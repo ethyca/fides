@@ -67,12 +67,12 @@ ROUTERS = [CTL_ROUTER, api_router, DB_ROUTER]
 DEFAULT_PRIVACY_NOTICES_PATH = join(
     dirname(__file__),
     "../data/privacy_notices",
-    "privacy_notice_templates.yml",
+    "privacy_notice_templates2.yml",
 )
 PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
     dirname(__file__),
     "../data/privacy_notices",
-    "privacy_experience_config_defaults.yml",
+    "privacy_experience_config_defaults2.yml",
 )
 
 
@@ -199,12 +199,12 @@ async def run_database_startup(app: FastAPI) -> None:
     finally:
         db.close()
 
-    load_default_experience_configs()  # Must occur before loading default privacy notices
+    # load_default_experience_configs()  # Must occur before loading default privacy notices
 
     if not CONFIG.test_mode:
         # Default notices subject to change, so preventing these from
         # loading in test mode to avoid interfering with unit tests.
-        load_default_privacy_notices()
+        # load_default_privacy_notices()
         # Similarly avoiding loading other consent out-of-the-box resources to avoid interfering with unit tests
         load_tcf_experiences()
         load_tcf_purpose_overrides()

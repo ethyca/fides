@@ -7,10 +7,19 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
-from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel, Language
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
+
+
+class NoticeTranslation(FidesSchema):
+    language: Language
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+    class Config:
+        use_enum_values = True
 
 
 class PrivacyNotice(FidesSchema):
@@ -23,35 +32,21 @@ class PrivacyNotice(FidesSchema):
 
     name: Optional[str]
     notice_key: Optional[FidesKey]
-    description: Optional[str]
     internal_description: Optional[str]
     origin: Optional[str]
-    regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
     data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
-    displayed_in_privacy_center: Optional[bool] = False
-    displayed_in_overlay: Optional[bool] = False
-    displayed_in_api: Optional[bool] = False
+    translations: Optional[List[NoticeTranslation]] = []
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
 
         use_enum_values = True
         orm_mode = True
-        extra = Extra.forbid
-
-    @validator("regions")
-    @classmethod
-    def validate_regions(
-        cls, regions: List[PrivacyNoticeRegion]
-    ) -> List[PrivacyNoticeRegion]:
-        """Assert regions aren't duplicated.  Without this, duplications get flagged as misleading duplicate data uses"""
-        if len(regions) != len(set(regions)):
-            raise ValueError("Duplicate regions found.")
-        return regions
+        extra = Extra.ignore
 
     def validate_data_uses(self, valid_data_uses: List[str]) -> None:
         """
@@ -62,6 +57,21 @@ class PrivacyNotice(FidesSchema):
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
 
+    @root_validator(pre=True)
+    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ensure no two translations with the same language are supplied
+        """
+        translations: List[Dict] = values.get("translations")
+        if not translations:
+            return values
+
+        languages = [translation.get("language") for translation in translations]
+        if len(languages) != len(set(languages)):
+            raise ValueError(f"Multiple translations supplied for the same language")
+
+        return values
+
 
 class PrivacyNoticeCreation(PrivacyNotice):
     """
@@ -71,7 +81,6 @@ class PrivacyNoticeCreation(PrivacyNotice):
     """
 
     name: str
-    regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     consent_mechanism: ConsentMechanism
     data_uses: conlist(str, min_items=1)  # type: ignore
     enforcement_level: EnforcementLevel
@@ -88,37 +97,18 @@ class PrivacyNoticeCreation(PrivacyNotice):
 
         return values
 
-    @root_validator
-    def validate_consent_mechanisms_and_display(
-        cls, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    @root_validator(pre=True)
+    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Add some validation regarding where certain consent mechanisms must be displayed
+        Ensure no two translations with the same language are supplied
         """
-        consent_mechanism: Optional[str] = values.get("consent_mechanism")
-        displayed_in_overlay: Optional[bool] = values.get("displayed_in_overlay")
-        displayed_in_privacy_center: Optional[bool] = values.get(
-            "displayed_in_privacy_center"
-        )
+        translations: List[Dict] = values.get("translations")
+        if not translations:
+            return values
 
-        if (
-            consent_mechanism == ConsentMechanism.opt_in.value
-            and not displayed_in_overlay
-        ):
-            raise ValueError("Opt-in notices must be served in an overlay.")
-
-        if consent_mechanism == ConsentMechanism.opt_out.value and not (
-            displayed_in_privacy_center or displayed_in_overlay
-        ):
-            raise ValueError(
-                "Opt-out notices must be served in an overlay or the privacy center."
-            )
-
-        if (
-            consent_mechanism == ConsentMechanism.notice_only.value
-            and not displayed_in_overlay
-        ):
-            raise ValueError("Notice-only notices must be served in an overlay.")
+        languages = [translation.get("language") for translation in translations]
+        if len(languages) != len(set(languages)):
+            raise ValueError(f"Multiple translations supplied for the same language")
 
         return values
 

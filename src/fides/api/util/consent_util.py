@@ -36,13 +36,18 @@ from fides.api.models.privacy_request import (
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
-from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
+from fides.api.schemas.privacy_notice import (
+    PrivacyNoticeCreation,
+    PrivacyNoticeWithId,
+    NoticeTranslation,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
 
-PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
-PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
+PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "internal_description"]
+PRIVACY_EXPERIENCE_ESCAPE_FIELDS = []
+PRIVACY_TRANSLATION_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
     "banner_description",
@@ -330,15 +335,13 @@ def create_privacy_notices_util(
 
     existing_notices = PrivacyNotice.query(db).filter(PrivacyNotice.disabled.is_(False)).all()  # type: ignore[attr-defined]
 
-    new_notices = [
-        PrivacyNotice(**privacy_notice.dict(exclude_unset=True))
-        for privacy_notice in privacy_notice_schemas
-    ]
-    check_conflicting_data_uses(new_notices, existing_notices)
+    new_notices = []
+    for privacy_notice in new_notices:
+        new_notices.append(PrivacyNotice(**privacy_notice.dict(exclude_unset=True)))
+
     check_conflicting_notice_keys(new_notices, existing_notices)
 
     created_privacy_notices: List[PrivacyNotice] = []
-    affected_regions: Set = set()
 
     for privacy_notice in privacy_notice_schemas:
         if should_escape:
@@ -356,16 +359,13 @@ def create_privacy_notices_util(
             check_name=False,
         )
         created_privacy_notices.append(created_privacy_notice)
-        affected_regions.update(created_privacy_notice.regions)
 
-    # After creating any new notices, make sure experiences exist to back all notices.
-    upsert_privacy_experiences_after_notice_update(
-        db, affected_regions=list(affected_regions)
-    )
-    return created_privacy_notices, affected_regions
+    return created_privacy_notices, set()
 
 
-def validate_privacy_notice_dry_update(dry_update: PrivacyNotice) -> None:
+def validate_privacy_notice_dry_update(
+    dry_update: Union[PrivacyNotice, PrivacyNoticeTemplate]
+) -> None:
     """
     Verify that a dry update of a PrivacyNotice satisfies the constraints
     for creating a privacy notice.
@@ -455,11 +455,6 @@ def prepare_privacy_notice_patches(
 
     # run the validation here on our proposed "dry-run" updates
     try:
-        check_conflicting_data_uses(
-            validation_updates,
-            existing_notices.values(),
-            ignore_disabled=ignore_disabled,
-        )
         check_conflicting_notice_keys(
             validation_updates,
             existing_notices.values(),
@@ -555,7 +550,7 @@ def load_default_notices_on_startup(
             privacy_notice_schema.origin = SafeStr(template.id)
             notice_schemas.append(privacy_notice_schema)
 
-        # Create PrivacyNotice and PrivacyNoticeHistory records only for new templates
+        # Create PrivacyNotice, NoticeTranslation, and PrivacyNoticeHistory records only for new templates
         # Not escaping here, because it was already escaped when the templates were created.
         new_privacy_notices, _ = create_privacy_notices_util(
             db, notice_schemas, should_escape=False
@@ -599,9 +594,6 @@ def create_default_experience_config(
         model=(ExperienceConfigCreateWithId(**experience_config_data)),
         fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
-    if not experience_config_schema.is_default:
-        raise Exception("This method is for created default experience configs.")
-
     existing_experience_config = PrivacyExperienceConfig.get(
         db=db, object_id=experience_config_schema.id
     )

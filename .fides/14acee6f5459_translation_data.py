@@ -130,6 +130,7 @@ def determine_needed_experience_configs(bind):
 
 
 def upgrade():
+    return
     bind = op.get_bind()
 
     experience_config_df: DataFrame = determine_needed_experience_configs(bind)

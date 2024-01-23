@@ -11,7 +11,6 @@ from sqlalchemy import Boolean, Column, UniqueConstraint
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, or_
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
@@ -23,9 +22,14 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     System,
 )
 
+
 class Language(Enum):
     """Using BCP 47 Language Tags"""
+
     en_us = "en_us"  # English (US)
+
+    class Config:
+        use_enum_values = True
 
 
 class UserConsentPreference(Enum):
@@ -170,7 +174,7 @@ class PrivacyNoticeBase:
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
         index=True,
-        nullable=False,
+        nullable=True,
     )
     consent_mechanism = Column(EnumColumn(ConsentMechanism), nullable=False)
     data_uses = Column(
@@ -202,6 +206,14 @@ class PrivacyNoticeBase:
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
         return FidesKey(FidesKey.validate(notice_key))
 
+
+class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
+    """
+    This table contains the out-of-the-box Privacy Notices that are shipped with Fides
+    """
+
+    translations = Column(ARRAY(JSONB))
+
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """
         A utility method to get an updated object without saving it to the db.
@@ -219,16 +231,7 @@ class PrivacyNoticeBase:
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
-        return PrivacyNotice(**cloned_attributes)
-
-
-class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
-    """
-    This table contains the out-of-the-box Privacy Notices that are shipped with Fides
-    """
-    translations = Column(
-        MutableDict.as_mutable(JSONB)
-    )
+        return PrivacyNoticeTemplate(**cloned_attributes)
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
@@ -242,9 +245,19 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     )  # pointer back to the PrivacyNoticeTemplate
     version = Column(Float, nullable=False, default=1.0)
 
-    histories = relationship(
-        "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
+    translations = relationship(
+        "NoticeTranslation", backref="privacy_notice", lazy="dynamic"
     )
+
+    experience_configs = relationship(
+        "PrivacyExperienceConfig",
+        secondary="experiencenotices",
+        back_populates="privacy_notices",
+    )
+
+    # histories = relationship(
+    #     "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
+    # )
 
     @hybridproperty
     def privacy_notice_history_id(self) -> Optional[str]:
@@ -313,13 +326,22 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyNotice:
+        translations = data.pop("translations", [])
         created = super().create(db=db, data=data, check_name=check_name)
 
-        # create the history after the initial object creation succeeds, to avoid
-        # writing history if the creation fails and so that we can get the generated ID
-        data.pop("id", None)
-        history_data = {**data, "privacy_notice_id": created.id}
-        PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
+        for translation_data in translations:
+            data.pop(
+                "id", None
+            )  # Default Notices have id specified but we don't want to use the same id for the historical record
+            translation = NoticeTranslation.create(
+                db, data={**translation_data, "privacy_notice_id": created.id}
+            )
+            PrivacyNoticeHistory.create(
+                db,
+                data={**data, **translation_data, "translation_id": translation.id},
+                check_name=False,
+            )
+
         return created
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyNotice:
@@ -336,6 +358,25 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         return resource  # type: ignore[return-value]
 
+    def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
+        """
+        A utility method to get an updated object without saving it to the db.
+
+        This is used to see what an object update would look like, in memory,
+        without actually persisting the update to the db
+        """
+        # Update our attributes with values in data
+        cloned_attributes = self.__dict__.copy()
+        for key, val in data.items():
+            cloned_attributes[key] = val
+
+        # remove protected fields from the cloned dict
+        cloned_attributes.pop("_sa_instance_state")
+
+        # create a new object with the updated attribute data to keep this
+        # ORM object (i.e., `self`) pristine
+        return PrivacyNotice(**cloned_attributes)
+
 
 class NoticeTranslationBase:
     language = Column(EnumColumn(Language), nullable=False)
@@ -350,7 +391,25 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
 
-    __table_args__ = (UniqueConstraint("language", "privacy_notice_id", name="notice_translation"),)
+    histories = relationship(
+        "PrivacyNoticeHistory", backref="notice_translation", lazy="dynamic"
+    )
+
+    __table_args__ = (
+        UniqueConstraint("language", "privacy_notice_id", name="notice_translation"),
+    )
+
+    @hybridproperty
+    def privacy_notice_history_id(self) -> Optional[str]:
+        """Convenience property that returns the historical privacy notice history id for the current version.
+
+        Note that there are possibly many historical records for the given notice, this just returns the current
+        corresponding historical record.
+        """
+        history: PrivacyNoticeHistory = self.histories.order_by(
+            PrivacyNoticeHistory.version.asc()
+        ).first()
+        return history.id if history else None
 
 
 PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
@@ -362,35 +421,27 @@ def check_conflicting_notice_keys(
     ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
 ) -> None:
     """
-    Checks to see if new notice keys will conflict with any existing notice keys for a specific region
+    Checks to see if new notice keys will conflict with any existing notice keys
     """
-    # Map regions to existing notice key, notice name
-    notice_keys_by_region: Dict[
-        PrivacyNoticeRegion, List[Tuple[str, str]]
-    ] = defaultdict(list)
-    for privacy_notice in existing_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
-            continue
-        for region in privacy_notice.regions:
-            notice_keys_by_region[PrivacyNoticeRegion(region)].append(
-                (privacy_notice.notice_key, privacy_notice.name)
-            )
+    new_notice_keys = [
+        notice.notice_key
+        for notice in new_privacy_notices
+        if not (notice.disabled and ignore_disabled)
+    ]
+    if len(new_notice_keys) > len(set(new_notice_keys)):
+        raise ValidationError(message=f"Privacy Notice Keys must be unique")
 
-    for privacy_notice in new_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
-            # Skip validation if the notice is disabled
-            continue
-        # check each of the incoming notice's regions
-        for region in privacy_notice.regions:
-            region_notice_keys = notice_keys_by_region[PrivacyNoticeRegion(region)]
-            # check the incoming notice keys
-            for notice_key, notice_name in region_notice_keys:
-                if notice_key == privacy_notice.notice_key:
-                    raise ValidationError(
-                        message=f"Privacy Notice '{unescape(notice_name)}' has already assigned notice key '{notice_key}' to region '{region}'"
-                    )
-            # add the new notice key to our map
-            region_notice_keys.append((privacy_notice.notice_key, privacy_notice.name))
+    existing_notice_keys = [
+        notice.notice_key
+        for notice in existing_privacy_notices
+        if not (notice.disabled and ignore_disabled)
+    ]
+
+    overlaps = set(new_notice_keys).intersection(set(existing_notice_keys))
+    if set(new_notice_keys).intersection(existing_notice_keys):
+        raise ValidationError(
+            message=f"Privacy Notice Keys already assigned: {overlaps}'"
+        )
 
 
 def check_conflicting_data_uses(
@@ -472,7 +523,7 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
         String, ForeignKey(NoticeTranslation.id_field_path), nullable=False
     )  # pointer back to the NoticeTranslation
     privacy_notice_id = Column(
-        String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
+        String, ForeignKey(PrivacyNotice.id_field_path), nullable=True
     )
 
 

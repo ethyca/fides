@@ -7,19 +7,13 @@ from pydantic import Extra, Field, HttpUrl, root_validator, validator
 
 from fides.api.custom_types import HtmlStr
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
-from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.models.privacy_notice import PrivacyNoticeRegion, Language
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.util.endpoint_utils import human_friendly_list
 
 
-class ExperienceConfigSchema(FidesSchema):
-    """
-    Base for ExperienceConfig API objects.  Here all fields are optional since
-    Pydantic allows subclasses to be more strict but not less strict
-
-    Note component is intentionally not included in the base class. This can be specified when creating an ExperienceConfig
-    but cannot be updated later.
-    """
+class ExperienceTranslation(FidesSchema):
+    language: Optional[Language] = None
 
     accept_button_label: Optional[str] = Field(
         description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
@@ -30,13 +24,9 @@ class ExperienceConfigSchema(FidesSchema):
     banner_description: Optional[HtmlStr] = Field(
         description="Overlay 'Banner Description'"
     )
-    banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
     banner_title: Optional[str] = Field(description="Overlay 'Banner title'")
     description: Optional[HtmlStr] = Field(
         description="Overlay 'Description' or Privacy Center 'Description'"
-    )
-    disabled: Optional[bool] = Field(
-        default=False, description="Whether the given ExperienceConfig is disabled"
     )
     is_default: Optional[bool] = Field(
         default=False,
@@ -64,6 +54,35 @@ class ExperienceConfigSchema(FidesSchema):
         description="Overlay 'title' or Privacy Center 'title'"
     )
 
+
+class ExperienceConfigSchema(FidesSchema):
+    """
+    Base for ExperienceConfig API objects.  Here all fields are optional since
+    Pydantic allows subclasses to be more strict but not less strict
+
+    Note component is intentionally not included in the base class. This can be specified when creating an ExperienceConfig
+    but cannot be updated later.
+    """
+
+    component: ComponentType
+    banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
+    origin: Optional[str]
+    dismissable: Optional[bool]
+    allow_language_selection: Optional[bool]
+    translations: List[ExperienceTranslation] = []
+
+
+class ExperienceConfigCreate(ExperienceConfigSchema):
+    """
+    An API representation to create ExperienceConfig.
+    This model doesn't include an `id` so that it can be used for creation.
+    It also establishes some fields _required_ for creation
+    """
+
+    regions: List[PrivacyNoticeRegion] = []
+    component: ComponentType
+    notices: List[str] = []
+
     @validator("regions")
     @classmethod
     def validate_regions(
@@ -74,40 +93,25 @@ class ExperienceConfigSchema(FidesSchema):
             raise ValueError("Duplicate regions found.")
         return regions
 
-
-class ExperienceConfigCreate(ExperienceConfigSchema):
-    """
-    An API representation to create ExperienceConfig.
-    This model doesn't include an `id` so that it can be used for creation.
-    It also establishes some fields _required_ for creation
-    """
-
-    accept_button_label: str
-    component: ComponentType
-    description: HtmlStr
-    reject_button_label: str
-    save_button_label: str
-    title: str
-
-    @root_validator
-    def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate minimum set of required fields exist given the type of component"""
-        component: Optional[ComponentType] = values.get("component")
-
-        if component == ComponentType.overlay:
-            # Overlays have a few additional required fields beyond the privacy center
-            required_overlay_fields = [
-                "acknowledge_button_label",
-                "banner_enabled",
-                "privacy_preferences_link_label",
-            ]
-            for field in required_overlay_fields:
-                if not values.get(field):
-                    raise ValueError(
-                        f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
-                    )
-
-        return values
+    # @root_validator
+    # def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    #     """Validate minimum set of required fields exist given the type of component"""
+    #     component: Optional[ComponentType] = values.get("component")
+    #
+    #     if component == ComponentType.overlay:
+    #         # Overlays have a few additional required fields beyond the privacy center
+    #         required_overlay_fields = [
+    #             "acknowledge_button_label",
+    #             "banner_enabled",
+    #             "privacy_preferences_link_label",
+    #         ]
+    #         for field in required_overlay_fields:
+    #             if not values.get(field):
+    #                 raise ValueError(
+    #                     f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
+    #                 )
+    #
+    #     return values
 
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):

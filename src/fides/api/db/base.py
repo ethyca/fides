@@ -24,13 +24,13 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfigHistory,
     ExperienceConfigTemplate,
     ExperienceNotices,
-    ExperienceTranslation
+    ExperienceTranslation,
 )
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeTemplate,
-    NoticeTranslation
+    NoticeTranslation,
 )
 from fides.api.models.privacy_preference import (
     DeprecatedCurrentPrivacyPreference,

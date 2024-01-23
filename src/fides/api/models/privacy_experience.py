@@ -3,11 +3,10 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Boolean, Column, Table
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, and_, or_
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy.util import hybridproperty
 
@@ -18,7 +17,8 @@ from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
     create_historical_data_from_record,
-    update_if_modified, Language,
+    update_if_modified,
+    Language,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
@@ -26,6 +26,20 @@ BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
     ConsentMechanism.opt_in,
 }
+
+
+class ExperienceNotices(Base):
+    """Many-to-many table that stores which Notices are on which Experience Configs"""
+
+    notice_id = Column(
+        String, ForeignKey("privacynotice.id"), index=True, nullable=False
+    )
+    experience_config_id = Column(
+        String,
+        ForeignKey("privacyexperienceconfig.id"),
+        index=True,
+        nullable=False,
+    )
 
 
 class ComponentType(Enum):
@@ -50,18 +64,18 @@ class BannerEnabled(Enum):
 
 class ExperienceConfigTemplate(Base):
     """Table for out-of-the-box Experience Configurations"""
+
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
     )
     component = Column(EnumColumn(ComponentType), nullable=False)
     privacy_notices: List[str] = []
-    translations = Column(
-        MutableDict.as_mutable(JSONB)
-    )
+    translations = Column(ARRAY(JSONB))
 
 
 class ExperienceTranslationBase:
     """Base schema for Experience translations"""
+
     language = Column(EnumColumn(Language), nullable=False)
 
     accept_button_label = Column(String)
@@ -104,9 +118,8 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
     Can be linked to multiple PrivacyExperiences.
     """
-    custom_asset_id = Column(
-        String, ForeignKey(CustomAsset.id_field_path)
-    )
+
+    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     dismissable = Column(Boolean, nullable=False, default=False)
 
     experiences = relationship(
@@ -115,21 +128,29 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         lazy="dynamic",
     )
 
+    privacy_notices = relationship(
+        "PrivacyNotice",
+        secondary="experiencenotices",
+        back_populates="experience_configs",
+        lazy="selectin",
+    )
+
     histories = relationship(
         "PrivacyExperienceConfigHistory",
         backref="experience_config",
         lazy="dynamic",
     )
 
-    origin = Column(
-        String, ForeignKey(ExperienceConfigTemplate.id_field_path)
-    )
-
+    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
         """Return the regions using this experience config"""
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
+
+    translations = relationship(
+        "ExperienceTranslation", backref="privacy_experience_config", lazy="dynamic"
+    )
 
     @classmethod
     def create(
@@ -140,19 +161,30 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         check_name: bool = False,
     ) -> PrivacyExperienceConfig:
         """Create experience config and then clone this record into the history table for record keeping"""
+        translations = data.pop("translations", [])
+        regions = data.pop("regions", [])
+        notices = data.pop("notices", [])
+
         experience_config: PrivacyExperienceConfig = super().create(
             db=db, data=data, check_name=check_name
         )
-        # create the history after the initial object creation succeeds, to avoid
-        # writing history if the creation fails and so that we can get the generated ID
-        data.pop(
-            "id", None
-        )  # Default Experience Configs have id specified but we don't want to use the same id for the historical record
-        history_data = {
-            **data,
-            "experience_config_id": experience_config.id,
-        }
-        PrivacyExperienceConfigHistory.create(db, data=history_data, check_name=False)
+
+        for translation_data in translations:
+            data.pop(
+                "id", None
+            )  # Default Experience Configs have id specified but we don't want to use the same id for the historical record
+            translation = ExperienceTranslation.create(
+                db,
+                data={**translation_data, "experience_config_id": experience_config.id},
+            )
+            PrivacyExperienceConfigHistory.create(
+                db,
+                data={**data, **translation_data, "translation_id": translation.id},
+                check_name=False,
+            )
+
+        upsert_privacy_experiences_after_config_update(db, experience_config, regions)
+
         return experience_config
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
@@ -216,23 +248,31 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
     )
     is_default = Column(Boolean, nullable=False, default=False)
 
-    __table_args__ = (UniqueConstraint("language", "experience_config_id", name="experience_translation"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "language", "experience_config_id", name="experience_translation"
+        ),
+    )
+
+    histories = relationship(
+        "PrivacyExperienceConfigHistory",
+        backref="experience_translation",
+        lazy="dynamic",
+    )
 
 
 class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
     """Experience Config History - stores the history of how the config has changed over time"""
 
     experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
+        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
     )
 
     translation_id = Column(
         String, ForeignKey(ExperienceTranslation.id_field_path), nullable=False
     )
 
-    origin = Column(
-        String, ForeignKey(ExperienceConfigTemplate.id_field_path)
-    )
+    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     dismissable = Column(Boolean, nullable=False, default=False)
     version = Column(Float, nullable=False, default=1.0)
@@ -241,8 +281,6 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
     banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
     component = Column(EnumColumn(ComponentType), nullable=False, index=True)
     is_default = Column(Boolean, nullable=False, default=False)
-
-
 
 
 class PrivacyExperience(Base):
@@ -608,12 +646,25 @@ def upsert_privacy_experiences_after_config_update(
     return linked_regions, unlinked_regions
 
 
-class ExperienceNotices(Base):
-    """Many-to-many table that stores which Notices are on which Experience Configs"""
-    notice_id = Column(
-        String, ForeignKey(PrivacyNotice.id_field_path), index=True, nullable=False
-    )
-    experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), index=True, nullable=False
-    )
+def link_notices_to_experience_config(
+    db: Session,
+    notice_keys: List[str],
+    experience_config: PrivacyExperienceConfig,
+) -> Tuple[List[PrivacyNoticeRegion], List[PrivacyNoticeRegion]]:
+    """
+    Link Notices to ExperienceConfig
+    """
+    existing_linked_notices = [pn for pn in experience_config.privacy_notices]
+    notices = db.query(PrivacyNotice).filter(PrivacyNotice.notice_key.in_(notice_keys))
 
+    for notice in notices:
+        if notice not in experience_config.privacy_notices:
+            experience_config.append(notices)
+
+    to_remove = set(existing_linked_notices) - set(
+        notice.id for notice in experience_config.privacy_notices
+    )
+    for privacy_notice in to_remove:
+        experience_config.privacy_notices.remove(privacy_notice)
+
+    return experience_config.privacy_notices
