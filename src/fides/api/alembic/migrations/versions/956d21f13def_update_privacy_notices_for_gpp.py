@@ -1,7 +1,7 @@
 """update privacy notices for gpp
 
 Revision ID: 956d21f13def
-Revises: 5a8cee9c014c
+Revises: 61a922702f4c
 Create Date: 2024-01-10 02:14:24.802051
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "956d21f13def"
-down_revision = "5a8cee9c014c"
+down_revision = "61a922702f4c"
 branch_labels = None
 depends_on = None
 
