@@ -48,7 +48,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
                 <Flex width="100%" height="100%" flex={1}>
                   <MainSideNav />
                   <Flex direction="column" width="100%">
-                    <Header />
                     <Component {...pageProps} />
                   </Flex>
                 </Flex>
