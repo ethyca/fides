@@ -59,6 +59,7 @@ const systemApi = baseApi.injectEndpoints({
         "System",
         "Datastore Connection",
         "System Vendors",
+        "Privacy Notices",
       ],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({

@@ -290,6 +290,7 @@ const plusApi = baseApi.injectEndpoints({
         "System",
         "Datamap",
         "System History",
+        "Privacy Notices",
       ],
     }),
     getFidesCloudConfig: build.query<CloudConfig, void>({
