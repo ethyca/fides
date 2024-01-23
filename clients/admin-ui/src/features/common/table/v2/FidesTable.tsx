@@ -16,6 +16,7 @@ import {
 } from "@fidesui/react";
 import {
   flexRender,
+  Header,
   Row,
   RowData,
   Table as TableInstance,
@@ -23,7 +24,9 @@ import {
 import React, { ReactNode } from "react";
 
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
-import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
+
+import { DisplayAllIcon, GroupedIcon } from "../../Icon";
+// import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -40,6 +43,37 @@ declare module "@tanstack/table-core" {
   }
 }
 /* eslint-enable */
+
+const HeaderContent = <T,>({ header }: { header: Header<T, unknown> }) => {
+  // TODO: return regular render if there is no grouping possible
+  console.log({ header });
+
+  return (
+    <Menu size="xs">
+      <MenuButton
+        as={Button}
+        rightIcon={<ChevronDownIcon />}
+        variant="ghost"
+        width="100%"
+        pr={1}
+        textAlign="start"
+      >
+        {flexRender(header.column.columnDef.header, header.getContext())}
+      </MenuButton>
+      <Portal>
+        <MenuList fontSize="xs">
+          <MenuItem>
+            <GroupedIcon mr="2" /> Group all
+          </MenuItem>
+          <MenuItem>
+            <DisplayAllIcon mr="2" />
+            Display all
+          </MenuItem>
+        </MenuList>
+      </Portal>
+    </Menu>
+  );
+};
 
 type Props<T> = {
   tableInstance: TableInstance<T>;
@@ -109,27 +143,7 @@ export const FidesTableV2 = <T,>({
                 textTransform="unset"
                 position="relative"
               >
-                <Menu size="xs">
-                  <MenuButton
-                    as={Button}
-                    rightIcon={<ChevronDownIcon />}
-                    variant="ghost"
-                    width="100%"
-                    pr={1}
-                    textAlign="start"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </MenuButton>
-                  <Portal>
-                    <MenuList fontSize="xs">
-                      <MenuItem>Group all</MenuItem>
-                      <MenuItem>Display all</MenuItem>
-                    </MenuList>
-                  </Portal>
-                </Menu>
+                <HeaderContent header={header} />
                 {/* Capture area to render resizer cursor */}
                 {header.column.getCanResize() ? (
                   <Box
