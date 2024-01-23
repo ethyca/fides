@@ -24,20 +24,22 @@ The types of changes are:
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
 - Datamap Reporting page [#4519](https://github.com/ethyca/fides/pull/4519)
 - Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
+- Custom privacy request field support for consent requests [#4546](https://github.com/ethyca/fides/pull/4546)
 
 ### Changed
 
 - Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
+- No longer generate the `vendors_disclosed` section of the TC string in `fides.js` [#4553](https://github.com/ethyca/fides/pull/4553)
+- Changed consent management vendor add flow [#4550](https://github.com/ethyca/fides/pull/4550)
 
 ### Fixed
 
 - Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
 
-### Changed
+### Developer Experience
 
-- No longer generate the `vendors_disclosed` section of the TC string in `fides.js` [#4553](https://github.com/ethyca/fides/pull/4553)
-- Changed consent management vendor add flow [#4550](https://github.com/ethyca/fides/pull/4550)
+- Switch to anyascii for unicode transliteration [#4550](https://github.com/ethyca/fides/pull/4564)
 
 ## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 

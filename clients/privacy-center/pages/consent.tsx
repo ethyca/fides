@@ -23,7 +23,6 @@ import {
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
 } from "~/features/consent/consent.slice";
-import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import ConsentToggles from "~/components/consent/ConsentToggles";
@@ -31,6 +30,7 @@ import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import ConsentHeading from "~/components/consent/ConsentHeading";
 import ConsentDescription from "~/components/consent/ConsentDescription";
 import { selectIsNoticeDriven } from "~/features/common/settings.slice";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -134,7 +134,7 @@ const Consent: NextPage = () => {
 
     const privacyCenterConfig = getIdVerificationConfigQueryResult.data;
     if (
-      privacyCenterConfig.identity_verification_required &&
+      !privacyCenterConfig.disable_consent_identity_verification &&
       !verificationCode
     ) {
       toastError({ title: "Identity verification is required." });
@@ -142,7 +142,7 @@ const Consent: NextPage = () => {
       return;
     }
 
-    if (privacyCenterConfig.identity_verification_required) {
+    if (!privacyCenterConfig.disable_consent_identity_verification) {
       postConsentRequestVerificationMutationTrigger({
         id: consentRequestId,
         code: verificationCode,
