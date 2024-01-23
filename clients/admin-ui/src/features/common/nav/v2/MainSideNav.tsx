@@ -171,7 +171,7 @@ export const UnconnectedMainSideNav = ({
       </Box>
       <Box alignItems="center">
         <Link href="https://docs.ethyca.com" isExternal>
-          <Button size="sm" variant="ghost">
+          <Button size="sm" variant="ghost" _hover={{ backgroundColor: "gray.700" }}>
             <QuestionIcon color="white" boxSize={4} />
           </Button>
         </Link>
