@@ -6,7 +6,7 @@ describe("Nav Bar", () => {
   it("renders all navigation groups with links inside", () => {
     cy.visit("/");
 
-    cy.get("nav button").should("have.length", 4);
+    cy.get("nav button").should("have.length", 7);
     cy.getByTestId("Overview-nav-group").within(() => {
       cy.getByTestId("Home-nav-link");
     });

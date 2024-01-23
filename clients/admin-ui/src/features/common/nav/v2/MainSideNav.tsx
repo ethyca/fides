@@ -8,13 +8,24 @@ import {
   Button,
   Link,
   ListItem,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  QuestionIcon,
+  Stack,
+  Text,
   UnorderedList,
+  UserIcon,
   VStack,
 } from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 
 import logoImage from "~/../public/logo-white.svg";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 
 import { useNav } from "./hooks";
@@ -120,25 +131,86 @@ const NavGroupMenu = ({
 export const UnconnectedMainSideNav = ({
   groups,
   active,
+  handleLogout,
+  username,
 }: {
   groups: NavGroup[];
   active: ActiveNav | undefined;
+  handleLogout: any;
+  username: string;
 }) => (
-  <Box p={4} minWidth="200px" maxWidth="200px" backgroundColor="#191D27">
-    <VStack as="nav" alignItems="start" color="white" height="100%">
-      <Box pb={6}>
-        <FidesLogoHomeLink />
+  <Box
+    p={4}
+    pb={0}
+    minWidth="200px"
+    maxWidth="200px"
+    backgroundColor="#191D27"
+    height="100%"
+    overflow="scroll"
+  >
+    <VStack
+      as="nav"
+      alignItems="start"
+      color="white"
+      height="100%"
+      justifyContent="space-between"
+    >
+      <Box>
+        <Box pb={6}>
+          <FidesLogoHomeLink />
+        </Box>
+        <Accordion
+          allowMultiple
+          width="100%"
+          defaultIndex={[...Array(groups.length).keys()]}
+          overflowY="auto"
+        >
+          {groups.map((group) => (
+            <NavGroupMenu key={group.title} group={group} active={active} />
+          ))}
+        </Accordion>
       </Box>
-      <Accordion
-        allowMultiple
-        width="100%"
-        defaultIndex={[...Array(groups.length).keys()]}
-        overflowY="auto"
-      >
-        {groups.map((group) => (
-          <NavGroupMenu key={group.title} group={group} active={active} />
-        ))}
-      </Accordion>
+      <Box alignItems="center" pb={4}>
+        <Link href="https://docs.ethyca.com" isExternal>
+          <Button
+            size="sm"
+            variant="ghost"
+            _hover={{ backgroundColor: "gray.700" }}
+          >
+            <QuestionIcon color="white" boxSize={4} />
+          </Button>
+        </Link>
+        {username && (
+          <Menu>
+            <MenuButton
+              as={Button}
+              size="sm"
+              variant="ghost"
+              _hover={{ backgroundColor: "gray.700" }}
+              data-testid="header-menu-button"
+            >
+              <UserIcon color="white" />
+            </MenuButton>
+            <MenuList shadow="xl" zIndex="20">
+              <Stack px={3} py={2} spacing={1}>
+                <Text color="gray.700" fontWeight="medium">
+                  {username}
+                </Text>
+              </Stack>
+
+              <MenuDivider />
+              <MenuItem
+                color="gray.700"
+                _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                onClick={handleLogout}
+                data-testid="header-menu-sign-out"
+              >
+                Sign out
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        )}
+      </Box>
     </VStack>
   </Box>
 );
@@ -146,8 +218,22 @@ export const UnconnectedMainSideNav = ({
 const MainSideNav = () => {
   const router = useRouter();
   const nav = useNav({ path: router.pathname });
+  const [logoutMutation] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const username = user ? user.username : "";
 
-  return <UnconnectedMainSideNav {...nav} />;
+  const handleLogout = async () => {
+    await logoutMutation({});
+    dispatch(logout());
+  };
+  return (
+    <UnconnectedMainSideNav
+      {...nav}
+      handleLogout={handleLogout}
+      username={username}
+    />
+  );
 };
 
 export default MainSideNav;
