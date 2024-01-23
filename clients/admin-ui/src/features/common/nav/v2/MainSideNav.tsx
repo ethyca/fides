@@ -140,7 +140,8 @@ export const UnconnectedMainSideNav = ({
   username: string;
 }) => (
   <Box
-    p={4} pb={0}
+    p={4}
+    pb={0}
     minWidth="200px"
     maxWidth="200px"
     backgroundColor="#191D27"
@@ -171,7 +172,11 @@ export const UnconnectedMainSideNav = ({
       </Box>
       <Box alignItems="center" pb={4}>
         <Link href="https://docs.ethyca.com" isExternal>
-          <Button size="sm" variant="ghost" _hover={{ backgroundColor: "gray.700" }}>
+          <Button
+            size="sm"
+            variant="ghost"
+            _hover={{ backgroundColor: "gray.700" }}
+          >
             <QuestionIcon color="white" boxSize={4} />
           </Button>
         </Link>
