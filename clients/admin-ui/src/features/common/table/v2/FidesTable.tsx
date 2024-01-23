@@ -1,5 +1,12 @@
 import {
   Box,
+  Button,
+  ChevronDownIcon,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Portal,
   Table,
   TableContainer,
   Tbody,
@@ -88,7 +95,8 @@ export const FidesTableV2 = <T,>({
                 colSpan={header.colSpan}
                 data-testid={`column-${header.id}`}
                 style={{
-                  ...getTableTHandTDStyles(header.column.id),
+                  // ...getTableTHandTDStyles(header.column.id),
+                  padding: 0,
                   width: header.column.columnDef.meta?.width || "unset",
                   minWidth:
                     header.column.columnDef.meta?.minWidth ||
@@ -101,10 +109,27 @@ export const FidesTableV2 = <T,>({
                 textTransform="unset"
                 position="relative"
               >
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
+                <Menu size="xs">
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    variant="ghost"
+                    width="100%"
+                    pr={1}
+                    textAlign="start"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </MenuButton>
+                  <Portal>
+                    <MenuList fontSize="xs">
+                      <MenuItem>Group all</MenuItem>
+                      <MenuItem>Display all</MenuItem>
+                    </MenuList>
+                  </Portal>
+                </Menu>
                 {/* Capture area to render resizer cursor */}
                 {header.column.getCanResize() ? (
                   <Box
