@@ -1721,6 +1721,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_request_id
       data_categories: [system.operations]
+    - name: consent_request_id
+      data_categories: [system.operations]
     - name: field_name
       data_categories: [system.operations]
     - name: field_label
