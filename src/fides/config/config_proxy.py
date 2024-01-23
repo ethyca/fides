@@ -54,7 +54,26 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     prefix = "execution"
 
     subject_identity_verification_required: bool
+    disable_consent_identity_verification: bool
     require_manual_request_approval: bool
+
+    def __getattribute__(self, name: str) -> Any:
+        """
+        Overrides base __getattribute__ to provide a dynamic fallback for
+        'disable_consent_identity_verification'. The fallback is based on
+        'subject_identity_verification_required' only when no explicit value is provided,
+        preserving None for unset cases.
+        """
+        if name == "disable_consent_identity_verification":
+            value = super().__getattribute__("disable_consent_identity_verification")
+            if value is None:
+                subject_verification_required = super().__getattribute__(
+                    "subject_identity_verification_required"
+                )
+                return not subject_verification_required
+            return value
+
+        return super().__getattribute__(name)
 
 
 class StorageSettingsProxy(ConfigProxyBase):

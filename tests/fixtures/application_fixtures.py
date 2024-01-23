@@ -2118,6 +2118,22 @@ def provided_identity_and_consent_request(
 
 
 @pytest.fixture(scope="function")
+def provided_identity_and_consent_request_with_custom_fields(
+    db,
+    provided_identity_and_consent_request,
+):
+    _, consent_request = provided_identity_and_consent_request
+    consent_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields={
+            "first_name": CustomPrivacyRequestField(label="First name", value="John"),
+            "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+        },
+    )
+    return consent_request
+
+
+@pytest.fixture(scope="function")
 def fides_user_provided_identity(db):
     provided_identity_data = {
         "privacy_request_id": None,
@@ -2454,6 +2470,38 @@ def allow_custom_privacy_request_field_collection_enabled():
     CONFIG.execution.allow_custom_privacy_request_field_collection = True
     yield
     CONFIG.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_field_collection_disabled():
+    original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
+    CONFIG.execution.allow_custom_privacy_request_field_collection = False
+    yield
+    CONFIG.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_fields_in_request_execution_enabled():
+    original_value = (
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution
+    )
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+    yield
+    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+        original_value
+    )
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_fields_in_request_execution_disabled():
+    original_value = (
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution
+    )
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = False
+    yield
+    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+        original_value
+    )
 
 
 @pytest.fixture(scope="function")
