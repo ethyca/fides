@@ -25,6 +25,7 @@ The types of changes are:
 - Datamap Reporting page [#4519](https://github.com/ethyca/fides/pull/4519)
 - Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
 - Custom privacy request field support for consent requests [#4546](https://github.com/ethyca/fides/pull/4546)
+- Support GPP in privacy notices [#4554](https://github.com/ethyca/fides/pull/4554)
 
 ### Changed
 

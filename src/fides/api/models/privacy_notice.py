@@ -10,7 +10,8 @@ from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, or_
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
@@ -21,6 +22,11 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
+
+
+class PrivacyNoticeFramework(Enum):
+    gpp_us_national = "gpp_us_national"
+    gpp_us_state = "gpp_us_state"
 
 
 class UserConsentPreference(Enum):
@@ -169,7 +175,10 @@ class PrivacyNoticeBase:
     )
     consent_mechanism = Column(EnumColumn(ConsentMechanism), nullable=False)
     data_uses = Column(
-        ARRAY(String), nullable=False
+        ARRAY(String),
+        nullable=False,
+        server_default="{}",
+        default=dict,
     )  # a list of `fides_key`s of `DataUse` records
     enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
     disabled = Column(Boolean, nullable=False, default=False)
@@ -178,6 +187,17 @@ class PrivacyNoticeBase:
     displayed_in_overlay = Column(Boolean, nullable=False, default=False)
     displayed_in_api = Column(Boolean, nullable=False, default=False)
     notice_key = Column(String, nullable=False)
+    framework = Column(String, nullable=True)
+    gpp_field_mapping = Column(
+        MutableList.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
+
+    @property
+    def is_gpp(self) -> bool:
+        return self.framework in (
+            PrivacyNoticeFramework.gpp_us_national.value,
+            PrivacyNoticeFramework.gpp_us_state.value,
+        )
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -215,6 +235,13 @@ class PrivacyNoticeBase:
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
         return PrivacyNotice(**cloned_attributes)
+
+    def validate_enabled_has_data_uses(self) -> None:
+        """Validated that enabled privacy notices have data uses"""
+        if not self.disabled and not self.data_uses:
+            raise ValidationError(
+                "A privacy notice must have at least one data use assigned in order to be enabled."
+            )
 
 
 class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
@@ -367,62 +394,6 @@ def check_conflicting_notice_keys(
                     )
             # add the new notice key to our map
             region_notice_keys.append((privacy_notice.notice_key, privacy_notice.name))
-
-
-def check_conflicting_data_uses(
-    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
-    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
-    ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
-) -> None:
-    """
-    Checks the provided lists of potential "new" (incoming) `PrivacyNotice` records
-    and existing `PrivacyNotice` records for conflicts (i.e. overlaps) in DataUse specifications
-    within `PrivacyNoticeRegion`s associated with the `PrivacyNotice` records.
-
-    Checks are effectively performed between the new records and the existing records, as well as
-    between the new records themselves.
-
-    A `DataUse` conflict is considered not only an exact match in `DataUse` strings, but also a
-    hierarchical overlap, e.g. `DataUse`s of `advertising` and `advertising.first_party` as well as
-    `advertising` and `advertising.first_party.contextual` would both be considered conflicts
-    if they occurred in `PrivacyNotice`s that are associated with the same `PrivacyNoticeRegion`.
-
-    For templates, we don't want to ignore disabled data uses.
-    """
-    # first, we map the existing [region -> data use] associations based on the set of
-    # existing notices.
-    # this gives us a simple "lookup table" for region and data use conflicts in incoming notices
-    uses_by_region: Dict[PrivacyNoticeRegion, List[Tuple[str, str]]] = defaultdict(list)
-    for privacy_notice in existing_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
-            continue
-        for region in privacy_notice.regions:
-            for data_use in privacy_notice.data_uses:
-                uses_by_region[PrivacyNoticeRegion(region)].append(
-                    (data_use, privacy_notice.name)
-                )
-
-    # now, validate the new (incoming) notices
-    for privacy_notice in new_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
-            # if the incoming notice is disabled, it skips validation
-            continue
-        # check each of the incoming notice's regions
-        for region in privacy_notice.regions:
-            region_uses = uses_by_region[PrivacyNoticeRegion(region)]
-            # check each of the incoming notice's data uses
-            for data_use in privacy_notice.data_uses:
-                for existing_use, notice_name in region_uses:
-                    # we need to check for hierarchical overlaps in _both_ directions
-                    # i.e. whether the incoming DataUse is a parent _or_ a child of
-                    # an existing DataUse
-                    if new_data_use_conflicts_with_existing_use(existing_use, data_use):
-                        raise ValidationError(
-                            message=f"Privacy Notice '{unescape(notice_name)}' has already assigned data use '{existing_use}' to region '{region}'"
-                        )
-                # add the data use to our map, to effectively include it in validation against the
-                # following incoming records
-                region_uses.append((data_use, privacy_notice.name))
 
 
 def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) -> bool:
