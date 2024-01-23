@@ -181,6 +181,7 @@ export const UnconnectedMainSideNav = ({
               as={Button}
               size="sm"
               variant="ghost"
+              _hover={{ backgroundColor: "gray.700" }}
               data-testid="header-menu-button"
             >
               <UserIcon color="white" />
