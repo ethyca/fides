@@ -21,7 +21,7 @@ import {
   RowData,
   Table as TableInstance,
 } from "@tanstack/react-table";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useMemo, useState } from "react";
 
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 
@@ -57,8 +57,6 @@ const HeaderContent = <T,>({
   onDisplayAll: (id: string) => void;
   isDisplayAll: boolean;
 }) => {
-  // TODO: return regular render if there is no grouping possible
-
   if (!header.column.columnDef.meta?.showHeaderMenu) {
     return (
       <Box style={{ ...getTableTHandTDStyles(header.column.id) }}>
@@ -99,6 +97,7 @@ const HeaderContent = <T,>({
     </Menu>
   );
 };
+
 type Props<T> = {
   tableInstance: TableInstance<T>;
   rowActionBar?: ReactNode;
@@ -106,6 +105,33 @@ type Props<T> = {
   onRowClick?: (row: T) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
 };
+
+const TableBody = <T,>({
+  tableInstance,
+  rowActionBar,
+  onRowClick,
+  renderRowTooltipLabel,
+  displayAllColumns,
+}: Omit<Props<T>, "footer"> & { displayAllColumns: string[] }) => (
+  <Tbody data-testid="fidesTable-body">
+    {rowActionBar}
+    {tableInstance.getRowModel().rows.map((row) => (
+      <FidesRow<T>
+        key={row.id}
+        row={row}
+        onRowClick={onRowClick}
+        renderRowTooltipLabel={renderRowTooltipLabel}
+        displayAllColumns={displayAllColumns}
+      />
+    ))}
+  </Tbody>
+);
+
+const MemoizedTableBody = React.memo(
+  TableBody,
+  (prev, next) =>
+    prev.tableInstance.options.data === next.tableInstance.options.data
+) as typeof TableBody;
 
 export const FidesTableV2 = <T,>({
   tableInstance,
@@ -124,6 +150,22 @@ export const FidesTableV2 = <T,>({
     setDisplayAllColumns(displayAllColumns.filter((c) => c !== id));
   };
 
+  // From https://tanstack.com/table/v8/docs/examples/react/column-resizing-performant
+  // To optimize resizing performance
+  const columnSizeVars = useMemo(() => {
+    const headers = tableInstance.getFlatHeaders();
+    const colSizes: { [key: string]: number } = {};
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]!;
+      colSizes[`--header-${header.id}-size`] = header.getSize();
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+    }
+    return colSizes;
+    // Disabling since the example docs do
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableInstance.getState().columnSizingInfo]);
+
   return (
     <TableContainer
       data-testid="fidesTable"
@@ -136,6 +178,7 @@ export const FidesTableV2 = <T,>({
         style={{
           borderCollapse: "separate",
           borderSpacing: 0,
+          ...columnSizeVars,
           width: tableInstance.getCenterTotalSize(),
         }}
       >
@@ -166,16 +209,6 @@ export const FidesTableV2 = <T,>({
                   style={{
                     padding: 0,
                     width: header.column.columnDef.meta?.width || "unset",
-                    minWidth:
-                      header.column.columnDef.meta?.minWidth ||
-                      (header.column.getCanResize()
-                        ? header.getSize()
-                        : "unset"),
-                    maxWidth:
-                      header.column.columnDef.meta?.maxWidth ||
-                      (header.column.getCanResize()
-                        ? header.getSize()
-                        : "unset"),
                     overflowX: "auto",
                   }}
                   textTransform="unset"
@@ -192,7 +225,6 @@ export const FidesTableV2 = <T,>({
                   {/* Capture area to render resizer cursor */}
                   {header.column.getCanResize() ? (
                     <Box
-                      onDoubleClick={header.column.resetSize}
                       onMouseDown={header.getResizeHandler()}
                       position="absolute"
                       height="100%"
@@ -208,18 +240,23 @@ export const FidesTableV2 = <T,>({
             </Tr>
           ))}
         </Thead>
-        <Tbody data-testid="fidesTable-body">
-          {rowActionBar}
-          {tableInstance.getRowModel().rows.map((row) => (
-            <FidesRow<T>
-              key={row.id}
-              row={row}
-              onRowClick={onRowClick}
-              renderRowTooltipLabel={renderRowTooltipLabel}
-              displayAllColumns={displayAllColumns}
-            />
-          ))}
-        </Tbody>
+        {tableInstance.getState().columnSizingInfo.isResizingColumn ? (
+          <MemoizedTableBody
+            tableInstance={tableInstance}
+            rowActionBar={rowActionBar}
+            onRowClick={onRowClick}
+            renderRowTooltipLabel={renderRowTooltipLabel}
+            displayAllColumns={displayAllColumns}
+          />
+        ) : (
+          <TableBody
+            tableInstance={tableInstance}
+            rowActionBar={rowActionBar}
+            onRowClick={onRowClick}
+            renderRowTooltipLabel={renderRowTooltipLabel}
+            displayAllColumns={displayAllColumns}
+          />
+        )}
         {footer}
       </Table>
     </TableContainer>

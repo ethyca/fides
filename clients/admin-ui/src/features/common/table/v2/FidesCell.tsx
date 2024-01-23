@@ -45,7 +45,6 @@ export const FidesCell = <T,>({
           ? cell.column.columnDef.meta.width
           : "unset"
       }
-      maxWidth={cell.column.getCanResize() ? cell.column.getSize() : "unset"}
       overflowX="auto"
       borderBottomWidth={isLastRowOfPage || isGroupedColumn ? "0px" : "1px"}
       borderBottomColor="gray.200"
@@ -70,6 +69,9 @@ export const FidesCell = <T,>({
       height="inherit"
       style={{
         ...getTableTHandTDStyles(cell.column.id),
+        // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/examples/react/column-resizing-performant
+        maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
+        minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
       }}
       onClick={
         cell.column.columnDef.header !== "Enable" && onRowClick
