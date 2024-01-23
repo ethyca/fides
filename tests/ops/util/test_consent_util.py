@@ -572,6 +572,69 @@ class TestCreatePrivacyNoticeUtils:
         db.delete(translation)
         db.delete(notice)
 
+    def test_enabled_data_use_constraint(self, db, load_default_data_uses):
+        """Test enabled/data use logic - enabled must have data uses."""
+
+        # default is enabled, should throw error if no data uses
+        with pytest.raises(ValidationError):
+            create_privacy_notices_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        name="A",
+                        notice_key="a",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=[],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    )
+                ],
+            )
+
+        # explicitly enabled should throw error if no data uses
+        with pytest.raises(ValidationError):
+            create_privacy_notices_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        name="A",
+                        disabled=False,
+                        notice_key="a",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=[],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    )
+                ],
+            )
+
+        # if disabled, we can have no data uses
+        templates = create_privacy_notices_util(
+            db,
+            [
+                PrivacyNoticeWithId(
+                    id="test_id_1",
+                    name="A",
+                    disabled=True,
+                    notice_key="a",
+                    regions=["it"],
+                    consent_mechanism=ConsentMechanism.opt_in,
+                    data_uses=[],
+                    enforcement_level=EnforcementLevel.system_wide,
+                    displayed_in_overlay=True,
+                )
+            ],
+        )
+
+        # ensure our template was created properly
+        assert len(templates[0]) == 1
+        assert templates[0][0].id == "test_id_1"
+        assert templates[0][0].disabled is True
+
 
 class TestLoadDefaultNotices:
     def test_load_default_notices(self, db, load_default_data_uses):
@@ -809,11 +872,6 @@ class TestLoadDefaultNotices:
         assert history.version == 1.0
         assert history.id != new_history.id
 
-        with pytest.raises(HTTPException):
-            load_default_notices_on_startup(
-                db, "tests/fixtures/test_bad_privacy_notices_update.yml"
-            )
-
         new_history.delete(db)
         history.delete(db)
 
@@ -880,16 +938,16 @@ class TestUpsertPrivacyNoticeTemplates:
                 [
                     PrivacyNoticeWithId(
                         id="test_id_1",
-                        notice_key="a",
                         name="A",
+                        notice_key="a",
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential"],
                         enforcement_level=EnforcementLevel.system_wide,
                     ),
                     PrivacyNoticeWithId(
                         id="test_id_2",
+                        name="A",
                         notice_key="a",
-                        name="B",
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["marketing"],
                         enforcement_level=EnforcementLevel.frontend,
@@ -903,6 +961,7 @@ class TestUpsertPrivacyNoticeTemplates:
     @pytest.mark.usefixtures("load_default_data_uses")
     def test_bad_data_uses(self, db):
         """Test data uses must exist"""
+        # explicitly enabled should throw error if no data uses
         with pytest.raises(HTTPException) as exc:
             upsert_privacy_notice_templates_util(
                 db,
@@ -910,15 +969,42 @@ class TestUpsertPrivacyNoticeTemplates:
                     PrivacyNoticeWithId(
                         id="test_id_1",
                         name="A",
+                        disabled=False,
                         notice_key="a",
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["bad use"],
+                        data_uses=[],
                         enforcement_level=EnforcementLevel.system_wide,
                     )
                 ],
             )
         assert exc._excinfo[1].status_code == 422
-        assert exc._excinfo[1].detail == "Unknown data_use 'bad use'"
+        assert (
+            exc._excinfo[1].detail
+            == "A privacy notice must have at least one data use assigned in order to be enabled."
+        )
+
+        # if disabled, we can have no data uses
+        templates = upsert_privacy_notice_templates_util(
+            db,
+            [
+                PrivacyNoticeWithId(
+                    id="test_id_1",
+                    name="A",
+                    disabled=True,
+                    notice_key="a",
+                    regions=["it"],
+                    consent_mechanism=ConsentMechanism.opt_in,
+                    data_uses=[],
+                    enforcement_level=EnforcementLevel.system_wide,
+                    displayed_in_overlay=True,
+                )
+            ],
+        )
+
+        # ensure our template was created properly
+        assert len(templates) == 1
+        assert templates[0].id == "test_id_1"
+        assert templates[0].disabled is True
 
     @pytest.mark.usefixtures("load_default_data_uses")
     def test_duplicate_translations(self, db):
@@ -1110,15 +1196,7 @@ class TestUpsertDefaultExperienceConfig:
         assert experience_config.banner_enabled == BannerEnabled.enabled_where_required
         assert experience_config.component == ComponentType.overlay
         assert experience_config.regions == [PrivacyNoticeRegion.us_ca]
-        import pdb
-
-        pdb.set_trace()
-
         translation = experience_config.translations[0]
-
-        import pdb
-
-        pdb.set_trace()
 
         assert translation.accept_button_label == "A"
         assert translation.acknowledge_button_label == "B"
@@ -1316,7 +1394,6 @@ class TestValidateDataUses:
         """
         Ensure custom data uses added to the DB are considered valid
         """
-
         privacy_notice_request.data_uses = [custom_data_use.fides_key]
         validate_notice_data_uses([privacy_notice_request], db)
         privacy_notice_request.data_uses = [

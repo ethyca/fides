@@ -31,7 +31,7 @@ import {
   useGetConfigurationSettingsQuery,
   usePutConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { ApplicationConfig } from "~/types/api";
+import { PlusApplicationConfig } from "~/types/api";
 
 type FormValues = CORSOrigins;
 
@@ -78,7 +78,7 @@ const CORSConfigurationPage: NextPage = () => {
         ? values.cors_origins
         : undefined;
 
-    const payload: ApplicationConfig = {
+    const payload: PlusApplicationConfig = {
       ...applicationConfig,
       security: {
         cors_origins: payloadOrigins,

@@ -7,9 +7,15 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
+from fides.api.custom_types import GPPMechanismConsentValue
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel, Language
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
-from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
+from fides.api.models.privacy_notice import (
+    PrivacyNoticeFramework,
+    PrivacyNoticeRegion,
+    UserConsentPreference,
+)
 from fides.api.schemas.base_class import FidesSchema
 
 
@@ -20,6 +26,19 @@ class NoticeTranslation(FidesSchema):
 
     class Config:
         use_enum_values = True
+
+
+class GPPMechanismMapping(FidesSchema):
+    field: str
+    not_available: GPPMechanismConsentValue
+    opt_out: GPPMechanismConsentValue
+    not_opt_out: GPPMechanismConsentValue
+
+
+class GPPFieldMapping(FidesSchema):
+    region: PrivacyNoticeRegion
+    notice: Optional[List[str]]
+    mechanism: Optional[List[GPPMechanismMapping]]
 
 
 class PrivacyNotice(FidesSchema):
@@ -35,11 +54,13 @@ class PrivacyNotice(FidesSchema):
     internal_description: Optional[str]
     origin: Optional[str]
     consent_mechanism: Optional[ConsentMechanism]
-    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
+    data_uses: Optional[List[str]] = []
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
     translations: Optional[List[NoticeTranslation]] = []
+    framework: Optional[PrivacyNoticeFramework] = None
+    gpp_field_mapping: Optional[List[GPPFieldMapping]] = None
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -47,6 +68,18 @@ class PrivacyNotice(FidesSchema):
         use_enum_values = True
         orm_mode = True
         extra = Extra.ignore
+
+    @root_validator(pre=True)
+    def validate_framework(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        gpp_framework: bool = (
+            values.get("framework") == PrivacyNoticeFramework.gpp_us_national.value
+            or values.get("framework") == PrivacyNoticeFramework.gpp_us_state.value
+        )
+        if gpp_framework and not values.get("gpp_field_mapping"):
+            raise ValueError(
+                "GPP field mapping must be defined on notices assigned with a GPP framework."
+            )
+        return values
 
     def validate_data_uses(self, valid_data_uses: List[str]) -> None:
         """
@@ -82,7 +115,6 @@ class PrivacyNoticeCreation(PrivacyNotice):
 
     name: str
     consent_mechanism: ConsentMechanism
-    data_uses: conlist(str, min_items=1)  # type: ignore
     enforcement_level: EnforcementLevel
 
     @root_validator(pre=True)

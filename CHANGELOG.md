@@ -24,11 +24,14 @@ The types of changes are:
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
 - Datamap Reporting page [#4519](https://github.com/ethyca/fides/pull/4519)
 - Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
+- Form for configuring GPP settings [#4557](https://github.com/ethyca/fides/pull/4557)
 - Custom privacy request field support for consent requests [#4546](https://github.com/ethyca/fides/pull/4546)
+- Support GPP in privacy notices [#4554](https://github.com/ethyca/fides/pull/4554)
 
 ### Changed
 
 - Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
+- Fides.js GPP for US geographies now derives values from backend privacy notices [#4559](https://github.com/ethyca/fides/pull/4559)
 - No longer generate the `vendors_disclosed` section of the TC string in `fides.js` [#4553](https://github.com/ethyca/fides/pull/4553)
 - Changed consent management vendor add flow [#4550](https://github.com/ethyca/fides/pull/4550)
 
@@ -36,6 +39,7 @@ The types of changes are:
 
 - Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
+- Fixed browser compatibility issues with Object.hasOwn [#4568](https://github.com/ethyca/fides/pull/4568)
 
 ### Developer Experience
 

@@ -4,6 +4,7 @@
 
 import type { ConsentConfig } from "./ConsentConfig";
 import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
+import type { GPPApplicationConfig } from "./GPPApplicationConfig";
 import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
 import type { SecurityApplicationConfig } from "./SecurityApplicationConfig";
 import type { StorageApplicationConfig } from "./StorageApplicationConfig";
@@ -15,10 +16,11 @@ import type { StorageApplicationConfig } from "./StorageApplicationConfig";
  * TODO: Eventually this should be driven by a more formal validation schema for this
  * the application config that is properly hooked up to the global pydantic config module.
  */
-export type ApplicationConfig = {
+export type PlusApplicationConfig = {
   storage?: StorageApplicationConfig;
   notifications?: NotificationApplicationConfig;
   execution?: ExecutionApplicationConfig;
   security?: SecurityApplicationConfig;
   consent?: ConsentConfig;
+  gpp?: GPPApplicationConfig;
 };

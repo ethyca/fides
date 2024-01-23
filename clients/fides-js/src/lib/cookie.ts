@@ -225,7 +225,7 @@ export const updateExperienceFromCookieConsentNotices = ({
   // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
     experience.privacy_notices?.map((notice) => {
-      const preference = Object.hasOwn(cookie.consent, notice.notice_key)
+      const preference = Object.keys(cookie.consent).includes(notice.notice_key)
         ? transformConsentToFidesUserPreference(
             Boolean(cookie.consent[notice.notice_key]),
             notice.consent_mechanism
