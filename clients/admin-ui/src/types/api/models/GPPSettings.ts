@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { GPPSections } from "./GPPSections";
 import type { GPPUSApproach } from "./GPPUSApproach";
 
 /**
@@ -10,13 +9,24 @@ import type { GPPUSApproach } from "./GPPUSApproach";
  */
 export type GPPSettings = {
   enabled?: boolean;
-  regions?: Array<GPPSections>;
   /**
-   * National ('national') or state-by-state ('state') approach. Only required if regions includes US.
+   * National ('national') or state-by-state ('state') approach.
    */
   us_approach?: GPPUSApproach;
   /**
-   * List of US states. Only required if using a state-by-state approach.
+   * Whether MSPA service provider mode is enabled
    */
-  us_states?: Array<string>;
+  mspa_service_provider_mode?: boolean;
+  /**
+   * Whether MSPA opt out option mode is enabled
+   */
+  mspa_opt_out_option_mode?: boolean;
+  /**
+   * Whether all transactions are MSPA covered
+   */
+  mspa_covered_transactions?: boolean;
+  /**
+   * Whether the TCF EU string should be included as a section in GPP
+   */
+  enable_tcfeu_string?: boolean;
 };
