@@ -15,7 +15,7 @@ import {
 export const noticeHasConsentInCookie = (
   notice: PrivacyNoticeWithPreference,
   cookie: FidesCookie
-): boolean => Boolean(Object.hasOwn(cookie.consent, notice.notice_key));
+): boolean => Boolean(Object.keys(cookie.consent).includes(notice.notice_key));
 /**
  * Convert a user consent preference into true/false
  */
