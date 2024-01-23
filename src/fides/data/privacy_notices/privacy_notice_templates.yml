@@ -3,8 +3,8 @@ privacy_notices:
 - name: Data sales and sharing
   notice_key: data_sales_sharing_gpp_us_state
   id: pri_8a6a69d1-d0d1-4e5f-89c4-d17f448e0f6e_dss_gpp_state
-  description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of [cross-context behavioral targeted advertising]. You can learn more about what information is used for this purpose in our privacy notice.
-  internal_description: Data sales and sharing (GPP, California)
+  description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
+  internal_description: Data sales and sharing (GPP, state-by-state)
   regions:
     - us_ca
   consent_mechanism: opt_out
@@ -13,7 +13,7 @@ privacy_notices:
     - marketing.advertising.third_party.targeted
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: True
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -51,7 +51,7 @@ privacy_notices:
     - marketing.advertising.third_party.targeted
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: True
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -96,8 +96,8 @@ privacy_notices:
 
 - name: Data sharing
   notice_key: data_sharing_gpp_us_state
-  id: pri_575fab38-d97b-4859-8db4-3b9fae1e1bac_dsha_gpp_state # TODO: update
-  description: We may transfer or share your personal information to third parties for the purpose of [performance, analytics and reporting]. You can learn more about what information is used for this purpose in our privacy notice.
+  id: pri_575fab38-d97b-4859-8db4-3b9fae1e1bac_dsha_gpp_state
+  description: We may transfer or share your personal information. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Data sharing (GPP, state-by-state)
   regions:
     - us_co
@@ -108,7 +108,7 @@ privacy_notices:
   # data_uses: data uses must be applied manually
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: False
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -142,7 +142,7 @@ privacy_notices:
   # data_uses: data uses must be applied manually
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: True
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -185,23 +185,18 @@ privacy_notices:
       notice:
       mechanism:
 
-
 - name: Sensitive Personal Data Sharing
-  notice_key: sensitive_personal_data_sharing_gpp_us_state
-  id: pri_f46d06be-6b40-472c-86da-2c910e7aa800_spds_gpp_state
-  description: We may transfer or share Sensitive Personal Data about you with third parties for the purpose of [performance, analytics and reporting]. You can learn more about what information is used for this purpose in our privacy notice.
-  internal_description: Sensitive personal data sharing (GPP, state-by-state)
+  notice_key: sensitive_personal_data_sharing_gpp_california
+  id: pri_257f4f4d-d991-403a-9cb4-83e17c5dba85_spds_gpp_california
+  description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about what information is used for this purpose in our privacy notice. Opt-out to limit the use of your sensitive personal information.
+  internal_description: Sensitive personal data sharing (GPP, California)
   regions:
     - us_ca
-    - us_co
-    - us_ct
-    - us_ut
-    - us_va
-  consent_mechanism: notice_only
+  consent_mechanism: opt_out
   # data_uses: data uses must be applied manually
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: False
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -215,6 +210,52 @@ privacy_notices:
         not_available: "000000000"
         opt_out: "111111111"
         not_opt_out: "222222222"
+
+- name: Sensitive Personal Data Sharing
+  notice_key: sensitive_personal_data_sharing_gpp_utah
+  id: pri_36d70a75-1a3a-4682-8da4-4698df1a960e_spds_gpp_utah
+  description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about how this information is used in our privacy notice.
+  internal_description: Sensitive personal data sharing (GPP, Utah)
+  regions:
+    - us_ut
+  consent_mechanism: opt_out
+  # data_uses: data uses must be applied manually
+  enforcement_level: not_applicable
+  disabled: True
+  has_gpc_flag: False
+  displayed_in_privacy_center: True
+  displayed_in_overlay: True
+  displayed_in_api: False
+  framework: gpp_us_state
+  gpp_field_mapping:
+    - region: us_ut
+      notice:
+        - SensitiveDataProcessingOptOutNotice
+      mechanism:
+        - field: SensitiveDataProcessing
+          not_available: "00000000"
+          opt_out: "11111111"
+          not_opt_out: "22222222"
+
+- name: Sensitive Personal Data Sharing
+  notice_key: sensitive_personal_data_sharing_gpp_us_state_opt_in
+  id: pri_f46d06be-6b40-472c-86da-2c910e7aa800_spds_gpp_state_opt_in
+  description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about how this information is used in our privacy notice.
+  internal_description: Sensitive personal data sharing (GPP, state-by-state, opt-in)
+  regions:
+    - us_co
+    - us_ct
+    - us_va
+  consent_mechanism: opt_in
+  # data_uses: data uses must be applied manually
+  enforcement_level: not_applicable
+  disabled: True
+  has_gpc_flag: False
+  displayed_in_privacy_center: True
+  displayed_in_overlay: True
+  displayed_in_api: False
+  framework: gpp_us_state
+  gpp_field_mapping:
     - region: us_co
       notice:
       mechanism:
@@ -224,14 +265,6 @@ privacy_notices:
           not_opt_out: "2222222"
     - region: us_ct
       notice:
-      mechanism:
-        - field: SensitiveDataProcessing
-          not_available: "00000000"
-          opt_out: "11111111"
-          not_opt_out: "22222222"
-    - region: us_ut
-      notice:
-        - SensitiveDataProcessingOptOutNotice
       mechanism:
         - field: SensitiveDataProcessing
           not_available: "00000000"
@@ -247,8 +280,8 @@ privacy_notices:
 
 - name: Known Child Sensitive Data Consents
   notice_key: known_child_sensitive_data_consents_gpp_us_state
-  id: pri_0c8f3012-c37a-4478-9d1a-5a2f807c89ea_kcsdc_gpp_state # TODO: update
-  description: We may process the personal information of children under 16. # TODO: text TBD
+  id: pri_0c8f3012-c37a-4478-9d1a-5a2f807c89ea_kcsdc_gpp_state
+  description: We may process the personal information of children under 16. You can learn more in our privacy policy.
   internal_description: Known child sensitive data consents (GPP, state-by-state)
   regions:
     - us_ca
@@ -256,11 +289,11 @@ privacy_notices:
     - us_ct
     - us_ut
     - us_va
-  consent_mechanism: opt_out
+  consent_mechanism: opt_in
   # data_uses: data uses must be applied manually
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: False
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -308,7 +341,7 @@ privacy_notices:
 - name: Sales, Sharing, Targeted Advertising
   notice_key: sales_sharing_targeted_advertising_gpp_us_national
   id: pri_117129c2-7229-4d93-8a4b-fea1f73cb4ea_ssta_gpp_us_nat
-  description: Sales opt out notice & mechanism; Sharing opt out notice & mechanism; Targeted advertising opt out notice & mechanism; Sharing notice only # TODO: this looks wrong
+  description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Sales, Sharing, Targeted Advertising (GPP, US National)
   regions:
     - us
@@ -318,7 +351,7 @@ privacy_notices:
     - marketing.advertising.third_party.targeted
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: True
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -342,15 +375,15 @@ privacy_notices:
 - name: Sensitive Personal Data Sharing
   notice_key: sensitive_personal_data_sharing_gpp_us_national
   id: pri_9bb9cb76-e7ad-40ee-b5c9-9f0527f9b4f1_spds_gpp_us_nat
-  description: We may transfer or share Sensitive Personal Data about you with third parties for the purpose of [performance, analytics and reporting]. You can learn more about what information is used for this purpose in our privacy notice.
+  description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about how this information is used in our privacy notice.
   internal_description: Sensitive Personal Data Sharing (GPP, US National)
   regions:
     - us
-  consent_mechanism: notice_only
+  consent_mechanism: opt_in
   # data_uses: data uses must be applied manually
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: False
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
@@ -369,15 +402,15 @@ privacy_notices:
 - name: Known Child Sensitive Data Consents
   notice_key: known_child_sensitive_data_consents_gpp_us_national
   id: pri_e6bf75ec-5023-424c-8fd6-7c937addce58_kcsdc_gpp_us_nat
-  description: We may process the personal information of children under 16. # TODO: text TBD
+  description: We may process the personal information of children under 16. You can learn more in our privacy policy.
   internal_description: Known child sensitive data consents (GPP, US National
   regions:
     - us
-  consent_mechanism: opt_out
+  consent_mechanism: opt_in
   # data_uses: data uses must be applied manually
   enforcement_level: not_applicable
   disabled: True
-  has_gpc_flag: False # TODO: not sure?
+  has_gpc_flag: False
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
