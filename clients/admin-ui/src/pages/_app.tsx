@@ -12,7 +12,6 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
-import Header from "~/features/common/Header";
 import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 
 import store, { persistor } from "../app/store";
