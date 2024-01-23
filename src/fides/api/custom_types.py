@@ -107,3 +107,21 @@ class PhoneNumber(str):
                 "Phone number must be formatted in E.164 format, i.e. '+15558675309'."
             )
         return value
+
+
+class GPPMechanismConsentValue(str):
+    """
+    Allowable consent values for GPP Mechanism Mappings.
+
+    """
+
+    @classmethod
+    def __get_validators__(cls) -> Generator:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: str) -> str:
+        pattern = regex(r"^\d+$")
+        if not isinstance(value, str) or not pattern.search(value):
+            raise ValueError("GPP Mechanism consent value must be a string of digits.")
+        return value

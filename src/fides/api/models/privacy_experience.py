@@ -17,7 +17,6 @@ from fides.api.models.privacy_notice import (
     create_historical_data_from_record,
     update_if_modified,
 )
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -223,6 +222,11 @@ class PrivacyExperience(Base):
     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
     show_banner: bool
 
+    @property
+    def region_country(self) -> str:
+        """The experience's country, based on naming convention of its region string."""
+        return region_country(self.region.value)  # type: ignore[attr-defined]
+
     def get_should_show_banner(
         self, db: Session, show_disabled: Optional[bool] = True
     ) -> bool:
@@ -246,7 +250,7 @@ class PrivacyExperience(Base):
                 return True
 
         privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, self.region, self.component  # type: ignore[arg-type]
+            db, [self.region.value], self.component  # type: ignore[arg-type, attr-defined]
         )
         if show_disabled is False:
             privacy_notice_query = privacy_notice_query.filter(
@@ -258,36 +262,6 @@ class PrivacyExperience(Base):
                 PrivacyNotice.consent_mechanism.in_(BANNER_CONSENT_MECHANISMS)
             ).count()
         )
-
-    def get_related_privacy_notices(
-        self,
-        db: Session,
-        show_disabled: Optional[bool] = True,
-        systems_applicable: Optional[bool] = False,
-    ) -> List[PrivacyNotice]:
-        """Return privacy notices that overlap on at least one region
-        and match on ComponentType
-
-        If show_disabled=False, only return enabled notices.
-
-        """
-        if self.component == ComponentType.tcf_overlay:
-            return []
-        privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, self.region, self.component  # type: ignore[arg-type]
-        )
-        if show_disabled is False:
-            privacy_notice_query = privacy_notice_query.filter(
-                PrivacyNotice.disabled.is_(False)
-            )
-
-        if systems_applicable:
-            data_uses: set[str] = System.get_data_uses(
-                System.all(db), include_parents=True
-            )
-            privacy_notice_query = privacy_notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
-
-        return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
 
     @staticmethod
     def create_default_experience_for_region(
@@ -381,7 +355,7 @@ class PrivacyExperience(Base):
 
 
 def get_privacy_notices_by_region_and_component(
-    db: Session, region: PrivacyNoticeRegion, component: ComponentType
+    db: Session, regions: List[str], component: ComponentType
 ) -> Query:
     """
     Return relevant privacy notices that should be displayed for a certain
@@ -389,7 +363,7 @@ def get_privacy_notices_by_region_and_component(
     """
     return (
         db.query(PrivacyNotice)
-        .filter(PrivacyNotice.regions.any(region.value))  # type: ignore[attr-defined]
+        .filter(PrivacyNotice.regions.overlap(regions))  # type: ignore[attr-defined]
         .filter(
             or_(
                 and_(
@@ -432,10 +406,12 @@ def upsert_privacy_experiences_after_notice_update(
         )
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
-            db, region, ComponentType.privacy_center
+            db,
+            [region.value, region_country(region.value)],
+            ComponentType.privacy_center,
         )
         overlay_notices: Query = get_privacy_notices_by_region_and_component(
-            db, region, ComponentType.overlay
+            db, [region.value, region_country(region.value)], ComponentType.overlay
         )
 
         # See if we need to create a Privacy Center Experience for the Privacy Center Notices
@@ -536,3 +512,11 @@ def upsert_privacy_experiences_after_config_update(
             )
             linked_regions.append(region)
     return linked_regions, unlinked_regions
+
+
+def region_country(region: str) -> str:
+    """
+    Utility function to extract the country string from a region string,
+    based on naming convention (i.e. `country_subregion`)
+    """
+    return region.split("_")[0]
