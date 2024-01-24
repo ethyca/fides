@@ -178,7 +178,7 @@ export const FidesTableV2 = <T,>({
           borderCollapse: "separate",
           borderSpacing: 0,
           ...columnSizeVars,
-          width: tableInstance.getCenterTotalSize(),
+          minWidth: "100%",
         }}
       >
         <Thead
