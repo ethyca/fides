@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.28.0...main)
 
+### Fixed
+
+- Fixed CORS domain update functionality [#4570](https://github.com/ethyca/fides/pull/4570)
+
 ## [2.28.0](https://github.com/ethyca/fides/compare/2.27.0...2.28.0)
 
 ### Added
@@ -40,6 +44,7 @@ The types of changes are:
 - Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
 - Fixed browser compatibility issues with Object.hasOwn [#4568](https://github.com/ethyca/fides/pull/4568)
+
 
 ### Developer Experience
 
