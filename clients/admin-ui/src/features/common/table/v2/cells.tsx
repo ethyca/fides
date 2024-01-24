@@ -72,25 +72,33 @@ export const GroupCountBadgeCell = ({
     return <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>;
   }
   if (Array.isArray(value)) {
-    badges =
-      isDisplayAll && value.length > 0 ? (
-        value.map((d) => (
-          <Box key={d}>
-            <FidesBadge>{d}</FidesBadge>
-          </Box>
-        ))
-      ) : (
+    // If there's only one value, always display it
+    if (value.length === 1) {
+      badges = <FidesBadge>{value}</FidesBadge>;
+    }
+    // Expanded case, list every value as a badge
+    else if (isDisplayAll && value.length > 0) {
+      badges = value.map((d) => (
+        <Box key={d} mr={2}>
+          <FidesBadge>{d}</FidesBadge>
+        </Box>
+      ));
+    }
+    // Collapsed case, summarize the values in one badge
+    else {
+      badges = (
         <FidesBadge>
           {value.length}
           {suffix ? ` ${suffix}` : null}
         </FidesBadge>
       );
+    }
   } else {
     badges = <FidesBadge>{value}</FidesBadge>;
   }
 
   return (
-    <Flex alignItems="center" height="100%" mr="2">
+    <Flex alignItems="center" height="100%" mr="2" overflowX="hidden">
       {badges}
     </Flex>
   );
