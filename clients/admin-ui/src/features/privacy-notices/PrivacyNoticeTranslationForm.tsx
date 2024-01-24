@@ -1,7 +1,10 @@
 import {
   Box,
   Button,
+  DeleteIcon,
+  Flex,
   HStack,
+  IconButton,
   SmallAddIcon,
   Tab,
   TabList,
@@ -12,6 +15,7 @@ import {
   VStack,
 } from "@fidesui/react";
 import { FieldArray, useFormikContext } from "formik";
+import localeCodes from "locale-codes";
 import { ChangeEvent, useState } from "react";
 
 import FormSection from "~/features/common/form/FormSection";
@@ -22,7 +26,7 @@ import {
 } from "~/features/common/form/inputs";
 import {
   getLanguageNameByTag,
-  getLanguageOptionByTag,
+  getLocaleOption,
   NewPrivacyNotice,
   NoticeTranslation,
 } from "~/features/privacy-notices/form";
@@ -47,6 +51,38 @@ const TranslationFormBlock = ({ index }: { index: number }) => (
   </VStack>
 );
 
+const TranslationTabButton = ({
+  translation,
+  onLanguageDeleted,
+}: {
+  translation: NoticeTranslation;
+  onLanguageDeleted?: (language: string) => void;
+}) => (
+  <Flex gap={2} direction="row" w="100%">
+    <Tab
+      as={Button}
+      variant="outline"
+      size="sm"
+      fontWeight="normal"
+      w="100%"
+      key={translation.language}
+      _selected={{ color: "white", bg: "gray.500" }}
+    >
+      {getLanguageNameByTag(translation.language)}
+    </Tab>
+    {onLanguageDeleted ? (
+      <IconButton
+        aria-label={"delete-translation"}
+        variant="outline"
+        size="sm"
+        onClick={() => onLanguageDeleted(translation.language)}
+      >
+        <DeleteIcon boxSize={4} />
+      </IconButton>
+    ) : null}
+  </Flex>
+);
+
 const PrivacyNoticeTranslationForm = () => {
   const { values, setFieldValue } = useFormikContext<NewPrivacyNotice>();
 
@@ -54,25 +90,14 @@ const PrivacyNoticeTranslationForm = () => {
     useState<boolean>(false);
   const [tabIndex, setTabIndex] = useState<number>(0);
 
-  const languageOptions = [
-    "fr",
-    "es",
-    "pt",
-    "de",
-    "zh-Hans",
-    "zh-Hant",
-    "ja",
-    "ru",
-    "en-US",
-    "en-GB",
-  ]
+  const languageOptions = localeCodes.all
     .filter(
-      (lang) =>
+      (locale) =>
         !values.translations.some(
-          (translation) => translation.language === lang
+          (translation) => translation.language === locale.tag
         )
     )
-    .map((lang) => getLanguageOptionByTag(lang))
+    .map((locale) => getLocaleOption(locale))
     .sort((a, b) => a.label.localeCompare(b.label));
 
   const handleLanguageSelected = (language: string) => {
@@ -84,6 +109,18 @@ const PrivacyNoticeTranslationForm = () => {
     setTabIndex(values.translations.length);
     setFieldValue("translations", [...values.translations, newTranslation]);
     setIsSelectingLanguage(false);
+  };
+
+  const handleLanguageDeleted = (tag: string) => {
+    const newTranslations = values.translations
+      .slice()
+      .filter((lang) => lang.language !== tag);
+    const newTabIndex =
+      tabIndex === newTranslations.length
+        ? newTranslations.length - 1
+        : tabIndex;
+    setFieldValue("translations", newTranslations);
+    setTabIndex(newTabIndex);
   };
 
   return (
@@ -105,22 +142,16 @@ const PrivacyNoticeTranslationForm = () => {
           outlineColor="gray.200"
           p={4}
           borderRadius="md"
-          minW="20%"
+          minW="30%"
         >
           <TabList w="100%">
             <VStack spacing={2} w="100%">
               {values.translations.length ? (
                 values.translations.map((translation) => (
-                  <Tab
-                    as={Button}
-                    size="sm"
-                    fontWeight="normal"
-                    w="100%"
-                    key={translation.language}
-                    _selected={{ color: "white", bg: "gray.500" }}
-                  >
-                    {getLanguageNameByTag(translation.language)}
-                  </Tab>
+                  <TranslationTabButton
+                    translation={translation}
+                    onLanguageDeleted={handleLanguageDeleted}
+                  />
                 ))
               ) : (
                 <Tab as={Button}>English</Tab>

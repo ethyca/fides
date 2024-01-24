@@ -1,4 +1,5 @@
-import localeCodes from "locale-codes";
+import { getName } from "i18n-iso-countries";
+import localeCodes, { ILocale } from "locale-codes";
 import * as Yup from "yup";
 
 import { Option } from "~/features/common/form/inputs";
@@ -42,16 +43,16 @@ const DEFAULT_TRANSLATION = {
   description: "",
 };
 
-export const getLanguageNameByTag = (tag: string): string => {
-  const localeInfo = localeCodes.getByTag(tag);
-  return localeInfo.location
-    ? `${localeInfo.name} (${localeInfo.location})`
-    : localeInfo.name;
+export const formatLocaleName = (locale: ILocale) => {
+  return locale.location ? `${locale.name} (${locale.location})` : locale.name;
 };
 
-export const getLanguageOptionByTag = (tag: string): Option => ({
-  value: tag,
-  label: getLanguageNameByTag(tag),
+export const getLanguageNameByTag = (tag: string): string =>
+  formatLocaleName(localeCodes.getByTag(tag));
+
+export const getLocaleOption = (locale: ILocale): Option => ({
+  value: locale.tag,
+  label: formatLocaleName(locale),
 });
 
 // TEMP
