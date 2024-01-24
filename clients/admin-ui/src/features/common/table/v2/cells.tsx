@@ -17,7 +17,13 @@ export const DefaultCell = ({
   value: string | undefined | number | boolean;
 }) => (
   <Flex alignItems="center" height="100%">
-    <Text fontSize="xs" lineHeight={4} fontWeight="normal">
+    <Text
+      fontSize="xs"
+      lineHeight={4}
+      fontWeight="normal"
+      overflow="hidden"
+      textOverflow="ellipsis"
+    >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>
   </Flex>
@@ -69,7 +75,7 @@ export const GroupCountBadgeCell = ({
     badges =
       isDisplayAll && value.length > 0 ? (
         value.map((d) => (
-          <Box px={1} key={d}>
+          <Box key={d}>
             <FidesBadge>{d}</FidesBadge>
           </Box>
         ))

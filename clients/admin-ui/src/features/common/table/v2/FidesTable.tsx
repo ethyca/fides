@@ -66,7 +66,7 @@ const HeaderContent = <T,>({
   }
 
   return (
-    <Menu>
+    <Menu placement="bottom-end">
       <MenuButton
         as={Button}
         rightIcon={<ChevronDownIcon />}
@@ -140,7 +140,6 @@ export const FidesTableV2 = <T,>({
   onRowClick,
   renderRowTooltipLabel,
 }: Props<T>) => {
-  // TODO: https://tanstack.com/table/v8/docs/examples/react/column-resizing-performant
   const [displayAllColumns, setDisplayAllColumns] = useState<string[]>([]);
 
   const handleAddDisplayColumn = (id: string) => {
