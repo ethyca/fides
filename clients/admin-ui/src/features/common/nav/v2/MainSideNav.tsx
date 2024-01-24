@@ -36,6 +36,7 @@ import { INDEX_ROUTE } from "./routes";
 const LINK_HOVER_BACKGROUND_COLOR = "#28303F";
 const LINK_ACTIVE_BACKGROUND_COLOR = "#7745F0";
 const LINK_COLOR = "#CBD5E0";
+const NAV_BACKGROUND_COLOR = "#191D27";
 
 const FidesLogoHomeLink = () => (
   <Box px={2}>
@@ -145,7 +146,7 @@ export const UnconnectedMainSideNav = ({
     pb={0}
     minWidth="200px"
     maxWidth="200px"
-    backgroundColor="#191D27"
+    backgroundColor={NAV_BACKGROUND_COLOR}
     height="100%"
     overflow="scroll"
   >
@@ -238,7 +239,7 @@ const MainSideNav = () => {
       <Box
         minWidth="200px"
         maxWidth="200px"
-        backgroundColor="#191D27"
+        backgroundColor={NAV_BACKGROUND_COLOR}
         height="100%"
       />
     );
