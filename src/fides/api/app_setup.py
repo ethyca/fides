@@ -4,16 +4,14 @@ Contains utility functions that set up the application webserver.
 # pylint: disable=too-many-branches
 from logging import DEBUG
 from os.path import dirname, join
-from typing import List, Optional, Pattern
+from typing import List
 
 from fastapi import APIRouter, FastAPI
 from loguru import logger
-from pydantic import AnyUrl
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
-from starlette.middleware.cors import CORSMiddleware
 
 import fides
 from fides.api.api.deps import get_api_session
