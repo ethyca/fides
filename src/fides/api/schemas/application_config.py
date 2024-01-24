@@ -61,6 +61,7 @@ class NotificationApplicationConfig(FidesSchema):
 
 class ExecutionApplicationConfig(FidesSchema):
     subject_identity_verification_required: Optional[bool]
+    disable_consent_identity_verification: Optional[bool]
     require_manual_request_approval: Optional[bool]
 
     class Config:

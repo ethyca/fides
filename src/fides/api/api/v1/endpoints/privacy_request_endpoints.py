@@ -57,6 +57,7 @@ from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
+    ConsentRequest,
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestNotifications,
@@ -1776,9 +1777,11 @@ def create_privacy_request_func(
             privacy_request.persist_identity(
                 db=db, identity=privacy_request_data.identity
             )
-            privacy_request.persist_custom_privacy_request_fields(
-                db=db,
-                custom_privacy_request_fields=privacy_request_data.custom_privacy_request_fields,
+            _create_or_update_custom_fields(
+                db,
+                privacy_request,
+                privacy_request_data.consent_request_id,
+                privacy_request_data.custom_privacy_request_fields,
             )
             for privacy_preference in privacy_preferences:
                 privacy_preference.privacy_request_id = privacy_request.id
@@ -1857,6 +1860,33 @@ def create_privacy_request_func(
         succeeded=created,
         failed=failed,
     )
+
+
+def _create_or_update_custom_fields(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    consent_request_id: Optional[str],
+    custom_privacy_request_fields: Optional[Dict[str, Any]],
+) -> None:
+    """
+    Updates existing custom privacy request fields in the database with a privacy request ID.
+    Creates new custom privacy request fields if there aren't any available.
+
+    The presence or absence of custom fields is based on whether or not the creation of this
+    current privacy request was triggered by a consent request.
+    """
+    consent_request = ConsentRequest.get_by_key_or_id(
+        db=db, data={"id": consent_request_id}
+    )
+    if consent_request and consent_request.custom_fields:
+        for custom_field in consent_request.custom_fields:  # type: ignore[attr-defined]
+            custom_field.privacy_request_id = privacy_request.id
+            custom_field.save(db=db)
+    elif custom_privacy_request_fields:
+        privacy_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields=custom_privacy_request_fields,
+        )
 
 
 def _process_privacy_request_restart(

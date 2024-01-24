@@ -12,7 +12,6 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
-import Header from "~/features/common/Header";
 import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 
 import store, { persistor } from "../app/store";
@@ -48,7 +47,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
                 <Flex width="100%" height="100%" flex={1}>
                   <MainSideNav />
                   <Flex direction="column" width="100%">
-                    <Header />
                     <Component {...pageProps} />
                   </Flex>
                 </Flex>

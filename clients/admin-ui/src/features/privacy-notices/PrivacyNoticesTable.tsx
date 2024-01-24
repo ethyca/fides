@@ -15,6 +15,7 @@ import { Column } from "react-table";
 import { useAppSelector } from "~/app/hooks";
 import {
   EnablePrivacyNoticeCell,
+  FrameworkCell,
   LocationCell,
   MechanismCell,
   PrivacyNoticeStatusCell,
@@ -62,6 +63,11 @@ export const PrivacyNoticesTable = () => {
       {
         Header: "Status",
         Cell: PrivacyNoticeStatusCell,
+      },
+      {
+        Header: "Framework",
+        accessor: "framework",
+        Cell: FrameworkCell,
       },
       {
         Header: "Enable",
