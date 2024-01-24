@@ -27,6 +27,7 @@ import logoImage from "~/../public/logo-white.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import { useNav } from "./hooks";
 import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
@@ -221,12 +222,28 @@ const MainSideNav = () => {
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const plusQuery = useGetHealthQuery();
   const username = user ? user.username : "";
 
   const handleLogout = async () => {
     await logoutMutation({});
     dispatch(logout());
   };
+
+  // While we are loading if we have plus, the nav isn't ready to display yet
+  // since otherwise new items can suddenly pop in. So instead, we render an empty
+  // version of the nav during load, so that when the nav does load, it is fully featured.
+  if (plusQuery.isLoading) {
+    return (
+      <Box
+        minWidth="200px"
+        maxWidth="200px"
+        backgroundColor="#191D27"
+        height="100%"
+      />
+    );
+  }
+
   return (
     <UnconnectedMainSideNav
       {...nav}
