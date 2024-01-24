@@ -23,10 +23,9 @@ import {
 } from "@tanstack/react-table";
 import React, { ReactNode, useMemo, useState } from "react";
 
+import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
-
-import { DisplayAllIcon, GroupedIcon } from "../../Icon";
 
 /*
   This was throwing a false positive for unused parameters.
