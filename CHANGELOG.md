@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.28.0...main)
 
+### Changed
+- Delay rendering the nav until all necessary queries are finished loading [#4571](https://github.com/ethyca/fides/pull/4571)
+
 ## [2.28.0](https://github.com/ethyca/fides/compare/2.27.0...2.28.0)
 
 ### Added
