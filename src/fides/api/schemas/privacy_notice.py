@@ -8,7 +8,6 @@ from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
 from fides.api.custom_types import GPPMechanismConsentValue
-from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel, Language
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import (

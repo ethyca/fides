@@ -10,22 +10,23 @@ from pydantic import ValidationError
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.exceptions import HTTPException
 
-from fides.api.app_setup import DEFAULT_PRIVACY_NOTICES_PATH
-from fides.api.models.privacy_experience import (
-    BannerEnabled,
-    ComponentType,
-    PrivacyExperience,
+from fides.api.app_setup import (
+    DEFAULT_PRIVACY_NOTICES_PATH,
+    PRIVACY_EXPERIENCE_CONFIGS_PATH,
 )
+from fides.api.common_exceptions import ValidationError as FidesValidationError
+from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
+    Language,
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
-    Language,
 )
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import DataUse as sql_DataUse
+from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.util.consent_util import (
     EEA_COUNTRIES,
@@ -35,8 +36,8 @@ from fides.api.util.consent_util import (
     create_default_experience_config,
     create_default_tcf_purpose_overrides_on_startup,
     create_privacy_notices_util,
-    create_tcf_experiences_on_startup,
     get_fides_user_device_id_provided_identity,
+    load_default_experience_configs_on_startup,
     load_default_notices_on_startup,
     should_opt_in_to_service,
     upsert_privacy_notice_templates_util,
@@ -67,7 +68,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice.translations[
+                    0
+                ].privacy_notice_history_id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -115,9 +118,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
                     0
-                ].id,
+                ].privacy_notice_history_id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -161,9 +164,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.histories[
+                "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.translations[
                     0
-                ].id,
+                ].privacy_notice_history_id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -201,9 +204,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+                "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.translations[
                     0
-                ].id,
+                ].privacy_notice_history_id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -240,7 +243,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.translations[
+                    0
+                ].privacy_notice_history_id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -272,7 +277,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": "opt_in",
-                "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice.translations[
+                    0
+                ].privacy_notice_history_id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -284,7 +291,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": "opt_out",
-                "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
+                    0
+                ].privacy_notice_history_id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -544,9 +553,6 @@ class TestCreatePrivacyNoticeUtils:
         assert notice.enforcement_level == EnforcementLevel.not_applicable
         assert notice.disabled is False
         assert notice.has_gpc_flag is False
-        import pdb
-
-        pdb.set_trace()
 
         translation = notice.translations[0]
         assert translation.title == "A"
@@ -572,11 +578,11 @@ class TestCreatePrivacyNoticeUtils:
         db.delete(translation)
         db.delete(notice)
 
-    def test_enabled_data_use_constraint(self, db, load_default_data_uses):
+    @pytest.mark.usefixtures("load_default_data_uses")
+    def test_enabled_data_use_constraint(self, db):
         """Test enabled/data use logic - enabled must have data uses."""
-
         # default is enabled, should throw error if no data uses
-        with pytest.raises(ValidationError):
+        with pytest.raises(FidesValidationError):
             create_privacy_notices_util(
                 db,
                 [
@@ -588,13 +594,19 @@ class TestCreatePrivacyNoticeUtils:
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=[],
                         enforcement_level=EnforcementLevel.system_wide,
-                        displayed_in_overlay=True,
+                        translations=[
+                            {
+                                "language": Language.en_us,
+                                "title": "A",
+                                "description": "A description",
+                            }
+                        ],
                     )
                 ],
             )
 
         # explicitly enabled should throw error if no data uses
-        with pytest.raises(ValidationError):
+        with pytest.raises(FidesValidationError):
             create_privacy_notices_util(
                 db,
                 [
@@ -637,26 +649,17 @@ class TestCreatePrivacyNoticeUtils:
 
 
 class TestLoadDefaultNotices:
-    def test_load_default_notices(self, db, load_default_data_uses):
+    @pytest.mark.usefixtures("load_default_data_uses")
+    def test_load_default_notices(self, db):
         # Load notice from a file that only has one template (A) defined.
-        # This should create one template (A), one notice (A), and one notice history (A)
-        (
-            overlay_exp,
-            privacy_exp,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
-        assert overlay_exp is None
-        assert privacy_exp is None
-
+        # This should create one template (A), one notice (A), one translation (A) and one notice history (A)
         new_templates, new_privacy_notices = load_default_notices_on_startup(
             db, "tests/fixtures/test_privacy_notice.yml"
         )
+
         assert len(new_privacy_notices) == 1
         notice = new_privacy_notices[0]
         assert notice.name == "Test Privacy Notice"
-        assert notice.notice_key == "test_privacy_notice"
-        assert notice.description == "This website uses cookies."
         assert (
             unescape(notice.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
@@ -665,41 +668,33 @@ class TestLoadDefaultNotices:
             notice.internal_description
             == "This is a contrived template for testing.  This field&#x27;s for internal testing!"
         )  # Stored escaped
-        assert notice.regions == [PrivacyNoticeRegion.us_ak]
         assert notice.consent_mechanism == ConsentMechanism.opt_in
         assert notice.enforcement_level == EnforcementLevel.system_wide
         assert notice.disabled is False
         assert notice.has_gpc_flag is True
-        assert notice.displayed_in_privacy_center is False
-        assert notice.displayed_in_overlay is True
-        assert notice.displayed_in_api is False
-        assert notice.version == 1.0
-        (
-            overlay_exp,
-            privacy_exp,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
-        assert overlay_exp is not None
-        assert privacy_exp is None
 
-        assert notice.privacy_notice_history_id is not None
-        history = notice.histories[0]
+        assert notice.translations.count() == 1
+        translation = notice.translations[0]
+
+        assert translation.title == "Test Privacy Notice"
+        assert translation.description == "This is my test description."
+        assert translation.language == Language.en_us
+
+        history = translation.histories[0]
+
         assert history.name == "Test Privacy Notice"
         assert history.notice_key == "test_privacy_notice"
-        assert history.description == "This website uses cookies."
+        assert history.title == "Test Privacy Notice"
+        assert history.language == Language.en_us
+        assert history.description == "This is my test description."
         assert (
             unescape(history.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
         )
-        assert history.regions == [PrivacyNoticeRegion.us_ak]
         assert history.consent_mechanism == ConsentMechanism.opt_in
         assert history.enforcement_level == EnforcementLevel.system_wide
         assert history.disabled is False
         assert history.has_gpc_flag is True
-        assert history.displayed_in_privacy_center is False
-        assert history.displayed_in_overlay is True
-        assert history.displayed_in_api is False
         assert history.version == 1.0
         assert history.origin == new_templates[0].id
 
@@ -708,36 +703,30 @@ class TestLoadDefaultNotices:
         template_id = notice.origin
         template = db.query(PrivacyNoticeTemplate).get(template_id)
         assert template.name == "Test Privacy Notice"
-        assert template.description == "This website uses cookies."
         assert (
             unescape(template.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
         )
-        assert template.regions == [PrivacyNoticeRegion.us_ak]
         assert template.consent_mechanism == ConsentMechanism.opt_in
         assert template.enforcement_level == EnforcementLevel.system_wide
         assert template.disabled is False
         assert template.has_gpc_flag is True
-        assert template.displayed_in_privacy_center is False
-        assert template.displayed_in_overlay is True
-        assert template.displayed_in_api is False
         assert (
             template.id == "pri-5bd5cee7-8c8c-4da7-9a5c-7617a7d4dbb2"
         ), "Id hardoded in template"
+        assert template.translations == [
+            {
+                "title": "Test Privacy Notice",
+                "language": "en_us",
+                "description": "This is my test description.",
+            }
+        ]
 
         # Load two notices from new file.
         # One notice is an update of the previous template (A), the other is brand new (B).
         # This should update the existing template (A), create a separate new template (B),
-        # and then create a new notice (B) and notice history (B) from just the new template (B).
-        # Leave the existing notice (A) and notice history (A) untouched.
-        (
-            overlay_exp,
-            privacy_exp,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_al
-        )
-        assert overlay_exp is None
-        assert privacy_exp is None
+        # and then create a new notice (B) new translation (B) and notice history (B) from just the new template (B).
+        # Leave the existing notice (A) translation (A) and notice history (A) untouched.
 
         new_templates, new_privacy_notices = load_default_notices_on_startup(
             db, "tests/fixtures/test_privacy_notice_update.yml"
@@ -747,133 +736,114 @@ class TestLoadDefaultNotices:
         new_template = new_templates[0]
         assert new_template.name == "Other Privacy Notice"
         assert (
-            new_template.description == "This website uses a large amount of cookies."
-        )
-        assert (
             new_template.internal_description
             == "This is another template added for testing"
         )
-        assert new_template.regions == [PrivacyNoticeRegion.us_al]
         assert new_template.consent_mechanism == ConsentMechanism.opt_out
         assert new_template.enforcement_level == EnforcementLevel.frontend
         assert new_template.disabled is True
         assert new_template.has_gpc_flag is False
-        assert new_template.displayed_in_privacy_center is True
-        assert new_template.displayed_in_overlay is False
-        assert new_template.displayed_in_api is False
         assert new_template.id != template.id
         assert new_template.id == "pri-685486d9-f532-4951-bb1a-b15fea586ff8"
 
-        # Updated template A, consent mechanism and internal description were updated
+        # Updated template A, consent mechanism, internal description, and translations were updated
         db.refresh(template)
         assert template.name == "Test Privacy Notice"
-        assert template.description == "This website uses cookies."
         assert (
             template.internal_description
             == "This is an existing template that we are updating to make the default opt_out instead."
         )
-        assert template.regions == [PrivacyNoticeRegion.us_ak]
         assert template.consent_mechanism == ConsentMechanism.opt_out  # Updated value
         assert template.enforcement_level == EnforcementLevel.system_wide
         assert template.disabled is False
         assert template.has_gpc_flag is True
-        assert template.displayed_in_privacy_center is False
-        assert template.displayed_in_overlay is True
-        assert template.displayed_in_api is False
+        assert template.translations == [
+            {
+                "title": "Test Privacy Notice",
+                "language": "en_us",
+                "description": "This is my updated test description!",
+            }
+        ]
 
         # Newly created privacy notice (B)
         assert len(new_privacy_notices) == 1
         new_privacy_notice = new_privacy_notices[0]
         assert new_privacy_notice.name == "Other Privacy Notice"
         assert (
-            new_privacy_notice.description
-            == "This website uses a large amount of cookies."
-        )
-        assert (
             new_privacy_notice.internal_description
             == "This is another template added for testing"
         )
-        assert new_privacy_notice.regions == [PrivacyNoticeRegion.us_al]
         assert new_privacy_notice.consent_mechanism == ConsentMechanism.opt_out
         assert new_privacy_notice.enforcement_level == EnforcementLevel.frontend
         assert new_privacy_notice.disabled is True
         assert new_privacy_notice.has_gpc_flag is False
-        assert new_privacy_notice.displayed_in_privacy_center is True
-        assert new_privacy_notice.displayed_in_overlay is False
-        assert new_privacy_notice.displayed_in_api is False
         assert new_privacy_notice.version == 1.0
         assert new_privacy_notice.id != notice.id
-
-        (
-            overlay_exp,
-            privacy_exp,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_al
-        )
-        assert overlay_exp is None
-        assert privacy_exp is not None
+        assert new_privacy_notice.translations.count() == 1
+        new_translation = new_privacy_notice.translations[0]
+        assert new_translation.language == Language.en_us
+        assert new_translation.title == "Other Privacy Notice Title"
+        assert new_translation.description == "Other description"
 
         # Newly created privacy notice history (B)
-        assert new_privacy_notice.privacy_notice_history_id is not None
-        new_history = new_privacy_notice.histories[0]
+        new_history = new_translation.histories[0]
         assert new_history.name == "Other Privacy Notice"
-        assert new_history.description == "This website uses a large amount of cookies."
         assert (
             new_history.internal_description
             == "This is another template added for testing"
         )
-        assert new_history.regions == [PrivacyNoticeRegion.us_al]
         assert new_history.consent_mechanism == ConsentMechanism.opt_out
         assert new_history.enforcement_level == EnforcementLevel.frontend
         assert new_history.disabled is True
         assert new_history.has_gpc_flag is False
-        assert new_history.displayed_in_privacy_center is True
-        assert new_history.displayed_in_overlay is False
-        assert new_history.displayed_in_api is False
         assert new_history.version == 1.0
-        assert new_history.id != notice.id
+        assert new_history.id != new_translation.id != template.id
         assert new_history.version == 1.0
 
         # Existing notice A - assert this wasn't updated.
         db.refresh(notice)
         assert notice.name == "Test Privacy Notice"
-        assert notice.description == "This website uses cookies."
         assert (
             unescape(notice.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
         )
-        assert notice.regions == [PrivacyNoticeRegion.us_ak]
         assert notice.consent_mechanism == ConsentMechanism.opt_in
         assert notice.enforcement_level == EnforcementLevel.system_wide
         assert notice.disabled is False
         assert notice.has_gpc_flag is True
-        assert notice.displayed_in_privacy_center is False
-        assert notice.displayed_in_overlay is True
-        assert notice.displayed_in_api is False
         assert notice.version == 1.0
-        assert notice.histories.count() == 1
+
+        assert notice.translations.count() == 1
+        translation = notice.translations[0]
+
+        assert translation.title == "Test Privacy Notice"
+        assert translation.description == "This is my test description."
+        assert translation.language == Language.en_us
+
+        assert translation.histories.count() == 1
 
         db.refresh(history)
         # Existing history B - assert this wasn't updated.
         assert history.name == "Test Privacy Notice"
-        assert history.description == "This website uses cookies."
+        assert history.description == "This is my test description."
         assert (
             unescape(history.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
         )
-        assert history.regions == [PrivacyNoticeRegion.us_ak]
         assert history.consent_mechanism == ConsentMechanism.opt_in
         assert history.enforcement_level == EnforcementLevel.system_wide
         assert history.disabled is False
         assert history.has_gpc_flag is True
-        assert history.displayed_in_privacy_center is False
-        assert history.displayed_in_overlay is True
-        assert history.displayed_in_api is False
         assert history.version == 1.0
+        assert history.language == Language.en_us
+        assert history.title == "Test Privacy Notice"
         assert history.id != new_history.id
 
         new_history.delete(db)
         history.delete(db)
+
+        new_translation.delete(db)
+        translation.delete(db)
 
         new_privacy_notice.delete(db)
         notice.delete(db)
@@ -887,7 +857,13 @@ class TestLoadDefaultNotices:
             db, DEFAULT_PRIVACY_NOTICES_PATH
         )
         assert len(new_templates) >= 1
+        first_template = new_templates[0]
+        assert len(first_template.translations) >= 1
         assert len(new_privacy_notices) >= 1
+        pn = new_privacy_notices[0]
+        assert pn.translations.count() >= 1
+        translation = pn.translations[0]
+        assert translation.histories.count() == 1
 
 
 class TestUpsertPrivacyNoticeTemplates:
@@ -1161,41 +1137,188 @@ class TestUpsertPrivacyNoticeTemplates:
         assert not third_template.disabled
 
 
+class TestLoadDefaultExperienceConfigs:
+    @pytest.mark.usefixtures("load_default_data_uses")
+    def test_load_default_experience_configs(self, db, privacy_notice):
+        # Load notice from a file that only has one template (A) defined.
+        # This should create one template (A), one experience config (A), one translation (A) and one config history (A), two experiences - one for each region (A) and link the experience notices
+        new_exp_templates, new_experiences = load_default_experience_configs_on_startup(
+            db, "tests/fixtures/test_privacy_experience_config.yml"
+        )
+
+        # Verify Experience Config Template
+        assert len(new_exp_templates) == 1
+        template = new_exp_templates[0]
+        assert template.regions == [PrivacyNoticeRegion.be, PrivacyNoticeRegion.bg]
+        assert template.component == ComponentType.overlay
+        translations = template.translations
+        assert len(translations) == 1
+        translation = translations[0]
+
+        assert translation["language"] == "en_us"
+        assert translation["title"] == "Manage your consent preferences"
+        assert translation["accept_button_label"] == "Opt in to all"
+
+        assert len(new_experiences) == 1
+        experience_config = new_experiences[0]
+
+        # Verify Experience Config
+        updated = experience_config.updated_at
+        assert experience_config.origin == template.id != experience_config.id
+        assert experience_config.component == ComponentType.overlay
+        assert experience_config.dismissable is False
+        assert experience_config.privacy_notices == [privacy_notice]
+
+        # Verify Experiences
+        assert experience_config.experiences.count() == 2
+        for exp in experience_config.experiences:
+            assert exp.component == ComponentType.overlay
+            assert exp.experience_config_id == experience_config.id
+            assert exp.region in [PrivacyNoticeRegion.be, PrivacyNoticeRegion.bg]
+
+        # Verify Translation
+        assert experience_config.translations.count() == 1
+        translation = experience_config.translations[0]
+
+        assert translation.experience_config_id == experience_config.id
+        assert translation.language == Language.en_us
+        assert translation.title == "Manage your consent preferences"
+        assert translation.description.startswith("We use cookies and similar methods")
+        assert not translation.is_default
+        assert translation.privacy_policy_link_label == "Privacy Policy"
+
+        # Assert Translation History
+        assert translation.histories.count() == 1
+        history = translation.histories[0]
+
+        assert not history.dismissable
+        assert history.origin == template.id
+        assert history.language == Language.en_us
+        assert history.title == "Manage your consent preferences"
+        assert history.description.startswith("We use cookies and similar methods")
+        assert not history.is_default
+        assert history.privacy_policy_link_label == "Privacy Policy"
+        assert history.translation_id == translation.id
+        assert history.version == 1.0
+
+        # Update templates - templates should change but existing configs should not
+        (
+            updated_exp_templates,
+            updated_configs,
+        ) = load_default_experience_configs_on_startup(
+            db, "tests/fixtures/test_privacy_experience_config_update.yml"
+        )
+
+        assert len(updated_exp_templates) == 1
+        assert len(updated_configs) == 0
+
+        assert len(updated_exp_templates) == 1
+        updated_template = updated_exp_templates[0]
+        assert updated_template.regions == [
+            PrivacyNoticeRegion.be,
+            PrivacyNoticeRegion.bg,
+            PrivacyNoticeRegion.us_ca,
+        ]
+        assert updated_template.id == template.id
+        assert template.component == ComponentType.overlay
+        updated_template_translations = template.translations
+        assert len(updated_template_translations) == 1
+        temp_translation = updated_template_translations[0]
+        assert temp_translation["language"] == "en_us"
+        assert temp_translation["title"] == "Manage your consent preferences"
+        assert temp_translation["accept_button_label"] == "Opt in!"
+
+        db.refresh(experience_config)
+        db.refresh(translation)
+        db.refresh(history)
+        assert experience_config.updated_at == updated
+        assert experience_config.translations.count() == 1
+        assert translation.accept_button_label == "Opt in to all"
+        assert len(experience_config.privacy_notices) == 1
+        assert history.version == 1.0
+        assert len(experience_config.regions) == 2
+
+        history.delete(db)
+        translation.delete(db)
+        experience_config.delete(db)
+        template.delete(db)
+
+    def test_load_actual_default_experiences(self, db):
+        """Sanity check, makings sure that default experiences don't load with errors"""
+        (
+            new_templates,
+            new_experience_configs,
+        ) = load_default_experience_configs_on_startup(
+            db, PRIVACY_EXPERIENCE_CONFIGS_PATH
+        )
+        assert len(new_templates) >= 1
+        assert len(new_experience_configs) >= 1
+        exp_config = new_experience_configs[0]
+        assert exp_config.experiences.count() >= 1
+        assert len(exp_config.regions) >= 1
+        assert exp_config.origin is not None
+        assert exp_config.translations.count() >= 1
+        translation = exp_config.translations[0]
+
+        assert translation.histories.count() == 1
+
+        tcf_config = next(
+            config
+            for config in new_experience_configs
+            if config.component == ComponentType.tcf_overlay
+        )
+        experiences_created = tcf_config.experiences
+        assert experiences_created.count() == len(EEA_COUNTRIES)
+        be_exp = experiences_created[0]
+        assert be_exp.component == ComponentType.tcf_overlay
+        assert be_exp.region == PrivacyNoticeRegion.be
+
+        assert tcf_config.translations.count() >= 1
+
+        translation = tcf_config.translations[0]
+        assert translation.histories.count() == 1
+
+
 class TestUpsertDefaultExperienceConfig:
     @pytest.fixture(scope="function")
-    def default_overlay_config_data(self, db):
-        return {
-            "banner_enabled": BannerEnabled.enabled_where_required,
-            "component": ComponentType.overlay,
-            "id": "test_id",
-            "regions": ["us_ca"],
-            "notices": ["essential"],
-            "translations": [
-                {
-                    "language": "en_us",
-                    "accept_button_label": "A",
-                    "acknowledge_button_label": "B",
-                    "banner_description": "J",
-                    "banner_title": "K",
-                    "description": "C",
-                    "privacy_preferences_link_label": "D",
-                    "privacy_policy_link_label": "E's label",
-                    "privacy_policy_url": "https://example.com/privacy_policy",
-                    "reject_button_label": "G",
-                    "save_button_label": "H",
-                    "title": "I",
-                    "is_default": True,
-                }
-            ],
-        }
+    def default_overlay_config_data(self, db, privacy_notice):
+        return ExperienceConfigCreateWithId(
+            **{
+                "banner_enabled": BannerEnabled.enabled_where_required,
+                "component": ComponentType.overlay,
+                "id": "test_id",
+                "regions": ["us_ca"],
+                "privacy_notices": ["example_privacy_notice"],
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "accept_button_label": "A",
+                        "acknowledge_button_label": "B",
+                        "banner_description": "J",
+                        "banner_title": "K",
+                        "description": "C",
+                        "privacy_preferences_link_label": "D",
+                        "privacy_policy_link_label": "E's label",
+                        "privacy_policy_url": "https://example.com/privacy_policy",
+                        "reject_button_label": "G",
+                        "save_button_label": "H",
+                        "title": "I",
+                        "is_default": True,
+                    }
+                ],
+            }
+        )
 
-    def test_create_default_experience_config(self, db, default_overlay_config_data):
+    def test_create_default_experience_config(
+        self, db, default_overlay_config_data, privacy_notice
+    ):
         experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
         assert experience_config.banner_enabled == BannerEnabled.enabled_where_required
         assert experience_config.component == ComponentType.overlay
         assert experience_config.regions == [PrivacyNoticeRegion.us_ca]
+        assert experience_config.privacy_notices == [privacy_notice]
         translation = experience_config.translations[0]
 
         assert translation.accept_button_label == "A"
@@ -1235,85 +1358,17 @@ class TestUpsertDefaultExperienceConfig:
         assert history.title == "I"
         assert history.updated_at is not None
         assert history.version == 1.0
+        assert history.language == Language.en_us
 
         db.delete(translation)
         db.delete(history)
         db.delete(experience_config)
 
-    def test_create_default_experience_config_config_already_exists_no_change(
-        self, db, default_overlay_config_data
-    ):
-        """Experience config is not changed in any way"""
-        experience_config = create_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert experience_config is not None
-
-        resp = create_default_experience_config(db, default_overlay_config_data)
-        assert resp is None
-
-        db.refresh(experience_config)
-
-        # Nothing changed so we don't want to update the version
-        assert experience_config.version == 1.0
-        assert experience_config.histories.count() == 1
-
-        db.delete(experience_config.histories[0])
-        db.delete(experience_config)
-
-    def test_default_experience_config_data_has_changed(
-        self, db, default_overlay_config_data
-    ):
-        """Even though data has changed, we don't update existing experience config"""
-        experience_config = create_default_experience_config(
-            db, default_overlay_config_data
-        )
-        assert experience_config is not None
-
-        default_overlay_config_data[
-            "privacy_policy_url"
-        ] = "https://test_example.com/privacy_policy"
-
-        resp = create_default_experience_config(db, default_overlay_config_data)
-        assert resp is None
-
-        db.refresh(experience_config)
-
-        # Data has changed but we didn't update existing config
-        assert experience_config.version == 1.0
-        assert (
-            experience_config.privacy_policy_url
-            != "https://test_example.com/privacy_policy"
-        )
-        assert experience_config.histories.count() == 1
-
-        assert experience_config.experience_config_history_id is not None
-        assert experience_config.experience_config_history_id != "test_id"
-        history = experience_config.histories[0]
-
-        assert history.version == 1.0
-        assert (
-            experience_config.privacy_policy_url
-            != "https://test_example.com/privacy_policy"
-        )
-
-        history.delete(db)
-        experience_config.delete(db)
-
-    def test_trying_to_use_this_function_to_create_non_default_configs(
-        self, db, default_overlay_config_data
-    ):
-        default_overlay_config_data["is_default"] = False
-
-        with pytest.raises(Exception):
-            create_default_experience_config(db, default_overlay_config_data)
-
     def test_create_default_experience_config_validation_error(
         self, db, default_overlay_config_data
     ):
-        default_overlay_config_data[
-            "banner_enabled"
-        ] = None  # Marking required field as None
+        # TODO validation needs to be rewritten
+        default_overlay_config_data.banner_enabled = None
 
         with pytest.raises(ValueError) as exc:
             create_default_experience_config(db, default_overlay_config_data)
@@ -1330,11 +1385,9 @@ class TestValidateDataUses:
         return PrivacyNoticeCreation(
             name="sample privacy notice",
             notice_key="sample_privacy_notice",
-            regions=[PrivacyNoticeRegion.us_ca],
             consent_mechanism=ConsentMechanism.opt_in,
             data_uses=["placeholder"],
             enforcement_level=EnforcementLevel.system_wide,
-            displayed_in_overlay=True,
         )
 
     @pytest.fixture(scope="function")
@@ -1401,19 +1454,6 @@ class TestValidateDataUses:
             custom_data_use.fides_key,
         ]
         validate_notice_data_uses([privacy_notice_request], db)
-
-
-class TestLoadTCFExperiences:
-    def test_create_tcf_experiences_on_startup(self, db):
-        """Sanity check on creating TCF experiences"""
-        experiences_created = create_tcf_experiences_on_startup(db)
-        assert len(experiences_created) == len(EEA_COUNTRIES)
-        be_exp = experiences_created[0]
-        assert be_exp.component == ComponentType.tcf_overlay
-        assert be_exp.region == PrivacyNoticeRegion.be
-        experience_config = be_exp.experience_config
-        assert experience_config.is_default
-        assert experience_config.component == ComponentType.tcf_overlay
 
 
 class TestLoadTCFPurposeOverrides:

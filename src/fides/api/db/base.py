@@ -19,18 +19,18 @@ from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_experience import (
-    PrivacyExperience,
-    PrivacyExperienceConfig,
-    PrivacyExperienceConfigHistory,
     ExperienceConfigTemplate,
     ExperienceNotices,
     ExperienceTranslation,
+    PrivacyExperience,
+    PrivacyExperienceConfig,
+    PrivacyExperienceConfigHistory,
 )
 from fides.api.models.privacy_notice import (
+    NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeTemplate,
-    NoticeTranslation,
 )
 from fides.api.models.privacy_preference import (
     DeprecatedCurrentPrivacyPreference,

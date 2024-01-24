@@ -7,7 +7,7 @@ from pydantic import Extra, Field, HttpUrl, root_validator, validator
 
 from fides.api.custom_types import HtmlStr
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
-from fides.api.models.privacy_notice import PrivacyNoticeRegion, Language
+from fides.api.models.privacy_notice import Language, PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.util.endpoint_utils import human_friendly_list
 
@@ -54,6 +54,9 @@ class ExperienceTranslation(FidesSchema):
         description="Overlay 'title' or Privacy Center 'title'"
     )
 
+    class Config:
+        use_enum_values = True
+
 
 class ExperienceConfigSchema(FidesSchema):
     """
@@ -81,7 +84,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
 
     regions: List[PrivacyNoticeRegion] = []
     component: ComponentType
-    notices: List[str] = []
+    privacy_notices: List[str] = []
 
     @validator("regions")
     @classmethod

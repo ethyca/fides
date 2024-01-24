@@ -12,10 +12,8 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_experience import (
-    ComponentType,
-    PrivacyExperience,
+    ExperienceConfigTemplate,
     PrivacyExperienceConfig,
-    upsert_privacy_experiences_after_notice_update,
 )
 from fides.api.models.privacy_notice import (
     PRIVACY_NOTICE_TYPE,
@@ -36,11 +34,7 @@ from fides.api.models.privacy_request import (
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
-from fides.api.schemas.privacy_notice import (
-    PrivacyNoticeCreation,
-    PrivacyNoticeWithId,
-    NoticeTranslation,
-)
+from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
 from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
@@ -328,17 +322,17 @@ def create_privacy_notices_util(
     privacy_notice_schemas: List[PrivacyNoticeCreation],
     should_escape: bool = True,
 ) -> Tuple[List[PrivacyNotice], Set[PrivacyNoticeRegion]]:
-    """Performs validation before creating Privacy Notices and Privacy Notice History records
-    and then ensures that Privacy Experiences exist for all Privacy Notices.
-    """
+    """Performs validation before creating Privacy Notices, Notice Translations, and Privacy Notice History records"""
     validate_notice_data_uses(privacy_notice_schemas, db)  # type: ignore[arg-type]
 
     existing_notices = PrivacyNotice.query(db).filter(PrivacyNotice.disabled.is_(False)).all()  # type: ignore[attr-defined]
 
-    new_notices = [
-        PrivacyNotice(**privacy_notice.dict(exclude_unset=True))
-        for privacy_notice in privacy_notice_schemas
-    ]
+    new_notices: List[PrivacyNotice] = []
+    for privacy_notice in privacy_notice_schemas:
+        data = privacy_notice.dict(exclude_unset=True)
+        data.pop("translations", [])
+        new_notices.append(PrivacyNotice(**data))
+
     check_conflicting_notice_keys(new_notices, existing_notices)
     for new_notice in new_notices:
         new_notice.validate_enabled_has_data_uses()
@@ -367,6 +361,8 @@ def create_privacy_notices_util(
         )
         created_privacy_notices.append(created_privacy_notice)
 
+    # TODO - Experiences aren't created via Notices now, just Experience Configs.  Remove the
+    # second element of this tuple after we've adjusted the caller.
     return created_privacy_notices, set()
 
 
@@ -523,6 +519,42 @@ def upsert_privacy_notice_templates_util(
     return upserted_templates  # type: ignore[return-value]
 
 
+def upsert_privacy_experience_templates_util(
+    db: Session,
+    template_schemas: List[ExperienceConfigCreateWithId],
+) -> List[ExperienceConfigTemplate]:
+    """
+    Create or update *Privacy Experience Templates*. These are the resources that
+    Fides ships with out of the box.
+    """
+    ensure_unique_ids(template_schemas)
+
+    upserted_templates = []
+
+    for template_data in template_schemas:
+        existing_template = (
+            db.query(ExperienceConfigTemplate)
+            .filter(ExperienceConfigTemplate.id == template_data.id)
+            .first()
+        )
+        if existing_template:
+            upserted_templates.append(
+                existing_template.update(
+                    db, data=template_data.dict(exclude_unset=True)
+                )
+            )
+        else:
+            upserted_templates.append(
+                ExperienceConfigTemplate.create(
+                    db=db,
+                    data=template_data.dict(exclude_unset=True),
+                    check_name=False,
+                )
+            )
+
+    return upserted_templates  # type: ignore[return-value]
+
+
 def load_default_notices_on_startup(
     db: Session, notice_yaml_file_path: str
 ) -> Tuple[List[PrivacyNoticeTemplate], List[PrivacyNotice]]:
@@ -576,7 +608,7 @@ def load_default_notices_on_startup(
 
 def load_default_experience_configs_on_startup(
     db: Session, notice_yaml_file_path: str
-) -> None:
+) -> Tuple[List[ExperienceConfigTemplate], List[PrivacyExperienceConfig]]:
     """
     On startup, loads default ExperienceConfigs into the database. Creates the defaults
     if they don't exist, otherwise, updates them with any new values from the default
@@ -588,46 +620,61 @@ def load_default_experience_configs_on_startup(
     with open(load_file([notice_yaml_file_path]), "r", encoding="utf-8") as file:
         experience_configs = yaml.safe_load(file).get("privacy_experience_configs", [])
 
+        template_schemas: List[ExperienceConfigCreateWithId] = []
         for experience_config_data in experience_configs:
-            create_default_experience_config(db, experience_config_data)
+            template_schemas.append(
+                ExperienceConfigCreateWithId(**experience_config_data)
+            )
+
+        privacy_experience_config_templates = upsert_privacy_experience_templates_util(
+            db, template_schemas
+        )
+
+        # Determine which templates don't have corresponding records in Privacy Experience Config
+        new_templates: List[ExperienceConfigTemplate] = [
+            template
+            for template in privacy_experience_config_templates
+            if template.id
+            not in [
+                origin for (origin,) in db.query(PrivacyExperienceConfig.origin).all()
+            ]
+        ]
+
+        new_experience_configs: List[PrivacyExperienceConfig] = []
+        for template in new_templates:
+            experience_config_schema = ExperienceConfigCreateWithId.from_orm(template)
+            experience_config_schema.origin = SafeStr(template.id)
+            new_experience_configs.append(
+                create_default_experience_config(db, experience_config_schema)
+            )
+
+        return privacy_experience_config_templates, new_experience_configs
 
 
 def create_default_experience_config(
-    db: Session, experience_config_data: dict
+    db: Session, experience_config_data: ExperienceConfigCreateWithId
 ) -> Optional[PrivacyExperienceConfig]:
     """Create a default experience config on startup.  The id is specified upfront.
 
     Split from load_default_experience_configs_on_startup for easier testing
     of a function that runs on application startup.
     """
-    experience_config_data = (
-        experience_config_data.copy()
-    )  # Avoids unexpected behavior on update in testing
+    # experience_config_data = (
+    #     experience_config_data.copy()
+    # )  # Avoids unexpected behavior on update in testing
 
     experience_config_schema = transform_fields(
         transformation=escape,
-        model=(ExperienceConfigCreateWithId(**experience_config_data)),
+        model=experience_config_data,
         fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
-    existing_experience_config = PrivacyExperienceConfig.get(
-        db=db, object_id=experience_config_schema.id
-    )
 
-    if not existing_experience_config:
-        logger.info(
-            "Creating default experience config {}", experience_config_schema.id
-        )
-        return PrivacyExperienceConfig.create(
-            db,
-            data=experience_config_schema.dict(exclude_unset=True),
-            check_name=False,
-        )
-
-    logger.info(
-        "Found existing experience config {}, not creating a new default experience config",
-        experience_config_schema.id,
+    logger.info("Creating default experience config {}", experience_config_data.id)
+    return PrivacyExperienceConfig.create(
+        db,
+        data=experience_config_schema.dict(exclude_unset=True),
+        check_name=False,
     )
-    return None
 
 
 EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
@@ -667,25 +714,6 @@ EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
     PrivacyNoticeRegion.li,
     PrivacyNoticeRegion.eea,  # Catch-all region - can query this Experience directly to get a generic TCF experience
 ]
-
-
-def create_tcf_experiences_on_startup(db: Session) -> List[PrivacyExperience]:
-    """On startup, create TCF Overlay Experiences for all EEA Regions.  There
-    are no Privacy Notices associated with these Experiences."""
-    experiences_created: List[PrivacyExperience] = []
-    for region in EEA_COUNTRIES:
-        if not PrivacyExperience.get_experience_by_region_and_component(
-            db,
-            region.value,
-            ComponentType.tcf_overlay,
-        ):
-            experiences_created.append(
-                PrivacyExperience.create_default_experience_for_region(
-                    db, region, ComponentType.tcf_overlay
-                )
-            )
-
-    return experiences_created
 
 
 def create_default_tcf_purpose_overrides_on_startup(

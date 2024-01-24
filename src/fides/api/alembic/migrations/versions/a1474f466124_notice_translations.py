@@ -5,8 +5,8 @@ Revises: 956d21f13def
 Create Date: 2024-01-23 17:10:46.686716
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
@@ -33,11 +33,17 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
+        sa.Column("banner_enabled", sa.String(), nullable=False),
         sa.Column("regions", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column("component", sa.String(), nullable=False),
         sa.Column(
             "translations",
             postgresql.ARRAY(postgresql.JSONB(astext_type=sa.Text())),
+            nullable=True,
+        ),
+        sa.Column(
+            "privacy_notices",
+            postgresql.ARRAY(sa.String()),
             nullable=True,
         ),
         sa.PrimaryKeyConstraint("id"),

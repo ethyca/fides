@@ -1480,6 +1480,13 @@ def privacy_notice(db: Session) -> Generator:
             "displayed_in_privacy_center": True,
             "displayed_in_overlay": True,
             "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
         },
     )
 
@@ -1522,6 +1529,12 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
             "displayed_in_overlay": True,
             "displayed_in_privacy_center": False,
             "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "example privacy notice us_ca provide",
+                }
+            ],
         },
     )
 
@@ -1545,7 +1558,9 @@ def privacy_preference_history_us_ca_provide(
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_in",
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[0].id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
+                0
+            ].privacy_notice_history_id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
@@ -1587,7 +1602,6 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            "description": "a sample privacy notice configuration",
             "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service.operations"],
@@ -1595,6 +1609,13 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
             "displayed_in_privacy_center": False,
             "displayed_in_overlay": True,
             "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "example privacy notice us_co provide.service.operations",
+                    "description": "a sample privacy notice configuration",
+                }
+            ],
         },
     )
 
@@ -1643,7 +1664,6 @@ def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            "description": "a sample privacy notice configuration",
             "regions": [PrivacyNoticeRegion.fr],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service"],
@@ -1651,6 +1671,13 @@ def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
             "displayed_in_overlay": True,
             "displayed_in_privacy_center": False,
             "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "example privacy notice us_co provide.service.operations",
+                    "description": "a sample privacy notice configuration",
+                }
+            ],
         },
     )
 
@@ -1691,12 +1718,14 @@ def privacy_preference_history_fr_provide_service_frontend_only(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
+                0
+            ].experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
-            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.translations[
                 0
-            ].id,
+            ].privacy_notice_history_id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "fr_idg",
@@ -2223,7 +2252,7 @@ def privacy_preference_history(
     privacy_experience_privacy_center,
     served_notice_history,
 ):
-    privacy_notice_history = privacy_notice.histories[0]
+    privacy_notice_history = privacy_notice.translations[0].histories[0]
 
     preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
@@ -2231,7 +2260,9 @@ def privacy_preference_history(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
+                0
+            ].experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
@@ -2319,18 +2350,25 @@ def experience_config_privacy_center(db: Session) -> Generator:
     exp = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "accept_button_label": "Accept all",
-            "description": "user&#x27;s description &lt;script /&gt;",
             "component": "privacy_center",
-            "reject_button_label": "Reject all",
-            "save_button_label": "Save",
-            "title": "Control your privacy",
-            "disabled": True,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Control your privacy",
+                    "accept_button_label": "Accept all",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
         },
     )
     yield exp
-    for history in exp.histories:
-        history.delete(db)
+    for translation in exp.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
     exp.delete(db)
 
 
@@ -2356,20 +2394,24 @@ def experience_config_overlay(db: Session) -> Generator:
     config = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "accept_button_label": "Accept all",
-            "acknowledge_button_label": "Confirm",
-            "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
-            "banner_title": "Manage Your Consent",
             "component": "overlay",
-            "description": "On this page you can opt in and out of these data uses cases",
-            "disabled": False,
-            "privacy_preferences_link_label": "Manage preferences",
-            "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "https://example.com/privacy",
-            "reject_button_label": "Reject all",
-            "save_button_label": "Save",
-            "title": "Manage your consent",
+            "translations": [
+                {
+                    "language": "en_us",
+                    "accept_button_label": "Accept all",
+                    "acknowledge_button_label": "Confirm",
+                    "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                    "banner_title": "Manage Your Consent",
+                    "description": "On this page you can opt in and out of these data uses cases",
+                    "privacy_preferences_link_label": "Manage preferences",
+                    "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                    "privacy_policy_url": "https://example.com/privacy",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Manage your consent",
+                }
+            ],
         },
     )
 
@@ -2882,7 +2924,9 @@ def served_notice_history(
         data={
             "acknowledge_mode": False,
             "serving_component": "overlay",
-            "privacy_notice_history_id": privacy_notice.histories[0].id,
+            "privacy_notice_history_id": privacy_notice.translations[
+                0
+            ].privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
             "served_notice_history_id": "ser_12345",

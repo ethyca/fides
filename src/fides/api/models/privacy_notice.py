@@ -7,10 +7,9 @@ from html import unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
-from sqlalchemy import Boolean, Column, UniqueConstraint
+from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, or_
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
@@ -283,22 +282,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         back_populates="privacy_notices",
     )
 
-    # histories = relationship(
-    #     "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
-    # )
-
-    @hybridproperty
-    def privacy_notice_history_id(self) -> Optional[str]:
-        """Convenience property that returns the historical privacy notice history id for the current version.
-
-        Note that there are possibly many historical records for the given notice, this just returns the current
-        corresponding historical record.
-        """
-        history: PrivacyNoticeHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
-            version=self.version
-        ).first()
-        return history.id if history else None
-
     @hybridproperty
     def default_preference(self) -> UserConsentPreference:
         """Returns the user's default consent preference given the consent
@@ -354,7 +337,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyNotice:
-        translations = data.pop("translations", [])
+        translations = data.pop("translations", []) or []
         created = super().create(db=db, data=data, check_name=check_name)
 
         for translation_data in translations:
@@ -399,7 +382,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             cloned_attributes[key] = val
 
         # remove protected fields from the cloned dict
-        cloned_attributes.pop("_sa_instance_state")
+        cloned_attributes.pop("_sa_instance_state", None)
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine

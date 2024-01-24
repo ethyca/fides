@@ -37,7 +37,7 @@ privacy_experience_configs:
     - li
   component: overlay
   banner_enabled: enabled_where_required
-  notices:
+  privacy_notices:
     - essential
     - functional
     - analytics
@@ -64,7 +64,7 @@ privacy_experience_configs:
     - us_va
   component: overlay
   banner_enabled: enabled_where_required
-  notices:
+  privacy_notices:
     - data_sales_and_sharing
   translations:
     - language: en_us
@@ -88,7 +88,8 @@ privacy_experience_configs:
     - us_ut
     - us_va
   component: privacy_center
-  notices:
+  banner_enabled: enabled_where_required
+  privacy_notices:
     - data_sales_and_sharing
   translations:
     - language: en_us
@@ -142,6 +143,7 @@ privacy_experience_configs:
     - li
     - eea
   component: tcf_overlay
+  privacy_notices: []
   translations:
     - language: en_us
       accept_button_label: Opt in to all
@@ -150,7 +152,7 @@ privacy_experience_configs:
         We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.
 
         We, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.
-     privacy_policy_link_label: Privacy Policy
+      privacy_policy_link_label: Privacy Policy
       privacy_policy_url: null
       privacy_preferences_link_label: Manage preferences
       reject_button_label: Opt out of all

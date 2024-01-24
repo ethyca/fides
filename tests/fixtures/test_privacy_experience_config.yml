@@ -1,0 +1,20 @@
+privacy_experience_configs:
+- id: test-over
+  regions:
+    - be
+    - bg
+  component: overlay
+  banner_enabled: enabled_where_required
+  privacy_notices:
+    - example_privacy_notice
+  translations:
+    - language: en_us
+      accept_button_label: Opt in to all
+      acknowledge_button_label: OK
+      description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+      privacy_policy_link_label: Privacy Policy
+      privacy_policy_url: null
+      privacy_preferences_link_label: Manage preferences
+      reject_button_label: Opt out of all
+      save_button_label: Save
+      title: Manage your consent preferences

@@ -3,9 +3,9 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
-from sqlalchemy import Boolean, Column, Table
+from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, and_, or_
+from sqlalchemy import Float, ForeignKey, String, Table, UniqueConstraint, and_, or_
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy.util import hybridproperty
@@ -14,11 +14,11 @@ from fides.api.db.base_class import Base
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
+    Language,
     PrivacyNotice,
     PrivacyNoticeRegion,
     create_historical_data_from_record,
     update_if_modified,
-    Language,
 )
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
@@ -68,8 +68,9 @@ class ExperienceConfigTemplate(Base):
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
     )
     component = Column(EnumColumn(ComponentType), nullable=False)
-    privacy_notices: List[str] = []
+    privacy_notices = Column(ARRAY(String))
     translations = Column(ARRAY(JSONB))
+    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
 
 
 class ExperienceTranslationBase:
@@ -134,12 +135,6 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         lazy="selectin",
     )
 
-    histories = relationship(
-        "PrivacyExperienceConfigHistory",
-        backref="experience_config",
-        lazy="dynamic",
-    )
-
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     @property
@@ -162,7 +157,10 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         """Create experience config and then clone this record into the history table for record keeping"""
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
-        notices = data.pop("notices", [])
+        privacy_notices = data.pop("privacy_notices", [])
+        data.pop(
+            "id", None
+        )  # Default templates may have ids but we don't want to use them here
 
         experience_config: PrivacyExperienceConfig = super().create(
             db=db, data=data, check_name=check_name
@@ -183,6 +181,9 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
             )
 
         upsert_privacy_experiences_after_config_update(db, experience_config, regions)
+        link_notices_to_experience_config(
+            db, notice_keys=privacy_notices, experience_config=experience_config
+        )
 
         return experience_config
 
@@ -216,18 +217,6 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         cloned_attributes.pop("_sa_instance_state")
         return PrivacyExperienceConfig(**cloned_attributes)
 
-    @hybridproperty
-    def experience_config_history_id(self) -> Optional[str]:
-        """Convenience property that returns the experience config id for the current version.
-
-        Note that there are possibly many historical records for the given experience config, this just returns the current
-        corresponding historical record.
-        """
-        history: PrivacyExperienceConfigHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
-            version=self.version
-        ).first()
-        return history.id if history else None
-
     @classmethod
     def get_default_config(
         cls, db: Session, component: ComponentType
@@ -258,6 +247,18 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         backref="experience_translation",
         lazy="dynamic",
     )
+
+    @hybridproperty
+    def experience_config_history_id(self) -> Optional[str]:
+        """Convenience property that returns the experience config id for the current version.
+
+        Note that there are possibly many historical records for the given experience config translation, this just returns the current
+        corresponding historical record.
+        """
+        history: PrivacyExperienceConfigHistory = self.histories.order_by(
+            PrivacyExperienceConfigHistory.version.asc()
+        ).first()
+        return history.id if history else None
 
 
 class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
@@ -643,7 +644,7 @@ def link_notices_to_experience_config(
 
     for notice in notices:
         if notice not in experience_config.privacy_notices:
-            experience_config.append(notices)
+            experience_config.privacy_notices.append(notice)
 
     to_remove = set(existing_linked_notices) - set(
         notice.id for notice in experience_config.privacy_notices
