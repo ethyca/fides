@@ -12,6 +12,12 @@ import {
   CmpStatus,
   SignalStatus,
   TcfEuV2,
+  UsCaV1,
+  UsCoV1,
+  UsCtV1,
+  UsNatV1,
+  UsUtV1,
+  UsVaV1,
 } from "@iabgpp/cmpapi";
 import { makeStub } from "./lib/gpp/stub";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
@@ -22,13 +28,12 @@ import {
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import type { Fides } from "./lib/initialize";
 import type { OverrideOptions } from "./lib/consent-types";
-import { GppFunction } from "./lib/gpp/types";
+import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
 import { FidesEvent } from "./fides";
 import {
   setGppNoticesProvidedFromExperience,
-  setGppOptOutsFromCookie,
+  setGppOptOutsFromCookieAndExperience,
 } from "./lib/gpp/us-notices";
-import { FIDES_REGION_TO_GPP_SECTION } from "./lib/gpp/constants";
 
 const CMP_VERSION = 1;
 
@@ -51,7 +56,11 @@ declare global {
  * @param cmpApi: the CMP API model
  */
 const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
-  if (!window.Fides.options.tcfEnabled) {
+  if (!isPrivacyExperience(window.Fides.experience)) {
+    return false;
+  }
+  const { gpp_settings: gppSettings } = window.Fides.experience;
+  if (!window.Fides.options.tcfEnabled || !gppSettings?.enable_tcfeu_string) {
     return false;
   }
   const tcString = extractTCStringForCmpApi(event);
@@ -67,20 +76,22 @@ const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
 /** From our options, derive what APIs of GPP are applicable */
 const getSupportedApis = () => {
   const supportedApis: string[] = [];
-  if (window.Fides.options.tcfEnabled) {
-    supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
-    return supportedApis;
-  }
   if (isPrivacyExperience(window.Fides.experience)) {
     const { gpp_settings: gppSettings } = window.Fides.experience;
-    if (gppSettings && gppSettings.enabled && gppSettings.regions) {
-      const gppSections = Object.values(FIDES_REGION_TO_GPP_SECTION);
-      gppSettings.regions.forEach((region) => {
-        const section = gppSections.find((d) => d.prefix === region);
-        if (section) {
-          supportedApis.push(`${section.id}:${section.prefix}`);
-        }
-      });
+    if (gppSettings && gppSettings.enabled) {
+      if (window.Fides.options.tcfEnabled && gppSettings.enable_tcfeu_string) {
+        supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
+      }
+      if (gppSettings.us_approach === GPPUSApproach.NATIONAL) {
+        supportedApis.push(`${UsNatV1.ID}:${UsNatV1.NAME}`);
+      }
+      if (gppSettings.us_approach === GPPUSApproach.STATE) {
+        // TODO: include the states based off of locations/regulations.
+        // For now, hard code all of them. https://ethyca.atlassian.net/browse/PROD-1595
+        [UsCaV1, UsCoV1, UsCtV1, UsUtV1, UsVaV1].forEach((state) => {
+          supportedApis.push(`${state.ID}:${state.NAME}`);
+        });
+      }
     }
   }
   return supportedApis;
@@ -103,10 +114,10 @@ export const initializeGppCmpApi = () => {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
       }
       setGppNoticesProvidedFromExperience({ cmpApi, experience });
-      const sectionsChanged = setGppOptOutsFromCookie({
+      const sectionsChanged = setGppOptOutsFromCookieAndExperience({
         cmpApi,
         cookie: event.detail,
-        region: experience.region,
+        experience,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -152,16 +163,18 @@ export const initializeGppCmpApi = () => {
     }
 
     // Set US GPP opt outs
-    const sectionsChanged = setGppOptOutsFromCookie({
-      cmpApi,
-      cookie: event.detail,
-      region: window.Fides.experience?.region ?? "",
-    });
-    if (sectionsChanged.length) {
-      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
-      sectionsChanged.forEach((section) => {
-        cmpApi.fireSectionChange(section.name);
+    if (isPrivacyExperience(window.Fides.experience)) {
+      const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+        cmpApi,
+        cookie: event.detail,
+        experience: window.Fides.experience,
       });
+      if (sectionsChanged.length) {
+        cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+        sectionsChanged.forEach((section) => {
+          cmpApi.fireSectionChange(section.name);
+        });
+      }
     }
     cmpApi.setSignalStatus(SignalStatus.READY);
   });

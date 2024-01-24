@@ -333,6 +333,7 @@ describe("Privacy notices", () => {
         displayed_in_api: false,
         displayed_in_overlay: true,
         notice_key: "my_notice",
+        disabled: true,
       };
 
       // details section
