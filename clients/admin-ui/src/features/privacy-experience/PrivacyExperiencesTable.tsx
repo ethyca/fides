@@ -1,4 +1,11 @@
-import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Spinner,
+  Stack,
+  useDisclosure,
+} from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
 import Restrict, { useHasPermission } from "common/Restrict";
 import { DateCell, FidesTable } from "common/table";
@@ -15,6 +22,7 @@ import {
   EnablePrivacyExperienceCell,
   LocationCell,
 } from "~/features/privacy-experience/cells";
+import ConfigurePrivacyExperienceModal from "~/features/privacy-experience/ConfigurePrivacyExperienceModal";
 import {
   selectAllExperienceConfigs,
   selectPage,
@@ -40,10 +48,13 @@ const PrivacyExperiencesTable = () => {
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
+
+  const { onOpen, isOpen, onClose } = useDisclosure();
   const handleRowClick = ({ id }: ExperienceConfigResponse) => {
-    if (userCanUpdate) {
-      router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
-    }
+    // if (userCanUpdate) {
+    //   router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
+    // }
+    onOpen();
   };
 
   const columns: Column<ExperienceConfigResponse>[] = useMemo(
@@ -110,6 +121,7 @@ const PrivacyExperiencesTable = () => {
         data={privacyExperiences}
         onRowClick={userCanUpdate ? handleRowClick : undefined}
       />
+      <ConfigurePrivacyExperienceModal isOpen={isOpen} onClose={onClose} />
     </Stack>
   );
 };
