@@ -24,10 +24,9 @@ import {
 import React, { ReactNode, useMemo, useState } from "react";
 
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
+import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 import { DisplayAllIcon, GroupedIcon } from "../../Icon";
-import { getTableTHandTDStyles } from "./util";
-// import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -133,6 +132,13 @@ const MemoizedTableBody = React.memo(
     prev.tableInstance.options.data === next.tableInstance.options.data
 ) as typeof TableBody;
 
+/**
+ * To enable column resizing, when creating your tableInstance, pass the prop
+ * `enableColumnResizing: true`. You'll likely also want `columnResizeMode: "onChange"`.
+ *
+ * For cells that should either display all or group all, add `showHeaderMenu` to the
+ * columnDef's `meta` field and use the cell `GroupCountBadgeCell`
+ */
 export const FidesTableV2 = <T,>({
   tableInstance,
   rowActionBar,
