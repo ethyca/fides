@@ -16,7 +16,7 @@ const assertIsChecked = (
   });
 };
 
-describe("Locations", () => {
+describe("Locations and regulations", () => {
   beforeEach(() => {
     cy.login();
     stubPlus(true);
@@ -296,6 +296,7 @@ describe("Locations", () => {
       // Selecting Quebec should also select Canada in the continent view since Quebec
       // is the only child of Canada
       cy.getByTestId("subgroup-modal").within(() => {
+        assertIsChecked("select-all", "indeterminate");
         cy.getByTestId("United States-accordion").click();
         cy.getByTestId("Canada-accordion")
           .click()
