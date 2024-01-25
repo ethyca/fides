@@ -17,12 +17,27 @@ coverage:
       default:
         target: 100%
 
-codecov:
-  notify:
-    after_n_builds: 10
 
 comment:
-  after_n_builds: 10
+  layout: "flags, reach, diff, files"
+  behavior: default
+  require_changes: false  
+  require_base: yes
+  require_head: yes       
+
+flags:
+  backend:
+    paths:
+      - src/fides/**/*
+    after_n_builds: 9 # combine across multiple test suite uploads
+  admin-ui:
+    paths:
+      - clients/admin-ui/**/*
+    after_n_builds: 1
+  privacy-center:
+    paths:
+      - clients/privacy-center/**/*
+    after_n_builds: 1
 
 ignore:
   - "**/migrations"
