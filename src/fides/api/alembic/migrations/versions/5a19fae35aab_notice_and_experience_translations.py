@@ -1,8 +1,8 @@
-"""add notice translations
+"""notice and experience translations
 
-Revision ID: 188459911b19
+Revision ID: 5a19fae35aab
 Revises: 956d21f13def
-Create Date: 2024-01-24 23:00:41.290039
+Create Date: 2024-01-25 18:29:29.904138
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "188459911b19"
+revision = "5a19fae35aab"
 down_revision = "956d21f13def"
 branch_labels = None
 depends_on = None
@@ -119,6 +119,7 @@ def upgrade():
         sa.Column("banner_description", sa.String(), nullable=True),
         sa.Column("banner_title", sa.String(), nullable=True),
         sa.Column("description", sa.String(), nullable=True),
+        sa.Column("is_default", sa.Boolean(), nullable=False),
         sa.Column("privacy_policy_link_label", sa.String(), nullable=True),
         sa.Column("privacy_policy_url", sa.String(), nullable=True),
         sa.Column("privacy_preferences_link_label", sa.String(), nullable=True),
@@ -126,7 +127,6 @@ def upgrade():
         sa.Column("save_button_label", sa.String(), nullable=True),
         sa.Column("title", sa.String(), nullable=True),
         sa.Column("experience_config_id", sa.String(), nullable=False),
-        sa.Column("is_default", sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(
             ["experience_config_id"],
             ["privacyexperienceconfig.id"],
@@ -175,18 +175,19 @@ def upgrade():
         "privacyexperience", sa.Column("disabled", sa.Boolean(), nullable=True)
     )
     op.add_column(
-        "privacyexperienceconfig",
-        sa.Column("custom_asset_id", sa.String(), nullable=True),
+        "privacyexperienceconfig", sa.Column("origin", sa.String(), nullable=True)
     )
     op.add_column(
         "privacyexperienceconfig",
         sa.Column("dismissable", sa.Boolean(), nullable=False),
     )
     op.add_column(
-        "privacyexperienceconfig", sa.Column("origin", sa.String(), nullable=True)
+        "privacyexperienceconfig",
+        sa.Column("allow_language_selection", sa.Boolean(), nullable=False),
     )
-    op.create_foreign_key(
-        None, "privacyexperienceconfig", "experienceconfigtemplate", ["origin"], ["id"]
+    op.add_column(
+        "privacyexperienceconfig",
+        sa.Column("custom_asset_id", sa.String(), nullable=True),
     )
     op.create_foreign_key(
         None,
@@ -195,13 +196,13 @@ def upgrade():
         ["custom_asset_id"],
         ["id"],
     )
+    op.create_foreign_key(
+        None, "privacyexperienceconfig", "experienceconfigtemplate", ["origin"], ["id"]
+    )
+    op.drop_column("privacyexperienceconfig", "is_default")
     op.add_column(
         "privacyexperienceconfighistory",
         sa.Column("language", sa.String(), nullable=False),
-    )
-    op.add_column(
-        "privacyexperienceconfighistory",
-        sa.Column("translation_id", sa.String(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
@@ -209,11 +210,19 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
+        sa.Column("dismissable", sa.Boolean(), nullable=False),
+    )
+    op.add_column(
+        "privacyexperienceconfighistory",
+        sa.Column("allow_language_selection", sa.Boolean(), nullable=False),
+    )
+    op.add_column(
+        "privacyexperienceconfighistory",
         sa.Column("custom_asset_id", sa.String(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("dismissable", sa.Boolean(), nullable=False),
+        sa.Column("translation_id", sa.String(), nullable=True),
     )
     op.alter_column(
         "privacyexperienceconfighistory",
@@ -335,16 +344,22 @@ def downgrade():
         existing_type=sa.VARCHAR(),
         nullable=False,
     )
-    op.drop_column("privacyexperienceconfighistory", "dismissable")
-    op.drop_column("privacyexperienceconfighistory", "custom_asset_id")
-    op.drop_column("privacyexperienceconfighistory", "origin")
     op.drop_column("privacyexperienceconfighistory", "translation_id")
+    op.drop_column("privacyexperienceconfighistory", "custom_asset_id")
+    op.drop_column("privacyexperienceconfighistory", "allow_language_selection")
+    op.drop_column("privacyexperienceconfighistory", "dismissable")
+    op.drop_column("privacyexperienceconfighistory", "origin")
     op.drop_column("privacyexperienceconfighistory", "language")
+    op.add_column(
+        "privacyexperienceconfig",
+        sa.Column("is_default", sa.BOOLEAN(), autoincrement=False, nullable=False),
+    )
     op.drop_constraint(None, "privacyexperienceconfig", type_="foreignkey")
     op.drop_constraint(None, "privacyexperienceconfig", type_="foreignkey")
-    op.drop_column("privacyexperienceconfig", "origin")
-    op.drop_column("privacyexperienceconfig", "dismissable")
     op.drop_column("privacyexperienceconfig", "custom_asset_id")
+    op.drop_column("privacyexperienceconfig", "allow_language_selection")
+    op.drop_column("privacyexperienceconfig", "dismissable")
+    op.drop_column("privacyexperienceconfig", "origin")
     op.drop_column("privacyexperience", "disabled")
     op.drop_index(op.f("ix_noticetranslation_id"), table_name="noticetranslation")
     op.drop_table("noticetranslation")

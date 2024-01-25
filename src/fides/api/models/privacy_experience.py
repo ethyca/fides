@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, Table, UniqueConstraint, and_, or_
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Query, Session, relationship
 
@@ -30,13 +30,18 @@ class ExperienceNotices(Base):
     """Many-to-many table that stores which Notices are on which Experience Configs"""
 
     notice_id = Column(
-        String, ForeignKey("privacynotice.id"), index=True, nullable=False
+        String,
+        ForeignKey("privacynotice.id"),
+        index=True,
+        nullable=False,
+        primary_key=True,
     )
     experience_config_id = Column(
         String,
         ForeignKey("privacyexperienceconfig.id"),
         index=True,
         nullable=False,
+        primary_key=True,
     )
 
 
@@ -67,9 +72,13 @@ class ExperienceConfigTemplate(Base):
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
     )
     component = Column(EnumColumn(ComponentType), nullable=False)
-    privacy_notices = Column(ARRAY(String))
+    privacy_notices = Column(
+        ARRAY(String)
+    )  # A string of notice keys which should correspond to out-of-the-box notices
     translations = Column(ARRAY(JSONB))
-    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
+    banner_enabled = Column(
+        EnumColumn(BannerEnabled), index=True
+    )  # TODO likely pending removal
 
 
 class ExperienceTranslationBase:
@@ -82,6 +91,8 @@ class ExperienceTranslationBase:
     banner_description = Column(String)
     banner_title = Column(String)
     description = Column(String)
+    is_default = Column(Boolean, nullable=False, default=False)
+
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
@@ -93,22 +104,43 @@ class ExperienceTranslationBase:
 class ExperienceConfigBase:
     """Base schema for PrivacyExperienceConfig."""
 
-    accept_button_label = Column(String)
-    acknowledge_button_label = Column(String)
-    banner_description = Column(String)
-    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
-    banner_title = Column(String)
+    accept_button_label = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    acknowledge_button_label = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    banner_description = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    banner_enabled = Column(
+        EnumColumn(BannerEnabled), index=True
+    )  # Likely pending removal
+    banner_title = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
     component = Column(EnumColumn(ComponentType), nullable=False, index=True)
-    description = Column(String)
-    disabled = Column(Boolean, nullable=False, default=False)
-    is_default = Column(Boolean, nullable=False, default=False)
-    privacy_policy_link_label = Column(String)
-    privacy_policy_url = Column(String)
-    privacy_preferences_link_label = Column(String)
-    reject_button_label = Column(String)
-    save_button_label = Column(String)
-    title = Column(String)
-    version = Column(Float, nullable=False, default=1.0)
+    description = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    disabled = Column(Boolean, nullable=False, default=False)  # TODO pending removal
+    privacy_policy_link_label = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    privacy_policy_url = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    privacy_preferences_link_label = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    reject_button_label = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    save_button_label = Column(
+        String
+    )  # TODO pending removal in favor of ExperienceTranslation
+    title = Column(String)  # TODO pending removal in favor of ExperienceTranslation
+    version = Column(Float, nullable=False, default=1.0)  # TODO pending removal
 
 
 class PrivacyExperienceConfig(ExperienceConfigBase, Base):
@@ -118,8 +150,10 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
     Can be linked to multiple PrivacyExperiences.
     """
 
-    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
+    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
     dismissable = Column(Boolean, nullable=False, default=False)
+    allow_language_selection = Column(Boolean, nullable=False, default=False)
+    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
 
     experiences = relationship(
         "PrivacyExperience",
@@ -134,16 +168,14 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         lazy="selectin",
     )
 
-    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
+    translations = relationship(
+        "ExperienceTranslation", backref="privacy_experience_config", lazy="dynamic"
+    )
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
         """Return the regions using this experience config"""
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
-
-    translations = relationship(
-        "ExperienceTranslation", backref="privacy_experience_config", lazy="dynamic"
-    )
 
     @classmethod
     def create(
@@ -153,7 +185,8 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyExperienceConfig:
-        """Create experience config and then clone this record into the history table for record keeping"""
+        """Create experience config and its translation(s) and then for each translation, store a combination of the
+        config and translation for record-keeping"""
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
         privacy_notices = data.pop("privacy_notices", [])
@@ -262,7 +295,9 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
     def get_default_config(
         cls, db: Session, component: ComponentType
     ) -> Optional[PrivacyExperienceConfig]:
-        """Load the first default config of a given component type"""
+        """Load the first default config of a given component type
+        TODO pending removal - there is no longer a "default" config
+        """
         return (
             db.query(PrivacyExperienceConfig)
             .filter(PrivacyExperienceConfig.component == component)
@@ -272,10 +307,11 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
 
 class ExperienceTranslation(ExperienceTranslationBase, Base):
+    """Stores all the translations for a given Experience Config"""
+
     experience_config_id = Column(
         String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
     )
-    is_default = Column(Boolean, nullable=False, default=False)
 
     __table_args__ = (
         UniqueConstraint(
@@ -326,6 +362,11 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
 class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
     """Experience Config History - stores the history of how the config has changed over time"""
 
+    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
+    dismissable = Column(Boolean, nullable=False, default=False)
+    allow_language_selection = Column(Boolean, nullable=False, default=False)
+    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
+
     experience_config_id = Column(
         String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
     )  # TODO slated for removal after data migration
@@ -334,16 +375,13 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
         String, ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL")
     )
 
-    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
-
-    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
-    dismissable = Column(Boolean, nullable=False, default=False)
     version = Column(Float, nullable=False, default=1.0)
-    disabled = Column(Boolean, nullable=False, default=False)
+    disabled = Column(Boolean, nullable=False, default=False)  # TODO pending removal
 
-    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
+    banner_enabled = Column(
+        EnumColumn(BannerEnabled), index=True
+    )  # TODO pending removal
     component = Column(EnumColumn(ComponentType), nullable=False, index=True)
-    is_default = Column(Boolean, nullable=False, default=False)
 
 
 class PrivacyExperience(Base):

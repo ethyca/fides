@@ -173,9 +173,11 @@ class PrivacyNoticeBase:
     """
 
     name = Column(String, nullable=False)
-    description = Column(String)  # User-facing description
+    description = Column(
+        String
+    )  # TODO will be removed from PrivacyNoticeTemplate and PrivacyNotice in favor of NoticeTranslation.
     internal_description = Column(String)  # Visible to internal users only
-    regions = Column(
+    regions = Column(  # TODO will be removed in favor of configuring this on the Experience-side
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
         index=True,
         nullable=True,
@@ -190,14 +192,18 @@ class PrivacyNoticeBase:
     enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
-    displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
-    displayed_in_overlay = Column(Boolean, nullable=False, default=False)
-    displayed_in_api = Column(Boolean, nullable=False, default=False)
+    displayed_in_privacy_center = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed
+    displayed_in_overlay = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed
+    displayed_in_api = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed
     notice_key = Column(String, nullable=False)
-    framework = Column(String, nullable=True)
-    gpp_field_mapping = Column(
-        MutableList.as_mutable(JSONB), index=False, unique=False, nullable=True
-    )
+    framework = Column(String)
+    gpp_field_mapping = Column(MutableList.as_mutable(JSONB), index=False, unique=False)
 
     @property
     def is_gpp(self) -> bool:
@@ -337,6 +343,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyNotice:
+        """Creates a Privacy Notice, relevant Notice Translations, and a PrivacyNoticeHistory record, versioning
+        the combined contents of the PrivacyNotice and the Translation"""
         translations = data.pop("translations", []) or []
         created = super().create(db=db, data=data, check_name=check_name)
 
@@ -357,8 +365,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyNotice:
         """
-        Overrides the base update method to automatically bump the version of the
-        PrivacyNotice record and also create a new PrivacyNoticeHistory entry
+        Updates the Privacy Notice and relevant Notice Translations, creating Historical records
+        for each Translation if there were updates to the Notice and/or the Translation.  Any translations
+        not in the data are removed.
         """
         translations = data.pop("translations", [])
 
@@ -515,21 +524,23 @@ def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) ->
 
 class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     """
-    An "audit table" tracking outdated versions of `PrivacyNotice` records whose
-    "current" versions are stored in the `PrivacyNotice` table/model
+    An "audit table" tracking outdated versions of `PrivacyNotice` + `NoticeTranslations`.
+    Privacy preferences are saved against the notice hoistory.
     """
 
     origin = Column(
         String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
     )  # pointer back to the PrivacyNoticeTemplate
+
     version = Column(Float, nullable=False, default=1.0)
 
     translation_id = Column(
         String, ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL")
     )  # pointer back to the NoticeTranslation
+
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=True
-    )
+    )  # TODO Will be removed.  This now points to just the translation.
 
 
 def update_if_modified(
