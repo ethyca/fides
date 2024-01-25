@@ -180,6 +180,75 @@ describe("System management with Plus features", () => {
     });
   });
 
+  describe("data use", () => {
+    it("should enable legal basis editing if flexible is true", () => {
+      cy.intercept("GET", "/api/v1/system/*", {
+        fixture: "systems/system_with_flexible_legal_basis.json",
+      }).as("getSystemWithFlexibleDataUses");
+
+      cy.visit(`${SYSTEM_ROUTE}/configure/flexible_system`);
+      cy.wait("@getSystemWithFlexibleDataUses");
+
+      cy.getByTestId("tab-Data uses").click();
+      cy.contains("a", "Analytics for Advertising Performance").click();
+
+      cy.contains("label", "This legal basis is flexible").should("exist");
+      cy.get('input[name="flexible_legal_basis_for_processing"]')
+        .should("exist")
+        .and("be.disabled");
+
+      cy.getByTestId("input-legal_basis_for_processing")
+        .get("input")
+        .should("be.enabled");
+
+      cy.getByTestId("save-btn").should("exist");
+    });
+
+    it("should disable legal basis editing if flexible is false", () => {
+      cy.intercept("GET", "/api/v1/system/*", {
+        fixture: "systems/system_with_flexible_legal_basis.json",
+      }).as("getSystemWithFlexibleDataUses");
+
+      cy.visit(`${SYSTEM_ROUTE}/configure/flexible_system`);
+      cy.wait("@getSystemWithFlexibleDataUses");
+
+      cy.getByTestId("tab-Data uses").click();
+      cy.contains("a", "personalize.content.profiling").click();
+
+      cy.contains("label", "This legal basis is flexible").should("exist");
+      cy.get('input[name="flexible_legal_basis_for_processing"]')
+        .should("exist")
+        .and("be.disabled");
+
+      cy.getByTestId("input-legal_basis_for_processing")
+        .get("input")
+        .should("be.disabled");
+
+      cy.getByTestId("save-btn").should("not.exist");
+    });
+
+    it("should enable legal basis editing for non-GVL systems", () => {
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+
+      cy.getByTestId("tab-Data uses").click();
+      cy.contains(
+        "a",
+        "Improve Service - Analyze customer behaviour for improvements."
+      ).click();
+
+      cy.getByTestId("declaration-form").should(
+        "not.contain",
+        "This legal basis is flexible"
+      );
+
+      cy.getByTestId("input-legal_basis_for_processing")
+        .get("input")
+        .should("be.enabled");
+
+      cy.getByTestId("save-btn").should("exist");
+    });
+  });
+
   describe("custom metadata", () => {
     beforeEach(() => {
       cy.intercept(
