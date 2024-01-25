@@ -10,7 +10,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
 from fideslang import MAPPED_PURPOSES_BY_DATA_USE
-from fideslang.gvl import MAPPED_PURPOSES, MappedPurpose
+from fideslang.gvl import DEFAULT_LANGUAGE_ID, MAPPED_PURPOSES, MappedPurpose
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
@@ -50,11 +50,13 @@ from fides.config import get_config
 
 CONFIG = get_config()
 
+DEFAULT_LANGUAGE_MAPPED_PURPOSES = [purpose[DEFAULT_LANGUAGE_ID] for purpose in MAPPED_PURPOSES.values()]
+
 # Mapping of data uses to *Purposes* not Special Purposes
 MAPPED_PURPOSES_ONLY_BY_DATA_USE: Dict[str, MappedPurpose] = {
-    data_use: purpose
+    data_use: purpose[DEFAULT_LANGUAGE_ID]
     for data_use, purpose in MAPPED_PURPOSES_BY_DATA_USE.items()
-    if purpose in MAPPED_PURPOSES.values()
+    if purpose[DEFAULT_LANGUAGE_ID] in DEFAULT_LANGUAGE_MAPPED_PURPOSES
 }
 
 
