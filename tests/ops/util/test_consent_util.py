@@ -542,7 +542,7 @@ class TestCreatePrivacyNoticeUtils:
             ],
         )
 
-        privacy_notices, affected_regions = create_privacy_notices_util(db, [schema])
+        privacy_notices = create_privacy_notices_util(db, [schema])
 
         assert len(privacy_notices) == 1
         notice = privacy_notices[0]
@@ -643,9 +643,9 @@ class TestCreatePrivacyNoticeUtils:
         )
 
         # ensure our template was created properly
-        assert len(templates[0]) == 1
-        assert templates[0][0].id == "test_id_1"
-        assert templates[0][0].disabled is True
+        assert len(templates) == 1
+        assert templates[0].id == "test_id_1"
+        assert templates[0].disabled is True
 
 
 class TestLoadDefaultNotices:
@@ -677,7 +677,7 @@ class TestLoadDefaultNotices:
         translation = notice.translations[0]
 
         assert translation.title == "Test Privacy Notice"
-        assert translation.description == "This is my test description."
+        assert translation.description == "This is my test&#x27;s description."
         assert translation.language == Language.en_us
 
         history = translation.histories[0]
@@ -686,7 +686,7 @@ class TestLoadDefaultNotices:
         assert history.notice_key == "test_privacy_notice"
         assert history.title == "Test Privacy Notice"
         assert history.language == Language.en_us
-        assert history.description == "This is my test description."
+        assert history.description == "This is my test&#x27;s description."
         assert (
             unescape(history.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
@@ -718,7 +718,7 @@ class TestLoadDefaultNotices:
             {
                 "title": "Test Privacy Notice",
                 "language": "en_us",
-                "description": "This is my test description.",
+                "description": "This is my test&#x27;s description.",
             }
         ]
 
@@ -817,7 +817,7 @@ class TestLoadDefaultNotices:
         translation = notice.translations[0]
 
         assert translation.title == "Test Privacy Notice"
-        assert translation.description == "This is my test description."
+        assert translation.description == "This is my test&#x27;s description."
         assert translation.language == Language.en_us
 
         assert translation.histories.count() == 1
@@ -825,7 +825,7 @@ class TestLoadDefaultNotices:
         db.refresh(history)
         # Existing history B - assert this wasn't updated.
         assert history.name == "Test Privacy Notice"
-        assert history.description == "This is my test description."
+        assert history.description == "This is my test&#x27;s description."
         assert (
             unescape(history.internal_description)
             == "This is a contrived template for testing.  This field's for internal testing!"
@@ -1183,7 +1183,9 @@ class TestLoadDefaultExperienceConfigs:
         assert translation.experience_config_id == experience_config.id
         assert translation.language == Language.en_us
         assert translation.title == "Manage your consent preferences"
-        assert translation.description.startswith("We use cookies and similar methods")
+        assert translation.description.startswith(
+            "We use your organization&#x27;s cookies and similar methods"
+        )
         assert not translation.is_default
         assert translation.privacy_policy_link_label == "Privacy Policy"
 
@@ -1195,7 +1197,9 @@ class TestLoadDefaultExperienceConfigs:
         assert history.origin == template.id
         assert history.language == Language.en_us
         assert history.title == "Manage your consent preferences"
-        assert history.description.startswith("We use cookies and similar methods")
+        assert history.description.startswith(
+            "We use your organization&#x27;s cookies and similar methods"
+        )
         assert not history.is_default
         assert history.privacy_policy_link_label == "Privacy Policy"
         assert history.translation_id == translation.id
@@ -1367,15 +1371,89 @@ class TestUpsertDefaultExperienceConfig:
     def test_create_default_experience_config_validation_error(
         self, db, default_overlay_config_data
     ):
-        # TODO validation needs to be rewritten
-        default_overlay_config_data.banner_enabled = None
-
-        with pytest.raises(ValueError) as exc:
-            create_default_experience_config(db, default_overlay_config_data)
+        with pytest.raises(ValidationError) as exc:
+            config = ExperienceConfigCreateWithId(
+                **{
+                    "banner_enabled": BannerEnabled.enabled_where_required,
+                    "component": ComponentType.overlay,
+                    "id": "test_id",
+                    "regions": ["us_ca"],
+                    "privacy_notices": ["example_privacy_notice"],
+                    "translations": [
+                        {
+                            "language": "en_us",
+                            "accept_button_label": "A",
+                            "banner_description": "J",
+                            "banner_title": "K",
+                            "description": "C",
+                            "privacy_preferences_link_label": "D",
+                            "privacy_policy_link_label": "E's label",
+                            "privacy_policy_url": "https://example.com/privacy_policy",
+                            "reject_button_label": "G",
+                            "save_button_label": "H",
+                            "title": "I",
+                            "is_default": True,
+                        }
+                    ],
+                }
+            )
+            create_default_experience_config(db, config)
 
         assert (
             str(exc.value.args[0][0].exc)
-            == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
+            == "The following additional fields are required when defining an overlay: acknowledge_button_label and privacy_preferences_link_label."
+        )
+
+    def test_create_duplicate_experience_translations(
+        self, db, default_overlay_config_data
+    ):
+        with pytest.raises(ValidationError) as exc:
+            config = ExperienceConfigCreateWithId(
+                **{
+                    "banner_enabled": BannerEnabled.enabled_where_required,
+                    "component": ComponentType.overlay,
+                    "id": "test_id",
+                    "regions": ["us_ca"],
+                    "privacy_notices": ["example_privacy_notice"],
+                    "translations": [
+                        {
+                            "language": "en_us",
+                            "accept_button_label": "A",
+                            "banner_description": "J",
+                            "banner_title": "K",
+                            "description": "C",
+                            "acknowledge_button_label": "B",
+                            "privacy_preferences_link_label": "D",
+                            "privacy_policy_link_label": "E's label",
+                            "privacy_policy_url": "https://example.com/privacy_policy",
+                            "reject_button_label": "G",
+                            "save_button_label": "H",
+                            "title": "I",
+                            "is_default": True,
+                        },
+                        {
+                            "language": "en_us",
+                            "accept_button_label": "A",
+                            "banner_description": "J",
+                            "banner_title": "K",
+                            "description": "C",
+                            "acknowledge_button_label": "B",
+                            "privacy_preferences_link_label": "D",
+                            "privacy_policy_link_label": "E's label",
+                            "privacy_policy_url": "https://example.com/privacy_policy",
+                            "reject_button_label": "G",
+                            "save_button_label": "H",
+                            "title": "I",
+                            "is_default": True,
+                        },
+                    ],
+                }
+            )
+            create_default_experience_config(db, config)
+
+        assert (
+            str(exc.value.args[0][0].exc)
+            == "Multiple translations supplied for the same language"
         )
 
 

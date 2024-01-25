@@ -40,8 +40,9 @@ from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "internal_description"]
+NOTICE_TRANSLATION_ESCAPE_FIELDS = ["title", "description"]
 PRIVACY_EXPERIENCE_ESCAPE_FIELDS = []
-PRIVACY_TRANSLATION_ESCAPE_FIELDS = [
+CONFIG_TRANSLATION_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
     "banner_description",
@@ -321,7 +322,7 @@ def create_privacy_notices_util(
     db: Session,
     privacy_notice_schemas: List[PrivacyNoticeCreation],
     should_escape: bool = True,
-) -> Tuple[List[PrivacyNotice], Set[PrivacyNoticeRegion]]:
+) -> List[PrivacyNotice]:
     """Performs validation before creating Privacy Notices, Notice Translations, and Privacy Notice History records"""
     validate_notice_data_uses(privacy_notice_schemas, db)  # type: ignore[arg-type]
 
@@ -349,6 +350,13 @@ def create_privacy_notices_util(
                 model=privacy_notice,
                 fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
             )
+            for translation in privacy_notice.translations:
+                transform_fields(
+                    transformation=escape,
+                    model=translation,
+                    fields=NOTICE_TRANSLATION_ESCAPE_FIELDS,
+                )
+
         privacy_notice = transform_fields(
             transformation=jsonable_encoder,
             model=privacy_notice,
@@ -361,9 +369,8 @@ def create_privacy_notices_util(
         )
         created_privacy_notices.append(created_privacy_notice)
 
-    # TODO - Experiences aren't created via Notices now, just Experience Configs.  Remove the
     # second element of this tuple after we've adjusted the caller.
-    return created_privacy_notices, set()
+    return created_privacy_notices
 
 
 def validate_privacy_notice_dry_update(
@@ -426,6 +433,13 @@ def prepare_privacy_notice_patches(
             model=update_data,
             fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
         )
+        for translation in update_data.translations:
+            transform_fields(
+                transformation=escape,
+                model=translation,
+                fields=NOTICE_TRANSLATION_ESCAPE_FIELDS,
+            )
+
         update_data = transform_fields(
             transformation=jsonable_encoder,
             model=update_data,
@@ -599,7 +613,7 @@ def load_default_notices_on_startup(
 
         # Create PrivacyNotice, NoticeTranslation, and PrivacyNoticeHistory records only for new templates
         # Not escaping here, because it was already escaped when the templates were created.
-        new_privacy_notices, _ = create_privacy_notices_util(
+        new_privacy_notices = create_privacy_notices_util(
             db, notice_schemas, should_escape=False
         )
 
@@ -663,16 +677,17 @@ def create_default_experience_config(
     #     experience_config_data.copy()
     # )  # Avoids unexpected behavior on update in testing
 
-    experience_config_schema = transform_fields(
-        transformation=escape,
-        model=experience_config_data,
-        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-    )
+    for translation in experience_config_data.translations:
+        transform_fields(
+            transformation=escape,
+            model=translation,
+            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
+        )
 
     logger.info("Creating default experience config {}", experience_config_data.id)
     return PrivacyExperienceConfig.create(
         db,
-        data=experience_config_schema.dict(exclude_unset=True),
+        data=experience_config_data.dict(exclude_unset=True),
         check_name=False,
     )
 

@@ -1209,14 +1209,3 @@ def load_default_data_uses(db):
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.dict())
-
-
-# @pytest.fixture(scope="function", autouse=True)
-# def load_default_privacy_experience_configs(db):
-#     """Ops tests drop db data, so for now, load these back in if they don't exist"""
-#     if not PrivacyExperienceConfig.get_default_config(
-#         db, ComponentType.overlay
-#     ) or not PrivacyExperienceConfig.get_default_config(
-#         db, ComponentType.privacy_center
-#     ):
-#         load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)

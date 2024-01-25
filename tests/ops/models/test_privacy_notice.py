@@ -16,7 +16,7 @@ from fides.api.models.privacy_notice import (
     check_conflicting_notice_keys,
     new_data_use_conflicts_with_existing_use,
 )
-from fides.api.models.sql_models import Cookies, DataUse
+from fides.api.models.sql_models import Cookies
 
 
 class TestPrivacyNoticeModel:
@@ -101,9 +101,9 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.data_uses == old_data_uses
         assert privacy_notice.version == 1.0
 
-    def test_update(self, db: Session, privacy_notice: PrivacyNotice):
+    def test_update_notice_level(self, db: Session, privacy_notice: PrivacyNotice):
         """
-        Evaluate the overriden update functionality
+        Evaluate the overridden update functionality
         Specifically look at the history table and version changes
         """
         assert len(PrivacyNotice.all(db)) == 1
@@ -213,6 +213,173 @@ class TestPrivacyNoticeModel:
         assert notice_history.name == "updated name"
         assert notice_history.data_uses == old_data_uses
         assert notice_history.version == 2.0
+
+    def test_update_translations_added(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        """
+        Evaluate the overridden update functionality
+        Specifically look at the history table and version changes
+        """
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+        privacy_notice_updated_at = privacy_notice.updated_at
+
+        privacy_notice.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    },
+                    {
+                        "language": Language.en_gb,
+                        "title": "Example privacy notice!",
+                    },
+                ],
+            },
+        )
+
+        # assert we have expected db records
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 2
+        assert len(PrivacyNoticeHistory.all(db)) == 2
+
+        db.refresh(privacy_notice)
+        # Privacy notice itself unchanged
+        assert privacy_notice.updated_at == privacy_notice_updated_at
+
+        assert privacy_notice.translations.count() == 2
+
+        translation = privacy_notice.translations[0]
+
+        # US English translation unchanged
+        assert translation.language == Language.en_us
+        assert translation.title == "Example privacy notice"
+
+        # US British translation translation added
+        translation_gb = privacy_notice.translations[1]
+
+        assert translation_gb.language == Language.en_gb
+        assert translation_gb.title == "Example privacy notice!"
+
+        # make sure our latest entry in history table corresponds to current record
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(
+                PrivacyNoticeHistory.version == 1.0,
+                PrivacyNoticeHistory.translation_id == translation_gb.id,
+            )
+            .first()
+        )
+        assert notice_history.title == "Example privacy notice!"
+        assert notice_history.version == 1.0
+
+        # and that other record hasn't changed
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(
+                PrivacyNoticeHistory.version == 1.0,
+                PrivacyNoticeHistory.translation_id == translation.id,
+            )
+            .first()
+        )
+        assert notice_history.title == "Example privacy notice"
+        assert notice_history.version == 1.0
+
+    def test_update_translations_modified(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        """
+        Evaluate the overridden update functionality
+        Specifically look at the history table and version changes
+        """
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+        privacy_notice_updated_at = privacy_notice.updated_at
+
+        updated_privacy_notice = privacy_notice.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "title": "Example privacy notice with updated title",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+            },
+        )
+
+        # assert we have expected db records
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 2
+
+        db.refresh(privacy_notice)
+        # Privacy notice itself unchanged
+        assert privacy_notice.updated_at == privacy_notice_updated_at
+
+        assert privacy_notice.translations.count() == 1
+        translation = privacy_notice.translations[0]
+        # Translation was updated though
+        assert translation.title == "Example privacy notice with updated title"
+
+        # make sure our latest entry in history table corresponds to current record
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.version == 2.0)
+            .first()
+        )
+        assert notice_history.title == "Example privacy notice with updated title"
+        assert notice_history.version == 2.0
+
+        # and that previous record hasn't changed
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.version == 1.0)
+            .first()
+        )
+        assert notice_history.title == "Example privacy notice"
+        assert notice_history.version == 1.0
+
+    def test_update_translations_removed(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        """
+        Evaluate the overridden update functionality
+        Specifically look at the history table and version changes
+        """
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+        privacy_notice_updated_at = privacy_notice.updated_at
+        history = db.query(PrivacyNoticeHistory).first()
+        assert history.translation_id == NoticeTranslation.all(db)[0].id
+
+        privacy_notice.update(
+            db,
+            data={"name": "New name"},
+        )
+
+        # assert we have expected db records
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+
+        db.refresh(privacy_notice)
+        assert privacy_notice.name == "New name"
+        assert privacy_notice.updated_at != privacy_notice_updated_at
+
+        assert not privacy_notice.translations.count()
+
+        db.refresh(history)
+        # Translation id just removed, so it can stay linked to the Privacy Preference History record if applicable
+        assert history.translation_id is None
 
     def test_dry_update(self, privacy_notice: PrivacyNotice):
         old_name = privacy_notice.name

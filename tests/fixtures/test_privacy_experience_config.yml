@@ -11,7 +11,7 @@ privacy_experience_configs:
     - language: en_us
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
-      description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+      description: We use your organization's cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
       privacy_policy_link_label: Privacy Policy
       privacy_policy_url: null
       privacy_preferences_link_label: Manage preferences

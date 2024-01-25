@@ -25,7 +25,8 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
 class Language(Enum):
     """Using BCP 47 Language Tags"""
 
-    en_us = "en_us"  # English (US)
+    en_us = "en_us"  # US English
+    en_gb = "en_gb"  # British English
 
     class Config:
         use_enum_values = True
@@ -279,7 +280,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     )  # TODO Pending Removal.  This is now only on PrivacyNoticeHistory.
 
     translations = relationship(
-        "NoticeTranslation", backref="privacy_notice", lazy="dynamic"
+        "NoticeTranslation",
+        backref="privacy_notice",
+        lazy="dynamic",
+        order_by="NoticeTranslation.created_at",
     )
 
     experience_configs = relationship(
@@ -449,7 +453,10 @@ class NoticeTranslation(NoticeTranslationBase, Base):
     )
 
     histories = relationship(
-        "PrivacyNoticeHistory", backref="notice_translation", lazy="dynamic"
+        "PrivacyNoticeHistory",
+        backref="notice_translation",
+        lazy="dynamic",
+        order_by="PrivacyNoticeHistory.created_at",
     )
 
     __table_args__ = (
@@ -470,7 +477,8 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         Note that there are possibly many historical records for the given experience config translation, this just returns the current
         corresponding historical record.
         """
-        return self.histories.order_by(PrivacyNoticeHistory.version.desc()).first()
+        # Histories are sorted at the relationship level
+        return self.histories[-1] if self.histories.count() else None
 
     @property
     def privacy_notice_history_id(self) -> Optional[str]:

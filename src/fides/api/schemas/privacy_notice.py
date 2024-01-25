@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
-from pydantic import Extra, conlist, root_validator, validator
+from pydantic import Extra, root_validator
 
 from fides.api.custom_types import GPPMechanismConsentValue
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel, Language
@@ -19,8 +19,10 @@ from fides.api.schemas.base_class import FidesSchema
 
 
 class NoticeTranslation(FidesSchema):
+    """Notice Translation Schema"""
+
     language: Language
-    title: Optional[str] = None
+    title: str
     description: Optional[str] = None
 
     class Config:
@@ -125,21 +127,6 @@ class PrivacyNoticeCreation(PrivacyNotice):
             values["notice_key"] = PrivacyNoticeModel.generate_notice_key(
                 values.get("name")
             )
-
-        return values
-
-    @root_validator(pre=True)
-    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Ensure no two translations with the same language are supplied
-        """
-        translations: List[Dict] = values.get("translations")
-        if not translations:
-            return values
-
-        languages = [translation.get("language") for translation in translations]
-        if len(languages) != len(set(languages)):
-            raise ValueError(f"Multiple translations supplied for the same language")
 
         return values
 

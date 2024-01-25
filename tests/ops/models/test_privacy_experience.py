@@ -1,3 +1,5 @@
+from copy import copy
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -101,8 +103,7 @@ class TestExperienceConfig:
         translation.delete(db)
         config.delete(db=db)
 
-    def test_update_privacy_experience_config_translations_same(self, db):
-        """Assert if PrivacyExperienceConfig is updated, its version is bumped and a new historical record is created"""
+    def test_update_privacy_experience_config_level(self, db):
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
@@ -110,7 +111,7 @@ class TestExperienceConfig:
                 "banner_enabled": "enabled_where_required",
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": Language.en_us,
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
@@ -176,6 +177,265 @@ class TestExperienceConfig:
         translation.delete(db)
         old_history.delete(db)
         history.delete(db)
+
+    def test_update_privacy_experience_config_add_translation(
+        self, db, experience_config_overlay
+    ):
+        updated_at = experience_config_overlay.updated_at
+
+        experience_config_overlay.update(
+            db=db,
+            data={
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                        "banner_title": "Manage Your Consent",
+                        "description": "On this page you can opt in and out of these data uses cases",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "privacy_policy_url": "https://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Manage your consent",
+                    },
+                    {
+                        "language": Language.en_gb,
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                        "banner_title": "Manage Your Consent",
+                        "description": "On this page you can opt in and out of these data uses cases",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "privacy_policy_url": "https://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Manage your consent",
+                    },
+                ],
+            },
+        )
+        db.refresh(experience_config_overlay)
+        assert experience_config_overlay.updated_at == updated_at
+
+        assert experience_config_overlay.translations.count() == 2
+        translation = experience_config_overlay.translations[0]
+        assert translation.language == Language.en_us
+        assert translation.histories.count() == 1
+
+        translation_gb = experience_config_overlay.translations[1]
+        assert translation_gb.language == Language.en_gb
+        assert translation_gb.histories.count() == 1
+
+    def test_update_privacy_experience_config_update_translation(
+        self, db, experience_config_overlay
+    ):
+        updated_at = experience_config_overlay.updated_at
+
+        experience_config_overlay.update(
+            db=db,
+            data={
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                        "banner_title": "Manage Your Consent",
+                        "description": "On this page you can opt in and out of these data uses cases",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "privacy_policy_url": "https://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Manage your consent!",
+                    }
+                ],
+            },
+        )
+        db.refresh(experience_config_overlay)
+        assert experience_config_overlay.updated_at == updated_at
+
+        assert experience_config_overlay.translations.count() == 1
+        translation = experience_config_overlay.translations[0]
+        assert translation.language == Language.en_us
+        assert translation.histories.count() == 2
+        assert translation.title == "Manage your consent!"
+        assert translation.histories.count() == 2
+
+        assert translation.histories[0].title == "Manage your consent"
+        assert translation.histories[0].version == 1.0
+
+        assert translation.histories[1].title == "Manage your consent!"
+        assert translation.histories[1].version == 2.0
+
+    def test_update_privacy_experience_config_remove_translation(
+        self, db, experience_config_overlay
+    ):
+        updated_at = copy(experience_config_overlay.updated_at)
+
+        translation = experience_config_overlay.translations[0]
+        history = translation.histories[0]
+
+        experience_config_overlay.update(
+            db=db,
+            data={
+                "component": "privacy_center",
+                "translations": [],
+            },
+        )
+
+        assert experience_config_overlay.updated_at != updated_at
+        assert experience_config_overlay.component == ComponentType.privacy_center
+
+        assert experience_config_overlay.translations.count() == 0
+
+        db.refresh(history)
+        assert history.version == 1.0
+        assert history.translation_id is None
+
+    def test_update_privacy_experience_config_update_notices(
+        self, db, experience_config_overlay, privacy_notice
+    ):
+        assert experience_config_overlay.privacy_notices == []
+
+        experience_config_overlay.update(
+            db=db,
+            data={
+                "privacy_notices": [privacy_notice.notice_key],
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                        "banner_title": "Manage Your Consent",
+                        "description": "On this page you can opt in and out of these data uses cases",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "privacy_policy_url": "https://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Manage your consent",
+                    }
+                ],
+            },
+        )
+        db.refresh(experience_config_overlay)
+
+        assert experience_config_overlay.privacy_notices == [privacy_notice]
+
+        db.refresh(experience_config_overlay)
+        assert experience_config_overlay.translations.count() == 1
+        translation = experience_config_overlay.translations[0]
+        assert translation.histories.count() == 1
+
+        experience_config_overlay.update(
+            db=db,
+            data={
+                "privacy_notices": [],
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                        "banner_title": "Manage Your Consent",
+                        "description": "On this page you can opt in and out of these data uses cases",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "privacy_policy_url": "https://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Manage your consent",
+                    }
+                ],
+            },
+        )
+
+        db.refresh(experience_config_overlay)
+        assert experience_config_overlay.privacy_notices == []
+
+    def test_update_privacy_experience_config_update_regions(
+        self, db, experience_config_overlay
+    ):
+        assert (
+            PrivacyExperience.get_experience_by_region_and_component(
+                db, "us_ca", ComponentType.overlay
+            )
+            is None
+        )
+
+        updated_at = experience_config_overlay.updated_at
+        experience_config_overlay.update(
+            db=db,
+            data={
+                "regions": [PrivacyNoticeRegion.us_ca],
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                        "banner_title": "Manage Your Consent",
+                        "description": "On this page you can opt in and out of these data uses cases",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "privacy_policy_url": "https://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Manage your consent",
+                    }
+                ],
+            },
+        )
+
+        db.refresh(experience_config_overlay)
+        assert experience_config_overlay.regions == [PrivacyNoticeRegion.us_ca]
+        exp = PrivacyExperience.get_experience_by_region_and_component(
+            db, "us_ca", ComponentType.overlay
+        )
+        assert exp.experience_config_id == experience_config_overlay.id
+        assert experience_config_overlay.updated_at == updated_at
+
+        experience_config_overlay.update(
+            db=db,
+            data={
+                "regions": [],
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                        "banner_title": "Manage Your Consent",
+                        "description": "On this page you can opt in and out of these data uses cases",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "privacy_policy_url": "https://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Manage your consent",
+                    }
+                ],
+            },
+        )
+
+        db.refresh(experience_config_overlay)
+        assert experience_config_overlay.regions == []
+        assert (
+            PrivacyExperience.get_experience_by_region_and_component(
+                db, "us_ca", ComponentType.overlay
+            )
+            == exp
+        )
+        assert experience_config_overlay.updated_at == updated_at
+
+        db.refresh(exp)
+        assert exp.experience_config_id is None  # Unlinked from Experience Config
 
 
 class TestPrivacyExperience:

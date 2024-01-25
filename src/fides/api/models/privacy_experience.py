@@ -169,7 +169,10 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
     )
 
     translations = relationship(
-        "ExperienceTranslation", backref="privacy_experience_config", lazy="dynamic"
+        "ExperienceTranslation",
+        backref="privacy_experience_config",
+        lazy="dynamic",
+        order_by="ExperienceTranslation.created_at",
     )
 
     @property
@@ -249,10 +252,12 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
             if config_updated or translation_updated:
                 new_version = translation.version or 0.0
+                history_data = create_historical_data_from_record(resource, db)
+                history_data.pop("privacy_notices", None)
                 PrivacyExperienceConfigHistory.create(
                     db,
                     data={
-                        **data,
+                        **history_data,
                         **translation_data,
                         "translation_id": translation.id,
                         "version": new_version + 1.0,
@@ -260,16 +265,14 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                     check_name=False,
                 )
 
-            translations_to_remove = set(
-                [translation.language for translation in resource.translations]
-            ).difference(
-                set([translation.get("language") for translation in translations])
-            )
+        translations_to_remove = set(
+            [translation.language for translation in resource.translations]
+        ).difference(set([translation.get("language") for translation in translations]))
 
-            db.query(ExperienceTranslation).filter(
-                ExperienceTranslation.language.in_(translations_to_remove),
-                ExperienceTranslation.experience_config_id == resource.id,
-            ).delete()
+        db.query(ExperienceTranslation).filter(
+            ExperienceTranslation.language.in_(translations_to_remove),
+            ExperienceTranslation.experience_config_id == resource.id,
+        ).delete()
 
         upsert_privacy_experiences_after_config_update(db, resource, regions)
         link_notices_to_experience_config(
@@ -323,6 +326,7 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         "PrivacyExperienceConfigHistory",
         backref="experience_translation",
         lazy="dynamic",
+        order_by="PrivacyExperienceConfigHistory.created_at",
     )
 
     @property
@@ -341,9 +345,8 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         Note that there are possibly many historical records for the given experience config translation, this just returns the current
         corresponding historical record.
         """
-        return self.histories.order_by(
-            PrivacyExperienceConfigHistory.version.desc()
-        ).first()
+        # Histories are sorted at the relationship level
+        return self.histories[-1] if self.histories.count() else None
 
     @property
     def experience_config_history_id(self) -> Optional[str]:
@@ -560,65 +563,6 @@ def get_privacy_notices_by_region_and_component(
             PrivacyExperience.component == component,
         )
     )
-
-
-def upsert_privacy_experiences_after_notice_update(
-    db: Session, affected_regions: List[PrivacyNoticeRegion]
-) -> List[PrivacyExperience]:
-    """
-    Keeps Privacy Experiences in sync with *PrivacyNotices* changes.
-    Create or update "overlay" or "privacy center" PrivacyExperiences based on the PrivacyNotices in the "affected_regions".
-    To be called whenever PrivacyNotices are created or updated (pass in any regions that were potentially affected)
-
-    PrivacyExperiences should not be deleted.  It's okay if no notices are associated with an Experience.
-    """
-    added_experiences: List[PrivacyExperience] = []
-
-    def new_experience_needed(
-        existing_experience: Optional[PrivacyExperience], related_notices: Query
-    ) -> bool:
-        """Do we need to create a new experience to match the notices?"""
-        return not existing_experience and bool(related_notices.count())
-
-    for region in affected_regions:
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db=db, region=region.value
-        )
-
-        privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
-            db,
-            [region.value, region_country(region.value)],
-            ComponentType.privacy_center,
-        )
-        overlay_notices: Query = get_privacy_notices_by_region_and_component(
-            db, [region.value, region_country(region.value)], ComponentType.overlay
-        )
-
-        # See if we need to create a Privacy Center Experience for the Privacy Center Notices
-        if new_experience_needed(
-            existing_experience=privacy_center_experience,
-            related_notices=privacy_center_notices,
-        ):
-            privacy_center_experience = (
-                PrivacyExperience.create_default_experience_for_region(
-                    db, region, ComponentType.privacy_center
-                )
-            )
-            added_experiences.append(privacy_center_experience)
-
-        # See if we need to create a new overlay Experience for the overlay Notices.
-        if new_experience_needed(
-            existing_experience=overlay_experience, related_notices=overlay_notices
-        ):
-            overlay_experience = PrivacyExperience.create_default_experience_for_region(
-                db, region, ComponentType.overlay
-            )
-            added_experiences.append(overlay_experience)
-
-    return added_experiences
 
 
 def remove_config_from_matched_experiences(

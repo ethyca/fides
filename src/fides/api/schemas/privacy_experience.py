@@ -74,6 +74,21 @@ class ExperienceConfigSchema(FidesSchema):
     allow_language_selection: Optional[bool]
     translations: List[ExperienceTranslation] = []
 
+    @root_validator(pre=True)
+    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ensure no two translations with the same language are supplied
+        """
+        translations: List[Dict] = values.get("translations")
+        if not translations:
+            return values
+
+        languages = [translation.get("language") for translation in translations]
+        if len(languages) != len(set(languages)):
+            raise ValueError(f"Multiple translations supplied for the same language")
+
+        return values
+
 
 class ExperienceConfigCreate(ExperienceConfigSchema):
     """
@@ -96,25 +111,31 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
             raise ValueError("Duplicate regions found.")
         return regions
 
-    # @root_validator
-    # def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-    #     """Validate minimum set of required fields exist given the type of component"""
-    #     component: Optional[ComponentType] = values.get("component")
-    #
-    #     if component == ComponentType.overlay:
-    #         # Overlays have a few additional required fields beyond the privacy center
-    #         required_overlay_fields = [
-    #             "acknowledge_button_label",
-    #             "banner_enabled",
-    #             "privacy_preferences_link_label",
-    #         ]
-    #         for field in required_overlay_fields:
-    #             if not values.get(field):
-    #                 raise ValueError(
-    #                     f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
-    #                 )
-    #
-    #     return values
+    @root_validator
+    def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate minimum set of required fields exist given the type of component"""
+        component: Optional[ComponentType] = values.get("component")
+
+        translations = values.get("translations")
+
+        if not translations:
+            return values
+
+        if component == ComponentType.overlay:
+            # Overlays have a few additional required fields beyond the privacy center
+            required_overlay_fields = [
+                "acknowledge_button_label",
+                # "banner_enabled",  # TODO are we removing this?
+                "privacy_preferences_link_label",
+            ]
+            for translation in translations:
+                for field in required_overlay_fields:
+                    if not getattr(translation, field, None):
+                        raise ValueError(
+                            f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
+                        )
+
+        return values
 
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):
