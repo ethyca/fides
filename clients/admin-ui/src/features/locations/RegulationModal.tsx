@@ -45,7 +45,7 @@ const RegulationModal = ({
   return (
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
-      <ModalContent data-testid="subgroup-modal">
+      <ModalContent data-testid="regulation-modal">
         <Header title="Select regulations" />
         <ModalBody p={6} maxHeight="70vh" overflowY="auto">
           <HeaderCheckboxRow

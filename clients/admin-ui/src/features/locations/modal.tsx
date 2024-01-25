@@ -82,7 +82,13 @@ export const Footer = ({
       justifyContent="space-between"
       width="100%"
     >
-      <Button flexGrow={1} variant="outline" mr={3} onClick={onClose}>
+      <Button
+        data-testid="cancel-btn"
+        flexGrow={1}
+        variant="outline"
+        mr={3}
+        onClick={onClose}
+      >
         Cancel
       </Button>
       <Button
