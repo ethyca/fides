@@ -8,7 +8,6 @@ from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, Table, UniqueConstraint, and_, or_
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Query, Session, relationship
-from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base
 from fides.api.models.custom_asset import CustomAsset
@@ -192,15 +191,57 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyExperienceConfig record and also create a new PrivacyExperienceConfigHistory entry
         """
-        resource, updated = update_if_modified(self, db=db, data=data)
+        translations = data.pop("translations", [])
+        regions = data.pop("regions", [])
+        privacy_notices = data.pop("privacy_notices", [])
 
-        if updated:
-            history_data = create_historical_data_from_record(resource)
-            history_data["experience_config_id"] = self.id
+        resource, config_updated = update_if_modified(self, db=db, data=data)
 
-            PrivacyExperienceConfigHistory.create(
-                db, data=history_data, check_name=False
+        for translation_data in translations:
+            existing_translation = resource.translations.filter(
+                ExperienceTranslation.language == translation_data.get("language")
+            ).first()
+            if existing_translation:
+                translation, translation_updated = update_if_modified(
+                    existing_translation,
+                    db=db,
+                    data={**translation_data, "experience_config_id": resource.id},
+                )
+            else:
+                translation_updated = True
+                translation = ExperienceTranslation.create(
+                    db,
+                    data={**translation_data, "experience_config_id": resource.id},
+                )
+
+            if config_updated or translation_updated:
+                new_version = translation.version or 0.0
+                PrivacyExperienceConfigHistory.create(
+                    db,
+                    data={
+                        **data,
+                        **translation_data,
+                        "translation_id": translation.id,
+                        "version": new_version + 1.0,
+                    },
+                    check_name=False,
+                )
+
+            translations_to_remove = set(
+                [translation.language for translation in resource.translations]
+            ).difference(
+                set([translation.get("language") for translation in translations])
             )
+
+            db.query(ExperienceTranslation).filter(
+                ExperienceTranslation.language.in_(translations_to_remove),
+                ExperienceTranslation.experience_config_id == resource.id,
+            ).delete()
+
+        upsert_privacy_experiences_after_config_update(db, resource, regions)
+        link_notices_to_experience_config(
+            db, notice_keys=privacy_notices, experience_config=resource
+        )
 
         return resource  # type: ignore[return-value]
 
@@ -248,17 +289,38 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         lazy="dynamic",
     )
 
-    @hybridproperty
-    def experience_config_history_id(self) -> Optional[str]:
-        """Convenience property that returns the experience config id for the current version.
+    @property
+    def version(self) -> Optional[float]:
+        """Convenience property that returns the latest version number of the translation"""
+        return (
+            self.experience_config_history.version
+            if self.experience_config_history
+            else None
+        )
+
+    @property
+    def experience_config_history(self) -> Optional[PrivacyExperienceConfigHistory]:
+        """Convenience property that returns the experience config history for the latest version.
 
         Note that there are possibly many historical records for the given experience config translation, this just returns the current
         corresponding historical record.
         """
-        history: PrivacyExperienceConfigHistory = self.histories.order_by(
-            PrivacyExperienceConfigHistory.version.asc()
+        return self.histories.order_by(
+            PrivacyExperienceConfigHistory.version.desc()
         ).first()
-        return history.id if history else None
+
+    @property
+    def experience_config_history_id(self) -> Optional[str]:
+        """Convenience property that returns the experience config history id for the current version.
+
+        Note that there are possibly many historical records for the given experience config translation, this just returns the current
+        corresponding historical record.
+        """
+        return (
+            self.experience_config_history.id
+            if self.experience_config_history
+            else None
+        )
 
 
 class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
@@ -266,14 +328,15 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
 
     experience_config_id = Column(
         String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
-    )
+    )  # TODO slated for removal after data migration
 
     translation_id = Column(
-        String, ForeignKey(ExperienceTranslation.id_field_path), nullable=False
+        String, ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL")
     )
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
+    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     dismissable = Column(Boolean, nullable=False, default=False)
     version = Column(Float, nullable=False, default=1.0)
     disabled = Column(Boolean, nullable=False, default=False)
@@ -339,10 +402,7 @@ class PrivacyExperience(Base):
     def get_should_show_banner(
         self, db: Session, show_disabled: Optional[bool] = True
     ) -> bool:
-        """Returns True if this Experience should be delivered by a banner
-
-        Relevant privacy notices are queried at runtime.
-        """
+        """Returns True if this Experience should be delivered by a banner"""
         if self.component == ComponentType.tcf_overlay:
             # For now, just returning that the TCF Overlay should always show a banner,
             # but this is subject to change.
@@ -358,19 +418,18 @@ class PrivacyExperience(Base):
             if self.experience_config.banner_enabled == BannerEnabled.always_enabled:
                 return True
 
-        privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, [self.region.value], self.component  # type: ignore[arg-type, attr-defined]
-        )
-        if show_disabled is False:
-            privacy_notice_query = privacy_notice_query.filter(
-                PrivacyNotice.disabled.is_(False)
-            )
+            notices = self.experience_config.privacy_notices
 
-        return bool(
-            privacy_notice_query.filter(
-                PrivacyNotice.consent_mechanism.in_(BANNER_CONSENT_MECHANISMS)
-            ).count()
-        )
+            if show_disabled is False:
+                notices = [notice for notice in notices if notice.disabled.is_(False)]
+
+            for notice in notices:
+                if show_disabled is False and notice.disabled:
+                    continue
+
+                return notice.consent_mechanism in BANNER_CONSENT_MECHANISMS
+
+        return False
 
     @staticmethod
     def create_default_experience_for_region(
@@ -442,26 +501,6 @@ class PrivacyExperience(Base):
             data={"experience_config_id": None, "experience_config_history_id": None},
         )
 
-    def link_default_experience_config(self, db: Session) -> PrivacyExperience:
-        """Replace config from experience with default config
-
-        Replaces the FK only; does not delete Privacy Experiences or Privacy Experience Configs
-        """
-        default_config: Optional[
-            PrivacyExperienceConfig
-        ] = PrivacyExperienceConfig.get_default_config(
-            db, self.component  # type: ignore[arg-type]
-        )
-        return self.update(  # type: ignore[return-value]
-            db,
-            data={
-                "experience_config_id": default_config.id if default_config else None,
-                "experience_config_history_id": default_config.experience_config_history_id
-                if default_config
-                else None,
-            },
-        )
-
 
 def get_privacy_notices_by_region_and_component(
     db: Session, regions: List[str], component: ComponentType
@@ -472,18 +511,15 @@ def get_privacy_notices_by_region_and_component(
     """
     return (
         db.query(PrivacyNotice)
-        .filter(PrivacyNotice.regions.overlap(regions))  # type: ignore[attr-defined]
+        .join(ExperienceNotices, PrivacyNotice.id == ExperienceNotices.notice_id)
+        .join(
+            PrivacyExperience,
+            PrivacyExperience.experience_config_id
+            == ExperienceNotices.experience_config_id,
+        )
         .filter(
-            or_(
-                and_(
-                    component == ComponentType.overlay,
-                    PrivacyNotice.displayed_in_overlay,
-                ),
-                and_(
-                    component == ComponentType.privacy_center,
-                    PrivacyNotice.displayed_in_privacy_center,
-                ),
-            )
+            PrivacyExperience.region.in_(regions),
+            PrivacyExperience.component == component,
         )
     )
 
@@ -561,10 +597,7 @@ def remove_config_from_matched_experiences(
     ).all()
 
     for experience in experiences_to_unlink:
-        if experience_config.is_default:
-            experience.unlink_experience_config(db)
-        else:
-            experience.link_default_experience_config(db)
+        experience.unlink_experience_config(db)
     return [experience.region for experience in experiences_to_unlink]  # type: ignore[misc]
 
 
@@ -652,4 +685,5 @@ def link_notices_to_experience_config(
     for privacy_notice in to_remove:
         experience_config.privacy_notices.remove(privacy_notice)
 
+    experience_config.save(db)
     return experience_config.privacy_notices

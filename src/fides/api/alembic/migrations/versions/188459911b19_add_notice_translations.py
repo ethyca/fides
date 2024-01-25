@@ -1,8 +1,8 @@
-"""notice translations
+"""add notice translations
 
-Revision ID: a1474f466124
+Revision ID: 188459911b19
 Revises: 956d21f13def
-Create Date: 2024-01-23 17:10:46.686716
+Create Date: 2024-01-24 23:00:41.290039
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "a1474f466124"
+revision = "188459911b19"
 down_revision = "956d21f13def"
 branch_labels = None
 depends_on = None
@@ -33,20 +33,22 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("banner_enabled", sa.String(), nullable=False),
         sa.Column("regions", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column("component", sa.String(), nullable=False),
+        sa.Column("privacy_notices", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column(
             "translations",
             postgresql.ARRAY(postgresql.JSONB(astext_type=sa.Text())),
             nullable=True,
         ),
-        sa.Column(
-            "privacy_notices",
-            postgresql.ARRAY(sa.String()),
-            nullable=True,
-        ),
+        sa.Column("banner_enabled", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_experienceconfigtemplate_banner_enabled"),
+        "experienceconfigtemplate",
+        ["banner_enabled"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_experienceconfigtemplate_id"),
@@ -199,7 +201,7 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("translation_id", sa.String(), nullable=False),
+        sa.Column("translation_id", sa.String(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
@@ -207,7 +209,32 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
+        sa.Column("custom_asset_id", sa.String(), nullable=True),
+    )
+    op.add_column(
+        "privacyexperienceconfighistory",
         sa.Column("dismissable", sa.Boolean(), nullable=False),
+    )
+    op.alter_column(
+        "privacyexperienceconfighistory",
+        "experience_config_id",
+        existing_type=sa.VARCHAR(),
+        nullable=True,
+    )
+    op.create_foreign_key(
+        None,
+        "privacyexperienceconfighistory",
+        "experiencetranslation",
+        ["translation_id"],
+        ["id"],
+        ondelete="SET NULL",
+    )
+    op.create_foreign_key(
+        None,
+        "privacyexperienceconfighistory",
+        "plus_custom_asset",
+        ["custom_asset_id"],
+        ["id"],
     )
     op.create_foreign_key(
         None,
@@ -216,27 +243,10 @@ def upgrade():
         ["origin"],
         ["id"],
     )
-    op.create_foreign_key(
-        None,
-        "privacyexperienceconfighistory",
-        "experiencetranslation",
-        ["translation_id"],
-        ["id"],
-    )
     op.alter_column(
         "privacynotice",
         "regions",
         existing_type=postgresql.ARRAY(sa.VARCHAR()),
-        nullable=True,
-    )
-    op.alter_column(
-        "privacynoticehistory",
-        "privacy_notice_id",
-        nullable=True,
-    )
-    op.alter_column(
-        "privacyexperienceconfighistory",
-        "experience_config_id",
         nullable=True,
     )
     op.add_column(
@@ -246,7 +256,7 @@ def upgrade():
         "privacynoticehistory", sa.Column("title", sa.String(), nullable=False)
     )
     op.add_column(
-        "privacynoticehistory", sa.Column("translation_id", sa.String(), nullable=False)
+        "privacynoticehistory", sa.Column("translation_id", sa.String(), nullable=True)
     )
     op.alter_column(
         "privacynoticehistory",
@@ -254,8 +264,19 @@ def upgrade():
         existing_type=postgresql.ARRAY(sa.VARCHAR()),
         nullable=True,
     )
+    op.alter_column(
+        "privacynoticehistory",
+        "privacy_notice_id",
+        existing_type=sa.VARCHAR(),
+        nullable=True,
+    )
     op.create_foreign_key(
-        None, "privacynoticehistory", "noticetranslation", ["translation_id"], ["id"]
+        None,
+        "privacynoticehistory",
+        "noticetranslation",
+        ["translation_id"],
+        ["id"],
+        ondelete="SET NULL",
     )
     op.add_column(
         "privacynoticetemplate",
@@ -286,6 +307,12 @@ def downgrade():
     op.drop_constraint(None, "privacynoticehistory", type_="foreignkey")
     op.alter_column(
         "privacynoticehistory",
+        "privacy_notice_id",
+        existing_type=sa.VARCHAR(),
+        nullable=False,
+    )
+    op.alter_column(
+        "privacynoticehistory",
         "regions",
         existing_type=postgresql.ARRAY(sa.VARCHAR()),
         nullable=False,
@@ -301,7 +328,15 @@ def downgrade():
     )
     op.drop_constraint(None, "privacyexperienceconfighistory", type_="foreignkey")
     op.drop_constraint(None, "privacyexperienceconfighistory", type_="foreignkey")
+    op.drop_constraint(None, "privacyexperienceconfighistory", type_="foreignkey")
+    op.alter_column(
+        "privacyexperienceconfighistory",
+        "experience_config_id",
+        existing_type=sa.VARCHAR(),
+        nullable=False,
+    )
     op.drop_column("privacyexperienceconfighistory", "dismissable")
+    op.drop_column("privacyexperienceconfighistory", "custom_asset_id")
     op.drop_column("privacyexperienceconfighistory", "origin")
     op.drop_column("privacyexperienceconfighistory", "translation_id")
     op.drop_column("privacyexperienceconfighistory", "language")
@@ -328,6 +363,10 @@ def downgrade():
     op.drop_table("experiencenotices")
     op.drop_index(
         op.f("ix_experienceconfigtemplate_id"), table_name="experienceconfigtemplate"
+    )
+    op.drop_index(
+        op.f("ix_experienceconfigtemplate_banner_enabled"),
+        table_name="experienceconfigtemplate",
     )
     op.drop_table("experienceconfigtemplate")
     # ### end Alembic commands ###

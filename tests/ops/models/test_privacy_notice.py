@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import ValidationError
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
+    Language,
+    NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
     PrivacyNoticeHistory,
@@ -22,16 +24,10 @@ class TestPrivacyNoticeModel:
         """
         Ensure our create override works as expected to create a history object
         """
-        # our fixture should have created a privacy notice and therefore a similar history object
+        # our fixture should have created a privacy notice and therefore a similar translation and history object
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
-
-        history_object = PrivacyNoticeHistory.all(db)[0]
-        assert history_object.name == privacy_notice.name
-        assert history_object.data_uses == privacy_notice.data_uses
-        assert history_object.version == privacy_notice.version
-        assert history_object.privacy_notice_id == privacy_notice.id
-        assert history_object.notice_key == privacy_notice.notice_key
 
         # make sure our create method still auto-populates as needed
         assert privacy_notice.created_at is not None
@@ -40,6 +36,16 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
         assert privacy_notice.default_preference == UserConsentPreference.opt_out
         assert privacy_notice.notice_key == "example_privacy_notice"
+
+        assert privacy_notice.translations.count() == 1
+        translation = privacy_notice.translations[0]
+
+        history_object = PrivacyNoticeHistory.all(db)[0]
+        assert history_object.name == privacy_notice.name
+        assert history_object.data_uses == privacy_notice.data_uses
+        assert history_object.version == 1.0
+        assert history_object.translation_id == translation.id
+        assert history_object.notice_key == privacy_notice.notice_key
 
     def test_default_preference_property(self, privacy_notice):
         assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
@@ -58,6 +64,7 @@ class TestPrivacyNoticeModel:
         Ensure updating with no real updates doesn't actually add a history record
         """
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         old_name = privacy_notice.name
@@ -100,13 +107,24 @@ class TestPrivacyNoticeModel:
         Specifically look at the history table and version changes
         """
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
 
         updated_privacy_notice = privacy_notice.update(
-            db, data={"name": "updated name"}
+            db,
+            data={
+                "name": "updated name",
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+            },
         )
         # assert our returned object is updated as we expect
         assert updated_privacy_notice.name == "updated name" != old_name
@@ -114,12 +132,14 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 2
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == "updated name"
         assert privacy_notice.data_uses == old_data_uses
-        assert privacy_notice.version == 2.0
+
+        assert privacy_notice.translations.count() == 1
 
         # make sure our latest entry in history table corresponds to current record
         notice_history = (
@@ -148,6 +168,13 @@ class TestPrivacyNoticeModel:
             data={
                 "name": "updated name again",
                 "data_uses": ["data_use_1", "data_use_2"],
+                "translations": [
+                    {
+                        "language": Language.en_us,
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
             },
         )
 
@@ -157,12 +184,15 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 3
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == "updated name again"
         assert privacy_notice.data_uses == ["data_use_1", "data_use_2"]
-        assert privacy_notice.version == 3.0
+        assert privacy_notice.translations.count() == 1
+        translation = privacy_notice.translations[0]
+        assert translation.privacy_notice_history.version == 3.0
 
         # make sure our latest entry in history table corresponds to current record
         notice_history = (
@@ -184,7 +214,7 @@ class TestPrivacyNoticeModel:
         assert notice_history.data_uses == old_data_uses
         assert notice_history.version == 2.0
 
-    def test_dry_update(self, db: Session, privacy_notice: PrivacyNotice):
+    def test_dry_update(self, privacy_notice: PrivacyNotice):
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
 
@@ -239,6 +269,7 @@ class TestPrivacyNoticeModel:
         """
 
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
         old_name = privacy_notice.name
 
@@ -251,6 +282,8 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         # and ensure it hasn't been impacted by the update
         assert privacy_notice.name == old_name
+
+        assert len(NoticeTranslation.all(db)) == 1
 
         # ensure no PrivacyNoticeHistory entries were created
         assert len(PrivacyNoticeHistory.all(db)) == 1
@@ -271,7 +304,6 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
                 [
@@ -279,7 +311,6 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
             ),
@@ -290,13 +321,11 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     ),
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["essential.service"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     ),
                 ],
                 [
@@ -304,7 +333,6 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
             ),
@@ -315,7 +343,6 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
                 [
@@ -323,18 +350,16 @@ class TestPrivacyNoticeModel:
                         name="pn_2",
                         notice_key="pn_2",
                         data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
             ),
             (
-                False,
+                True,
                 [
                     PrivacyNotice(
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
                 [
@@ -342,7 +367,6 @@ class TestPrivacyNoticeModel:
                         name="pn_1",
                         notice_key="pn_1",
                         data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_va],
                     )
                 ],
             ),

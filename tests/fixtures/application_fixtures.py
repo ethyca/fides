@@ -1470,16 +1470,16 @@ def privacy_notice(db: Session) -> Generator:
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
             "description": "user&#x27;s description &lt;script /&gt;",
-            "regions": [
-                PrivacyNoticeRegion.us_ca,
-                PrivacyNoticeRegion.us_co,
-            ],
+            # "regions": [
+            #     PrivacyNoticeRegion.us_ca,
+            #     PrivacyNoticeRegion.us_co,
+            # ],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_privacy_center": True,
-            "displayed_in_overlay": True,
-            "displayed_in_api": False,
+            # "displayed_in_privacy_center": True,
+            # "displayed_in_overlay": True,
+            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en_us",
@@ -2416,8 +2416,11 @@ def experience_config_overlay(db: Session) -> Generator:
     )
 
     yield config
-    for history in config.histories:
-        history.delete(db)
+    for translation in config.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
     config.delete(db)
 
 
@@ -2426,26 +2429,33 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
     config = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "accept_button_label": "Accept all",
-            "acknowledge_button_label": "Confirm",
-            "banner_description": "You can accept, reject, or manage your preferences in detail.",
-            "banner_enabled": "enabled_where_required",
-            "banner_title": "Manage Your Consent",
             "component": "tcf_overlay",
-            "description": "On this page you can opt in and out of these data uses cases",
-            "disabled": False,
-            "privacy_preferences_link_label": "Manage preferences",
-            "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "https://example.com/privacy",
-            "reject_button_label": "Reject all",
-            "save_button_label": "Save",
-            "title": "Manage your consent",
+            "banner_enabled": "enabled_where_required",
+            "translations": [
+                {
+                    "language": "en_us",
+                    "privacy_preferences_link_label": "Manage preferences",
+                    "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                    "privacy_policy_url": "https://example.com/privacy",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Manage your consent",
+                    "description": "On this page you can opt in and out of these data uses cases",
+                    "accept_button_label": "Accept all",
+                    "acknowledge_button_label": "Confirm",
+                    "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                    "banner_title": "Manage Your Consent",
+                }
+            ],
         },
     )
 
     yield config
-    for history in config.histories:
-        history.delete(db)
+    for translation in config.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
     config.delete(db)
 
 

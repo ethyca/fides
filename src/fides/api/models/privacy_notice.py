@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import re
-from collections import defaultdict
 from enum import Enum
-from html import unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
@@ -270,7 +268,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     origin = Column(
         String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
     )  # pointer back to the PrivacyNoticeTemplate
-    version = Column(Float, nullable=False, default=1.0)
+    version = Column(
+        Float, nullable=False, default=1.0
+    )  # TODO Pending Removal.  This is now only on PrivacyNoticeHistory.
 
     translations = relationship(
         "NoticeTranslation", backref="privacy_notice", lazy="dynamic"
@@ -360,12 +360,49 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyNotice record and also create a new PrivacyNoticeHistory entry
         """
-        resource, updated = update_if_modified(self, db=db, data=data)
+        translations = data.pop("translations", [])
 
-        if updated:
-            history_data = create_historical_data_from_record(resource)
-            history_data["privacy_notice_id"] = resource.id
-            PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
+        resource, config_updated = update_if_modified(self, db=db, data=data)
+
+        for translation_data in translations:
+            existing_translation = resource.translations.filter(
+                NoticeTranslation.language == translation_data.get("language")
+            ).first()
+            if existing_translation:
+                translation, translation_updated = update_if_modified(
+                    existing_translation,
+                    db=db,
+                    data={**translation_data, "privacy_notice_id": resource.id},
+                )
+            else:
+                translation_updated = True
+                translation = NoticeTranslation.create(
+                    db,
+                    data={**translation_data, "privacy_notice_id": resource.id},
+                )
+
+            if config_updated or translation_updated:
+                new_version = translation.version or 0.0
+                history_data = create_historical_data_from_record(resource, db)
+                PrivacyNoticeHistory.create(
+                    db,
+                    data={
+                        **history_data,
+                        **translation_data,
+                        "translation_id": translation.id,
+                        "version": new_version + 1.0,
+                    },
+                    check_name=False,
+                )
+
+        translations_to_remove = set(
+            [translation.language for translation in resource.translations]
+        ).difference(set([translation.get("language") for translation in translations]))
+
+        db.query(NoticeTranslation).filter(
+            NoticeTranslation.language.in_(translations_to_remove),
+            NoticeTranslation.privacy_notice_id == resource.id,
+        ).delete()
 
         return resource  # type: ignore[return-value]
 
@@ -410,17 +447,30 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         UniqueConstraint("language", "privacy_notice_id", name="notice_translation"),
     )
 
-    @hybridproperty
-    def privacy_notice_history_id(self) -> Optional[str]:
-        """Convenience property that returns the historical privacy notice history id for the current version.
+    @property
+    def version(self) -> Optional[float]:
+        """Convenience property that returns the latest version number of the translation"""
+        return (
+            self.privacy_notice_history.version if self.privacy_notice_history else None
+        )
 
-        Note that there are possibly many historical records for the given notice, this just returns the current
+    @property
+    def privacy_notice_history(self) -> Optional[PrivacyNoticeHistory]:
+        """Convenience property that returns the privacy notice history for the latest version.
+
+        Note that there are possibly many historical records for the given experience config translation, this just returns the current
         corresponding historical record.
         """
-        history: PrivacyNoticeHistory = self.histories.order_by(
-            PrivacyNoticeHistory.version.asc()
-        ).first()
-        return history.id if history else None
+        return self.histories.order_by(PrivacyNoticeHistory.version.desc()).first()
+
+    @property
+    def privacy_notice_history_id(self) -> Optional[str]:
+        """Convenience property that returns the privacy notice history id for the current version.
+
+        Note that there are possibly many historical records for the given experience config translation, this just returns the current
+        corresponding historical record.
+        """
+        return self.privacy_notice_history.id if self.privacy_notice_history else None
 
 
 PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
@@ -475,7 +525,7 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     version = Column(Float, nullable=False, default=1.0)
 
     translation_id = Column(
-        String, ForeignKey(NoticeTranslation.id_field_path), nullable=False
+        String, ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL")
     )  # pointer back to the NoticeTranslation
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=True
@@ -485,32 +535,27 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
 def update_if_modified(
     resource: Base, db: Session, *, data: dict[str, Any]
 ) -> Tuple[Base, bool]:
-    """Update the resource and increment its version if applicable.
-
-    Return the updated resource and whether it was modified (which determines if we should create
+    """Return the updated resource and whether it was modified (which determines if we should create
     a corresponding historical record).
-
-    Currently used for PrivacyNotice, PrivacyExperience, and PrivacyExperienceConfig models.
     """
     # run through potential updates now
     for key, value in data.items():
         setattr(resource, key, value)
 
     if db.is_modified(resource):
-        # on any update to a privacy experience record, its version must be incremented
-        # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
-        resource.version = float(resource.version) + 1.0  # type: ignore
         resource.save(db)
         return resource, True
 
     return resource, False
 
 
-def create_historical_data_from_record(resource: Base) -> Dict:
+def create_historical_data_from_record(resource: Base, db: Session) -> Dict:
     """Prep data to be saved in a historical table for record keeping"""
+    # Making sure all the attributes from resource are loaded instead of being lazy loaded
+    resource.id
     history_data = resource.__dict__.copy()
-    history_data.pop("_sa_instance_state")
-    history_data.pop("id")
-    history_data.pop("created_at")
-    history_data.pop("updated_at")
+    history_data.pop("_sa_instance_state", None)
+    history_data.pop("id", None)
+    history_data.pop("created_at", None)
+    history_data.pop("updated_at", None)
     return history_data
