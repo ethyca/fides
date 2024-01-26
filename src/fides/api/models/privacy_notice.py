@@ -23,7 +23,11 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
 
 
 class Language(Enum):
-    """Using BCP 47 Language Tags"""
+    """Using BCP 47 Language Tags
+
+    TODO propose adding this list:
+    https://www.techonthenet.com/js/language_tags.php
+    """
 
     en_us = "en_us"  # US English
     en_gb = "en_gb"  # British English
@@ -241,7 +245,7 @@ class PrivacyNoticeBase:
 
 class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
     """
-    This table contains the out-of-the-box Privacy Notices that are shipped with Fides
+    This table contains the out-of-the-box Privacy Notice Templates that are shipped with Fides
     """
 
     translations = Column(ARRAY(JSONB))
@@ -347,8 +351,12 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyNotice:
-        """Creates a Privacy Notice, relevant Notice Translations, and a PrivacyNoticeHistory record, versioning
-        the combined contents of the PrivacyNotice and the Translation"""
+        """
+        Creates a Privacy Notice and then a NoticeTranslation record for each supplied Translation.
+
+        For each Translation a historical record is created which combines details from the Notice and
+        the Translation for auditing purposes.  Privacy preferences are saved against the PrivacyNoticeHistory
+        record which contains the full details."""
         translations = data.pop("translations", []) or []
         created = super().create(db=db, data=data, check_name=check_name)
 
@@ -369,9 +377,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyNotice:
         """
-        Updates the Privacy Notice and relevant Notice Translations, creating Historical records
-        for each Translation if there were updates to the Notice and/or the Translation.  Any translations
-        not in the data are removed.
+        Updates the Privacy Notice
+        - Upserts or deletes supplied translations to match translations in the request
+        - For each remaining translation, create a historical record if the base notice or translation changed.
         """
         translations = data.pop("translations", [])
 
@@ -396,7 +404,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
             if config_updated or translation_updated:
                 new_version = translation.version or 0.0
-                history_data = create_historical_data_from_record(resource, db)
+                history_data = create_historical_data_from_record(resource)
                 PrivacyNoticeHistory.create(
                     db,
                     data={
@@ -532,8 +540,8 @@ def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) ->
 
 class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     """
-    An "audit table" tracking outdated versions of `PrivacyNotice` + `NoticeTranslations`.
-    Privacy preferences are saved against the notice hoistory.
+    An "audit table" stores outdated versions of `PrivacyNotice` + `NoticeTranslations`.
+    Privacy preferences are saved against this notice history.
     """
 
     origin = Column(
@@ -568,10 +576,10 @@ def update_if_modified(
     return resource, False
 
 
-def create_historical_data_from_record(resource: Base, db: Session) -> Dict:
+def create_historical_data_from_record(resource: Base) -> Dict:
     """Prep data to be saved in a historical table for record keeping"""
-    # Making sure all the attributes from resource are loaded instead of being lazy loaded
-    resource.id
+
+    resource.id  # TODO Revisit why resource attributes were lazy loaded and therefore missing from the created dict
     history_data = resource.__dict__.copy()
     history_data.pop("_sa_instance_state", None)
     history_data.pop("id", None)

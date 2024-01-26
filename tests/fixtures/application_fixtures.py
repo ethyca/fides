@@ -1522,13 +1522,13 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
             "notice_key": "example_privacy_notice_us_ca_provide",
             # no description or origin on this privacy notice to help
             # cover edge cases due to column nullability
-            "regions": [PrivacyNoticeRegion.us_ca],
+            # "regions": [PrivacyNoticeRegion.us_ca],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_overlay": True,
-            "displayed_in_privacy_center": False,
-            "displayed_in_api": False,
+            # "displayed_in_overlay": True,
+            # "displayed_in_privacy_center": False,
+            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en_us",
@@ -1582,13 +1582,20 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
             "name": "example privacy notice us_co third_party_sharing",
             "notice_key": "example_privacy_notice_us_co_third_party_sharing",
             "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.us_co],
+            # "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_overlay": True,
-            "displayed_in_privacy_center": True,
-            "displayed_in_api": False,
+            # "displayed_in_overlay": True,
+            # "displayed_in_privacy_center": True,
+            # "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "example privacy notice us_co third_party_sharing",
+                    "description": "a sample privacy notice configuration",
+                }
+            ],
         },
     )
 
@@ -1602,13 +1609,13 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            "regions": [PrivacyNoticeRegion.us_co],
+            # "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service.operations"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_privacy_center": False,
-            "displayed_in_overlay": True,
-            "displayed_in_api": False,
+            # "displayed_in_privacy_center": False,
+            # "displayed_in_overlay": True,
+            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en_us",
@@ -1664,13 +1671,13 @@ def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            "regions": [PrivacyNoticeRegion.fr],
+            # "regions": [PrivacyNoticeRegion.fr],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
-            "displayed_in_overlay": True,
-            "displayed_in_privacy_center": False,
-            "displayed_in_api": False,
+            # "displayed_in_overlay": True,
+            # "displayed_in_privacy_center": False,
+            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en_us",
@@ -1691,14 +1698,20 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
         data={
             "name": "example privacy notice eu_cy provide.service.operations",
             "notice_key": "example_privacy_notice_eu_cy_provide.service.operations",
-            "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.cy],
+            # "regions": [PrivacyNoticeRegion.cy],
             "consent_mechanism": ConsentMechanism.opt_out,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
-            "displayed_in_overlay": False,
-            "displayed_in_privacy_center": True,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "example privacy notice eu_cy provide.service.operations",
+                    "description": "a sample privacy notice configuration",
+                }
+            ]
+            # "displayed_in_overlay": False,
+            # "displayed_in_privacy_center": True,
+            # "displayed_in_api": False,
         },
     )
 
@@ -2498,16 +2511,22 @@ def privacy_notice_france(db: Session) -> Generator:
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            "description": "user description",
-            "regions": [
-                PrivacyNoticeRegion.fr,
-            ],
+            # "regions": [
+            #     PrivacyNoticeRegion.fr,
+            # ],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_privacy_center": True,
-            "displayed_in_overlay": False,
-            "displayed_in_api": False,
+            # "displayed_in_privacy_center": True,
+            # "displayed_in_overlay": False,
+            # "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "example privacy notice",
+                    "description": "user description",
+                }
+            ],
         },
     )
 

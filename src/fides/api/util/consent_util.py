@@ -533,12 +533,12 @@ def upsert_privacy_notice_templates_util(
     return upserted_templates  # type: ignore[return-value]
 
 
-def upsert_privacy_experience_templates_util(
+def upsert_privacy_experience_config_templates_util(
     db: Session,
     template_schemas: List[ExperienceConfigCreateWithId],
 ) -> List[ExperienceConfigTemplate]:
     """
-    Create or update *Privacy Experience Templates*. These are the resources that
+    Create or update *Privacy Experience Config Templates*. These are the resources that
     Fides ships with out of the box.
     """
     ensure_unique_ids(template_schemas)
@@ -576,8 +576,10 @@ def load_default_notices_on_startup(
     On startup, loads any new PrivacyNoticeTemplates into the database, and updates
     existing templates where applicable.
 
-    Creates Privacy Notices from these templates, if no notices are linked to the given template
-    already.  Otherwise, we skip making updates to the Notices themselves automatically.
+    Creates Privacy Notices / Translations / Historical records from these templates, if no notices
+    are linked to the given template already.
+
+    Otherwise, we skip making updates to the Notices themselves automatically.
     """
     logger.info(
         "Loading default privacy notice templates from {}", notice_yaml_file_path
@@ -624,9 +626,10 @@ def load_default_experience_configs_on_startup(
     db: Session, notice_yaml_file_path: str
 ) -> Tuple[List[ExperienceConfigTemplate], List[PrivacyExperienceConfig]]:
     """
-    On startup, loads default ExperienceConfigs into the database. Creates the defaults
-    if they don't exist, otherwise, updates them with any new values from the default
-    yaml file if applicable.
+    On startup, loads default ExperienceConfig Templates into the database.
+
+    Creates ExperienceConfigs/Translations/Historical records, as well as linking regions (via
+    Privacy Experience) and Notices as long as this ExperienceConfig is new.
     """
     logger.info(
         "Loading default privacy experience configs from {}", notice_yaml_file_path
@@ -640,8 +643,8 @@ def load_default_experience_configs_on_startup(
                 ExperienceConfigCreateWithId(**experience_config_data)
             )
 
-        privacy_experience_config_templates = upsert_privacy_experience_templates_util(
-            db, template_schemas
+        privacy_experience_config_templates = (
+            upsert_privacy_experience_config_templates_util(db, template_schemas)
         )
 
         # Determine which templates don't have corresponding records in Privacy Experience Config

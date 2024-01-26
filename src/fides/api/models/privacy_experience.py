@@ -144,10 +144,10 @@ class ExperienceConfigBase:
 
 
 class PrivacyExperienceConfig(ExperienceConfigBase, Base):
-    """Stores common copy to be shared across multiple regions, e.g.
-    banner titles, descriptions, button labels, etc.
+    """Experience Config are details shared among multiple Privacy Experiences.
 
-    Can be linked to multiple PrivacyExperiences.
+    An Experience Config can have multiple translations, multiple notices, and multiple
+    regions (Privacy Experiences) linked to it.
     """
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
@@ -188,8 +188,16 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyExperienceConfig:
-        """Create experience config and its translation(s) and then for each translation, store a combination of the
-        config and translation for record-keeping"""
+        """
+        Creates an Experience Config which is a large exercise!
+
+        - Creates the ExperienceConfig
+        - For each Translation supplied, creates an ExperienceTranslation and a historical
+        record combining details from the translation and the Experience Config
+        - Links regions to the ExperienceConfig (by creating/updating associated PrivacyExperiences
+        and adding a FK back to the config)
+        - Adds/removes Notices to the Experience Config
+        """
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
         privacy_notices = data.pop("privacy_notices", [])
@@ -224,8 +232,15 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
         """
-        Overrides the base update method to automatically bump the version of the
-        PrivacyExperienceConfig record and also create a new PrivacyExperienceConfigHistory entry
+        Updates a PrivacyExperienceConfig which is a large exercise!
+
+        - Updates the PrivacyExperienceConfig details
+        - For each supplied translation, add, update, or delete translations so they match
+        the translations in the update request
+        - For each remaining translation, if the translation or the config has changed,
+        create a historical record for auditing purposes
+        - Link or unlink regions (via Privacy Experiences)
+        - Link or unlink Privacy Notices
         """
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
@@ -252,7 +267,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
             if config_updated or translation_updated:
                 new_version = translation.version or 0.0
-                history_data = create_historical_data_from_record(resource, db)
+                history_data = create_historical_data_from_record(resource)
                 history_data.pop("privacy_notices", None)
                 PrivacyExperienceConfigHistory.create(
                     db,
@@ -342,15 +357,15 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
     def experience_config_history(self) -> Optional[PrivacyExperienceConfigHistory]:
         """Convenience property that returns the experience config history for the latest version.
 
-        Note that there are possibly many historical records for the given experience config translation, this just returns the current
-        corresponding historical record.
+        Note that there are possibly many historical records for the given experience config translation,
+        this just returns the current corresponding historical record.
         """
         # Histories are sorted at the relationship level
         return self.histories[-1] if self.histories.count() else None
 
     @property
     def experience_config_history_id(self) -> Optional[str]:
-        """Convenience property that returns the experience config history id for the current version.
+        """Convenience property that returns the experience config history id for the latest version.
 
         Note that there are possibly many historical records for the given experience config translation, this just returns the current
         corresponding historical record.
@@ -363,7 +378,9 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
 
 
 class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
-    """Experience Config History - stores the history of how the config has changed over time"""
+    """Experience Config History - stores the history of how the config has changed over time
+    Both an ExperienceTranslation and its ExperienceConfig are versioned here together.
+    """
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
     dismissable = Column(Boolean, nullable=False, default=False)
@@ -388,10 +405,13 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
 
 
 class PrivacyExperience(Base):
-    """Stores Privacy Experiences for a given just a single region.  The Experience describes how to surface
-    multiple Privacy Notices or TCF content to the end user in a given region.
+    """Stores Privacy Experiences for just a single region.
+    The Experience describes how to surface multiple Privacy Notices or TCF content to the
+    end user in a given region.
 
-    There can only be one component per region.
+    There can only be one component per region.  Most of the details for a given Experience
+    are on the ExperienceConfig (which allows multiple Experiences to share the same
+    configuration options).
     """
 
     component = Column(EnumColumn(ComponentType), nullable=False)
@@ -443,7 +463,9 @@ class PrivacyExperience(Base):
     def get_should_show_banner(
         self, db: Session, show_disabled: Optional[bool] = True
     ) -> bool:
-        """Returns True if this Experience should be delivered by a banner"""
+        """Returns True if this Experience should be delivered by a banner
+        # TODO revisit this logic with likely new component types.
+        """
         if self.component == ComponentType.tcf_overlay:
             # For now, just returning that the TCF Overlay should always show a banner,
             # but this is subject to change.
@@ -477,7 +499,9 @@ class PrivacyExperience(Base):
         db: Session, region: PrivacyNoticeRegion, component: ComponentType
     ) -> PrivacyExperience:
         """Creates an Experience for a given Component Type and Region and links
-        to default copy (ExperienceConfig)"""
+        to default copy (ExperienceConfig)
+        # TODO revisit this method because we won't have "default" Privacy Experience Config
+        """
         experience_data: Dict = {
             "region": region,
             "component": component,
@@ -516,6 +540,8 @@ class PrivacyExperience(Base):
 
         TCF overlays are not returned here.  This method is used in building experiences when Notices
         are created, which is not applicable for TCF.
+
+        # TODO method can likely be removed
         """
         overlay_experience: Optional[
             PrivacyExperience
@@ -536,6 +562,7 @@ class PrivacyExperience(Base):
 
         Note that neither the Experience Config or Experience are deleted; we're only removing
         a FK if it exists.
+        # TODO revisit this method
         """
         return self.update(  # type: ignore[return-value]
             db,
