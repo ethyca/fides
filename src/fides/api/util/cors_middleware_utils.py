@@ -9,11 +9,9 @@ def update_cors_middleware(
     app: FastAPI,
     allow_origins: Iterable[str],
     allow_origin_regex: Optional[Pattern[Any]],
-) -> Optional[Middleware]:
+) -> None:
     """
-    Update the CORSMiddleware of the running app with the provided origin parameters.
-
-    Returns the _old_ middleware instance that is no longer being used.
+    Update the CORSMiddleware of the provided app with the provided origin parameters.
     """
     existing_middleware = find_cors_middleware(app)
     if existing_middleware:
@@ -26,7 +24,6 @@ def update_cors_middleware(
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    return existing_middleware
 
 
 def find_cors_middleware(app: FastAPI) -> Optional[Middleware]:

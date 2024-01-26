@@ -355,7 +355,7 @@ class TestPatchApplicationConfig:
         response = api_client.options(url, headers=headers)
         assert response.status_code == 200
 
-    def test_patch_application_config_updates_cors_domains_rejects_non_url(
+    def test_patch_application_config_updates_cors_domains_rejects_invalid_urls(
         self,
         api_client: TestClient,
         generate_auth_header,
@@ -363,11 +363,43 @@ class TestPatchApplicationConfig:
         db: Session,
     ):
         """
-        Ensure non-URL values for cors domains -- specifically `*` --
-        are rejected by API
+        Ensure invalid URL values for cors origin domains are rejected by API.
         """
+
         payload = {"security": {"cors_origins": ["*"]}}
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["test.com"]}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["test"]}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["http://test.com/"]}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["http://test.com/123/456"]}}
         response = api_client.patch(
             url,
             headers=auth_header,
