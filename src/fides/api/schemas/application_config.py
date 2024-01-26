@@ -3,8 +3,9 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import AnyUrl, Extra, Field, root_validator, validator
+from pydantic import Extra, Field, root_validator, validator
 
+from fides.api.custom_types import URLOrigin
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 
@@ -80,7 +81,7 @@ class SecurityApplicationConfig(FidesSchema):
     # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
     # `cors_origin_regex` property should be used.
     # this is explicitly _not_ accessible via API - it must be used with care.
-    cors_origins: Optional[List[AnyUrl]] = Field(
+    cors_origins: Optional[List[URLOrigin]] = Field(
         default=None,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
