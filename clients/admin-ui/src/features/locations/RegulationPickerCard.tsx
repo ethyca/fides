@@ -36,6 +36,9 @@ const RegulationPickerCard = ({
         onClose={disclosure.onClose}
         selected={selected}
         onChange={onChange}
+        // Rerender if a selection changes in this component so that the checkboxes
+        // in the modal stay up to date
+        key={`regulation-modal-selected-${selected.length}`}
       />
     </>
   );
