@@ -495,5 +495,15 @@ describe("Locations and regulations", () => {
         cy.getByTestId("view-more-btn").click();
       });
     });
+
+    it("unsaved changes in cards propagate to modal", () => {
+      cy.getByTestId("picker-card-North America").within(() => {
+        cy.getByTestId("Law 25 (Quebec)-checkbox").click();
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("regulation-modal").within(() => {
+        assertIsChecked("Law 25 (Quebec)-checkbox", "checked");
+      });
+    });
   });
 });
