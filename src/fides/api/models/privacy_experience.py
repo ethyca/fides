@@ -154,6 +154,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
     dismissable = Column(Boolean, nullable=False, default=False)
     allow_language_selection = Column(Boolean, nullable=False, default=False)
     custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
+    is_default = Column(Boolean, nullable=False, default=False)  # TODO will be removed
 
     experiences = relationship(
         "PrivacyExperience",
