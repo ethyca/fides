@@ -31,14 +31,14 @@ class ExperienceNotices(Base):
 
     notice_id = Column(
         String,
-        ForeignKey("privacynotice.id"),
+        ForeignKey("privacynotice.id", ondelete="CASCADE"),
         index=True,
         nullable=False,
         primary_key=True,
     )
     experience_config_id = Column(
         String,
-        ForeignKey("privacyexperienceconfig.id"),
+        ForeignKey("privacyexperienceconfig.id", ondelete="CASCADE"),
         index=True,
         nullable=False,
         primary_key=True,
