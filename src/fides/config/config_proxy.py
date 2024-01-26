@@ -5,10 +5,11 @@ from typing import Any, List, Optional
 from fastapi.applications import FastAPI
 from pydantic import AnyUrl
 from sqlalchemy.orm import Session
-from starlette.middleware.cors import CORSMiddleware
 
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
+from fides.api.util.cors_middleware_utils import update_cors_middleware
+from fides.config import CONFIG
 
 
 class ConfigProxyBase:
@@ -131,14 +132,12 @@ class ConfigProxy:
         Util function that loads the current CORS domains from
         `ConfigProxy` into the  `CORSMiddleware` at runtime.
         """
-        for mw in app.user_middleware:
-            if mw.cls is CORSMiddleware:
-                current_config_proxy_domains = (
-                    self.security.cors_origins
-                    if self.security.cors_origins is not None
-                    else []
-                )
 
-                mw.options["allow_origins"] = [
-                    str(domain) for domain in current_config_proxy_domains
-                ]
+        current_config_proxy_domains = (
+            self.security.cors_origins if self.security.cors_origins is not None else []
+        )
+        update_cors_middleware(
+            app,
+            current_config_proxy_domains,
+            CONFIG.security.cors_origin_regex,
+        )

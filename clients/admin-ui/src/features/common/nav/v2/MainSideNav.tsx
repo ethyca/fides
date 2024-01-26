@@ -27,6 +27,7 @@ import logoImage from "~/../public/logo-white.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import { useNav } from "./hooks";
 import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
@@ -35,6 +36,8 @@ import { INDEX_ROUTE } from "./routes";
 const LINK_HOVER_BACKGROUND_COLOR = "#28303F";
 const LINK_ACTIVE_BACKGROUND_COLOR = "#7745F0";
 const LINK_COLOR = "#CBD5E0";
+const NAV_BACKGROUND_COLOR = "#191D27";
+const NAV_WIDTH = "200px";
 
 const FidesLogoHomeLink = () => (
   <Box px={2}>
@@ -142,9 +145,9 @@ export const UnconnectedMainSideNav = ({
   <Box
     p={4}
     pb={0}
-    minWidth="200px"
-    maxWidth="200px"
-    backgroundColor="#191D27"
+    minWidth={NAV_WIDTH}
+    maxWidth={NAV_WIDTH}
+    backgroundColor={NAV_BACKGROUND_COLOR}
     height="100%"
     overflow="scroll"
   >
@@ -221,12 +224,28 @@ const MainSideNav = () => {
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const plusQuery = useGetHealthQuery();
   const username = user ? user.username : "";
 
   const handleLogout = async () => {
     await logoutMutation({});
     dispatch(logout());
   };
+
+  // While we are loading if we have plus, the nav isn't ready to display yet
+  // since otherwise new items can suddenly pop in. So instead, we render an empty
+  // version of the nav during load, so that when the nav does load, it is fully featured.
+  if (plusQuery.isLoading) {
+    return (
+      <Box
+        minWidth={NAV_WIDTH}
+        maxWidth={NAV_WIDTH}
+        backgroundColor={NAV_BACKGROUND_COLOR}
+        height="100%"
+      />
+    );
+  }
+
   return (
     <UnconnectedMainSideNav
       {...nav}
