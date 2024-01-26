@@ -4,16 +4,14 @@ Contains utility functions that set up the application webserver.
 # pylint: disable=too-many-branches
 from logging import DEBUG
 from os.path import dirname, join
-from typing import List, Optional, Pattern
+from typing import List
 
 from fastapi import APIRouter, FastAPI
 from loguru import logger
-from pydantic import AnyUrl
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
-from starlette.middleware.cors import CORSMiddleware
 
 import fides
 from fides.api.api.deps import get_api_session
@@ -77,8 +75,6 @@ PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
 
 
 def create_fides_app(
-    cors_origins: List[AnyUrl] = CONFIG.security.cors_origins,
-    cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
     security_env: str = CONFIG.security.env,
@@ -95,16 +91,6 @@ def create_fides_app(
     for handler in ExceptionHandlers.get_handlers():
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
     fastapi_app.add_middleware(SlowAPIMiddleware)
-
-    if cors_origins or cors_origin_regex:
-        fastapi_app.add_middleware(
-            CORSMiddleware,
-            allow_origins=[str(origin) for origin in cors_origins],
-            allow_origin_regex=cors_origin_regex,
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
 
     for router in routers:
         fastapi_app.include_router(router)
