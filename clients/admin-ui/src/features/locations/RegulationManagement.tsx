@@ -74,7 +74,7 @@ const RegulationManagement = ({
     } else {
       toast(
         successToastParams(
-          <Text>
+          <Text display="inline">
             Fides has automatically associated the relevant locations with your
             regulation choices.
             <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
