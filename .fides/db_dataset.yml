@@ -1205,6 +1205,10 @@ dataset:
       data_categories: [system.operations]
     - name: displayed_in_api
       data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: framework
+      data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
     - name: created_at
@@ -1244,6 +1248,10 @@ dataset:
       data_categories: [system.operations]
     - name: displayed_in_api
       data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: framework
+      data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
     - name: created_at
@@ -1282,6 +1290,10 @@ dataset:
     - name: displayed_in_overlay
       data_categories: [system.operations]
     - name: displayed_in_api
+      data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: framework
       data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]

@@ -4,6 +4,7 @@
 
 import {
   Box,
+  Checkbox,
   EyeIcon,
   Flex,
   FormControl,
@@ -168,6 +169,7 @@ export interface Option {
   value: string;
   label: string;
   description?: string;
+  tooltip?: string;
 }
 
 const CustomOption: React.FC<
@@ -883,22 +885,72 @@ export const CustomTextArea = ({
 };
 
 interface CustomRadioGroupProps {
-  label: string;
+  label?: string;
   options: Option[];
+  variant?: "inline" | "stacked";
+  defaultFirstSelected?: boolean;
 }
 export const CustomRadioGroup = ({
   label,
   options,
+  variant,
+  defaultFirstSelected = true,
   ...props
 }: CustomRadioGroupProps & StringField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
-  const selected = options.find((o) => o.value === field.value) ?? options[0];
+  const defaultSelected = defaultFirstSelected ? options[0] : undefined;
+  const selected =
+    options.find((o) => o.value === field.value) ?? defaultSelected;
 
   const handleChange = (o: string) => {
     field.onChange(props.name)(o);
   };
+
+  if (variant === "stacked") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Stack width="fit-content">
+          {label ? (
+            <Label htmlFor={props.id || props.name}>{label}</Label>
+          ) : null}
+          <RadioGroup
+            onChange={handleChange}
+            value={selected?.value}
+            data-testid={`input-${field.name}`}
+            colorScheme="complimentary"
+          >
+            <Stack direction="column" spacing={3}>
+              {options.map(
+                ({ value, label: optionLabel, tooltip: optionTooltip }) => (
+                  <Radio
+                    key={value}
+                    value={value}
+                    data-testid={`option-${value}`}
+                  >
+                    <HStack alignItems="center" spacing={2}>
+                      <Text fontSize="sm" fontWeight="medium">
+                        {optionLabel}
+                      </Text>
+                      {optionTooltip ? (
+                        <QuestionTooltip label={optionTooltip} />
+                      ) : null}
+                    </HStack>
+                  </Radio>
+                )
+              )}
+            </Stack>
+          </RadioGroup>
+        </Stack>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -906,7 +958,7 @@ export const CustomRadioGroup = ({
         <Label htmlFor={props.id || props.name}>{label}</Label>
         <RadioGroup
           onChange={handleChange}
-          value={selected.value}
+          value={selected?.value}
           data-testid={`input-${field.name}`}
           colorScheme="secondary"
         >
@@ -1014,7 +1066,7 @@ export const CustomNumberInput = ({
 interface CustomSwitchProps {
   label?: string;
   tooltip?: string;
-  variant?: "inline" | "condensed" | "stacked";
+  variant?: "inline" | "condensed" | "stacked" | "switchFirst";
   isDisabled?: boolean;
 }
 export const CustomSwitch = ({
@@ -1045,6 +1097,7 @@ export const CustomSwitch = ({
       data-testid={`input-${field.name}`}
       disabled={isDisabled}
       size="sm"
+      id={field.name}
     />
   );
 
@@ -1060,6 +1113,20 @@ export const CustomSwitch = ({
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
         </Grid>
+      </FormControl>
+    );
+  }
+
+  if (variant === "switchFirst") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Flex alignItems="center">
+          {innerSwitch}
+          <Label htmlFor={props.id || props.name} my={0} fontSize="sm" mr={2}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
       </FormControl>
     );
   }
@@ -1095,6 +1162,40 @@ export const CustomSwitch = ({
         {innerSwitch}
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Box>
+    </FormControl>
+  );
+};
+
+export const CustomCheckbox = ({
+  label,
+  tooltip,
+  onChange,
+  isDisabled,
+  ...props
+}: Omit<CustomSwitchProps, "variant"> & FieldHookConfig<boolean>) => {
+  const [field, meta] = useField({ ...props, type: "checkbox" });
+  const isInvalid = !!(meta.touched && meta.error);
+
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Flex alignItems="center">
+        <Checkbox
+          name={field.name}
+          isChecked={field.checked}
+          onChange={field.onChange}
+          onBlur={field.onBlur}
+          data-testid={`input-${field.name}`}
+          disabled={isDisabled}
+          colorScheme="complimentary"
+          mr="2"
+        >
+          <Text fontSize="sm" fontWeight="medium">
+            {label}
+          </Text>
+        </Checkbox>
+
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      </Flex>
     </FormControl>
   );
 };
