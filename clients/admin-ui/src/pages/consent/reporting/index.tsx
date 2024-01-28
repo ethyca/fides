@@ -5,10 +5,10 @@ import Layout from "~/features/common/Layout";
 import ConsentReporting from "~/features/consent-reporting/ConsentReporting";
 
 const ConsentReportingPage = () => (
-  <Layout title="Configure consent">
+  <Layout title="Consent reporting">
     <Box mb={4}>
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
-        Configure consent
+        Consent reporting
       </Heading>
     </Box>
     <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
