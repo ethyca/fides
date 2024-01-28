@@ -1,5 +1,5 @@
 from html import escape, unescape
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -16,6 +16,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -32,6 +33,7 @@ from fides.api.schemas.privacy_experience import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
+    CONFIG_TRANSLATION_ESCAPE_FIELDS,
     PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     UNESCAPE_SAFESTR_HEADER,
 )
@@ -42,6 +44,10 @@ from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience Config"], prefix=urls.V1_URL_PREFIX)
+
+
+def get_configured_locations(db: Session = Depends(deps.get_db)) -> Set:
+    return LocationRegulationSelections.get_selected_locations(db)
 
 
 def get_experience_config_or_error(
@@ -211,13 +217,15 @@ def experience_config_create(
     ],
 )
 def experience_config_detail(
-    *, db: Session = Depends(deps.get_db), experience_config_id: str, request: Request
+    *, db: Session = Depends(deps.get_db), experience_config_id: str, request: Request, configured_locations: Set = Depends(get_configured_locations)
 ) -> PrivacyExperienceConfig:
     """
-    Returns a PrivacyExperienceConfig.
+    Returns a PrivacyExperienceConfig with embedded translations as well as its notices with config translations
     """
     logger.info("Retrieving experience config with id '{}'.", experience_config_id)
     should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
+
+    # TODO further restrict regions on locations if applicable
 
     experience_config = get_experience_config_or_error(db, experience_config_id)
     if should_unescape:
@@ -226,6 +234,13 @@ def experience_config_detail(
             model=experience_config,
             fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
         )
+        for translation in experience_config.translations:
+            transform_fields(
+                transformation=escape,
+                model=translation,
+                fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
+            )
+
     return experience_config
 
 

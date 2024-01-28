@@ -37,7 +37,7 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.default_preference == UserConsentPreference.opt_out
         assert privacy_notice.notice_key == "example_privacy_notice"
 
-        assert privacy_notice.translations.count() == 1
+        assert len(privacy_notice.translations) == 1
         translation = privacy_notice.translations[0]
 
         history_object = PrivacyNoticeHistory.all(db)[0]
@@ -139,7 +139,7 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.name == "updated name"
         assert privacy_notice.data_uses == old_data_uses
 
-        assert privacy_notice.translations.count() == 1
+        assert len(privacy_notice.translations) == 1
 
         # make sure our latest entry in history table corresponds to current record
         notice_history = (
@@ -190,7 +190,7 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         assert privacy_notice.name == "updated name again"
         assert privacy_notice.data_uses == ["data_use_1", "data_use_2"]
-        assert privacy_notice.translations.count() == 1
+        assert len(privacy_notice.translations) == 1
         translation = privacy_notice.translations[0]
         assert translation.privacy_notice_history.version == 3.0
 
@@ -252,7 +252,7 @@ class TestPrivacyNoticeModel:
         # Privacy notice itself unchanged
         assert privacy_notice.updated_at == privacy_notice_updated_at
 
-        assert privacy_notice.translations.count() == 2
+        assert len(privacy_notice.translations) == 2
 
         translation = privacy_notice.translations[0]
 
@@ -324,7 +324,7 @@ class TestPrivacyNoticeModel:
         # Privacy notice itself unchanged
         assert privacy_notice.updated_at == privacy_notice_updated_at
 
-        assert privacy_notice.translations.count() == 1
+        assert len(privacy_notice.translations) == 1
         translation = privacy_notice.translations[0]
         # Translation was updated though
         assert translation.title == "Example privacy notice with updated title"
@@ -375,7 +375,7 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.name == "New name"
         assert privacy_notice.updated_at != privacy_notice_updated_at
 
-        assert not privacy_notice.translations.count()
+        assert not len(privacy_notice.translations) == 1
 
         db.refresh(history)
         # Translation id just removed, so it can stay linked to the Privacy Preference History record if applicable

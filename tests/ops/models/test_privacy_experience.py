@@ -221,7 +221,7 @@ class TestExperienceConfig:
         db.refresh(experience_config_overlay)
         assert experience_config_overlay.updated_at == updated_at
 
-        assert experience_config_overlay.translations.count() == 2
+        assert len(experience_config_overlay.translations) == 2
         translation = experience_config_overlay.translations[0]
         assert translation.language == Language.en_us
         assert translation.histories.count() == 1
@@ -259,7 +259,7 @@ class TestExperienceConfig:
         db.refresh(experience_config_overlay)
         assert experience_config_overlay.updated_at == updated_at
 
-        assert experience_config_overlay.translations.count() == 1
+        assert len(experience_config_overlay.translations) == 1
         translation = experience_config_overlay.translations[0]
         assert translation.language == Language.en_us
         assert translation.histories.count() == 2
@@ -291,7 +291,7 @@ class TestExperienceConfig:
         assert experience_config_overlay.updated_at != updated_at
         assert experience_config_overlay.component == ComponentType.privacy_center
 
-        assert experience_config_overlay.translations.count() == 0
+        assert len(experience_config_overlay.translations) == 0
 
         db.refresh(history)
         assert history.version == 1.0
@@ -329,7 +329,7 @@ class TestExperienceConfig:
         assert experience_config_overlay.privacy_notices == [privacy_notice]
 
         db.refresh(experience_config_overlay)
-        assert experience_config_overlay.translations.count() == 1
+        assert len(experience_config_overlay.translations) == 1
         translation = experience_config_overlay.translations[0]
         assert translation.histories.count() == 1
 

@@ -286,7 +286,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     translations = relationship(
         "NoticeTranslation",
         backref="privacy_notice",
-        lazy="dynamic",
+        lazy="selectin",
         order_by="NoticeTranslation.created_at",
     )
 
@@ -386,9 +386,14 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         resource, config_updated = update_if_modified(self, db=db, data=data)
 
         for translation_data in translations:
-            existing_translation = resource.translations.filter(
-                NoticeTranslation.language == translation_data.get("language")
-            ).first()
+            existing_translation = (
+                db.query(NoticeTranslation)
+                .filter(
+                    NoticeTranslation.language == translation_data.get("language"),
+                    NoticeTranslation.privacy_notice_id == resource.id,
+                )
+                .first()
+            )
             if existing_translation:
                 translation, translation_updated = update_if_modified(
                     existing_translation,
@@ -405,6 +410,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             if config_updated or translation_updated:
                 new_version = translation.version or 0.0
                 history_data = create_historical_data_from_record(resource)
+                history_data.pop("translations", None)
                 PrivacyNoticeHistory.create(
                     db,
                     data={
@@ -417,8 +423,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 )
 
         translations_to_remove = set(
-            [translation.language for translation in resource.translations]
-        ).difference(set([translation.get("language") for translation in translations]))
+            translation.language for translation in resource.translations
+        ).difference(set(translation.get("language") for translation in translations))
 
         db.query(NoticeTranslation).filter(
             NoticeTranslation.language.in_(translations_to_remove),
@@ -515,7 +521,7 @@ def check_conflicting_notice_keys(
         if not (notice.disabled and ignore_disabled)
     ]
     if len(new_notice_keys) > len(set(new_notice_keys)):
-        raise ValidationError(message=f"Privacy Notice Keys must be unique")
+        raise ValidationError(message="Privacy Notice Keys must be unique")
 
     existing_notice_keys = [
         notice.notice_key

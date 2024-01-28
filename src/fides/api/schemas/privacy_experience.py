@@ -9,11 +9,12 @@ from fides.api.custom_types import HtmlStr
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import Language, PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
 from fides.api.util.endpoint_utils import human_friendly_list
 
 
 class ExperienceTranslation(FidesSchema):
-    language: Optional[Language] = None
+    language: Language
 
     accept_button_label: Optional[str] = Field(
         description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
@@ -30,7 +31,7 @@ class ExperienceTranslation(FidesSchema):
     )
     is_default: Optional[bool] = Field(
         default=False,
-        description="Whether the given ExperienceConfig is a global default",
+        description="Whether the given translation is the default",
     )
     privacy_policy_link_label: Optional[str] = Field(
         description="Overlay and Privacy Center 'Privacy policy link label'"
@@ -40,9 +41,6 @@ class ExperienceTranslation(FidesSchema):
     )
     privacy_preferences_link_label: Optional[str] = Field(
         description="Overlay 'Privacy preferences link label'"
-    )
-    regions: Optional[List[PrivacyNoticeRegion]] = Field(
-        description="Regions using this ExperienceConfig"
     )
     reject_button_label: Optional[str] = Field(
         description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
@@ -56,6 +54,10 @@ class ExperienceTranslation(FidesSchema):
 
     class Config:
         use_enum_values = True
+
+
+class ExperienceTranslationResponse(ExperienceTranslation):
+    experience_config_history_id: str
 
 
 class ExperienceConfigSchema(FidesSchema):
@@ -74,7 +76,7 @@ class ExperienceConfigSchema(FidesSchema):
     allow_language_selection: Optional[bool]
     translations: List[ExperienceTranslation] = []
 
-    @root_validator(pre=True)
+    @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Ensure no two translations with the same language are supplied
@@ -83,9 +85,9 @@ class ExperienceConfigSchema(FidesSchema):
         if not translations:
             return values
 
-        languages = [translation.get("language") for translation in translations]
+        languages = [translation.language for translation in translations]
         if len(languages) != len(set(languages)):
-            raise ValueError(f"Multiple translations supplied for the same language")
+            raise ValueError("Multiple translations supplied for the same language")
 
         return values
 
@@ -164,7 +166,6 @@ class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
 
     id: str
     component: ComponentType
-    experience_config_history_id: str
     version: float
 
 
@@ -176,6 +177,8 @@ class ExperienceConfigResponse(ExperienceConfigSchemaWithId):
     created_at: datetime
     updated_at: datetime
     regions: List[PrivacyNoticeRegion]  # Property
+    privacy_notices: List[PrivacyNoticeResponse] = []
+    translations: List[ExperienceTranslationResponse]
 
 
 class ExperienceConfigCreateOrUpdateResponse(FidesSchema):

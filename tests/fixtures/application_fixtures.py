@@ -1491,6 +1491,11 @@ def privacy_notice(db: Session) -> Generator:
     )
 
     yield privacy_notice
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            db.delete(history)
+        db.delete(translation)
+    db.delete(privacy_notice)
 
 
 @pytest.fixture(scope="function")

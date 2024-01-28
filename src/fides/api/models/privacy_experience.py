@@ -172,7 +172,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
     translations = relationship(
         "ExperienceTranslation",
         backref="privacy_experience_config",
-        lazy="dynamic",
+        lazy="selectin",
         order_by="ExperienceTranslation.created_at",
     )
 
@@ -250,9 +250,14 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         resource, config_updated = update_if_modified(self, db=db, data=data)
 
         for translation_data in translations:
-            existing_translation = resource.translations.filter(
-                ExperienceTranslation.language == translation_data.get("language")
-            ).first()
+            existing_translation = (
+                db.query(ExperienceTranslation)
+                .filter(
+                    ExperienceTranslation.language == translation_data.get("language"),
+                    ExperienceTranslation.experience_config_id == resource.id,
+                )
+                .first()
+            )
             if existing_translation:
                 translation, translation_updated = update_if_modified(
                     existing_translation,
@@ -270,6 +275,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                 new_version = translation.version or 0.0
                 history_data = create_historical_data_from_record(resource)
                 history_data.pop("privacy_notices", None)
+                history_data.pop("translations", None)
                 PrivacyExperienceConfigHistory.create(
                     db,
                     data={
@@ -282,13 +288,14 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                 )
 
         translations_to_remove = set(
-            [translation.language for translation in resource.translations]
-        ).difference(set([translation.get("language") for translation in translations]))
+            translation.language for translation in resource.translations
+        ).difference(set(translation.get("language") for translation in translations))
 
         db.query(ExperienceTranslation).filter(
             ExperienceTranslation.language.in_(translations_to_remove),
             ExperienceTranslation.experience_config_id == resource.id,
         ).delete()
+        db.commit()
 
         upsert_privacy_experiences_after_config_update(db, resource, regions)
         link_notices_to_experience_config(
@@ -678,7 +685,7 @@ def link_notices_to_experience_config(
     db: Session,
     notice_keys: List[str],
     experience_config: PrivacyExperienceConfig,
-) -> Tuple[List[PrivacyNoticeRegion], List[PrivacyNoticeRegion]]:
+) -> List[PrivacyNotice]:
     """
     Link Notices to ExperienceConfig
     """

@@ -13,6 +13,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
+    link_notices_to_experience_config,
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.common.api import scope_registry as scopes
@@ -973,7 +974,13 @@ class TestGetExperienceConfigDetail:
         url,
         generate_auth_header,
         experience_config_overlay,
+        privacy_notice,
+        db,
     ) -> None:
+        link_notices_to_experience_config(
+            db, [privacy_notice.notice_key], experience_config_overlay
+        )
+
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
         response = api_client.get(
             url,
@@ -985,20 +992,57 @@ class TestGetExperienceConfigDetail:
         assert resp["id"] == experience_config_overlay.id
         assert resp["component"] == "overlay"
         assert resp["banner_enabled"] == "enabled_where_required"
-        assert resp["disabled"] is False
+        assert resp["allow_language_selection"] is False
+        assert not resp["dismissable"]
+
         assert resp["regions"] == ["us_ca"]
         assert resp["version"] == 1.0
         assert resp["created_at"] is not None
         assert resp["updated_at"] is not None
+        translations = resp["translations"]
+        assert len(translations) == 1
+        translation = translations[0]
+
+        assert translation["language"] == "en_us"
+        assert translation["title"] == "Manage your consent"
+        assert translation["acknowledge_button_label"] == "Confirm"
         assert (
-            resp["experience_config_history_id"]
-            == experience_config_overlay.experience_config_history_id
+            translation["banner_description"]
+            == "You can accept, reject, or manage your preferences in detail."
         )
-        assert resp["title"] == "Manage your consent"
+        assert translation["banner_title"] == "Manage Your Consent"
+        assert translation["is_default"] is False
+        assert translation["privacy_preferences_link_label"] == "Manage preferences"
+        assert translation["accept_button_label"] == "Accept all"
+        assert translation["reject_button_label"] == "Reject all"
+        assert translation["save_button_label"] == "Save"
         assert (
-            resp["privacy_policy_link_label"]
+            translation["description"]
+            == "On this page you can opt in and out of these data uses cases"
+        )
+        assert translation["experience_config_history_id"] is not None
+        assert (
+            translation["experience_config_history_id"]
+            == experience_config_overlay.translations[0].experience_config_history.id
+        )
+        assert (
+            translation["privacy_policy_link_label"]
             == "View our company&#x27;s privacy policy"
         )  # Escaped without request header
+
+        assert len(resp["privacy_notices"]) == 1
+        privacy_notice_response = resp["privacy_notices"][0]
+        assert privacy_notice_response["name"] == privacy_notice.name
+        assert privacy_notice_response["notice_key"] == privacy_notice.notice_key
+        assert privacy_notice_response["consent_mechanism"] == "opt_in"
+        translations = privacy_notice_response["translations"]
+        assert len(translations) == 1
+        assert translations[0]["language"] == "en_us"
+        assert translations[0]["privacy_notice_history_id"] is not None
+        assert (
+            translations[0]["privacy_notice_history_id"]
+            == privacy_notice.translations[0].privacy_notice_history.id
+        )
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",

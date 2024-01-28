@@ -29,6 +29,18 @@ class NoticeTranslation(FidesSchema):
         use_enum_values = True
 
 
+class NoticeTranslationResponse(FidesSchema):
+    """Notice Translation Response Schema"""
+
+    language: Language
+    title: str
+    description: Optional[str] = None
+    privacy_notice_history_id: str  # Preferences should be saved against the privacy notice history id
+
+    class Config:
+        use_enum_values = True
+
+
 class GPPMechanismMapping(FidesSchema):
     field: str
     not_available: GPPMechanismConsentValue
@@ -91,7 +103,7 @@ class PrivacyNotice(FidesSchema):
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
 
-    @root_validator(pre=True)
+    @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Ensure no two translations with the same language are supplied
@@ -100,9 +112,9 @@ class PrivacyNotice(FidesSchema):
         if not translations:
             return values
 
-        languages = [translation.get("language") for translation in translations]
+        languages = [translation.language for translation in translations]
         if len(languages) != len(set(languages)):
-            raise ValueError(f"Multiple translations supplied for the same language")
+            raise ValueError("Multiple translations supplied for the same language")
 
         return values
 
@@ -156,9 +168,9 @@ class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNoticeWithId):
     created_at: datetime
     updated_at: datetime
     version: float
-    privacy_notice_history_id: str
     cookies: List[CookieSchema]
     systems_applicable: bool = False
+    translations: List[NoticeTranslationResponse] = []
 
 
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):

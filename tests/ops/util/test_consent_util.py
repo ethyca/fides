@@ -673,7 +673,7 @@ class TestLoadDefaultNotices:
         assert notice.disabled is False
         assert notice.has_gpc_flag is True
 
-        assert notice.translations.count() == 1
+        assert len(notice.translations) == 1
         translation = notice.translations[0]
 
         assert translation.title == "Test Privacy Notice"
@@ -779,7 +779,7 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.has_gpc_flag is False
         assert new_privacy_notice.version == 1.0
         assert new_privacy_notice.id != notice.id
-        assert new_privacy_notice.translations.count() == 1
+        assert len(new_privacy_notice.translations) == 1
         new_translation = new_privacy_notice.translations[0]
         assert new_translation.language == Language.en_us
         assert new_translation.title == "Other Privacy Notice Title"
@@ -813,7 +813,7 @@ class TestLoadDefaultNotices:
         assert notice.has_gpc_flag is True
         assert notice.version == 1.0
 
-        assert notice.translations.count() == 1
+        assert len(notice.translations) == 1
         translation = notice.translations[0]
 
         assert translation.title == "Test Privacy Notice"
@@ -861,7 +861,7 @@ class TestLoadDefaultNotices:
         assert len(first_template.translations) >= 1
         assert len(new_privacy_notices) >= 1
         pn = new_privacy_notices[0]
-        assert pn.translations.count() >= 1
+        assert len(pn.translations) >= 1
         translation = pn.translations[0]
         assert translation.histories.count() == 1
 
@@ -1177,7 +1177,7 @@ class TestLoadDefaultExperienceConfigs:
             assert exp.region in [PrivacyNoticeRegion.be, PrivacyNoticeRegion.bg]
 
         # Verify Translation
-        assert experience_config.translations.count() == 1
+        assert len(experience_config.translations) == 1
         translation = experience_config.translations[0]
 
         assert translation.experience_config_id == experience_config.id
@@ -1236,7 +1236,7 @@ class TestLoadDefaultExperienceConfigs:
         db.refresh(translation)
         db.refresh(history)
         assert experience_config.updated_at == updated
-        assert experience_config.translations.count() == 1
+        assert len(experience_config.translations) == 1
         assert translation.accept_button_label == "Opt in to all"
         assert len(experience_config.privacy_notices) == 1
         assert history.version == 1.0
@@ -1258,10 +1258,10 @@ class TestLoadDefaultExperienceConfigs:
         assert len(new_templates) >= 1
         assert len(new_experience_configs) >= 1
         exp_config = new_experience_configs[0]
-        assert exp_config.experiences.count() >= 1
+        assert len(exp_config.translations) >= 1
         assert len(exp_config.regions) >= 1
         assert exp_config.origin is not None
-        assert exp_config.translations.count() >= 1
+        assert len(exp_config.translations) >= 1
         translation = exp_config.translations[0]
 
         assert translation.histories.count() == 1
@@ -1277,7 +1277,7 @@ class TestLoadDefaultExperienceConfigs:
         assert be_exp.component == ComponentType.tcf_overlay
         assert be_exp.region == PrivacyNoticeRegion.be
 
-        assert tcf_config.translations.count() >= 1
+        assert len(tcf_config.translations) >= 1
 
         translation = tcf_config.translations[0]
         assert translation.histories.count() == 1

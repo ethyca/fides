@@ -1,5 +1,5 @@
 from html import escape
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 import yaml
 from fastapi import HTTPException
