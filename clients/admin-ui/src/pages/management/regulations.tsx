@@ -19,7 +19,7 @@ const RegulationsPage: NextPage = () => {
 
   return (
     <Layout title="Regulations">
-      <Box data-testid="location-management">
+      <Box data-testid="regulation-management">
         <Heading marginBottom={2} fontSize="2xl">
           Regulations
         </Heading>
