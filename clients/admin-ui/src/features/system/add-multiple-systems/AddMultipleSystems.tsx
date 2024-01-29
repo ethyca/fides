@@ -174,9 +174,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             onChange={row.getToggleSelectedHandler()}
           />
         ),
-        meta: {
-          width: "55px",
-        },
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -189,9 +186,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
         enableColumnFilter: isTcfEnabled,
         filterFn: "arrIncludesSome",
-        meta: {
-          width: "80px",
-        },
       }),
     ],
     [allRowsLinkedToSystem, systemText, isTcfEnabled]
@@ -218,7 +212,13 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       pagination: {
         pageSize: PAGE_SIZES[0],
       },
+      columnSizing: {
+        select: 0,
+        vendor_id: 0,
+      },
     },
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
   });
 
   useEffect(() => {

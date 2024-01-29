@@ -273,8 +273,6 @@ export const DatamapReportTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const cellWidth = "270px";
-
   const tcfColumns = useMemo(
     () => [
       columnHelper.accessor((row) => row.system_name, {
@@ -283,8 +281,6 @@ export const DatamapReportTable = () => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="System" {...props} />,
         meta: {
-          width: cellWidth,
-          minWidth: cellWidth,
           displayText: "System",
         },
       }),
@@ -293,14 +289,12 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data uses"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
-          width: cellWidth,
-          minWidth: cellWidth,
           displayText: "Data use",
         },
       }),
@@ -309,16 +303,16 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data categories"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Data categories",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.data_subjects, {
@@ -326,16 +320,16 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data subjects"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Data subject" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Data subject",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.legal_name, {
@@ -343,7 +337,6 @@ export const DatamapReportTable = () => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Legal name" {...props} />,
         meta: {
-          width: cellWidth,
           displayText: "Legal name",
         },
       }),
@@ -354,7 +347,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Data privacy officer" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Data privacy officer",
         },
       }),
@@ -365,7 +357,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Legal basis for processing" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Legal basis for processing",
         },
       }),
@@ -376,7 +367,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Administrating department" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Administrating department",
         },
       }),
@@ -387,7 +377,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Cookie max age seconds" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Cookie max age seconds",
         },
       }),
@@ -398,7 +387,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Privacy policy" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Privacy policy",
         },
       }),
@@ -409,7 +397,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Legal address" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Legal address",
         },
       }),
@@ -425,7 +412,6 @@ export const DatamapReportTable = () => {
           />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Cookie refresh",
         },
       }),
@@ -436,7 +422,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Data security practices" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Data security practices",
         },
       }),
@@ -450,7 +435,6 @@ export const DatamapReportTable = () => {
           />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Data shared with third parties",
         },
       }),
@@ -458,17 +442,17 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.DATA_STEWARDS,
         cell: (props) => (
           <GroupCountBadgeCell
-            expand={false}
             suffix="data stewards"
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Data stewards" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Data stewards",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.declaration_name, {
@@ -478,7 +462,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Declaration name" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Declaration name",
         },
       }),
@@ -489,7 +472,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Does internation transfers" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Does internation transfers",
         },
       }),
@@ -500,7 +482,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="DPA Location" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "DPA Location",
         },
       }),
@@ -509,14 +490,14 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="egress"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Egress" {...props} />,
         meta: {
-          width: cellWidth,
           displayText: "Egress",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.exempt_from_privacy_regulations, {
@@ -529,7 +510,6 @@ export const DatamapReportTable = () => {
           />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Exempt from privacy regulations",
         },
       }),
@@ -538,14 +518,14 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="features"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Features" {...props} />,
         meta: {
-          width: cellWidth,
           displayText: "Features",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.fides_key, {
@@ -553,7 +533,6 @@ export const DatamapReportTable = () => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Fides key" {...props} />,
         meta: {
-          width: cellWidth,
           displayText: "Fides key",
         },
       }),
@@ -567,7 +546,6 @@ export const DatamapReportTable = () => {
           />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Flexible legal basis for processing",
         },
       }),
@@ -578,7 +556,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Impact assessment location" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Impact assessment location",
         },
       }),
@@ -587,14 +564,14 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="ingress"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Ingress" {...props} />,
         meta: {
-          width: cellWidth,
           displayText: "Ingress",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.joint_controller_info, {
@@ -604,7 +581,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Joint controller info" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Joint controller info",
         },
       }),
@@ -613,16 +589,16 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="profiles"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Legal basis for profiling" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Legal basis for profiling",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.legal_basis_for_transfers, {
@@ -630,16 +606,16 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="transfers"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Legal basis for transfers" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Legal basis for transfers",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
@@ -652,7 +628,6 @@ export const DatamapReportTable = () => {
           />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Legitimate interest disclosure url",
         },
       }),
@@ -663,7 +638,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Link to processor contract" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Link to processor contract",
         },
       }),
@@ -674,7 +648,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Processes personal data" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Processes personal data",
         },
       }),
@@ -685,7 +658,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Reason for excemption" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Reason for excemption",
         },
       }),
@@ -699,7 +671,6 @@ export const DatamapReportTable = () => {
           />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Requires data protection assessments",
         },
       }),
@@ -708,16 +679,16 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="responsibilitlies"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Responsibility" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Responsibility",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.retention_period, {
@@ -727,7 +698,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Retention period" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Retention period",
         },
       }),
@@ -736,16 +706,16 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="shared categories"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Shared categories" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Shared categories",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.special_category_legal_basis, {
@@ -755,7 +725,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Special category legal basis" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Special category legal basis",
         },
       }),
@@ -764,16 +733,16 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="dependencies"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
           <DefaultHeaderCell value="System dependencies" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "System dependencies",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.third_country_safeguards, {
@@ -783,7 +752,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Third country safeguards" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Third country safeguards",
         },
       }),
@@ -794,7 +762,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Third parties" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Third parties",
         },
       }),
@@ -805,7 +772,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Uses cookies" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Uses cookies",
         },
       }),
@@ -816,7 +782,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Uses non cookie access" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Uses non cookie access",
         },
       }),
@@ -827,7 +792,6 @@ export const DatamapReportTable = () => {
           <DefaultHeaderCell value="Uses profiling" {...props} />
         ),
         meta: {
-          width: cellWidth,
           displayText: "Uses profiling",
         },
       }),
@@ -855,6 +819,9 @@ export const DatamapReportTable = () => {
       expanded: true,
       grouping,
     },
+    // column resizing
+    columnResizeMode: "onChange",
+    enableColumnResizing: true,
   });
 
   const getMenuDisplayValue = () => {
