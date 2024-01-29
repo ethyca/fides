@@ -1,4 +1,4 @@
-from html import escape
+from html import escape, unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 import yaml
@@ -345,17 +345,7 @@ def create_privacy_notices_util(
             # should_escape flag is for when we're creating a notice
             # from a template. The content was already escaped in the
             # template - we don't want to escape twice.
-            privacy_notice = transform_fields(
-                transformation=escape,
-                model=privacy_notice,
-                fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
-            )
-            for translation in privacy_notice.translations:
-                transform_fields(
-                    transformation=escape,
-                    model=translation,
-                    fields=NOTICE_TRANSLATION_ESCAPE_FIELDS,
-                )
+            escape_notice_fields_for_storage(privacy_notice)
 
         privacy_notice = transform_fields(
             transformation=jsonable_encoder,
@@ -428,17 +418,7 @@ def prepare_privacy_notice_patches(
         Tuple[PrivacyNoticeWithId, Optional[PRIVACY_NOTICE_TYPE]]
     ] = []
     for update_data in privacy_notice_updates:
-        update_data = transform_fields(
-            transformation=escape,
-            model=update_data,
-            fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
-        )
-        for translation in update_data.translations:
-            transform_fields(
-                transformation=escape,
-                model=translation,
-                fields=NOTICE_TRANSLATION_ESCAPE_FIELDS,
-            )
+        escape_notice_fields_for_storage(update_data)
 
         update_data = transform_fields(
             transformation=jsonable_encoder,
@@ -680,12 +660,7 @@ def create_default_experience_config(
     #     experience_config_data.copy()
     # )  # Avoids unexpected behavior on update in testing
 
-    for translation in experience_config_data.translations:
-        transform_fields(
-            transformation=escape,
-            model=translation,
-            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
-        )
+    escape_experience_fields_for_storage(experience_config_data)
 
     logger.info("Creating default experience config {}", experience_config_data.id)
     return PrivacyExperienceConfig.create(
@@ -758,3 +733,63 @@ def create_default_tcf_purpose_overrides_on_startup(
             )
 
     return purpose_override_resources_created
+
+
+def escape_experience_fields_for_storage(experience_config_data):
+    """Escapes experience config fields in-place for storage"""
+    transform_fields(
+        transformation=escape,
+        model=experience_config_data,
+        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+    )
+    for translation in experience_config_data.translations:
+        transform_fields(
+            transformation=escape,
+            model=translation,
+            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
+        )
+
+
+def unescape_experience_fields_for_display(experience_config: PrivacyExperienceConfig):
+    """Unescapes experience config fields in-place for display"""
+    experience_config = transform_fields(
+        transformation=unescape,
+        model=experience_config,
+        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
+    )
+    for translation in experience_config.translations:
+        transform_fields(
+            transformation=unescape,
+            model=translation,
+            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
+        )
+
+
+def escape_notice_fields_for_storage(privacy_notice_data):
+    """Escapes Notice Fields for Storage in place"""
+    transform_fields(
+        transformation=escape,
+        model=privacy_notice_data,
+        fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+    )
+    for translation in privacy_notice_data.translations:
+        transform_fields(
+            transformation=escape,
+            model=translation,
+            fields=NOTICE_TRANSLATION_ESCAPE_FIELDS,
+        )
+
+
+def unescape_notice_fields_for_display(privacy_notice: PrivacyNotice):
+    """Unescapes privacy notice fields in-place for display"""
+    transform_fields(
+        transformation=unescape,
+        model=privacy_notice,
+        fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
+    )
+    for translation in privacy_notice.translations:
+        transform_fields(
+            transformation=unescape,
+            model=translation,
+            fields=NOTICE_TRANSLATION_ESCAPE_FIELDS,
+        )

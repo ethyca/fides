@@ -52,7 +52,19 @@ class ExperienceTranslation(FidesSchema):
         description="Overlay 'title' or Privacy Center 'title'"
     )
 
+
+class ExperienceTranslationCreate(ExperienceTranslation):
+    """Overrides ExperienceTranslation field to make some fields required on create"""
+
+    accept_button_label: str
+    description: HtmlStr
+    reject_button_label: str
+    save_button_label: str
+    title: str
+
     class Config:
+        """For when we're creating templates - so the Experience Translation Language can be serialized into JSON"""
+
         use_enum_values = True
 
 
@@ -69,12 +81,23 @@ class ExperienceConfigSchema(FidesSchema):
     but cannot be updated later.
     """
 
-    component: ComponentType
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
     origin: Optional[str]
     dismissable: Optional[bool]
     allow_language_selection: Optional[bool]
     translations: List[ExperienceTranslation] = []
+    regions: List[PrivacyNoticeRegion] = []
+    privacy_notices: List[str] = []
+
+    @validator("regions")
+    @classmethod
+    def validate_regions(
+        cls, regions: List[PrivacyNoticeRegion]
+    ) -> List[PrivacyNoticeRegion]:
+        """Assert regions aren't duplicated."""
+        if regions and len(regions) != len(set(regions)):
+            raise ValueError("Duplicate regions found.")
+        return regions
 
     @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -90,28 +113,6 @@ class ExperienceConfigSchema(FidesSchema):
             raise ValueError("Multiple translations supplied for the same language")
 
         return values
-
-
-class ExperienceConfigCreate(ExperienceConfigSchema):
-    """
-    An API representation to create ExperienceConfig.
-    This model doesn't include an `id` so that it can be used for creation.
-    It also establishes some fields _required_ for creation
-    """
-
-    regions: List[PrivacyNoticeRegion] = []
-    component: ComponentType
-    privacy_notices: List[str] = []
-
-    @validator("regions")
-    @classmethod
-    def validate_regions(
-        cls, regions: List[PrivacyNoticeRegion]
-    ) -> List[PrivacyNoticeRegion]:
-        """Assert regions aren't duplicated."""
-        if regions and len(regions) != len(set(regions)):
-            raise ValueError("Duplicate regions found.")
-        return regions
 
     @root_validator
     def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -140,10 +141,25 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
         return values
 
 
+class ExperienceConfigCreate(ExperienceConfigSchema):
+    """
+    An API representation to create ExperienceConfig.
+    This model doesn't include an `id` so that it can be used for creation.
+    It also establishes some fields _required_ for creation
+    """
+
+    translations: List[ExperienceTranslationCreate] = []
+    component: ComponentType
+
+
 class ExperienceConfigUpdate(ExperienceConfigSchema):
     """
     Updating ExperienceConfig. Note that component cannot be updated once its created
     """
+
+    translations: List[ExperienceTranslation]
+    regions: List[PrivacyNoticeRegion]
+    privacy_notices: List[str]
 
     class Config:
         """Forbid extra values - specifically we don't want component to be updated here."""
@@ -172,6 +188,7 @@ class ExperienceConfigResponse(ExperienceConfigSchemaWithId):
 
     created_at: datetime
     updated_at: datetime
+    component: ComponentType
     regions: List[PrivacyNoticeRegion]  # Property
     privacy_notices: List[PrivacyNoticeResponse] = []
     translations: List[ExperienceTranslationResponse]

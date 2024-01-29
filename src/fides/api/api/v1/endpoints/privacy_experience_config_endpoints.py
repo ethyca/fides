@@ -1,4 +1,3 @@
-from html import escape, unescape
 from typing import Dict, List, Optional, Set
 
 from fastapi import Depends, HTTPException, Security
@@ -6,6 +5,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy.orm import Query, Session
 from starlette.requests import Request
 from starlette.status import (
@@ -19,25 +19,27 @@ from fides.api.api import deps
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.privacy_experience import (
     ComponentType,
+    ExperienceTranslation,
     PrivacyExperience,
     PrivacyExperienceConfig,
-    upsert_privacy_experiences_after_config_update,
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
-    ExperienceConfigCreateOrUpdateResponse,
     ExperienceConfigResponse,
     ExperienceConfigUpdate,
+    ExperienceTranslationCreate,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     CONFIG_TRANSLATION_ESCAPE_FIELDS,
     PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     UNESCAPE_SAFESTR_HEADER,
+    escape_experience_fields_for_storage,
+    unescape_experience_fields_for_display,
 )
-from fides.api.util.endpoint_utils import human_friendly_list, transform_fields
+from fides.api.util.endpoint_utils import transform_fields
 from fides.common.api import scope_registry
 from fides.common.api.scope_registry import PRIVACY_EXPERIENCE_UPDATE
 from fides.common.api.v1 import urn_registry as urls
@@ -122,18 +124,8 @@ def experience_config_list(
     experience_configs = privacy_experience_config_query.all()
     if should_unescape:
         for experience_config in experience_configs:
-            transform_fields(
-                transformation=unescape,
-                model=experience_config,
-                fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-            )
+            unescape_experience_fields_for_display(experience_config)
 
-            for translation in experience_config.translations:
-                transform_fields(
-                    transformation=unescape,
-                    model=translation,
-                    fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
-                )
     return fastapi_paginate(experience_configs, params=params)
 
 
@@ -159,18 +151,9 @@ def experience_config_create(
     """
     Create Experience Config and then attempt to upsert Experiences and link to ExperienceConfig
     """
-    privacy_experience_data = transform_fields(
-        transformation=escape,
-        model=experience_config_data,
-        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-    )
-    for translation in experience_config_data.translations:
-        transform_fields(
-            transformation=escape,
-            model=translation,
-            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
-        )
-    experience_config_dict: Dict = privacy_experience_data.dict(exclude_unset=True)
+    escape_experience_fields_for_storage(experience_config_data)
+
+    experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
 
     logger.info(
         "Creating experience config of component '{}'.",
@@ -181,17 +164,8 @@ def experience_config_create(
         db, data=experience_config_dict, check_name=False
     )
 
-    experience_config = transform_fields(
-        transformation=unescape,
-        model=experience_config,
-        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-    )
-    for translation in experience_config.translations:
-        transform_fields(
-            transformation=unescape,
-            model=translation,
-            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
-        )
+    unescape_experience_fields_for_display(experience_config)
+
     return experience_config
 
 
@@ -220,17 +194,7 @@ def experience_config_detail(
 
     experience_config = get_experience_config_or_error(db, experience_config_id)
     if should_unescape:
-        experience_config = transform_fields(
-            transformation=unescape,
-            model=experience_config,
-            fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-        )
-        for translation in experience_config.translations:
-            transform_fields(
-                transformation=unescape,
-                model=translation,
-                fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
-            )
+        unescape_experience_fields_for_display(experience_config)
 
     return experience_config
 
@@ -238,7 +202,7 @@ def experience_config_detail(
 @router.patch(
     urls.EXPERIENCE_CONFIG_DETAIL,
     status_code=HTTP_200_OK,
-    response_model=ExperienceConfigCreateOrUpdateResponse,
+    response_model=ExperienceConfigResponse,
     dependencies=[
         Security(
             verify_oauth_client,
@@ -253,51 +217,36 @@ def experience_config_update(
     db: Session = Depends(deps.get_db),
     experience_config_id: str,
     experience_config_data: ExperienceConfigUpdate,
-) -> ExperienceConfigCreateOrUpdateResponse:
+) -> ExperienceConfigResponse:
     """
-    Update Experience Config and then attempt to upsert Experiences and link back to ExperienceConfig.
+    Update Experience Config and link associated resources.
 
-    All regions that should be linked to this ExperienceConfig (or remain linked) need to be
-    included in this request.  Don't pass in a regions key if you want to leave regions untouched.
-    Passing in an empty list will remove all regions.
+    All regions, translations, and privacy notices that you want linked to the Experience Config need
+    to be passed in through the request, regardless of whether you're editing or they will be unlinked.
     """
     experience_config: PrivacyExperienceConfig = get_experience_config_or_error(
         db, experience_config_id
     )
 
-    default_config: Optional[
-        PrivacyExperienceConfig
-    ] = PrivacyExperienceConfig.get_default_config(
-        db, experience_config.component  # type: ignore[arg-type]
-    )
-    if (
-        default_config
-        and default_config.id != experience_config_id
-        and experience_config_data.is_default
-    ):
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Cannot set as the default. Only one default {experience_config.component.value} config can be in the system.",  # type: ignore[attr-defined]
-        )
+    escape_experience_fields_for_storage(experience_config_data)
 
-    privacy_experience_data = transform_fields(
-        transformation=escape,
-        model=experience_config_data,
-        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-    )
-
-    experience_config_data_dict: Dict = privacy_experience_data.dict(exclude_unset=True)
-    # Pop the regions off the request
-    regions: Optional[List[PrivacyNoticeRegion]] = experience_config_data_dict.pop(
-        "regions", None
-    )
+    experience_config_data_dict: Dict = experience_config_data.dict(exclude_unset=True)
 
     # Because we're allowing patch updates here, first do a dry update and make sure the experience
     # config wouldn't be put in a bad state.
     dry_update: PrivacyExperienceConfig = experience_config.dry_update(
         data=experience_config_data_dict
     )
+    dry_update_translations: List[
+        ExperienceTranslation
+    ] = experience_config.dry_update_translations(
+        [
+            translation.dict(exclude_unset=True)
+            for translation in experience_config_data.translations
+        ]
+    )
     try:
+        dry_update.translations = dry_update_translations
         ExperienceConfigCreate.from_orm(dry_update)
     except ValueError as exc:
         raise HTTPException(
@@ -310,38 +259,6 @@ def experience_config_update(
     experience_config.update(db=db, data=experience_config_data_dict)
     db.refresh(experience_config)
 
-    linked: List[PrivacyNoticeRegion] = []
-    unlinked_regions: List[PrivacyNoticeRegion] = []
-    if (
-        regions is not None
-    ):  # If regions list is not in the request, we skip linking/unlinking regions
-        logger.info(
-            "Verifying or linking regions {} to experience config '{}'.",
-            human_friendly_list([reg.value for reg in regions]),
-            experience_config.id,
-        )
-        # Upserting PrivacyExperiences based on regions specified in the request.
-        # Valid Privacy Experiences will be linked via FK to the given Experience Config.
-        (
-            linked,
-            unlinked_regions,
-        ) = upsert_privacy_experiences_after_config_update(
-            db, experience_config, regions
-        )
+    unescape_experience_fields_for_display(experience_config)
 
-        if unlinked_regions:
-            logger.info(
-                "Unlinking regions {} from Privacy Experience Config '{}'.",
-                human_friendly_list([reg.value for reg in unlinked_regions]),
-                experience_config.id,
-            )
-
-    return ExperienceConfigCreateOrUpdateResponse(
-        experience_config=transform_fields(
-            transformation=unescape,
-            model=experience_config,
-            fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-        ),
-        linked_regions=linked,
-        unlinked_regions=unlinked_regions,
-    )
+    return experience_config

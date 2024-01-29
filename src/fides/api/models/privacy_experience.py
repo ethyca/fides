@@ -84,7 +84,7 @@ class ExperienceConfigTemplate(Base):
 class ExperienceTranslationBase:
     """Base schema for Experience translations"""
 
-    language = Column(EnumColumn(Language), nullable=False)
+    language = Column(EnumColumn(Language, native_enum=False), nullable=False)
 
     accept_button_label = Column(String)
     acknowledge_button_label = Column(String)
@@ -181,6 +181,19 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         """Return the regions using this experience config"""
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
 
+    def get_translation_by_language(
+        self, db, language: Language
+    ) -> Optional[ExperienceTranslation]:
+        """Lookup a translation on an ExperienceConfig by language if it exists"""
+        return (
+            db.query(ExperienceTranslation)
+            .filter(
+                ExperienceTranslation.language == language,
+                ExperienceTranslation.experience_config_id == self.id,
+            )
+            .first()
+        )
+
     @classmethod
     def create(
         cls: Type[PrivacyExperienceConfig],
@@ -250,13 +263,8 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         resource, config_updated = update_if_modified(self, db=db, data=data)
 
         for translation_data in translations:
-            existing_translation = (
-                db.query(ExperienceTranslation)
-                .filter(
-                    ExperienceTranslation.language == translation_data.get("language"),
-                    ExperienceTranslation.experience_config_id == resource.id,
-                )
-                .first()
+            existing_translation: ExperienceTranslation = (
+                self.get_translation_by_language(db, translation_data.get("language"))
             )
             if existing_translation:
                 translation, translation_updated = update_if_modified(
@@ -276,6 +284,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                 history_data = create_historical_data_from_record(resource)
                 history_data.pop("privacy_notices", None)
                 history_data.pop("translations", None)
+                translation_data = create_historical_data_from_record(translation)
                 PrivacyExperienceConfigHistory.create(
                     db,
                     data={
@@ -315,7 +324,29 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         for key, val in data.items():
             cloned_attributes[key] = val
         cloned_attributes.pop("_sa_instance_state")
+        cloned_attributes.pop("regions", [])
+        cloned_attributes.pop("translations", [])
+        cloned_attributes.pop("privacy_notices", [])
         return PrivacyExperienceConfig(**cloned_attributes)
+
+    def dry_update_translations(
+        self, data: list[dict[str, Any]]
+    ) -> List[ExperienceTranslation]:
+        """A utility method to get updated ExperienceTranslations without saving them to the db"""
+        dry_updated_translations = []
+        for translation_data in data:
+            existing_translation = self.get_translation_by_language(
+                Session.object_session(self), translation_data.get("language")
+            )
+            if existing_translation:
+                cloned_attributes = existing_translation.__dict__.copy()
+                for key, val in translation_data.items():
+                    cloned_attributes[key] = val
+                cloned_attributes.pop("_sa_instance_state")
+            else:
+                cloned_attributes = translation_data
+            dry_updated_translations.append(ExperienceTranslation(**cloned_attributes))
+        return dry_updated_translations
 
     @classmethod
     def get_default_config(
