@@ -3,8 +3,9 @@ import { narrow } from "narrow-minded";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
-  ApplicationConfig,
   BulkPostPrivacyRequests,
+  GPPSettings,
+  PlusApplicationConfig as ApplicationConfig,
   PrivacyRequestNotificationInfo,
   SecurityApplicationConfig,
 } from "~/types/api";
@@ -361,7 +362,9 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: params,
       }),
-      invalidatesTags: ["Configuration Settings"],
+      // Switching GPP settings causes the backend to update privacy notices behind the scenes, so
+      // invalidate privacy notices when a patch goes through.
+      invalidatesTags: ["Configuration Settings", "Privacy Notices"],
     }),
     putConfigurationSettings: build.mutation<
       ApplicationConfig,
@@ -374,11 +377,14 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Configuration Settings"],
     }),
-    getConfigurationSettings: build.query<Record<string, any>, void>({
-      query: () => ({
+    getConfigurationSettings: build.query<
+      Record<string, any>,
+      { api_set: boolean }
+    >({
+      query: ({ api_set }) => ({
         url: `/config`,
         method: "GET",
-        params: { api_set: true },
+        params: { api_set },
       }),
       providesTags: ["Configuration Settings"],
     }),
@@ -502,7 +508,9 @@ export const selectCORSOrigins = () =>
   createSelector(
     [
       (state) => state,
-      privacyRequestApi.endpoints.getConfigurationSettings.select(),
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: true,
+      }),
     ],
     (_, { data }) => {
       const hasCorsOrigins = narrow(
@@ -525,7 +533,36 @@ export const selectApplicationConfig = () =>
   createSelector(
     [
       (state) => state,
-      privacyRequestApi.endpoints.getConfigurationSettings.select(),
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: true,
+      }),
     ],
     (_, { data }) => data as ApplicationConfig
+  );
+
+const defaultGppSettings: GPPSettings = {
+  enabled: false,
+};
+export const selectGppSettings: (state: RootState) => GPPSettings =
+  createSelector(
+    [
+      (state) => state,
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: true,
+      }),
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: false,
+      }),
+    ],
+    (state, { data: apiSetConfig }, { data: config }) => {
+      const hasApi = apiSetConfig && apiSetConfig.gpp;
+      const hasDefault = config && config.gpp;
+      if (hasApi && hasDefault) {
+        return { ...config.gpp, ...apiSetConfig.gpp };
+      }
+      if (hasDefault) {
+        return config.gpp;
+      }
+      return defaultGppSettings;
+    }
   );

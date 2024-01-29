@@ -4,12 +4,14 @@ import {
   Box,
   Button,
   Flex,
+  HStack,
   Spinner,
   Tag,
   Text,
   Tooltip,
   useDisclosure,
   useToast,
+  VStack,
 } from "@fidesui/react";
 import {
   createColumnHelper,
@@ -17,6 +19,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useFeatures } from "common/features";
@@ -41,11 +44,12 @@ import {
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
+import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,
   selectAllDictSystems,
@@ -67,6 +71,9 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
   );
 };
 
+const ADDED_VENDOR_TOOLTIP_LABEL =
+  "This vendor has already been added. You can view the properties of this vendor by going to View Systems.";
+
 type MultipleSystemTable = DictSystems;
 
 const columnHelper = createColumnHelper<MultipleSystemTable>();
@@ -74,6 +81,30 @@ const columnHelper = createColumnHelper<MultipleSystemTable>();
 type Props = {
   redirectRoute: string;
 };
+
+const EmptyTableNotice = () => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    boxShadow="md"
+    borderRadius="base"
+    maxW="70%"
+    data-testid="no-results-notice"
+    alignSelf="center"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        No results found.
+      </Text>
+      <Text fontSize="sm">
+        {`Can't find the vendor you are looking for? Add custom systems or unlisted
+      vendors by selecting the "Add custom vendor" button below.`}
+      </Text>
+    </VStack>
+    <AddVendor buttonLabel="Add custom vendor" />
+  </VStack>
+);
 
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const systemText = "Vendor";
@@ -107,40 +138,42 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         id: "select",
         header: ({ table }) => (
           <IndeterminateCheckboxCell
-            {...{
-              dataTestId: "select-page-checkbox",
-              checked: table.getIsAllPageRowsSelected(),
-              indeterminate: table
+            dataTestId="select-page-checkbox"
+            isChecked={table.getIsAllPageRowsSelected()}
+            isDisabled={
+              allRowsLinkedToSystem ||
+              table
                 .getPaginationRowModel()
-                .rows.filter((r) => !r.original.linked_system)
-                .some((r) => r.getIsSelected()),
-              onChange: (e) => {
-                table.getToggleAllPageRowsSelectedHandler()(e);
-                setIsRowSelectionBarOpen((prev) => !prev);
-              },
-              manualDisable:
-                allRowsLinkedToSystem ||
-                table
-                  .getPaginationRowModel()
-                  .rows.filter((r) => r.original.linked_system).length ===
-                  table.getState().pagination.pageSize,
+                .rows.filter((r) => r.original.linked_system).length ===
+                table.getState().pagination.pageSize
+            }
+            isIndeterminate={table
+              .getPaginationRowModel()
+              .rows.filter((r) => r.getCanSelect())
+              .some((r) => !r.getIsSelected())}
+            onChange={() => {
+              table.setRowSelection((old) => {
+                const rowSelection: RowSelectionState = { ...old };
+                table.getRowModel().rows.forEach((row) => {
+                  if (row.getCanSelect()) {
+                    rowSelection[row.id] = !rowSelection[row.id];
+                  }
+                });
+
+                return rowSelection;
+              });
+              setIsRowSelectionBarOpen((prev) => !prev);
             }}
           />
         ),
         cell: ({ row }) => (
           <IndeterminateCheckboxCell
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler(),
-              initialValue: row.original.linked_system,
-            }}
+            isChecked={row.getIsSelected()}
+            isDisabled={!row.getCanSelect()}
+            isIndeterminate={row.getIsSomeSelected()}
+            onChange={row.getToggleSelectedHandler()}
           />
         ),
-        meta: {
-          width: "55px",
-        },
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -153,23 +186,10 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
         enableColumnFilter: isTcfEnabled,
         filterFn: "arrIncludesSome",
-        meta: {
-          width: "80px",
-        },
       }),
     ],
     [allRowsLinkedToSystem, systemText, isTcfEnabled]
   );
-
-  const rowSelection = useMemo(() => {
-    const innerRowSelection: Record<string, boolean> = {};
-    dictionaryOptions.forEach((ds, index) => {
-      if (ds.linked_system) {
-        innerRowSelection[index] = true;
-      }
-    });
-    return innerRowSelection;
-  }, [dictionaryOptions]);
 
   const tableInstance = useReactTable<MultipleSystemTable>({
     columns,
@@ -179,7 +199,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    enableRowSelection: true,
+    enableRowSelection: (row) => !row.original.linked_system,
     enableSorting: true,
     enableGlobalFilter: true,
     state: {
@@ -189,12 +209,30 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       },
     },
     initialState: {
-      rowSelection,
       pagination: {
         pageSize: PAGE_SIZES[0],
       },
+      columnSizing: {
+        select: 0,
+        vendor_id: 0,
+      },
     },
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
   });
+
+  useEffect(() => {
+    const innerRowSelection: RowSelectionState = {};
+    dictionaryOptions.forEach((ds, index) => {
+      if (ds.linked_system) {
+        innerRowSelection[index] = true;
+      }
+    });
+    // Set on the table instance once this is ready
+    if (Object.keys(innerRowSelection).length) {
+      tableInstance.setRowSelection(innerRowSelection);
+    }
+  }, [dictionaryOptions, tableInstance]);
 
   const {
     totalRows,
@@ -281,7 +319,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           .length as number)
       : 0;
   return (
-    <Flex flex={1} direction="column" overflow="auto">
+    <Flex
+      flex={1}
+      direction="column"
+      overflow="auto"
+      data-testid="add-multiple-systems-tbl"
+    >
       <ConfirmationModal
         isOpen={isOpen}
         isCentered
@@ -310,30 +353,32 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             />
           </Box>
           {totalSelectSystemsLength > 0 ? (
-            <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
-              {totalSelectSystemsLength.toLocaleString("en")} selected
-            </Text>
+            <>
+              <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
+                {totalSelectSystemsLength.toLocaleString("en")} selected
+              </Text>
+              <Tooltip
+                label={toolTipText}
+                shouldWrapChildren
+                placement="top"
+                isDisabled={isTooltipDisabled}
+              >
+                <Button
+                  onClick={onOpen}
+                  data-testid="add-multiple-systems-btn"
+                  size="xs"
+                  variant="outline"
+                  disabled={!anyNewSelectedRows}
+                  ml={4}
+                >
+                  Add
+                </Button>
+              </Tooltip>
+            </>
           ) : null}
-
-          <Tooltip
-            label={toolTipText}
-            shouldWrapChildren
-            placement="top"
-            isDisabled={isTooltipDisabled}
-          >
-            <Button
-              onClick={onOpen}
-              data-testid="add-multiple-systems-btn"
-              size="xs"
-              variant="outline"
-              disabled={!anyNewSelectedRows}
-              ml={4}
-            >
-              Add
-            </Button>
-          </Tooltip>
         </Flex>
-        <Flex alignItems="center">
+        <HStack spacing={4} alignItems="center">
+          <AddVendor buttonLabel="Add custom vendor" buttonVariant="outline" />
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
@@ -354,7 +399,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               </Button>
             </span>
           ) : null}
-        </Flex>
+        </HStack>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
         tableInstance={tableInstance}
@@ -365,6 +410,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             isOpen={isRowSelectionBarOpen}
           />
         }
+        renderRowTooltipLabel={(row) => {
+          if (!row.getCanSelect()) {
+            return ADDED_VENDOR_TOOLTIP_LABEL;
+          }
+          return undefined;
+        }}
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}
@@ -377,6 +428,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         startRange={startRange}
         endRange={endRange}
       />
+      {totalRows === 0 ? <EmptyTableNotice /> : null}
     </Flex>
   );
 };

@@ -14,9 +14,5 @@ export type TCFVendorLegitimateInterestsRecord = {
   name?: string;
   description?: string;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
   purpose_legitimate_interests?: Array<EmbeddedPurpose>;
 };

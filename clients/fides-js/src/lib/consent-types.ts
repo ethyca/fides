@@ -1,20 +1,21 @@
-import type { CookieKeyConsent } from "./cookie";
+import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
-  TCFFeatureRecord,
-  TCFPurposeSave,
-  TCFSpecialPurposeSave,
-  TCFFeatureSave,
-  TCFSpecialFeatureSave,
-  TCFVendorSave,
   GVLJson,
+  TCFFeatureRecord,
+  TCFFeatureSave,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
-  TCFSpecialPurposeRecord,
+  TCFPurposeSave,
   TCFSpecialFeatureRecord,
+  TCFSpecialFeatureSave,
+  TCFSpecialPurposeRecord,
+  TCFSpecialPurposeSave,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
+  TCFVendorSave,
 } from "./tcf/types";
+import { TcfCookieConsent } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -82,15 +83,60 @@ export type FidesOptions = {
   // Allows for explicit overrides on various internal API calls made from Fides.
   apiOptions: FidesApiOptions | null;
 
-  // Whether or the GPP extension should be loaded
-  gppEnabled: boolean;
-
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
 
-  // GPP extension path (ex: "/fides-ext-gpp.js")
-  gppExtensionPath: string;
+  // Base URL for directory of fides.js scripts
+  fidesJsBaseUrl: string;
+
+  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
+  customOptionsPath: string | null;
+
+  // Prevents the banner and modal from being dismissed
+  preventDismissal: boolean;
+
+  // Allows providing rich HTML descriptions
+  allowHTMLDescription: boolean | null;
 };
+
+/**
+ * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
+ * {
+ *   "data_sales": false,
+ *   "analytics": true,
+ *   ...
+ * }
+ */
+export type CookieKeyConsent = {
+  [cookieKey: string]: boolean | undefined;
+};
+/**
+ * Store the user's identity values on the cookie, e.g.
+ * {
+ *   "fides_user_device_id": "1234-",
+ *   "email": "jane@example.com",
+ *   ...
+ * }
+ */
+export type CookieIdentity = Record<string, string>;
+/**
+ * Store metadata about the cookie itself, e.g.
+ * {
+ *   "version": "0.9.0",
+ *   "createdAt": "2023-01-01T12:00:00.000Z",
+ *   ...
+ * }
+ */
+export type CookieMeta = Record<string, string>;
+
+export interface FidesCookie {
+  consent: CookieKeyConsent;
+  identity: CookieIdentity;
+  fides_meta: CookieMeta;
+  fides_string?: string;
+  tcf_consent: TcfCookieConsent;
+  tcf_version_hash?: ExperienceMeta["version_hash"];
+}
 
 export type GetPreferencesFnResp = {
   // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
@@ -126,7 +172,7 @@ export type FidesApiOptions = {
    * Intake a custom function that is used to fetch privacy experience.
    *
    * @param {string} userLocationString - user location
-   * @param {string} fidesUserDeviceId - (optional) Fides user device id, if known
+   * @param {string} fidesUserDeviceId - (deprecated) We no longer support handling user preferences on the experience using fidesUserDeviceId
    */
   getPrivacyExperienceFn?: (
     userLocationString: string,
@@ -139,7 +185,7 @@ export type FidesApiOptions = {
    */
   patchNoticesServedFn?: (
     request: RecordConsentServedRequest
-  ) => Promise<Array<LastServedConsentSchema> | null>;
+  ) => Promise<RecordsServedResponse | null>;
 };
 
 export class SaveConsentPreference {
@@ -147,16 +193,9 @@ export class SaveConsentPreference {
 
   notice: PrivacyNotice;
 
-  servedNoticeHistoryId?: string;
-
-  constructor(
-    notice: PrivacyNotice,
-    consentPreference: UserConsentPreference,
-    servedNoticeHistoryId?: string
-  ) {
+  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
     this.notice = notice;
     this.consentPreference = consentPreference;
-    this.servedNoticeHistoryId = servedNoticeHistoryId;
   }
 }
 
@@ -278,7 +317,7 @@ export type PrivacyExperience = {
   created_at: string;
   updated_at: string;
   show_banner?: boolean;
-  privacy_notices?: Array<PrivacyNotice>;
+  privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -292,12 +331,15 @@ export type PrivacyExperience = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
+  gpp_settings?: GPPSettings;
 };
 
 export type ExperienceConfig = {
   accept_button_label?: string;
   acknowledge_button_label?: string;
+  banner_description?: string;
   banner_enabled?: BannerEnabled;
+  banner_title?: string;
   description?: string;
   disabled?: boolean;
   is_default?: boolean;
@@ -322,6 +364,11 @@ export type Cookies = {
   domain?: string;
 };
 
+export enum PrivacyNoticeFramework {
+  GPP_US_NATIONAL = "gpp_us_national",
+  GPP_US_STATE = "gpp_us_state",
+}
+
 export type PrivacyNotice = {
   name?: string;
   notice_key: string;
@@ -337,6 +384,8 @@ export type PrivacyNotice = {
   displayed_in_privacy_center?: boolean;
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
+  framework?: PrivacyNoticeFramework;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
   id: string;
   created_at: string;
   updated_at: string;
@@ -344,8 +393,12 @@ export type PrivacyNotice = {
   privacy_notice_history_id: string;
   cookies: Array<Cookies>;
   default_preference: UserConsentPreference;
+};
+
+// This type is exclusively used on front-end
+export type PrivacyNoticeWithPreference = PrivacyNotice & {
+  // Tracks preference to be shown via the UI / served via CMP
   current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
 };
 
 export enum EnforcementLevel {
@@ -414,13 +467,13 @@ export enum ButtonType {
 }
 
 export enum ConsentMethod {
-  button = "button", // deprecated- keeping for backwards-compatibility
-  reject = "reject",
-  accept = "accept",
-  save = "save",
-  dismiss = "dismiss",
-  gpc = "gpc",
-  individual_notice = "api",
+  BUTTON = "button", // deprecated- keeping for backwards-compatibility
+  REJECT = "reject",
+  ACCEPT = "accept",
+  SAVE = "save",
+  DISMISS = "dismiss",
+  GPC = "gpc",
+  INDIVIDUAL_NOTICE = "individual_notice",
 }
 
 export type PrivacyPreferencesRequest = {
@@ -441,12 +494,12 @@ export type PrivacyPreferencesRequest = {
   privacy_experience_id?: string;
   user_geography?: string;
   method?: ConsentMethod;
+  served_notice_history_id?: string;
 };
 
 export type ConsentOptionCreate = {
   privacy_notice_history_id: string;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 export type Identity = {
@@ -501,26 +554,22 @@ export type RecordConsentServedRequest = {
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
 };
+
 /**
- * Schema that surfaces the the last time a consent item that was shown to a user
+ * Response when saving that consent was served
  */
-export type LastServedConsentSchema = {
-  purpose?: number;
-  purpose_consent?: number;
-  purpose_legitimate_interests?: number;
-  special_purpose?: number;
-  vendor?: string;
-  vendor_consent?: string;
-  vendor_legitimate_interests?: string;
-  feature?: number;
-  special_feature?: number;
-  system?: string;
-  system_consent?: string;
-  system_legitimate_interests?: string;
-  id: string;
-  updated_at: string;
+export type RecordsServedResponse = {
   served_notice_history_id: string;
-  privacy_notice_history?: PrivacyNotice;
+  privacy_notice_history_ids: string[];
+  tcf_purpose_consents: number[];
+  tcf_purpose_legitimate_interests: number[];
+  tcf_special_purposes: number[];
+  tcf_vendor_consents: string[];
+  tcf_vendor_legitimate_interests: string[];
+  tcf_features: number[];
+  tcf_special_features: number[];
+  tcf_system_consents: string[];
+  tcf_system_legitimate_interests: string[];
 };
 
 // ------------------LEGACY TYPES BELOW -------------------

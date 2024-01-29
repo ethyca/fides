@@ -32,8 +32,7 @@ describe("System management page", () => {
 
   it("Can navigate to the system management page", () => {
     cy.visit("/");
-    cy.contains("nav a", "Data map").click();
-    cy.contains("nav a", "View systems").click();
+    cy.getByTestId("View systems-nav-link").click();
     cy.wait("@getSystems");
     cy.getByTestId("system-management");
   });
@@ -82,6 +81,13 @@ describe("System management page", () => {
         cy.intercept("GET", "/api/v1/connection_type*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
+      });
+
+      it("can't create a system with the same name as an existing system", () => {
+        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
+        cy.getByTestId("input-name").type("Demo Analytics System");
+        cy.getByTestId("input-description").focus();
+        cy.getByTestId("error-name");
       });
 
       it.skip("Can step through the flow", () => {
@@ -318,22 +324,10 @@ describe("System management page", () => {
         "have.value",
         "Software that functionally applies Fides."
       );
-      cy.getByTestId("input-data_responsibility_title").should(
-        "contain",
-        "Controller"
-      );
       cy.getByTestId("input-administrating_department").should(
         "have.value",
         "Not defined"
       );
-      // add something for joint controller
-      const controllerName = "Sally Controller";
-      cy.getByTestId("input-joint_controller.name").type(controllerName);
-      cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem").then((interception) => {
-        const { body } = interception.request;
-        expect(body.joint_controller.name).to.eql(controllerName);
-      });
       cy.wait("@getFidesctlSystem");
 
       // Switch to the Data Uses tab
@@ -381,53 +375,14 @@ describe("System management page", () => {
       const system = {
         fides_key: "fidesctl_system",
         system_type: "cool system",
-        data_responsibility_title: "Sub-Processor",
+
         organization_fides_key: "default_organization",
         administrating_department: "department",
-        third_country_transfers: ["USA"],
-        joint_controller: {
-          name: "bob",
-          email: "bob@ethyca.com",
-        },
-        data_protection_impact_assessment: {
-          is_required: true,
-          progress: "in progress",
-          link: "http://www.ethyca.com",
-        },
       };
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
-
-      // input extra fields
-      cy.getByTestId("input-data_responsibility_title").click();
-      cy.getByTestId("input-data_responsibility_title").within(() => {
-        cy.contains(system.data_responsibility_title).click();
-      });
-      cy.getByTestId("input-administrating_department")
-        .clear()
-        .type(system.administrating_department);
-      cy.getByTestId("input-third_country_transfers").type(
-        "United States of America{enter}"
-      );
-      cy.getByTestId("input-joint_controller.name").type(
-        system.joint_controller.name
-      );
-      cy.getByTestId("input-joint_controller.email").type(
-        system.joint_controller.email
-      );
-      cy.getByTestId(
-        "input-data_protection_impact_assessment.is_required"
-      ).within(() => {
-        cy.getByTestId("option-true").click();
-      });
-      cy.getByTestId("input-data_protection_impact_assessment.progress").type(
-        system.data_protection_impact_assessment.progress
-      );
-      cy.getByTestId("input-data_protection_impact_assessment.link").type(
-        system.data_protection_impact_assessment.link
-      );
 
       cy.getByTestId("save-btn").click();
       cy.wait("@putSystem").then((interception) => {
@@ -437,7 +392,6 @@ describe("System management page", () => {
           tags,
           fidesctl_meta: fidesctlMeta,
           meta,
-          registry_id: registryid,
           ...edited
         } = body;
         expect(edited).to.eql({
@@ -448,12 +402,7 @@ describe("System management page", () => {
           system_type: "Service",
           egress: [],
           ingress: [],
-          third_country_transfers: ["USA"],
           administrating_department: system.administrating_department,
-          data_responsibility_title: system.data_responsibility_title,
-          joint_controller: system.joint_controller,
-          data_protection_impact_assessment:
-            system.data_protection_impact_assessment,
         });
       });
     });
@@ -571,8 +520,6 @@ describe("System management page", () => {
         name: "Second data use",
         data_categories: ["user.biometric"],
         data_use: "collect",
-        data_qualifier:
-          "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         data_subjects: ["anonymous"],
         dataset_references: [],
       };

@@ -10,6 +10,8 @@ import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 
 import ChooseConnection from "./ChooseConnection";
 import ConfigureConnector from "./ConfigureConnector";
@@ -70,6 +72,7 @@ const AddConnection: React.FC = () => {
 
   return (
     <>
+      <BackButton backPath={DATASTORE_CONNECTION_ROUTE} />
       <Heading
         fontSize="2xl"
         fontWeight="semibold"

@@ -11,5 +11,4 @@ import type { UserConsentPreference } from "./UserConsentPreference";
 export type TCFVendorSave = {
   id: string;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };

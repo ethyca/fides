@@ -15,6 +15,7 @@ from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.sql import Select
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
@@ -83,6 +84,7 @@ async def get_custom_fields_filtered(
                     CustomField.value,
                     CustomFieldDefinition.resource_type,
                     CustomFieldDefinition.name,
+                    CustomFieldDefinition.field_type,
                 ).join(
                     CustomFieldDefinition,
                     CustomFieldDefinition.id == CustomField.custom_field_definition_id,
@@ -200,11 +202,22 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
 
     Returns a list of SQLAlchemy models of that resource type.
     """
+    query = select(sql_model)
+    return await list_resource_query(async_session, query, sql_model)
+
+
+async def list_resource_query(
+    async_session: AsyncSession, query: Select, sql_model: Base = Base
+) -> List[Base]:
+    """
+    Utility function to wrap a select query in generic "list_resource" execution handling.
+    Wrapping includes execution against the DB session, logging and error handling.
+    """
+
     with log.contextualize(sql_model=sql_model.__name__):
         async with async_session.begin():
             try:
                 log.debug("Fetching resources")
-                query = select(sql_model)
                 result = await async_session.execute(query)
                 sql_resources = result.scalars().all()
             except SQLAlchemyError:

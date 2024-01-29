@@ -3,17 +3,18 @@ import {
   ComponentType,
   ConsentMechanism,
   EmptyExperience,
+  FidesCookie,
   FidesOptions,
   GpcStatus,
+  OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
-import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
-import { TCFPurposeConsentRecord } from "./tcf/types";
+import { TcfModelsRecord } from "./tcf/types";
 import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
-import type { FidesCookie } from "./cookie";
+import { noticeHasConsentInCookie } from "./shared-consent-utils";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -90,40 +91,6 @@ export const constructFidesRegionString = (
     "cannot construct user location from provided geoLocation params..."
   );
   return null;
-};
-
-/**
- * Convert a user consent preference into true/false
- */
-export const transformUserPreferenceToBoolean = (
-  preference: UserConsentPreference | undefined
-) => {
-  if (!preference) {
-    return false;
-  }
-  if (preference === UserConsentPreference.OPT_OUT) {
-    return false;
-  }
-  if (preference === UserConsentPreference.OPT_IN) {
-    return true;
-  }
-  return preference === UserConsentPreference.ACKNOWLEDGE;
-};
-
-/**
- * Convert a true/false consent to Fides user consent preference
- */
-export const transformConsentToFidesUserPreference = (
-  consented: boolean,
-  consentMechanism?: ConsentMechanism
-): UserConsentPreference => {
-  if (consented) {
-    if (consentMechanism === ConsentMechanism.NOTICE_ONLY) {
-      return UserConsentPreference.ACKNOWLEDGE;
-    }
-    return UserConsentPreference.OPT_IN;
-  }
-  return UserConsentPreference.OPT_OUT;
 };
 
 /**
@@ -216,23 +183,11 @@ export const experienceIsValid = (
   return true;
 };
 
-/** Returns true if a list of records has any current preference at all */
-const hasCurrentPreference = (
-  records: Pick<TCFPurposeConsentRecord, "current_preference">[] | undefined
-) => {
-  if (!records || records.length === 0) {
-    return false;
-  }
-  return records.some((record) => record.current_preference);
-};
-
 /**
- * Returns true if the user has any saved TCF preferences
+ * Returns default TCF preference
  */
-export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
-  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
-    hasCurrentPreference(experience[key])
-  );
+export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
+  tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
 
 /**
  * Returns true if there are notices in the experience that require a user preference
@@ -241,18 +196,66 @@ export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie
-) => {
-  if (
-    experience.component === ComponentType.TCF_OVERLAY &&
-    experience.meta?.version_hash
-  ) {
-    return experience.meta.version_hash !== cookie.tcf_version_hash;
+): boolean => {
+  if (experience.component === ComponentType.TCF_OVERLAY) {
+    if (experience.meta?.version_hash) {
+      return experience.meta.version_hash !== cookie.tcf_version_hash;
+    }
+    // Ensure we always resurface consent for TCF if for some reason experience does not have version_hash
+    return true;
   }
+  // Do not surface consent for null or empty notices
+  if (
+    experience?.privacy_notices == null ||
+    experience.privacy_notices.length === 0
+  ) {
+    return false;
+  }
+  // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
-    experience?.privacy_notices?.some(
-      (notice) => notice.current_preference == null
+    !experience.privacy_notices?.every((notice) =>
+      noticeHasConsentInCookie(notice, cookie)
     )
   );
+};
+
+/**
+ * Descend down the provided path on the "window" object and return the nested
+ * override options object located at the given path.
+ *
+ * If any part of the path is invalid, return `undefined`.
+ *
+ *
+ * For example, given a window object like this:
+ * ```
+ * window.custom_overrides = { nested_obj: { fides_string: "foo" } } };
+ * ```
+ *
+ * Then expect the following:
+ * ```
+ * const overrides = getWindowObjFromPath(["window", "custom_overrides", "nested_obj"])
+ * console.assert(overrides.fides_string === "foo");
+ * ```
+ */
+export const getWindowObjFromPath = (
+  path: string[]
+): OverrideOptions | undefined => {
+  // Implicitly start from the global "window" object
+  if (path[0] === "window") {
+    path.shift();
+  }
+  // Descend down the provided path (starting from `window`)
+  let record: any = window;
+  while (path.length > 0) {
+    const key = path.shift();
+    // If we ever encounter an invalid key or a non-object value, return undefined
+    if (typeof key === "undefined" || typeof record[key] !== "object") {
+      return undefined;
+    }
+    // Keep descending!
+    record = record[key];
+  }
+  return record;
 };
 
 export const getGpcStatusFromNotice = ({
@@ -273,6 +276,7 @@ export const getGpcStatusFromNotice = ({
     return GpcStatus.NONE;
   }
 
+  // if gpc is enabled for the notice and consent is opt-out (false)
   if (!value) {
     return GpcStatus.APPLIED;
   }

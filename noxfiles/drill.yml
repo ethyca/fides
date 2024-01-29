@@ -50,13 +50,6 @@ plan:
         Authorization: "Bearer {{ login.body.token_data.access_token }}"
       url: /api/v1/data_category
 
-  - name: Get Data Qualifier
-    request:
-      method: GET
-      headers:
-        Authorization: "Bearer {{ login.body.token_data.access_token }}"
-      url: /api/v1/data_qualifier
-
   - name: Get Data Subject
     request:
       method: GET

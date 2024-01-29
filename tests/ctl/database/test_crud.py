@@ -58,7 +58,7 @@ def fixture_created_resources(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "created_resources",
-    ["data_category", "data_use", "data_qualifier"],
+    ["data_category", "data_use"],
     indirect=["created_resources"],
 )
 async def test_cascade_delete_taxonomy_children(
@@ -278,6 +278,7 @@ async def test_get_custom_fields_filtered(
                         field.resource_id == f["resource_id"]
                         and field.value == f["value"]
                         and cfd.name == f["name"]
+                        and cfd.field_type == f["field_type"]
                     )
                     for f in filtered_fields
                 ]
@@ -289,6 +290,7 @@ async def test_get_custom_fields_filtered(
                         field.resource_id == f["resource_id"]
                         and field.value == f["value"]
                         and cfd.name == f["name"]
+                        and cfd.field_type == f["field_type"]
                     )
                     for f in filtered_fields
                 ]
@@ -304,6 +306,7 @@ async def test_get_custom_fields_filtered(
                     field.resource_id == f["resource_id"]
                     and field.value == f["value"]
                     and cfd.name == f["name"]
+                    and cfd.field_type == f["field_type"]
                 )
                 for f in filtered_fields
             ]
@@ -336,6 +339,7 @@ async def test_get_custom_fields_filtered(
                     field.resource_id == f["resource_id"]
                     and field.value == f["value"]
                     and cfd.name == f["name"]
+                    and cfd.field_type == f["field_type"]
                 )
                 for f in filtered_fields
             ]
@@ -360,6 +364,7 @@ async def test_get_custom_fields_filtered(
         (
             custom_fields_system[3].resource_id == f["resource_id"]
             and custom_fields_system[3].value == f["value"]
+            and cfd.field_type == f["field_type"]
         )
         for f in filtered_fields
     )
@@ -376,7 +381,6 @@ async def test_get_custom_fields_filtered(
 async def test_get_resource_with_custom_field(db, async_session_temp):
     system_data = {
         "name": "my system",
-        "registry_id": "1",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }
@@ -427,7 +431,6 @@ async def test_get_resource_with_custom_field(db, async_session_temp):
 async def test_get_resource_with_custom_field_no_custom_field(async_session_temp):
     system_data = {
         "name": "my system",
-        "registry_id": "1",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }

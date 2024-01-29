@@ -1,6 +1,10 @@
 import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
-import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
+import {
+  FidesCookie,
+  FidesOptions,
+  PrivacyExperience,
+} from "../lib/consent-types";
 
 import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
 
@@ -9,7 +13,6 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
-import { FidesCookie } from "../lib/cookie";
 import ConsentContent from "./ConsentContent";
 
 interface RenderBannerProps {
@@ -28,6 +31,7 @@ interface Props {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   onOpen: () => void;
+  onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
   renderModalFooter: (props: RenderModalFooter) => VNode;
@@ -39,6 +43,7 @@ const Overlay: FunctionComponent<Props> = ({
   options,
   cookie,
   onOpen,
+  onDismiss,
   renderBanner,
   renderModalContent,
   renderModalFooter,
@@ -52,15 +57,23 @@ const Overlay: FunctionComponent<Props> = ({
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
       dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
+      if (!saved) {
+        onDismiss();
+      }
     },
-    [cookie, options.debug]
+    [cookie, onDismiss, options.debug]
   );
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
-    role: "alertdialog",
+    role: window.Fides.options.preventDismissal ? "alertdialog" : "dialog",
     title: experience?.experience_config?.title || "",
-    onClose: () => dispatchCloseEvent({ saved: false }),
+    onClose: () => {
+      dispatchCloseEvent({ saved: false });
+    },
+    onEsc: () => {
+      dispatchCloseEvent({ saved: false });
+    },
   });
 
   const handleOpenModal = useCallback(() => {
@@ -103,8 +116,8 @@ const Overlay: FunctionComponent<Props> = ({
         // Update modal link to trigger modal on click
         const modalLink = modalLinkEl;
         modalLink.onclick = () => {
-          handleOpenModal();
           setBannerIsOpen(false);
+          handleOpenModal();
         };
         // Update to show the pre-existing modal link in the DOM
         modalLink.classList.add("fides-modal-link-shown");
@@ -121,7 +134,7 @@ const Overlay: FunctionComponent<Props> = ({
       experience.show_banner &&
       shouldResurfaceConsent(experience, cookie) &&
       !options.fidesEmbed,
-    [experience, options, cookie]
+    [cookie, experience, options]
   );
 
   const handleManagePreferencesClick = (): void => {
@@ -140,6 +153,9 @@ const Overlay: FunctionComponent<Props> = ({
 
   return (
     <div>
+      {showBanner && bannerIsOpen && window.Fides.options.preventDismissal && (
+        <div className="fides-modal-overlay" />
+      )}
       {showBanner
         ? renderBanner({
             isOpen: bannerIsOpen,

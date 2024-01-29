@@ -46,6 +46,7 @@
  * ```
  */
 import type { TCData } from "@iabtechlabtcf/cmpapi";
+import { TCString } from "@iabtechlabtcf/core";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
@@ -57,10 +58,9 @@ import {
   GetPreferencesFnResp,
   OverrideOptions,
   PrivacyExperience,
-  UserConsentPreference,
 } from "./lib/consent-types";
 
-import { generateFidesString, initializeTcfCmpApi } from "./lib/tcf";
+import { initializeTcfCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -69,35 +69,21 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import {
-  buildTcfEntitiesFromCookie,
-  debugLog,
-  experienceIsValid,
-  FidesCookie,
-  hasSavedTcfPreferences,
-  isPrivacyExperience,
-  tcfConsentCookieObjHasSomeConsentSet,
-  transformTcfPreferencesToCookieKeys,
-  transformUserPreferenceToBoolean,
-} from "./fides";
+import { debugLog, FidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import {
-  EnabledIds,
-  TcfModelsRecord,
-  TcfSavePreferences,
-} from "./lib/tcf/types";
-import { TCF_KEY_MAP } from "./lib/tcf/constants";
-import {
-  generateFidesStringFromCookieTcfConsent,
-  transformFidesStringToCookieKeys,
-} from "./lib/tcf/utils";
 import type { GppFunction } from "./lib/gpp/types";
 import { makeStub } from "./lib/tcf/stub";
 import { customGetConsentPreferences } from "./services/external/preferences";
+import { decodeFidesString } from "./lib/tcf/fidesString";
+import {
+  buildTcfEntitiesFromCookieAndFidesString,
+  updateExperienceFromCookieConsentTcf,
+} from "./lib/tcf/utils";
 
 declare global {
   interface Window {
     Fides: Fides;
+    fides_overrides: OverrideOptions;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
@@ -105,10 +91,6 @@ declare global {
       callback: (tcData: TCData, success: boolean) => void,
       parameter?: number | string
     ) => void;
-    config: {
-      // DEFER (PROD-1243): support a configurable "custom options" path
-      tc_info: OverrideOptions;
-    };
     __gpp?: GppFunction;
     __gppLocator?: Window;
   }
@@ -118,17 +100,7 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-/** Helper function to determine the initial value of a TCF object */
-const getInitialPreference = (
-  tcfObject: TcfModelsRecord
-): UserConsentPreference => {
-  if (tcfObject.current_preference) {
-    return tcfObject.current_preference;
-  }
-  return tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
-};
-
-const updateCookieAndExperience = async ({
+const updateExperience = async ({
   cookie,
   experience,
   debug = false,
@@ -138,107 +110,29 @@ const updateCookieAndExperience = async ({
   experience: PrivacyExperience;
   debug?: boolean;
   isExperienceClientSideFetched: boolean;
-}): Promise<{
-  cookie: FidesCookie;
-  experience: Partial<PrivacyExperience>;
-}> => {
+}): Promise<Partial<PrivacyExperience>> => {
   if (!isExperienceClientSideFetched) {
     // If it's not client side fetched, we don't update anything since the cookie has already
     // been updated earlier.
-    return { cookie, experience };
+    return experience;
   }
 
-  // If cookie.fides_string exists, update the fetched experience based on the cookie here.
+  // We need the cookie.fides_string to attach user preference to an experience.
+  // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
     debugLog(
       debug,
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
       cookie.fides_string
     );
-    const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
-    return { cookie, experience: tcfEntities };
-  }
-
-  // If user has no prefs saved, we don't need to override the prefs on the cookie
-  if (!hasSavedTcfPreferences(experience)) {
-    return { cookie, experience };
-  }
-
-  // If the user has prefs on a client-side fetched experience, but there is no fides_string,
-  // we need to use the prefs on the experience to generate a fidesString and cookie.tcf_consent
-  const tcSavePrefs: TcfSavePreferences = {};
-  const enabledIds: EnabledIds = {
-    purposesConsent: [],
-    purposesLegint: [],
-    specialPurposes: [],
-    features: [],
-    specialFeatures: [],
-    vendorsConsent: [],
-    vendorsLegint: [],
-  };
-
-  TCF_KEY_MAP.forEach(({ experienceKey, cookieKey, enabledIdsKey }) => {
-    tcSavePrefs[cookieKey] = [];
-    experience[experienceKey]?.forEach((record) => {
-      const pref: UserConsentPreference = getInitialPreference(record);
-      // map experience to tcSavePrefs (same as cookie keys)
-      tcSavePrefs[cookieKey]?.push({
-        // @ts-ignore
-        id: record.id,
-        preference: pref,
-      });
-      // add to enabledIds only if user consent is True
-      if (transformUserPreferenceToBoolean(pref)) {
-        if (enabledIdsKey) {
-          enabledIds[enabledIdsKey].push(record.id.toString());
-        }
-      }
-    });
-  });
-
-  const fidesString = await generateFidesString({
-    experience,
-    tcStringPreferences: enabledIds,
-  });
-  const tcfConsent = transformTcfPreferencesToCookieKeys(tcSavePrefs);
-  return {
-    cookie: { ...cookie, fides_string: fidesString, tcf_consent: tcfConsent },
-    experience,
-  };
-};
-
-/**
- * If a fidesString is provided either explicitly or retrieved with a custom get preferences fn,
- * we override the associated cookie props, which are then used to override associated props in the experience.
- */
-const updateFidesCookieFromString = (
-  cookie: FidesCookie,
-  fidesString: string,
-  debug: boolean,
-  fidesStringVersionHash: string | undefined
-): { cookie: FidesCookie; success: boolean } => {
-  debugLog(
-    debug,
-    "Explicit fidesString detected. Proceeding to override all TCF preferences with given fidesString"
-  );
-  try {
-    const cookieKeys = transformFidesStringToCookieKeys(fidesString, debug);
-    return {
-      cookie: {
-        ...cookie,
-        tcf_consent: cookieKeys,
-        fides_string: fidesString,
-        tcf_version_hash: fidesStringVersionHash ?? cookie.tcf_version_hash,
-      },
-      success: true,
-    };
-  } catch (error) {
-    debugLog(
-      debug,
-      `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`
+    const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
+      experience,
+      cookie
     );
-    return { cookie, success: false };
+    return tcfEntities;
   }
+
+  return experience;
 };
 
 /**
@@ -246,7 +140,7 @@ const updateFidesCookieFromString = (
  */
 const init = async (config: FidesConfig) => {
   const optionsOverrides: Partial<FidesOptionsOverrides> =
-    getOptionsOverrides();
+    getOptionsOverrides(config);
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });
@@ -266,35 +160,32 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
-  if (config.options.fidesString) {
-    const { cookie: updatedCookie, success } = updateFidesCookieFromString(
-      cookie,
-      config.options.fidesString,
-      config.options.debug,
-      overrides.consentPrefsOverrides?.version_hash
-    );
-    if (success) {
+  // Update the fidesString if we have an override and the TC portion is valid
+  const { fidesString } = config.options;
+  if (fidesString) {
+    try {
+      // Make sure TC string is valid before we assign it
+      const { tc: tcString } = decodeFidesString(fidesString);
+      TCString.decode(tcString);
+      const updatedCookie: Partial<FidesCookie> = {
+        fides_string: fidesString,
+        tcf_version_hash:
+          overrides.consentPrefsOverrides?.version_hash ??
+          cookie.tcf_version_hash,
+      };
       Object.assign(cookie, updatedCookie);
+    } catch (error) {
+      debugLog(
+        config.options.debug,
+        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`
+      );
     }
-  } else if (
-    tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
-    !cookie.fides_string &&
-    isPrivacyExperience(config.experience) &&
-    experienceIsValid(config.experience, config.options)
-  ) {
-    // This state should not be hit, but just in case: if fidesString is missing on cookie but we have tcf consent,
-    // we should generate fidesString so that our CMP API accurately reflects user preference
-    cookie.fides_string = await generateFidesStringFromCookieTcfConsent(
-      config.experience,
-      cookie.tcf_consent
-    );
-    debugLog(
-      config.options.debug,
-      "fides_string was missing from cookie, so it has been generated based on tcf_consent",
-      cookie.fides_string
-    );
   }
-  const initialFides = getInitialFides({ ...config, cookie });
+  const initialFides = getInitialFides({
+    ...config,
+    cookie,
+    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
+  });
   // Initialize the CMP API early so that listeners are established
   initializeTcfCmpApi();
   if (initialFides) {
@@ -307,7 +198,7 @@ const init = async (config: FidesConfig) => {
     cookie,
     experience,
     renderOverlay,
-    updateCookieAndExperience,
+    updateExperience,
   });
   Object.assign(_Fides, updatedFides);
 
@@ -332,14 +223,16 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: true,
-    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
     fidesTcfGdprApplies: true,
-    gppExtensionPath: "",
+    fidesJsBaseUrl: "",
+    customOptionsPath: null,
+    preventDismissal: false,
+    allowHTMLDescription: null,
   },
   fides_meta: {},
   identity: {},
@@ -361,6 +254,7 @@ export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
+export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";

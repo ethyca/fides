@@ -24,9 +24,10 @@ export type NavConfigGroup = {
 export const NAV_CONFIG: NavConfigGroup[] = [
   // Goes last because its root path will match everything.
   {
-    title: "Home",
+    title: "Overview",
     routes: [
       {
+        title: "Home",
         path: "/",
         exact: true,
         scopes: [],
@@ -36,6 +37,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Data map",
     routes: [
+      {
+        title: "Reporting",
+        path: routes.REPORTING_DATAMAP_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        requiresFlag: "datamapReportingPage",
+      },
       {
         title: "View map",
         path: routes.DATAMAP_ROUTE,
@@ -93,9 +101,8 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Consent",
     routes: [
       {
-        title: "Configure consent",
+        title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
-        requiresFlag: "configureConsent",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
@@ -110,6 +117,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
+      },
+      {
+        title: "Consent reporting",
+        path: routes.CONSENT_REPORTING_ROUTE,
+        requiresFlag: "consentReporting",
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
     ],
   },
@@ -134,6 +148,26 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.ORGANIZATION_READ,
           ScopeRegistryEnum.ORGANIZATION_UPDATE,
         ],
+      },
+      {
+        title: "Locations",
+        path: routes.LOCATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.LOCATION_READ,
+          ScopeRegistryEnum.LOCATION_UPDATE,
+        ],
+        requiresPlus: true,
+        requiresFlag: "locationRegulationConfiguration",
+      },
+      {
+        title: "Regulations",
+        path: routes.REGULATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.LOCATION_READ,
+          ScopeRegistryEnum.LOCATION_UPDATE,
+        ],
+        requiresPlus: true,
+        requiresFlag: "locationRegulationConfiguration",
       },
       {
         title: "Taxonomy",
@@ -176,6 +210,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Consent",
+        path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
+        ],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
@@ -193,12 +237,11 @@ export type NavGroupChild = {
 
 export type NavGroup = {
   /**
-   * Title of the group. Displayed in NavTopBar.
+   * Title of the group. Displayed as an accordion in MainSideNav.
    */
   title: string;
   /**
-   * The routes that are nested under this group. These are displayed in the NavSideBar. If this has
-   * only one child, the side bar should not be shown at all (such as for "Home").
+   * The routes that are nested under this group. These are displayed inside of each group's accordion.
    */
   children: Array<NavGroupChild>;
 };

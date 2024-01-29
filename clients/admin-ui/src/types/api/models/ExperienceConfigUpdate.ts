@@ -18,11 +18,19 @@ export type ExperienceConfigUpdate = {
    */
   acknowledge_button_label?: string;
   /**
+   * Overlay 'Banner Description'
+   */
+  banner_description?: string;
+  /**
    * Overlay 'Banner'
    */
   banner_enabled?: BannerEnabled;
   /**
-   * Overlay 'Banner Description' or Privacy Center 'Description'
+   * Overlay 'Banner title'
+   */
+  banner_title?: string;
+  /**
+   * Overlay 'Description' or Privacy Center 'Description'
    */
   description?: string;
   /**
@@ -58,7 +66,7 @@ export type ExperienceConfigUpdate = {
    */
   save_button_label?: string;
   /**
-   * Overlay 'Banner title' or Privacy Center 'title'
+   * Overlay 'title' or Privacy Center 'title'
    */
   title?: string;
 };

@@ -5,10 +5,11 @@ from typing import Any, List, Optional
 from fastapi.applications import FastAPI
 from pydantic import AnyUrl
 from sqlalchemy.orm import Session
-from starlette.middleware.cors import CORSMiddleware
 
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
+from fides.api.util.cors_middleware_utils import update_cors_middleware
+from fides.config import CONFIG
 
 
 class ConfigProxyBase:
@@ -54,7 +55,26 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     prefix = "execution"
 
     subject_identity_verification_required: bool
+    disable_consent_identity_verification: bool
     require_manual_request_approval: bool
+
+    def __getattribute__(self, name: str) -> Any:
+        """
+        Overrides base __getattribute__ to provide a dynamic fallback for
+        'disable_consent_identity_verification'. The fallback is based on
+        'subject_identity_verification_required' only when no explicit value is provided,
+        preserving None for unset cases.
+        """
+        if name == "disable_consent_identity_verification":
+            value = super().__getattribute__("disable_consent_identity_verification")
+            if value is None:
+                subject_verification_required = super().__getattribute__(
+                    "subject_identity_verification_required"
+                )
+                return not subject_verification_required
+            return value
+
+        return super().__getattribute__(name)
 
 
 class StorageSettingsProxy(ConfigProxyBase):
@@ -71,6 +91,12 @@ class SecuritySettingsProxy(ConfigProxyBase):
     # `cors_origin_regex` property should be used.
     # this is explicitly _not_ accessible via API - it must be used with care.
     cors_origins: List[AnyUrl]
+
+
+class ConsentSettingsProxy(ConfigProxyBase):
+    prefix = "consent"
+
+    override_vendor_purposes: bool
 
 
 class ConfigProxy:
@@ -99,20 +125,19 @@ class ConfigProxy:
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
+        self.consent = ConsentSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
         """
         Util function that loads the current CORS domains from
         `ConfigProxy` into the  `CORSMiddleware` at runtime.
         """
-        for mw in app.user_middleware:
-            if mw.cls is CORSMiddleware:
-                current_config_proxy_domains = (
-                    self.security.cors_origins
-                    if self.security.cors_origins is not None
-                    else []
-                )
 
-                mw.options["allow_origins"] = [
-                    str(domain) for domain in current_config_proxy_domains
-                ]
+        current_config_proxy_domains = (
+            self.security.cors_origins if self.security.cors_origins is not None else []
+        )
+        update_cors_middleware(
+            app,
+            current_config_proxy_domains,
+            CONFIG.security.cors_origin_regex,
+        )

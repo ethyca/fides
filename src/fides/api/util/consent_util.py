@@ -1,8 +1,9 @@
 from html import escape
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 import yaml
 from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
@@ -23,10 +24,9 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
     UserConsentPreference,
-    check_conflicting_data_uses,
     check_conflicting_notice_keys,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
@@ -45,6 +45,8 @@ PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
 PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
+    "banner_description",
+    "banner_title",
     "description",
     "privacy_policy_link_label",
     "privacy_policy_url",
@@ -57,7 +59,8 @@ UNESCAPE_SAFESTR_HEADER = "unescape-safestr"
 
 
 def filter_privacy_preferences_for_propagation(
-    system: Optional[System], privacy_preferences: List[PrivacyPreferenceHistory]
+    system: Optional[System],
+    privacy_preferences: List[PrivacyPreferenceHistory],
 ) -> List[PrivacyPreferenceHistory]:
     """Filter privacy preferences on a privacy request to just the ones that should be considered for third party
     consent propagation.
@@ -71,7 +74,11 @@ def filter_privacy_preferences_for_propagation(
         if pref.privacy_notice_history
         and pref.privacy_notice_history.enforcement_level
         == EnforcementLevel.system_wide
-        and pref.preference != UserConsentPreference.acknowledge
+        and (
+            pref.preference
+            and pref.preference
+            in [UserConsentPreference.opt_in, UserConsentPreference.opt_out]
+        )
     ]
 
     if not system:
@@ -278,7 +285,7 @@ def get_or_create_fides_user_device_id_provided_identity(
 
 
 def validate_notice_data_uses(
-    privacy_notices: List[Union[PrivacyNoticeWithId, PrivacyNoticeCreation]],
+    privacy_notices: Iterable[Union[PrivacyNoticeWithId, PrivacyNoticeCreation]],
     db: Session,
 ) -> None:
     """
@@ -327,8 +334,9 @@ def create_privacy_notices_util(
         PrivacyNotice(**privacy_notice.dict(exclude_unset=True))
         for privacy_notice in privacy_notice_schemas
     ]
-    check_conflicting_data_uses(new_notices, existing_notices)
     check_conflicting_notice_keys(new_notices, existing_notices)
+    for new_notice in new_notices:
+        new_notice.validate_enabled_has_data_uses()
 
     created_privacy_notices: List[PrivacyNotice] = []
     affected_regions: Set = set()
@@ -343,6 +351,11 @@ def create_privacy_notices_util(
                 model=privacy_notice,
                 fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
             )
+        privacy_notice = transform_fields(
+            transformation=jsonable_encoder,
+            model=privacy_notice,
+            fields=["gpp_field_mapping"],
+        )
         created_privacy_notice = PrivacyNotice.create(
             db=db,
             data=privacy_notice.dict(exclude_unset=True),
@@ -416,6 +429,11 @@ def prepare_privacy_notice_patches(
             model=update_data,
             fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
         )
+        update_data = transform_fields(
+            transformation=jsonable_encoder,
+            model=update_data,
+            fields=["gpp_field_mapping"],
+        )
         if update_data.id not in existing_notices:
             if not allow_create:
                 raise HTTPException(
@@ -427,7 +445,7 @@ def prepare_privacy_notice_patches(
             updates_and_existing.append((update_data, existing_notices[update_data.id]))
 
     # we temporarily store proposed update data in-memory for validation purposes only
-    validation_updates = []
+    validation_updates: List[PRIVACY_NOTICE_TYPE] = []
     for update_data, existing_notice in updates_and_existing:
         # add the patched update to our temporary updates for validation
         if existing_notice:
@@ -448,16 +466,14 @@ def prepare_privacy_notice_patches(
 
     # run the validation here on our proposed "dry-run" updates
     try:
-        check_conflicting_data_uses(
-            validation_updates,
-            existing_notices.values(),
-            ignore_disabled=ignore_disabled,
-        )
         check_conflicting_notice_keys(
             validation_updates,
             existing_notices.values(),
             ignore_disabled=ignore_disabled,
         )
+        for validation_update in validation_updates:
+            validation_update.validate_enabled_has_data_uses()
+
     except ValidationError as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
 
@@ -467,14 +483,14 @@ def prepare_privacy_notice_patches(
 
 def upsert_privacy_notice_templates_util(
     db: Session,
-    template_schemas: List[Union[PrivacyNoticeWithId]],
+    template_schemas: List[PrivacyNoticeWithId],
 ) -> List[PrivacyNoticeTemplate]:
     """
     Create or update *Privacy Notice Templates*. These are the resources that
     Fides ships with out of the box.
     """
     ensure_unique_ids(template_schemas)
-    validate_notice_data_uses(template_schemas, db)  # type: ignore[arg-type]
+    validate_notice_data_uses(template_schemas, db)
 
     upserts_and_existing: List[
         Tuple[PrivacyNoticeWithId, Optional[PrivacyNoticeTemplate]]
@@ -592,6 +608,7 @@ def create_default_experience_config(
         model=(ExperienceConfigCreateWithId(**experience_config_data)),
         fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
+
     if not experience_config_schema.is_default:
         raise Exception("This method is for created default experience configs.")
 

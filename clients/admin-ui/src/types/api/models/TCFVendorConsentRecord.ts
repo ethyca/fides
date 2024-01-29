@@ -14,9 +14,5 @@ export type TCFVendorConsentRecord = {
   name?: string;
   description?: string;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
   purpose_consents?: Array<EmbeddedPurpose>;
 };

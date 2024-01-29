@@ -47,6 +47,7 @@ from fides.api.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentReport,
+    ConsentRequestCreate,
     ConsentRequestResponse,
     ConsentWithExecutableStatus,
     PrivacyRequestCreate,
@@ -180,7 +181,7 @@ def create_consent_request(
     *,
     db: Session = Depends(get_db),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
-    data: Identity,
+    data: ConsentRequestCreate,
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
     if not CONFIG.redis.enabled:
@@ -188,33 +189,45 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not data.email and not data.phone_number and not data.fides_user_device_id:
+    identity = data.identity
+    if (
+        not identity.email
+        and not identity.phone_number
+        and not identity.fides_user_device_id
+    ):
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
             detail="An email address, phone number, or fides_user_device_id is required",
         )
 
-    identity = _get_or_create_provided_identity(
+    provided_identity = _get_or_create_provided_identity(
         db=db,
-        identity_data=data,
+        identity_data=identity,
     )
 
     consent_request_data = {
-        "provided_identity_id": identity.id,
+        "provided_identity_id": provided_identity.id,
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
-    if config_proxy.execution.subject_identity_verification_required:
+    consent_request.persist_custom_privacy_request_fields(
+        db=db, custom_privacy_request_fields=data.custom_privacy_request_fields
+    )
+
+    # we send out a verification code if verification is required in general (for access, erasure, and consent),
+    # but have the ability to disable verification just for consent
+    if not config_proxy.execution.disable_consent_identity_verification:
         try:
-            send_verification_code_to_user(db, consent_request, data)
+            send_verification_code_to_user(db, consent_request, data.identity)
         except MessageDispatchException as exc:
             logger.error("Error sending the verification code message: {}", str(exc))
             raise HTTPException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error sending the verification code message: {str(exc)}",
             )
+
     return ConsentRequestResponse(
-        identity=data,
+        identity=identity,
         consent_request_id=consent_request.id,
     )
 
@@ -274,8 +287,7 @@ def consent_request_verify(
         HTTP_404_NOT_FOUND: {"detail": "Consent request not found"},
         HTTP_400_BAD_REQUEST: {
             "detail": "Retrieving consent preferences without identity verification is "
-            "only supported with subject_identity_verification_required "
-            "turned off."
+            "only supported with disable_consent_identity_verification set to true"
         },
     },
 )
@@ -287,12 +299,11 @@ def get_consent_preferences_no_id(
 ) -> ConsentPreferences:
     """Returns the current consent preferences if successful."""
 
-    if config_proxy.execution.subject_identity_verification_required:
+    if not config_proxy.execution.disable_consent_identity_verification:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Retrieving consent preferences without identity verification is "
-            "only supported with subject_identity_verification_required "
-            "turned off.",
+            "only supported with disable_consent_identity_verification set to true",
         )
 
     _, provided_identity = _get_consent_request_and_provided_identity(
@@ -348,6 +359,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     provided_identity: ProvidedIdentity,
     policy: Union[FidesKey, str],
     consent_preferences: ConsentPreferences,
+    consent_request: ConsentRequest,
     executable_consents: Optional[List[ConsentWithExecutableStatus]] = [],
     browser_identity: Optional[Identity] = None,
 ) -> Optional[BulkPostPrivacyRequests]:
@@ -395,6 +407,8 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
                 identity=identity,
                 policy_key=policy,
                 consent_preferences=executable_consent_preferences,
+                consent_request_id=consent_request.id,
+                custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
             )
         ],
         authenticated=True,
@@ -470,6 +484,7 @@ def set_consent_preferences(
         provided_identity,
         data.policy_key or DEFAULT_CONSENT_POLICY,
         consent_preferences,
+        consent_request,
         data.executable_options,
         data.browser_identity,
     )
@@ -598,7 +613,7 @@ def _get_consent_request_and_provided_identity(
             detail="Consent request not found",
         )
 
-    if ConfigProxy(db).execution.subject_identity_verification_required:
+    if not ConfigProxy(db).execution.disable_consent_identity_verification:
         try:
             consent_request.verify_identity(
                 db,

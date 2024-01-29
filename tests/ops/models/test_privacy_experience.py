@@ -1,34 +1,20 @@
 import pytest
-from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
 from sqlalchemy.exc import IntegrityError
 
-from fides.api.api.deps import get_api_session
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
-    cache_saved_and_served_on_consent_record,
+    get_privacy_notices_by_region_and_component,
     upsert_privacy_experiences_after_config_update,
-    upsert_privacy_experiences_after_notice_update,
 )
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
-    UserConsentPreference,
-)
-from fides.api.models.privacy_preference import ConsentRecordType
-from fides.api.schemas.tcf import (
-    TCFFeatureRecord,
-    TCFPurposeConsentRecord,
-    TCFPurposeLegitimateInterestsRecord,
-    TCFSpecialPurposeRecord,
-    TCFVendorConsentRecord,
-    TCFVendorLegitimateInterestsRecord,
-    TCFVendorRelationships,
 )
 
 
@@ -42,7 +28,9 @@ class TestExperienceConfig:
             data={
                 "accept_button_label": "Accept all",
                 "acknowledge_button_label": "OK",
+                "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
                 "banner_enabled": "enabled_where_required",
+                "banner_title": "Control Your Privacy",
                 "component": "overlay",
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
@@ -62,6 +50,11 @@ class TestExperienceConfig:
             config.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
+        assert (
+            config.banner_description
+            == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
+        )
+        assert config.banner_title == "Control Your Privacy"
         assert config.disabled is False
         assert config.is_default is False
         assert config.privacy_preferences_link_label == "Manage preferences"
@@ -87,6 +80,11 @@ class TestExperienceConfig:
             history.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
+        assert (
+            history.banner_description
+            == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
+        )
+        assert history.banner_title == "Control Your Privacy"
         assert history.disabled is False
         assert history.is_default is False
         assert history.privacy_preferences_link_label == "Manage preferences"
@@ -107,6 +105,7 @@ class TestExperienceConfig:
             data={
                 "accept_button_label": "Accept all",
                 "acknowledge_button_label": "OK",
+                "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
                 "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
@@ -332,86 +331,6 @@ class TestPrivacyExperience:
 
         exp.delete(db)
 
-    def test_get_related_privacy_notices(self, db, system):
-        """Test PrivacyExperience.get_related_privacy_notices that are embedded in PrivacyExperience request"""
-        privacy_experience = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": ComponentType.overlay,
-                "region": "it",
-            },
-        )
-
-        # No privacy notices exist
-        assert privacy_experience.get_related_privacy_notices(db) == []
-
-        privacy_notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "Test privacy notice",
-                "notice_key": "test_privacy_notice",
-                "description": "a test sample privacy notice configuration",
-                "regions": [PrivacyNoticeRegion.fr, PrivacyNoticeRegion.it],
-                "consent_mechanism": ConsentMechanism.opt_in,
-                "data_uses": ["marketing.advertising", "third_party_sharing"],
-                "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_overlay": False,
-                "displayed_in_api": True,
-                "displayed_in_privacy_center": True,
-            },
-        )
-
-        # Privacy Notice has a matching region, but is not displayed in overlay
-        assert privacy_experience.get_related_privacy_notices(db) == []
-
-        privacy_notice.displayed_in_overlay = True
-        privacy_notice.save(db)
-
-        # Privacy Notice both has a matching region and is displayed in overlay
-        assert privacy_experience.get_related_privacy_notices(db) == [privacy_notice]
-
-        privacy_notice.regions = ["us_ca"]
-        privacy_notice.save(db)
-        # While privacy notice is displayed in the overlay, it doesn't have a matching region
-        assert privacy_experience.get_related_privacy_notices(db) == []
-
-        privacy_notice.regions = ["it"]
-        privacy_notice.save(db)
-        privacy_notice.disabled = True
-        privacy_notice.save(db)
-
-        assert privacy_experience.get_related_privacy_notices(db) == [privacy_notice]
-        # Disabled show by default but if show_disable is False, they're unlinked.
-        assert (
-            privacy_experience.get_related_privacy_notices(db, show_disabled=False)
-            == []
-        )
-
-        # Privacy notice is applicable to a system - they share a data use
-        assert privacy_experience.get_related_privacy_notices(
-            db, systems_applicable=True
-        ) == [privacy_notice]
-
-        system.privacy_declarations[0].delete(db)
-        db.refresh(system)
-
-        # Privacy notice is no longer applicable to any systems
-        assert (
-            privacy_experience.get_related_privacy_notices(db, systems_applicable=True)
-            == []
-        )
-
-        privacy_notice.histories[0].delete(db)
-        privacy_notice.delete(db)
-
-    def test_get_related_privacy_notices_for_a_tcf_overlay(
-        self, db, privacy_experience_france_tcf_overlay
-    ):
-        """Just returns an empty list; Privacy Notices are not relevant here"""
-        assert (
-            privacy_experience_france_tcf_overlay.get_related_privacy_notices(db) == []
-        )
-
     def test_get_should_show_banner(self, db):
         """Test PrivacyExperience.get_should_show_banner that is calculated at runtime"""
         privacy_experience = PrivacyExperience.create(
@@ -503,112 +422,6 @@ class TestPrivacyExperience:
         """Currently, this returns true if the experience is a TCF Overlay type"""
         assert privacy_experience_france_tcf_overlay.get_should_show_banner(db) is True
 
-    @pytest.mark.usefixtures("privacy_preference_history_us_ca_provide")
-    def test_get_related_notices_no_privacy_preference_for_fides_user_device_id(
-        self,
-        db,
-        privacy_notice_us_ca_provide,
-        fides_user_provided_identity,
-    ):
-        """Test fides_user_provided_identity argument for get_related_privacy_notices when the
-        user does not have saved preferences.
-
-        By default, we still return the notices, we just don't surface current or outdated preferences for the
-        user because none exist.
-        """
-        privacy_experience = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": ComponentType.overlay,
-                "region": "us_ca",
-            },
-        )
-
-        notices = privacy_experience.get_related_privacy_notices(db)
-        assert notices == [privacy_notice_us_ca_provide]
-        # No preference here, because no user passed in.
-        assert notices[0].default_preference == UserConsentPreference.opt_out
-        assert notices[0].current_preference is None
-        assert notices[0].outdated_preference is None
-
-        notices = privacy_experience.get_related_privacy_notices(
-            db, fides_user_provided_identity=fides_user_provided_identity
-        )
-        assert notices == [privacy_notice_us_ca_provide]
-        # User has no preferences saved for this notice
-        assert notices[0].default_preference == UserConsentPreference.opt_out
-        assert notices[0].current_preference is None
-        assert notices[0].outdated_preference is None
-
-    def test_get_related_privacy_notices_with_fides_user_device_id_preferences(
-        self,
-        db,
-        privacy_notice_us_ca_provide,
-        privacy_preference_history_us_ca_provide_for_fides_user,
-        fides_user_provided_identity,
-    ):
-        """Test fides user device id argument to Experience.get_related_privacy_notices adds the user's
-        preferences if they exist.  If the user's preferences correspond to an older version, that
-        will go under "outdated" preference.
-        """
-        privacy_experience = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": ComponentType.overlay,
-                "region": "us_ca",
-            },
-        )
-
-        notices = privacy_experience.get_related_privacy_notices(db)
-        assert notices == [privacy_notice_us_ca_provide]
-        # No preference here, because no user passed in.
-        assert notices[0].current_preference is None
-        assert notices[0].outdated_preference is None
-
-        current_saved_preference = (
-            privacy_preference_history_us_ca_provide_for_fides_user.current_privacy_preference
-        )
-        assert current_saved_preference.preference == UserConsentPreference.opt_in
-
-        # Current preference returned for given user
-        notices = privacy_experience.get_related_privacy_notices(
-            db, fides_user_provided_identity=fides_user_provided_identity
-        )
-        assert notices == [privacy_notice_us_ca_provide]
-        assert notices[0].default_preference == UserConsentPreference.opt_out
-        assert notices[0].current_preference == UserConsentPreference.opt_in
-        assert notices[0].outdated_preference is None
-
-        # Update privacy notice
-        privacy_notice_us_ca_provide.update(
-            db=db,
-            data={
-                "data_uses": ["functional"],
-                "enforcement_level": EnforcementLevel.frontend,
-            },
-        )
-
-        # Current preference for the given user is now None, and opt in preference is the "outdated" preference because it
-        # corresponds to a preference for an older version
-        refreshed_notices = privacy_experience.get_related_privacy_notices(
-            db, fides_user_provided_identity=fides_user_provided_identity
-        )
-
-        assert refreshed_notices == [privacy_notice_us_ca_provide]
-        assert refreshed_notices[0].default_preference == UserConsentPreference.opt_out
-        assert refreshed_notices[0].current_preference is None
-        assert refreshed_notices[0].outdated_preference == UserConsentPreference.opt_in
-
-        privacy_experience.delete(db)
-
-        another_session = get_api_session()
-        requeried = privacy_experience.get_related_privacy_notices(another_session)
-        # Assert current/outdated preferences are None when requeried in another session w/ no device id
-        assert requeried[0].default_preference == UserConsentPreference.opt_out
-        assert requeried[0].current_preference is None
-        assert requeried[0].outdated_preference is None
-        another_session.close()
-
     def test_create_multiple_experiences_of_same_component_type(self, db):
         """We can only have one experience per component type per region"""
         exp = PrivacyExperience.create(
@@ -661,333 +474,99 @@ class TestPrivacyExperience:
         exp_2.delete(db)
         exp.delete(db)
 
-
-class TestUpsertPrivacyExperiencesOnNoticeChange:
-    def test_privacy_center_experience_needed(self, db):
-        """
-        Notice that needs to be displayed in the PrivacyCenter is created and no Privacy Center Experience
-        exists.  Assert that a privacy center PrivacyExperience is created.
-        """
-        notice = PrivacyNotice.create(
+    @pytest.mark.parametrize(
+        "region,country",
+        [
+            ("us_ca", "us"),
+            ("us_tx", "us"),
+            ("us", "us"),
+            ("ca_qc", "ca"),
+            ("ca", "ca"),
+            ("fr", "fr"),
+        ],
+    )
+    def test_region_country_property(self, db, region, country):
+        exp: PrivacyExperience = PrivacyExperience.create(
             db=db,
             data={
-                "name": "example privacy notice",
-                "notice_key": "example_privacy_notice",
-                "regions": [
-                    PrivacyNoticeRegion.us_ca,
-                ],
+                "component": "overlay",
+                "region": region,
+            },
+        )
+
+        assert exp.region_country == country
+
+        exp.delete(db)
+
+    def test_get_privacy_notices_by_region_and_component(self, db):
+        """
+        Test that `get_privacy_notices_by_region_and_component` properly
+        finds notices against multiple regions.
+        """
+
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test privacy notice",
+                "notice_key": "test_privacy_notice",
+                "description": "a test sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.us],
                 "consent_mechanism": ConsentMechanism.opt_out,
                 "data_uses": ["marketing.advertising", "third_party_sharing"],
                 "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_privacy_center": True,
                 "displayed_in_overlay": False,
-                "displayed_in_api": False,
-            },
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-        assert overlay_experience is None
-        assert privacy_center_experience is None
-
-        added_exp = upsert_privacy_experiences_after_notice_update(
-            db, [PrivacyNoticeRegion.us_ca]
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-
-        assert overlay_experience is None  # Only privacy center experience was created
-        assert privacy_center_experience is not None
-        assert added_exp == [privacy_center_experience]
-
-        assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
-        # Experience automatically linked to default privacy center config
-        assert (
-            privacy_center_experience.experience_config_id
-            == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
-        )
-        assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
-
-        privacy_center_experience.delete(db)
-
-        notice.histories[0].delete(db)
-        notice.delete(db)
-
-    def test_privacy_center_experience_already_exists(self, db):
-        """
-        Notice that needs to be displayed in the PrivacyCenter is created and Privacy Center Experience
-        already exists.  No action needed.
-        """
-        notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "example privacy notice",
-                "notice_key": "example_privacy_notice",
-                "regions": [
-                    PrivacyNoticeRegion.us_ca,
-                ],
-                "consent_mechanism": ConsentMechanism.opt_out,
-                "data_uses": ["marketing.advertising", "third_party_sharing"],
-                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_api": True,
                 "displayed_in_privacy_center": True,
-                "displayed_in_overlay": False,
-                "displayed_in_api": False,
             },
         )
 
-        exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "region": PrivacyNoticeRegion.us_ca,
-                "component": ComponentType.privacy_center,
-            },
-        )
-        exp_created_at = exp.created_at
-        exp_updated_at = exp.updated_at
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-        assert overlay_experience is None
-        assert privacy_center_experience is not None
-
-        added_exp = upsert_privacy_experiences_after_notice_update(
-            db, [PrivacyNoticeRegion.us_ca]
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-
-        assert overlay_experience is None
-        assert privacy_center_experience is not None
-        assert added_exp == []
-
-        assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
-        assert privacy_center_experience.experience_config_id is None
-        assert privacy_center_experience.created_at == exp_created_at
-        assert privacy_center_experience.updated_at == exp_updated_at
-
-        assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
-
-        privacy_center_experience.delete(db)
-
-        notice.histories[0].delete(db)
-        notice.delete(db)
-
-    def test_overlay_experience_needed(self, db):
-        """Test Notice created that needs to be displayed in an overlay but none exists. Assert one is created"""
-        notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "example privacy notice",
-                "notice_key": "example_privacy_notice",
-                "regions": [
-                    PrivacyNoticeRegion.it,
-                ],
-                "consent_mechanism": ConsentMechanism.opt_in,
-                "data_uses": ["marketing.advertising"],
-                "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_privacy_center": False,
-                "displayed_in_overlay": True,
-                "displayed_in_api": False,
-            },
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.it
-        )
-        assert overlay_experience is None
-        assert privacy_center_experience is None
-
-        added_exp = upsert_privacy_experiences_after_notice_update(
-            db, [PrivacyNoticeRegion.it]
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.it
-        )
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert added_exp == [overlay_experience]
-
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.region == PrivacyNoticeRegion.it
         assert (
-            overlay_experience.experience_config_id
-            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us],
+                ComponentType.privacy_center,
+            ).all()[0]
+            == privacy_notice
         )
-
-        assert overlay_experience.get_related_privacy_notices(db) == [notice]
-
-        overlay_experience.delete(db)
-
-        notice.histories[0].delete(db)
-        notice.delete(db)
-
-    def test_overlay_experience_exists(self, db):
-        """
-        Test Notice created that needs to be displayed in an overlay and experience already exists.
-        No action needed.
-        """
-        notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "example privacy notice",
-                "notice_key": "example_privacy_notice",
-                "regions": [
-                    PrivacyNoticeRegion.us_ca,
-                ],
-                "consent_mechanism": ConsentMechanism.opt_out,
-                "data_uses": ["marketing.advertising"],
-                "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_privacy_center": False,
-                "displayed_in_overlay": True,
-                "displayed_in_api": False,
-            },
-        )
-
-        exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "region": PrivacyNoticeRegion.us_ca,
-                "component": ComponentType.overlay,
-            },
-        )
-        exp_created_at = exp.created_at
-        exp_updated_at = exp.updated_at
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-
-        added_exp = upsert_privacy_experiences_after_notice_update(
-            db, [PrivacyNoticeRegion.us_ca]
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-        db.refresh(overlay_experience)
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is None
-        assert added_exp == []
-
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ca
-        assert overlay_experience.experience_config_id is None
-        assert overlay_experience.created_at == exp_created_at
-        assert overlay_experience.updated_at == exp_updated_at
-
-        assert overlay_experience.get_related_privacy_notices(db) == [notice]
-
-        overlay_experience.delete(db)
-
-        notice.histories[0].delete(db)
-        notice.delete(db)
-
-    def test_both_privacy_center_and_overlay_experience_needed(self, db):
-        """Assert multiple types of experiences can be created simultaneously"""
-        notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "example privacy notice",
-                "notice_key": "example_privacy_notice",
-                "regions": [
-                    PrivacyNoticeRegion.us_ca,
-                ],
-                "consent_mechanism": ConsentMechanism.opt_out,
-                "data_uses": ["marketing.advertising", "third_party_sharing"],
-                "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_privacy_center": True,
-                "displayed_in_overlay": True,
-                "displayed_in_api": False,
-            },
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-        assert overlay_experience is None
-        assert privacy_center_experience is None
-
-        added_exp = upsert_privacy_experiences_after_notice_update(
-            db, [PrivacyNoticeRegion.us_ca]
-        )
-
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ca
-        )
-
-        assert overlay_experience is not None
-        assert privacy_center_experience is not None
-        assert {exp.id for exp in added_exp} == {
-            overlay_experience.id,
-            privacy_center_experience.id,
-        }
-
-        assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.region == PrivacyNoticeRegion.us_ca
         assert (
-            privacy_center_experience.experience_config_id
-            == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us],
+                ComponentType.overlay,
+            ).all()
+            == []
         )
-
-        assert overlay_experience.component == ComponentType.overlay
-        assert overlay_experience.region == PrivacyNoticeRegion.us_ca
         assert (
-            overlay_experience.experience_config_id
-            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+            get_privacy_notices_by_region_and_component(
+                db, [PrivacyNoticeRegion.us], ComponentType.privacy_center
+            ).all()[0]
+            == privacy_notice
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us, PrivacyNoticeRegion.fr],
+                ComponentType.privacy_center,
+            ).all()[0]
+            == privacy_notice
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db, [PrivacyNoticeRegion.us_ca], ComponentType.privacy_center
+            ).all()
+            == []
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_tx],
+                ComponentType.privacy_center,
+            ).all()
+            == []
         )
 
-        assert privacy_center_experience.get_related_privacy_notices(db) == [notice]
-        assert overlay_experience.get_related_privacy_notices(db) == [notice]
-
-        overlay_experience.delete(db)
-        privacy_center_experience.delete(db)
-
-        notice.histories[0].delete(db)
-        notice.delete(db)
+        privacy_notice.histories[0].delete(db)
+        privacy_notice.delete(db)
 
 
 class TestUpsertPrivacyExperiencesOnConfigChange:
@@ -1263,311 +842,3 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert privacy_center_experience.experience_config_id is None
 
         privacy_center_experience.delete(db)
-
-
-class TestCacheSavedAndServedOnConsentRecord:
-    @pytest.fixture
-    def tcf_purpose_consent_record(self):
-        return TCFPurposeConsentRecord(**MAPPED_PURPOSES[8].dict())
-
-    @pytest.fixture
-    def tcf_purpose_legitimate_interests_record(self):
-        return TCFPurposeLegitimateInterestsRecord(**MAPPED_PURPOSES[8].dict())
-
-    @pytest.mark.usefixtures(
-        "served_notice_history_us_provide_for_fides_user",
-        "privacy_preference_history_us_ca_provide_for_fides_user",
-    )
-    def test_cache_saved_and_served_for_privacy_notice_history(
-        self,
-        db,
-        fides_user_provided_identity,
-        privacy_notice_us_ca_provide,
-    ):
-        assert (
-            privacy_notice_us_ca_provide.default_preference
-            == UserConsentPreference.opt_out
-        )
-        assert privacy_notice_us_ca_provide.current_preference is None
-        assert privacy_notice_us_ca_provide.outdated_preference is None
-        assert privacy_notice_us_ca_provide.current_served is None
-        assert privacy_notice_us_ca_provide.outdated_served is None
-
-        cache_saved_and_served_on_consent_record(
-            db=db,
-            consent_record=privacy_notice_us_ca_provide,
-            fides_user_provided_identity=fides_user_provided_identity,
-            record_type=ConsentRecordType.privacy_notice_id,
-        )
-
-        assert (
-            privacy_notice_us_ca_provide.default_preference
-            == UserConsentPreference.opt_out
-        )
-        assert (
-            privacy_notice_us_ca_provide.current_preference
-            == UserConsentPreference.opt_in
-        )
-        assert privacy_notice_us_ca_provide.outdated_preference is None
-        assert privacy_notice_us_ca_provide.current_served is True
-        assert privacy_notice_us_ca_provide.outdated_served is None
-
-    def test_record_for_tcf_purpose_exists_for_older_version(
-        self,
-        db,
-        tcf_purpose_consent_record,
-        fides_user_provided_identity,
-        privacy_preference_history_for_tcf_purpose_consent,
-        served_notice_history_for_tcf_purpose,
-    ):
-        """For TCF preferences, preferences saved against a purpose in an older TCF version are still returned
-        as the current preference, not the outdated preference, same with TCF served.
-
-        For TCF, just because a preference was saved against an older TCF version, doesn't mean its necessarily "outdated".
-        For Privacy Notices, however, we do consider them outdated.
-        """
-        privacy_preference_history_for_tcf_purpose_consent.current_privacy_preference.tcf_version = (
-            "1.0"
-        )
-        privacy_preference_history_for_tcf_purpose_consent.current_privacy_preference.save(
-            db
-        )
-
-        served_notice_history_for_tcf_purpose.last_served_record.tcf_version = "1.0"
-        served_notice_history_for_tcf_purpose.last_served_record.save(db)
-
-        cache_saved_and_served_on_consent_record(
-            db,
-            tcf_purpose_consent_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.purpose_consent,
-        )
-
-        assert (
-            tcf_purpose_consent_record.default_preference
-            == UserConsentPreference.opt_out
-        )
-        assert tcf_purpose_consent_record.outdated_preference is None
-        assert (
-            tcf_purpose_consent_record.current_preference
-            == UserConsentPreference.opt_out
-        )
-        assert tcf_purpose_consent_record.current_served is True
-        assert tcf_purpose_consent_record.outdated_served is None
-
-    @pytest.mark.usefixtures(
-        "privacy_preference_history_for_tcf_purpose_consent",
-        "served_notice_history_for_tcf_purpose",
-    )
-    def test_record_for_tcf_purpose_exists_for_current_version(
-        self, db, tcf_purpose_consent_record, fides_user_provided_identity
-    ):
-        cache_saved_and_served_on_consent_record(
-            db,
-            tcf_purpose_consent_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.purpose_consent,
-        )
-
-        assert (
-            tcf_purpose_consent_record.default_preference
-            == UserConsentPreference.opt_out
-        )
-        assert (
-            tcf_purpose_consent_record.current_preference
-            == UserConsentPreference.opt_out
-        )
-        assert tcf_purpose_consent_record.outdated_preference is None
-        assert tcf_purpose_consent_record.current_served is True
-        assert tcf_purpose_consent_record.outdated_served is None
-
-    def test_no_record_for_tcf_purpose_exists(
-        self, db, tcf_purpose_consent_record, fides_user_provided_identity
-    ):
-        cache_saved_and_served_on_consent_record(
-            db,
-            tcf_purpose_consent_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.purpose_consent,
-        )
-        assert (
-            tcf_purpose_consent_record.default_preference
-            == UserConsentPreference.opt_out
-        )
-        assert tcf_purpose_consent_record.current_preference is None
-        assert tcf_purpose_consent_record.outdated_preference is None
-        assert tcf_purpose_consent_record.current_served is None
-        assert tcf_purpose_consent_record.outdated_served is None
-
-    def test_tcf_purpose_legitimate_interests_record(
-        self,
-        db,
-        tcf_purpose_legitimate_interests_record,
-        fides_user_provided_identity,
-        privacy_preference_history_for_tcf_purpose_legitimate_interests,
-    ):
-        cache_saved_and_served_on_consent_record(
-            db,
-            tcf_purpose_legitimate_interests_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.purpose_legitimate_interests,
-        )
-        assert (
-            tcf_purpose_legitimate_interests_record.default_preference
-            == UserConsentPreference.opt_in
-        )
-        assert (
-            tcf_purpose_legitimate_interests_record.current_preference
-            == UserConsentPreference.opt_in
-        )
-        assert tcf_purpose_legitimate_interests_record.outdated_preference is None
-        assert tcf_purpose_legitimate_interests_record.current_served is None
-        assert tcf_purpose_legitimate_interests_record.outdated_served is None
-
-    @pytest.mark.usefixtures(
-        "privacy_preference_history_for_tcf_special_purpose",
-        "served_notice_history_for_tcf_special_purpose",
-    )
-    def test_cache_saved_and_served_for_special_purpose(
-        self,
-        db,
-        fides_user_provided_identity,
-    ):
-        special_purpose_record = TCFPurposeConsentRecord(
-            **MAPPED_SPECIAL_PURPOSES[1].dict()
-        )
-        cache_saved_and_served_on_consent_record(
-            db,
-            special_purpose_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.special_purpose,
-        )
-
-        assert (
-            special_purpose_record.default_preference == UserConsentPreference.opt_out
-        )
-        assert special_purpose_record.current_preference == UserConsentPreference.opt_in
-        assert special_purpose_record.outdated_preference is None
-        assert special_purpose_record.current_served is True
-        assert special_purpose_record.outdated_served is None
-
-    @pytest.mark.usefixtures("privacy_preference_history_for_vendor")
-    def test_cache_saved_and_served_for_vendor_consent(
-        self, db, fides_user_provided_identity
-    ):
-        vendor_record = TCFVendorConsentRecord(
-            id="gvl.42", name="test", description="test", has_vendor_id=False
-        )
-        cache_saved_and_served_on_consent_record(
-            db,
-            vendor_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.vendor_consent,
-        )
-
-        assert vendor_record.default_preference == UserConsentPreference.opt_out
-        assert vendor_record.current_preference == UserConsentPreference.opt_out
-        assert vendor_record.outdated_preference is None
-        assert vendor_record.current_served is None
-        assert vendor_record.outdated_served is None
-
-    @pytest.mark.usefixtures(
-        "privacy_preference_history_for_vendor_legitimate_interests"
-    )
-    def test_cache_saved_and_served_for_vendor_legitimate_interests(
-        self, db, fides_user_provided_identity
-    ):
-        vendor_record = TCFVendorLegitimateInterestsRecord(
-            id="gvl.42", name="test", description="test", has_vendor_id=True
-        )
-        cache_saved_and_served_on_consent_record(
-            db,
-            vendor_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.vendor_legitimate_interests,
-        )
-
-        assert vendor_record.default_preference == UserConsentPreference.opt_in
-        assert vendor_record.current_preference == UserConsentPreference.opt_out
-        assert vendor_record.outdated_preference is None
-        assert vendor_record.current_served is True
-        assert vendor_record.outdated_served is None
-
-    @pytest.mark.usefixtures("privacy_preference_history_for_system")
-    def test_cache_saved_and_served_for_system_consent(
-        self, db, fides_user_provided_identity, system
-    ):
-        system_record = TCFVendorConsentRecord(id=system.id, has_vendor_id=True)
-        cache_saved_and_served_on_consent_record(
-            db,
-            system_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.system_consent,
-        )
-
-        assert system_record.default_preference == UserConsentPreference.opt_out
-        assert system_record.current_preference == UserConsentPreference.opt_in
-        assert system_record.outdated_preference is None
-        assert system_record.current_served is None
-        assert system_record.outdated_served is None
-
-    def test_cache_saved_and_served_for_vendor_relationships(
-        self, db, fides_user_provided_identity, system
-    ):
-        """This is more just aggregating additional info - no consent is saved here"""
-        system_record = TCFVendorRelationships(
-            id=system.id, name="test", description="test", has_vendor_id=False
-        )
-        cache_saved_and_served_on_consent_record(
-            db,
-            system_record,
-            fides_user_provided_identity,
-            record_type=None,
-        )
-
-        assert not getattr(system_record, "default_preference", None)
-
-    def test_cache_saved_and_served_for_tcf_special_purpose(
-        self, db, fides_user_provided_identity
-    ):
-        sp_record = TCFSpecialPurposeRecord(
-            id=2,
-            name="Special Purpose 2",
-            illustrations=["test illustrations"],
-            data_uses=["test"],
-            description="desc",
-        )
-        cache_saved_and_served_on_consent_record(
-            db,
-            sp_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.special_purpose,
-        )
-
-        assert sp_record.default_preference == UserConsentPreference.acknowledge
-        assert sp_record.current_preference is None
-        assert sp_record.outdated_preference is None
-        assert sp_record.current_served is None
-        assert sp_record.outdated_served is None
-
-    @pytest.mark.usefixtures("privacy_preference_history_for_tcf_feature")
-    def test_cache_saved_and_served_for_tcf_feature(
-        self, db, fides_user_provided_identity
-    ):
-        feature_record = TCFFeatureRecord(
-            id=2,
-            name="Link different devices",
-            description="Different devices can be determined as belonging to you or your household in support of one or more of purposes.",
-        )
-        cache_saved_and_served_on_consent_record(
-            db,
-            feature_record,
-            fides_user_provided_identity,
-            record_type=ConsentRecordType.feature,
-        )
-
-        assert feature_record.default_preference == UserConsentPreference.acknowledge
-        assert feature_record.current_preference == UserConsentPreference.opt_in
-        assert feature_record.outdated_preference is None
-        assert feature_record.current_served is True
-        assert feature_record.outdated_served is None
