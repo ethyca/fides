@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
+from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
@@ -93,6 +94,7 @@ from fides.api.service.masking.strategy.masking_strategy_nullify import (
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
+from fides.api.util.consent_util import load_default_experience_configs_on_startup
 from fides.api.util.data_category import DataCategory
 from fides.config import CONFIG
 from fides.config.helpers import load_file
@@ -2969,3 +2971,14 @@ def served_notice_history(
     )
     yield pref_1
     pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
+def load_default_privacy_experience_configs(db):
+    """Ops tests drop db data, so for now, load these back in if they don't exist"""
+    if not PrivacyExperienceConfig.get_default_config(
+        db, ComponentType.overlay
+    ) or not PrivacyExperienceConfig.get_default_config(
+        db, ComponentType.privacy_center
+    ):
+        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)

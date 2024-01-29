@@ -160,13 +160,9 @@ class ExperienceConfigCreateWithId(ExperienceConfigCreate):
 class ExperienceConfigSchemaWithId(ExperienceConfigSchema):
     """
     An API representation of a ExperienceConfig that includes an `id` field.
-
-    Also includes the experience config history id and version
     """
 
     id: str
-    component: ComponentType
-    version: float
 
 
 class ExperienceConfigResponse(ExperienceConfigSchemaWithId):

@@ -16,6 +16,7 @@ from fides.api.models.privacy_experience import (
     link_notices_to_experience_config,
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.util.consent_util import EEA_COUNTRIES
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
 
@@ -78,69 +79,50 @@ class TestGetExperienceConfigList:
         assert response.status_code == 200
         resp = response.json()
         assert (
-            resp["total"] == 4
-        )  # Two default configs loaded on startup plus two here. TCF Experience is excluded.
+            resp["total"] == 2
+        )  # Two experience configs loaded here. TCF Experience is excluded.
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 4
+        assert len(data) == 2
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
+
+        assert first_config["component"] == "overlay"
+        assert first_config["banner_enabled"] == "enabled_where_required"
+        assert first_config["regions"] == ["us_ca"]
+        assert first_config["created_at"] is not None
+        assert first_config["updated_at"] is not None
+        assert len(first_config["translations"]) == 1
+        translation = first_config["translations"][0]
         assert (
-            first_config["description"]
+            translation["description"]
             == "On this page you can opt in and out of these data uses cases"
         )
         assert (
-            first_config["banner_description"]
+            translation["banner_description"]
             == "You can accept, reject, or manage your preferences in detail."
         )
-        assert first_config["banner_title"] == "Manage Your Consent"
-        assert first_config["component"] == "overlay"
-        assert first_config["banner_enabled"] == "enabled_where_required"
-        assert first_config["disabled"] is False
-        assert first_config["regions"] == ["us_ca"]
-        assert first_config["version"] == 1.0
-        assert first_config["created_at"] is not None
-        assert first_config["updated_at"] is not None
+        assert translation["banner_title"] == "Manage Your Consent"
+
         assert (
-            first_config["experience_config_history_id"]
-            == experience_config_overlay.experience_config_history_id
+            translation["experience_config_history_id"]
+            == experience_config_overlay.translations[0].experience_config_history.id
         )
 
         second_config = data[1]
         assert second_config["id"] == experience_config_privacy_center.id
-        assert (
-            second_config["description"] == "user's description "
-        )  # Sanitized due to HtmlStr
-        assert second_config["banner_description"] is None
         assert second_config["component"] == "privacy_center"
         assert second_config["banner_enabled"] is None
-        assert second_config["disabled"] is True
         assert second_config["regions"] == ["us_co"]
         assert second_config["created_at"] is not None
         assert second_config["updated_at"] is not None
-        assert second_config["version"] == 1.0
+        assert len(second_config["translations"]) == 1
+        second_translation = second_config["translations"][0]
         assert (
-            second_config["experience_config_history_id"]
-            == experience_config_privacy_center.experience_config_history_id
-        )
-
-        third_config = data[2]
-        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
-        assert third_config["is_default"] is True
-        assert third_config["component"] == "privacy_center"
-        assert third_config["regions"] == []
-        assert third_config["version"] == 1.0
-        assert third_config["created_at"] is not None
-        assert third_config["updated_at"] is not None
-
-        fourth_config = data[3]
-        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
-        assert fourth_config["is_default"] is True
-        assert fourth_config["disabled"] is False
-        assert fourth_config["regions"] == []
-        assert fourth_config["component"] == "overlay"
+            second_translation["description"] == "user's description "
+        )  # Sanitized due to HtmlStr
 
         response = api_client.get(
             url + "?component=tcf_overlay", headers={**auth_header, **unescape_header}
@@ -150,7 +132,7 @@ class TestGetExperienceConfigList:
         assert response.json()["items"] == []
         assert response.json()["total"] == 0
 
-    @pytest.mark.usefixtures("enable_tcf")
+    @pytest.mark.usefixtures("enable_tcf", "load_default_privacy_experience_configs")
     def test_get_tcf_experience_config(
         self,
         api_client: TestClient,
@@ -164,37 +146,22 @@ class TestGetExperienceConfigList:
         assert response.status_code == 200
         resp = response.json()
         assert (
-            resp["total"] == 3
-        )  # All three default configs loaded on startup including TCF Experience
+            resp["total"] == 12
+        )  # Out of the box configs loaded on startup including TCF Experience
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 3
+        assert len(data) == 12
 
         first_config = data[0]
-        assert first_config["id"] == "a4974670-abad-471f-9084-2cb-tcf-over"
-        assert first_config["is_default"] is True
+        assert first_config["origin"] == "a4974670-abad-471f-9084-2cb-tcf-over"
         assert first_config["component"] == "tcf_overlay"
-        assert first_config["regions"] == []
+        assert set(first_config["regions"]) == set(
+            [country.value for country in EEA_COUNTRIES]
+        )
         assert first_config["version"] == 1.0
         assert first_config["created_at"] is not None
         assert first_config["updated_at"] is not None
-
-        second_config = data[1]
-        assert second_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
-        assert second_config["is_default"] is True
-        assert second_config["component"] == "privacy_center"
-        assert second_config["regions"] == []
-        assert second_config["version"] == 1.0
-        assert second_config["created_at"] is not None
-        assert second_config["updated_at"] is not None
-
-        third_config = data[2]
-        assert third_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
-        assert third_config["is_default"] is True
-        assert third_config["disabled"] is False
-        assert third_config["regions"] == []
-        assert third_config["component"] == "overlay"
 
     @pytest.mark.usefixtures(
         "privacy_experience_privacy_center",
@@ -216,63 +183,10 @@ class TestGetExperienceConfigList:
         second_config = resp[1]
         assert second_config["id"] == experience_config_privacy_center.id
         assert (
-            second_config["description"] == "user's description &lt;script /&gt;"
+            second_config["translations"][0]["description"]
+            == "user's description &lt;script /&gt;"
         )  # Still escaped
-        assert second_config["banner_description"] is None
-
-    @pytest.mark.usefixtures(
-        "privacy_experience_overlay",
-        "privacy_experience_privacy_center",
-        "experience_config_privacy_center",
-    )
-    def test_get_experience_config_show_disabled_false_filter(
-        self,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-        experience_config_overlay,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-        response = api_client.get(
-            url + "?show_disabled=False",
-            headers=auth_header,
-        )
-        assert response.status_code == 200
-        resp = response.json()
-        assert resp["total"] == 3
-        assert resp["page"] == 1
-        assert resp["size"] == 50
-        data = resp["items"]
-        assert len(data) == 3
-
-        config = data[0]
-        assert config["id"] == experience_config_overlay.id
-        assert config["component"] == "overlay"
-        assert config["disabled"] is False
-        assert config["regions"] == ["us_ca"]
-        assert config["version"] == 1.0
-        assert config["created_at"] is not None
-        assert config["updated_at"] is not None
-        assert (
-            config["experience_config_history_id"]
-            == experience_config_overlay.experience_config_history_id
-        )
-
-        third_config = data[1]
-        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
-        assert third_config["is_default"] is True
-        assert third_config["component"] == "privacy_center"
-        assert third_config["disabled"] is False
-        assert third_config["version"] == 1.0
-        assert third_config["created_at"] is not None
-        assert third_config["updated_at"] is not None
-
-        fourth_config = data[2]
-        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
-        assert fourth_config["is_default"] is True
-        assert fourth_config["disabled"] is False
-        assert fourth_config["regions"] == []
-        assert fourth_config["component"] == "overlay"
+        assert second_config["translations"][0]["banner_description"] is None
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
@@ -301,12 +215,11 @@ class TestGetExperienceConfigList:
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
         assert first_config["regions"] == ["us_ca"]
-        assert first_config["version"] == 1.0
         assert first_config["created_at"] is not None
         assert first_config["updated_at"] is not None
         assert (
-            first_config["experience_config_history_id"]
-            == experience_config_overlay.experience_config_history_id
+            first_config["translations"][0]["experience_config_history_id"]
+            == experience_config_overlay.translations[0].experience_config_history.id
         )
 
     def test_get_experience_config_component_filter(
@@ -324,14 +237,13 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 2
+        assert resp["total"] == 1
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 2
+        assert len(data) == 1
 
         assert data[0]["id"] == experience_config_overlay.id
-        assert data[1]["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
 
         response = api_client.get(
             url + "?component=privacy_center",
@@ -339,39 +251,48 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 2
+        assert resp["total"] == 1
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 2
+        assert len(data) == 1
 
         assert data[0]["id"] == experience_config_privacy_center.id
-        assert data[1]["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
 
 
 class TestCreateExperienceConfig:
+    # TODO test language required
+    # TODO test no translations
+
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return V1_URL_PREFIX + EXPERIENCE_CONFIG
 
     @pytest.fixture(scope="function")
-    def overlay_experience_request_body(self) -> dict:
+    def overlay_experience_request_body(self, privacy_notice) -> dict:
         return {
-            "acknowledge_button_label": "Confirm",
-            "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
-            "banner_title": "Manage Your Consent",
             "component": "overlay",
-            "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-            "accept_button_label": "Accept all",
-            "disabled": False,
-            "privacy_preferences_link_label": "Manage preferences",
-            "privacy_policy_link_label": "View our privacy policy",
-            "privacy_policy_url": "http://example.com/privacy",
-            "reject_button_label": "Reject all",
-            "regions": [],
-            "save_button_label": "Save",
-            "title": "Control your privacy",
+            "dismissable": True,
+            "allow_language_selection": False,
+            "regions": ["us_va"],
+            "privacy_notices": [privacy_notice.notice_key],
+            "translations": [
+                {
+                    "language": "en_us",
+                    "save_button_label": "Save",
+                    "title": "Control your privacy",
+                    "privacy_preferences_link_label": "Manage preferences",
+                    "privacy_policy_link_label": "View our privacy policy",
+                    "privacy_policy_url": "http://example.com/privacy",
+                    "reject_button_label": "Reject all",
+                    "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                    "accept_button_label": "Accept all",
+                    "banner_title": "Manage Your Consent",
+                    "acknowledge_button_label": "Confirm",
+                    "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                }
+            ],
         }
 
     def test_create_experience_config_unauthenticated(self, url, api_client):
@@ -425,44 +346,26 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "accept_button_label": "Accept",
-                "description": "We care about your privacy",
                 "component": "overlay",
                 "regions": ["it"],
-                "reject_button_label": "Reject",
-                "save_button_label": "Save",
-                "title": "Manage your privacy",
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "reject_button_label": "Reject",
+                        "save_button_label": "Save",
+                        "title": "Manage your privacy",
+                        "accept_button_label": "Accept",
+                        "description": "We care about your privacy",
+                    }
+                ],
             },
             headers=auth_header,
         )
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
+            == "The following additional fields are required when defining an overlay: acknowledge_button_label and privacy_preferences_link_label."
         )
-
-    def test_create_privacy_center_config_missing_details(
-        self,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(
-            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
-        )
-        response = api_client.post(
-            url,
-            json={
-                "accept_button_label": "Accept",
-                "description": "We care about your privacy",
-                "component": "privacy_center",
-                "regions": ["it"],
-                "save_button_label": "Save",
-            },
-            headers=auth_header,
-        )
-        assert response.status_code == 422
-        assert response.json()["detail"][0]["msg"] == "field required"
 
     def test_create_experience_duplicate_regions(
         self,
@@ -476,48 +379,13 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "accept_button_label": "Accept all",
-                "description": "We care about your privacy",
                 "component": "privacy_center",
-                "reject_button_label": "Reject all",
-                "save_button_label": "Save",
-                "title": "Control your privacy",
                 "regions": ["it", "it"],
             },
             headers=auth_header,
         )
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
-
-    def test_create_another_default_experience_config(
-        self, api_client: TestClient, url, generate_auth_header, db
-    ) -> None:
-        """We have defaults loaded in at startup so don't allow other defaults to be created here"""
-        auth_header = generate_auth_header(
-            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
-        )
-        response = api_client.post(
-            url,
-            json={
-                "accept_button_label": "Yes",
-                "banner_enabled": "always_disabled",
-                "component": "privacy_center",
-                "description": "We take your privacy seriously",
-                "is_default": True,
-                "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "http://example.com/privacy",
-                "reject_button_label": "No",
-                "save_button_label": "Save",
-                "title": "Manage your privacy",
-            },
-            headers=auth_header,
-        )
-
-        assert response.status_code == 422
-        assert (
-            response.json()["detail"]
-            == "Cannot set as the default. Only one default privacy_center config can be in the system."
-        )
 
     @pytest.mark.parametrize(
         "invalid_url",
@@ -527,7 +395,7 @@ class TestCreateExperienceConfig:
         ],
     )
     def test_create_experience_config_with_invalid_policy_url(
-        self, api_client: TestClient, url, generate_auth_header, db, invalid_url
+        self, api_client: TestClient, url, generate_auth_header, invalid_url
     ) -> None:
         """
         Verify that an invalid Privacy Policy URL returns a 422.
@@ -538,141 +406,133 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "accept_button_label": "Yes",
                 "banner_enabled": "always_disabled",
                 "component": "privacy_center",
-                "description": "We take your company's privacy seriously",
-                "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": invalid_url,
-                "reject_button_label": "No",
-                "save_button_label": "Save",
-                "title": "Manage your privacy",
+                "translations": [
+                    {
+                        "description": "We take your company's privacy seriously",
+                        "privacy_policy_link_label": "Manage your privacy",
+                        "privacy_policy_url": invalid_url,
+                        "reject_button_label": "No",
+                        "save_button_label": "Save",
+                        "title": "Manage your privacy",
+                        "accept_button_label": "Yes",
+                        "language": "en_us",
+                    }
+                ],
             },
             headers=auth_header,
         )
         assert response.status_code == 422
+        assert "missing URL scheme" in response.json()["detail"][0]["msg"]
 
-    def test_create_experience_config_with_no_regions(
-        self, api_client: TestClient, url, generate_auth_header, db
+    def test_create_experience_config_with_no_regions_or_translations_or_notices(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_experience_request_body,
     ) -> None:
-        """Experience config can be defined without any regions specified. This is handy for defining default experiences
+        """Experience config can be defined without any regions specified
 
-        No privacy experiences are affected here.  But ExperienceConfig and ExperienceConfigHistory records are created.
+        No privacy experiences are affected here but the Experience Config is created
+        No Experience Config History is created, because these are created alongside translations
         """
+        overlay_experience_request_body.pop("translations")
+        overlay_experience_request_body.pop("regions")
+        overlay_experience_request_body.pop("privacy_notices")
+
         auth_header = generate_auth_header(
             scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
         )
         response = api_client.post(
             url,
-            json={
-                "accept_button_label": "Yes",
-                "banner_enabled": "always_disabled",
-                "component": "privacy_center",
-                "description": "We take your company's privacy seriously",
-                "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "http://example.com/privacy",
-                "reject_button_label": "No",
-                "save_button_label": "Save",
-                "title": "Manage your privacy",
-            },
+            json=overlay_experience_request_body,
             headers=auth_header,
         )
         assert response.status_code == 201
-        resp = response.json()["experience_config"]
-        assert resp["accept_button_label"] == "Yes"
-        assert resp["banner_enabled"] == "always_disabled"
-        assert resp["component"] == "privacy_center"
-        assert (
-            resp["description"] == "We take your company's privacy seriously"
-        )  # Returned in the response, unescaped, for display
-        assert resp["privacy_policy_link_label"] == "Manage your privacy"
-        assert resp["privacy_policy_url"] == "http://example.com/privacy"
+        resp = response.json()
+
+        assert resp["component"] == "overlay"
+        assert resp["banner_enabled"] == "enabled_where_required"
+        assert resp["dismissable"] is True
+        assert resp["allow_language_selection"] is False
+        assert resp["origin"] is None
         assert resp["regions"] == []
-        assert resp["reject_button_label"] == "No"
-        assert resp["save_button_label"] == "Save"
-        assert resp["title"] == "Manage your privacy"
+        assert resp["privacy_notices"] == []
+        assert resp["translations"] == []
+
         assert resp["created_at"] is not None
         assert resp["updated_at"] is not None
-        assert resp["version"] == 1.0
 
         experience_config = get_experience_config_or_error(db, resp["id"])
-        assert experience_config.component == ComponentType.privacy_center
-        assert experience_config.privacy_policy_link_label == "Manage your privacy"
-        assert experience_config.experiences.all() == []
-        assert experience_config.histories.count() == 1
-        assert (
-            experience_config.description
-            == "We take your company&#x27;s privacy seriously"
-        )  # Saved in the db escaped
-        history = experience_config.histories[0]
-        assert history.version == 1.0
-        assert history.component == ComponentType.privacy_center
-        assert history.privacy_policy_link_label == "Manage your privacy"
-        assert history.experience_config_id == experience_config.id
+        assert experience_config.component == ComponentType.overlay
+        assert experience_config.banner_enabled == BannerEnabled.enabled_where_required
+        assert experience_config.dismissable is True
+        assert experience_config.allow_language_selection is False
+        assert experience_config.regions == []
+        assert experience_config.privacy_notices == []
+        assert experience_config.translations == []
+        assert experience_config.experiences.count() == 0
 
-        assert response.json()["linked_regions"] == []
-        assert response.json()["unlinked_regions"] == []
-
-        history.delete(db)
         experience_config.delete(db)
 
-    def test_create_experience_config_with_empty_regions(
-        self, api_client: TestClient, url, generate_auth_header, db
+    def test_create_experience_config(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        privacy_notice,
+        overlay_experience_request_body,
     ) -> None:
-        """Experience config can be defined without any regions specified. This is handy for defining default experiences
-
-        No privacy experiences are affected here.  But ExperienceConfig and ExperienceConfigHistory records are created.
-        """
+        """Experience config can be created with specifying translations, regions, and notices in one request"""
         auth_header = generate_auth_header(
             scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
         )
         response = api_client.post(
             url,
-            json={
-                "accept_button_label": "Yes",
-                "banner_enabled": "always_disabled",
-                "component": "privacy_center",
-                "description": "We take your privacy seriously",
-                "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "http://example.com/privacy",
-                "regions": [],
-                "reject_button_label": "No",
-                "save_button_label": "Save",
-                "title": "Manage your privacy",
-            },
+            json=overlay_experience_request_body,
             headers=auth_header,
         )
         assert response.status_code == 201
-        resp = response.json()["experience_config"]
-        assert resp["accept_button_label"] == "Yes"
-        assert resp["banner_enabled"] == "always_disabled"
-        assert resp["component"] == "privacy_center"
-        assert resp["description"] == "We take your privacy seriously"
-        assert resp["privacy_policy_link_label"] == "Manage your privacy"
-        assert resp["privacy_policy_url"] == "http://example.com/privacy"
-        assert resp["regions"] == []
-        assert resp["reject_button_label"] == "No"
-        assert resp["save_button_label"] == "Save"
-        assert resp["title"] == "Manage your privacy"
+        resp = response.json()
+
+        assert resp["component"] == "overlay"
+        assert resp["banner_enabled"] == "enabled_where_required"
+        assert resp["dismissable"] is True
+        assert resp["allow_language_selection"] is False
+        assert resp["origin"] is None
+
+        assert resp["regions"] == ["us_va"]
+        assert len(resp["privacy_notices"]) == 1
+        notice = resp["privacy_notices"][0]
+        assert notice["name"] == "example privacy notice"
+        assert len(notice["translations"]) == 1
+        notice_translation = notice["translations"][0]
+        assert notice_translation["privacy_notice_history_id"] is not None
+
+        assert len(resp["translations"]) == 1
+
+        translation = resp["translations"][0]
+        assert translation["language"] == "en_us"
+        assert translation["save_button_label"] == "Save"
+        assert translation["experience_config_history_id"] is not None
+
         assert resp["created_at"] is not None
         assert resp["updated_at"] is not None
-        assert resp["version"] == 1.0
 
         experience_config = get_experience_config_or_error(db, resp["id"])
-        assert experience_config.component == ComponentType.privacy_center
-        assert experience_config.privacy_policy_link_label == "Manage your privacy"
-        assert experience_config.experiences.all() == []
-        assert experience_config.histories.count() == 1
-        history = experience_config.histories[0]
-        assert history.version == 1.0
-        assert history.component == ComponentType.privacy_center
-        assert history.privacy_policy_link_label == "Manage your privacy"
-        assert history.experience_config_id == experience_config.id
+        assert experience_config.regions == [PrivacyNoticeRegion.us_va]
+        assert experience_config.privacy_notices == [privacy_notice]
+        assert len(experience_config.translations) == 1
+        assert experience_config.experiences.count() == 1
 
-        assert response.json()["linked_regions"] == []
-        assert response.json()["unlinked_regions"] == []
-
-        history.delete(db)
+        for translation in experience_config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
         experience_config.delete(db)
 
     def test_create_experience_config_no_existing_experiences(
@@ -700,68 +560,42 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "accept_button_label": "Accept all",
-                "acknowledge_button_label": "Confirm",
                 "banner_enabled": "enabled_where_required",
                 "component": "overlay",
-                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "privacy_preferences_link_label": "Control your privacy",
-                "privacy_policy_link_label": "Control your privacy",
-                "privacy_policy_url": "http://example.com/privacy",
                 "regions": ["us_ny"],
-                "reject_button_label": "Reject all",
-                "save_button_label": "Save",
-                "title": "Control your privacy",
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Control your privacy",
+                        "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                        "privacy_preferences_link_label": "Control your privacy",
+                        "privacy_policy_link_label": "Control your privacy",
+                        "privacy_policy_url": "http://example.com/privacy",
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                    }
+                ],
             },
             headers=auth_header,
         )
         assert response.status_code == 201
         resp = response.json()["experience_config"]
-        assert resp["accept_button_label"] == "Accept all"
-        assert resp["acknowledge_button_label"] == "Confirm"
-        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["component"] == "overlay"
         assert resp["created_at"] is not None
-        assert (
-            resp["description"]
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert resp["privacy_preferences_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == ["us_ny"]
-        assert resp["reject_button_label"] == "Reject all"
-        assert resp["save_button_label"] == "Save"
-        assert resp["title"] == "Control your privacy"
-        assert resp["version"] == 1.0
-        assert resp["updated_at"] is not None
 
         # Created Experience Config
         experience_config = get_experience_config_or_error(db, resp["id"])
-        assert experience_config.accept_button_label == "Accept all"
-        assert experience_config.acknowledge_button_label == "Confirm"
-        assert experience_config.banner_enabled == BannerEnabled.enabled_where_required
         assert experience_config.component == ComponentType.overlay
-        assert (
-            experience_config.description
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert (
-            experience_config.privacy_preferences_link_label == "Control your privacy"
-        )
-        assert experience_config.privacy_policy_link_label == "Control your privacy"
-        assert experience_config.privacy_policy_url == "http://example.com/privacy"
-        assert experience_config.regions == [PrivacyNoticeRegion.us_ny]
-        assert experience_config.reject_button_label == "Reject all"
-        assert experience_config.save_button_label == "Save"
-        assert experience_config.title == "Control your privacy"
 
-        assert experience_config.created_at is not None
-        assert experience_config.updated_at is not None
-        assert experience_config.histories.count() == 1
+        # Created Translation
+        translation = experience_config.translations[0]
+        assert translation.language == "en_us"
 
         # Created Experience Config History
-        experience_config_history = experience_config.histories[0]
+        experience_config_history = translation.histories[0]
         assert experience_config_history.version == 1.0
 
         assert experience_config_history.accept_button_label == "Accept all"
@@ -792,7 +626,7 @@ class TestCreateExperienceConfig:
 
         assert experience_config_history.created_at is not None
         assert experience_config_history.updated_at is not None
-        assert experience_config_history.experience_config_id == experience_config.id
+        assert experience_config_history.translation_id == translation.id
 
         # Created Privacy Experience
         assert experience_config.experiences.count() == 1
@@ -803,10 +637,8 @@ class TestCreateExperienceConfig:
 
         experience.delete(db)
         experience_config_history.delete(db)
+        translation.delete(db)
         experience_config.delete(db)
-
-        assert response.json()["linked_regions"] == ["us_ny"]
-        assert response.json()["unlinked_regions"] == []
 
     def test_create_experience_config_existing_experiences(
         self,
@@ -836,56 +668,33 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "accept_button_label": "Accept all",
-                "acknowledge_button_label": "Confirm",
                 "banner_enabled": "enabled_where_required",
                 "component": "overlay",
-                "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
-                "privacy_preferences_link_label": "Control your privacy",
-                "privacy_policy_link_label": "Control your privacy",
-                "privacy_policy_url": "http://example.com/privacy",
                 "regions": ["us_tx"],
-                "reject_button_label": "Reject all",
-                "save_button_label": "Save",
-                "title": "Control your privacy",
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Control your privacy",
+                        "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                        "privacy_preferences_link_label": "Control your privacy",
+                        "privacy_policy_link_label": "Control your privacy",
+                        "privacy_policy_url": "http://example.com/privacy",
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                    }
+                ],
             },
             headers=auth_header,
         )
         assert response.status_code == 201
-        resp = response.json()["experience_config"]
-        assert resp["accept_button_label"] == "Accept all"
-        assert resp["acknowledge_button_label"] == "Confirm"
+        resp = response.json()
         assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["component"] == "overlay"
-        assert resp["created_at"] is not None
-        assert (
-            resp["description"]
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert resp["privacy_preferences_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_url"] == "http://example.com/privacy"
-        assert resp["regions"] == ["us_tx"]
-        assert resp["reject_button_label"] == "Reject all"
-        assert resp["save_button_label"] == "Save"
-        assert resp["title"] == "Control your privacy"
-        assert resp["created_at"] is not None
-        assert resp["updated_at"] is not None
-        assert resp["version"] == 1.0
 
         # Created Experience Config
         experience_config = get_experience_config_or_error(db, resp["id"])
-        assert experience_config.histories.count() == 1
-
-        # Created Experience Config History
-        experience_config_history = experience_config.histories[0]
-        assert experience_config_history.version == 1.0
-        assert experience_config_history.component == ComponentType.overlay
-        assert (
-            experience_config_history.banner_enabled
-            == BannerEnabled.enabled_where_required
-        )
-        assert experience_config_history.experience_config_id == experience_config.id
 
         # Updated Privacy Experience - TX Privacy Experience automatically linked
         assert experience_config.experiences.count() == 1
@@ -898,11 +707,9 @@ class TestCreateExperienceConfig:
         assert experience.component == ComponentType.overlay
         assert experience.experience_config_id == experience_config.id
 
-        assert response.json()["linked_regions"] == ["us_tx"]
-        assert response.json()["unlinked_regions"] == []
-
         experience.delete(db)
-        experience_config_history.delete(db)
+        experience_config.translations[0].histories[0].delete(db)
+        experience_config.translations[0].delete(db)
         experience_config.delete(db)
 
 

@@ -121,22 +121,26 @@ def experience_config_list(
     logger.info("Loading Experience Configs with params {}.", params)
     experience_configs = privacy_experience_config_query.all()
     if should_unescape:
-        experience_configs = [
+        for experience_config in experience_configs:
             transform_fields(
                 transformation=unescape,
                 model=experience_config,
                 fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
             )
-            for experience_config in experience_configs
-        ]
 
+            for translation in experience_config.translations:
+                transform_fields(
+                    transformation=unescape,
+                    model=translation,
+                    fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
+                )
     return fastapi_paginate(experience_configs, params=params)
 
 
 @router.post(
     urls.EXPERIENCE_CONFIG,
     status_code=HTTP_201_CREATED,
-    response_model=ExperienceConfigCreateOrUpdateResponse,
+    response_model=ExperienceConfigResponse,
     dependencies=[
         Security(
             verify_oauth_client,
@@ -151,7 +155,7 @@ def experience_config_create(
     *,
     db: Session = Depends(deps.get_db),
     experience_config_data: ExperienceConfigCreate,
-) -> ExperienceConfigCreateOrUpdateResponse:
+) -> PrivacyExperienceConfig:
     """
     Create Experience Config and then attempt to upsert Experiences and link to ExperienceConfig
     """
@@ -160,21 +164,13 @@ def experience_config_create(
         model=experience_config_data,
         fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
-    experience_config_dict: Dict = privacy_experience_data.dict(exclude_unset=True)
-    # Pop the regions off the request
-    new_regions: Optional[List[PrivacyNoticeRegion]] = experience_config_dict.pop(
-        "regions", None
-    )
-    default_config: Optional[
-        PrivacyExperienceConfig
-    ] = PrivacyExperienceConfig.get_default_config(
-        db, experience_config_data.component  # type: ignore[arg-type]
-    )
-    if default_config and experience_config_data.is_default:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Cannot set as the default. Only one default {experience_config_data.component.value} config can be in the system.",
+    for translation in experience_config_data.translations:
+        transform_fields(
+            transformation=escape,
+            model=translation,
+            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
         )
+    experience_config_dict: Dict = privacy_experience_data.dict(exclude_unset=True)
 
     logger.info(
         "Creating experience config of component '{}'.",
@@ -185,27 +181,18 @@ def experience_config_create(
         db, data=experience_config_dict, check_name=False
     )
 
-    linked: List[PrivacyNoticeRegion] = []
-    unlinked: List[PrivacyNoticeRegion] = []
-    if new_regions:
-        logger.info(
-            "Linking regions: {} to experience config '{}'",
-            human_friendly_list([reg.value for reg in new_regions]),
-            experience_config.id,
-        )
-        linked, unlinked = upsert_privacy_experiences_after_config_update(
-            db, experience_config, new_regions
-        )
-
-    return ExperienceConfigCreateOrUpdateResponse(
-        experience_config=transform_fields(
-            transformation=unescape,
-            model=experience_config,
-            fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
-        ),
-        linked_regions=linked,
-        unlinked_regions=unlinked,
+    experience_config = transform_fields(
+        transformation=unescape,
+        model=experience_config,
+        fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
+    for translation in experience_config.translations:
+        transform_fields(
+            transformation=unescape,
+            model=translation,
+            fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
+        )
+    return experience_config
 
 
 @router.get(
@@ -217,7 +204,11 @@ def experience_config_create(
     ],
 )
 def experience_config_detail(
-    *, db: Session = Depends(deps.get_db), experience_config_id: str, request: Request, configured_locations: Set = Depends(get_configured_locations)
+    *,
+    db: Session = Depends(deps.get_db),
+    experience_config_id: str,
+    request: Request,
+    configured_locations: Set = Depends(get_configured_locations),
 ) -> PrivacyExperienceConfig:
     """
     Returns a PrivacyExperienceConfig with embedded translations as well as its notices with config translations
@@ -236,7 +227,7 @@ def experience_config_detail(
         )
         for translation in experience_config.translations:
             transform_fields(
-                transformation=escape,
+                transformation=unescape,
                 model=translation,
                 fields=CONFIG_TRANSLATION_ESCAPE_FIELDS,
             )
