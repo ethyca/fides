@@ -96,5 +96,18 @@
       "prettier --write --list-different",
       "eslint --fix"
     ]
+  },
+  "nyc": {
+    "all": true,
+    "include": [
+      "**/*.tsx",
+      "**/*.ts"
+    ],
+    "exclude": [
+      "__tests__/**",
+      "cypress/**",
+      "public/**",
+      "types/**"
+    ]
   }
 }

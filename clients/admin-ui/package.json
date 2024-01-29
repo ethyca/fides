@@ -120,5 +120,12 @@
   },
   "msw": {
     "workerDirectory": "public"
+  },
+  "nyc": {
+    "all": true,
+    "include": [
+      "src/**/*.tsx",
+      "src/**/*.ts"
+    ]
   }
 }
