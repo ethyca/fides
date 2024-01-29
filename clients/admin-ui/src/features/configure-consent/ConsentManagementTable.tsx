@@ -159,9 +159,6 @@ export const ConsentManagementTable = () => {
         id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
-        meta: {
-          maxWidth: "350px",
-        },
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: "tcf_purpose",
@@ -169,9 +166,6 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="purposes" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="TCF purpose" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: "data_uses",
@@ -179,17 +173,11 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="data uses" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.legal_bases, {
         id: "legal_bases",
         cell: (props) => <BadgeCell suffix="bases" value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Legal basis" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.consent_categories, {
         id: "consent_categories",
@@ -197,9 +185,6 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="Categories" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="Categories" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.cookies, {
         id: "cookies",
@@ -207,9 +192,6 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="Cookies" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
     ],
     []
@@ -228,6 +210,8 @@ export const ConsentManagementTable = () => {
       },
     },
     getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
+    enableColumnResizing: true,
   });
 
   const onRowClick = (system: SystemSummary) => {
