@@ -13,7 +13,6 @@ from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
-from fides.api import common_exceptions
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
@@ -95,6 +94,22 @@ def test_policy_upload_dispatch_message_called(
     )
     assert upload_mock.called
     assert mock_email_dispatch.call_count == 1
+
+
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+def test_complete_email_not_sent_if_consent_request(
+    upload_mock: Mock,
+    mock_email_dispatch: Mock,
+    privacy_request_with_consent_policy: PrivacyRequest,
+    run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
+) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
+    run_privacy_request_task.delay(privacy_request_with_consent_policy.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
+    assert not mock_email_dispatch.called
 
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
