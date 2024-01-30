@@ -5,7 +5,6 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from pydantic import ValidationError
 from sqlalchemy.orm import Query, Session
 from starlette.requests import Request
 from starlette.status import (
@@ -29,17 +28,13 @@ from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
     ExperienceConfigResponse,
     ExperienceConfigUpdate,
-    ExperienceTranslationCreate,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
-    CONFIG_TRANSLATION_ESCAPE_FIELDS,
-    PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     UNESCAPE_SAFESTR_HEADER,
     escape_experience_fields_for_storage,
     unescape_experience_fields_for_display,
 )
-from fides.api.util.endpoint_utils import transform_fields
 from fides.common.api import scope_registry
 from fides.common.api.scope_registry import PRIVACY_EXPERIENCE_UPDATE
 from fides.common.api.v1 import urn_registry as urls
@@ -217,7 +212,7 @@ def experience_config_update(
     db: Session = Depends(deps.get_db),
     experience_config_id: str,
     experience_config_data: ExperienceConfigUpdate,
-) -> ExperienceConfigResponse:
+) -> PrivacyExperienceConfig:
     """
     Update Experience Config and link associated resources.
 

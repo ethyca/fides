@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Type, Union
 
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
@@ -10,7 +10,8 @@ from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.util import hybridproperty
 
 from fides.api.common_exceptions import ValidationError
@@ -283,7 +284,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         Float, nullable=False, default=1.0
     )  # TODO Pending Removal.  This is now only on PrivacyNoticeHistory.
 
-    translations = relationship(
+    translations: RelationshipProperty[List[NoticeTranslation]] = relationship(
         "NoticeTranslation",
         backref="privacy_notice",
         lazy="selectin",
@@ -381,59 +382,62 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         - Upserts or deletes supplied translations to match translations in the request
         - For each remaining translation, create a historical record if the base notice or translation changed.
         """
-        translations = data.pop("translations", [])
+        request_translations = data.pop("translations", [])
 
-        resource, config_updated = update_if_modified(self, db=db, data=data)
+        config_updated: bool = update_if_modified(self, db=db, data=data)
 
-        for translation_data in translations:
-            existing_translation = (
-                db.query(NoticeTranslation)
-                .filter(
-                    NoticeTranslation.language == translation_data.get("language"),
-                    NoticeTranslation.privacy_notice_id == resource.id,
-                )
-                .first()
-            )
+        for translation_data in request_translations:
+            existing_translation: Optional[
+                NoticeTranslation
+            ] = self.get_translation_by_language(db, translation_data.get("language"))
+
             if existing_translation:
-                translation, translation_updated = update_if_modified(
+                translation: NoticeTranslation = existing_translation
+                translation_updated: bool = update_if_modified(  # type: ignore[attr-defined]
                     existing_translation,
                     db=db,
-                    data={**translation_data, "privacy_notice_id": resource.id},
+                    data={**translation_data, "privacy_notice_id": self.id},
                 )
             else:
                 translation_updated = True
                 translation = NoticeTranslation.create(
                     db,
-                    data={**translation_data, "privacy_notice_id": resource.id},
+                    data={**translation_data, "privacy_notice_id": self.id},
                 )
 
             if config_updated or translation_updated:
-                new_version = translation.version or 0.0
-                history_data = create_historical_data_from_record(resource)
+                new_version: float = translation.version or 0.0
+                history_data: dict = create_historical_data_from_record(self)
                 history_data.pop("translations", None)
+                updated_translation_data: dict = create_historical_data_from_record(
+                    translation
+                )
                 PrivacyNoticeHistory.create(
                     db,
                     data={
                         **history_data,
-                        **translation_data,
+                        **updated_translation_data,
                         "translation_id": translation.id,
                         "version": new_version + 1.0,
                     },
                     check_name=False,
                 )
 
-        translations_to_remove = set(
-            translation.language for translation in resource.translations
-        ).difference(set(translation.get("language") for translation in translations))
+        notice_translations: List[NoticeTranslation] = self.translations
+        translations_to_remove: Set[Language] = set(  # type: ignore[assignment]
+            translation.language for translation in notice_translations
+        ).difference(
+            set(translation.get("language") for translation in request_translations)
+        )
 
         db.query(NoticeTranslation).filter(
             NoticeTranslation.language.in_(translations_to_remove),
-            NoticeTranslation.privacy_notice_id == resource.id,
+            NoticeTranslation.privacy_notice_id == self.id,
         ).delete()
 
-        return resource  # type: ignore[return-value]
+        return self  # type: ignore[return-value]
 
-    def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
+    def dry_update(self, *, data: dict[str, Any]) -> PrivacyNotice:
         """
         A utility method to get an updated object without saving it to the db.
 
@@ -452,6 +456,22 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         # ORM object (i.e., `self`) pristine
         return PrivacyNotice(**cloned_attributes)
 
+    def get_translation_by_language(
+        self, db: Session, language: Optional[Language]
+    ) -> Optional[NoticeTranslation]:
+        """Lookup a translation on a Privacy Notice by language if it exists"""
+        if not language:
+            # Shouldn't be possible, but just in case
+            return None
+        return (
+            db.query(NoticeTranslation)
+            .filter(
+                NoticeTranslation.language == language,
+                NoticeTranslation.privacy_notice_id == self.id,
+            )
+            .first()
+        )
+
 
 class NoticeTranslationBase:
     language = Column(EnumColumn(Language), nullable=False)
@@ -466,7 +486,7 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
 
-    histories = relationship(
+    histories: RelationshipProperty[AppenderQuery] = relationship(
         "PrivacyNoticeHistory",
         backref="notice_translation",
         lazy="dynamic",
@@ -481,7 +501,7 @@ class NoticeTranslation(NoticeTranslationBase, Base):
     def version(self) -> Optional[float]:
         """Convenience property that returns the latest version number of the translation"""
         return (
-            self.privacy_notice_history.version if self.privacy_notice_history else None
+            self.privacy_notice_history.version if self.privacy_notice_history else None  # type: ignore[return-value]
         )
 
     @property
@@ -565,10 +585,8 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     )  # TODO Will be removed.  This now points to just the translation.
 
 
-def update_if_modified(
-    resource: Base, db: Session, *, data: dict[str, Any]
-) -> Tuple[Base, bool]:
-    """Return the updated resource and whether it was modified (which determines if we should create
+def update_if_modified(resource: Base, db: Session, *, data: dict[str, Any]) -> bool:
+    """Returns whether the resource was modified on save (which determines if we should create
     a corresponding historical record).
     """
     # run through potential updates now
@@ -577,9 +595,9 @@ def update_if_modified(
 
     if db.is_modified(resource):
         resource.save(db)
-        return resource, True
+        return True
 
-    return resource, False
+    return False
 
 
 def create_historical_data_from_record(resource: Base) -> Dict:

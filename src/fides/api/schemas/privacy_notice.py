@@ -71,7 +71,6 @@ class PrivacyNotice(FidesSchema):
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
-    translations: Optional[List[NoticeTranslation]] = []
     framework: Optional[PrivacyNoticeFramework] = None
     gpp_field_mapping: Optional[List[GPPFieldMapping]] = None
 
@@ -103,21 +102,6 @@ class PrivacyNotice(FidesSchema):
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
 
-    @root_validator()
-    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Ensure no two translations with the same language are supplied
-        """
-        translations: List[Dict] = values.get("translations")
-        if not translations:
-            return values
-
-        languages = [translation.language for translation in translations]
-        if len(languages) != len(set(languages)):
-            raise ValueError("Multiple translations supplied for the same language")
-
-        return values
-
 
 class PrivacyNoticeCreation(PrivacyNotice):
     """
@@ -129,6 +113,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
     name: str
     consent_mechanism: ConsentMechanism
     enforcement_level: EnforcementLevel
+    translations: Optional[List[NoticeTranslation]]
 
     @root_validator(pre=True)
     def validate_notice_key(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -142,14 +127,29 @@ class PrivacyNoticeCreation(PrivacyNotice):
 
         return values
 
+    @root_validator()
+    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ensure no two translations with the same language are supplied
+        """
+        return validate_translations(values)
+
 
 class PrivacyNoticeWithId(PrivacyNotice):
     """
-    An API representation of a PrivacyNotice that includes an `id` field.
-    Used to help model API responses and update payloads
+    An API representation of a PrivacyNotice that includes an `id` field, useful
+    for creating privacy notices from a template
     """
 
     id: str
+    translations: List[NoticeTranslation] = []
+
+    @root_validator()
+    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ensure no two translations with the same language are supplied
+        """
+        return validate_translations(values)
 
 
 class UserSpecificConsentDetails(FidesSchema):
@@ -160,10 +160,12 @@ class UserSpecificConsentDetails(FidesSchema):
     ]  # The default preference for this notice or TCF component
 
 
-class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNoticeWithId):
+class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNotice):
     """
     An API representation of a PrivacyNotice used for response payloads
     """
+
+    id: str
 
     created_at: datetime
     updated_at: datetime
@@ -184,3 +186,18 @@ class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
     class Config:
         use_enum_values = True
         orm_mode = True
+
+
+def validate_translations(values: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Ensure no two translations with the same language are supplied
+    """
+    translations: List[NoticeTranslation] = values.get("translations", [])
+    if not translations:
+        return values
+
+    languages = [translation.language for translation in translations]
+    if len(languages) != len(set(languages)):
+        raise ValueError("Multiple translations supplied for the same language")
+
+    return values

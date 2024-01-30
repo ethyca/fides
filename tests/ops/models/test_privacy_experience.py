@@ -301,6 +301,7 @@ class TestExperienceConfig:
         self, db, experience_config_overlay, privacy_notice
     ):
         assert experience_config_overlay.privacy_notices == []
+        experience_config_overlay.save(db)
 
         experience_config_overlay.update(
             db=db,
@@ -325,7 +326,6 @@ class TestExperienceConfig:
             },
         )
         db.refresh(experience_config_overlay)
-
         assert experience_config_overlay.privacy_notices == [privacy_notice]
 
         db.refresh(experience_config_overlay)

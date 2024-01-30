@@ -7,7 +7,8 @@ from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.orm import Query, Session, relationship
+from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
+from sqlalchemy.orm.dynamic import AppenderQuery
 
 from fides.api.db.base_class import Base
 from fides.api.models.custom_asset import CustomAsset
@@ -162,14 +163,14 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         lazy="dynamic",
     )
 
-    privacy_notices = relationship(
+    privacy_notices: RelationshipProperty[List[PrivacyNotice]] = relationship(
         "PrivacyNotice",
         secondary="experiencenotices",
         back_populates="experience_configs",
         lazy="selectin",
     )
 
-    translations = relationship(
+    translations: RelationshipProperty[List[ExperienceTranslation]] = relationship(
         "ExperienceTranslation",
         backref="privacy_experience_config",
         lazy="selectin",
@@ -182,9 +183,11 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
 
     def get_translation_by_language(
-        self, db, language: Language
+        self, db: Session, language: Optional[Language]
     ) -> Optional[ExperienceTranslation]:
         """Lookup a translation on an ExperienceConfig by language if it exists"""
+        if not language:
+            return None
         return (
             db.query(ExperienceTranslation)
             .filter(
@@ -256,62 +259,68 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         - Link or unlink regions (via Privacy Experiences)
         - Link or unlink Privacy Notices
         """
-        translations = data.pop("translations", [])
+        request_translations = data.pop("translations", [])
         regions = data.pop("regions", [])
         privacy_notices = data.pop("privacy_notices", [])
 
-        resource, config_updated = update_if_modified(self, db=db, data=data)
+        config_updated = update_if_modified(self, db=db, data=data)
 
-        for translation_data in translations:
-            existing_translation: ExperienceTranslation = (
-                self.get_translation_by_language(db, translation_data.get("language"))
-            )
+        for translation_data in request_translations:
+            existing_translation: Optional[
+                ExperienceTranslation
+            ] = self.get_translation_by_language(db, translation_data.get("language"))
             if existing_translation:
-                translation, translation_updated = update_if_modified(
+                translation_updated: bool = update_if_modified(
                     existing_translation,
                     db=db,
-                    data={**translation_data, "experience_config_id": resource.id},
+                    data={**translation_data, "experience_config_id": self.id},
                 )
+                translation = existing_translation
             else:
                 translation_updated = True
                 translation = ExperienceTranslation.create(
                     db,
-                    data={**translation_data, "experience_config_id": resource.id},
+                    data={**translation_data, "experience_config_id": self.id},
                 )
 
             if config_updated or translation_updated:
-                new_version = translation.version or 0.0
-                history_data = create_historical_data_from_record(resource)
+                new_version: float = translation.version or 0.0
+                history_data: dict = create_historical_data_from_record(self)
                 history_data.pop("privacy_notices", None)
                 history_data.pop("translations", None)
-                translation_data = create_historical_data_from_record(translation)
+                updated_translation_data: dict = create_historical_data_from_record(
+                    translation
+                )
                 PrivacyExperienceConfigHistory.create(
                     db,
                     data={
                         **history_data,
-                        **translation_data,
+                        **updated_translation_data,
                         "translation_id": translation.id,
                         "version": new_version + 1.0,
                     },
                     check_name=False,
                 )
 
-        translations_to_remove = set(
-            translation.language for translation in resource.translations
-        ).difference(set(translation.get("language") for translation in translations))
+        experience_translations: List[ExperienceTranslation] = self.translations
+        translations_to_remove: Set[Language] = set(  # type: ignore[assignment]
+            translation.language for translation in experience_translations
+        ).difference(
+            set(translation.get("language") for translation in request_translations)
+        )
 
         db.query(ExperienceTranslation).filter(
             ExperienceTranslation.language.in_(translations_to_remove),
-            ExperienceTranslation.experience_config_id == resource.id,
+            ExperienceTranslation.experience_config_id == self.id,
         ).delete()
         db.commit()
 
-        upsert_privacy_experiences_after_config_update(db, resource, regions)
+        upsert_privacy_experiences_after_config_update(db, self, regions)
         link_notices_to_experience_config(
-            db, notice_keys=privacy_notices, experience_config=resource
+            db, notice_keys=privacy_notices, experience_config=self
         )
 
-        return resource  # type: ignore[return-value]
+        return self  # type: ignore[return-value]
 
     def dry_update(self, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
         """
@@ -376,7 +385,7 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         ),
     )
 
-    histories = relationship(
+    histories: RelationshipProperty[AppenderQuery] = relationship(
         "PrivacyExperienceConfigHistory",
         backref="experience_translation",
         lazy="dynamic",
@@ -387,7 +396,7 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
     def version(self) -> Optional[float]:
         """Convenience property that returns the latest version number of the translation"""
         return (
-            self.experience_config_history.version
+            self.experience_config_history.version  # type: ignore[return-value]
             if self.experience_config_history
             else None
         )
@@ -520,10 +529,10 @@ class PrivacyExperience(Base):
             if self.experience_config.banner_enabled == BannerEnabled.always_enabled:
                 return True
 
-            notices = self.experience_config.privacy_notices
+            notices: List[PrivacyNotice] = self.experience_config.privacy_notices
 
             if show_disabled is False:
-                notices = [notice for notice in notices if notice.disabled.is_(False)]
+                notices = [notice for notice in notices if notice.disabled]
 
             for notice in notices:
                 if show_disabled is False and notice.disabled:
@@ -718,18 +727,22 @@ def link_notices_to_experience_config(
     experience_config: PrivacyExperienceConfig,
 ) -> List[PrivacyNotice]:
     """
-    Link Notices to ExperienceConfig
-    """
-    existing_linked_notices = [pn for pn in experience_config.privacy_notices]
-    notices = db.query(PrivacyNotice).filter(PrivacyNotice.notice_key.in_(notice_keys))
+    Link supplied Notices to ExperienceConfig and unlink any notices not supplied.
 
-    for notice in notices:
+    Notices retrieved by Notice Key
+    """
+    new_notices: Query = db.query(PrivacyNotice).filter(
+        PrivacyNotice.notice_key.in_(notice_keys)
+    )
+
+    for notice in new_notices:
         if notice not in experience_config.privacy_notices:
             experience_config.privacy_notices.append(notice)
 
-    to_remove = set(existing_linked_notices) - set(
-        notice.id for notice in experience_config.privacy_notices
-    )
+    to_remove: Set[PrivacyNotice] = set(
+        notice for notice in experience_config.privacy_notices
+    ) - set(notice for notice in new_notices)
+
     for privacy_notice in to_remove:
         experience_config.privacy_notices.remove(privacy_notice)
 

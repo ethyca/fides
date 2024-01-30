@@ -85,9 +85,7 @@ class ExperienceConfigSchema(FidesSchema):
     origin: Optional[str]
     dismissable: Optional[bool]
     allow_language_selection: Optional[bool]
-    translations: List[ExperienceTranslation] = []
     regions: List[PrivacyNoticeRegion] = []
-    privacy_notices: List[str] = []
 
     @validator("regions")
     @classmethod
@@ -99,16 +97,30 @@ class ExperienceConfigSchema(FidesSchema):
             raise ValueError("Duplicate regions found.")
         return regions
 
+
+class ExperienceConfigCreate(ExperienceConfigSchema):
+    """
+    An API representation to create ExperienceConfig.
+    This model doesn't include an `id` so that it can be used for creation.
+    It also establishes some fields _required_ for creation
+    """
+
+    translations: List[ExperienceTranslationCreate] = []
+    component: ComponentType
+    privacy_notices: List[str] = []
+
     @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Ensure no two translations with the same language are supplied
         """
-        translations: List[Dict] = values.get("translations")
+        translations: Optional[List[ExperienceTranslation]] = values.get("translations")
         if not translations:
             return values
 
-        languages = [translation.language for translation in translations]
+        languages: List[Language] = [
+            translation.language for translation in translations
+        ]
         if len(languages) != len(set(languages)):
             raise ValueError("Multiple translations supplied for the same language")
 
@@ -139,17 +151,6 @@ class ExperienceConfigSchema(FidesSchema):
                         )
 
         return values
-
-
-class ExperienceConfigCreate(ExperienceConfigSchema):
-    """
-    An API representation to create ExperienceConfig.
-    This model doesn't include an `id` so that it can be used for creation.
-    It also establishes some fields _required_ for creation
-    """
-
-    translations: List[ExperienceTranslationCreate] = []
-    component: ComponentType
 
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):
@@ -191,7 +192,7 @@ class ExperienceConfigResponse(ExperienceConfigSchemaWithId):
     component: ComponentType
     regions: List[PrivacyNoticeRegion]  # Property
     privacy_notices: List[PrivacyNoticeResponse] = []
-    translations: List[ExperienceTranslationResponse]
+    translations: List[ExperienceTranslationResponse] = []
 
 
 class ExperienceConfigCreateOrUpdateResponse(FidesSchema):

@@ -172,7 +172,6 @@ class TestPrivacyNoticeModel:
                     {
                         "language": Language.en_us,
                         "title": "Example privacy notice",
-                        "description": "user&#x27;s description &lt;script /&gt;",
                     }
                 ],
             },
@@ -192,6 +191,8 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.data_uses == ["data_use_1", "data_use_2"]
         assert len(privacy_notice.translations) == 1
         translation = privacy_notice.translations[0]
+        assert translation.description == "user&#x27;s description &lt;script /&gt;"
+
         assert translation.privacy_notice_history.version == 3.0
 
         # make sure our latest entry in history table corresponds to current record
@@ -203,6 +204,7 @@ class TestPrivacyNoticeModel:
         assert notice_history.name == "updated name again"
         assert notice_history.data_uses == ["data_use_1", "data_use_2"]
         assert notice_history.version == 3.0
+        assert notice_history.description == "user&#x27;s description &lt;script /&gt;"
 
         # and that previous record hasn't changed
         notice_history = (

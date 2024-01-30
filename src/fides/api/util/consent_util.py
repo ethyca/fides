@@ -33,7 +33,11 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
-from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
+from fides.api.schemas.privacy_experience import (
+    ExperienceConfigCreate,
+    ExperienceConfigCreateWithId,
+    ExperienceConfigUpdate,
+)
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
 from fides.api.util.endpoint_utils import transform_fields
@@ -41,7 +45,7 @@ from fides.config.helpers import load_file
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "internal_description"]
 NOTICE_TRANSLATION_ESCAPE_FIELDS = ["title", "description"]
-PRIVACY_EXPERIENCE_ESCAPE_FIELDS = []
+PRIVACY_EXPERIENCE_ESCAPE_FIELDS: List[str] = []
 CONFIG_TRANSLATION_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
@@ -301,7 +305,9 @@ def validate_notice_data_uses(
 
 
 def ensure_unique_ids(
-    privacy_notices: List[PrivacyNoticeWithId],
+    privacy_notices: Union[
+        List[PrivacyNoticeWithId], List[ExperienceConfigCreateWithId]
+    ],
 ) -> None:
     """
     Ensures that all the provided `PrivacyNotice`s have unique IDs
@@ -650,7 +656,7 @@ def load_default_experience_configs_on_startup(
 
 def create_default_experience_config(
     db: Session, experience_config_data: ExperienceConfigCreateWithId
-) -> Optional[PrivacyExperienceConfig]:
+) -> PrivacyExperienceConfig:
     """Create a default experience config on startup.  The id is specified upfront.
 
     Split from load_default_experience_configs_on_startup for easier testing
@@ -735,7 +741,9 @@ def create_default_tcf_purpose_overrides_on_startup(
     return purpose_override_resources_created
 
 
-def escape_experience_fields_for_storage(experience_config_data):
+def escape_experience_fields_for_storage(
+    experience_config_data: Union[ExperienceConfigCreate, ExperienceConfigUpdate]
+) -> None:
     """Escapes experience config fields in-place for storage"""
     transform_fields(
         transformation=escape,
@@ -750,7 +758,9 @@ def escape_experience_fields_for_storage(experience_config_data):
         )
 
 
-def unescape_experience_fields_for_display(experience_config: PrivacyExperienceConfig):
+def unescape_experience_fields_for_display(
+    experience_config: PrivacyExperienceConfig,
+) -> None:
     """Unescapes experience config fields in-place for display"""
     experience_config = transform_fields(
         transformation=unescape,
@@ -765,14 +775,16 @@ def unescape_experience_fields_for_display(experience_config: PrivacyExperienceC
         )
 
 
-def escape_notice_fields_for_storage(privacy_notice_data):
+def escape_notice_fields_for_storage(
+    privacy_notice_data: Union[PrivacyNoticeCreation, PrivacyNoticeWithId],
+) -> None:
     """Escapes Notice Fields for Storage in place"""
     transform_fields(
         transformation=escape,
         model=privacy_notice_data,
         fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
     )
-    for translation in privacy_notice_data.translations:
+    for translation in privacy_notice_data.translations or []:
         transform_fields(
             transformation=escape,
             model=translation,
@@ -780,7 +792,7 @@ def escape_notice_fields_for_storage(privacy_notice_data):
         )
 
 
-def unescape_notice_fields_for_display(privacy_notice: PrivacyNotice):
+def unescape_notice_fields_for_display(privacy_notice: PrivacyNotice) -> None:
     """Unescapes privacy notice fields in-place for display"""
     transform_fields(
         transformation=unescape,
