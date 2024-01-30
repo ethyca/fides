@@ -112,44 +112,44 @@
   "regulations": [
     {
       "id": "gdpr",
-      "selected": false,
-      "name": "General Data Protection Regulation (GDPR)",
+      "selected": true,
+      "name": "GDPR (European Union)",
       "continent": "Europe"
     },
     {
       "id": "ccpa",
-      "selected": false,
-      "name": "California Consumer Privacy Act (CCPA)",
+      "selected": true,
+      "name": "CCPA (California)",
       "continent": "North America"
     },
     {
       "id": "cpa",
       "selected": false,
-      "name": "Colorado Privacy Act (CPA)",
+      "name": "CPA (Colorado)",
       "continent": "North America"
     },
     {
       "id": "vcdpa",
       "selected": false,
-      "name": "Virginia Consumer Data Privacy Act (VCDPA)",
+      "name": "VCDPA (Virginia)",
       "continent": "North America"
     },
     {
       "id": "ctdpa",
       "selected": false,
-      "name": "Connecticut Data Privacy Act (CTDPA)",
+      "name": "CTDPA (Connecticut)",
       "continent": "North America"
     },
     {
       "id": "ucpa",
       "selected": false,
-      "name": "Utah Consumer Privacy Act (UCPA)",
+      "name": "UCPA (Utah)",
       "continent": "North America"
     },
     {
       "id": "pipeda",
       "selected": false,
-      "name": "The Personal Information Protection and Electronic Documents Act (PIPEDA)",
+      "name": "PIPEDA (Canada)",
       "continent": "North America"
     },
     {
@@ -160,8 +160,8 @@
     },
     {
       "id": "lgpd",
-      "selected": false,
-      "name": "General Personal Data Protection Act (LGPD)",
+      "selected": true,
+      "name": "LGPD (Brazil)",
       "continent": "South America"
     }
   ]

@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { ReactNode } from "react";
 
-const NUM_TO_SHOW = 5;
+export const NUM_TO_SHOW = 5;
 
 export const usePicker = <T extends { id: string; name: string }>({
   items,
@@ -49,6 +49,17 @@ export const usePicker = <T extends { id: string; name: string }>({
   };
 };
 
+export interface Props<T> {
+  title: string;
+  items: T[];
+  selected: Array<string>;
+  indeterminate: Array<string>;
+  onChange: (newSelected: Array<string>) => void;
+  toggle?: ReactNode;
+  onViewMore?: () => void;
+  numSelected: number;
+}
+
 const PickerCard = <T extends { id: string; name: string }>({
   title,
   items,
@@ -58,16 +69,7 @@ const PickerCard = <T extends { id: string; name: string }>({
   toggle,
   onViewMore,
   numSelected,
-}: {
-  title: string;
-  items: T[];
-  selected: Array<string>;
-  indeterminate: Array<string>;
-  onChange: (newSelected: Array<string>) => void;
-  toggle?: ReactNode;
-  onViewMore?: () => void;
-  numSelected: number;
-}) => {
+}: Props<T>) => {
   const itemsToShow = onViewMore ? items.slice(0, NUM_TO_SHOW) : items;
 
   const { allSelected, someSelected, handleToggleAll, handleToggleSelection } =
