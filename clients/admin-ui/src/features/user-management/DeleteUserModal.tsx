@@ -32,7 +32,6 @@ import {
   setActiveUserId,
   useDeleteUserMutation,
 } from "./user-management.slice";
-import { WarningIcon } from "@chakra-ui/icons";
 
 const initialValues = { username: "", usernameConfirmation: "" };
 
