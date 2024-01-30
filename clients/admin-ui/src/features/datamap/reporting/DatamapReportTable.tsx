@@ -29,30 +29,46 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import _ from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
   DatamapReportFilterModal,
   useDatamapReportFilters,
 } from "~/features/datamap/reporting/DatamapReportFilterModal";
-import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
+  selectAllCustomFieldDefinitions,
+  useGetAllCustomFieldDefinitionsQuery,
+  useGetHealthQuery,
+} from "~/features/plus/plus.slice";
+import {
+  CustomField,
   DATAMAP_GROUPING,
-  DatamapReport,
+  DatamapReport as BaseDatamapReport,
   Page_DatamapReport_,
 } from "~/types/api";
 
+// Extend the base datamap report type to also have custom fields
+type DatamapReport = BaseDatamapReport & Record<string, CustomField["value"]>;
+
 const columnHelper = createColumnHelper<DatamapReport>();
 
-const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
+const emptyMinimalDatamapReportResponse: Omit<Page_DatamapReport_, "items"> & {
+  items: DatamapReport[];
+} = {
   items: [],
   total: 0,
   page: 1,
   size: 25,
   pages: 1,
 };
+
+// Custom fields are prepended by `system_` or `privacy_declaration_`
+const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
+const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 enum COLUMN_IDS {
@@ -249,6 +265,8 @@ export const DatamapReportTable = () => {
     columnOrder,
   } = useMemo(() => {
     const report = datamapReport || emptyMinimalDatamapReportResponse;
+    // Type workaround since extending BaseDatamapReport with custom fields causes some trouble
+    const items = report.items as DatamapReport[];
     if (groupChangeStarted) {
       setGroupChangeStarted(false);
     }
@@ -262,6 +280,7 @@ export const DatamapReportTable = () => {
     */
     return {
       ...report,
+      items,
       grouping: getGrouping(groupBy),
       columnOrder: getColumnOrder(groupBy),
     };
@@ -272,6 +291,48 @@ export const DatamapReportTable = () => {
   useEffect(() => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
+
+  // Get custom fields
+  useGetAllCustomFieldDefinitionsQuery();
+  const customFields = useAppSelector(selectAllCustomFieldDefinitions);
+
+  const customFieldColumns = useMemo(() => {
+    const datamapKeys = datamapReport
+      ? Object.keys(datamapReport.items[0])
+      : [];
+    const defaultKeys = Object.values(COLUMN_IDS);
+
+    const customFieldKeys = datamapKeys
+      .filter((k) => !defaultKeys.includes(k as COLUMN_IDS))
+      .filter(
+        (k) =>
+          k.startsWith(CUSTOM_FIELD_DATA_USE_PREFIX) ||
+          k.startsWith(CUSTOM_FIELD_SYSTEM_PREFIX)
+      );
+
+    const columns = customFieldKeys.map((key) => {
+      const customField = customFields.find((cf) =>
+        key.includes(_.snakeCase(cf.name))
+      );
+      const displayText = _.upperFirst(key.replaceAll("_", " "));
+      return columnHelper.accessor((row) => row[key], {
+        id: key,
+        cell: (props) =>
+          Array.isArray(props.getValue()) ? (
+            <GroupCountBadgeCell value={props.getValue()} {...props} />
+          ) : (
+            <DefaultCell value={props.getValue() as string} />
+          ),
+        header: (props) => <DefaultHeaderCell value={displayText} {...props} />,
+        meta: {
+          displayText,
+          showHeaderMenu: customField?.field_type === "string[]",
+        },
+      });
+    });
+
+    return columns;
+  }, [datamapReport, customFields]);
 
   const tcfColumns = useMemo(
     () => [
@@ -795,8 +856,9 @@ export const DatamapReportTable = () => {
           displayText: "Uses profiling",
         },
       }),
+      ...customFieldColumns,
     ],
-    []
+    [customFieldColumns]
   );
 
   const {
