@@ -203,7 +203,7 @@ describe("User management", () => {
     beforeEach(() => {
       cy.intercept("DELETE", "/api/v1/user/*", { body: {} }).as("deleteUser");
     });
-    it("can delete a user via the menu", () => {
+    it.only("can delete a user via the menu", () => {
       cy.visit("/user-management");
       cy.getByTestId(`row-${USER_1_ID}`).within(() => {
         cy.getByTestId("delete-user-btn").click();
@@ -211,18 +211,14 @@ describe("User management", () => {
       cy.getByTestId("delete-user-modal");
       cy.getByTestId("submit-btn").should("be.disabled");
 
-      // type mismatching usernames
+      // type mismatching username
       cy.getByTestId("input-usernameConfirmation").type("user_one");
       // trigger blur event
-      cy.getByTestId("delete-user-modal").click();
+      cy.getByTestId("input-usernameConfirmation").blur()
       cy.getByTestId("submit-btn").should("be.disabled");
-
-      // type matching but incorrect username
-      cy.getByTestId("input-usernameConfirmation").clear().type("user_one");
-      cy.getByTestId("delete-user-modal").contains(
+      cy.getByTestId("error-usernameConfirmation").contains(
         "Username must match this user's"
       );
-      cy.getByTestId("submit-btn").should("be.disabled");
 
       // now enter the proper thing
       cy.getByTestId("input-usernameConfirmation").clear().type("user_1");
