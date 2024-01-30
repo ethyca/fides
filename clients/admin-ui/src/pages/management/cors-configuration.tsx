@@ -101,7 +101,11 @@ const CORSConfigurationPage: NextPage = () => {
             Manage domains for your organization
           </Text>
           <Text mb={10} fontSize="sm">
-            You must add domains associated with your organization to Fides to ensure features such as consent function correctly. Fides uses these domains to enforce cross-origin resource sharing (CORS), a browser-based security standard. For more information on managing domains on Fides, click here{" "}
+            You must add domains associated with your organization to Fides to
+            ensure features such as consent function correctly. Fides uses these
+            domains to enforce cross-origin resource sharing (CORS), a
+            browser-based security standard. For more information on managing
+            domains on Fides, click here{" "}
             <DocsLink href="https://fid.es/cors-configuration">
               docs.ethyca.com
             </DocsLink>
