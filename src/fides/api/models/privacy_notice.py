@@ -33,9 +33,6 @@ class Language(Enum):
     en_us = "en_us"  # US English
     en_gb = "en_gb"  # British English
 
-    class Config:
-        use_enum_values = True
-
 
 class PrivacyNoticeFramework(Enum):
     gpp_us_national = "gpp_us_national"
@@ -291,8 +288,11 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         order_by="NoticeTranslation.created_at",
     )
 
+    # Forward declaration to avoid circular import errors
+    PrivacyExperienceConfig = "PrivacyExperienceConfig"
+
     experience_configs = relationship(
-        "PrivacyExperienceConfig",
+        PrivacyExperienceConfig,
         secondary="experiencenotices",
         back_populates="privacy_notices",
     )
@@ -602,8 +602,9 @@ def update_if_modified(resource: Base, db: Session, *, data: dict[str, Any]) -> 
 
 def create_historical_data_from_record(resource: Base) -> Dict:
     """Prep data to be saved in a historical table for record keeping"""
-
-    resource.id  # TODO Revisit why resource attributes were lazy loaded and therefore missing from the created dict
+    # Resource attributes are being lazy loaded and not showing up in the dict.  Accessing
+    # an attribute causes them to be loaded.
+    resource.id  # pylint: disable=pointless-statement
     history_data = resource.__dict__.copy()
     history_data.pop("_sa_instance_state", None)
     history_data.pop("id", None)
