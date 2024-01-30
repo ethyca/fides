@@ -51,8 +51,10 @@ class ComponentType(Enum):
     The component type - not formalized in the db
     """
 
-    overlay = "overlay"
+    overlay = "overlay"  # Overlay means banner + modal combined.
     privacy_center = "privacy_center"
+    banner = "banner"
+    modal = "modal"
     tcf_overlay = "tcf_overlay"
 
 
@@ -79,7 +81,7 @@ class ExperienceConfigTemplate(Base):
     translations = Column(ARRAY(JSONB))
     banner_enabled = Column(
         EnumColumn(BannerEnabled), index=True
-    )  # TODO likely pending removal
+    )  # Will be removed
 
 
 class ExperienceTranslationBase:
@@ -507,40 +509,6 @@ class PrivacyExperience(Base):
     def region_country(self) -> str:
         """The experience's country, based on naming convention of its region string."""
         return region_country(self.region.value)  # type: ignore[attr-defined]
-
-    def get_should_show_banner(
-        self, db: Session, show_disabled: Optional[bool] = True
-    ) -> bool:
-        """Returns True if this Experience should be delivered by a banner
-        # TODO revisit this logic with likely new component types.
-        """
-        if self.component == ComponentType.tcf_overlay:
-            # For now, just returning that the TCF Overlay should always show a banner,
-            # but this is subject to change.
-            return True
-
-        if self.component != ComponentType.overlay:
-            return False
-
-        if self.experience_config:
-            if self.experience_config.banner_enabled == BannerEnabled.always_disabled:
-                return False
-
-            if self.experience_config.banner_enabled == BannerEnabled.always_enabled:
-                return True
-
-            notices: List[PrivacyNotice] = self.experience_config.privacy_notices
-
-            if show_disabled is False:
-                notices = [notice for notice in notices if notice.disabled]
-
-            for notice in notices:
-                if show_disabled is False and notice.disabled:
-                    continue
-
-                return notice.consent_mechanism in BANNER_CONSENT_MECHANISMS
-
-        return False
 
     @staticmethod
     def create_default_experience_for_region(
