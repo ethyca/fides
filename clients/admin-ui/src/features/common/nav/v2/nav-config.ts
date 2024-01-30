@@ -193,14 +193,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
-        title: "Domain records",
+        title: "Domain verification",
         path: routes.DOMAIN_RECORDS_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: true,
         scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
       },
       {
-        title: "Domains",
+        title: "Domain managment",
         path: routes.CORS_CONFIGURATION_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: false,
