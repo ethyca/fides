@@ -26,5 +26,6 @@ def get_id_verification_config(
     messaging_config: Optional[MessagingConfig] = db.query(MessagingConfig).first()
     return IdentityVerificationConfigResponse(
         identity_verification_required=config_proxy.execution.subject_identity_verification_required,
+        disable_consent_identity_verification=config_proxy.execution.disable_consent_identity_verification,
         valid_email_config_exists=bool(messaging_config and messaging_config.secrets),
     )

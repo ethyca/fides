@@ -5,7 +5,10 @@
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
+import type { GPPFieldMapping } from "./GPPFieldMapping";
+import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
  * An API representation of a PrivacyNotice used for response payloads
@@ -25,7 +28,10 @@ export type PrivacyNoticeResponse = {
   displayed_in_privacy_center?: boolean;
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
+  framework?: PrivacyNoticeFramework;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
   id: string;
+  default_preference?: UserConsentPreference;
   created_at: string;
   updated_at: string;
   version: number;

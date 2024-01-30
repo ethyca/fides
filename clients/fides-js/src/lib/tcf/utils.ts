@@ -36,7 +36,8 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
     const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
     // @ts-ignore the array map should ensure we will get the right record type
     tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
-      const preference = Object.hasOwn(cookieConsent, item.id)
+      // Object.keys converts keys to strings, so we coerce id to string here
+      const preference = Object.keys(cookieConsent).includes(item.id as string)
         ? transformConsentToFidesUserPreference(
             Boolean(cookieConsent[item.id]),
             ConsentMechanism.OPT_IN

@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Button, Flex } from "@fidesui/react";
+import { Button, Flex, HStack } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -17,11 +17,14 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
+import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
+import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementFilterModal,
-  Option,
   useConsentManagementFilters,
 } from "~/features/configure-consent/ConsentManagementFilterModal";
 import {
@@ -44,13 +47,16 @@ const emptyVendorReportResponse: Page_SystemSummary_ = {
   pages: 1,
 };
 export const ConsentManagementTable = () => {
-  const { tcf: isTcfEnabled } = useFeatures();
+  const { tcf: isTcfEnabled, dictionaryService } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     isOpen: isRowModalOpen,
     onOpen: onRowModalOpen,
     onClose: onRowModalClose,
   } = useConsentManagementModal();
+
+  const router = useRouter();
+
   const [systemFidesKey, setSystemFidesKey] = useState<string>();
 
   const {
@@ -68,14 +74,6 @@ export const ConsentManagementTable = () => {
     onConsentCategoryChange,
   } = useConsentManagementFilters();
 
-  const getQueryParamsFromList = (optionList: Option[], queryParam: string) => {
-    const checkedOptions = optionList.filter((option) => option.isChecked);
-    return checkedOptions.length > 0
-      ? `${queryParam}=${checkedOptions
-          .map((option) => option.value)
-          .join(`&${queryParam}=`)}`
-      : undefined;
-  };
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
     [dataUseOptions]
@@ -161,9 +159,6 @@ export const ConsentManagementTable = () => {
         id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
-        meta: {
-          maxWidth: "350px",
-        },
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: "tcf_purpose",
@@ -171,9 +166,6 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="purposes" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="TCF purpose" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: "data_uses",
@@ -181,17 +173,11 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="data uses" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.legal_bases, {
         id: "legal_bases",
         cell: (props) => <BadgeCell suffix="bases" value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Legal basis" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.consent_categories, {
         id: "consent_categories",
@@ -199,9 +185,6 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="Categories" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="Categories" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
       columnHelper.accessor((row) => row.cookies, {
         id: "cookies",
@@ -209,9 +192,6 @@ export const ConsentManagementTable = () => {
           <BadgeCell suffix="Cookies" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
-        meta: {
-          width: "175px",
-        },
       }),
     ],
     []
@@ -230,11 +210,17 @@ export const ConsentManagementTable = () => {
       },
     },
     getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
+    enableColumnResizing: true,
   });
 
   const onRowClick = (system: SystemSummary) => {
     setSystemFidesKey(system.fides_key);
     onRowModalOpen();
+  };
+
+  const goToAddMultiple = () => {
+    router.push(ADD_MULTIPLE_VENDORS_ROUTE);
   };
 
   if (isReportLoading || isLoadingHealthCheck) {
@@ -269,7 +255,12 @@ export const ConsentManagementTable = () => {
           consentCategoryOptions={consentCategoryOptions}
           onConsentCategoryChange={onConsentCategoryChange}
         />
-        <Flex alignItems="center">
+        <HStack alignItems="center" spacing={4}>
+          <AddVendor
+            buttonLabel="Add vendors"
+            buttonVariant="outline"
+            onButtonClick={dictionaryService ? goToAddMultiple : undefined}
+          />
           <Button
             onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"
@@ -278,7 +269,7 @@ export const ConsentManagementTable = () => {
           >
             Filter
           </Button>
-        </Flex>
+        </HStack>
       </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
       <PaginationBar

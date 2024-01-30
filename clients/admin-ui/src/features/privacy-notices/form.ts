@@ -21,6 +21,8 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   displayed_in_api: true,
   displayed_in_overlay: true,
   displayed_in_privacy_center: true,
+  // When creating, set to disabled to start
+  disabled: true,
 };
 
 export const transformPrivacyNoticeResponseToCreation = (
@@ -47,9 +49,6 @@ export const transformPrivacyNoticeResponseToCreation = (
 
 export const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Title"),
-  data_uses: Yup.array(Yup.string())
-    .min(1, "Must assign at least one data use")
-    .label("Data uses"),
   regions: Yup.array(Yup.string())
     .min(1, "Must assign at least one location")
     .label("Locations"),

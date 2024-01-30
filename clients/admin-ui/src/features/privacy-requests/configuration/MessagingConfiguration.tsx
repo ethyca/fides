@@ -1,20 +1,11 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-  Radio,
-  RadioGroup,
-  Stack,
-  Text,
-} from "@fidesui/react";
-import NextLink from "next/link";
+import { Box, Heading, Radio, RadioGroup, Stack, Text } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
 import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateMessagingConfigurationMutation,
@@ -75,29 +66,7 @@ const MessagingConfiguration = () => {
 
   return (
     <Layout title="Configure Privacy Requests - Messaging">
-      <Box mb={8}>
-        <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
-          <BreadcrumbItem>
-            <BreadcrumbLink as={NextLink} href="/privacy-requests">
-              Privacy requests
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <BreadcrumbLink as={NextLink} href="/privacy-requests/configure">
-              Configuration
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem color="complimentary.500">
-            <BreadcrumbLink
-              as={NextLink}
-              href="/privacy-requests/configure/messaging"
-              isCurrentPage
-            >
-              Configure messaging provider
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
+      <BackButton backPath={PRIVACY_REQUESTS_CONFIGURATION_ROUTE} />
 
       <Heading mb={5} fontSize="2xl" fontWeight="semibold">
         Configure your messaging provider

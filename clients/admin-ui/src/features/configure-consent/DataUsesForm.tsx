@@ -8,7 +8,10 @@ import {
   CustomSelect,
 } from "~/features/common/form/inputs";
 import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
-import { selectDataUseOptions } from "~/features/data-use/data-use.slice";
+import {
+  selectDataUseOptions,
+  useGetAllDataUsesQuery,
+} from "~/features/data-use/data-use.slice";
 import {
   selectDictDataUses,
   useGetDictionaryDataUsesQuery,
@@ -31,6 +34,7 @@ const DataUseBlock = ({
   isSuggestion: boolean;
   disabled?: boolean;
 }) => {
+  useGetAllDataUsesQuery();
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
   const textColor = isSuggestion ? "complimentary.500" : "gray.800";
 

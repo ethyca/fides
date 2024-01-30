@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - "main"
+      - "release-**"
 
 env:
   DEFAULT_PYTHON_VERSION: "3.10.12"

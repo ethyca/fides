@@ -12,17 +12,6 @@ export type GppFunction = (
   version?: string
 ) => void;
 
-export enum GPPSections {
-  TCFEUV2 = "tcfeuv2",
-  TCFCAV1 = "tcfcav1",
-  USNAT = "usnat",
-  USCA = "usca",
-  USVA = "usva",
-  USCO = "usco",
-  USUT = "usut",
-  USCT = "usct",
-}
-
 export enum GPPUSApproach {
   NATIONAL = "national",
   STATE = "state",
@@ -30,7 +19,6 @@ export enum GPPUSApproach {
 
 export type GPPSettings = {
   enabled?: boolean;
-  regions?: Array<GPPSections>;
   /**
    * National ('national') or state-by-state ('state') approach. Only required if regions includes US.
    */
@@ -39,4 +27,33 @@ export type GPPSettings = {
    * List of US states. Only required if using a state-by-state approach.
    */
   us_states?: Array<string>;
+  /**
+   * Whether MSPA service provider mode is enabled
+   */
+  mspa_service_provider_mode?: boolean;
+  /**
+   * Whether MSPA opt out option mode is enabled
+   */
+  mspa_opt_out_option_mode?: boolean;
+  /**
+   * Whether all transactions are MSPA covered
+   */
+  mspa_covered_transactions?: boolean;
+  /**
+   * Whether TC string should be included as a section in GPP
+   */
+  enable_tcfeu_string?: boolean;
+};
+
+export type GPPMechanismMapping = {
+  field: string;
+  not_available: string;
+  opt_out: string;
+  not_opt_out: string;
+};
+
+export type GPPFieldMapping = {
+  region: string;
+  notice?: Array<string>;
+  mechanism?: Array<GPPMechanismMapping>;
 };

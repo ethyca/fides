@@ -1,21 +1,10 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-  Spinner,
-  Text,
-} from "@fidesui/react";
+import { Box, Heading, Spinner, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
-import {
-  LOCATIONS_ROUTE,
-  USER_MANAGEMENT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
@@ -30,22 +19,10 @@ const RegulationsPage: NextPage = () => {
 
   return (
     <Layout title="Regulations">
-      <Box data-testid="location-management">
+      <Box data-testid="regulation-management">
         <Heading marginBottom={2} fontSize="2xl">
           Regulations
         </Heading>
-        <Breadcrumb fontWeight="medium" fontSize="sm" mb="4">
-          <BreadcrumbItem>
-            <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-              <BreadcrumbLink href={USER_MANAGEMENT_ROUTE}>
-                Management
-              </BreadcrumbLink>
-            </NextLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="#">Regulations</BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
         <Box>
           <Text marginBottom={4} fontSize="sm" maxWidth="600px">
             Select the regulations that apply to your organizations compliance

@@ -1,11 +1,4 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  Button,
-  Heading,
-  Spinner,
-} from "@fidesui/react";
+import { Box, Button, Heading, Spinner } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
@@ -23,16 +16,6 @@ const DataSets: NextPage = () => {
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">
         Datasets
       </Heading>
-      <Box mb={8}>
-        <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
-          <BreadcrumbItem>
-            <NextLink href="/dataset">Datasets</NextLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <NextLink href="#">Select dataset</NextLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
       <Box mb={4}>{isLoading ? <Spinner /> : <DatasetsTable />}</Box>
       <Box>
         <Button

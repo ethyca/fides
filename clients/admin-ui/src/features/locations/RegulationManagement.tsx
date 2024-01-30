@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import PickerCard from "~/features/common/PickerCard";
+import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
@@ -25,8 +25,8 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { LOCATIONS_ROUTE } from "../common/nav/v2/routes";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
+import RegulationPickerCard from "./RegulationPickerCard";
 import { groupRegulationsByContinent } from "./transformations";
 
 const SEARCH_FILTER = (regulation: LocationRegulationBase, search: string) =>
@@ -66,7 +66,7 @@ const RegulationManagement = ({
         id: s.id,
         selected: s.selected,
       })),
-      // no changes to regulations
+      // no changes to locations
       locations: [],
     });
     if (isErrorResult(result)) {
@@ -74,7 +74,7 @@ const RegulationManagement = ({
     } else {
       toast(
         successToastParams(
-          <Text>
+          <Text display="inline">
             Fides has automatically associated the relevant locations with your
             regulation choices.
             <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
@@ -124,14 +124,12 @@ const RegulationManagement = ({
               handleDraftChange(updatedSelections);
             };
             return (
-              <PickerCard
+              <RegulationPickerCard
                 key={continent}
                 title={continent}
                 items={regulations}
                 selected={selected}
                 onChange={handleChange}
-                numSelected={selected.length}
-                indeterminate={[]}
               />
             );
           }
