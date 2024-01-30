@@ -1562,7 +1562,9 @@ def privacy_preference_history_us_ca_provide(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
+                0
+            ].experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_in",
             "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[

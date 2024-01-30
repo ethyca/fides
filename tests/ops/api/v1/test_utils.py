@@ -4,7 +4,8 @@ from html import escape
 import pytest
 from fastapi import HTTPException
 
-from fides.api.schemas.privacy_notice import PrivacyNotice
+from fides.api.models.privacy_notice import Language
+from fides.api.schemas.privacy_notice import NoticeTranslation, PrivacyNotice
 from fides.api.util.endpoint_utils import (
     human_friendly_list,
     transform_fields,
@@ -36,13 +37,17 @@ class TestValidateStartAndEndFilters:
 class TestTransformFields:
     def test_transform_escape(self):
         escaped_field = "user&#x27;s description &lt;script /&gt;"
-        notice_1 = PrivacyNotice(name="whew", description=escaped_field)
+        translation_1 = NoticeTranslation(
+            language=Language.en_us, title="whew", description=escaped_field
+        )
 
         unescaped_field = "user's description <script />"
-        notice_2 = PrivacyNotice(name="whew", description=unescaped_field)
-        notice_2 = transform_fields(escape, notice_2, ["description"])
+        translation_2 = NoticeTranslation(
+            language=Language.en_us, title="whew", description=unescaped_field
+        )
+        translation_2 = transform_fields(escape, translation_2, ["description"])
 
-        assert notice_1 == notice_2
+        assert translation_1 == translation_2
 
 
 class TestHumanFriendlyList:

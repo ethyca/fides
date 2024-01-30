@@ -181,7 +181,7 @@ class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
     """
 
     version: float
-    privacy_notice_id: str
+    translation_id: str
 
     class Config:
         use_enum_values = True
