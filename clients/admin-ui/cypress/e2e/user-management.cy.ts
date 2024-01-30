@@ -241,7 +241,6 @@ describe("User management", () => {
       cy.getByTestId("delete-user-btn").click();
 
       cy.getByTestId("delete-user-modal").within(() => {
-        cy.getByTestId("input-username").type("user_1");
         cy.getByTestId("input-usernameConfirmation").type("user_1");
         cy.getByTestId("submit-btn").should("be.enabled");
         cy.getByTestId("submit-btn").click();
