@@ -21,6 +21,7 @@ The types of changes are:
 
 - View more modal to regulations page [#4574](https://github.com/ethyca/fides/pull/4574)
 - Columns in data map reporting, adding multiple systems, and consent configuration tables can be resized. In the data map reporting table, fields with multiple values can show all or collapse all [#4569](https://github.com/ethyca/fides/pull/4569)
+- Show custom fields in the data map report table [#4579](https://github.com/ethyca/fides/pull/4579)
 
 ### Changed
 
