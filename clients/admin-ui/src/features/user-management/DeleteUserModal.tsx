@@ -111,7 +111,7 @@ const DeleteUserModal = ({
                     </Text>
                     <Text mb={2}>
                       This action cannot be undone. To confirm, please enter the
-                      user's username below.
+                      user&rsquo;s username below.
                     </Text>
                   </AlertDescription>
                 </Alert>
