@@ -214,10 +214,10 @@ describe("User management", () => {
       // type mismatching username
       cy.getByTestId("input-usernameConfirmation").type("user_one");
       // trigger blur event
-      cy.getByTestId("input-usernameConfirmation").blur()
+      cy.getByTestId("input-usernameConfirmation").blur();
       cy.getByTestId("submit-btn").should("be.disabled");
       cy.getByTestId("error-usernameConfirmation").contains(
-        "Username must match this user's"
+        "Confirmation input must match the username"
       );
 
       // now enter the proper thing
