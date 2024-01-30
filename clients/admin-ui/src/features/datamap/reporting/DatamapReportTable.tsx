@@ -56,9 +56,7 @@ type DatamapReport = BaseDatamapReport & Record<string, CustomField["value"]>;
 
 const columnHelper = createColumnHelper<DatamapReport>();
 
-const emptyMinimalDatamapReportResponse: Omit<Page_DatamapReport_, "items"> & {
-  items: DatamapReport[];
-} = {
+const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   items: [],
   total: 0,
   page: 1,
@@ -297,11 +295,13 @@ export const DatamapReportTable = () => {
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
 
   const customFieldColumns = useMemo(() => {
+    // Determine custom field keys by
+    // 1. If they aren't in our expected, static, columns
+    // 2. If they start with one of the custom field prefixes
     const datamapKeys = datamapReport
       ? Object.keys(datamapReport.items[0])
       : [];
     const defaultKeys = Object.values(COLUMN_IDS);
-
     const customFieldKeys = datamapKeys
       .filter((k) => !defaultKeys.includes(k as COLUMN_IDS))
       .filter(
@@ -310,7 +310,10 @@ export const DatamapReportTable = () => {
           k.startsWith(CUSTOM_FIELD_SYSTEM_PREFIX)
       );
 
+    // Create column objects for each custom field key
     const columns = customFieldKeys.map((key) => {
+      // We need to figure out the original custom field object in order to see
+      // if the value is a string[], which would want `showHeaderMenu=true`
       const customField = customFields.find((cf) =>
         key.includes(_.snakeCase(cf.name))
       );
@@ -318,6 +321,8 @@ export const DatamapReportTable = () => {
       return columnHelper.accessor((row) => row[key], {
         id: key,
         cell: (props) =>
+          // Conditionally render the Group cell if we have more than one value.
+          // Alternatively, could check the customField type
           Array.isArray(props.getValue()) ? (
             <GroupCountBadgeCell value={props.getValue()} {...props} />
           ) : (
@@ -856,6 +861,7 @@ export const DatamapReportTable = () => {
           displayText: "Uses profiling",
         },
       }),
+      // Tack on the custom field columns to the end
       ...customFieldColumns,
     ],
     [customFieldColumns]
