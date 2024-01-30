@@ -7,12 +7,14 @@ type Props<T> = {
   row: Row<T>;
   onRowClick?: (row: T) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
+  displayAllColumns: string[];
 };
 
 export const FidesRow = <T,>({
   row,
   renderRowTooltipLabel,
   onRowClick,
+  displayAllColumns,
 }: Props<T>) => {
   if (row.getIsGrouped()) {
     return null;
@@ -30,7 +32,12 @@ export const FidesRow = <T,>({
       backgroundColor={row.getCanSelect() ? undefined : "gray.50"}
     >
       {row.getVisibleCells().map((cell) => (
-        <FidesCell key={cell.id} cell={cell} onRowClick={onRowClick} />
+        <FidesCell
+          key={cell.id}
+          cell={cell}
+          onRowClick={onRowClick}
+          isDisplayAll={!!displayAllColumns.find((c) => c === cell.column.id)}
+        />
       ))}
     </Tr>
   );

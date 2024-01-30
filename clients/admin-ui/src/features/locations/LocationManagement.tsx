@@ -67,7 +67,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
     } else {
       toast(
         successToastParams(
-          <Text>
+          <Text display="inline">
             Fides has automatically associated the relevant regulations with
             your location choices.{" "}
             <ToastLink onClick={goToRegulations}>
