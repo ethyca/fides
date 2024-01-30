@@ -203,7 +203,7 @@ describe("User management", () => {
     beforeEach(() => {
       cy.intercept("DELETE", "/api/v1/user/*", { body: {} }).as("deleteUser");
     });
-    it.only("can delete a user via the menu", () => {
+    it("can delete a user via the menu", () => {
       cy.visit("/user-management");
       cy.getByTestId(`row-${USER_1_ID}`).within(() => {
         cy.getByTestId("delete-user-btn").click();
