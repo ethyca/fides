@@ -1,6 +1,9 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  LOCATIONS_ROUTE,
+  REGULATIONS_ROUTE,
+} from "~/features/common/nav/v2/routes";
 
 const assertIsChecked = (
   name: string,
@@ -16,7 +19,7 @@ const assertIsChecked = (
   });
 };
 
-describe("Locations", () => {
+describe("Locations and regulations", () => {
   beforeEach(() => {
     cy.login();
     stubPlus(true);
@@ -26,11 +29,13 @@ describe("Locations", () => {
     cy.intercept("PATCH", "/api/v1/plus/locations", {
       fixture: "locations/list.json",
     }).as("patchLocations");
-    cy.visit(LOCATIONS_ROUTE);
-    cy.getByTestId("location-management");
   });
 
-  describe("continent view", () => {
+  describe("location continent view", () => {
+    beforeEach(() => {
+      cy.visit(LOCATIONS_ROUTE);
+      cy.getByTestId("location-management");
+    });
     it("renders locations by continent from initial data", () => {
       cy.getByTestId("picker-card-Europe").within(() => {
         assertIsChecked("select-all", "indeterminate");
@@ -256,7 +261,11 @@ describe("Locations", () => {
     });
   });
 
-  describe("modal view", () => {
+  describe("location modal view", () => {
+    beforeEach(() => {
+      cy.visit(LOCATIONS_ROUTE);
+      cy.getByTestId("location-management");
+    });
     it("can show the modal view with selections", () => {
       cy.getByTestId("picker-card-Europe").within(() => {
         cy.getByTestId("view-more-btn").click();
@@ -296,6 +305,7 @@ describe("Locations", () => {
       // Selecting Quebec should also select Canada in the continent view since Quebec
       // is the only child of Canada
       cy.getByTestId("subgroup-modal").within(() => {
+        assertIsChecked("select-all", "indeterminate");
         cy.getByTestId("United States-accordion").click();
         cy.getByTestId("Canada-accordion")
           .click()
@@ -351,6 +361,148 @@ describe("Locations", () => {
         cy.getByTestId("Other-accordion").should("not.exist");
         assertIsChecked("Brazil-checkbox", "checked");
         assertIsChecked("Venezuela-checkbox", "unchecked");
+      });
+    });
+  });
+
+  describe("regulations page", () => {
+    beforeEach(() => {
+      cy.visit(REGULATIONS_ROUTE);
+      cy.getByTestId("regulation-management");
+    });
+
+    it("can view picker cards with regulations", () => {
+      cy.getByTestId("picker-card-Europe").within(() => {
+        assertIsChecked("GDPR (European Union)-checkbox", "checked");
+      });
+      cy.getByTestId("picker-card-North America").within(() => {
+        assertIsChecked("CCPA (California)-checkbox", "checked");
+        assertIsChecked("CPA (Colorado)-checkbox", "unchecked");
+        assertIsChecked("CTDPA (Connecticut)-checkbox", "unchecked");
+        assertIsChecked("Law 25 (Quebec)-checkbox", "unchecked");
+        assertIsChecked("PIPEDA (Canada)-checkbox", "unchecked");
+      });
+      cy.getByTestId("picker-card-South America").within(() => {
+        assertIsChecked("LGPD (Brazil)-checkbox", "checked");
+      });
+    });
+
+    it("can save updated regulations", () => {
+      // Uncheck GDPR
+      cy.getByTestId("GDPR (European Union)-checkbox").click();
+      assertIsChecked("GDPR (European Union)-checkbox", "unchecked");
+
+      // Check CPA
+      cy.getByTestId("CPA (Colorado)-checkbox").click();
+      assertIsChecked("CPA (Colorado)-checkbox", "checked");
+
+      // Set up the next GET to return our changed data
+      cy.fixture("locations/list.json").then((data) => {
+        const newRegulations = data.regulations.map((r) => {
+          if (r.id === "gdpr") {
+            return { ...r, selected: false };
+          }
+          if (r.id === "cpa") {
+            return { ...r, selected: true };
+          }
+          return r;
+        });
+        cy.intercept("GET", "/api/v1/plus/locations", {
+          body: { ...data, regulations: newRegulations },
+        }).as("getRegulationsSecond");
+      });
+
+      cy.getByTestId("save-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@patchLocations").then((interception) => {
+        const { body } = interception.request;
+        // No changes to locations
+        expect(body.locations).to.eql([]);
+        // Check regulations
+        expect(body.regulations).to.eql([
+          {
+            id: "gdpr",
+            selected: false,
+          },
+          {
+            id: "ccpa",
+            selected: true,
+          },
+          {
+            id: "cpa",
+            selected: true,
+          },
+          {
+            id: "vcdpa",
+            selected: false,
+          },
+          {
+            id: "ctdpa",
+            selected: false,
+          },
+          {
+            id: "ucpa",
+            selected: false,
+          },
+          {
+            id: "pipeda",
+            selected: false,
+          },
+          {
+            id: "law_25_quebec",
+            selected: false,
+          },
+          {
+            id: "lgpd",
+            selected: true,
+          },
+        ]);
+      });
+      cy.wait("@getRegulationsSecond");
+      cy.getByTestId("save-btn").should("not.exist");
+    });
+
+    it("can open the modal", () => {
+      cy.getByTestId("picker-card-North America").within(() => {
+        assertIsChecked("select-all", "indeterminate");
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("regulation-modal").within(() => {
+        assertIsChecked("select-all", "indeterminate");
+        assertIsChecked("CCPA (California)-checkbox", "checked");
+        // Check a few more
+        cy.getByTestId("Law 25 (Quebec)-checkbox").click();
+        assertIsChecked("Law 25 (Quebec)-checkbox", "checked");
+        cy.getByTestId("UCPA (Utah)-checkbox").click();
+        assertIsChecked("UCPA (Utah)-checkbox", "checked");
+        cy.getByTestId("apply-btn").click();
+      });
+      // Make sure checkboxes applied
+      cy.getByTestId("picker-card-North America").within(() => {
+        assertIsChecked("Law 25 (Quebec)-checkbox", "checked");
+        cy.getByTestId("view-more-btn").click();
+      });
+      // Try opening modal, making choices, then canceling
+      cy.getByTestId("regulation-modal").within(() => {
+        // Uncheck Law 25
+        cy.getByTestId("Law 25 (Quebec)-checkbox").click();
+        assertIsChecked("Law 25 (Quebec)-checkbox", "unchecked");
+        cy.getByTestId("cancel-btn").click();
+      });
+      // Law 25 should still be applied
+      cy.getByTestId("picker-card-North America").within(() => {
+        assertIsChecked("Law 25 (Quebec)-checkbox", "checked");
+        cy.getByTestId("view-more-btn").click();
+      });
+    });
+
+    it("unsaved changes in cards propagate to modal", () => {
+      cy.getByTestId("picker-card-North America").within(() => {
+        cy.getByTestId("Law 25 (Quebec)-checkbox").click();
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("regulation-modal").within(() => {
+        assertIsChecked("Law 25 (Quebec)-checkbox", "checked");
       });
     });
   });
