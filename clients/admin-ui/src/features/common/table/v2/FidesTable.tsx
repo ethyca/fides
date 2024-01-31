@@ -57,7 +57,10 @@ const HeaderContent = <T,>({
 }) => {
   if (!header.column.columnDef.meta?.showHeaderMenu) {
     return (
-      <Box style={{ ...getTableTHandTDStyles(header.column.id) }}>
+      <Box
+        data-testid={`${header.id}-header`}
+        style={{ ...getTableTHandTDStyles(header.column.id) }}
+      >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
     );
@@ -72,11 +75,17 @@ const HeaderContent = <T,>({
         width="100%"
         pr={1}
         textAlign="start"
+        data-testid={`${header.id}-header-menu`}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </MenuButton>
       <Portal>
-        <MenuList fontSize="xs" minW="0" w="158px">
+        <MenuList
+          fontSize="xs"
+          minW="0"
+          w="158px"
+          data-testid={`${header.id}-header-menu-list`}
+        >
           <MenuItem
             color={!isDisplayAll ? "complimentary.500" : undefined}
             onClick={() => onGroupAll(header.id)}

@@ -80,6 +80,7 @@ export const FidesCell = <T,>({
             }
           : undefined
       }
+      data-testid={`row-${cell.row.id}-col-${cell.column.id}`}
     >
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {
