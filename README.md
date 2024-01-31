@@ -27,7 +27,9 @@ In order to get started quickly with Fides, a sample project is bundled within t
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
 * [Python](https://www.python.org/downloads/) (version 3.8 through 3.10)
 
-#### Additional requirements (for ARM Mac Users)
+#### Additional requirements for optional dependencies (for ARM Mac Users)
+
+*NOTE*: The following only applies to those who wish to use the optional dependencies (e.g. `pip install ethyca-fides[all]`) as part of the python package on an ARM Mac. This is an advanced and targeted use case!
 
 Due to platform differences, the following dependencies and steps are also required:
 
