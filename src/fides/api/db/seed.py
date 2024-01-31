@@ -16,6 +16,7 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import FidesBase
 from fides.api.db.ctl_session import sync_session
 from fides.api.db.system import upsert_system
+from fides.api.models.client import get_client_id
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
