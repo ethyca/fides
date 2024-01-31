@@ -16,7 +16,6 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import FidesBase
 from fides.api.db.ctl_session import sync_session
 from fides.api.db.system import upsert_system
-from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
@@ -47,7 +46,6 @@ from .samples import (
     load_sample_resources_from_project,
 )
 
-DEFAULT_OAUTH_CLIENT_KEY = "default_oauth_client"
 DEFAULT_ACCESS_POLICY = "default_access_policy"
 DEFAULT_ACCESS_POLICY_RULE = "default_access_policy_rule"
 DEFAULT_ERASURE_POLICY = "default_erasure_policy"
@@ -141,23 +139,6 @@ def filter_data_categories(
         }
         return sorted(list(default_categories))
     return sorted(user_categories)
-
-
-def get_client_id(db_session: Session) -> str:
-    client = ClientDetail.get_by(
-        db=db_session,
-        field="fides_key",
-        value=DEFAULT_OAUTH_CLIENT_KEY,
-    )
-    if not client:
-        client, _ = ClientDetail.create_client_and_secret(
-            db=db_session,
-            client_id_byte_length=CONFIG.security.oauth_client_id_length_bytes,
-            client_secret_byte_length=CONFIG.security.oauth_client_secret_length_bytes,
-            fides_key=DEFAULT_OAUTH_CLIENT_KEY,
-        )
-
-    return client.id
 
 
 def load_default_access_policy(
