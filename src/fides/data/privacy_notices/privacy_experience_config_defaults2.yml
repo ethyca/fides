@@ -4,7 +4,7 @@ privacy_experience_configs:
     - us_ca
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - data_sales_sharing_gpp_us_state
     - sensitive_personal_data_sharing_gpp_california
     - known_child_sensitive_data_consents_gpp_us_state
@@ -29,7 +29,7 @@ privacy_experience_configs:
     - us_ca
   component: privacy_center
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - data_sales_sharing_gpp_us_state
     - sensitive_personal_data_sharing_gpp_california
     - known_child_sensitive_data_consents_gpp_us_state
@@ -57,7 +57,7 @@ privacy_experience_configs:
     - us_va
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
     - data_sales_gpp_us_state
@@ -87,7 +87,7 @@ privacy_experience_configs:
     - us_va
   component: privacy_center
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
     - data_sales_gpp_us_state
@@ -115,7 +115,7 @@ privacy_experience_configs:
     - us_ia
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sales_gpp_us_state
     - data_sales_and_sharing
@@ -140,7 +140,7 @@ privacy_experience_configs:
     - us_ia
   component: privacy_center
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sales_gpp_us_state
     - data_sales_and_sharing
@@ -164,7 +164,7 @@ privacy_experience_configs:
     - us_ut
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
     - data_sales_gpp_us_state
@@ -192,7 +192,7 @@ privacy_experience_configs:
     - us_ut
   component: privacy_center
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
     - data_sales_gpp_us_state
@@ -220,7 +220,7 @@ privacy_experience_configs:
     - us
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - sales_sharing_targeted_advertising_gpp_us_national
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
@@ -242,7 +242,7 @@ privacy_experience_configs:
     - us
   component: privacy_center
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - sales_sharing_targeted_advertising_gpp_us_national
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
@@ -296,7 +296,7 @@ privacy_experience_configs:
     - li
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - essential
     - functional
     - analytics
@@ -354,7 +354,7 @@ privacy_experience_configs:
     - li
     - eea
   component: tcf_overlay
-  privacy_notices: []
+  privacy_notice_keys: []
   translations:
     - language: en_us
       accept_button_label: Opt in to all

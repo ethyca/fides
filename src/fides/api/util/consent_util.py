@@ -22,7 +22,6 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
     UserConsentPreference,
-    check_conflicting_notice_keys,
 )
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
@@ -35,7 +34,7 @@ from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-def
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
-    ExperienceConfigCreateWithId,
+    ExperienceConfigCreateTemplate,
     ExperienceConfigUpdate,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
@@ -306,7 +305,7 @@ def validate_notice_data_uses(
 
 def ensure_unique_ids(
     privacy_notices: Union[
-        List[PrivacyNoticeWithId], List[ExperienceConfigCreateWithId]
+        List[PrivacyNoticeWithId], List[ExperienceConfigCreateTemplate]
     ],
 ) -> None:
     """
@@ -332,15 +331,12 @@ def create_privacy_notices_util(
     """Performs validation before creating Privacy Notices, Notice Translations, and Privacy Notice History records"""
     validate_notice_data_uses(privacy_notice_schemas, db)  # type: ignore[arg-type]
 
-    existing_notices = PrivacyNotice.query(db).filter(PrivacyNotice.disabled.is_(False)).all()  # type: ignore[attr-defined]
-
     new_notices: List[PrivacyNotice] = []
     for privacy_notice in privacy_notice_schemas:
         data = privacy_notice.dict(exclude_unset=True)
         data.pop("translations", [])
         new_notices.append(PrivacyNotice(**data))
 
-    check_conflicting_notice_keys(new_notices, existing_notices)
     for new_notice in new_notices:
         new_notice.validate_enabled_has_data_uses()
 
@@ -411,7 +407,6 @@ def prepare_privacy_notice_patches(
     :return:
     """
     allow_create: bool = model == PrivacyNoticeTemplate
-    ignore_disabled: bool = model != PrivacyNoticeTemplate
 
     # first we populate a map of privacy notices or templates in the db, indexed by ID
     existing_notices: Dict[str, PRIVACY_NOTICE_TYPE] = {}
@@ -463,11 +458,6 @@ def prepare_privacy_notice_patches(
 
     # run the validation here on our proposed "dry-run" updates
     try:
-        check_conflicting_notice_keys(
-            validation_updates,
-            existing_notices.values(),
-            ignore_disabled=ignore_disabled,
-        )
         for validation_update in validation_updates:
             validation_update.validate_enabled_has_data_uses()
 
@@ -521,7 +511,7 @@ def upsert_privacy_notice_templates_util(
 
 def upsert_privacy_experience_config_templates_util(
     db: Session,
-    template_schemas: List[ExperienceConfigCreateWithId],
+    template_schemas: List[ExperienceConfigCreateTemplate],
 ) -> List[ExperienceConfigTemplate]:
     """
     Create or update *Privacy Experience Config Templates*. These are the resources that
@@ -623,10 +613,10 @@ def load_default_experience_configs_on_startup(
     with open(load_file([notice_yaml_file_path]), "r", encoding="utf-8") as file:
         experience_configs = yaml.safe_load(file).get("privacy_experience_configs", [])
 
-        template_schemas: List[ExperienceConfigCreateWithId] = []
+        template_schemas: List[ExperienceConfigCreateTemplate] = []
         for experience_config_data in experience_configs:
             template_schemas.append(
-                ExperienceConfigCreateWithId(**experience_config_data)
+                ExperienceConfigCreateTemplate(**experience_config_data)
             )
 
         privacy_experience_config_templates = (
@@ -645,8 +635,22 @@ def load_default_experience_configs_on_startup(
 
         new_experience_configs: List[PrivacyExperienceConfig] = []
         for template in new_templates:
-            experience_config_schema = ExperienceConfigCreateWithId.from_orm(template)
+            template.id  # pylint: disable=pointless-statement
+            config_data = template.__dict__
+            # Taking notice keys on the template and converting them into privacy notice ids
+            notice_keys = config_data.pop("privacy_notice_keys", [])
+            privacy_notice_ids = [
+                notice.id
+                for notice in db.query(PrivacyNotice).filter(
+                    PrivacyNotice.notice_key.in_(notice_keys),
+                    PrivacyNotice.origin.isnot(None),
+                )
+            ]
+            config_data["privacy_notice_ids"] = privacy_notice_ids
+
+            experience_config_schema = ExperienceConfigCreate(**config_data)
             experience_config_schema.origin = SafeStr(template.id)
+
             new_experience_configs.append(
                 create_default_experience_config(db, experience_config_schema)
             )
@@ -655,20 +659,16 @@ def load_default_experience_configs_on_startup(
 
 
 def create_default_experience_config(
-    db: Session, experience_config_data: ExperienceConfigCreateWithId
+    db: Session, experience_config_data: ExperienceConfigCreate
 ) -> PrivacyExperienceConfig:
     """Create a default experience config on startup.  The id is specified upfront.
 
     Split from load_default_experience_configs_on_startup for easier testing
     of a function that runs on application startup.
     """
-    # experience_config_data = (
-    #     experience_config_data.copy()
-    # )  # Avoids unexpected behavior on update in testing
-
     escape_experience_fields_for_storage(experience_config_data)
 
-    logger.info("Creating default experience config {}", experience_config_data.id)
+    logger.info("Creating default experience config {}", experience_config_data.origin)
     return PrivacyExperienceConfig.create(
         db,
         data=experience_config_data.dict(exclude_unset=True),
@@ -742,7 +742,9 @@ def create_default_tcf_purpose_overrides_on_startup(
 
 
 def escape_experience_fields_for_storage(
-    experience_config_data: Union[ExperienceConfigCreate, ExperienceConfigUpdate]
+    experience_config_data: Union[
+        ExperienceConfigCreate, ExperienceConfigCreateTemplate, ExperienceConfigUpdate
+    ]
 ) -> None:
     """Escapes experience config fields in-place for storage"""
     transform_fields(

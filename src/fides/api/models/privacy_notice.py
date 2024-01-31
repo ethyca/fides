@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Set, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type, Union
 
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
@@ -262,6 +262,7 @@ class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
 
         # remove protected fields from the cloned dict
         cloned_attributes.pop("_sa_instance_state", None)
+        cloned_attributes.pop("id", None)
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
@@ -451,6 +452,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         # remove protected fields from the cloned dict
         cloned_attributes.pop("_sa_instance_state", None)
+        cloned_attributes.pop("id", None)
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
@@ -525,35 +527,6 @@ class NoticeTranslation(NoticeTranslationBase, Base):
 
 
 PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
-
-
-def check_conflicting_notice_keys(
-    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
-    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
-    ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
-) -> None:
-    """
-    Checks to see if new notice keys will conflict with any existing notice keys
-    """
-    new_notice_keys = [
-        notice.notice_key
-        for notice in new_privacy_notices
-        if not (notice.disabled and ignore_disabled)
-    ]
-    if len(new_notice_keys) > len(set(new_notice_keys)):
-        raise ValidationError(message="Privacy Notice Keys must be unique")
-
-    existing_notice_keys = [
-        notice.notice_key
-        for notice in existing_privacy_notices
-        if not (notice.disabled and ignore_disabled)
-    ]
-
-    overlaps = set(new_notice_keys).intersection(set(existing_notice_keys))
-    if set(new_notice_keys).intersection(existing_notice_keys):
-        raise ValidationError(
-            message=f"Privacy Notice Keys already assigned: {overlaps}'"
-        )
 
 
 def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) -> bool:

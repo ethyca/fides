@@ -272,7 +272,7 @@ class TestCreateExperienceConfig:
             "dismissable": True,
             "allow_language_selection": False,
             "regions": ["us_va"],
-            "privacy_notices": [privacy_notice.notice_key],
+            "privacy_notice_ids": [privacy_notice.id],
             "translations": [
                 {
                     "language": "en_us",
@@ -422,6 +422,47 @@ class TestCreateExperienceConfig:
         assert response.status_code == 422
         assert "missing URL scheme" in response.json()["detail"][0]["msg"]
 
+    def test_create_experience_config_duplicate_privacy_notice_keys(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_notice_us_ca_provide,
+        privacy_notice,
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+
+        privacy_notice_us_ca_provide.notice_key = privacy_notice.notice_key
+        privacy_notice_us_ca_provide.save(db)
+
+        response = api_client.post(
+            url,
+            json={
+                "banner_enabled": "always_disabled",
+                "component": "privacy_center",
+                "privacy_notice_ids": [
+                    privacy_notice.id,
+                    privacy_notice_us_ca_provide.id,
+                ],
+                "translations": [
+                    {
+                        "description": "We take your company's privacy seriously",
+                        "privacy_policy_link_label": "Manage your privacy",
+                        "reject_button_label": "No",
+                        "save_button_label": "Save",
+                        "title": "Manage your privacy",
+                        "accept_button_label": "Yes",
+                        "language": "en_us",
+                    }
+                ],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+
     def test_create_experience_config_with_no_regions_or_translations_or_notices(
         self,
         api_client: TestClient,
@@ -437,7 +478,7 @@ class TestCreateExperienceConfig:
         """
         overlay_experience_request_body.pop("translations")
         overlay_experience_request_body.pop("regions")
-        overlay_experience_request_body.pop("privacy_notices")
+        overlay_experience_request_body.pop("privacy_notice_ids")
 
         auth_header = generate_auth_header(
             scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
@@ -781,7 +822,7 @@ class TestGetExperienceConfigDetail:
         db,
     ) -> None:
         link_notices_to_experience_config(
-            db, [privacy_notice.notice_key], experience_config_overlay
+            db, [privacy_notice.id], experience_config_overlay
         )
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
@@ -884,7 +925,7 @@ class TestUpdateExperienceConfig:
                 "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "regions": [PrivacyNoticeRegion.us_ia],
-                "privacy_notices": [privacy_notice.notice_key],
+                "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
                         "language": "en_us",
@@ -944,7 +985,7 @@ class TestUpdateExperienceConfig:
         auth_header = generate_role_header(roles=[role])
         response = api_client.patch(
             url,
-            json={"translations": [], "privacy_notices": [], "regions": []},
+            json={"translations": [], "privacy_notice_ids": [], "regions": []},
             headers=auth_header,
         )
         assert response.status_code == expected_status
@@ -961,7 +1002,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "regions": ["us_ca", "us_ca"],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "translations": [],
             },
             headers=auth_header,
@@ -969,6 +1010,35 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 422
 
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
+
+    def test_update_experience_config_duplicate_notice_keys(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        db,
+    ) -> None:
+        privacy_notice.notice_key = privacy_notice_us_ca_provide.notice_key
+        privacy_notice.save(db)
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "regions": [],
+                "privacy_notice_ids": [
+                    privacy_notice.id,
+                    privacy_notice_us_ca_provide.id,
+                ],
+                "translations": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+
+        assert response.json()["detail"] == "Duplicate notice keys detected"
 
     def test_update_bad_experience_config(
         self,
@@ -982,7 +1052,7 @@ class TestUpdateExperienceConfig:
             V1_URL_PREFIX + EXPERIENCE_CONFIG + "/bad_experience_id",
             json={
                 "translations": [{"title": None, "language": "en_us"}],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "regions": ["us_ca"],
             },
             headers=auth_header,
@@ -1004,7 +1074,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "translations": [{"title": None, "language": "en_us"}],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "regions": ["us_ca"],
             },
             headers=auth_header,
@@ -1026,7 +1096,7 @@ class TestUpdateExperienceConfig:
                 "translations": [
                     {"privacy_preferences_link_label": "", "language": "en_us"}
                 ],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "regions": ["us_ca"],
             },
             headers=auth_header,
@@ -1055,11 +1125,12 @@ class TestUpdateExperienceConfig:
                         "language": "en_us",
                     }
                 ],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "regions": ["us_ca"],
             },
             headers=auth_header,
         )
+
         assert response.status_code == 200
         assert (
             response.json()["translations"][0]["title"]
@@ -1084,7 +1155,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "component": "privacy_center",
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "translations": [],
                 "regions": [],
             },
@@ -1124,7 +1195,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "regions": ["us_ny"],
-                "privacy_notices": [privacy_notice.notice_key],
+                "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
                         "language": "en_us",
@@ -1204,7 +1275,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "regions": ["us_tx"],
-                "privacy_notices": [privacy_notice.notice_key],
+                "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
                         "language": "en_us",
@@ -1286,7 +1357,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "regions": [],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "translations": [
                     {
                         "banner_description": invalid_description[0],
@@ -1340,7 +1411,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "regions": [],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "translations": [
                     {
                         "banner_description": valid_description[0],
@@ -1392,7 +1463,7 @@ class TestUpdateExperienceConfig:
             json={
                 "regions": ["us_ca", "fr"],
                 "translations": [],
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
             },
             headers=auth_header,
         )

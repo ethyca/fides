@@ -306,7 +306,7 @@ class TestExperienceConfig:
         experience_config_overlay.update(
             db=db,
             data={
-                "privacy_notices": [privacy_notice.notice_key],
+                "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
                         "language": Language.en_us,
@@ -336,7 +336,7 @@ class TestExperienceConfig:
         experience_config_overlay.update(
             db=db,
             data={
-                "privacy_notices": [],
+                "privacy_notice_ids": [],
                 "translations": [
                     {
                         "language": Language.en_us,
@@ -703,7 +703,7 @@ class TestPrivacyExperience:
                 "component": "privacy_center",
                 "banner_enabled": "enabled_where_required",
                 "regions": [PrivacyNoticeRegion.us],
-                "privacy_notices": ["test_privacy_notice"],
+                "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
                         "language": Language.en_us,

@@ -14,6 +14,10 @@ from fides.api.util.endpoint_utils import human_friendly_list
 
 
 class ExperienceTranslation(FidesSchema):
+    """
+    Schema for Experience Translations
+    """
+
     language: Language
 
     accept_button_label: Optional[str] = Field(
@@ -54,7 +58,7 @@ class ExperienceTranslation(FidesSchema):
 
 
 class ExperienceTranslationCreate(ExperienceTranslation):
-    """Overrides ExperienceTranslation field to make some fields required on create"""
+    """Overrides ExperienceTranslation fields to make some fields required on create"""
 
     accept_button_label: str
     description: HtmlStr
@@ -69,6 +73,8 @@ class ExperienceTranslationCreate(ExperienceTranslation):
 
 
 class ExperienceTranslationResponse(ExperienceTranslation):
+    """Adds the historical id to the translation for the response"""
+
     experience_config_history_id: str
 
 
@@ -98,7 +104,7 @@ class ExperienceConfigSchema(FidesSchema):
         return regions
 
 
-class ExperienceConfigCreate(ExperienceConfigSchema):
+class ExperienceConfigCreateBase(ExperienceConfigSchema):
     """
     An API representation to create ExperienceConfig.
     This model doesn't include an `id` so that it can be used for creation.
@@ -107,7 +113,6 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
 
     translations: List[ExperienceTranslationCreate] = []
     component: ComponentType
-    privacy_notices: List[str] = []
 
     @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -153,6 +158,27 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
         return values
 
 
+class ExperienceConfigCreateTemplate(ExperienceConfigCreateBase):
+    id: str
+    privacy_notice_keys: List[str]
+
+    @validator("privacy_notice_keys")
+    def check_duplicate_notice_keys(cls, privacy_notice_keys: List[str]) -> List[str]:
+        if len(privacy_notice_keys) != len(set(privacy_notice_keys)):
+            raise ValueError("Duplicate privacy notice keys detected")
+        return privacy_notice_keys
+
+
+class ExperienceConfigCreate(ExperienceConfigCreateBase):
+    privacy_notice_ids: List[str] = []
+
+    @validator("privacy_notice_ids")
+    def check_duplicate_notice_ids(cls, privacy_notice_ids: List[str]) -> List[str]:
+        if len(privacy_notice_ids) != len(set(privacy_notice_ids)):
+            raise ValueError("Duplicate privacy notice ids detected")
+        return privacy_notice_ids
+
+
 class ExperienceConfigUpdate(ExperienceConfigSchema):
     """
     Updating ExperienceConfig. Note that component cannot be updated once its created
@@ -160,18 +186,12 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
 
     translations: List[ExperienceTranslation]
     regions: List[PrivacyNoticeRegion]
-    privacy_notices: List[str]
+    privacy_notice_ids: List[str]
 
     class Config:
         """Forbid extra values - specifically we don't want component to be updated here."""
 
         extra = Extra.forbid
-
-
-class ExperienceConfigCreateWithId(ExperienceConfigCreate):
-    """Schema for creating out-of-the-box experience configs"""
-
-    id: str
 
 
 class ExperienceConfigSchemaWithId(ExperienceConfigSchema):

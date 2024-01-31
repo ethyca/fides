@@ -47,6 +47,7 @@ from fides.api.models.privacy_notice import (
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
+    PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
@@ -1466,6 +1467,25 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 @pytest.fixture(scope="function")
 def privacy_notice(db: Session) -> Generator:
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
+            "name": "example privacy notice",
+            "notice_key": "example_privacy_notice_2",
+            "description": "user&#x27;s description &lt;script /&gt;",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
@@ -1482,6 +1502,7 @@ def privacy_notice(db: Session) -> Generator:
             # "displayed_in_privacy_center": True,
             # "displayed_in_overlay": True,
             # "displayed_in_api": False,
+            "origin": template.id,
             "translations": [
                 {
                     "language": "en_us",
@@ -1495,9 +1516,10 @@ def privacy_notice(db: Session) -> Generator:
     yield privacy_notice
     for translation in privacy_notice.translations:
         for history in translation.histories:
-            db.delete(history)
-        db.delete(translation)
-    db.delete(privacy_notice)
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
+    # template.delete(db)
 
 
 @pytest.fixture(scope="function")

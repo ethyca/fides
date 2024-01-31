@@ -6,7 +6,7 @@ privacy_experience_configs:
     - us_ca
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - essential
   translations:
     - language: en_us

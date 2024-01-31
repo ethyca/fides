@@ -22,7 +22,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
@@ -78,7 +78,6 @@ def experience_config_list(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
-    show_disabled: Optional[bool] = True,
     component: Optional[ComponentType] = None,
     region: Optional[PrivacyNoticeRegion] = None,
     request: Request,
@@ -98,11 +97,6 @@ def experience_config_list(
     if component:
         privacy_experience_config_query = privacy_experience_config_query.filter(
             PrivacyExperienceConfig.component == component
-        )
-
-    if show_disabled is False:
-        privacy_experience_config_query = privacy_experience_config_query.filter(
-            PrivacyExperienceConfig.disabled.is_(False)
         )
 
     if region:
@@ -144,9 +138,12 @@ def experience_config_create(
     experience_config_data: ExperienceConfigCreate,
 ) -> PrivacyExperienceConfig:
     """
-    Create Experience Config and then attempt to upsert Experiences and link to ExperienceConfig
+    Create Experience Config, and potentially Experience Translation(s), Historical Records for auditing,
+    and linking regions and privacy notices.
     """
     escape_experience_fields_for_storage(experience_config_data)
+
+    validate_notice_keys_or_error(db, experience_config_data.privacy_notice_ids)
 
     experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
 
@@ -223,6 +220,8 @@ def experience_config_update(
         db, experience_config_id
     )
 
+    validate_notice_keys_or_error(db, experience_config_data.privacy_notice_ids)
+
     escape_experience_fields_for_storage(experience_config_data)
 
     experience_config_data_dict: Dict = experience_config_data.dict(exclude_unset=True)
@@ -240,6 +239,7 @@ def experience_config_update(
             for translation in experience_config_data.translations
         ]
     )
+
     try:
         dry_update.translations = dry_update_translations
         ExperienceConfigCreate.from_orm(dry_update)
@@ -257,3 +257,33 @@ def experience_config_update(
     unescape_experience_fields_for_display(experience_config)
 
     return experience_config
+
+
+def validate_notice_keys_or_error(
+    db: Session, notice_ids: Optional[List[str]] = []
+) -> None:
+    try:
+        validate_notice_keys(db, notice_ids)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        )
+
+
+def validate_notice_keys(db: Session, notice_ids: Optional[List[str]] = []) -> None:
+    """Given a list of Privacy Notice Ids, retrieve their notice keys and ensure
+    no two notice keys are the same"""
+    if not notice_ids:
+        return
+
+    notice_keys: List[str] = [
+        notice.notice_key
+        for notice in db.query(PrivacyNotice).filter(PrivacyNotice.id.in_(notice_ids))
+    ]
+
+    if len(notice_keys) > len(notice_ids):
+        raise ValueError("Privacy Notice not found")
+
+    if len(notice_keys) > len(set(notice_keys)):
+        raise ValueError("Duplicate notice keys detected")

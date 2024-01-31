@@ -75,13 +75,11 @@ class ExperienceConfigTemplate(Base):
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
     )
     component = Column(EnumColumn(ComponentType), nullable=False)
-    privacy_notices = Column(
+    privacy_notice_keys = Column(
         ARRAY(String)
-    )  # A string of notice keys which should correspond to out-of-the-box notices
+    )  # A list of notice keys which should correspond to a subset of out-of-the-box notice keys
     translations = Column(ARRAY(JSONB))
-    banner_enabled = Column(
-        EnumColumn(BannerEnabled), index=True
-    )  # Will be removed
+    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)  # Will be removed
 
 
 class ExperienceTranslationBase:
@@ -219,7 +217,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         """
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
-        privacy_notices = data.pop("privacy_notices", [])
+        privacy_notice_ids = data.pop("privacy_notice_ids", [])
         data.pop(
             "id", None
         )  # Default templates may have ids but we don't want to use them here
@@ -244,7 +242,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
         upsert_privacy_experiences_after_config_update(db, experience_config, regions)
         link_notices_to_experience_config(
-            db, notice_keys=privacy_notices, experience_config=experience_config
+            db, notice_ids=privacy_notice_ids, experience_config=experience_config
         )
 
         return experience_config
@@ -263,7 +261,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         """
         request_translations = data.pop("translations", [])
         regions = data.pop("regions", [])
-        privacy_notices = data.pop("privacy_notices", [])
+        privacy_notice_ids = data.pop("privacy_notice_ids", [])
 
         config_updated = update_if_modified(self, db=db, data=data)
 
@@ -319,7 +317,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
         upsert_privacy_experiences_after_config_update(db, self, regions)
         link_notices_to_experience_config(
-            db, notice_keys=privacy_notices, experience_config=self
+            db, notice_ids=privacy_notice_ids, experience_config=self
         )
 
         return self  # type: ignore[return-value]
@@ -337,7 +335,8 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         cloned_attributes.pop("_sa_instance_state")
         cloned_attributes.pop("regions", [])
         cloned_attributes.pop("translations", [])
-        cloned_attributes.pop("privacy_notices", [])
+        cloned_attributes.pop("privacy_notice_ids", [])
+        cloned_attributes.pop("id", None)
         return PrivacyExperienceConfig(**cloned_attributes)
 
     def dry_update_translations(
@@ -354,6 +353,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                 for key, val in translation_data.items():
                     cloned_attributes[key] = val
                 cloned_attributes.pop("_sa_instance_state")
+                cloned_attributes.pop("id")
             else:
                 cloned_attributes = translation_data
             dry_updated_translations.append(ExperienceTranslation(**cloned_attributes))
@@ -691,7 +691,7 @@ def region_country(region: str) -> str:
 
 def link_notices_to_experience_config(
     db: Session,
-    notice_keys: List[str],
+    notice_ids: List[str],
     experience_config: PrivacyExperienceConfig,
 ) -> List[PrivacyNotice]:
     """
@@ -700,7 +700,7 @@ def link_notices_to_experience_config(
     Notices retrieved by Notice Key
     """
     new_notices: Query = db.query(PrivacyNotice).filter(
-        PrivacyNotice.notice_key.in_(notice_keys)
+        PrivacyNotice.id.in_(notice_ids)
     )
 
     for notice in new_notices:

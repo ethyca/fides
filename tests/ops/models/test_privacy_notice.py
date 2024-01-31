@@ -13,7 +13,6 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
     UserConsentPreference,
-    check_conflicting_notice_keys,
     new_data_use_conflicts_with_existing_use,
 )
 from fides.api.models.sql_models import Cookies
@@ -462,99 +461,6 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.name == old_name
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
-
-    @pytest.mark.parametrize(
-        "should_error,new_privacy_notices,existing_privacy_notices",
-        [
-            (
-                True,
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                    )
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["functional"],
-                    )
-                ],
-            ),
-            (
-                True,
-                [
-                    PrivacyNotice(
-                        name="pn_2",
-                        notice_key="pn_2",
-                        data_uses=["functional"],
-                    ),
-                    PrivacyNotice(
-                        name="pn_2",
-                        notice_key="pn_2",
-                        data_uses=["essential.service"],
-                    ),
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                    )
-                ],
-            ),
-            (
-                False,
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                    )
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_2",
-                        notice_key="pn_2",
-                        data_uses=["functional"],
-                    )
-                ],
-            ),
-            (
-                True,
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                    )
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["functional"],
-                    )
-                ],
-            ),
-        ],
-    )
-    def test_check_conflicting_privacy_notice_keys(
-        self, should_error, new_privacy_notices, existing_privacy_notices
-    ):
-        if should_error:
-            with pytest.raises(ValidationError):
-                check_conflicting_notice_keys(
-                    new_privacy_notices=new_privacy_notices,
-                    existing_privacy_notices=existing_privacy_notices,
-                )
-        else:
-            check_conflicting_notice_keys(
-                new_privacy_notices=new_privacy_notices,
-                existing_privacy_notices=existing_privacy_notices,
-            )
 
     @pytest.mark.parametrize(
         "privacy_notice_data_use,declaration_cookies,expected_cookies,description",

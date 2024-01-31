@@ -5,7 +5,7 @@ privacy_experience_configs:
     - bg
   component: overlay
   banner_enabled: enabled_where_required
-  privacy_notices:
+  privacy_notice_keys:
     - example_privacy_notice
   translations:
     - language: en_us

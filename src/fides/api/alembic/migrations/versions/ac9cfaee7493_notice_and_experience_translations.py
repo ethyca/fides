@@ -35,7 +35,7 @@ def upgrade():
         ),
         sa.Column("regions", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column("component", sa.String(), nullable=False),
-        sa.Column("privacy_notices", postgresql.ARRAY(sa.String()), nullable=True),
+        sa.Column("privacy_notice_keys", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column(
             "translations",
             postgresql.ARRAY(postgresql.JSONB(astext_type=sa.Text())),

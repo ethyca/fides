@@ -26,7 +26,10 @@ from fides.api.models.privacy_notice import (
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import DataUse as sql_DataUse
-from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
+from fides.api.schemas.privacy_experience import (
+    ExperienceConfigCreate,
+    ExperienceConfigCreateTemplate,
+)
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.util.consent_util import (
     EEA_COUNTRIES,
@@ -906,35 +909,6 @@ class TestUpsertPrivacyNoticeTemplates:
         )
 
     @pytest.mark.usefixtures("load_default_data_uses")
-    def test_overlapping_notice_keys(self, db):
-        """Can't have overlapping notice keys on incoming templates, and we also check these for disabled templates"""
-        with pytest.raises(HTTPException) as exc:
-            upsert_privacy_notice_templates_util(
-                db,
-                [
-                    PrivacyNoticeWithId(
-                        id="test_id_1",
-                        name="A",
-                        notice_key="a",
-                        consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["essential"],
-                        enforcement_level=EnforcementLevel.system_wide,
-                    ),
-                    PrivacyNoticeWithId(
-                        id="test_id_2",
-                        name="A",
-                        notice_key="a",
-                        consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["marketing"],
-                        enforcement_level=EnforcementLevel.frontend,
-                        disabled=True,
-                    ),
-                ],
-            )
-        assert exc._excinfo[1].status_code == 422
-        assert exc._excinfo[1].detail == "Privacy Notice Keys must be unique"
-
-    @pytest.mark.usefixtures("load_default_data_uses")
     def test_bad_data_uses(self, db):
         """Test data uses must exist"""
         # explicitly enabled should throw error if no data uses
@@ -1286,13 +1260,13 @@ class TestLoadDefaultExperienceConfigs:
 class TestUpsertDefaultExperienceConfig:
     @pytest.fixture(scope="function")
     def default_overlay_config_data(self, db, privacy_notice):
-        return ExperienceConfigCreateWithId(
+        return ExperienceConfigCreate(
             **{
                 "banner_enabled": BannerEnabled.enabled_where_required,
                 "component": ComponentType.overlay,
                 "id": "test_id",
                 "regions": ["us_ca"],
-                "privacy_notices": ["example_privacy_notice"],
+                "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
                         "language": "en_us",
@@ -1372,13 +1346,13 @@ class TestUpsertDefaultExperienceConfig:
         self, db, default_overlay_config_data
     ):
         with pytest.raises(ValidationError) as exc:
-            config = ExperienceConfigCreateWithId(
+            config = ExperienceConfigCreateTemplate(
                 **{
                     "banner_enabled": BannerEnabled.enabled_where_required,
                     "component": ComponentType.overlay,
                     "id": "test_id",
                     "regions": ["us_ca"],
-                    "privacy_notices": ["example_privacy_notice"],
+                    "privacy_notice_keys": ["example_privacy_notice"],
                     "translations": [
                         {
                             "language": "en_us",
@@ -1408,13 +1382,13 @@ class TestUpsertDefaultExperienceConfig:
         self, db, default_overlay_config_data
     ):
         with pytest.raises(ValidationError) as exc:
-            config = ExperienceConfigCreateWithId(
+            config = ExperienceConfigCreateTemplate(
                 **{
                     "banner_enabled": BannerEnabled.enabled_where_required,
                     "component": ComponentType.overlay,
                     "id": "test_id",
                     "regions": ["us_ca"],
-                    "privacy_notices": ["example_privacy_notice"],
+                    "privacy_notice_keys": ["example_privacy_notice"],
                     "translations": [
                         {
                             "language": "en_us",
