@@ -1234,6 +1234,32 @@ class TestRuleTargets:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 2
 
+    def test_create_rule_targets_as_root(
+        self,
+        api_client: TestClient,
+        root_auth_header,
+        policy,
+    ):
+        rule = policy.rules[0]
+        data = [
+            {
+                "data_category": DataCategory("user.name").value,
+            },
+            {
+                "data_category": DataCategory("user.contact.email").value,
+            },
+        ]
+        auth_header = root_auth_header
+        resp = api_client.patch(
+            self.get_rule_url(policy.key, rule.key),
+            json=data,
+            headers=auth_header,
+        )
+
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 2
+
     def test_create_rule_target_with_custom_category(
         self,
         api_client: TestClient,
