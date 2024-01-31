@@ -1,11 +1,4 @@
-import {
-  ButtonGroup,
-  Flex,
-  IconButton,
-  Spacer,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { Flex, Spacer, Text, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -13,8 +6,6 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
-import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
-import { MobileIcon } from "~/features/common/Icon/MobileIcon";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -29,16 +20,19 @@ import {
   selectPageSize as selectLanguagePageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
+import Preview from "~/features/privacy-experience/Preview";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
+import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
+  SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -72,6 +66,7 @@ const ConfigurePrivacyExperience = ({
   const languagePageSize = useAppSelector(selectLanguagePageSize);
   useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
   const allLanguages = useAppSelector(selectAllLanguages);
+  const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
     const valuesToSubmit = {
@@ -144,6 +139,7 @@ const ConfigurePrivacyExperience = ({
             />
           ) : (
             <PrivacyExperienceForm
+              allPrivacyNotices={allPrivacyNotices}
               onSelectTranslation={handleNewTranslationSelected}
             />
           )}
@@ -159,17 +155,36 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              <ButtonGroup size="sm" variant="outline" isAttached>
-                <IconButton
-                  icon={<MobileIcon />}
-                  aria-label="View mobile preview"
-                />
-                <IconButton
-                  icon={<DesktopIcon />}
-                  aria-label="View desktop preview"
-                />
-              </ButtonGroup>
+              {/* fixme- pass in component */}
+              {/* <div> */}
+              {/*  <Button */}
+              {/*      colorScheme="primary" */}
+              {/*      size="sm" */}
+              {/*      onClick={() => { */}
+              {/*        console.log( */}
+              {/*            "removing fides overlay and regenerating it with new config" */}
+              {/*        ); */}
+              {/*        reloadPreviewMode(fidesConfig) */}
+              {/*      }} */}
+              {/*  > */}
+              {/*    Reload Preview */}
+              {/*  </Button> */}
+              {/* </div> */}
+              {/* <ButtonGroup size="sm" variant="outline" isAttached> */}
+              {/*  <IconButton */}
+              {/*    icon={<MobileIcon />} */}
+              {/*    aria-label="View mobile preview" */}
+              {/*  /> */}
+              {/*  <IconButton */}
+              {/*    icon={<DesktopIcon />} */}
+              {/*    aria-label="View desktop preview" */}
+              {/*  /> */}
+              {/* </ButtonGroup> */}
             </Flex>
+            <Preview
+              initialValues={initialValues}
+              translation={translationToEdit}
+            />
           </Flex>
         </Flex>
       </Form>

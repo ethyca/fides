@@ -103,6 +103,13 @@ export type FidesOptions = {
 
   // Allows specifying the preferred locale used for translations
   fidesLocale?: string;
+
+  // Allows preview of banner components for internal use or testing, such that saving to cookie disabled,
+  // and some buttons are disabled on the Fides components
+  fidesPreviewMode: boolean;
+
+  // Allows preview mode to specify which component to open, banner or modal
+  fidesPreviewComponent?: string | null;
 };
 
 /**

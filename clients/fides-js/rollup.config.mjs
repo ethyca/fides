@@ -45,6 +45,10 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
         src: `dist/${name}.js`,
         dest: `../privacy-center/public/lib/`,
       },
+      {
+        src: `dist/${name}.js`,
+        dest: `../admin-ui/public/lib/`,
+      },
     ],
     verbose: true,
     hook: "writeBundle",

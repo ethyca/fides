@@ -145,6 +145,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}
+          fidesPreviewMode={options.fidesPreviewMode}
           onOpen={dispatchOpenBannerEvent}
           onClose={() => {
             onClose();
@@ -165,6 +166,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
               isAcknowledge={isAllNoticeOnly}
               isMobile={isMobile}
+              fidesPreviewMode={options.fidesPreviewMode}
             />
           )}
         />
@@ -176,6 +178,9 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               notices={privacyNotices}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
+                if (options.fidesPreviewMode) {
+                  return;
+                }
                 setDraftEnabledNoticeKeys(updatedKeys);
                 dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
               }}
@@ -199,6 +204,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isAcknowledge={isAllNoticeOnly}
             isMobile={isMobile}
             saveOnly={privacyNotices.length === 1}
+            fidesPreviewMode={options.fidesPreviewMode}
           />
           <PrivacyPolicyLink experience={experience.experience_config} />
         </Fragment>

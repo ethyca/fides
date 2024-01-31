@@ -307,6 +307,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         return (
           <ConsentBanner
             bannerIsOpen={isOpen}
+            fidesPreviewMode={options.fidesPreviewMode}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
               onClose();

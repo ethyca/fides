@@ -23,6 +23,7 @@ interface BannerProps {
   onVendorPageClick?: () => void;
   renderButtonGroup: (props: ButtonGroupProps) => VNode;
   className?: string;
+  fidesPreviewMode?: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -34,6 +35,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onVendorPageClick,
   renderButtonGroup,
   className,
+  fidesPreviewMode,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -79,7 +81,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         <div id="fides-banner-inner">
           <CloseButton
             ariaLabel="Close banner"
-            onClick={onClose}
+            onClick={window.Fides.options.fidesPreviewMode ? () => {} : onClose}
             hidden={window.Fides?.options?.preventDismissal}
           />
           <div

@@ -25,7 +25,6 @@ import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-r
 import ScrollableList from "~/features/common/ScrollableList";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
-  selectAllPrivacyNotices,
   selectPage as selectNoticePage,
   selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
@@ -34,6 +33,7 @@ import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceTranslation,
+  LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeRegion,
   SupportedLanguage,
 } from "~/types/api";
@@ -71,8 +71,10 @@ export const PrivacyExperienceConfigColumnLayout = ({
 );
 
 export const PrivacyExperienceForm = ({
+  allPrivacyNotices,
   onSelectTranslation,
 }: {
+  allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   onSelectTranslation: (t: ExperienceTranslation) => void;
 }) => {
   const router = useRouter();
@@ -83,7 +85,6 @@ export const PrivacyExperienceForm = ({
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
-  const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
 
   const getPrivacyNoticeName = (id: string) => {
     const notice = allPrivacyNotices.find((n) => n.id === id);

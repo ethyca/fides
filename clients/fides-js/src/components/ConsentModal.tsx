@@ -40,7 +40,11 @@ const ConsentModal = ({
           <div />
           <CloseButton
             ariaLabel="Close modal"
-            onClick={closeButton.onClick}
+            onClick={
+              window.Fides.options.fidesPreviewMode
+                ? () => {}
+                : closeButton.onClick
+            }
             hidden={window.Fides.options.preventDismissal}
           />
         </div>
