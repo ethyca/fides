@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.28.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.29.0...main)
+
+## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
 
 ### Added
 
@@ -26,7 +28,9 @@ The types of changes are:
 
 - Delay rendering the nav until all necessary queries are finished loading [#4571](https://github.com/ethyca/fides/pull/4571)
 - Updating return value for crud.get_custom_fields_filtered [#4575](https://github.com/ethyca/fides/pull/4575)
+- Updated user deletion confirmation flow to only require one confirmatory input [#4402](https://github.com/ethyca/fides/pull/4402) 
 - Moved `pymssl` to an optional dependency no longer installed by default with our python package [#4581](https://github.com/ethyca/fides/pull/4581)
+
 
 ### Fixed
 
