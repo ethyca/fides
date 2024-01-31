@@ -2,7 +2,6 @@
 from pathlib import Path
 
 import nox
-
 from constants_nox import COMPOSE_FILE_LIST
 from run_infrastructure import run_infrastructure
 
@@ -51,9 +50,11 @@ def teardown(session: nox.Session, volumes: bool = False, images: bool = False) 
     session.log("Teardown complete")
 
 
-def install_requirements(session: nox.Session) -> None:
+def install_requirements(session: nox.Session, include_optional: bool = False) -> None:
     session.install("-r", "requirements.txt")
     session.install("-r", "dev-requirements.txt")
+    if include_optional:
+        session.install("-r", "optional-requirements.txt")
 
 
 @nox.session()
