@@ -34,6 +34,7 @@ from fides.api.util.consent_util import (
     UNESCAPE_SAFESTR_HEADER,
     escape_experience_fields_for_storage,
     unescape_experience_fields_for_display,
+    validate_region_uniqueness_on_ux_type,
 )
 from fides.common.api import scope_registry
 from fides.common.api.scope_registry import PRIVACY_EXPERIENCE_UPDATE
@@ -145,6 +146,11 @@ def experience_config_create(
 
     validate_notice_keys_or_error(db, experience_config_data.privacy_notice_ids)
 
+    if not experience_config_data.disabled:
+        validate_region_uniqueness_on_ux_type(
+            db, experience_config_data.component, experience_config_data.regions
+        )
+
     experience_config_dict: Dict = experience_config_data.dict(exclude_unset=True)
 
     logger.info(
@@ -248,6 +254,14 @@ def experience_config_update(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             # pylint: disable=no-member
             detail=exc.errors(),  # type: ignore
+        )
+
+    if not dry_update.disabled:
+        validate_region_uniqueness_on_ux_type(
+            db,
+            ux_type=experience_config.component,
+            regions=experience_config_data.regions,
+            excluded_config=experience_config_id,
         )
 
     logger.info("Updating experience config of id '{}'.", experience_config.id)

@@ -2390,6 +2390,35 @@ def consent_records(
 
 
 @pytest.fixture(scope="function")
+def experience_config_banner(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
+        db=db,
+        data={
+            "component": "banner",
+            "regions": [PrivacyNoticeRegion.it],
+            "disabled": False,
+            "translations": [
+                {
+                    "language": "en_us",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Control your privacy",
+                    "accept_button_label": "Accept all",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
+    yield exp
+    for translation in exp.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
+    exp.delete(db)
+
+
+@pytest.fixture(scope="function")
 def experience_config_privacy_center(db: Session) -> Generator:
     exp = PrivacyExperienceConfig.create(
         db=db,

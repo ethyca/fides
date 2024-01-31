@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple, Type
+from typing import Any, Dict, List, Optional, Set, Type
+from uuid import uuid4
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -30,6 +31,24 @@ BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
 class ExperienceNotices(Base):
     """Many-to-many table that stores which Notices are on which Experience Configs"""
 
+    def generate_uuid(self) -> str:
+        """
+        Generates a uuid with a prefix based on the tablename to be used as the
+        record's ID value
+        """
+        try:
+            # `self` in this context is an instance of
+            # sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2
+            prefix = f"{self.current_column.table.name[:3]}_"  # type: ignore
+        except AttributeError:
+            # If the table name is unavailable for any reason, we don't
+            # need to use it
+            prefix = ""
+        uuid = str(uuid4())
+        return f"{prefix}{uuid}"
+
+    id = Column(String(255), default=generate_uuid)
+
     notice_id = Column(
         String,
         ForeignKey("privacynotice.id", ondelete="CASCADE"),
@@ -55,7 +74,15 @@ class ComponentType(Enum):
     privacy_center = "privacy_center"
     banner = "banner"
     modal = "modal"
-    tcf_overlay = "tcf_overlay"
+    api = "api"
+    tcf_overlay = "tcf_overlay"  # TCF Banner + modal combined
+
+
+FidesJSUXTypes: List = [
+    ComponentType.overlay,
+    ComponentType.banner,
+    ComponentType.modal,
+]
 
 
 class BannerEnabled(Enum):
@@ -116,7 +143,7 @@ class ExperienceConfigBase:
     )  # TODO pending removal in favor of ExperienceTranslation
     banner_enabled = Column(
         EnumColumn(BannerEnabled), index=True
-    )  # Likely pending removal
+    )  # TODO pending removal
     banner_title = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
@@ -124,7 +151,7 @@ class ExperienceConfigBase:
     description = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
-    disabled = Column(Boolean, nullable=False, default=False)  # TODO pending removal
+    disabled = Column(Boolean, nullable=False, default=True)
     privacy_policy_link_label = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
@@ -152,10 +179,13 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
     """
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
-    dismissable = Column(Boolean, nullable=False, default=False)
-    allow_language_selection = Column(Boolean, nullable=False, default=False)
+    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
+    allow_language_selection = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )
     custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     is_default = Column(Boolean, nullable=False, default=False)  # TODO will be removed
+    name = Column(String)
 
     experiences = relationship(
         "PrivacyExperience",
@@ -432,10 +462,15 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
     Both an ExperienceTranslation and its ExperienceConfig are versioned here together.
     """
 
+    name = Column(String)
+
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
-    dismissable = Column(Boolean, nullable=False, default=False)
-    allow_language_selection = Column(Boolean, nullable=False, default=False)
+    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
+    allow_language_selection = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )
     custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
+    disabled = Column(Boolean, nullable=False, default=True)
 
     experience_config_id = Column(
         String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
@@ -446,7 +481,6 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
     )
 
     version = Column(Float, nullable=False, default=1.0)
-    disabled = Column(Boolean, nullable=False, default=False)  # TODO pending removal
 
     banner_enabled = Column(
         EnumColumn(BannerEnabled), index=True
@@ -464,7 +498,9 @@ class PrivacyExperience(Base):
     configuration options).
     """
 
-    component = Column(EnumColumn(ComponentType), nullable=False)
+    component = Column(
+        EnumColumn(ComponentType), nullable=False
+    )  # I think we should delete this now.
     region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
 
     experience_config_id = Column(
@@ -473,11 +509,6 @@ class PrivacyExperience(Base):
         nullable=True,
         index=True,
     )
-
-    disabled = Column(Boolean, nullable=True, default=False)
-
-    # There can only be one component per region
-    __table_args__ = (UniqueConstraint("region", "component", name="region_component"),)
 
     experience_config = relationship(
         "PrivacyExperienceConfig",
@@ -502,87 +533,19 @@ class PrivacyExperience(Base):
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}
 
-    # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
-    show_banner: bool
-
     @property
     def region_country(self) -> str:
         """The experience's country, based on naming convention of its region string."""
         return region_country(self.region.value)  # type: ignore[attr-defined]
 
     @staticmethod
-    def create_default_experience_for_region(
-        db: Session, region: PrivacyNoticeRegion, component: ComponentType
-    ) -> PrivacyExperience:
-        """Creates an Experience for a given Component Type and Region and links
-        to default copy (ExperienceConfig)
-        # TODO revisit this method because we won't have "default" Privacy Experience Config
-        """
-        experience_data: Dict = {
-            "region": region,
-            "component": component,
-        }
-        default_config: Optional[
-            PrivacyExperienceConfig
-        ] = PrivacyExperienceConfig.get_default_config(db, component)
-
-        if default_config:
-            experience_data["experience_config_id"] = default_config.id
-
-        return PrivacyExperience.create(
-            db=db,
-            data=experience_data,
-        )
-
-    @staticmethod
-    def get_experience_by_region_and_component(
+    def get_experiences_by_region_and_component(
         db: Session, region: str, component: ComponentType
-    ) -> Optional[PrivacyExperience]:
-        """Load an experience for a given region and component type"""
-        return (
-            db.query(PrivacyExperience)
-            .filter(
-                PrivacyExperience.region == region,
-                PrivacyExperience.component == component,
-            )
-            .first()
-        )
-
-    @staticmethod
-    def get_overlay_and_privacy_center_experience_by_region(
-        db: Session, region: str
-    ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience]]:
-        """Load both the overlay and privacy center experience for a given region
-
-        TCF overlays are not returned here.  This method is used in building experiences when Notices
-        are created, which is not applicable for TCF.
-
-        # TODO method can likely be removed
-        """
-        overlay_experience: Optional[
-            PrivacyExperience
-        ] = PrivacyExperience.get_experience_by_region_and_component(
-            db=db, region=region, component=ComponentType.overlay
-        )
-
-        privacy_center_experience: Optional[
-            PrivacyExperience
-        ] = PrivacyExperience.get_experience_by_region_and_component(
-            db=db, region=region, component=ComponentType.privacy_center
-        )
-
-        return overlay_experience, privacy_center_experience
-
-    def unlink_experience_config(self, db: Session) -> PrivacyExperience:
-        """Removes the experience config
-
-        Note that neither the Experience Config or Experience are deleted; we're only removing
-        a FK if it exists.
-        # TODO revisit this method
-        """
-        return self.update(  # type: ignore[return-value]
-            db,
-            data={"experience_config_id": None, "experience_config_history_id": None},
+    ) -> Query:
+        """Load experiences for a given region and component type"""
+        return db.query(PrivacyExperience).filter(
+            PrivacyExperience.region == region,
+            PrivacyExperience.component == component,
         )
 
 
@@ -608,29 +571,26 @@ def get_privacy_notices_by_region_and_component(
     )
 
 
-def remove_config_from_matched_experiences(
-    db: Session,
+def remove_regions_from_experience_config(
     experience_config: PrivacyExperienceConfig,
     regions_to_unlink: List[PrivacyNoticeRegion],
-) -> List[PrivacyNoticeRegion]:
-    """Remove the config from linked PrivacyExperiences"""
+) -> None:
+    """Remove regions from a PrivacyExperienceConfig by deleting the associated PrivacyExperiences"""
     if not regions_to_unlink:
-        return []
+        return None
 
-    experiences_to_unlink: List[PrivacyExperience] = experience_config.experiences.filter(  # type: ignore[call-arg]
+    experience_config.experiences.filter(  # type: ignore[call-arg]
         PrivacyExperience.region.in_(regions_to_unlink)
-    ).all()
+    ).delete()
 
-    for experience in experiences_to_unlink:
-        experience.unlink_experience_config(db)
-    return [experience.region for experience in experiences_to_unlink]  # type: ignore[misc]
+    return None
 
 
 def upsert_privacy_experiences_after_config_update(
     db: Session,
     experience_config: PrivacyExperienceConfig,
     regions: List[PrivacyNoticeRegion],
-) -> Tuple[List[PrivacyNoticeRegion], List[PrivacyNoticeRegion]]:
+) -> List[PrivacyNoticeRegion]:
     """
     Keeps Privacy Experiences in sync with ExperienceConfig changes.
     Create or update PrivacyExperiences for the regions we're attempting to link to the
@@ -638,8 +598,6 @@ def upsert_privacy_experiences_after_config_update(
 
     Assumes that components on the ExperienceConfig do not change after they're updated.
     """
-    linked_regions: List[PrivacyNoticeRegion] = []  # Regions that were linked
-
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
     removed_regions: List[
         PrivacyNoticeRegion
@@ -649,36 +607,37 @@ def upsert_privacy_experiences_after_config_update(
             {reg.value for reg in regions}
         )
     ]
-    unlinked_regions: List[
-        PrivacyNoticeRegion
-    ] = remove_config_from_matched_experiences(db, experience_config, removed_regions)
+
+    experience_config.experiences.filter(  # type: ignore[call-arg]
+        PrivacyExperience.region.in_(removed_regions)
+    ).delete()
 
     for region in regions:
-        existing_experience: Optional[
-            PrivacyExperience
-        ] = PrivacyExperience.get_experience_by_region_and_component(
-            db=db, region=region, component=experience_config.component  # type: ignore[arg-type]
+        existing_experience = (
+            db.query(PrivacyExperience)
+            .filter(
+                PrivacyExperience.experience_config_id == experience_config.id,
+                PrivacyExperience.region == region,
+            )
+            .first()
         )
+
         data = {
             "component": experience_config.component,
             "region": region,
             "experience_config_id": experience_config.id,
         }
 
-        # If existing experience exists, link to experience config
+        # If existing experience exists, refresh data
         if existing_experience:
-            if existing_experience.experience_config_id != experience_config.id:
-                linked_regions.append(region)
             existing_experience.update(db, data=data)
-
         else:
-            # If existing experience doesn't exist, create and link to experience config
             PrivacyExperience.create(
                 db,
                 data=data,
             )
-            linked_regions.append(region)
-    return linked_regions, unlinked_regions
+
+    return experience_config.regions
 
 
 def region_country(region: str) -> str:

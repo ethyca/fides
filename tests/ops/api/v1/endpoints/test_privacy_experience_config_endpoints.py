@@ -12,7 +12,6 @@ from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
-    PrivacyExperienceConfigHistory,
     link_notices_to_experience_config,
 )
 from fides.api.models.privacy_notice import Language, PrivacyNoticeRegion
@@ -383,6 +382,27 @@ class TestCreateExperienceConfig:
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
 
+    @pytest.mark.usefixtures("experience_config_banner")
+    def test_create_experience_config_region_exists_on_another_config(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={"component": "overlay", "regions": ["it"], "disabled": False},
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            "Region 'it' is already on an enabled Experience"
+            in response.json()["detail"]
+        )
+
     @pytest.mark.parametrize(
         "invalid_url",
         [
@@ -585,10 +605,10 @@ class TestCreateExperienceConfig:
         """
 
         assert (
-            PrivacyExperience.get_experience_by_region_and_component(
+            PrivacyExperience.get_experiences_by_region_and_component(
                 db, PrivacyNoticeRegion.us_ny, ComponentType.overlay
-            )
-            is None
+            ).count()
+            == 0
         )
 
         auth_header = generate_auth_header(
@@ -685,8 +705,8 @@ class TestCreateExperienceConfig:
         db,
     ) -> None:
         """
-        Specifying a TX region to be used with the new ExperienceConfig can
-        cause an existing TX PrivacyExperience to be linked to the current ExperienceConfig
+        Specifying a TX region to be used with the new ExperienceConfig has no effect on
+        existing experiences that aren't linked to this config
         """
 
         privacy_experience = PrivacyExperience.create(
@@ -737,9 +757,7 @@ class TestCreateExperienceConfig:
         assert experience_config.experiences.count() == 1
         experience = experience_config.experiences[0]
         db.refresh(experience)
-        assert (
-            experience == privacy_experience
-        )  # Linked experience is the same Texas experience from above
+        assert experience != privacy_experience
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
         assert experience.experience_config_id == experience_config.id
@@ -836,8 +854,8 @@ class TestGetExperienceConfigDetail:
         assert resp["id"] == experience_config_overlay.id
         assert resp["component"] == "overlay"
         assert resp["banner_enabled"] == "enabled_where_required"
-        assert resp["allow_language_selection"] is False
-        assert not resp["dismissable"]
+        assert resp["allow_language_selection"] is True
+        assert resp["dismissable"]
 
         assert resp["regions"] == ["us_ca"]
         assert resp["created_at"] is not None
@@ -926,6 +944,7 @@ class TestUpdateExperienceConfig:
                 "component": "overlay",
                 "regions": [PrivacyNoticeRegion.us_ia],
                 "privacy_notice_ids": [privacy_notice.id],
+                "disabled": False,
                 "translations": [
                     {
                         "language": "en_us",
@@ -1010,6 +1029,36 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 422
 
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
+
+    @pytest.mark.usefixtures("experience_config_banner")
+    def test_update_experience_config_region_exists_on_another_config(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_banner,
+        overlay_experience_config,
+    ) -> None:
+        assert not experience_config_banner.disabled
+        assert not overlay_experience_config.disabled
+
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.patch(
+            url,
+            json={
+                "regions": ["us_ia", "it"],
+                "privacy_notice_ids": [],
+                "translations": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            "Region 'it' is already on an enabled Experience"
+            in response.json()["detail"]
+        )
 
     def test_update_experience_config_duplicate_notice_keys(
         self,
@@ -1174,21 +1223,22 @@ class TestUpdateExperienceConfig:
     ) -> None:
         """
         This action is updating an existing ExperienceConfig to add NY.  NY does not have a PrivacyExperience
-        yet, so one will be created for it.
+        yet, so one will be created for it.  IA is already attached but not in the request so it will be deleted
         """
 
         assert (
-            PrivacyExperience.get_experience_by_region_and_component(
+            PrivacyExperience.get_experiences_by_region_and_component(
                 db, PrivacyNoticeRegion.us_ny, ComponentType.overlay
-            )
-            is None
+            ).count()
+            == 0
         )
 
-        ia_exp = PrivacyExperience.get_experience_by_region_and_component(
+        ia_exp = PrivacyExperience.get_experiences_by_region_and_component(
             db, PrivacyNoticeRegion.us_ia, ComponentType.overlay
-        )
+        ).first()
         assert ia_exp is not None
         assert ia_exp.experience_config_id == overlay_experience_config.id
+        ia_exp_id = ia_exp.id
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
         response = api_client.patch(
@@ -1238,9 +1288,13 @@ class TestUpdateExperienceConfig:
         assert experience.component == ComponentType.overlay
         assert experience.experience_config_id == overlay_experience_config.id
 
-        # Experience that was unlinked because it wasn't included in the request
-        db.refresh(ia_exp)
-        assert ia_exp.experience_config_id is None
+        # Iowa exp was deleted
+        assert (
+            db.query(PrivacyExperience)
+            .filter(PrivacyExperience.id == ia_exp_id)
+            .first()
+            is None
+        )
 
         experience.delete(db)
 
@@ -1255,8 +1309,7 @@ class TestUpdateExperienceConfig:
     ) -> None:
         """
         Existing ExperienceConfig is updated to add TX.  A Texas Privacy Experience already exists.
-
-        This should cause the existing Texas PrivacyExperience to be given a FK to the existing ExperienceConfig record
+        This TX privacy experience is not affected.
         """
 
         privacy_experience = PrivacyExperience.create(
@@ -1318,9 +1371,7 @@ class TestUpdateExperienceConfig:
         assert overlay_experience_config.experiences.count() == 1
         experience = overlay_experience_config.experiences[0]
         db.refresh(experience)
-        assert (
-            experience == privacy_experience
-        )  # Linked experience is the same Texas experience from above
+        assert experience != privacy_experience
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
         assert experience.experience_config_id == overlay_experience_config.id
@@ -1446,15 +1497,16 @@ class TestUpdateExperienceConfig:
 
         This is a contrived example, but tests that this workflow doesn't break for the new tcf overlay
         """
-        fr_experience = PrivacyExperience.get_experience_by_region_and_component(
+        fr_experiences = PrivacyExperience.get_experiences_by_region_and_component(
             db=db, region="fr", component=ComponentType.tcf_overlay
         )
-        assert fr_experience
+        assert fr_experiences.count() == 1
+        fr_experience = fr_experiences.first()
 
-        ca_experience = PrivacyExperience.get_experience_by_region_and_component(
+        ca_experiences = PrivacyExperience.get_experiences_by_region_and_component(
             db=db, region="us_ca", component=ComponentType.tcf_overlay
         )
-        assert not ca_experience
+        assert not ca_experiences.count()
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
         url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_tcf_overlay.id}"
@@ -1470,12 +1522,17 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 200
         assert response.json()["regions"] == ["fr", "us_ca"]
 
-        fr_experience = PrivacyExperience.get_experience_by_region_and_component(
-            db=db, region="fr", component=ComponentType.tcf_overlay
+        assert (
+            PrivacyExperience.get_experiences_by_region_and_component(
+                db=db, region="fr", component=ComponentType.tcf_overlay
+            ).count()
+            == 1
         )
         assert fr_experience
 
-        ca_experience = PrivacyExperience.get_experience_by_region_and_component(
-            db=db, region="us_ca", component=ComponentType.tcf_overlay
+        assert (
+            PrivacyExperience.get_experiences_by_region_and_component(
+                db=db, region="us_ca", component=ComponentType.tcf_overlay
+            ).count()
+            == 1
         )
-        assert ca_experience

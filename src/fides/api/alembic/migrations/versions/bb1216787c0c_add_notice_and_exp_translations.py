@@ -1,8 +1,8 @@
-"""notice and experience translations
+"""add notice and exp translations
 
-Revision ID: ac9cfaee7493
+Revision ID: bb1216787c0c
 Revises: 956d21f13def
-Create Date: 2024-01-26 15:25:13.940533
+Create Date: 2024-01-31 19:14:09.774805
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "ac9cfaee7493"
+revision = "bb1216787c0c"
 down_revision = "956d21f13def"
 branch_labels = None
 depends_on = None
@@ -58,7 +58,6 @@ def upgrade():
     )
     op.create_table(
         "experiencenotices",
-        sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -71,28 +70,22 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
+        sa.Column("id", sa.String(length=255), nullable=True),
         sa.Column("notice_id", sa.String(), nullable=False),
         sa.Column("experience_config_id", sa.String(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["experience_config_id"],
-            ["privacyexperienceconfig.id"],
-            ondelete="CASCADE",
+            ["experience_config_id"], ["privacyexperienceconfig.id"], ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
-            ["notice_id"],
-            ["privacynotice.id"],
-            ondelete="CASCADE",
+            ["notice_id"], ["privacynotice.id"], ondelete="CASCADE"
         ),
-        sa.PrimaryKeyConstraint("id", "notice_id", "experience_config_id"),
+        sa.PrimaryKeyConstraint("notice_id", "experience_config_id"),
     )
     op.create_index(
         op.f("ix_experiencenotices_experience_config_id"),
         "experiencenotices",
         ["experience_config_id"],
         unique=False,
-    )
-    op.create_index(
-        op.f("ix_experiencenotices_id"), "experiencenotices", ["id"], unique=False
     )
     op.create_index(
         op.f("ix_experiencenotices_notice_id"),
@@ -173,29 +166,36 @@ def upgrade():
     op.create_index(
         op.f("ix_noticetranslation_id"), "noticetranslation", ["id"], unique=False
     )
-    op.add_column(
-        "privacyexperience", sa.Column("disabled", sa.Boolean(), nullable=True)
-    )
+    op.drop_constraint("region_component", "privacyexperience", type_="unique")
     op.add_column(
         "privacyexperienceconfig", sa.Column("origin", sa.String(), nullable=True)
     )
     op.add_column(
         "privacyexperienceconfig",
-        sa.Column("dismissable", sa.Boolean(), nullable=False),
+        sa.Column("dismissable", sa.Boolean(), nullable=False, server_default="t"),
     )
     op.add_column(
         "privacyexperienceconfig",
-        sa.Column("allow_language_selection", sa.Boolean(), nullable=False),
+        sa.Column(
+            "allow_language_selection", sa.Boolean(), nullable=False, server_default="t"
+        ),
     )
     op.add_column(
         "privacyexperienceconfig",
         sa.Column("custom_asset_id", sa.String(), nullable=True),
     )
-    op.create_foreign_key(
-        None, "privacyexperienceconfig", "experienceconfigtemplate", ["origin"], ["id"]
+    op.add_column(
+        "privacyexperienceconfig", sa.Column("name", sa.String(), nullable=True)
     )
     op.create_foreign_key(
-        None,
+        "exp_config_to_template_fk",
+        "privacyexperienceconfig",
+        "experienceconfigtemplate",
+        ["origin"],
+        ["id"],
+    )
+    op.create_foreign_key(
+        "exp_config_to_custom_asset_fk",
         "privacyexperienceconfig",
         "plus_custom_asset",
         ["custom_asset_id"],
@@ -206,16 +206,21 @@ def upgrade():
         sa.Column("language", sa.String(), nullable=False),
     )
     op.add_column(
+        "privacyexperienceconfighistory", sa.Column("name", sa.String(), nullable=True)
+    )
+    op.add_column(
         "privacyexperienceconfighistory",
         sa.Column("origin", sa.String(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("dismissable", sa.Boolean(), nullable=False),
+        sa.Column("dismissable", sa.Boolean(), nullable=False, server_default="t"),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("allow_language_selection", sa.Boolean(), nullable=False),
+        sa.Column(
+            "allow_language_selection", sa.Boolean(), nullable=False, server_default="t"
+        ),
     )
     op.add_column(
         "privacyexperienceconfighistory",
@@ -232,21 +237,21 @@ def upgrade():
         nullable=True,
     )
     op.create_foreign_key(
-        None,
-        "privacyexperienceconfighistory",
-        "experienceconfigtemplate",
-        ["origin"],
-        ["id"],
-    )
-    op.create_foreign_key(
-        None,
+        "exp_hist_to_asset_fk",
         "privacyexperienceconfighistory",
         "plus_custom_asset",
         ["custom_asset_id"],
         ["id"],
     )
     op.create_foreign_key(
-        None,
+        "exp_hist_to_template_fk",
+        "privacyexperienceconfighistory",
+        "experienceconfigtemplate",
+        ["origin"],
+        ["id"],
+    )
+    op.create_foreign_key(
+        "exp_history_to_translation_fk",
         "privacyexperienceconfighistory",
         "experiencetranslation",
         ["translation_id"],
@@ -281,7 +286,7 @@ def upgrade():
         nullable=True,
     )
     op.create_foreign_key(
-        None,
+        "notice_hist_to_translation_fk",
         "privacynoticehistory",
         "noticetranslation",
         ["translation_id"],
@@ -302,11 +307,54 @@ def upgrade():
         existing_type=postgresql.ARRAY(sa.VARCHAR()),
         nullable=True,
     )
+    op.drop_index(
+        "ix_privacypreferencehistory_privacy_experience_id",
+        table_name="privacypreferencehistory",
+    )
+    op.drop_constraint(
+        "privacypreferencehistory_privacy_experience_id_fkey",
+        "privacypreferencehistory",
+        type_="foreignkey",
+    )
+    op.drop_index(
+        "ix_servednoticehistory_privacy_experience_id", table_name="servednoticehistory"
+    )
+    op.drop_constraint(
+        "servednoticehistory_privacy_experience_id_fkey",
+        "servednoticehistory",
+        type_="foreignkey",
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.create_foreign_key(
+        "servednoticehistory_privacy_experience_id_fkey",
+        "servednoticehistory",
+        "privacyexperience",
+        ["privacy_experience_id"],
+        ["id"],
+    )
+    op.create_index(
+        "ix_servednoticehistory_privacy_experience_id",
+        "servednoticehistory",
+        ["privacy_experience_id"],
+        unique=False,
+    )
+    op.create_foreign_key(
+        "privacypreferencehistory_privacy_experience_id_fkey",
+        "privacypreferencehistory",
+        "privacyexperience",
+        ["privacy_experience_id"],
+        ["id"],
+    )
+    op.create_index(
+        "ix_privacypreferencehistory_privacy_experience_id",
+        "privacypreferencehistory",
+        ["privacy_experience_id"],
+        unique=False,
+    )
     op.alter_column(
         "privacynoticetemplate",
         "regions",
@@ -314,7 +362,9 @@ def downgrade():
         nullable=False,
     )
     op.drop_column("privacynoticetemplate", "translations")
-    op.drop_constraint(None, "privacynoticehistory", type_="foreignkey")
+    op.drop_constraint(
+        "notice_hist_to_translation_fk", "privacynoticehistory", type_="foreignkey"
+    )
     op.alter_column(
         "privacynoticehistory",
         "privacy_notice_id",
@@ -336,9 +386,17 @@ def downgrade():
         existing_type=postgresql.ARRAY(sa.VARCHAR()),
         nullable=False,
     )
-    op.drop_constraint(None, "privacyexperienceconfighistory", type_="foreignkey")
-    op.drop_constraint(None, "privacyexperienceconfighistory", type_="foreignkey")
-    op.drop_constraint(None, "privacyexperienceconfighistory", type_="foreignkey")
+    op.drop_constraint(
+        "exp_history_to_translation_fk",
+        "privacyexperienceconfighistory",
+        type_="foreignkey",
+    )
+    op.drop_constraint(
+        "exp_hist_to_template_fk", "privacyexperienceconfighistory", type_="foreignkey"
+    )
+    op.drop_constraint(
+        "exp_hist_to_asset_fk", "privacyexperienceconfighistory", type_="foreignkey"
+    )
     op.alter_column(
         "privacyexperienceconfighistory",
         "experience_config_id",
@@ -350,14 +408,22 @@ def downgrade():
     op.drop_column("privacyexperienceconfighistory", "allow_language_selection")
     op.drop_column("privacyexperienceconfighistory", "dismissable")
     op.drop_column("privacyexperienceconfighistory", "origin")
+    op.drop_column("privacyexperienceconfighistory", "name")
     op.drop_column("privacyexperienceconfighistory", "language")
-    op.drop_constraint(None, "privacyexperienceconfig", type_="foreignkey")
-    op.drop_constraint(None, "privacyexperienceconfig", type_="foreignkey")
+    op.drop_constraint(
+        "exp_config_to_custom_asset_fk", "privacyexperienceconfig", type_="foreignkey"
+    )
+    op.drop_constraint(
+        "exp_config_to_template_fk", "privacyexperienceconfig", type_="foreignkey"
+    )
+    op.drop_column("privacyexperienceconfig", "name")
     op.drop_column("privacyexperienceconfig", "custom_asset_id")
     op.drop_column("privacyexperienceconfig", "allow_language_selection")
     op.drop_column("privacyexperienceconfig", "dismissable")
     op.drop_column("privacyexperienceconfig", "origin")
-    op.drop_column("privacyexperience", "disabled")
+    op.create_unique_constraint(
+        "region_component", "privacyexperience", ["region", "component"]
+    )
     op.drop_index(op.f("ix_noticetranslation_id"), table_name="noticetranslation")
     op.drop_table("noticetranslation")
     op.drop_index(
@@ -367,7 +433,6 @@ def downgrade():
     op.drop_index(
         op.f("ix_experiencenotices_notice_id"), table_name="experiencenotices"
     )
-    op.drop_index(op.f("ix_experiencenotices_id"), table_name="experiencenotices")
     op.drop_index(
         op.f("ix_experiencenotices_experience_config_id"),
         table_name="experiencenotices",

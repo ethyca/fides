@@ -1,7 +1,6 @@
 from copy import copy
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from fides.api.models.privacy_experience import (
     BannerEnabled,
@@ -89,7 +88,7 @@ class TestExperienceConfig:
             == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
         )
         assert history.banner_title == "Control Your Privacy"
-        assert history.disabled is False
+        assert history.disabled is True
         assert history.is_default is False
         assert history.privacy_preferences_link_label == "Manage preferences"
         assert history.privacy_policy_link_label == "View our privacy policy"
@@ -362,13 +361,7 @@ class TestExperienceConfig:
     def test_update_privacy_experience_config_update_regions(
         self, db, experience_config_overlay
     ):
-        assert (
-            PrivacyExperience.get_experience_by_region_and_component(
-                db, "us_ca", ComponentType.overlay
-            )
-            is None
-        )
-
+        assert experience_config_overlay.experiences.count() == 0
         updated_at = experience_config_overlay.updated_at
         experience_config_overlay.update(
             db=db,
@@ -395,9 +388,10 @@ class TestExperienceConfig:
 
         db.refresh(experience_config_overlay)
         assert experience_config_overlay.regions == [PrivacyNoticeRegion.us_ca]
-        exp = PrivacyExperience.get_experience_by_region_and_component(
-            db, "us_ca", ComponentType.overlay
-        )
+
+        exp = experience_config_overlay.experiences.first()
+        exp_id = exp.id
+
         assert exp.experience_config_id == experience_config_overlay.id
         assert experience_config_overlay.updated_at == updated_at
 
@@ -426,126 +420,15 @@ class TestExperienceConfig:
 
         db.refresh(experience_config_overlay)
         assert experience_config_overlay.regions == []
-        assert (
-            PrivacyExperience.get_experience_by_region_and_component(
-                db, "us_ca", ComponentType.overlay
-            )
-            == exp
-        )
-        assert experience_config_overlay.updated_at == updated_at
+        assert experience_config_overlay.experiences.count() == 0
 
-        db.refresh(exp)
-        assert exp.experience_config_id is None  # Unlinked from Experience Config
+        assert (
+            db.query(PrivacyExperience).filter(PrivacyExperience.id == exp_id).first()
+            is None
+        )
 
 
 class TestPrivacyExperience:
-    def test_get_experiences_by_region(self, db):
-        """Test PrivacyExperience.get_experiences_by_region method"""
-        (
-            queried_overlay_exp,
-            queried_pc_exp,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_tx
-        )
-        assert queried_overlay_exp is None
-        assert queried_pc_exp is None
-
-        overlay_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "region": "us_tx",
-            },
-        )
-
-        (
-            queried_overlay_exp,
-            queried_pc_exp,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_tx
-        )
-        assert queried_overlay_exp == overlay_exp
-        assert queried_pc_exp is None
-
-        pc_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "privacy_center",
-                "region": "us_tx",
-            },
-        )
-
-        (
-            queried_overlay_exp,
-            queried_pc_exp,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_tx
-        )
-        assert queried_overlay_exp == overlay_exp
-        assert queried_pc_exp == pc_exp
-
-        overlay_exp.delete(db)
-        pc_exp.delete(db)
-
-    def test_get_experience_by_component_and_region(self, db):
-        """Test PrivacyExperience.get_experience_by_region_and_component method"""
-        assert (
-            PrivacyExperience.get_experience_by_region_and_component(
-                db, PrivacyNoticeRegion.at, ComponentType.overlay
-            )
-            is None
-        )
-
-        pc_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "privacy_center",
-                "region": "at",
-            },
-        )
-
-        assert (
-            PrivacyExperience.get_experience_by_region_and_component(
-                db, PrivacyNoticeRegion.at, ComponentType.overlay
-            )
-            is None
-        )
-        assert (
-            PrivacyExperience.get_experience_by_region_and_component(
-                db, PrivacyNoticeRegion.at, ComponentType.privacy_center
-            )
-            == pc_exp
-        )
-
-        db.delete(pc_exp)
-
-    def test_unlink_privacy_experience_config(
-        self, db, experience_config_privacy_center
-    ):
-        """
-        Test Experience.unlink_experience_config unlinks the experience
-        """
-        pc_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "privacy_center",
-                "region": "at",
-                "experience_config_id": experience_config_privacy_center.id,
-            },
-        )
-        created_at = pc_exp.created_at
-        updated_at = pc_exp.updated_at
-
-        assert pc_exp.experience_config == experience_config_privacy_center
-        pc_exp.unlink_experience_config(db)
-        db.refresh(pc_exp)
-
-        assert pc_exp.experience_config_id is None
-        assert pc_exp.created_at == created_at
-        assert pc_exp.updated_at > updated_at
-
-        pc_exp.delete(db)
-
     def test_create_privacy_experience(self, db):
         """Assert PrivacyExperience is created as expected"""
         exp = PrivacyExperience.create(
@@ -593,7 +476,8 @@ class TestPrivacyExperience:
         exp.delete(db)
 
     def test_create_multiple_experiences_of_same_component_type(self, db):
-        """We can only have one experience per component type per region"""
+        """This is now allowed at the Experience level - we mostly want to check at the ExperienceConfig level
+        that we don't have overlapping regions on the same *enabled* ExperienceConfig"""
         exp = PrivacyExperience.create(
             db=db,
             data={
@@ -602,20 +486,21 @@ class TestPrivacyExperience:
             },
         )
 
-        with pytest.raises(IntegrityError):
-            PrivacyExperience.create(
-                db=db,
-                data={
-                    "component": "overlay",
-                    "region": "us_tx",
-                },
-            )
+        exp_2 = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "overlay",
+                "region": "us_tx",
+            },
+        )
 
+        exp_2.delete(db)
         exp.delete(db)
 
     def test_update_multiple_experiences_of_same_component_type(self, db):
-        """We can only have one experience per component type per region. Unique constraint prevents
-        Experience updates from getting in a bad state"""
+        """This is allowed - we have other checks at the ExperienceConfig level to make sure there are
+        no two regions attached to ExperienceConfigs of the same UX type or fides js UX type
+        """
         exp = PrivacyExperience.create(
             db=db,
             data={
@@ -632,14 +517,13 @@ class TestPrivacyExperience:
             },
         )
 
-        with pytest.raises(IntegrityError):
-            exp_2.update(
-                db=db,
-                data={
-                    "component": "overlay",
-                    "region": "us_tx",
-                },
-            )
+        exp_2.update(
+            db=db,
+            data={
+                "component": "overlay",
+                "region": "us_tx",
+            },
+        )
 
         exp_2.delete(db)
         exp.delete(db)
@@ -791,30 +675,25 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             },
         )
 
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
+        assert (
+            PrivacyExperience.get_experiences_by_region_and_component(
+                db, PrivacyNoticeRegion.us_ak, ComponentType.privacy_center
+            ).count()
+            == 0
         )
-        assert overlay_experience is None
-        assert privacy_center_experience is None
 
-        linked, unlinked = upsert_privacy_experiences_after_config_update(
+        linked = upsert_privacy_experiences_after_config_update(
             db, config, regions=[PrivacyNoticeRegion.us_ak]
         )
 
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
+        pc_exps = PrivacyExperience.get_experiences_by_region_and_component(
+            db, PrivacyNoticeRegion.us_ak, ComponentType.privacy_center
         )
+        assert pc_exps.count() == 1
+        privacy_center_experience = pc_exps.first()
 
-        assert overlay_experience is None
         assert privacy_center_experience is not None
         assert linked == [PrivacyNoticeRegion.us_ak]
-        assert unlinked == []
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
@@ -828,7 +707,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
 
     def test_experience_config_created_matching_unlinked_experience_exists(self, db):
         """Test ExperienceConfig created and we attempt to link AK to that ExperienceConfig.
-        A PrivacyExperience exists for AK, but needs to be linked to this ExperienceConfig.
+        Existing PrivacyExperiences of the same type aren't applicable here
         """
         config = PrivacyExperienceConfig.create(
             db=db,
@@ -850,33 +729,22 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         )
         assert pc_exp.experience_config_id is None
 
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
-        assert overlay_experience is None
-        assert privacy_center_experience == pc_exp
-
-        linked, unlinked = upsert_privacy_experiences_after_config_update(
+        linked = upsert_privacy_experiences_after_config_update(
             db, config, regions=[PrivacyNoticeRegion.us_ak]
         )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
 
-        assert overlay_experience is None
-        assert privacy_center_experience is not None
+        assert config.experiences.count() == 1
+
+        privacy_center_experience = config.experiences.first()
         assert linked == [PrivacyNoticeRegion.us_ak]
-        assert unlinked == []
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
         assert privacy_center_experience.experience_config_id == config.id
+
+        # Previously we only had one experience per region of any given type but that
+        # constraint has been relaxed
+        assert privacy_center_experience.id != pc_exp.id
 
         privacy_center_experience.delete(db)
         for translation in config.translations:
@@ -909,31 +777,20 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         )
         assert pc_exp.experience_config_id == config.id
 
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
+        assert config.experiences.count() == 1
+        assert config.experiences.first() == pc_exp
 
-        assert overlay_experience is None
-        assert privacy_center_experience == pc_exp
-
-        linked, unlinked = upsert_privacy_experiences_after_config_update(
+        linked = upsert_privacy_experiences_after_config_update(
             db, config, regions=[PrivacyNoticeRegion.us_ak]
         )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
-        db.refresh(privacy_center_experience)
 
-        assert overlay_experience is None
-        assert privacy_center_experience is not None
-        assert linked == []
-        assert unlinked == []
+        assert pc_exp.experience_config_id == config.id
+
+        assert config.experiences.count() == 1
+        privacy_center_experience = config.experiences.first()
+        assert privacy_center_experience == pc_exp
+
+        db.refresh(privacy_center_experience)
 
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
@@ -968,41 +825,24 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
                 "experience_config_id": config.id,
             },
         )
+        pc_exp_id = pc_exp.id
+
         assert pc_exp.experience_config_id == config.id
         assert config.experiences.count() == 1
 
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
-
-        assert overlay_experience is None
-        assert privacy_center_experience == pc_exp
-
-        linked, unlinked = upsert_privacy_experiences_after_config_update(
+        upsert_privacy_experiences_after_config_update(
             db, config, regions=[]  # Empty region list will remove regions
         )
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
-            db, PrivacyNoticeRegion.us_ak
-        )
 
-        assert overlay_experience is None
-        assert privacy_center_experience is not None
-        assert linked == []
-        assert unlinked == [PrivacyNoticeRegion.us_ak]
-        db.refresh(config)
         assert config.experiences.count() == 0
 
-        assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
-        assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.experience_config_id is None
+        assert (
+            db.query(PrivacyExperience)
+            .filter(PrivacyExperience.id == pc_exp_id)
+            .count()
+            == 0
+        )
 
-        privacy_center_experience.delete(db)
         for translation in config.translations:
             translation.histories[0].delete(db)
             translation.delete(db)

@@ -1140,7 +1140,7 @@ class TestLoadDefaultExperienceConfigs:
         updated = experience_config.updated_at
         assert experience_config.origin == template.id != experience_config.id
         assert experience_config.component == ComponentType.overlay
-        assert experience_config.dismissable is False
+        assert experience_config.dismissable is True
         assert experience_config.privacy_notices == [privacy_notice]
 
         # Verify Experiences
@@ -1167,7 +1167,7 @@ class TestLoadDefaultExperienceConfigs:
         assert translation.histories.count() == 1
         history = translation.histories[0]
 
-        assert not history.dismissable
+        assert history.dismissable
         assert history.origin == template.id
         assert history.language == Language.en_us
         assert history.title == "Manage your consent preferences"

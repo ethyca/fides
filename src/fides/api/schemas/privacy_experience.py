@@ -87,6 +87,7 @@ class ExperienceConfigSchema(FidesSchema):
     but cannot be updated later.
     """
 
+    disabled: Optional[bool]
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
     origin: Optional[str]
     dismissable: Optional[bool]
@@ -113,6 +114,7 @@ class ExperienceConfigCreateBase(ExperienceConfigSchema):
 
     translations: List[ExperienceTranslationCreate] = []
     component: ComponentType
+    disabled: Optional[bool] = True
 
     @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:

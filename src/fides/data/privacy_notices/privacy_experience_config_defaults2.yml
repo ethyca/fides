@@ -23,6 +23,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
+      is_default: true
 
 - id: pri-38d3-631c-4e8f-af5c-5bb00df6-pri
   regions:
@@ -48,7 +49,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
-
+      is_default: true
 
 - id: pri-cd9c-ac88-4290-8f5f-38c15db-over
   regions:
@@ -78,7 +79,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
-
+      is_default: true
 
 - id: pri-4430-51ba-45ab-a086-33666a61-pri
   regions:
@@ -108,7 +109,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
-
+      is_default: true
 
 - id: pri-19af2-1c47-436d-8d15-e7ad7c-over
   regions:
@@ -133,7 +134,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
-
+      is_default: true
 
 - id: pri-215c-860a-4b60-b313-6f459ebb-pri
   regions:
@@ -158,6 +159,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
+      is_default: true
 
 - id: pri-6b1f-3533-44e2-8a63-a1f6a12-over
   regions:
@@ -185,7 +187,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
-
+      is_default: true
 
 - id: pri-cdab-821d-4bf0-9c37-9b21ad8d-pri
   regions:
@@ -213,7 +215,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
-
+      is_default: true
 
 - id: pri-c826-2ad6-4cdc-9520-7358dd3-over
   regions:
@@ -235,7 +237,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
-
+      is_default: true
 
 - id: pri-060d-1753-487d-8664-59cc2c13-pri
   regions:
@@ -257,6 +259,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
+      is_default: true
 
 - id: pri-7ae3-f06b-4096-970f-0bbbdef-over
   regions:
@@ -312,6 +315,7 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
+      is_default: true
 
 
 - id: a4974670-abad-471f-9084-2cb-tcf-over
@@ -369,3 +373,4 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
+      is_default: true

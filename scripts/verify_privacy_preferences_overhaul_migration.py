@@ -161,9 +161,12 @@ def create_historical_records(db: Session):
     privacy_request: PrivacyRequest = create_test_privacy_request(db)
 
     ca_overlay_experience: PrivacyExperience = (
-        PrivacyExperience.get_experience_by_region_and_component(
-            db, component=ComponentType.overlay, region=PrivacyNoticeRegion.us_ca
+        db.query(PrivacyExperience)
+        .filter(
+            PrivacyExperience.component == ComponentType.overlay,
+            PrivacyExperience.region == PrivacyNoticeRegion.us_ca,
         )
+        .first()
     )
 
     device_id: str = "051b219f-20e4-45df-82f7-5eb68a00889f"

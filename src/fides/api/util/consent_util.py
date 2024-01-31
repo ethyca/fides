@@ -12,7 +12,10 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_experience import (
+    ComponentType,
     ExperienceConfigTemplate,
+    FidesJSUXTypes,
+    PrivacyExperience,
     PrivacyExperienceConfig,
 )
 from fides.api.models.privacy_notice import (
@@ -527,6 +530,7 @@ def upsert_privacy_experience_config_templates_util(
             .filter(ExperienceConfigTemplate.id == template_data.id)
             .first()
         )
+
         if existing_template:
             upserted_templates.append(
                 existing_template.update(
@@ -807,3 +811,42 @@ def unescape_notice_fields_for_display(privacy_notice: PrivacyNotice) -> None:
             model=translation,
             fields=NOTICE_TRANSLATION_ESCAPE_FIELDS,
         )
+
+
+def validate_region_uniqueness_on_ux_type(
+    db: Session,
+    ux_type: ComponentType,
+    regions: List[PrivacyNoticeRegion],
+    excluded_config: Optional[str] = None,
+) -> None:
+    """A region can only be on one enabled UX Type (and one Fides JS UX Type) at a time"""
+    forbidden_component_types = (
+        FidesJSUXTypes if ux_type in FidesJSUXTypes else [ux_type]
+    )
+
+    for region in regions:
+        existing_experience_config = (
+            db.query(PrivacyExperienceConfig)
+            .join(
+                PrivacyExperience,
+                PrivacyExperienceConfig.id == PrivacyExperience.experience_config_id,
+            )
+            .filter(
+                PrivacyExperienceConfig.component.in_(forbidden_component_types),
+                PrivacyExperienceConfig.disabled.is_(False),
+                PrivacyExperience.region == region,
+            )
+        )
+
+        if excluded_config:
+            # If we're running this validation on an "update", let's exclude the experience
+            # config itself
+            existing_experience_config = existing_experience_config.filter(
+                PrivacyExperienceConfig.id != excluded_config
+            )
+
+        if existing_experience_config.first():
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Region '{region.value}' is already on an enabled Experience of type {forbidden_component_types}.",
+            )
