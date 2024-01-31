@@ -1,4 +1,7 @@
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Button,
   ButtonGroup,
   Modal,
@@ -9,6 +12,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
+  Text,
   UseDisclosureReturn,
   useToast,
 } from "@fidesui/react";
@@ -54,13 +58,9 @@ const useDeleteUserModal = ({
   };
 
   const validationSchema = Yup.object().shape({
-    username: Yup.string()
-      .required()
-      .oneOf([username], "Username must match this user's")
-      .label("Username"),
     usernameConfirmation: Yup.string()
       .required()
-      .oneOf([Yup.ref("username")], "Usernames must match")
+      .oneOf([username], "Confirmation input must match the username")
       .label("Username confirmation"),
   });
 
@@ -95,11 +95,32 @@ const DeleteUserModal = ({
               <ModalHeader>Delete User</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
+                <Alert status="warning" overflow="visible">
+                  <AlertIcon />
+                  <AlertDescription>
+                    <Text as="span" mb={2}>
+                      You are about to delete the user&nbsp;
+                    </Text>
+                    <Text
+                      as="span"
+                      mb={2}
+                      fontStyle="italic"
+                      fontWeight="semibold"
+                    >
+                      {user.username}.
+                    </Text>
+                    <Text mb={2}>
+                      This action cannot be undone. To confirm, please enter the
+                      user&rsquo;s username below.
+                    </Text>
+                  </AlertDescription>
+                </Alert>
+
                 <Stack direction="column" spacing={4}>
-                  <CustomTextInput name="username" label="Enter username" />
                   <CustomTextInput
                     name="usernameConfirmation"
                     label="Confirm username"
+                    placeholder="Type the username to delete"
                   />
                 </Stack>
               </ModalBody>
