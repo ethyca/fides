@@ -33,6 +33,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python Dependencies
+
 COPY dev-requirements.txt .
 RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
 
@@ -44,8 +45,9 @@ ENV PATH="/opt/fides/bin:${PATH}"
 RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
 
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir install -r requirements.txt
+COPY optional-requirements.txt .
+RUN pip install --no-cache-dir install -r optional-requirements.txt
 
 COPY dev-requirements.txt .
 RUN pip install --no-cache-dir install -r dev-requirements.txt
