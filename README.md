@@ -100,7 +100,6 @@ Fides tools are built on [fideslang](https://github.com/ethyca/privacy-taxonomy)
 
 Fides is created and sponsored by Ethyca: a developer tools company building the trust infrastructure of the internet. If you have questions or need assistance getting started, let us know at fides@ethyca.com!
 
-
 [release-image]: https://img.shields.io/github/release/ethyca/fides.svg
 [release-url]: https://github.com/ethyca/fides/releases
 [docker-workflow-image]: https://github.com/ethyca/fides/workflows/Docker%20Build%20&%20Push/badge.svg
