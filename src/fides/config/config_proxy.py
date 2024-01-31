@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Set
 
 from fastapi.applications import FastAPI
 from pydantic import AnyUrl
@@ -22,12 +22,19 @@ class ConfigProxyBase:
     Config proxy classes allow these "resolved" properties to be looked up
     as if they were a "normal" pydantic config object, i.e. with dot notation,
     e.g. `ConfigProxy(db).notifications.notification_service_type`
+
+    To implement _merge_ behavior in config value resolution for a given property,
+    the property name should be specified as an element in the `merge_properties`
+    constructor arg, which takes a set of strings.
     """
 
     prefix: str
 
-    def __init__(self, db: Session) -> None:
+    def __init__(
+        self, db: Session, merge_properties: Optional[Set[str]] = None
+    ) -> None:
         self._db = db
+        self._merge_properties = merge_properties if merge_properties else set()
 
     def __getattribute__(self, __name: str) -> Any:
         """
@@ -35,10 +42,12 @@ class ConfigProxyBase:
         using the config proxy as a "normal" config object, i.e. with dot notation,
         e.g. `config_proxy.notifications.notification_service_type
         """
-        if __name in ("_db", "prefix"):
+        if __name in ("_db", "_merge_properties", "prefix"):
             return object.__getattribute__(self, __name)
         return ApplicationConfig.get_resolved_config_property(
-            self._db, f"{self.prefix}.{__name}"
+            self._db,
+            f"{self.prefix}.{__name}",
+            merge_values=__name in self._merge_properties,
         )
 
 
@@ -124,7 +133,7 @@ class ConfigProxy:
         self.notifications = NotificationSettingsProxy(db)
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
-        self.security = SecuritySettingsProxy(db)
+        self.security = SecuritySettingsProxy(db, merge_properties={"cors_origins"})
         self.consent = ConsentSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
@@ -133,9 +142,11 @@ class ConfigProxy:
         `ConfigProxy` into the  `CORSMiddleware` at runtime.
         """
 
+        # NOTE: `cors_origins` config proxy resolution _merges_ api-set and config-set values, if both present
         current_config_proxy_domains = (
             self.security.cors_origins if self.security.cors_origins is not None else []
         )
+
         update_cors_middleware(
             app,
             current_config_proxy_domains,
