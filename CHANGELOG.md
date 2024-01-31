@@ -31,6 +31,7 @@ The types of changes are:
 ### Fixed
 
 - Fixed CORS domain update functionality [#4570](https://github.com/ethyca/fides/pull/4570)
+- Completion emails are no longer attempted for consent requests [#4578](https://github.com/ethyca/fides/pull/4578)
 
 ## [2.28.0](https://github.com/ethyca/fides/compare/2.27.0...2.28.0)
 
