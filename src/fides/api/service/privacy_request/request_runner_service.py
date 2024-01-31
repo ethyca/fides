@@ -490,7 +490,11 @@ async def run_privacy_request(
             if not proceed:
                 return
 
-        if ConfigProxy(session).notifications.send_request_completion_notification:
+        if ConfigProxy(
+            session
+        ).notifications.send_request_completion_notification and not policy.get_rules_for_action(
+            action_type=ActionType.consent
+        ):
             try:
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data

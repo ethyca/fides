@@ -27,21 +27,6 @@ In order to get started quickly with Fides, a sample project is bundled within t
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
 * [Python](https://www.python.org/downloads/) (version 3.8 through 3.10)
 
-#### Additional requirements (for ARM Mac Users)
-
-Due to platform differences, the following dependencies and steps are also required:
-
-```bash
-brew install freetds openssl
-```
-
-**Add the following to your run commands (i.e. `.zshrc`), updating any path/versions to match yours**
-
-```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"`
-export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
-```
-
 #### Download and install Fides
 
 You can easily download and install Fides using `pip`. Run the following command to get started:
@@ -131,3 +116,24 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [mypy-url]: http://mypy-lang.org/
 [twitter-image]: https://img.shields.io/twitter/follow/ethyca?style=social
 [twitter-url]: https://twitter.com/ethyca
+
+## ⚠️ Advanced Setup for Microsoft SQL Server (MSSQL) Support
+
+By default, running `pip install ethyca-fides` locally will not install the optional Python libraries needed for Microsoft SQL Server, since these rely on additional system dependencies (`freetds`)! However, if you *do* want to connect to MSSQL, you have two options:
+1. Use our pre-built Docker images which install these optional dependencies automatically: [`ethyca/fides`](https://hub.docker.com/r/ethyca/fides). See our [Deployment Guide](https://ethyca.com/docs/dev-docs/configuration/deployment) for more!
+2. Install the required dependencies on your local development machine and run `pip install ethyca-fides[all]` to include "all" the optional libraries. Keep reading to learn more about this!
+
+For local development setup on macOS, follow these steps:
+1. Install the required development libraries from Homebrew:
+```bash
+brew install freetds openssl
+```
+2. Add the following to your shell (i.e. `.zshrc`) to ensure your compiler can access the `freetds` and `openssl` libraries, updating the paths & versions to match your local install:
+```bash
+export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"`
+export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
+```
+3. Reinstall Fides with MSSQL support by including the `all` extra requirement:
+```bash
+pip install ethyca-fides[all]
+```
