@@ -207,9 +207,9 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domain management")
+          .find((c) => c.title === "Domains")
       ).toEqual({
-        title: "Domain management",
+        title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
       });
     });
@@ -229,7 +229,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domain management")
+          .find((c) => c.title === "Domains")
       ).toEqual(undefined);
     });
 
@@ -248,7 +248,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1]?.children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domain management")
+          .find((c) => c.title === "Domains")
       ).toEqual(undefined);
     });
   });

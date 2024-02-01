@@ -200,7 +200,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
       },
       {
-        title: "Domain management",
+        title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: false,

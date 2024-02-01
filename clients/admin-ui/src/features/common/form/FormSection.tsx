@@ -1,4 +1,4 @@
-import { Box, BoxProps, Heading, Text, Stack } from "@fidesui/react";
+import { Box, BoxProps, Heading, Stack, Text } from "@fidesui/react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 

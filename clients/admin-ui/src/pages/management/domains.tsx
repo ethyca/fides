@@ -57,6 +57,7 @@ const CORSConfigurationPage: NextPage = () => {
       return false;
     }
     try {
+      /* eslint-disable-next-line no-new */
       new URL(value);
     } catch (e) {
       return false;
@@ -64,11 +65,19 @@ const CORSConfigurationPage: NextPage = () => {
     return true;
   };
 
-  const urlContainsNoPath = (value: string | undefined) => {
+  const containsNoWildcard = (value: string | undefined) => {
+    if (!value) {
+      return false;
+    }
+    return !value.includes("*");
+  };
+
+  const containsNoPath = (value: string | undefined) => {
     if (!value) {
       return false;
     }
     try {
+      /* eslint-disable-next-line no-new */
       const url = new URL(value);
       return url.pathname === "/" && !value.endsWith("/");
     } catch (e) {
@@ -90,10 +99,16 @@ const CORSConfigurationPage: NextPage = () => {
             (value) => isValidURL(value)
           )
           .test(
+            "has-no-wildcard",
+            ({ label }) =>
+              `${label} cannot contain a wildcard (e.g. https://*.example.com)`,
+            (value) => containsNoWildcard(value)
+          )
+          .test(
             "has-no-path",
             ({ label }) =>
               `${label} cannot contain a path (e.g. https://example.com/path)`,
-            (value) => urlContainsNoPath(value)
+            (value) => containsNoPath(value)
           )
           .label("Domain")
       ),
@@ -126,7 +141,6 @@ const CORSConfigurationPage: NextPage = () => {
         : undefined;
 
     // Ensure that we include the existing applicationConfig (for other API-set configs)
-    // TODO: is this necessary?
     const payload: PlusApplicationConfig = {
       ...applicationConfig,
       security: {
@@ -134,24 +148,20 @@ const CORSConfigurationPage: NextPage = () => {
       },
     };
 
-    console.log("putConfigSettings", payload);
     const result = await putConfigSettingsTrigger(payload);
 
     handleResult(result);
   };
 
   return (
-    <Layout title="Manage domains">
-      <Box data-testid="manage-domains">
+    <Layout title="Domains">
+      <Box data-testid="management-domains">
         <Heading marginBottom={4} fontSize="2xl">
-          Manage domains
+          Domains
         </Heading>
         <Box maxWidth="600px">
-          <Text marginBottom={2} fontSize="md">
-            Manage domains for your organization
-          </Text>
           <Text mb={10} fontSize="sm">
-            For Fides to work properly on your website the domain must be listed
+            For Fides to work securely on your website the domain must be listed
             below. You can add and remove domains at any time up to the quantity
             included in your license. For more information on managing domains,
             click here{" "}
@@ -163,7 +173,10 @@ const CORSConfigurationPage: NextPage = () => {
         </Box>
 
         <Box maxW="600px" marginY={3}>
-          <FormSection title="Organization domains">
+          <FormSection
+            title="Organization domains"
+            tooltip="Fides uses these domains to enforce cross-origin resource sharing (CORS), a browser-based security standard. Each domain must be a valid URL (e.g. https://example.com) without any wildcards '*' or paths '/blog'"
+          >
             {isLoadingGetQuery || isLoadingPutMutation ? (
               <Flex justifyContent="center">
                 <Spinner />
@@ -244,9 +257,8 @@ const CORSConfigurationPage: NextPage = () => {
         </Box>
         <Box maxW="600px" marginY={3}>
           <FormSection
-            // TODO: move this into a tooltip prop
-            title="Security Domains"
-            tooltip="These domains are configured in your Fides security settings by an administrator"
+            title="Advanced domains"
+            tooltip="These domains are configured in your Fides security settings by an administrator and can support more advanced options such as wildcards and regexs."
           >
             {isLoadingConfigSetQuery ? (
               <Flex justifyContent="center">
@@ -259,7 +271,7 @@ const CORSConfigurationPage: NextPage = () => {
                     key={index}
                     marginY={3}
                     value={origin}
-                    isDisabled={true}
+                    isDisabled
                     isPassword={false}
                   />
                 ))}
@@ -268,7 +280,7 @@ const CORSConfigurationPage: NextPage = () => {
                     key="cors_origin_regex"
                     marginY={3}
                     value={configSettings.cors_origin_regex}
-                    isDisabled={true}
+                    isDisabled
                     isPassword={false}
                   />
                 ) : undefined}
