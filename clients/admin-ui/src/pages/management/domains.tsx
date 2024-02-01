@@ -45,6 +45,9 @@ const CORSConfigurationPage: NextPage = () => {
   const currentSettings = useAppSelector(selectCORSOrigins);
   const apiSettings = currentSettings.apiSet;
   const configSettings = currentSettings.configSet;
+  const hasConfigSettings: boolean = !!(
+    configSettings.cors_origins?.length || configSettings.cors_origin_regex
+  );
   const applicationConfig = useAppSelector(selectApplicationConfig());
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
     usePutConfigurationSettingsMutation();
@@ -161,7 +164,7 @@ const CORSConfigurationPage: NextPage = () => {
           Domains
         </Heading>
         <Box maxWidth="600px">
-          <Text mb={10} fontSize="sm">
+          <Text marginBottom={3} fontSize="sm">
             For Fides to work on your website(s), each of your domains must be
             listed below. You can add and remove domains at any time up to the
             quantity included in your license. For more information on managing
@@ -173,7 +176,7 @@ const CORSConfigurationPage: NextPage = () => {
           </Text>
         </Box>
 
-        <Box maxW="600px" marginY={3}>
+        <Box maxW="600px" paddingY={3}>
           <FormSection
             data-testid="api-set-domains-form"
             title="Organization domains"
@@ -288,6 +291,11 @@ const CORSConfigurationPage: NextPage = () => {
                     isDisabled
                     isPassword={false}
                   />
+                ) : undefined}
+                {!hasConfigSettings ? (
+                  <Text fontSize="xs" color="gray.500">
+                    No advanced domain settings configured.
+                  </Text>
                 ) : undefined}
               </Flex>
             )}

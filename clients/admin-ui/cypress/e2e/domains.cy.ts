@@ -28,55 +28,86 @@ describe("Domains page", () => {
   });
 
   describe("can view domains", () => {
-    beforeEach(() => {
-      cy.intercept("GET", "/api/v1/config?api_set=true", API_SET_CONFIG).as(
-        "getApiSetConfig"
-      );
-      cy.intercept("GET", "/api/v1/config?api_set=false", CONFIG_SET_CONFIG).as(
-        "getConfigSetConfig"
-      );
-      cy.visit("/management/domains");
+    describe("when existing domains are configured (both api-set and config-set)", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/config?api_set=true", API_SET_CONFIG).as(
+          "getApiSetConfig"
+        );
+        cy.intercept(
+          "GET",
+          "/api/v1/config?api_set=false",
+          CONFIG_SET_CONFIG
+        ).as("getConfigSetConfig");
+        cy.visit("/management/domains");
+      });
+
+      it("can display a loading state while fetching domain configuration", () => {
+        cy.getByTestId("api-set-domains-form").within(() => {
+          cy.get(".chakra-spinner");
+        });
+        cy.getByTestId("config-set-domains-form").within(() => {
+          cy.get(".chakra-spinner");
+        });
+
+        // After fetching, spinners should disappear
+        cy.wait("@getApiSetConfig");
+        cy.wait("@getConfigSetConfig");
+        cy.getByTestId("api-set-domains-form").within(() => {
+          cy.get(".chakra-spinner").should("not.exist");
+        });
+        cy.getByTestId("config-set-domains-form").within(() => {
+          cy.get(".chakra-spinner").should("not.exist");
+        });
+      });
+
+      it("can view existing domain configuration, with both api-set and config-set values", () => {
+        cy.wait("@getApiSetConfig");
+        cy.wait("@getConfigSetConfig");
+
+        cy.getByTestId("api-set-domains-form").within(() => {
+          cy.getByTestId("input-cors_origins[0]").should(
+            "have.value",
+            "https://example.com"
+          );
+        });
+
+        cy.getByTestId("config-set-domains-form").within(() => {
+          cy.getByTestId("input-config_cors_origins[0]").should(
+            "have.value",
+            "http://localhost"
+          );
+          cy.getByTestId("input-config_cors_origin_regex").should(
+            "have.value",
+            "https://.*\\.example\\.com"
+          );
+        });
+      });
     });
 
-    it("can display a loading state while fetching domain configuration", () => {
-      cy.getByTestId("api-set-domains-form").within(() => {
-        cy.get(".chakra-spinner");
-      });
-      cy.getByTestId("config-set-domains-form").within(() => {
-        cy.get(".chakra-spinner");
-      });
-
-      // After fetching, spinners should disappear
-      cy.wait("@getApiSetConfig");
-      cy.wait("@getConfigSetConfig");
-      cy.getByTestId("api-set-domains-form").within(() => {
-        cy.get(".chakra-spinner").should("not.exist");
-      });
-      cy.getByTestId("config-set-domains-form").within(() => {
-        cy.get(".chakra-spinner").should("not.exist");
-      });
-    });
-
-    it("can view existing domain configuration, with both api-set and config-set values", () => {
-      cy.wait("@getApiSetConfig");
-      cy.wait("@getConfigSetConfig");
-
-      cy.getByTestId("api-set-domains-form").within(() => {
-        cy.getByTestId("input-cors_origins[0]").should(
-          "have.value",
-          "https://example.com"
+    describe("when no existing domains are configured", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/config?api_set=true", {}).as(
+          "getApiSetConfig"
         );
+        cy.intercept("GET", "/api/v1/config?api_set=false", {}).as(
+          "getConfigSetConfig"
+        );
+        cy.visit("/management/domains");
       });
 
-      cy.getByTestId("config-set-domains-form").within(() => {
-        cy.getByTestId("input-config_cors_origins[0]").should(
-          "have.value",
-          "http://localhost"
-        );
-        cy.getByTestId("input-config_cors_origin_regex").should(
-          "have.value",
-          "https://.*\\.example\\.com"
-        );
+      it("can view empty state", () => {
+        cy.wait("@getApiSetConfig");
+        cy.wait("@getConfigSetConfig");
+
+        cy.getByTestId("api-set-domains-form").within(() => {
+          cy.getByTestId("input-cors_origins[0]").should("not.exist");
+        });
+
+        cy.getByTestId("config-set-domains-form").within(() => {
+          cy.getByTestId("input-config_cors_origins[0]").should("not.exist");
+          cy.getByTestId("input-config_cors_origin_regex").should("not.exist");
+          cy.contains("No advanced domain settings configured.");
+        });
       });
     });
   });
