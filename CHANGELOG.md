@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.29.0...main)
 
+### Changed
+
+- Improve performance of Snowflake schema generation [#4587](https://github.com/ethyca/fides/pull/4587)
+
 ## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
 
 ### Added
