@@ -20,9 +20,10 @@ import * as Yup from "yup";
 import { useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
 import FormSection from "~/features/common/form/FormSection";
-import { CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextInput, TextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   CORSOrigins,
@@ -39,17 +40,64 @@ const CORSConfigurationPage: NextPage = () => {
   const { isLoading: isLoadingGetQuery } = useGetConfigurationSettingsQuery({
     api_set: true,
   });
-  const corsOrigins = useAppSelector(selectCORSOrigins());
+  const { isLoading: isLoadingConfigSetQuery } =
+    useGetConfigurationSettingsQuery({
+      api_set: false,
+    });
+  const corsOriginSettings = useAppSelector(selectCORSOrigins);
+  const apiSetCorsOrigins = corsOriginSettings.apiSet;
+  const configSetCorsOrigins = corsOriginSettings.configSet;
   const applicationConfig = useAppSelector(selectApplicationConfig());
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
     usePutConfigurationSettingsMutation();
 
   const toast = useToast();
 
+  const isValidURL = (value: string | undefined) => {
+    if (!value) {
+      return false;
+    }
+    try {
+      new URL(value);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  };
+
+  const urlContainsNoPath = (value: string | undefined) => {
+    if (!value) {
+      return false;
+    }
+    try {
+      const url = new URL(value);
+      return url.pathname === "/" && !value.endsWith("/")
+    } catch (e) {
+      return false;
+    }
+  };
+
   const ValidationSchema = Yup.object().shape({
     cors_origins: Yup.array()
       .nullable()
-      .of(Yup.string().required().trim().url().label("URL")),
+      .of(
+        Yup.string()
+          .required()
+          .trim()
+          .test(
+            "is-valid-url",
+            ({ label }) =>
+              `${label} must be a valid URL (e.g. https://example.com)`,
+            (value) => isValidURL(value)
+          )
+          .test(
+            "has-no-path",
+            ({ label }) =>
+              `${label} cannot contain a path (e.g. https://example.com/path)`,
+            (value) => urlContainsNoPath(value)
+          )
+          .label("Domain")
+      ),
   });
 
   const handleSubmit = async (
@@ -78,6 +126,8 @@ const CORSConfigurationPage: NextPage = () => {
         ? values.cors_origins
         : undefined;
 
+    // Ensure that we include the existing applicationConfig (for other API-set configs)
+    // TODO: is this necessary?
     const payload: PlusApplicationConfig = {
       ...applicationConfig,
       security: {
@@ -85,6 +135,7 @@ const CORSConfigurationPage: NextPage = () => {
       },
     };
 
+    console.log("putConfigSettings", payload);
     const result = await putConfigSettingsTrigger(payload);
 
     handleResult(result);
@@ -111,7 +162,7 @@ const CORSConfigurationPage: NextPage = () => {
           </Text>
         </Box>
 
-        <Box maxW="600px">
+        <Box maxW="600px" marginY={3}>
           <FormSection title="CORS domains">
             {isLoadingGetQuery || isLoadingPutMutation ? (
               <Flex justifyContent="center">
@@ -119,10 +170,11 @@ const CORSConfigurationPage: NextPage = () => {
               </Flex>
             ) : (
               <Formik<FormValues>
-                initialValues={corsOrigins}
+                initialValues={apiSetCorsOrigins}
                 enableReinitialize
                 onSubmit={handleSubmit}
                 validationSchema={ValidationSchema}
+                validateOnChange
               >
                 {({ dirty, values, isValid }) => (
                   <Form>
@@ -186,6 +238,36 @@ const CORSConfigurationPage: NextPage = () => {
                   </Form>
                 )}
               </Formik>
+            )}
+          </FormSection>
+        </Box>
+        <Box maxW="600px" marginY={3}>
+          <FormSection
+            // TODO: move this into a tooltip prop
+            title={
+              <Flex flexDir="row" alignItems="center" gap={1}>
+                <Flex>Security Domains</Flex>
+                <QuestionTooltip label="These domains are configured in your Fides security settings by an administrator" />
+              </Flex>
+            }
+          >
+            {isLoadingConfigSetQuery ? (
+              <Flex justifyContent="center">
+                <Spinner />
+              </Flex>
+            ) : (
+              <Flex flexDir="column">
+                {configSetCorsOrigins.cors_origins!.map((origin, index) => (
+                  <TextInput
+                    key={index}
+                    marginY={3}
+                    value={origin}
+                    isDisabled={true}
+                    isPassword={false}
+                    name={`config_set_cors_origins[${index}]`}
+                  />
+                ))}
+              </Flex>
             )}
           </FormSection>
         </Box>

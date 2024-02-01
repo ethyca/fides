@@ -501,31 +501,55 @@ export const {
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
-const EMPTY_CORS_DOMAINS: CORSOrigins = {
-  cors_origins: [],
+export type CORSOriginsSettings = {
+  configSet: CORSOrigins;
+  apiSet: CORSOrigins;
 };
-export const selectCORSOrigins = () =>
+export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
   createSelector(
     [
       (state) => state,
       privacyRequestApi.endpoints.getConfigurationSettings.select({
         api_set: true,
       }),
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: false,
+      }),
     ],
-    (_, { data }) => {
-      const hasCorsOrigins = narrow(
+    (_, { data: apiSetConfigSettings }, { data: configSetConfigSettings }) => {
+      // TODO: holy *** add a comment for this
+      const hasApiSetCorsOrigins = narrow(
         {
           security: {
             cors_origins: ["string"],
           },
         },
-        data
+        apiSetConfigSettings
       );
 
-      const corsOrigins: CORSOrigins = {
-        cors_origins: data?.security?.cors_origins,
+      const hasConfigSetCorsOrigins = narrow(
+        {
+          security: {
+            cors_origins: ["string"],
+          },
+        },
+        configSetConfigSettings
+      );
+
+      const currentCORSOriginSettings: CORSOriginsSettings = {
+        configSet: {
+          cors_origins: hasConfigSetCorsOrigins
+            ? configSetConfigSettings?.security?.cors_origins
+            : [],
+        },
+        apiSet: {
+          cors_origins: hasApiSetCorsOrigins
+            ? apiSetConfigSettings?.security?.cors_origins
+            : [],
+        },
       };
-      return hasCorsOrigins ? corsOrigins : EMPTY_CORS_DOMAINS;
+
+      return currentCORSOriginSettings;
     }
   );
 
