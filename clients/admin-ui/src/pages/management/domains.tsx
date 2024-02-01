@@ -160,9 +160,9 @@ const CORSConfigurationPage: NextPage = () => {
         </Heading>
         <Box maxWidth="600px">
           <Text mb={10} fontSize="sm">
-            For Fides to work securely on your website(s), each of your domains must be listed
+            For Fides to work on your website(s), each of your domains must be listed
             below. You can add and remove domains at any time up to the quantity
-            included in your license. For more information on managing domains,{" "}
+            included in your license. For more information on managing domains{" "}
             <DocsLink href="https://fid.es/domain-configuration">
               read here
             </DocsLink>
@@ -222,12 +222,12 @@ const CORSConfigurationPage: NextPage = () => {
                           <Flex justifyContent="center" mt={3}>
                             <Button
                               aria-label="add-domain"
+                              width="100%"
                               variant="outline"
                               size="sm"
                               onClick={() => {
                                 arrayHelpers.push("");
                               }}
-                              rightIcon={<AddIcon />}
                             >
                               Add domain
                             </Button>
@@ -257,8 +257,8 @@ const CORSConfigurationPage: NextPage = () => {
         <Box maxW="600px" marginY={3}>
           <FormSection
             data-testid="config-set-domains-form"
-            title="Administrator domains"
-            tooltip="These domains are configured in your Fides security settings by an administrator and can support more advanced options such as wildcards and regexs."
+            title="Advanced settings"
+            tooltip="These domains are configured by an administrator with access to Fides security settings and can support more advanced options such as wildcards and regex."
           >
             {isLoadingConfigSetQuery ? (
               <Flex justifyContent="center">
