@@ -17,7 +17,13 @@ export const DefaultCell = ({
   value: string | undefined | number | boolean;
 }) => (
   <Flex alignItems="center" height="100%">
-    <Text fontSize="xs" lineHeight={4} fontWeight="normal">
+    <Text
+      fontSize="xs"
+      lineHeight={4}
+      fontWeight="normal"
+      overflow="hidden"
+      textOverflow="ellipsis"
+    >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>
   </Flex>
@@ -55,33 +61,44 @@ export const BadgeCell = ({
 export const GroupCountBadgeCell = ({
   value,
   suffix,
-  expand,
+  isDisplayAll,
 }: {
   value: string[] | string | undefined;
   suffix?: string;
-  expand: boolean;
+  isDisplayAll?: boolean;
 }) => {
   let badges = null;
-  if (Array.isArray(value) || !value) {
-    badges = expand ? (
-      // @ts-ignore
-      value.map((d) => (
-        <Box px={1} key={d}>
+  if (!value) {
+    return <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>;
+  }
+  if (Array.isArray(value)) {
+    // If there's only one value, always display it
+    if (value.length === 1) {
+      badges = <FidesBadge>{value}</FidesBadge>;
+    }
+    // Expanded case, list every value as a badge
+    else if (isDisplayAll && value.length > 0) {
+      badges = value.map((d) => (
+        <Box key={d} mr={2}>
           <FidesBadge>{d}</FidesBadge>
         </Box>
-      ))
-    ) : (
-      <FidesBadge>
-        {value ? value.length : 0}
-        {suffix ? ` ${suffix}` : null}
-      </FidesBadge>
-    );
+      ));
+    }
+    // Collapsed case, summarize the values in one badge
+    else {
+      badges = (
+        <FidesBadge>
+          {value.length}
+          {suffix ? ` ${suffix}` : null}
+        </FidesBadge>
+      );
+    }
   } else {
     badges = <FidesBadge>{value}</FidesBadge>;
   }
 
   return (
-    <Flex alignItems="center" height="100%" mr="2">
+    <Flex alignItems="center" height="100%" mr="2" overflowX="hidden">
       {badges}
     </Flex>
   );

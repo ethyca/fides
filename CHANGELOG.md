@@ -15,15 +15,27 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.28.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.29.0...main)
+
+## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
+
+### Added
+
+- View more modal to regulations page [#4574](https://github.com/ethyca/fides/pull/4574)
+- Columns in data map reporting, adding multiple systems, and consent configuration tables can be resized. In the data map reporting table, fields with multiple values can show all or collapse all [#4569](https://github.com/ethyca/fides/pull/4569)
 
 ### Changed
 
 - Delay rendering the nav until all necessary queries are finished loading [#4571](https://github.com/ethyca/fides/pull/4571)
+- Updating return value for crud.get_custom_fields_filtered [#4575](https://github.com/ethyca/fides/pull/4575)
+- Updated user deletion confirmation flow to only require one confirmatory input [#4402](https://github.com/ethyca/fides/pull/4402) 
+- Moved `pymssl` to an optional dependency no longer installed by default with our python package [#4581](https://github.com/ethyca/fides/pull/4581)
+
 
 ### Fixed
 
 - Fixed CORS domain update functionality [#4570](https://github.com/ethyca/fides/pull/4570)
+- Completion emails are no longer attempted for consent requests [#4578](https://github.com/ethyca/fides/pull/4578)
 
 ## [2.28.0](https://github.com/ethyca/fides/compare/2.27.0...2.28.0)
 
