@@ -43,9 +43,9 @@ const CORSConfigurationPage: NextPage = () => {
     useGetConfigurationSettingsQuery({
       api_set: false,
     });
-  const corsOriginSettings = useAppSelector(selectCORSOrigins);
-  const apiSetCorsOrigins = corsOriginSettings.apiSet;
-  const configSetCorsOrigins = corsOriginSettings.configSet;
+  const currentSettings = useAppSelector(selectCORSOrigins);
+  const apiSettings = currentSettings.apiSet;
+  const configSettings = currentSettings.configSet;
   const applicationConfig = useAppSelector(selectApplicationConfig());
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
     usePutConfigurationSettingsMutation();
@@ -169,7 +169,7 @@ const CORSConfigurationPage: NextPage = () => {
               </Flex>
             ) : (
               <Formik<FormValues>
-                initialValues={apiSetCorsOrigins}
+                initialValues={apiSettings}
                 enableReinitialize
                 onSubmit={handleSubmit}
                 validationSchema={ValidationSchema}
@@ -252,16 +252,24 @@ const CORSConfigurationPage: NextPage = () => {
               </Flex>
             ) : (
               <Flex flexDir="column">
-                {configSetCorsOrigins.cors_origins!.map((origin, index) => (
+                {configSettings.cors_origins!.map((origin, index) => (
                   <TextInput
                     key={index}
                     marginY={3}
                     value={origin}
                     isDisabled={true}
                     isPassword={false}
-                    name={`config_set_cors_origins[${index}]`}
                   />
                 ))}
+                {configSettings.cors_origin_regex ? (
+                  <TextInput
+                    key="cors_origin_regex"
+                    marginY={3}
+                    value={configSettings.cors_origin_regex}
+                    isDisabled={true}
+                    isPassword={false}
+                  />
+                ) : undefined}
               </Flex>
             )}
           </FormSection>
