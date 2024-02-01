@@ -5,6 +5,7 @@ import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
+from joblib import Parallel, delayed
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
@@ -409,10 +410,22 @@ def get_snowflake_schemas(
             metadata[schema] = {}
             table_cursor = engine.execute(text(f'SHOW TABLES IN "{schema}"'))
             db_tables = [row[1] for row in table_cursor]
-            for table in db_tables:
-                column_cursor = engine.execute(
-                    text(f'SHOW COLUMNS IN "{schema}"."{table}"')
-                )
-                columns = [row[2] for row in column_cursor]
+            fields = Parallel(n_jobs=4, backend="threading")(
+                delayed(get_snowflake_table_fields)(engine, schema, table)
+                for table in db_tables
+            )
+            for table, columns in fields:
                 metadata[schema][table] = columns
     return metadata
+
+
+def get_snowflake_table_fields(
+    engine: Engine, schema: str, table: str
+) -> Tuple[str, List]:
+    """
+    Returns fields for a Snowflake table, ideally in parallel. Part of the
+    workaround strategy to improve performance when generating a Snowflake schema
+    """
+    column_cursor = engine.execute(text(f'SHOW COLUMNS IN "{schema}"."{table}"'))
+    columns = [row[2] for row in column_cursor]
+    return table, columns
