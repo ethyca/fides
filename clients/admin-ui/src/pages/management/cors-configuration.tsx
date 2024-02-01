@@ -23,7 +23,6 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput, TextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   CORSOrigins,
@@ -244,12 +243,8 @@ const CORSConfigurationPage: NextPage = () => {
         <Box maxW="600px" marginY={3}>
           <FormSection
             // TODO: move this into a tooltip prop
-            title={
-              <Flex flexDir="row" alignItems="center" gap={1}>
-                <Flex>Security Domains</Flex>
-                <QuestionTooltip label="These domains are configured in your Fides security settings by an administrator" />
-              </Flex>
-            }
+            title="Security Domains"
+            tooltip="These domains are configured in your Fides security settings by an administrator"
           >
             {isLoadingConfigSetQuery ? (
               <Flex justifyContent="center">
