@@ -189,6 +189,13 @@ describe("Domains page", () => {
 
         cy.getByTestId("input-cors_origins[0]")
           .clear()
+          .type("http:foo.com")
+          .blur();
+        cy.root().should("contain", "Domain must be a valid URL");
+        cy.getByTestId("save-btn").should("be.disabled");
+
+        cy.getByTestId("input-cors_origins[0]")
+          .clear()
           .type("https://foo.com/")
           .blur();
         cy.root().should("contain", "Domain cannot contain a path");

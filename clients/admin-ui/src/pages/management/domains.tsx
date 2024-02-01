@@ -52,12 +52,15 @@ const CORSConfigurationPage: NextPage = () => {
   const toast = useToast();
 
   const isValidURL = (value: string | undefined) => {
-    if (!value) {
+    if (
+      !value ||
+      !(value.startsWith("https://") || value.startsWith("http://"))
+    ) {
       return false;
     }
     try {
-      const url = new URL(value);
-      return url.protocol === "https:" || url.protocol === "http:";
+      /* eslint-disable-next-line no-new */
+      new URL(value);
     } catch (e) {
       return false;
     }
