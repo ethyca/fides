@@ -1,8 +1,8 @@
 """table updates for user invite
 
-Revision ID: 13403fee598a
-Revises: 5a8cee9c014c
-Create Date: 2024-01-06 00:05:49.159006
+Revision ID: 4d34d270f3ea
+Revises: 956d21f13def
+Create Date: 2024-02-01 00:50:46.547803
 
 """
 import sqlalchemy as sa
@@ -10,8 +10,8 @@ from alembic import op
 from citext import CIText
 
 # revision identifiers, used by Alembic.
-revision = "13403fee598a"
-down_revision = "5a8cee9c014c"
+revision = "4d34d270f3ea"
+down_revision = "956d21f13def"
 branch_labels = None
 depends_on = None
 
@@ -68,4 +68,4 @@ def downgrade():
     op.drop_index(op.f("ix_fides_user_invite_username"), table_name="fides_user_invite")
     op.drop_index(op.f("ix_fides_user_invite_id"), table_name="fides_user_invite")
     op.drop_table("fides_user_invite")
-    op.execute("DROP TYPE disabledreason")
+    op.execute("drop type disabledreason")
