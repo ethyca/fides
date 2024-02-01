@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Optional, Set
+from typing import Any, Callable, Iterable, List, Optional, Set
 
 from fastapi.applications import FastAPI
 from pydantic import AnyUrl
@@ -10,6 +10,19 @@ from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.util.cors_middleware_utils import update_cors_middleware
 from fides.config import CONFIG
+
+
+def merge_properties(attribute_names: Iterable[str]) -> Callable:
+    """
+    Decorator to specify a config proxy class's attributes as config properties
+    whose api-set and config-set values should be _merged_ when resolved by the proxy.
+    """
+
+    def decorator(cls: ConfigProxyBase) -> ConfigProxyBase:
+        cls.merge_properties = set(attribute_names)
+        return cls
+
+    return decorator
 
 
 class ConfigProxyBase:
@@ -23,18 +36,36 @@ class ConfigProxyBase:
     as if they were a "normal" pydantic config object, i.e. with dot notation,
     e.g. `ConfigProxy(db).notifications.notification_service_type`
 
-    To implement _merge_ behavior in config value resolution for a given property,
-    the property name should be specified as an element in the `merge_properties`
-    constructor arg, which takes a set of strings.
+    Merging: to have a given config property's api-set and config-set values to be merged
+    on property resolution, use the `@merge_properties` decorator on the config proxy
+    class to specify the corresponding attribute name.
+
+    For example, if creating a config proxy class:
+    ```
+    @merge_properties(["cors_origins"])
+    class SecuritySettingsProxy(ConfigProxyBase):
+        prefix = "security"
+        cors_origins: List[str]
+    ```
+
+    and `security.cors_origins` has the following values:
+    config-set: `["a", "b"]`
+    api-set: `["b", "c"]`
+
+    then, when using the config proxy to access the attribute, it will return
+    a merged set of values:
+    ```
+    >>> ConfigProxy(db).security.cors_origins
+    {"a", "b", "c"}
+    ```
+
     """
 
     prefix: str
+    merge_properties: Set[str] = set()
 
-    def __init__(
-        self, db: Session, merge_properties: Optional[Set[str]] = None
-    ) -> None:
+    def __init__(self, db: Session) -> None:
         self._db = db
-        self._merge_properties = merge_properties if merge_properties else set()
 
     def __getattribute__(self, __name: str) -> Any:
         """
@@ -42,12 +73,12 @@ class ConfigProxyBase:
         using the config proxy as a "normal" config object, i.e. with dot notation,
         e.g. `config_proxy.notifications.notification_service_type
         """
-        if __name in ("_db", "_merge_properties", "prefix"):
+        if __name in ("_db", "merge_properties", "prefix"):
             return object.__getattribute__(self, __name)
         return ApplicationConfig.get_resolved_config_property(
             self._db,
             f"{self.prefix}.{__name}",
-            merge_values=__name in self._merge_properties,
+            merge_values=__name in self.merge_properties,
         )
 
 
@@ -92,6 +123,7 @@ class StorageSettingsProxy(ConfigProxyBase):
     active_default_storage_type: StorageType
 
 
+@merge_properties(["cors_origins"])
 class SecuritySettingsProxy(ConfigProxyBase):
     prefix = "security"
 
@@ -133,7 +165,7 @@ class ConfigProxy:
         self.notifications = NotificationSettingsProxy(db)
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
-        self.security = SecuritySettingsProxy(db, merge_properties={"cors_origins"})
+        self.security = SecuritySettingsProxy(db)
         self.consent = ConsentSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
