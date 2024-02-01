@@ -1,5 +1,4 @@
 /* eslint-disable react/no-array-index-key */
-import { AddIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -160,9 +159,10 @@ const CORSConfigurationPage: NextPage = () => {
         </Heading>
         <Box maxWidth="600px">
           <Text mb={10} fontSize="sm">
-            For Fides to work on your website(s), each of your domains must be listed
-            below. You can add and remove domains at any time up to the quantity
-            included in your license. For more information on managing domains{" "}
+            For Fides to work on your website(s), each of your domains must be
+            listed below. You can add and remove domains at any time up to the
+            quantity included in your license. For more information on managing
+            domains{" "}
             <DocsLink href="https://fid.es/domain-configuration">
               read here
             </DocsLink>
