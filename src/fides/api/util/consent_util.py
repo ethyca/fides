@@ -47,7 +47,7 @@ from fides.config.helpers import load_file
 
 PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "internal_description"]
 NOTICE_TRANSLATION_ESCAPE_FIELDS = ["title", "description"]
-PRIVACY_EXPERIENCE_ESCAPE_FIELDS: List[str] = []
+PRIVACY_EXPERIENCE_ESCAPE_FIELDS: List[str] = ["name"]
 CONFIG_TRANSLATION_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",

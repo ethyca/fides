@@ -10,7 +10,6 @@ from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import Language, PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
-from fides.api.util.endpoint_utils import human_friendly_list
 
 
 class ExperienceTranslation(FidesSchema):
@@ -60,11 +59,8 @@ class ExperienceTranslation(FidesSchema):
 class ExperienceTranslationCreate(ExperienceTranslation):
     """Overrides ExperienceTranslation fields to make some fields required on create"""
 
-    accept_button_label: str
-    description: HtmlStr
-    reject_button_label: str
-    save_button_label: str
-    title: str
+    title: str  # Required for all UX types
+    description: HtmlStr  # Required for all UX types
 
     class Config:
         """For when we're creating templates - so the Experience Translation Language can be serialized into JSON"""
@@ -87,6 +83,7 @@ class ExperienceConfigSchema(FidesSchema):
     but cannot be updated later.
     """
 
+    name: Optional[str]
     disabled: Optional[bool]
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
     origin: Optional[str]
@@ -133,32 +130,6 @@ class ExperienceConfigCreateBase(ExperienceConfigSchema):
 
         return values
 
-    @root_validator
-    def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate minimum set of required fields exist given the type of component"""
-        component: Optional[ComponentType] = values.get("component")
-
-        translations = values.get("translations")
-
-        if not translations:
-            return values
-
-        if component == ComponentType.overlay:
-            # Overlays have a few additional required fields beyond the privacy center
-            required_overlay_fields = [
-                "acknowledge_button_label",
-                # "banner_enabled",  # TODO are we removing this?
-                "privacy_preferences_link_label",
-            ]
-            for translation in translations:
-                for field in required_overlay_fields:
-                    if not getattr(translation, field, None):
-                        raise ValueError(
-                            f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
-                        )
-
-        return values
-
 
 class ExperienceConfigCreateTemplate(ExperienceConfigCreateBase):
     id: str
@@ -189,6 +160,12 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
     translations: List[ExperienceTranslation]
     regions: List[PrivacyNoticeRegion]
     privacy_notice_ids: List[str]
+
+    @validator("privacy_notice_ids")
+    def check_duplicate_notice_ids(cls, privacy_notice_ids: List[str]) -> List[str]:
+        if len(privacy_notice_ids) != len(set(privacy_notice_ids)):
+            raise ValueError("Duplicate privacy notice ids detected")
+        return privacy_notice_ids
 
     class Config:
         """Forbid extra values - specifically we don't want component to be updated here."""

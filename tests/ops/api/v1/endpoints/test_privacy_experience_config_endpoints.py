@@ -14,7 +14,11 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfig,
     link_notices_to_experience_config,
 )
-from fides.api.models.privacy_notice import Language, PrivacyNoticeRegion
+from fides.api.models.privacy_notice import (
+    ConsentMechanism,
+    Language,
+    PrivacyNoticeRegion,
+)
 from fides.api.util.consent_util import EEA_COUNTRIES
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
@@ -358,8 +362,39 @@ class TestCreateExperienceConfig:
         )
         assert response.status_code == 422
         assert (
-            response.json()["detail"][0]["msg"]
-            == "The following additional fields are required when defining an overlay: acknowledge_button_label and privacy_preferences_link_label."
+            response.json()["detail"]
+            == "Missing 'privacy_preferences_link_label' needed for language 'en_us' for UX type 'overlay'."
+        )
+
+    def test_create_bannner_config_missing_details(
+        self, api_client: TestClient, url, generate_auth_header, privacy_notice
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+
+        response = api_client.post(
+            url,
+            json={
+                "component": "modal",
+                "regions": ["it"],
+                "privacy_notice_ids": [privacy_notice.id],
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "save_button_label": "Save",
+                        "title": "Manage your privacy",
+                        "accept_button_label": "Accept",
+                        "description": "We care about your privacy",
+                    }
+                ],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Missing 'reject_button_label' needed for language 'en_us' for UX type 'modal'."
         )
 
     def test_create_experience_duplicate_regions(
@@ -381,6 +416,46 @@ class TestCreateExperienceConfig:
         )
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
+
+    def test_create_experience_duplicate_privacy_notice_ids(
+        self, api_client: TestClient, url, generate_auth_header, privacy_notice
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "privacy_center",
+                "privacy_notice_ids": [privacy_notice.id, privacy_notice.id],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Duplicate privacy notice ids detected"
+        )
+
+    def test_create_experience_privacy_notices_do_not_exist(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "component": "privacy_center",
+                "privacy_notice_ids": ["asdf"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Privacy Notice Id Not Found."
 
     @pytest.mark.usefixtures("experience_config_banner")
     def test_create_experience_config_region_exists_on_another_config(
@@ -1089,28 +1164,51 @@ class TestUpdateExperienceConfig:
 
         assert response.json()["detail"] == "Duplicate notice keys detected"
 
-    def test_update_bad_experience_config(
+    def test_update_experience_config_duplicate_notice_ids(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_notice,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "regions": [],
+                "privacy_notice_ids": [
+                    privacy_notice.id,
+                    privacy_notice.id,
+                ],
+                "translations": [],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Duplicate privacy notice ids detected"
+        )
+
+    def test_update_privacy_notices_do_not_exist(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
     ) -> None:
-        """Nonexistent experience config id"""
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
         response = api_client.patch(
-            V1_URL_PREFIX + EXPERIENCE_CONFIG + "/bad_experience_id",
+            url,
             json={
                 "translations": [{"title": None, "language": "en_us"}],
-                "privacy_notice_ids": [],
+                "privacy_notice_ids": ["asdf"],
                 "regions": ["us_ca"],
             },
             headers=auth_header,
         )
         assert response.status_code == 404
-        assert (
-            response.json()["detail"]
-            == "No Privacy Experience Config found for id 'bad_experience_id'."
-        )
+        assert response.json()["detail"] == "Privacy Notice Id Not Found."
 
     def test_update_overlay_experience_config_missing_details(
         self,
@@ -1152,8 +1250,35 @@ class TestUpdateExperienceConfig:
         )
         assert response.status_code == 422
         assert (
-            response.json()["detail"][0]["msg"]
-            == "The following additional fields are required when defining an overlay: acknowledge_button_label and privacy_preferences_link_label."
+            response.json()["detail"]
+            == "Missing 'privacy_preferences_link_label' needed for language 'en_us' for UX type 'overlay'."
+        )
+
+    def test_update_overlay_experience_config_missing_banner_specific_fields(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_banner,
+        privacy_notice,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
+
+        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
+        response = api_client.patch(
+            url,
+            json={
+                "privacy_notice_ids": [privacy_notice.id],  # has opt in mechanism
+                "translations": [{"accept_button_label": "", "language": "en_us"}],
+                "regions": ["us_ca"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Missing 'accept_button_label' needed for language 'en_us' for UX type 'banner'."
         )
 
     def test_update_experience_config_with_fields_that_should_be_escaped(

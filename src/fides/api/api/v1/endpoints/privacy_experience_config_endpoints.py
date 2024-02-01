@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Union
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -22,12 +22,20 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.privacy_notice import (
+    ConsentMechanism,
+    Language,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
+)
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
     ExperienceConfigResponse,
     ExperienceConfigUpdate,
+)
+from fides.api.schemas.privacy_experience import (
+    ExperienceTranslation as ExperienceTranslationSchema,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
@@ -65,6 +73,28 @@ def get_experience_config_or_error(
         )
 
     return experience_config
+
+
+def get_experience_notices_or_error(
+    db: Session, privacy_notice_ids: List[str]
+) -> Query:
+    """
+    Helper method to load PrivacyNotices or throw a 404
+    """
+    logger.info("Finding Privacy Notices By Id '{}'", privacy_notice_ids)
+
+    notices: Query = db.query(PrivacyNotice).filter(
+        PrivacyNotice.id.in_(privacy_notice_ids)
+    )
+    verified_notice_ids: List[str] = [notice.id for notice in notices]
+
+    if len(privacy_notice_ids) > len(verified_notice_ids):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="Privacy Notice Id Not Found.",
+        )
+
+    return notices
 
 
 @router.get(
@@ -144,7 +174,17 @@ def experience_config_create(
     """
     escape_experience_fields_for_storage(experience_config_data)
 
-    validate_notice_keys_or_error(db, experience_config_data.privacy_notice_ids)
+    privacy_notices: Query = get_experience_notices_or_error(
+        db, experience_config_data.privacy_notice_ids or []
+    )
+
+    validate_notice_keys_or_error(privacy_notices)
+
+    validate_translation_fields_for_ux_type(
+        privacy_notices,
+        experience_config_data.component,
+        experience_config_data.translations,
+    )
 
     if not experience_config_data.disabled:
         validate_region_uniqueness_on_ux_type(
@@ -226,7 +266,11 @@ def experience_config_update(
         db, experience_config_id
     )
 
-    validate_notice_keys_or_error(db, experience_config_data.privacy_notice_ids)
+    privacy_notices: Query = get_experience_notices_or_error(
+        db, experience_config_data.privacy_notice_ids or []
+    )
+
+    validate_notice_keys_or_error(privacy_notices)
 
     escape_experience_fields_for_storage(experience_config_data)
 
@@ -256,6 +300,10 @@ def experience_config_update(
             detail=exc.errors(),  # type: ignore
         )
 
+    validate_translation_fields_for_ux_type(
+        privacy_notices, dry_update.component, dry_update_translations
+    )
+
     if not dry_update.disabled:
         validate_region_uniqueness_on_ux_type(
             db,
@@ -273,31 +321,71 @@ def experience_config_update(
     return experience_config
 
 
-def validate_notice_keys_or_error(
-    db: Session, notice_ids: Optional[List[str]] = []
-) -> None:
-    try:
-        validate_notice_keys(db, notice_ids)
-    except ValueError as exc:
+def validate_notice_keys_or_error(privacy_notices: Query) -> None:
+    """Validate notice keys assigned to Privacy Experience Config do not overlap"""
+    if not privacy_notices.first():
+        return
+
+    notice_keys: List[str] = [notice.notice_key for notice in privacy_notices]
+
+    if len(notice_keys) > len(set(notice_keys)):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(exc),
+            detail="Duplicate notice keys detected",
         )
 
 
-def validate_notice_keys(db: Session, notice_ids: Optional[List[str]] = []) -> None:
-    """Given a list of Privacy Notice Ids, retrieve their notice keys and ensure
-    no two notice keys are the same"""
-    if not notice_ids:
-        return
+def validate_translation_fields_for_ux_type(
+    privacy_notices: Query,
+    component_type: ComponentType,
+    translations: Union[List[ExperienceTranslation], List[ExperienceTranslationSchema]],
+) -> None:
+    """Validate translations that are required to be defined for various UX types
 
-    notice_keys: List[str] = [
-        notice.notice_key
-        for notice in db.query(PrivacyNotice).filter(PrivacyNotice.id.in_(notice_ids))
-    ]
+    While we could validate some of these with a Pydantic validator, because we need the privacy notice consent mechanisms
+    from the database for others, let's just define all this in one place here.
+    """
+    required_fields: List[str] = []
 
-    if len(notice_keys) > len(notice_ids):
-        raise ValueError("Privacy Notice not found")
+    if component_type == ComponentType.banner:
+        if privacy_notices.filter(
+            PrivacyNotice.consent_mechanism.in_(
+                [ConsentMechanism.opt_in, ConsentMechanism.opt_out]
+            )
+        ).first():
+            required_fields = [
+                "title",
+                "description",
+                "accept_button_label",
+                "reject_button_label",
+            ]
 
-    if len(notice_keys) > len(set(notice_keys)):
-        raise ValueError("Duplicate notice keys detected")
+        if privacy_notices.filter(
+            PrivacyNotice.consent_mechanism == ConsentMechanism.notice_only
+        ).first():
+            required_fields = ["title", "description", "acknowledge_button_label"]
+
+    if component_type in [ComponentType.overlay, ComponentType.tcf_overlay]:
+        required_fields = [
+            "title",
+            "description",
+            "accept_button_label",
+            "reject_button_label",
+            "privacy_preferences_link_label",
+        ]
+
+    if component_type == ComponentType.modal:
+        required_fields = [
+            "title",
+            "description",
+            "accept_button_label",
+            "reject_button_label",
+        ]
+
+    for translation in translations or []:
+        for field in required_fields:
+            if not getattr(translation, field, None):
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Missing '{field}' needed for language '{translation.language.value if isinstance(translation.language, Language) else translation.language}' for UX type '{component_type.value}'.",
+                )
