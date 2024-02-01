@@ -401,6 +401,10 @@ def get_snowflake_schemas(
     and being able to fall back to using the connector.
 
     Reference: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/157
+
+    Due to performance issues resulting in FastAPI timeouts, parallelization is
+    no used. The default number of threads to be used is 4 to cover most existing
+    use cases, bumping to 8 when the number of tables is over 250.
     """
     schema_cursor = engine.execute(text("SHOW SCHEMAS"))
     db_schemas = [row[1] for row in schema_cursor]
@@ -410,7 +414,8 @@ def get_snowflake_schemas(
             metadata[schema] = {}
             table_cursor = engine.execute(text(f'SHOW TABLES IN "{schema}"'))
             db_tables = [row[1] for row in table_cursor]
-            fields = Parallel(n_jobs=4, backend="threading")(
+            number_of_threads = 8 if len(db_tables) > 250 else 4
+            fields = Parallel(n_jobs=number_of_threads, backend="threading")(
                 delayed(get_snowflake_table_fields)(engine, schema, table)
                 for table in db_tables
             )
