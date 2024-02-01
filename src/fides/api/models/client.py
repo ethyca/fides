@@ -23,9 +23,8 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.jwt import generate_jwe
-from fides.config import CONFIG, FidesConfig
+from fides.config import FidesConfig
 
-DEFAULT_OAUTH_CLIENT_KEY = "default_oauth_client"
 DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []
 DEFAULT_SYSTEMS: list[str] = []
@@ -110,11 +109,8 @@ class ClientDetail(Base):
         roles: list[str] = [],
     ) -> ClientDetail | None:
         """Fetch a database record via a client_id"""
-        root_client_id = get_client_id(db)
-        if object_id in (config.security.oauth_root_client_id, root_client_id):
-            return _get_root_client_detail(
-                config, scopes=scopes, roles=roles, client_id=root_client_id
-            )
+        if object_id == config.security.oauth_root_client_id:
+            return _get_root_client_detail(config, scopes=scopes, roles=roles)
         return super().get(db, object_id=object_id)
 
     def create_access_code_jwe(self, encryption_key: str) -> str:
@@ -143,7 +139,6 @@ def _get_root_client_detail(
     config: FidesConfig,
     scopes: list[str],
     roles: list[str],
-    client_id: str,
     encoding: str = "UTF-8",
 ) -> ClientDetail | None:
     """
@@ -154,7 +149,7 @@ def _get_root_client_detail(
 
     if scopes or roles:
         return ClientDetail(
-            id=client_id,
+            id=config.security.oauth_root_client_id,
             hashed_secret=config.security.oauth_root_client_secret_hash[0],
             salt=config.security.oauth_root_client_secret_hash[1].decode(encoding),
             scopes=scopes,
@@ -163,27 +158,10 @@ def _get_root_client_detail(
         )
 
     return ClientDetail(
-        id=client_id,
+        id=config.security.oauth_root_client_id,
         hashed_secret=config.security.oauth_root_client_secret_hash[0],
         salt=config.security.oauth_root_client_secret_hash[1].decode(encoding),
         scopes=DEFAULT_SCOPES,
         roles=DEFAULT_ROLES,
         systems=DEFAULT_SYSTEMS,
     )
-
-
-def get_client_id(db_session: Session) -> str:
-    client = ClientDetail.get_by(
-        db=db_session,
-        field="fides_key",
-        value=DEFAULT_OAUTH_CLIENT_KEY,
-    )
-    if not client:
-        client, _ = ClientDetail.create_client_and_secret(
-            db=db_session,
-            client_id_byte_length=CONFIG.security.oauth_client_id_length_bytes,
-            client_secret_byte_length=CONFIG.security.oauth_client_secret_length_bytes,
-            fides_key=DEFAULT_OAUTH_CLIENT_KEY,
-        )
-
-    return client.id
