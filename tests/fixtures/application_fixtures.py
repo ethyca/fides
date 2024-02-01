@@ -2469,6 +2469,7 @@ def experience_config_overlay(db: Session) -> Generator:
         data={
             "banner_enabled": "enabled_where_required",
             "component": "overlay",
+            "allow_language_selection": False,
             "translations": [
                 {
                     "language": "en_us",

@@ -279,6 +279,7 @@ class TestCreateExperienceConfig:
             "translations": [
                 {
                     "language": "en_us",
+                    "is_default": True,
                     "save_button_label": "Save",
                     "title": "Control your privacy",
                     "privacy_preferences_link_label": "Manage preferences",
@@ -349,6 +350,7 @@ class TestCreateExperienceConfig:
                 "regions": ["it"],
                 "translations": [
                     {
+                        "is_default": True,
                         "language": "en_us",
                         "reject_button_label": "Reject",
                         "save_button_label": "Save",
@@ -381,6 +383,7 @@ class TestCreateExperienceConfig:
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
+                        "is_default": True,
                         "language": "en_us",
                         "save_button_label": "Save",
                         "title": "Manage your privacy",
@@ -697,6 +700,7 @@ class TestCreateExperienceConfig:
                 "regions": ["us_ny"],
                 "translations": [
                     {
+                        "is_default": True,
                         "language": "en_us",
                         "reject_button_label": "Reject all",
                         "save_button_label": "Save",
@@ -805,6 +809,7 @@ class TestCreateExperienceConfig:
                 "regions": ["us_tx"],
                 "translations": [
                     {
+                        "is_default": True,
                         "language": "en_us",
                         "reject_button_label": "Reject all",
                         "save_button_label": "Save",
@@ -929,7 +934,7 @@ class TestGetExperienceConfigDetail:
         assert resp["id"] == experience_config_overlay.id
         assert resp["component"] == "overlay"
         assert resp["banner_enabled"] == "enabled_where_required"
-        assert resp["allow_language_selection"] is True
+        assert resp["allow_language_selection"] is False
         assert resp["dismissable"]
 
         assert resp["regions"] == ["us_ca"]
@@ -1020,9 +1025,11 @@ class TestUpdateExperienceConfig:
                 "regions": [PrivacyNoticeRegion.us_ia],
                 "privacy_notice_ids": [privacy_notice.id],
                 "disabled": False,
+                "allow_language_selection": False,
                 "translations": [
                     {
                         "language": "en_us",
+                        "is_default": True,
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
@@ -1270,8 +1277,11 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "privacy_notice_ids": [privacy_notice.id],  # has opt in mechanism
-                "translations": [{"accept_button_label": "", "language": "en_us"}],
+                "translations": [
+                    {"accept_button_label": "", "language": "en_us", "is_default": True}
+                ],
                 "regions": ["us_ca"],
+                "allow_language_selection": False,
             },
             headers=auth_header,
         )
@@ -1279,6 +1289,138 @@ class TestUpdateExperienceConfig:
         assert (
             response.json()["detail"]
             == "Missing 'accept_button_label' needed for language 'en_us' for UX type 'banner'."
+        )
+
+    def test_no_translations_marked_as_the_default(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_banner,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
+
+        response = api_client.patch(
+            url,
+            json={
+                "privacy_notice_ids": [],
+                "allow_language_selection": False,
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our privacy policy",
+                        "privacy_policy_url": "http://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Control your privacy",
+                        "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                    }
+                ],
+                "regions": ["us_ca"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "One and only one translation must be specified as the default"
+        )
+
+    def test_too_many_translations_marked_as_the_default(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_banner,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
+
+        response = api_client.patch(
+            url,
+            json={
+                "privacy_notice_ids": [],
+                "allow_language_selection": True,
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our privacy policy",
+                        "privacy_policy_url": "http://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Control your privacy",
+                        "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "is_default": True,
+                    },
+                    {
+                        "language": "en_gb",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our privacy policy",
+                        "privacy_policy_url": "http://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Control your privacy",
+                        "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "is_default": True,
+                    },
+                ],
+                "regions": ["us_ca"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "One and only one translation must be specified as the default"
+        )
+
+    def test_allow_language_selection_only_one_language(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_banner,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
+
+        response = api_client.patch(
+            url,
+            json={
+                "privacy_notice_ids": [],
+                "allow_language_selection": True,
+                "translations": [
+                    {
+                        "language": "en_us",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "privacy_policy_link_label": "View our privacy policy",
+                        "privacy_policy_url": "http://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Control your privacy",
+                        "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "Confirm",
+                        "is_default": True,
+                    }
+                ],
+                "regions": ["us_ca"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "More than one translation must be supplied to allow language selection"
         )
 
     def test_update_experience_config_with_fields_that_should_be_escaped(
@@ -1638,6 +1780,7 @@ class TestUpdateExperienceConfig:
         response = api_client.patch(
             url,
             json={
+                "allow_language_selection": False,
                 "regions": ["us_ca", "fr"],
                 "translations": [],
                 "privacy_notice_ids": [],

@@ -37,6 +37,7 @@ from fides.api.schemas.privacy_experience import (
 from fides.api.schemas.privacy_experience import (
     ExperienceTranslation as ExperienceTranslationSchema,
 )
+from fides.api.schemas.privacy_experience import ExperienceTranslationCreate
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     UNESCAPE_SAFESTR_HEADER,
@@ -338,7 +339,11 @@ def validate_notice_keys_or_error(privacy_notices: Query) -> None:
 def validate_translation_fields_for_ux_type(
     privacy_notices: Query,
     component_type: ComponentType,
-    translations: Union[List[ExperienceTranslation], List[ExperienceTranslationSchema]],
+    translations: Union[
+        List[ExperienceTranslation],
+        List[ExperienceTranslationSchema],
+        List[ExperienceTranslationCreate],
+    ],
 ) -> None:
     """Validate translations that are required to be defined for various UX types
 

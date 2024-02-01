@@ -3,7 +3,8 @@ privacy_experience_configs:
   regions:
     - us_ca
   component: overlay
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - data_sales_sharing_gpp_us_state
     - sensitive_personal_data_sharing_gpp_california
@@ -29,7 +30,8 @@ privacy_experience_configs:
   regions:
     - us_ca
   component: privacy_center
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - data_sales_sharing_gpp_us_state
     - sensitive_personal_data_sharing_gpp_california
@@ -57,7 +59,8 @@ privacy_experience_configs:
     - us_ct
     - us_va
   component: overlay
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
@@ -87,7 +90,8 @@ privacy_experience_configs:
     - us_ct
     - us_va
   component: privacy_center
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
@@ -115,7 +119,8 @@ privacy_experience_configs:
   regions:
     - us_ia
   component: overlay
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sales_gpp_us_state
@@ -140,7 +145,8 @@ privacy_experience_configs:
   regions:
     - us_ia
   component: privacy_center
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sales_gpp_us_state
@@ -165,7 +171,8 @@ privacy_experience_configs:
   regions:
     - us_ut
   component: overlay
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
@@ -193,7 +200,8 @@ privacy_experience_configs:
   regions:
     - us_ut
   component: privacy_center
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - targeted_advertising_gpp_us_state
     - data_sharing_gpp_us_state
@@ -221,7 +229,8 @@ privacy_experience_configs:
   regions:
     - us
   component: overlay
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - sales_sharing_targeted_advertising_gpp_us_national
     - sensitive_personal_data_sharing_gpp_us_national
@@ -243,7 +252,8 @@ privacy_experience_configs:
   regions:
     - us
   component: privacy_center
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - sales_sharing_targeted_advertising_gpp_us_national
     - sensitive_personal_data_sharing_gpp_us_national
@@ -298,7 +308,8 @@ privacy_experience_configs:
     - "no"
     - li
   component: overlay
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   privacy_notice_keys:
     - essential
     - functional
@@ -319,7 +330,8 @@ privacy_experience_configs:
 
 
 - id: a4974670-abad-471f-9084-2cb-tcf-over
-  banner_enabled: enabled_where_required
+  allow_language_selection: false
+  dismissable: true
   notices: []
   regions:
     - be

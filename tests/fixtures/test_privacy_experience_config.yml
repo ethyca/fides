@@ -4,7 +4,8 @@ privacy_experience_configs:
     - be
     - bg
   component: overlay
-  banner_enabled: enabled_where_required
+  dismissable: true
+  allow_language_selection: false
   privacy_notice_keys:
     - example_privacy_notice
   translations:
@@ -18,3 +19,4 @@ privacy_experience_configs:
       reject_button_label: Opt out of all
       save_button_label: Save
       title: Manage your consent preferences
+      is_default: True

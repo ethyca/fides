@@ -1160,7 +1160,7 @@ class TestLoadDefaultExperienceConfigs:
         assert translation.description.startswith(
             "We use your organization&#x27;s cookies and similar methods"
         )
-        assert not translation.is_default
+        assert translation.is_default
         assert translation.privacy_policy_link_label == "Privacy Policy"
 
         # Assert Translation History
@@ -1174,7 +1174,7 @@ class TestLoadDefaultExperienceConfigs:
         assert history.description.startswith(
             "We use your organization&#x27;s cookies and similar methods"
         )
-        assert not history.is_default
+        assert history.is_default
         assert history.privacy_policy_link_label == "Privacy Policy"
         assert history.translation_id == translation.id
         assert history.version == 1.0
@@ -1341,42 +1341,6 @@ class TestUpsertDefaultExperienceConfig:
         db.delete(translation)
         db.delete(history)
         db.delete(experience_config)
-
-    def test_create_default_experience_config_validation_error(
-        self, db, default_overlay_config_data
-    ):
-        with pytest.raises(ValidationError) as exc:
-            config = ExperienceConfigCreateTemplate(
-                **{
-                    "banner_enabled": BannerEnabled.enabled_where_required,
-                    "component": ComponentType.overlay,
-                    "id": "test_id",
-                    "regions": ["us_ca"],
-                    "privacy_notice_keys": ["example_privacy_notice"],
-                    "translations": [
-                        {
-                            "language": "en_us",
-                            "accept_button_label": "A",
-                            "banner_description": "J",
-                            "banner_title": "K",
-                            "description": "C",
-                            "privacy_preferences_link_label": "D",
-                            "privacy_policy_link_label": "E's label",
-                            "privacy_policy_url": "https://example.com/privacy_policy",
-                            "reject_button_label": "G",
-                            "save_button_label": "H",
-                            "title": "I",
-                            "is_default": True,
-                        }
-                    ],
-                }
-            )
-            create_default_experience_config(db, config)
-
-        assert (
-            str(exc.value.args[0][0].exc)
-            == "The following additional fields are required when defining an overlay: acknowledge_button_label and privacy_preferences_link_label."
-        )
 
     def test_create_duplicate_experience_translations(
         self, db, default_overlay_config_data

@@ -33,6 +33,10 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
+        sa.Column("dismissable", sa.Boolean(), nullable=False, server_default="t"),
+        sa.Column(
+            "allow_language_selection", sa.Boolean(), nullable=False, server_default="t"
+        ),
         sa.Column("regions", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column("component", sa.String(), nullable=False),
         sa.Column("privacy_notice_keys", postgresql.ARRAY(sa.String()), nullable=True),

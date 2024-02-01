@@ -116,17 +116,36 @@ class ExperienceConfigCreateBase(ExperienceConfigSchema):
     @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Ensure no two translations with the same language are supplied
+        - Ensure no two translations with the same language are supplied and that
+        at least one is the default
+        - Only allow language selection if there are > 1 translations
         """
-        translations: Optional[List[ExperienceTranslation]] = values.get("translations")
+        translations: List[ExperienceTranslation] = values.get("translations") or []
+        allow_language_selection: bool = values.get("allow_language_selection") or False
+
+        if len(translations) < 2 and allow_language_selection:
+            raise ValueError(
+                "More than one translation must be supplied to allow language selection"
+            )
+
         if not translations:
             return values
 
-        languages: List[Language] = [
-            translation.language for translation in translations
-        ]
+        default_translations = 0
+
+        languages: List[Language] = []
+        for translation in translations:
+            languages.append(translation.language)
+            if translation.is_default:
+                default_translations += 1
+
         if len(languages) != len(set(languages)):
             raise ValueError("Multiple translations supplied for the same language")
+
+        if default_translations != 1:
+            raise ValueError(
+                "One and only one translation must be specified as the default"
+            )
 
         return values
 
@@ -147,9 +166,7 @@ class ExperienceConfigCreate(ExperienceConfigCreateBase):
 
     @validator("privacy_notice_ids")
     def check_duplicate_notice_ids(cls, privacy_notice_ids: List[str]) -> List[str]:
-        if len(privacy_notice_ids) != len(set(privacy_notice_ids)):
-            raise ValueError("Duplicate privacy notice ids detected")
-        return privacy_notice_ids
+        return check_dupe_notice_ids(privacy_notice_ids)
 
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):
@@ -163,9 +180,7 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
 
     @validator("privacy_notice_ids")
     def check_duplicate_notice_ids(cls, privacy_notice_ids: List[str]) -> List[str]:
-        if len(privacy_notice_ids) != len(set(privacy_notice_ids)):
-            raise ValueError("Duplicate privacy notice ids detected")
-        return privacy_notice_ids
+        return check_dupe_notice_ids(privacy_notice_ids)
 
     class Config:
         """Forbid extra values - specifically we don't want component to be updated here."""
@@ -200,3 +215,10 @@ class ExperienceConfigCreateOrUpdateResponse(FidesSchema):
     experience_config: ExperienceConfigResponse
     linked_regions: List[PrivacyNoticeRegion]
     unlinked_regions: List[PrivacyNoticeRegion]
+
+
+def check_dupe_notice_ids(privacy_notice_ids: List[str]) -> List[str]:
+    "Verify if there are duplicates in notice ids"
+    if len(privacy_notice_ids) != len(set(privacy_notice_ids)):
+        raise ValueError("Duplicate privacy notice ids detected")
+    return privacy_notice_ids
