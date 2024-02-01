@@ -214,7 +214,7 @@ describe("configureNavGroups", () => {
       });
     });
 
-    it("hide cors management when plus is disabled", () => {
+    it("hide domain management when plus is disabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: [
@@ -229,11 +229,11 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Manage domains")
+          .find((c) => c.title === "Domain management")
       ).toEqual(undefined);
     });
 
-    it("hide cors management when scopes are wrong", () => {
+    it("hide domain management when scopes are wrong", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: [
@@ -248,7 +248,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1]?.children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Manage domains")
+          .find((c) => c.title === "Domain management")
       ).toEqual(undefined);
     });
   });
