@@ -160,12 +160,11 @@ const CORSConfigurationPage: NextPage = () => {
         </Heading>
         <Box maxWidth="600px">
           <Text mb={10} fontSize="sm">
-            For Fides to work securely on your website the domain must be listed
+            For Fides to work securely on your website(s), each of your domains must be listed
             below. You can add and remove domains at any time up to the quantity
-            included in your license. For more information on managing domains,
-            click here{" "}
+            included in your license. For more information on managing domains,{" "}
             <DocsLink href="https://fid.es/domain-configuration">
-              docs.ethyca.com
+              read here
             </DocsLink>
             .
           </Text>
@@ -258,7 +257,7 @@ const CORSConfigurationPage: NextPage = () => {
         <Box maxW="600px" marginY={3}>
           <FormSection
             data-testid="config-set-domains-form"
-            title="Advanced domains"
+            title="Administrator domains"
             tooltip="These domains are configured in your Fides security settings by an administrator and can support more advanced options such as wildcards and regexs."
           >
             {isLoadingConfigSetQuery ? (
