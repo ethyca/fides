@@ -57,8 +57,8 @@ const CORSConfigurationPage: NextPage = () => {
       return false;
     }
     try {
-      /* eslint-disable-next-line no-new */
-      new URL(value);
+      const url = new URL(value);
+      return url.protocol === "https:" || url.protocol === "http:";
     } catch (e) {
       return false;
     }
@@ -77,7 +77,6 @@ const CORSConfigurationPage: NextPage = () => {
       return false;
     }
     try {
-      /* eslint-disable-next-line no-new */
       const url = new URL(value);
       return url.pathname === "/" && !value.endsWith("/");
     } catch (e) {
@@ -174,6 +173,7 @@ const CORSConfigurationPage: NextPage = () => {
 
         <Box maxW="600px" marginY={3}>
           <FormSection
+            data-testid="api-set-domains-form"
             title="Organization domains"
             tooltip="Fides uses these domains to enforce cross-origin resource sharing (CORS), a browser-based security standard. Each domain must be a valid URL (e.g. https://example.com) without any wildcards '*' or paths '/blog'"
           >
@@ -206,7 +206,7 @@ const CORSConfigurationPage: NextPage = () => {
 
                                 <IconButton
                                   ml={8}
-                                  aria-label="delete-cors-domain"
+                                  aria-label="delete-domain"
                                   variant="outline"
                                   zIndex={2}
                                   size="sm"
@@ -222,7 +222,7 @@ const CORSConfigurationPage: NextPage = () => {
 
                           <Flex justifyContent="center" mt={3}>
                             <Button
-                              aria-label="add-cors-domain"
+                              aria-label="add-domain"
                               variant="outline"
                               size="sm"
                               onClick={() => {
@@ -257,6 +257,7 @@ const CORSConfigurationPage: NextPage = () => {
         </Box>
         <Box maxW="600px" marginY={3}>
           <FormSection
+            data-testid="config-set-domains-form"
             title="Advanced domains"
             tooltip="These domains are configured in your Fides security settings by an administrator and can support more advanced options such as wildcards and regexs."
           >
@@ -268,6 +269,7 @@ const CORSConfigurationPage: NextPage = () => {
               <Flex flexDir="column">
                 {configSettings.cors_origins!.map((origin, index) => (
                   <TextInput
+                    data-testid={`input-config_cors_origins[${index}]`}
                     key={index}
                     marginY={3}
                     value={origin}
@@ -277,6 +279,7 @@ const CORSConfigurationPage: NextPage = () => {
                 ))}
                 {configSettings.cors_origin_regex ? (
                   <TextInput
+                    data-testid="input-config_cors_origin_regex"
                     key="cors_origin_regex"
                     marginY={3}
                     value={configSettings.cors_origin_regex}
