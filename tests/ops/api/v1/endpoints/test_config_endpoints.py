@@ -732,7 +732,7 @@ class TestPutApplicationConfig:
         # but ensure that an unrelated origin is still not allowed
         headers = {
             **auth_header,
-            "Origin": "http://fakesite.com",
+            "Origin": "https://fakesite.com",
             "Access-Control-Request-Method": "PUT",
         }
         response = api_client.options(url, headers=headers)
