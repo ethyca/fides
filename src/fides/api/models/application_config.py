@@ -212,6 +212,8 @@ class ApplicationConfig(Base):
         Api-set values get priority over config-set, in case of conflict, unless `merge_values`
         is specified as `True`, in which case the proxy will attempt to _merge_ the api-set
         and config-set values. Note that only iterable config values (e.g. lists) can be merged!
+
+        An error will be thrown if `merge_values` is used for a property with non-iterable values.
         """
         config_record = db.query(cls).first()
         if config_record:
@@ -222,17 +224,17 @@ class ApplicationConfig(Base):
             if api_prop is None:
                 return config_prop
 
-            # if we want to merge values AND we have iterable api and config-set properties
-            # then we try to merge
-            if (
-                merge_values
-                and config_prop
-                and isinstance(api_prop, Iterable)
-                and isinstance(config_prop, Iterable)
-            ):
+            # if we want to merge values and have a config property too
+            if merge_values and config_prop:
+                # AND we have iterable api and config-set properties, then we try to merge
+                if not isinstance(api_prop, Iterable) or not isinstance(
+                    config_prop, Iterable
+                ):
+                    raise RuntimeError("Only iterable values can be merged!")
                 return {value for value in (list(api_prop) + list(config_prop))}
 
             # otherwise, we just use the api-set property
+
             return api_prop
 
         logger.warning("No config record found!")
