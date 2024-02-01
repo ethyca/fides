@@ -1667,7 +1667,6 @@ def privacy_experience_france_tcf_overlay(
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.tcf_overlay,
             "region": PrivacyNoticeRegion.fr,
             "experience_config_id": experience_config_tcf_overlay.id,
         },
@@ -1685,7 +1684,6 @@ def privacy_experience_france_overlay(
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.overlay,
             "region": PrivacyNoticeRegion.fr,
             "experience_config_id": experience_config_overlay.id,
         },
@@ -2452,7 +2450,6 @@ def privacy_experience_privacy_center(
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.privacy_center,
             "region": PrivacyNoticeRegion.us_co,
             "experience_config_id": experience_config_privacy_center.id,
         },
@@ -2538,7 +2535,6 @@ def privacy_experience_overlay(db: Session, experience_config_overlay) -> Genera
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.overlay,
             "region": PrivacyNoticeRegion.us_ca,
             "experience_config_id": experience_config_overlay.id,
         },
@@ -2555,7 +2551,6 @@ def privacy_experience_privacy_center_france(
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.privacy_center,
             "region": PrivacyNoticeRegion.fr,
             "experience_config_id": experience_config_privacy_center.id,
         },

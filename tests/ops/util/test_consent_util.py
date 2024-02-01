@@ -1262,7 +1262,6 @@ class TestUpsertDefaultExperienceConfig:
     def default_overlay_config_data(self, db, privacy_notice):
         return ExperienceConfigCreate(
             **{
-                "banner_enabled": BannerEnabled.enabled_where_required,
                 "component": ComponentType.overlay,
                 "id": "test_id",
                 "regions": ["us_ca"],
@@ -1293,7 +1292,6 @@ class TestUpsertDefaultExperienceConfig:
         experience_config = create_default_experience_config(
             db, default_overlay_config_data
         )
-        assert experience_config.banner_enabled == BannerEnabled.enabled_where_required
         assert experience_config.component == ComponentType.overlay
         assert experience_config.regions == [PrivacyNoticeRegion.us_ca]
         assert experience_config.privacy_notices == [privacy_notice]
@@ -1305,10 +1303,7 @@ class TestUpsertDefaultExperienceConfig:
         assert translation.description == "C"
         assert translation.is_default is True
         assert translation.privacy_preferences_link_label == "D"
-        # TODO we need to escape experience translations
-        # assert (
-        #     translation.privacy_policy_link_label == "E&#x27;s label"
-        # )  # Escaped
+        assert translation.privacy_policy_link_label == "E&#x27;s label"  # Escaped
         assert translation.privacy_policy_url == "https://example.com/privacy_policy"
         assert translation.reject_button_label == "G"
         assert translation.save_button_label == "H"
@@ -1322,14 +1317,13 @@ class TestUpsertDefaultExperienceConfig:
 
         assert history.accept_button_label == "A"
         assert history.acknowledge_button_label == "B"
-        assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.component == ComponentType.overlay
         assert history.created_at is not None
         assert history.description == "C"
         assert history.is_default is True
         assert history.id != "test_id"
         assert history.privacy_preferences_link_label == "D"
-        # assert history.privacy_policy_link_label == "E&#x27;s label"
+        assert history.privacy_policy_link_label == "E&#x27;s label"
         assert history.privacy_policy_url == "https://example.com/privacy_policy"
         assert history.reject_button_label == "G"
         assert history.save_button_label == "H"
@@ -1348,7 +1342,6 @@ class TestUpsertDefaultExperienceConfig:
         with pytest.raises(ValidationError) as exc:
             config = ExperienceConfigCreateTemplate(
                 **{
-                    "banner_enabled": BannerEnabled.enabled_where_required,
                     "component": ComponentType.overlay,
                     "id": "test_id",
                     "regions": ["us_ca"],

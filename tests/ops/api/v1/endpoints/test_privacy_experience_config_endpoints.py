@@ -93,7 +93,6 @@ class TestGetExperienceConfigList:
         assert first_config["id"] == experience_config_overlay.id
 
         assert first_config["component"] == "overlay"
-        assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["regions"] == ["us_ca"]
         assert first_config["created_at"] is not None
         assert first_config["updated_at"] is not None
@@ -117,7 +116,6 @@ class TestGetExperienceConfigList:
         second_config = data[1]
         assert second_config["id"] == experience_config_privacy_center.id
         assert second_config["component"] == "privacy_center"
-        assert second_config["banner_enabled"] is None
         assert second_config["regions"] == ["us_co"]
         assert second_config["created_at"] is not None
         assert second_config["updated_at"] is not None
@@ -270,7 +268,6 @@ class TestCreateExperienceConfig:
     @pytest.fixture(scope="function")
     def overlay_experience_request_body(self, privacy_notice) -> dict:
         return {
-            "banner_enabled": "enabled_where_required",
             "component": "overlay",
             "dismissable": True,
             "allow_language_selection": False,
@@ -500,7 +497,6 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "banner_enabled": "always_disabled",
                 "component": "privacy_center",
                 "translations": [
                     {
@@ -539,7 +535,6 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "banner_enabled": "always_disabled",
                 "component": "privacy_center",
                 "privacy_notice_ids": [
                     privacy_notice.id,
@@ -590,7 +585,6 @@ class TestCreateExperienceConfig:
         resp = response.json()
 
         assert resp["component"] == "overlay"
-        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["dismissable"] is True
         assert resp["allow_language_selection"] is False
         assert resp["origin"] is None
@@ -603,7 +597,6 @@ class TestCreateExperienceConfig:
 
         experience_config = get_experience_config_or_error(db, resp["id"])
         assert experience_config.component == ComponentType.overlay
-        assert experience_config.banner_enabled == BannerEnabled.enabled_where_required
         assert experience_config.dismissable is True
         assert experience_config.allow_language_selection is False
         assert experience_config.regions == []
@@ -635,7 +628,6 @@ class TestCreateExperienceConfig:
         resp = response.json()
 
         assert resp["component"] == "overlay"
-        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["dismissable"] is True
         assert resp["allow_language_selection"] is False
         assert resp["origin"] is None
@@ -695,7 +687,6 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "regions": ["us_ny"],
                 "translations": [
@@ -736,10 +727,7 @@ class TestCreateExperienceConfig:
 
         assert experience_config_history.accept_button_label == "Accept all"
         assert experience_config_history.acknowledge_button_label == "Confirm"
-        assert (
-            experience_config_history.banner_enabled
-            == BannerEnabled.enabled_where_required
-        )
+
         assert experience_config_history.component == ComponentType.overlay
         assert (
             experience_config_history.description
@@ -791,7 +779,6 @@ class TestCreateExperienceConfig:
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )
@@ -804,7 +791,6 @@ class TestCreateExperienceConfig:
         response = api_client.post(
             url,
             json={
-                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "regions": ["us_tx"],
                 "translations": [
@@ -827,7 +813,6 @@ class TestCreateExperienceConfig:
         )
         assert response.status_code == 201
         resp = response.json()
-        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["component"] == "overlay"
 
         # Created Experience Config
@@ -933,7 +918,6 @@ class TestGetExperienceConfigDetail:
 
         assert resp["id"] == experience_config_overlay.id
         assert resp["component"] == "overlay"
-        assert resp["banner_enabled"] == "enabled_where_required"
         assert resp["allow_language_selection"] is False
         assert resp["dismissable"]
 
@@ -1020,7 +1004,6 @@ class TestUpdateExperienceConfig:
         exp = PrivacyExperienceConfig.create(
             db=db,
             data={
-                "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "regions": [PrivacyNoticeRegion.us_ia],
                 "privacy_notice_ids": [privacy_notice.id],
@@ -1582,7 +1565,6 @@ class TestUpdateExperienceConfig:
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )

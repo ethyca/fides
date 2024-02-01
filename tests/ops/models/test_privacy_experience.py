@@ -434,12 +434,10 @@ class TestPrivacyExperience:
         exp = PrivacyExperience.create(
             db=db,
             data={
-                "component": "overlay",
                 "region": "us_tx",
             },
         )
 
-        assert exp.component == ComponentType.overlay
         assert exp.region == PrivacyNoticeRegion.us_tx
         assert exp.experience_config_id is None
 
@@ -450,7 +448,6 @@ class TestPrivacyExperience:
         exp = PrivacyExperience.create(
             db=db,
             data={
-                "component": "overlay",
                 "region": "us_ca",
             },
         )
@@ -475,59 +472,6 @@ class TestPrivacyExperience:
 
         exp.delete(db)
 
-    def test_create_multiple_experiences_of_same_component_type(self, db):
-        """This is now allowed at the Experience level - we mostly want to check at the ExperienceConfig level
-        that we don't have overlapping regions on the same *enabled* ExperienceConfig"""
-        exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "region": "us_tx",
-            },
-        )
-
-        exp_2 = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "region": "us_tx",
-            },
-        )
-
-        exp_2.delete(db)
-        exp.delete(db)
-
-    def test_update_multiple_experiences_of_same_component_type(self, db):
-        """This is allowed - we have other checks at the ExperienceConfig level to make sure there are
-        no two regions attached to ExperienceConfigs of the same UX type or fides js UX type
-        """
-        exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "overlay",
-                "region": "us_tx",
-            },
-        )
-
-        exp_2 = PrivacyExperience.create(
-            db=db,
-            data={
-                "component": "privacy_center",
-                "region": "us_tx",
-            },
-        )
-
-        exp_2.update(
-            db=db,
-            data={
-                "component": "overlay",
-                "region": "us_tx",
-            },
-        )
-
-        exp_2.delete(db)
-        exp.delete(db)
-
     @pytest.mark.parametrize(
         "region,country",
         [
@@ -543,7 +487,6 @@ class TestPrivacyExperience:
         exp: PrivacyExperience = PrivacyExperience.create(
             db=db,
             data={
-                "component": "overlay",
                 "region": region,
             },
         )
@@ -567,9 +510,6 @@ class TestPrivacyExperience:
                 "consent_mechanism": ConsentMechanism.opt_out,
                 "data_uses": ["marketing.advertising", "third_party_sharing"],
                 "enforcement_level": EnforcementLevel.system_wide,
-                "displayed_in_overlay": False,
-                "displayed_in_api": True,
-                "displayed_in_privacy_center": True,
             },
         )
         assert (
@@ -581,7 +521,7 @@ class TestPrivacyExperience:
             == []
         )
 
-        config = PrivacyExperienceConfig.create(
+        PrivacyExperienceConfig.create(
             db=db,
             data={
                 "component": "privacy_center",
@@ -723,7 +663,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         pc_exp = PrivacyExperience.create(
             db=db,
             data={
-                "component": "privacy_center",
                 "region": "us_ak",
             },
         )
@@ -770,7 +709,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         pc_exp = PrivacyExperience.create(
             db=db,
             data={
-                "component": "privacy_center",
                 "region": "us_ak",
                 "experience_config_id": config.id,
             },
@@ -820,7 +758,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         pc_exp = PrivacyExperience.create(
             db=db,
             data={
-                "component": "privacy_center",
                 "region": "us_ak",
                 "experience_config_id": config.id,
             },

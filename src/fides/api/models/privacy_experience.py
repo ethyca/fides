@@ -110,7 +110,6 @@ class ExperienceConfigTemplate(Base):
     allow_language_selection = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )
-    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)  # Will be removed
 
 
 class ExperienceTranslationBase:
@@ -502,15 +501,12 @@ class PrivacyExperience(Base):
     configuration options).
     """
 
-    component = Column(
-        EnumColumn(ComponentType), nullable=False
-    )  # I think we should delete this now.
     region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
 
     experience_config_id = Column(
         String,
         ForeignKey(PrivacyExperienceConfig.id_field_path),
-        nullable=True,
+        nullable=True,  # Needs an ExperienceConfig to be valid
         index=True,
     )
 
@@ -519,6 +515,12 @@ class PrivacyExperience(Base):
         back_populates="experiences",
         uselist=False,
     )
+
+    @property
+    def component(self) -> Optional[ComponentType]:
+        if not self.experience_config_id:
+            return None
+        return self.experience_config.component  # type: ignore[return-value]
 
     # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
     # related to experiences.
@@ -546,10 +548,17 @@ class PrivacyExperience(Base):
     def get_experiences_by_region_and_component(
         db: Session, region: str, component: ComponentType
     ) -> Query:
-        """Load experiences for a given region and component type"""
-        return db.query(PrivacyExperience).filter(
-            PrivacyExperience.region == region,
-            PrivacyExperience.component == component,
+        """Utility method to load experiences for a given region and component type"""
+        return (
+            db.query(PrivacyExperience)
+            .join(
+                PrivacyExperienceConfig,
+                PrivacyExperienceConfig.id == PrivacyExperience.experience_config_id,
+            )
+            .filter(
+                PrivacyExperience.region == region,
+                PrivacyExperienceConfig.component == component,
+            )
         )
 
 
@@ -570,7 +579,7 @@ def get_privacy_notices_by_region_and_component(
         )
         .filter(
             PrivacyExperience.region.in_(regions),
-            PrivacyExperience.component == component,
+            PrivacyExperienceConfig.component == component,
         )
     )
 
@@ -626,19 +635,14 @@ def upsert_privacy_experiences_after_config_update(
             .first()
         )
 
-        data = {
-            "component": experience_config.component,
-            "region": region,
-            "experience_config_id": experience_config.id,
-        }
-
         # If existing experience exists, refresh data
-        if existing_experience:
-            existing_experience.update(db, data=data)
-        else:
+        if not existing_experience:
             PrivacyExperience.create(
                 db,
-                data=data,
+                data={
+                    "region": region,
+                    "experience_config_id": experience_config.id,
+                },
             )
 
     return experience_config.regions

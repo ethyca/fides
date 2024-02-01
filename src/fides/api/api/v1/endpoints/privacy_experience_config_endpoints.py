@@ -302,13 +302,13 @@ def experience_config_update(
         )
 
     validate_translation_fields_for_ux_type(
-        privacy_notices, dry_update.component, dry_update_translations
+        privacy_notices, dry_update.component, dry_update_translations  # type: ignore[arg-type]
     )
 
     if not dry_update.disabled:
         validate_region_uniqueness_on_ux_type(
             db,
-            ux_type=experience_config.component,
+            ux_type=experience_config.component,  # type: ignore[arg-type]
             regions=experience_config_data.regions,
             excluded_config=experience_config_id,
         )

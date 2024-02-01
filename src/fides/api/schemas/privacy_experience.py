@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import Extra, Field, HttpUrl, root_validator, validator
 
 from fides.api.custom_types import HtmlStr
-from fides.api.models.privacy_experience import BannerEnabled, ComponentType
+from fides.api.models.privacy_experience import ComponentType
 from fides.api.models.privacy_notice import Language, PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
@@ -85,7 +85,6 @@ class ExperienceConfigSchema(FidesSchema):
 
     name: Optional[str]
     disabled: Optional[bool]
-    banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
     origin: Optional[str]
     dismissable: Optional[bool]
     allow_language_selection: Optional[bool]
