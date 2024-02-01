@@ -1125,6 +1125,7 @@ class TestGetConfig:
                             "encoding",
                             "oauth_access_token_expire_minutes",
                             "subject_request_download_link_ttl_seconds",
+                            "cors_origin_regex",
                         ]
                     )
                 )
