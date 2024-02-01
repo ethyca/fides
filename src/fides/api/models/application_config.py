@@ -219,13 +219,12 @@ class ApplicationConfig(Base):
         if config_record:
             api_prop = get(config_record.api_set, config_property)
             config_prop = get(config_record.config_set, config_property, default_value)
-
             # if no api-set property found, fall back to config-set
             if api_prop is None:
                 return config_prop
 
             # if we want to merge values and have a config property too
-            if merge_values and config_prop:
+            if merge_values and config_prop is not None:
                 # AND we have iterable api and config-set properties, then we try to merge
                 if not isinstance(api_prop, Iterable) or not isinstance(
                     config_prop, Iterable
@@ -234,7 +233,6 @@ class ApplicationConfig(Base):
                 return {value for value in (list(api_prop) + list(config_prop))}
 
             # otherwise, we just use the api-set property
-
             return api_prop
 
         logger.warning("No config record found!")
