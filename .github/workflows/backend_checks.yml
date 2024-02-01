@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - "main"
+      - "release-**"
 
 env:
   IMAGE: ethyca/fides:local

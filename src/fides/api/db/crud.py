@@ -84,6 +84,7 @@ async def get_custom_fields_filtered(
                     CustomField.value,
                     CustomFieldDefinition.resource_type,
                     CustomFieldDefinition.name,
+                    CustomFieldDefinition.field_type,
                 ).join(
                     CustomFieldDefinition,
                     CustomFieldDefinition.id == CustomField.custom_field_definition_id,
