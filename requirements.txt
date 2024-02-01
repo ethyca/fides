@@ -40,7 +40,6 @@ pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0
 PyMySQL==1.0.2
-pymssql==2.2.8
 python-jose[cryptography]==3.3.0
 pyyaml==6.0.1
 redis==3.5.3

@@ -4,26 +4,20 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Badge,
   Box,
-  Button,
-  ButtonGroup,
   Checkbox,
-  Flex,
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
-  ModalHeader,
   ModalOverlay,
   SimpleGrid,
-  Text,
 } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
 import { usePicker } from "~/features/common/PickerCard";
 import { Location, LocationGroup } from "~/types/api";
 
+import { Footer, Header, HeaderCheckboxRow } from "./modal";
 import RegulatedToggle from "./RegulatedToggle";
 import { groupByBelongsTo } from "./transformations";
 
@@ -90,49 +84,20 @@ const SubgroupModal = ({
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent data-testid="subgroup-modal">
-        <ModalHeader
-          fontSize="lg"
-          fontWeight="semibold"
-          pt={5}
-          paddingInline={6}
-          pb={5}
-          backgroundColor="gray.50"
-          borderTopRadius="md"
-          borderBottom="1px solid"
-          borderColor="gray.200"
-        >
-          Select locations
-        </ModalHeader>
+        <Header title="Select locations" />
         <ModalBody p={6} maxHeight="70vh" overflowY="auto">
-          <Flex justifyContent="space-between" mb={4}>
-            <Box>
-              <Checkbox
-                colorScheme="complimentary"
-                size="md"
-                isChecked={allSelected}
-                onChange={handleToggleAll}
-                mr={3}
-                data-testid="select-all"
-              >
-                <Text fontWeight="semibold" fontSize="md">
-                  {continentName}
-                </Text>
-              </Checkbox>
-              <Badge
-                colorScheme="purple"
-                variant="solid"
-                width="fit-content"
-                data-testid="num-selected-badge"
-              >
-                {numSelected} selected
-              </Badge>
-            </Box>
+          <HeaderCheckboxRow
+            title={continentName}
+            allSelected={allSelected}
+            onToggleAll={handleToggleAll}
+            numSelected={numSelected}
+          >
             <RegulatedToggle
               id={`${continentName}-modal-regulated`}
               isChecked={showRegulatedOnly}
               onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
             />
-          </Flex>
+          </HeaderCheckboxRow>
           {isGroupedView ? (
             <Accordion allowToggle allowMultiple>
               {Object.entries(locationsByGroup).map(
@@ -198,26 +163,7 @@ const SubgroupModal = ({
             </SimpleGrid>
           )}
         </ModalBody>
-        <ModalFooter justifyContent="center">
-          <ButtonGroup
-            size="sm"
-            display="flex"
-            justifyContent="space-between"
-            width="100%"
-          >
-            <Button flexGrow={1} variant="outline" mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              flexGrow={1}
-              colorScheme="primary"
-              onClick={handleApply}
-              data-testid="apply-btn"
-            >
-              Apply
-            </Button>
-          </ButtonGroup>
-        </ModalFooter>
+        <Footer onApply={handleApply} onClose={onClose} />
       </ModalContent>
     </Modal>
   );
