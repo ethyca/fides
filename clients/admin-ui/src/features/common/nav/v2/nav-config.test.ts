@@ -210,7 +210,7 @@ describe("configureNavGroups", () => {
           .find((c) => c.title === "Domain management")
       ).toEqual({
         title: "Domain management",
-        path: routes.CORS_CONFIGURATION_ROUTE,
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
       });
     });
 

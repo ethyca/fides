@@ -24,7 +24,11 @@ const FormSection = ({
       textAlign="left"
     >
       {title}
-      { tooltip ? <Text as="span" mx={1}><QuestionTooltip label={tooltip} /></Text> : undefined }
+      {tooltip ? (
+        <Text as="span" mx={1}>
+          <QuestionTooltip label={tooltip} />
+        </Text>
+      ) : undefined}
     </Heading>
     <Stack p={6} spacing={6}>
       {children}

@@ -70,7 +70,7 @@ const CORSConfigurationPage: NextPage = () => {
     }
     try {
       const url = new URL(value);
-      return url.pathname === "/" && !value.endsWith("/")
+      return url.pathname === "/" && !value.endsWith("/");
     } catch (e) {
       return false;
     }
@@ -142,7 +142,7 @@ const CORSConfigurationPage: NextPage = () => {
 
   return (
     <Layout title="Manage domains">
-      <Box data-testid="cors-configuration">
+      <Box data-testid="manage-domains">
         <Heading marginBottom={4} fontSize="2xl">
           Manage domains
         </Heading>
@@ -155,7 +155,7 @@ const CORSConfigurationPage: NextPage = () => {
             below. You can add and remove domains at any time up to the quantity
             included in your license. For more information on managing domains,
             click here{" "}
-            <DocsLink href="https://fid.es/cors-configuration">
+            <DocsLink href="https://fid.es/domain-configuration">
               docs.ethyca.com
             </DocsLink>
             .

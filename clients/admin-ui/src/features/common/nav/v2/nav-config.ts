@@ -201,7 +201,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
       {
         title: "Domain management",
-        path: routes.CORS_CONFIGURATION_ROUTE,
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [
