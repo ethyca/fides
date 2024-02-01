@@ -110,11 +110,11 @@ const CORSConfigurationPage: NextPage = () => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving CORS domains. Please try again.`
+          `An unexpected error occurred while saving domains. Please try again.`
         );
         toast(errorToastParams(errorMsg));
       } else {
-        toast(successToastParams("CORS domains saved successfully"));
+        toast(successToastParams("Domains saved successfully"));
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
       }
@@ -151,9 +151,10 @@ const CORSConfigurationPage: NextPage = () => {
             Manage domains for your organization
           </Text>
           <Text mb={10} fontSize="sm">
-            You must add domains associated with your organization to Fides to
-            ensure features such as consent function correctly. For more
-            information on managing domains on Fides, click here{" "}
+            For Fides to work properly on your website the domain must be listed
+            below. You can add and remove domains at any time up to the quantity
+            included in your license. For more information on managing domains,
+            click here{" "}
             <DocsLink href="https://fid.es/cors-configuration">
               docs.ethyca.com
             </DocsLink>
@@ -162,7 +163,7 @@ const CORSConfigurationPage: NextPage = () => {
         </Box>
 
         <Box maxW="600px" marginY={3}>
-          <FormSection title="CORS domains">
+          <FormSection title="Organization domains">
             {isLoadingGetQuery || isLoadingPutMutation ? (
               <Flex justifyContent="center">
                 <Spinner />
@@ -187,6 +188,7 @@ const CORSConfigurationPage: NextPage = () => {
                                 <CustomTextInput
                                   variant="stacked"
                                   name={`cors_origins[${index}]`}
+                                  placeholder="https://subdomain.example.com:9090"
                                 />
 
                                 <IconButton
@@ -215,7 +217,7 @@ const CORSConfigurationPage: NextPage = () => {
                               }}
                               rightIcon={<AddIcon />}
                             >
-                              Add CORS domain
+                              Add domain
                             </Button>
                           </Flex>
                         </Flex>
