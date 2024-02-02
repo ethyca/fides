@@ -121,9 +121,12 @@ class PrivacyNoticeCreation(PrivacyNotice):
         Generate the notice_key from the name if not supplied
         """
         if not values.get("notice_key"):
-            values["notice_key"] = PrivacyNoticeModel.generate_notice_key(
-                values.get("name")
-            )
+            try:
+                values["notice_key"] = PrivacyNoticeModel.generate_notice_key(
+                    values.get("name")
+                )
+            except Exception as exc:
+                raise ValueError(exc.args[0])
 
         return values
 
