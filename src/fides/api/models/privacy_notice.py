@@ -345,6 +345,28 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 return True
         return False
 
+    @property
+    def configured_regions(self) -> List[PrivacyNoticeRegion]:
+        """Look up the regions on the Experiences using these Notices"""
+        from fides.api.models.privacy_experience import (
+            ExperienceNotices,
+            PrivacyExperience,
+        )
+
+        db = Session.object_session(self)
+        configured_regions = (
+            db.query(PrivacyExperience.region)
+            .join(
+                ExperienceNotices,
+                PrivacyExperience.experience_config_id
+                == ExperienceNotices.experience_config_id,
+            )
+            .filter(ExperienceNotices.notice_id == self.id)
+            .group_by(PrivacyExperience.region)
+            .order_by(PrivacyExperience.region.asc())
+        )
+        return [region[0] for region in configured_regions]
+
     @classmethod
     def create(
         cls: Type[PrivacyNotice],

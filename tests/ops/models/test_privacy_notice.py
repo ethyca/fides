@@ -19,6 +19,57 @@ from fides.api.models.sql_models import Cookies
 
 
 class TestPrivacyNoticeModel:
+    def test_configured_regions(
+        self,
+        db,
+        privacy_notice,
+        privacy_experience_overlay,
+        privacy_experience_privacy_center_france,
+        privacy_experience_france_tcf_overlay,
+    ):
+        def reset_notices():
+            privacy_experience_overlay.experience_config.privacy_notices = []
+            privacy_experience_overlay.experience_config.save(db)
+            privacy_experience_privacy_center_france.experience_config.privacy_notices = (
+                []
+            )
+            privacy_experience_privacy_center_france.experience_config.save(db)
+            privacy_experience_france_tcf_overlay.experience_config.privacy_notices = []
+            privacy_experience_france_tcf_overlay.experience_config.save(db)
+
+        reset_notices()
+        assert privacy_notice.configured_regions == []
+
+        privacy_experience_overlay.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_overlay.experience_config.save(db)
+
+        assert privacy_notice.configured_regions == [PrivacyNoticeRegion.us_ca]
+
+        privacy_experience_privacy_center_france.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_privacy_center_france.experience_config.save(db)
+
+        assert privacy_notice.configured_regions == [
+            PrivacyNoticeRegion.fr,
+            PrivacyNoticeRegion.us_ca,
+        ]
+
+        privacy_experience_france_tcf_overlay.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_france_tcf_overlay.experience_config.save(db)
+
+        # no duplicates
+        assert privacy_notice.configured_regions == [
+            PrivacyNoticeRegion.fr,
+            PrivacyNoticeRegion.us_ca,
+        ]
+
+        reset_notices()
+
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """
         Ensure our create override works as expected to create a history object

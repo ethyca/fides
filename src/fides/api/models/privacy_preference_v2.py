@@ -16,6 +16,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
+    Language,
     PrivacyNoticeHistory,
     UserConsentPreference,
 )
@@ -186,6 +187,8 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
         ),
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    language = Column(EnumColumn(Language), index=True)
 
     notice_key = Column(String, index=True)  # Privacy Notice Key
 

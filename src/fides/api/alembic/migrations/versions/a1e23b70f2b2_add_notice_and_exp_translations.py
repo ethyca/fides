@@ -314,6 +314,24 @@ def upgrade():
         "privacypreferencehistory",
         type_="foreignkey",
     )
+    op.add_column(
+        "privacypreferencehistory", sa.Column("language", sa.String(), nullable=True)
+    )
+    op.create_index(
+        op.f("ix_privacypreferencehistory_language"),
+        "privacypreferencehistory",
+        ["language"],
+        unique=False,
+    )
+    op.add_column(
+        "servednoticehistory", sa.Column("language", sa.String(), nullable=True)
+    )
+    op.create_index(
+        op.f("ix_servednoticehistory_language"),
+        "servednoticehistory",
+        ["language"],
+        unique=False,
+    )
     op.drop_index(
         "ix_servednoticehistory_privacy_experience_id", table_name="servednoticehistory"
     )
@@ -340,6 +358,15 @@ def downgrade():
         ["privacy_experience_id"],
         unique=False,
     )
+    op.drop_index(
+        op.f("ix_servednoticehistory_language"), table_name="servednoticehistory"
+    )
+    op.drop_column("servednoticehistory", "language")
+    op.drop_index(
+        op.f("ix_privacypreferencehistory_language"),
+        table_name="privacypreferencehistory",
+    )
+    op.drop_column("privacypreferencehistory", "language")
     op.create_foreign_key(
         "privacypreferencehistory_privacy_experience_id_fkey",
         "privacypreferencehistory",
