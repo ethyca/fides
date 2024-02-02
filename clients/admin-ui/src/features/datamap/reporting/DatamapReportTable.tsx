@@ -317,7 +317,11 @@ export const DatamapReportTable = () => {
       const customField = customFields.find((cf) =>
         key.includes(_.snakeCase(cf.name))
       );
-      const displayText = _.upperFirst(key.replaceAll("_", " "));
+      const keyWithoutPrefix = key.replace(
+        /^(system_|privacy_declaration_)/,
+        ""
+      );
+      const displayText = _.upperFirst(keyWithoutPrefix.replaceAll("_", " "));
       return columnHelper.accessor((row) => row[key], {
         id: key,
         cell: (props) =>
