@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from json import loads
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterable, Optional
 
 from loguru import logger
 from pydantic.utils import deep_update
@@ -170,6 +170,20 @@ class ApplicationConfig(Base):
         return None
 
     @classmethod
+    def clear_config_set(cls, db: Session) -> Optional[ApplicationConfig]:
+        """
+        Utility method to set the `config_set` column on the `applicationconfig`
+        db record to an empty dict
+
+        """
+        existing_record = db.query(cls).first()
+        if existing_record:
+            existing_record.config_set = {}
+            existing_record.save(db)
+            return existing_record
+        return None
+
+    @classmethod
     def update_config_set(cls, db: Session, config: FidesConfig) -> ApplicationConfig:
         """
         Utility method to set the `config_set` column on the `applicationconfig`
@@ -184,21 +198,42 @@ class ApplicationConfig(Base):
 
     @classmethod
     def get_resolved_config_property(
-        cls, db: Session, config_property: str, default_value: Any = None
+        cls,
+        db: Session,
+        config_property: str,
+        merge_values: bool = False,
+        default_value: Any = None,
     ) -> Optional[Any]:
         """
         Gets the 'resolved' config property based on api-set and config-set configs.
         `config_property` is a dot-separated path to the config property,
         e.g. `notifications.notification_service_type`.
 
-        Api-set values get priority over config-set, in case of conflict.
+        Api-set values get priority over config-set, in case of conflict, unless `merge_values`
+        is specified as `True`, in which case the proxy will attempt to _merge_ the api-set
+        and config-set values. Note that only iterable config values (e.g. lists) can be merged!
+
+        An error will be thrown if `merge_values` is used for a property with non-iterable values.
         """
         config_record = db.query(cls).first()
         if config_record:
             api_prop = get(config_record.api_set, config_property)
+            config_prop = get(config_record.config_set, config_property, default_value)
+            # if no api-set property found, fall back to config-set
             if api_prop is None:
-                logger.debug(f"No API-set {config_property} property found")
-                return get(config_record.config_set, config_property, default_value)
+                return config_prop
+
+            # if we want to merge values and have a config property too
+            if merge_values and config_prop is not None:
+                # AND we have iterable api and config-set properties, then we try to merge
+                if not isinstance(api_prop, Iterable) or not isinstance(
+                    config_prop, Iterable
+                ):
+                    raise RuntimeError("Only iterable values can be merged!")
+                return {value for value in (list(api_prop) + list(config_prop))}
+
+            # otherwise, we just use the api-set property
             return api_prop
+
         logger.warning("No config record found!")
         return default_value
