@@ -531,7 +531,6 @@ class TestCreatePrivacyNoticeUtils:
         schema = PrivacyNoticeCreation(
             name="Test Notice",
             notice_key="test_notice",
-            description="test description",
             internal_description="internal description",
             consent_mechanism="opt_out",
             data_uses=["train_ai_system"],
@@ -593,7 +592,6 @@ class TestCreatePrivacyNoticeUtils:
                         id="test_id_1",
                         name="A",
                         notice_key="a",
-                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=[],
                         enforcement_level=EnforcementLevel.system_wide,
@@ -618,11 +616,9 @@ class TestCreatePrivacyNoticeUtils:
                         name="A",
                         disabled=False,
                         notice_key="a",
-                        regions=["it"],
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=[],
                         enforcement_level=EnforcementLevel.system_wide,
-                        displayed_in_overlay=True,
                     )
                 ],
             )
@@ -636,11 +632,9 @@ class TestCreatePrivacyNoticeUtils:
                     name="A",
                     disabled=True,
                     notice_key="a",
-                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
                     data_uses=[],
                     enforcement_level=EnforcementLevel.system_wide,
-                    displayed_in_overlay=True,
                 )
             ],
         )
@@ -942,11 +936,9 @@ class TestUpsertPrivacyNoticeTemplates:
                     name="A",
                     disabled=True,
                     notice_key="a",
-                    regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
                     data_uses=[],
                     enforcement_level=EnforcementLevel.system_wide,
-                    displayed_in_overlay=True,
                 )
             ],
         )
@@ -1264,7 +1256,7 @@ class TestUpsertDefaultExperienceConfig:
             **{
                 "component": ComponentType.overlay,
                 "id": "test_id",
-                "regions": ["us_ca"],
+                "regions": [PrivacyNoticeRegion.us_ca],
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
@@ -1344,7 +1336,6 @@ class TestUpsertDefaultExperienceConfig:
                 **{
                     "component": ComponentType.overlay,
                     "id": "test_id",
-                    "regions": ["us_ca"],
                     "privacy_notice_keys": ["example_privacy_notice"],
                     "translations": [
                         {

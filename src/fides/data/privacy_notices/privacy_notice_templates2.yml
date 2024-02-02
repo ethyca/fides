@@ -3,7 +3,6 @@ privacy_notices:
 - name: Data sales and sharing
   notice_key: data_sales_sharing_gpp_us_state
   id: pri_8a6a69d1-d0d1-4e5f-89c4-d17f448e0f6e_dss_gpp_state
-  description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Data sales and sharing (GPP, state-by-state)
   consent_mechanism: opt_out
   data_uses:
@@ -169,7 +168,6 @@ privacy_notices:
 - name: Sensitive Personal Data Sharing
   notice_key: sensitive_personal_data_sharing_gpp_california
   id: pri_257f4f4d-d991-403a-9cb4-83e17c5dba85_spds_gpp_california
-  description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about what information is used for this purpose in our privacy notice. Opt-out to limit the use of your sensitive personal information.
   internal_description: Sensitive personal data sharing (GPP, California)
   consent_mechanism: opt_out
   # data_uses: data uses must be applied manually
@@ -341,18 +339,12 @@ privacy_notices:
 - name: Sensitive Personal Data Sharing
   notice_key: sensitive_personal_data_sharing_gpp_us_national
   id: pri_9bb9cb76-e7ad-40ee-b5c9-9f0527f9b4f1_spds_gpp_us_nat
-  description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about how this information is used in our privacy notice.
   internal_description: Sensitive Personal Data Sharing (GPP, US National)
-  regions:
-    - us
   consent_mechanism: opt_in
   # data_uses: data uses must be applied manually
   enforcement_level: not_applicable
   disabled: True
   has_gpc_flag: False
-  displayed_in_privacy_center: True
-  displayed_in_overlay: True
-  displayed_in_api: False
   framework: gpp_us_national
   translations:
     - language: en_us

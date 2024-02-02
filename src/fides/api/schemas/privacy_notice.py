@@ -79,7 +79,7 @@ class PrivacyNotice(FidesSchema):
 
         use_enum_values = True
         orm_mode = True
-        extra = Extra.ignore
+        extra = Extra.forbid
 
     @root_validator(pre=True)
     def validate_framework(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -172,7 +172,6 @@ class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNotice):
 
     created_at: datetime
     updated_at: datetime
-    version: float
     cookies: List[CookieSchema]
     systems_applicable: bool = False
     translations: List[NoticeTranslationResponse] = []
