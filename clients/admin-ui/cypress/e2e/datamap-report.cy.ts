@@ -60,15 +60,9 @@ describe("Datamap table and spatial view", () => {
 
   it("can render custom fields", () => {
     // Should render the custom fields as columns
-    cy.getByTestId("column-system_starter_pokemon").contains(
-      "System starter pokemon"
-    );
-    cy.getByTestId("column-system_pokemon_party").contains(
-      "System pokemon party"
-    );
-    cy.getByTestId("column-privacy_declaration_color").contains(
-      "Privacy declaration color"
-    );
+    cy.getByTestId("column-system_starter_pokemon").contains("Starter pokemon");
+    cy.getByTestId("column-system_pokemon_party").contains("Pokemon party");
+    cy.getByTestId("column-privacy_declaration_color").contains("Color");
 
     // Pokemon party is multi-select, so we should have a menu to allow grouping/displaying all
     cy.getByTestId("row-0-col-system_pokemon_party").contains("3");
