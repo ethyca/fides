@@ -403,7 +403,7 @@ def get_snowflake_schemas(
     Reference: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/157
 
     Due to performance issues resulting in FastAPI timeouts, parallelization is
-    no used. The default number of threads to be used is 4 to cover most existing
+    now used. The default number of threads to be used is 4 to cover most existing
     use cases, bumping to 8 when the number of tables is over 250.
     """
     schema_cursor = engine.execute(text("SHOW SCHEMAS"))
