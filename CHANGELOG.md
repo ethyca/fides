@@ -23,6 +23,7 @@ The types of changes are:
 
 - View more modal to regulations page [#4574](https://github.com/ethyca/fides/pull/4574)
 - Columns in data map reporting, adding multiple systems, and consent configuration tables can be resized. In the data map reporting table, fields with multiple values can show all or collapse all [#4569](https://github.com/ethyca/fides/pull/4569)
+- Show custom fields in the data map report table [#4579](https://github.com/ethyca/fides/pull/4579)
 
 ### Changed
 
@@ -30,7 +31,8 @@ The types of changes are:
 - Updating return value for crud.get_custom_fields_filtered [#4575](https://github.com/ethyca/fides/pull/4575)
 - Updated user deletion confirmation flow to only require one confirmatory input [#4402](https://github.com/ethyca/fides/pull/4402) 
 - Moved `pymssl` to an optional dependency no longer installed by default with our python package [#4581](https://github.com/ethyca/fides/pull/4581)
-
+- Fixed CORS domain update functionality [#4570](https://github.com/ethyca/fides/pull/4570)
+- Update Domains page with ability to add/remove "organization" domains, view "administrator" domains set via security settings, and improve various UX bugs and copy [#4584](https://github.com/ethyca/fides/pull/4584)
 
 ### Fixed
 

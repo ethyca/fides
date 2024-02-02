@@ -1,5 +1,4 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { narrow } from "narrow-minded";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -501,31 +500,52 @@ export const {
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
-const EMPTY_CORS_DOMAINS: CORSOrigins = {
-  cors_origins: [],
+/**
+ * NOTE:
+ * 1. "configSet" stores the results from `/api/v1/config?api_set=false`, and
+ *    contains the config settings that are set exclusively on the server via
+ *    TOML/ENV configuration.
+ * 2. "apiSet" stores the results from `/api/v1/config?api_set=true`, and
+ *    are the config settings that we can read/write via the API.
+ *
+ * These two settings are merged together at runtime by Fides when enforcing
+ * CORS origins, and although they're awkwardly-named concepts (try saying
+ * "config set config settings" 10 times fast), we're mirroring the API here to
+ * be consistent!
+ */
+export type CORSOriginsSettings = {
+  // EXTRA NOTE: We also include the "cors_origin_regex" setting here as a read-only config
+  configSet: Pick<
+    SecurityApplicationConfig,
+    "cors_origins" | "cors_origin_regex"
+  >;
+  apiSet: Pick<SecurityApplicationConfig, "cors_origins">;
 };
-export const selectCORSOrigins = () =>
+
+export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
   createSelector(
     [
       (state) => state,
       privacyRequestApi.endpoints.getConfigurationSettings.select({
         api_set: true,
       }),
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: false,
+      }),
     ],
-    (_, { data }) => {
-      const hasCorsOrigins = narrow(
-        {
-          security: {
-            cors_origins: ["string"],
-          },
+    (_, { data: apiSetConfig }, { data: configSetConfig }) => {
+      // Return a single state contains the current CORS config with both
+      // config-set and api-set values
+      const currentCORSOriginSettings: CORSOriginsSettings = {
+        configSet: {
+          cors_origins: configSetConfig?.security?.cors_origins || [],
+          cors_origin_regex: configSetConfig?.security?.cors_origin_regex,
         },
-        data
-      );
-
-      const corsOrigins: CORSOrigins = {
-        cors_origins: data?.security?.cors_origins,
+        apiSet: {
+          cors_origins: apiSetConfig?.security?.cors_origins || [],
+        },
       };
-      return hasCorsOrigins ? corsOrigins : EMPTY_CORS_DOMAINS;
+      return currentCORSOriginSettings;
     }
   );
 
