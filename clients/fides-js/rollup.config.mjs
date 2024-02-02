@@ -8,15 +8,33 @@ import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
 
-const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 24; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
-// TCF
-const GZIP_SIZE_TCF_ERROR_KB = 43;
-const GZIP_SIZE_TCF_WARN_KB = 35;
+// Define some constants for each of our script bundles
+const NAME = "fides";
+const SCRIPTS = [
+  // 1) fides.js
+  {
+    name: NAME,
+    gzipWarnSizeKb: 15,
+    gzipErrorSizeKb: 24,
+  },
+  // 2) fides-tcf.js
+  {
+    name: `${NAME}-tcf`,
+    gzipWarnSizeKb: 35,
+    gzipErrorSizeKb: 43,
+  },
+  // 3) fides-ext-gpp.js
+  {
+    name: `${NAME}-ext-gpp`,
+    gzipWarnSizeKb: 10,
+    gzipErrorSizeKb: 15,
+    isExtension: true,
+  },
+];
 
+// Alias usages of React to use Preact instead
 const preactAliases = {
   entries: [
     { find: "react", replacement: "preact/compat" },
@@ -26,6 +44,7 @@ const preactAliases = {
   ],
 };
 
+// Define the core plugins used for all the FidesJS script bundles
 const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   alias(preactAliases),
   nodeResolve(),
@@ -76,25 +95,6 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
       },
     ],
   }),
-];
-
-const SCRIPTS = [
-  {
-    name: NAME,
-    gzipWarnSizeKb: GZIP_SIZE_WARN_KB,
-    gzipErrorSizeKb: GZIP_SIZE_ERROR_KB,
-  },
-  {
-    name: `${NAME}-tcf`,
-    gzipWarnSizeKb: GZIP_SIZE_TCF_WARN_KB,
-    gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
-  },
-  {
-    name: `${NAME}-ext-gpp`,
-    gzipWarnSizeKb: 10,
-    gzipErrorSizeKb: 15,
-    isExtension: true,
-  },
 ];
 
 /**

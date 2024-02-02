@@ -23,6 +23,9 @@ export default defineConfig({
           }
         }
       );
+      // eslint-disable-next-line global-require
+      require("@cypress/code-coverage/task")(on, config);
+      return config;
     },
   },
 
