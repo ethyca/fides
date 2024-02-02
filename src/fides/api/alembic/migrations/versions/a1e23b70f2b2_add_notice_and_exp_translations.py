@@ -1,7 +1,7 @@
 """add notice and exp translations
 
 Revision ID: a1e23b70f2b2
-Revises: 956d21f13def
+Revises: 68cb26f3492d
 Create Date: 2024-02-01 21:49:20.792733
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "a1e23b70f2b2"
-down_revision = "956d21f13def"
+down_revision = "68cb26f3492d"
 branch_labels = None
 depends_on = None
 
