@@ -1,6 +1,7 @@
-import { h, FunctionComponent, Fragment } from "preact";
-import { useState, useCallback, useMemo } from "preact/hooks";
+import { h, Fragment, FunctionComponent } from "preact";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import {
+  ComponentType,
   ConsentMechanism,
   ConsentMethod,
   PrivacyNotice,
@@ -50,9 +51,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     [experience.privacy_notices]
   );
 
-  const isAllNoticeOnly = privacyNotices.every(
-    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-  );
+  // DEFER: for now, treat banner-only config as notice-only
+  const isAllNoticeOnly =
+    privacyNotices.every(
+      (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+    ) || experience.component === ComponentType.BANNER;
 
   const { servedNotice } = useConsentServed({
     notices: privacyNotices,

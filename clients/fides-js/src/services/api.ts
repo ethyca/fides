@@ -57,7 +57,7 @@ export const fetchExperience = async (
   let params: any = {
     show_disabled: "false",
     region: userLocationString,
-    component: ComponentType.OVERLAY,
+    // todo- need diff endpoint signature to call list of component types
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",

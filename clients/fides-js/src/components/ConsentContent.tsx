@@ -38,7 +38,7 @@ const ConsentModal = ({
             {...title}
             className="fides-modal-title"
           >
-            {experience.title}
+            {experience.translations[0].title}
           </div>
           <p
             data-testid="fides-modal-description"
@@ -46,7 +46,7 @@ const ConsentModal = ({
           >
             <ExperienceDescription
               onVendorPageClick={onVendorPageClick}
-              description={experience.description}
+              description={experience.translations[0].description}
               allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>

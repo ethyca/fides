@@ -149,7 +149,9 @@ export const experienceIsValid = (
     return false;
   }
   if (
-    effectiveExperience.component !== ComponentType.OVERLAY &&
+    effectiveExperience.component !== ComponentType.MODAL &&
+    effectiveExperience.component !== ComponentType.BANNER &&
+    effectiveExperience.component !== ComponentType.BANNER_AND_MODAL &&
     effectiveExperience.component !== ComponentType.TCF_OVERLAY
   ) {
     debugLog(
@@ -159,11 +161,13 @@ export const experienceIsValid = (
     return false;
   }
   if (
-    effectiveExperience.component === ComponentType.OVERLAY &&
-    !(
-      effectiveExperience.privacy_notices &&
-      effectiveExperience.privacy_notices.length > 0
-    )
+    effectiveExperience.component === ComponentType.MODAL ||
+    effectiveExperience.component === ComponentType.BANNER ||
+    (effectiveExperience.component === ComponentType.BANNER_AND_MODAL &&
+      !(
+        effectiveExperience.privacy_notices &&
+        effectiveExperience.privacy_notices.length > 0
+      ))
   ) {
     debugLog(
       options.debug,

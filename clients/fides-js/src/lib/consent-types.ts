@@ -315,6 +315,7 @@ export type ExperienceMeta = {
 export type PrivacyExperience = {
   region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
   component?: ComponentType;
+  disabled?: boolean;
   experience_config?: ExperienceConfig;
   id: string;
   created_at: string;
@@ -334,17 +335,30 @@ export type PrivacyExperience = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
-  gpp_settings?: GPPSettings;
+  gpp_settings?: GPPSettings; // todo- is this going to stay here?
 };
 
 export type ExperienceConfig = {
+  translations: Array<ExperienceConfigTranslation>;
+  banner_enabled?: BannerEnabled;
+  dismissable?: boolean;
+  allow_language_selection?: boolean;
+  custom_asset_id?: string;
+  id: string;
+  component: ComponentType;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ExperienceConfigTranslation = {
+  // will this have an id?
+  language: string;
   accept_button_label?: string;
   acknowledge_button_label?: string;
-  banner_description?: string;
-  banner_enabled?: BannerEnabled;
-  banner_title?: string;
+  banner_description?: string; // diff between banner_description and description?
+  banner_enabled?: BannerEnabled; // todo- duplicate from experienceconfig level?
+  banner_title?: string; // diff between banner_title and title?
   description?: string;
-  disabled?: boolean;
   is_default?: boolean;
   privacy_policy_link_label?: string;
   privacy_policy_url?: string;
@@ -352,13 +366,7 @@ export type ExperienceConfig = {
   reject_button_label?: string;
   save_button_label?: string;
   title?: string;
-  id: string;
-  component: ComponentType;
   experience_config_history_id: string;
-  version: number;
-  created_at: string;
-  updated_at: string;
-  regions: Array<string>;
 };
 
 export type Cookies = {
@@ -375,27 +383,34 @@ export enum PrivacyNoticeFramework {
 export type PrivacyNotice = {
   name?: string;
   notice_key: string;
-  description?: string;
   internal_description?: string;
   origin?: string;
-  regions?: Array<string>;
   consent_mechanism?: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
   has_gpc_flag?: boolean;
-  displayed_in_privacy_center?: boolean;
-  displayed_in_overlay?: boolean;
-  displayed_in_api?: boolean;
-  framework?: PrivacyNoticeFramework;
-  gpp_field_mapping?: Array<GPPFieldMapping>;
+  displayed_in_privacy_center?: boolean; // todo- is this going to stay here?
+  displayed_in_overlay?: boolean; // todo- is this going to stay here?
+  displayed_in_api?: boolean; // todo- is this going to stay here?
+  framework?: PrivacyNoticeFramework; // todo- is this going to stay here?
+  gpp_field_mapping?: Array<GPPFieldMapping>; // todo- is this going to stay here?
   id: string;
   created_at: string;
   updated_at: string;
-  version: number;
-  privacy_notice_history_id: string;
   cookies: Array<Cookies>;
   default_preference: UserConsentPreference;
+  systems_applicable?: boolean;
+  translations: Array<PrivacyNoticeTranslations>;
+};
+
+export type PrivacyNoticeTranslations = {
+  id: string;
+  language: string;
+  title?: string;
+  description?: string;
+  version: number;
+  privacy_notice_history_id: string;
 };
 
 // This type is exclusively used on front-end
@@ -423,7 +438,9 @@ export enum UserConsentPreference {
 }
 
 export enum ComponentType {
-  OVERLAY = "overlay",
+  BANNER = "banner",
+  MODAL = "modal",
+  BANNER_AND_MODAL = "banner_and_modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
 }

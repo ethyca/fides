@@ -102,7 +102,11 @@ const automaticallyApplyGPCPreferences = ({
   effectiveExperience?: PrivacyExperience;
   fidesOptions: FidesOptions;
 }): boolean => {
-  if (!effectiveExperience || !effectiveExperience.privacy_notices) {
+  if (
+    !effectiveExperience ||
+    effectiveExperience?.privacy_notices == null ||
+    effectiveExperience.privacy_notices.length === 0
+  ) {
     return false;
   }
 

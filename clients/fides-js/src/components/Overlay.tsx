@@ -7,6 +7,7 @@ import {
   useRef,
 } from "preact/hooks";
 import {
+  ComponentType,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -75,7 +76,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: experience?.experience_config?.title || "",
+    title: experience?.experience_config?.translations[0].title || "", // fixme- use internationalization lib
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },
@@ -102,53 +103,64 @@ const Overlay: FunctionComponent<Props> = ({
     }
   }, [options, onOpen]);
 
-  useEffect(() => {
-    const delayBanner = setTimeout(() => {
-      setBannerIsOpen(true);
-    }, delayBannerMilliseconds);
-    return () => clearTimeout(delayBanner);
-  }, [setBannerIsOpen]);
-
-  useEffect(() => {
-    window.Fides.showModal = handleOpenModal;
-    document.body.classList.add("fides-overlay-modal-link-shown");
-    // use a delay to ensure that link exists in the DOM
-    const delayModalLinkBinding = setTimeout(() => {
-      const modalLinkId = options.modalLinkId || "fides-modal-link";
-      const modalLinkEl = document.getElementById(modalLinkId);
-      if (modalLinkEl) {
-        debugLog(
-          options.debug,
-          "Modal link element found, updating it to show and trigger modal on click."
-        );
-        modalLinkRef.current = modalLinkEl;
-        modalLinkRef.current.addEventListener("click", window.Fides.showModal);
-        // Update to show the pre-existing modal link in the DOM
-        modalLinkRef.current.classList.add("fides-modal-link-shown");
-      } else {
-        debugLog(options.debug, "Modal link element not found.");
-      }
-    }, delayModalLinkMilliseconds);
-    return () => {
-      clearTimeout(delayModalLinkBinding);
-      if (modalLinkRef.current) {
-        modalLinkRef.current.removeEventListener(
-          "click",
-          window.Fides.showModal
-        );
-      }
-      window.Fides.showModal = defaultShowModal;
-    };
-  }, [options.modalLinkId, options.debug, handleOpenModal]);
-
   const showBanner = useMemo(
     () =>
-      !options.fidesDisableBanner &&
-      experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie) &&
-      !options.fidesEmbed,
+      (!options.fidesDisableBanner &&
+        experience.show_banner &&
+        experience?.experience_config?.component === ComponentType.BANNER) ||
+      (experience?.experience_config?.component ===
+        ComponentType.BANNER_AND_MODAL &&
+        shouldResurfaceConsent(experience, cookie) &&
+        !options.fidesEmbed),
     [cookie, experience, options]
   );
+
+  useEffect(() => {
+    if (showBanner) {
+      const delayBanner = setTimeout(() => {
+        setBannerIsOpen(true);
+      }, delayBannerMilliseconds);
+      return () => clearTimeout(delayBanner);
+    }
+  }, [showBanner, setBannerIsOpen]);
+
+  useEffect(() => {
+    if (
+        experience?.experience_config?.component === ComponentType.MODAL ||
+        experience?.experience_config?.component ===
+        ComponentType.BANNER_AND_MODAL
+    ) {
+      window.Fides.showModal = handleOpenModal;
+      document.body.classList.add("fides-overlay-modal-link-shown");
+      // use a delay to ensure that link exists in the DOM
+      const delayModalLinkBinding = setTimeout(() => {
+        const modalLinkId = options.modalLinkId || "fides-modal-link";
+        const modalLinkEl = document.getElementById(modalLinkId);
+        if (modalLinkEl) {
+          debugLog(
+              options.debug,
+              "Modal link element found, updating it to show and trigger modal on click."
+          );
+          modalLinkRef.current = modalLinkEl;
+          modalLinkRef.current.addEventListener("click", window.Fides.showModal);
+          // Update to show the pre-existing modal link in the DOM
+          modalLinkRef.current.classList.add("fides-modal-link-shown");
+        } else {
+          debugLog(options.debug, "Modal link element not found.");
+        }
+      }, delayModalLinkMilliseconds);
+      return () => {
+        clearTimeout(delayModalLinkBinding);
+        if (modalLinkRef.current) {
+          modalLinkRef.current.removeEventListener(
+              "click",
+              window.Fides.showModal
+          );
+        }
+        window.Fides.showModal = defaultShowModal;
+      };
+    }
+  }, [options.modalLinkId, options.debug, handleOpenModal, experience]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
