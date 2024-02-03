@@ -557,7 +557,6 @@ class TestMessageDispatchService:
                                 privacy_notice_history=PrivacyNoticeHistorySchema(
                                     name="Analytics",
                                     notice_key="analytics",
-                                    regions=["fr"],
                                     id="test_3",
                                     translation_id="39391",
                                     consent_mechanism=ConsentMechanism.opt_in,
