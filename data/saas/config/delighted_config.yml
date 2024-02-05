@@ -57,6 +57,7 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: person.id
                   direction: from
+          ignore_errors: [404]
     - name: survey_response
       requests:
         read:

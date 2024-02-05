@@ -40,14 +40,14 @@ saas_config:
               - name: email
                 identity: email
             data_path: data
-            ignore_errors: true
+            ignore_errors: [404]
           - method: GET
             path: /v1/customers/phone=<phone_number>
             param_values:
               - name: phone_number
                 identity: phone_number
             data_path: data
-            ignore_errors: true
+            ignore_errors: [404]
         delete:
           method: DELETE
           path: /v1/customers/<customer_id>
@@ -57,3 +57,4 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
+          ignore_errors: [404]
