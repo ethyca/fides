@@ -475,6 +475,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         # remove protected fields from the cloned dict
         cloned_attributes.pop("_sa_instance_state", None)
         cloned_attributes.pop("id", None)
+        cloned_attributes.pop("translations", [])
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
