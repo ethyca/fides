@@ -457,6 +457,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             NoticeTranslation.language.in_(translations_to_remove),
             NoticeTranslation.privacy_notice_id == self.id,
         ).delete()
+        db.commit()
 
         return self  # type: ignore[return-value]
 
