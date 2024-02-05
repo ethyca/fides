@@ -298,7 +298,7 @@ export const DatamapReportTable = () => {
     // Determine custom field keys by
     // 1. If they aren't in our expected, static, columns
     // 2. If they start with one of the custom field prefixes
-    const datamapKeys = datamapReport
+    const datamapKeys = datamapReport?.items?.length
       ? Object.keys(datamapReport.items[0])
       : [];
     const defaultKeys = Object.values(COLUMN_IDS);
@@ -919,8 +919,13 @@ export const DatamapReportTable = () => {
 
   return (
     <Flex flex={1} direction="column" overflow="auto">
-      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-        Data Map Report
+      <Heading
+        mb={8}
+        fontSize="2xl"
+        fontWeight="semibold"
+        data-testid="datamap-report-heading"
+      >
+        Data map report
       </Heading>
       <DatamapReportFilterModal
         isOpen={isOpen}
