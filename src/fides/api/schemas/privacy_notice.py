@@ -7,7 +7,7 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
 from pydantic import Extra, root_validator
 
-from fides.api.custom_types import GPPMechanismConsentValue
+from fides.api.custom_types import GPPMechanismConsentValue, HtmlStr
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel, Language
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import (
@@ -25,7 +25,11 @@ class NoticeTranslation(FidesSchema):
     title: str
     description: Optional[str] = None
 
+
+class NoticeTranslationCreate(NoticeTranslation):
     class Config:
+        """For when we're creating templates - so the Notice Translation Language can be serialized into JSON"""
+
         use_enum_values = True
 
 
@@ -112,7 +116,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
     name: str
     consent_mechanism: ConsentMechanism
     enforcement_level: EnforcementLevel
-    translations: Optional[List[NoticeTranslation]]
+    translations: Optional[List[NoticeTranslationCreate]]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -151,7 +155,7 @@ class PrivacyNoticeWithId(PrivacyNotice):
     """
 
     id: str
-    translations: List[NoticeTranslation] = []
+    translations: List[NoticeTranslationCreate] = []
 
     @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -182,7 +186,6 @@ class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNotice):
     """
 
     id: str
-
     created_at: datetime
     updated_at: datetime
     cookies: List[CookieSchema]
