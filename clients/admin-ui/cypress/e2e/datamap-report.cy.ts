@@ -74,4 +74,11 @@ describe("Datamap table and spatial view", () => {
       cy.getByTestId("row-0-col-system_pokemon_party").contains(pokemon);
     });
   });
+
+  it("can render empty datamap report", () => {
+    cy.intercept("GET", "/api/v1/plus/datamap/minimal*", {
+      body: { items: [], page: 1, pages: 0, size: 25, total: 0 },
+    }).as("getDatamapMinimalEmpty");
+    cy.getByTestId("datamap-report-heading").should("be.visible");
+  });
 });
