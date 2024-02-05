@@ -54,11 +54,6 @@ def talkable_erasure_data(
             "email": talkable_erasure_identity_email,
             "phone_number": "+19515551234",
             "username": "ethycatrtf",
-            "custom_properties": {
-                "country": "US",
-                "eye_color": "brown",
-                "person_occupation": "marketing",
-            },
             "gated_param_subscribed": False,
             "unsubscribed": False,
         },
