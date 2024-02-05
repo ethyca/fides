@@ -77,7 +77,6 @@ class PrivacyNotice(FidesSchema):
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
 
-        use_enum_values = True
         orm_mode = True
         extra = Extra.forbid
 
@@ -114,6 +113,13 @@ class PrivacyNoticeCreation(PrivacyNotice):
     consent_mechanism: ConsentMechanism
     enforcement_level: EnforcementLevel
     translations: Optional[List[NoticeTranslation]]
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        orm_mode = True
+        extra = Extra.forbid
+        use_enum_values = True
 
     @root_validator(pre=True)
     def validate_notice_key(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -153,6 +159,13 @@ class PrivacyNoticeWithId(PrivacyNotice):
         Ensure no two translations with the same language are supplied
         """
         return validate_translations(values)
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        orm_mode = True
+        extra = Extra.forbid
+        use_enum_values = True
 
 
 class UserSpecificConsentDetails(FidesSchema):

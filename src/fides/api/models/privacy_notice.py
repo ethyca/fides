@@ -407,7 +407,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         """
         request_translations = data.pop("translations", [])
 
-        config_updated: bool = update_if_modified(self, db=db, data=data)
+        base_notice_updated: bool = update_if_modified(self, db=db, data=data)
 
         for translation_data in request_translations:
             existing_translation: Optional[
@@ -428,8 +428,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                     data={**translation_data, "privacy_notice_id": self.id},
                 )
 
-            if config_updated or translation_updated:
-                new_version: float = translation.version or 0.0
+            if base_notice_updated or translation_updated:
+                existing_version: float = translation.version or 0.0
                 history_data: dict = create_historical_data_from_record(self)
                 history_data.pop("translations", None)
                 updated_translation_data: dict = create_historical_data_from_record(
@@ -441,7 +441,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                         **history_data,
                         **updated_translation_data,
                         "translation_id": translation.id,
-                        "version": new_version + 1.0,
+                        "version": existing_version + 1.0,
                     },
                     check_name=False,
                 )

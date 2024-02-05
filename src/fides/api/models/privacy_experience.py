@@ -317,7 +317,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                 )
 
             if config_updated or translation_updated:
-                new_version: float = translation.version or 0.0
+                existing_version: float = translation.version or 0.0
                 history_data: dict = create_historical_data_from_record(self)
                 history_data.pop("privacy_notices", None)
                 history_data.pop("translations", None)
@@ -330,7 +330,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                         **history_data,
                         **updated_translation_data,
                         "translation_id": translation.id,
-                        "version": new_version + 1.0,
+                        "version": existing_version + 1.0,
                     },
                     check_name=False,
                 )
