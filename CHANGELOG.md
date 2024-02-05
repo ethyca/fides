@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.29.0...main)
 
+### Added
+
+- Access and erausre support for Talkable [#4589](https://github.com/ethyca/fides/pull/4589)
+
 ## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
 
 ### Added
