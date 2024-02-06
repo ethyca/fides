@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 - Add enum and registry of supported languages [#4592](https://github.com/ethyca/fides/pull/4592)
+- Access and erasure support for Talkable [#4589](https://github.com/ethyca/fides/pull/4589)
 
 ### Fixed
 
