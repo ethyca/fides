@@ -40,6 +40,7 @@ from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
     should_opt_in_to_service,
 )
+from fides.api.util.logger_context_utils import saas_connector_details
 from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     assign_placeholders,
@@ -134,12 +135,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             self.secrets,
         )
         client: AuthenticatedClient = self.create_client()
-        with logger.contextualize(
-            system_id=(
-                self.configuration.system.id if self.configuration.system else None
-            ),
-            connection_key=self.configuration.key,
-        ):
+        with logger.contextualize(**saas_connector_details(self)):
             client.send(prepared_request, test_request.ignore_errors)
         self.unset_connector_state()
         return ConnectionTestStatus.succeeded
@@ -181,9 +177,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
         #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
         read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
-        delete_request: Optional[
-            SaaSRequest
-        ] = query_config.get_erasure_request_by_action("delete")
+        delete_request: Optional[SaaSRequest] = (
+            query_config.get_erasure_request_by_action("delete")
+        )
 
         if not read_requests:
             # if a delete request is specified for this endpoint without a read request
@@ -290,14 +286,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
 
         client: AuthenticatedClient = self.create_client()
-        with logger.contextualize(
-            system_id=(
-                self.configuration.system.id if self.configuration.system else None
-            ),
-            connection_key=self.configuration.key,
-            collection=self.current_collection_name,
-            privacy_request_id=self.current_privacy_request.id,
-        ):
+        with logger.contextualize(**saas_connector_details(self)):
             response: Response = client.send(
                 prepared_request, saas_request.ignore_errors
             )
@@ -449,14 +438,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     )
                     continue
                 raise exc
-            with logger.contextualize(
-                system_id=(
-                    self.configuration.system.id if self.configuration.system else None
-                ),
-                connection_key=self.configuration.key,
-                collection=self.current_collection_name,
-                privacy_request_id=self.current_privacy_request.id,
-            ):
+            with logger.contextualize(**saas_connector_details(self)):
                 client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
 
@@ -513,9 +495,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
             )
 
-        matching_consent_requests: List[
-            SaaSRequest
-        ] = self._get_consent_requests_by_preference(should_opt_in)
+        matching_consent_requests: List[SaaSRequest] = (
+            self._get_consent_requests_by_preference(should_opt_in)
+        )
 
         query_config.action = (
             "opt_in" if should_opt_in else "opt_out"
@@ -560,14 +542,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     continue
                 raise exc
             client: AuthenticatedClient = self.create_client()
-            with logger.contextualize(
-                system_id=self.configuration.system.id
-                if self.configuration.system
-                else None,
-                connection_key=self.configuration.key,
-                collection=self.current_collection_name,
-                privacy_request_id=self.current_privacy_request.id,
-            ):
+            with logger.contextualize(**saas_connector_details(self)):
                 client.send(prepared_request)
             fired = True
         self.unset_connector_state()
@@ -632,10 +607,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType.READ
+        override_function: Callable[..., Union[List[Row], int]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.READ
+            )
         )
         try:
             return override_function(
@@ -672,10 +647,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType(query_config.action)
+        override_function: Callable[..., Union[List[Row], int]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType(query_config.action)
+            )
         )
         try:
             # if using a saas override, we still need to use the core framework
@@ -704,9 +679,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
-        consent_requests: Optional[
-            ConsentRequestMap
-        ] = self.saas_config.consent_requests
+        consent_requests: Optional[ConsentRequestMap] = (
+            self.saas_config.consent_requests
+        )
 
         if not consent_requests:
             return []

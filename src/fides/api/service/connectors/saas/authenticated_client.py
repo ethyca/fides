@@ -5,7 +5,7 @@ import re
 import time
 from functools import wraps
 from time import sleep
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 from urllib.parse import urlparse
 
 from loguru import logger
@@ -21,6 +21,7 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
+from fides.api.util.logger_context_utils import exception_details, request_details
 from fides.api.util.saas_util import deny_unsafe_hosts
 from fides.config import CONFIG
 
@@ -100,7 +101,7 @@ class AuthenticatedClient:
         def decorator(func: Callable) -> Callable:
             @wraps(func)
             def result(*args: Any, **kwargs: Any) -> Response:
-                self = args[0]
+                self: AuthenticatedClient = args[0]
                 last_exception: Optional[Union[BaseException, Exception]] = None
 
                 for attempt in range(retry_count + 1):
@@ -128,6 +129,9 @@ class AuthenticatedClient:
                         dev_mode_log = f" with error: {exc}" if CONFIG.dev_mode else ""
                         last_exception = ConnectionException(
                             f"Operational Error connecting to '{self.configuration.key}'{dev_mode_log}"
+                        )
+                        logger.bind(**exception_details(exc, self.uri)).error(
+                            "Connector request failed."
                         )
                         # requests library can raise ConnectionError, Timeout or TooManyRedirects
                         # we will not retry these as they don't usually point to intermittent issues
@@ -217,21 +221,25 @@ class AuthenticatedClient:
         ignore_error = self._should_ignore_error(
             status_code=response.status_code, errors_to_ignore=ignore_errors
         )
-        request_details = generate_request_details(
-            prepared_request, response, ignore_error
+        context_logger = logger.bind(
+            **request_details(prepared_request, response, ignore_error)
         )
-        if request_details is not None:
-            logger.bind(**request_details).info("Connector request details")
 
-        if not response.ok:
-            if ignore_error:
-                logger.info(
-                    "Ignoring errors on response with status code {} as configured.",
-                    response.status_code,
-                )
-                return response
-            raise RequestFailureResponseException(response=response)
-        return response
+        if response.ok:
+            context_logger.info("Connector request successful.")
+            return response
+
+        if ignore_error:
+            context_logger.info(
+                "Connector request successful. Ignoring errors on response with status code {} as configured.",
+                response.status_code,
+            )
+            return response
+
+        context_logger.error(
+            "Connector request failed with status code {}.", response.status_code
+        )
+        raise RequestFailureResponseException(response=response)
 
 
 class RequestFailureResponseException(FidesopsException):
@@ -266,31 +274,3 @@ def get_retry_after(response: Response, max_retry_after: int = 300) -> Optional[
 
     seconds = max(seconds, 0)
     return min(seconds, max_retry_after)
-
-
-def generate_request_details(
-    prepared_request: PreparedRequest, response: Response, ignore_error: bool
-) -> Dict[str, Any]:
-    details = {
-        "status_code": response.status_code,
-        "method": prepared_request.method,
-        "url": prepared_request.url,
-    }
-
-    # add body and response content if in dev mode and present
-    if CONFIG.dev_mode:
-        if prepared_request.body is not None:
-            details["body"] = prepared_request.body
-        if response.content:
-            details["response"] = response.content.decode("utf-8")
-
-    # Assign error group only if error should not be ignored
-    if not ignore_error:
-        if response.status_code in [401, 403]:
-            details["error_group"] = "Authentication error"
-        elif 400 <= response.status_code < 500:
-            details["error_group"] = "Client error"
-        elif 500 <= response.status_code:
-            details["error_group"] = "Server error"
-
-    return details
