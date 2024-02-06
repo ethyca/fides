@@ -17,7 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.29.0...main)
 
+### Added
+
+- Add enum and registry of supported languages [#4592](https://github.com/ethyca/fides/pull/4592)
+
 ### Fixed
+
 - Fixing issue when modifying Policies, Rules, or RuleTargets as a root user [#4582](https://github.com/ethyca/fides/pull/4582)
 
 ## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
