@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import ValidationError
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
-    Language,
     NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
@@ -16,6 +15,7 @@ from fides.api.models.privacy_notice import (
     new_data_use_conflicts_with_existing_use,
 )
 from fides.api.models.sql_models import Cookies
+from fides.api.schemas.language import SupportedLanguage
 
 
 class TestPrivacyNoticeModel:
@@ -169,7 +169,7 @@ class TestPrivacyNoticeModel:
                 "name": "updated name",
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "title": "Example privacy notice",
                         "description": "user&#x27;s description &lt;script /&gt;",
                     }
@@ -220,7 +220,7 @@ class TestPrivacyNoticeModel:
                 "data_uses": ["data_use_1", "data_use_2"],
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "title": "Example privacy notice",
                     }
                 ],
@@ -283,12 +283,13 @@ class TestPrivacyNoticeModel:
             data={
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "title": "Example privacy notice",
                         "description": "user&#x27;s description &lt;script /&gt;",
                     },
                     {
-                        "language": Language.en_gb,
+                        # pretend this is spanish!
+                        "language": SupportedLanguage.spanish,
                         "title": "Example privacy notice!",
                     },
                 ],
@@ -309,21 +310,21 @@ class TestPrivacyNoticeModel:
         translation = privacy_notice.translations[0]
 
         # US English translation unchanged
-        assert translation.language == Language.en_us
+        assert translation.language == SupportedLanguage.english
         assert translation.title == "Example privacy notice"
 
-        # US British translation translation added
-        translation_gb = privacy_notice.translations[1]
+        # "Spanish" translation translation added
+        translation_es = privacy_notice.translations[1]
 
-        assert translation_gb.language == Language.en_gb
-        assert translation_gb.title == "Example privacy notice!"
+        assert translation_es.language == SupportedLanguage.spanish
+        assert translation_es.title == "Example privacy notice!"
 
         # make sure our latest entry in history table corresponds to current record
         notice_history = (
             PrivacyNoticeHistory.query(db)
             .filter(
                 PrivacyNoticeHistory.version == 1.0,
-                PrivacyNoticeHistory.translation_id == translation_gb.id,
+                PrivacyNoticeHistory.translation_id == translation_es.id,
             )
             .first()
         )
@@ -359,7 +360,7 @@ class TestPrivacyNoticeModel:
             data={
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "title": "Example privacy notice with updated title",
                         "description": "user&#x27;s description &lt;script /&gt;",
                     }

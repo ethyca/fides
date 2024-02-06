@@ -4,7 +4,7 @@ from html import escape
 import pytest
 from fastapi import HTTPException
 
-from fides.api.models.privacy_notice import Language
+from fides.api.schemas.language import SupportedLanguage
 from fides.api.schemas.privacy_notice import NoticeTranslation, PrivacyNotice
 from fides.api.util.endpoint_utils import (
     human_friendly_list,
@@ -38,12 +38,14 @@ class TestTransformFields:
     def test_transform_escape(self):
         escaped_field = "user&#x27;s description &lt;script /&gt;"
         translation_1 = NoticeTranslation(
-            language=Language.en_us, title="whew", description=escaped_field
+            language=SupportedLanguage.english, title="whew", description=escaped_field
         )
 
         unescaped_field = "user's description <script />"
         translation_2 = NoticeTranslation(
-            language=Language.en_us, title="whew", description=unescaped_field
+            language=SupportedLanguage.english,
+            title="whew",
+            description=unescaped_field,
         )
         translation_2 = transform_fields(escape, translation_2, ["description"])
 

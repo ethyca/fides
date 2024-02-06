@@ -14,11 +14,8 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfig,
     link_notices_to_experience_config,
 )
-from fides.api.models.privacy_notice import (
-    ConsentMechanism,
-    Language,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.privacy_notice import ConsentMechanism, PrivacyNoticeRegion
+from fides.api.schemas.language import SupportedLanguage
 from fides.api.util.consent_util import EEA_COUNTRIES
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
@@ -275,7 +272,7 @@ class TestCreateExperienceConfig:
             "privacy_notice_ids": [privacy_notice.id],
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "is_default": True,
                     "save_button_label": "Save",
                     "title": "Control your privacy",
@@ -348,7 +345,7 @@ class TestCreateExperienceConfig:
                 "translations": [
                     {
                         "is_default": True,
-                        "language": "en_us",
+                        "language": "en",
                         "reject_button_label": "Reject",
                         "save_button_label": "Save",
                         "title": "Manage your privacy",
@@ -362,7 +359,7 @@ class TestCreateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"]
-            == "Missing 'privacy_preferences_link_label' needed for language 'en_us' for UX type 'overlay'."
+            == "Missing 'privacy_preferences_link_label' needed for language 'en' for UX type 'overlay'."
         )
 
     def test_create_bannner_config_missing_details(
@@ -381,7 +378,7 @@ class TestCreateExperienceConfig:
                 "translations": [
                     {
                         "is_default": True,
-                        "language": "en_us",
+                        "language": "en",
                         "save_button_label": "Save",
                         "title": "Manage your privacy",
                         "accept_button_label": "Accept",
@@ -394,7 +391,7 @@ class TestCreateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"]
-            == "Missing 'reject_button_label' needed for language 'en_us' for UX type 'modal'."
+            == "Missing 'reject_button_label' needed for language 'en' for UX type 'modal'."
         )
 
     def test_create_experience_duplicate_regions(
@@ -507,7 +504,7 @@ class TestCreateExperienceConfig:
                         "save_button_label": "Save",
                         "title": "Manage your privacy",
                         "accept_button_label": "Yes",
-                        "language": "en_us",
+                        "language": "en",
                     }
                 ],
             },
@@ -548,7 +545,7 @@ class TestCreateExperienceConfig:
                         "save_button_label": "Save",
                         "title": "Manage your privacy",
                         "accept_button_label": "Yes",
-                        "language": "en_us",
+                        "language": "en",
                     }
                 ],
             },
@@ -643,7 +640,7 @@ class TestCreateExperienceConfig:
         assert len(resp["translations"]) == 1
 
         translation = resp["translations"][0]
-        assert translation["language"] == "en_us"
+        assert translation["language"] == "en"
         assert translation["save_button_label"] == "Save"
         assert translation["experience_config_history_id"] is not None
 
@@ -692,7 +689,7 @@ class TestCreateExperienceConfig:
                 "translations": [
                     {
                         "is_default": True,
-                        "language": "en_us",
+                        "language": "en",
                         "reject_button_label": "Reject all",
                         "save_button_label": "Save",
                         "title": "Control your privacy",
@@ -719,7 +716,7 @@ class TestCreateExperienceConfig:
 
         # Created Translation
         translation = experience_config.translations[0]
-        assert translation.language == Language.en_us
+        assert translation.language == SupportedLanguage.english
 
         # Created Experience Config History
         experience_config_history = translation.histories[0]
@@ -796,7 +793,7 @@ class TestCreateExperienceConfig:
                 "translations": [
                     {
                         "is_default": True,
-                        "language": "en_us",
+                        "language": "en",
                         "reject_button_label": "Reject all",
                         "save_button_label": "Save",
                         "title": "Control your privacy",
@@ -928,7 +925,7 @@ class TestGetExperienceConfigDetail:
         assert len(translations) == 1
         translation = translations[0]
 
-        assert translation["language"] == "en_us"
+        assert translation["language"] == "en"
         assert translation["title"] == "Manage your consent"
         assert translation["acknowledge_button_label"] == "Confirm"
         assert (
@@ -962,7 +959,7 @@ class TestGetExperienceConfigDetail:
         assert privacy_notice_response["consent_mechanism"] == "opt_in"
         translations = privacy_notice_response["translations"]
         assert len(translations) == 1
-        assert translations[0]["language"] == "en_us"
+        assert translations[0]["language"] == "en"
         assert translations[0]["privacy_notice_history_id"] is not None
         assert (
             translations[0]["privacy_notice_history_id"]
@@ -1011,7 +1008,7 @@ class TestUpdateExperienceConfig:
                 "allow_language_selection": False,
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "is_default": True,
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
@@ -1191,7 +1188,7 @@ class TestUpdateExperienceConfig:
         response = api_client.patch(
             url,
             json={
-                "translations": [{"title": None, "language": "en_us"}],
+                "translations": [{"title": None, "language": "en"}],
                 "privacy_notice_ids": ["asdf"],
                 "regions": ["us_ca"],
             },
@@ -1210,7 +1207,7 @@ class TestUpdateExperienceConfig:
         response = api_client.patch(
             url,
             json={
-                "translations": [{"title": None, "language": "en_us"}],
+                "translations": [{"title": None, "language": "en"}],
                 "privacy_notice_ids": [],
                 "regions": ["us_ca"],
             },
@@ -1231,7 +1228,7 @@ class TestUpdateExperienceConfig:
             url,
             json={
                 "translations": [
-                    {"privacy_preferences_link_label": "", "language": "en_us"}
+                    {"privacy_preferences_link_label": "", "language": "en"}
                 ],
                 "privacy_notice_ids": [],
                 "regions": ["us_ca"],
@@ -1241,7 +1238,7 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"]
-            == "Missing 'privacy_preferences_link_label' needed for language 'en_us' for UX type 'overlay'."
+            == "Missing 'privacy_preferences_link_label' needed for language 'en' for UX type 'overlay'."
         )
 
     def test_update_overlay_experience_config_missing_banner_specific_fields(
@@ -1261,7 +1258,7 @@ class TestUpdateExperienceConfig:
             json={
                 "privacy_notice_ids": [privacy_notice.id],  # has opt in mechanism
                 "translations": [
-                    {"accept_button_label": "", "language": "en_us", "is_default": True}
+                    {"accept_button_label": "", "language": "en", "is_default": True}
                 ],
                 "regions": ["us_ca"],
                 "allow_language_selection": False,
@@ -1271,7 +1268,7 @@ class TestUpdateExperienceConfig:
         assert response.status_code == 422
         assert (
             response.json()["detail"]
-            == "Missing 'accept_button_label' needed for language 'en_us' for UX type 'banner'."
+            == "Missing 'accept_button_label' needed for language 'en' for UX type 'banner'."
         )
 
     def test_no_translations_marked_as_the_default(
@@ -1291,7 +1288,7 @@ class TestUpdateExperienceConfig:
                 "allow_language_selection": False,
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
@@ -1330,7 +1327,7 @@ class TestUpdateExperienceConfig:
                 "allow_language_selection": True,
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
@@ -1343,7 +1340,8 @@ class TestUpdateExperienceConfig:
                         "is_default": True,
                     },
                     {
-                        "language": "en_gb",
+                        # pretend this is spanish!
+                        "language": "es",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
@@ -1383,7 +1381,7 @@ class TestUpdateExperienceConfig:
                 "allow_language_selection": True,
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
@@ -1421,7 +1419,7 @@ class TestUpdateExperienceConfig:
                 "translations": [
                     {
                         "title": "We care about you and your family's privacy",
-                        "language": "en_us",
+                        "language": "en",
                     }
                 ],
                 "privacy_notice_ids": [],
@@ -1498,7 +1496,7 @@ class TestUpdateExperienceConfig:
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
@@ -1580,7 +1578,7 @@ class TestUpdateExperienceConfig:
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
@@ -1662,7 +1660,7 @@ class TestUpdateExperienceConfig:
                     {
                         "banner_description": invalid_description[0],
                         "description": invalid_description[0],
-                        "language": "en_us",
+                        "language": "en",
                     }
                 ],
             },
@@ -1716,7 +1714,7 @@ class TestUpdateExperienceConfig:
                     {
                         "banner_description": valid_description[0],
                         "description": valid_description[0],
-                        "language": "en_us",
+                        "language": "en",
                     }
                 ],
             },

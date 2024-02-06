@@ -14,7 +14,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -41,7 +41,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -72,7 +72,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -103,7 +103,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -129,7 +129,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -155,7 +155,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -184,7 +184,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -213,7 +213,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -236,7 +236,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -259,7 +259,7 @@ privacy_experience_configs:
     - sensitive_personal_data_sharing_gpp_us_national
     - known_child_sensitive_data_consents_gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -316,7 +316,7 @@ privacy_experience_configs:
     - analytics
     - marketing
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
@@ -372,7 +372,7 @@ privacy_experience_configs:
   component: tcf_overlay
   privacy_notice_keys: []
   translations:
-    - language: en_us
+    - language: en
       accept_button_label: Opt in to all
       acknowledge_button_label: OK
       description: |

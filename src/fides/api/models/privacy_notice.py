@@ -21,17 +21,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
-
-
-class Language(Enum):
-    """Using BCP 47 Language Tags
-
-    TODO propose adding this list:
-    https://www.techonthenet.com/js/language_tags.php
-    """
-
-    en_us = "en_us"  # US English
-    en_gb = "en_gb"  # British English
+from fides.api.schemas.language import SupportedLanguage
 
 
 class PrivacyNoticeFramework(Enum):
@@ -410,9 +400,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         base_notice_updated: bool = update_if_modified(self, db=db, data=data)
 
         for translation_data in request_translations:
-            existing_translation: Optional[
-                NoticeTranslation
-            ] = self.get_translation_by_language(db, translation_data.get("language"))
+            existing_translation: Optional[NoticeTranslation] = (
+                self.get_translation_by_language(db, translation_data.get("language"))
+            )
 
             if existing_translation:
                 translation: NoticeTranslation = existing_translation
@@ -447,7 +437,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 )
 
         notice_translations: List[NoticeTranslation] = self.translations
-        translations_to_remove: Set[Language] = set(  # type: ignore[assignment]
+        translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
             translation.language for translation in notice_translations
         ).difference(
             set(translation.get("language") for translation in request_translations)
@@ -483,7 +473,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         return PrivacyNotice(**cloned_attributes)
 
     def get_translation_by_language(
-        self, db: Session, language: Optional[Language]
+        self, db: Session, language: Optional[SupportedLanguage]
     ) -> Optional[NoticeTranslation]:
         """Lookup a translation on a Privacy Notice by language if it exists"""
         if not language:
@@ -500,7 +490,14 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
 
 class NoticeTranslationBase:
-    language = Column(EnumColumn(Language), nullable=False)
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [i.value for i in x],
+        ),
+        nullable=False,
+    )
     title = Column(String, nullable=False)
     description = Column(String)
 

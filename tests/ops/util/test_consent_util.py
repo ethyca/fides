@@ -1,4 +1,5 @@
 """Test consent utils"""
+
 from __future__ import annotations
 
 from html import unescape
@@ -537,7 +538,7 @@ class TestCreatePrivacyNoticeUtils:
             enforcement_level=EnforcementLevel.not_applicable,
             translations=[
                 {
-                    "language": Language.en_us,
+                    "language": Language.english,
                     "title": "A",
                     "description": "A description",
                 }
@@ -559,7 +560,7 @@ class TestCreatePrivacyNoticeUtils:
         translation = notice.translations[0]
         assert translation.title == "A"
         assert translation.description == "A description"
-        assert translation.language == Language.en_us
+        assert translation.language == Language.english
 
         history = translation.histories[0]
 
@@ -574,7 +575,7 @@ class TestCreatePrivacyNoticeUtils:
 
         assert history.description == "A description"
         assert history.title == "A"
-        assert history.language == Language.en_us
+        assert history.language == Language.english
 
         db.delete(history)
         db.delete(translation)
@@ -597,7 +598,7 @@ class TestCreatePrivacyNoticeUtils:
                         enforcement_level=EnforcementLevel.system_wide,
                         translations=[
                             {
-                                "language": Language.en_us,
+                                "language": Language.english,
                                 "title": "A",
                                 "description": "A description",
                             }
@@ -675,14 +676,14 @@ class TestLoadDefaultNotices:
 
         assert translation.title == "Test Privacy Notice"
         assert translation.description == "This is my test&#x27;s description."
-        assert translation.language == Language.en_us
+        assert translation.language == Language.english
 
         history = translation.histories[0]
 
         assert history.name == "Test Privacy Notice"
         assert history.notice_key == "test_privacy_notice"
         assert history.title == "Test Privacy Notice"
-        assert history.language == Language.en_us
+        assert history.language == Language.english
         assert history.description == "This is my test&#x27;s description."
         assert (
             unescape(history.internal_description)
@@ -714,7 +715,7 @@ class TestLoadDefaultNotices:
         assert template.translations == [
             {
                 "title": "Test Privacy Notice",
-                "language": "en_us",
+                "language": "en",
                 "description": "This is my test&#x27;s description.",
             }
         ]
@@ -757,7 +758,7 @@ class TestLoadDefaultNotices:
         assert template.translations == [
             {
                 "title": "Test Privacy Notice",
-                "language": "en_us",
+                "language": "en",
                 "description": "This is my updated test description!",
             }
         ]
@@ -778,7 +779,7 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.id != notice.id
         assert len(new_privacy_notice.translations) == 1
         new_translation = new_privacy_notice.translations[0]
-        assert new_translation.language == Language.en_us
+        assert new_translation.language == Language.english
         assert new_translation.title == "Other Privacy Notice Title"
         assert new_translation.description == "Other description"
 
@@ -815,7 +816,7 @@ class TestLoadDefaultNotices:
 
         assert translation.title == "Test Privacy Notice"
         assert translation.description == "This is my test&#x27;s description."
-        assert translation.language == Language.en_us
+        assert translation.language == Language.english
 
         assert translation.histories.count() == 1
 
@@ -832,7 +833,7 @@ class TestLoadDefaultNotices:
         assert history.disabled is False
         assert history.has_gpc_flag is True
         assert history.version == 1.0
-        assert history.language == Language.en_us
+        assert history.language == Language.english
         assert history.title == "Test Privacy Notice"
         assert history.id != new_history.id
 
@@ -881,7 +882,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         enforcement_level=EnforcementLevel.system_wide,
                         translations=[
                             {
-                                "language": Language.en_us,
+                                "language": Language.english,
                                 "title": "A",
                                 "description": "A description",
                             }
@@ -963,8 +964,8 @@ class TestUpsertPrivacyNoticeTemplates:
                         data_uses=["marketing"],
                         enforcement_level=EnforcementLevel.system_wide,
                         translations=[
-                            {"language": Language.en_us, "title": "A"},
-                            {"language": Language.en_us, "title": "B"},
+                            {"language": Language.english, "title": "A"},
+                            {"language": Language.english, "title": "B"},
                         ],
                     )
                 ],
@@ -989,7 +990,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     enforcement_level=EnforcementLevel.system_wide,
                     translations=[
                         {
-                            "language": Language.en_us,
+                            "language": Language.english,
                             "title": "A",
                             "description": "A description",
                         }
@@ -1005,7 +1006,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     disabled=True,
                     translations=[
                         {
-                            "language": Language.en_us,
+                            "language": Language.english,
                             "title": "B",
                             "description": "B description",
                         }
@@ -1026,7 +1027,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert first_template.enforcement_level == EnforcementLevel.system_wide
         assert first_template.translations == [
             {
-                "language": Language.en_us.value,
+                "language": Language.english.value,
                 "title": "A",
                 "description": "A description",
             }
@@ -1040,7 +1041,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert second_template.disabled
         assert second_template.translations == [
             {
-                "language": Language.en_us.value,
+                "language": Language.english.value,
                 "title": "B",
                 "description": "B description",
             }
@@ -1121,7 +1122,7 @@ class TestLoadDefaultExperienceConfigs:
         assert len(translations) == 1
         translation = translations[0]
 
-        assert translation["language"] == "en_us"
+        assert translation["language"] == "en"
         assert translation["title"] == "Manage your consent preferences"
         assert translation["accept_button_label"] == "Opt in to all"
 
@@ -1147,7 +1148,7 @@ class TestLoadDefaultExperienceConfigs:
         translation = experience_config.translations[0]
 
         assert translation.experience_config_id == experience_config.id
-        assert translation.language == Language.en_us
+        assert translation.language == Language.english
         assert translation.title == "Manage your consent preferences"
         assert translation.description.startswith(
             "We use your organization&#x27;s cookies and similar methods"
@@ -1161,7 +1162,7 @@ class TestLoadDefaultExperienceConfigs:
 
         assert history.dismissable
         assert history.origin == template.id
-        assert history.language == Language.en_us
+        assert history.language == Language.english
         assert history.title == "Manage your consent preferences"
         assert history.description.startswith(
             "We use your organization&#x27;s cookies and similar methods"
@@ -1194,7 +1195,7 @@ class TestLoadDefaultExperienceConfigs:
         updated_template_translations = template.translations
         assert len(updated_template_translations) == 1
         temp_translation = updated_template_translations[0]
-        assert temp_translation["language"] == "en_us"
+        assert temp_translation["language"] == "en"
         assert temp_translation["title"] == "Manage your consent preferences"
         assert temp_translation["accept_button_label"] == "Opt in!"
 
@@ -1260,7 +1261,7 @@ class TestUpsertDefaultExperienceConfig:
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "accept_button_label": "A",
                         "acknowledge_button_label": "B",
                         "banner_description": "J",
@@ -1322,7 +1323,7 @@ class TestUpsertDefaultExperienceConfig:
         assert history.title == "I"
         assert history.updated_at is not None
         assert history.version == 1.0
-        assert history.language == Language.en_us
+        assert history.language == Language.english
 
         db.delete(translation)
         db.delete(history)
@@ -1339,7 +1340,7 @@ class TestUpsertDefaultExperienceConfig:
                     "privacy_notice_keys": ["example_privacy_notice"],
                     "translations": [
                         {
-                            "language": "en_us",
+                            "language": "en",
                             "accept_button_label": "A",
                             "banner_description": "J",
                             "banner_title": "K",
@@ -1354,7 +1355,7 @@ class TestUpsertDefaultExperienceConfig:
                             "is_default": True,
                         },
                         {
-                            "language": "en_us",
+                            "language": "en",
                             "accept_button_label": "A",
                             "banner_description": "J",
                             "banner_title": "K",
