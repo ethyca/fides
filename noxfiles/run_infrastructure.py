@@ -2,6 +2,7 @@
 This file invokes a command used to setup infrastructure for use in testing Fidesops
 and related workflows.
 """
+
 # pylint: disable=inconsistent-return-statements
 import argparse
 import subprocess
@@ -46,6 +47,7 @@ EXTERNAL_DATASTORE_CONFIG = {
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
 OPS_TEST_DIR = "tests/ops/"
+API_TEST_DIR = f"{OPS_TEST_DIR}api/"
 
 
 def run_infrastructure(
