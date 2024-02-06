@@ -225,7 +225,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
 
     def get_translation_by_language(
-        self, db: Session, language: Optional[Language]
+        self, db: Session, language: Optional[SupportedLanguage]
     ) -> Optional[ExperienceTranslation]:
         """Lookup a translation on an ExperienceConfig by language if it exists"""
         if not language:
@@ -345,7 +345,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                 )
 
         experience_translations: List[ExperienceTranslation] = self.translations
-        translations_to_remove: Set[Language] = set(  # type: ignore[assignment]
+        translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
             translation.language for translation in experience_translations
         ).difference(
             set(translation.get("language") for translation in request_translations)
