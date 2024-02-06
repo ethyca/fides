@@ -38,6 +38,7 @@ def talkable_erasure_identity_email() -> str:
 @pytest.fixture(scope="function")
 def talkable_erasure_data(
     talkable_erasure_identity_email: str,
+    talkable_secrets,
 ) -> Generator:
     # create the data needed for erasure tests here
     base_url = f"https://{talkable_secrets['domain']}"
@@ -59,12 +60,12 @@ def talkable_erasure_data(
         },
     }
 
-    people_response = requests.post(
+    people_response = requests.put(
         url=f"{base_url}/api/v2/people/{talkable_erasure_identity_email}",
         headers=headers,
         json=body,
     )
-    person = people_response.json()
+    person = people_response.json()["result"]["person"]
 
     yield person
 
