@@ -134,7 +134,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             self.secrets,
         )
         client: AuthenticatedClient = self.create_client()
-        client.send(prepared_request, test_request.ignore_errors)
+        with logger.contextualize(
+            system_id=(
+                self.configuration.system.id if self.configuration.system else None
+            ),
+            connection_key=self.configuration.key,
+        ):
+            client.send(prepared_request, test_request.ignore_errors)
         self.unset_connector_state()
         return ConnectionTestStatus.succeeded
 
@@ -150,7 +156,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         client_config = self.get_client_config()
         rate_limit_config = self.get_rate_limit_config()
 
-        logger.info("Creating client to {}", uri)
+        logger.debug("Creating client to {}", uri)
         return AuthenticatedClient(
             uri, self.configuration, client_config, rate_limit_config
         )
@@ -284,7 +290,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
 
         client: AuthenticatedClient = self.create_client()
-        response: Response = client.send(prepared_request, saas_request.ignore_errors)
+        with logger.contextualize(
+            system_id=(
+                self.configuration.system.id if self.configuration.system else None
+            ),
+            connection_key=self.configuration.key,
+            collection=self.current_collection_name,
+            privacy_request_id=self.current_privacy_request.id,
+        ):
+            response: Response = client.send(
+                prepared_request, saas_request.ignore_errors
+            )
         response = self._handle_errored_response(saas_request, response)
         response_data = self._unwrap_response_data(saas_request, response)
 
@@ -433,7 +449,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     )
                     continue
                 raise exc
-            client.send(prepared_request, masking_request.ignore_errors)
+            with logger.contextualize(
+                system_id=(
+                    self.configuration.system.id if self.configuration.system else None
+                ),
+                connection_key=self.configuration.key,
+                collection=self.current_collection_name,
+                privacy_request_id=self.current_privacy_request.id,
+            ):
+                client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
 
         self.unset_connector_state()
@@ -536,7 +560,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     continue
                 raise exc
             client: AuthenticatedClient = self.create_client()
-            client.send(prepared_request)
+            with logger.contextualize(
+                system_id=self.configuration.system.id
+                if self.configuration.system
+                else None,
+                connection_key=self.configuration.key,
+                collection=self.current_collection_name,
+                privacy_request_id=self.current_privacy_request.id,
+            ):
+                client.send(prepared_request)
             fired = True
         self.unset_connector_state()
         if not fired:
