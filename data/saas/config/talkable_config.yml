@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: talkable SaaS Config
+  name: Talkable
   type: talkable
   description: A sample schema representing the talkable connector for Fides
   version: 0.1.0
@@ -9,7 +9,11 @@ saas_config:
     - name: domain
       default_value: www.talkable.com
     - name: site_slug
+      label: Site slug
+      description: Your Talkable site ID
     - name: api_key
+      label: API key
+      sensitive: True
 
   client_config:
     protocol: https

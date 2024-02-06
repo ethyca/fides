@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: talkable
+    name: Talkable Dataset
     description: A sample dataset representing the talkable connector for Fides
     collections:
       - name: person
@@ -31,7 +31,7 @@ dataset:
               data_type: string
           - name: origins
             fidesops_meta:
-              data_type: 'object[]'
+              data_type: "object[]"
             fields:
               - name: type
                 data_categories: [system.operations]
