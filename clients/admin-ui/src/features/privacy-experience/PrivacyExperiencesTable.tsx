@@ -22,7 +22,7 @@ import {
   EnablePrivacyExperienceCell,
   LocationCell,
 } from "~/features/privacy-experience/cells";
-import ConfigurePrivacyExperienceModal from "~/features/privacy-experience/ConfigurePrivacyExperienceModal";
+import ConfigurePrivacyExperiencePage from "~/features/privacy-experience/ConfigurePrivacyExperience";
 import {
   selectAllExperienceConfigs,
   selectPage,
@@ -49,12 +49,10 @@ const PrivacyExperiencesTable = () => {
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
 
-  const { onOpen, isOpen, onClose } = useDisclosure();
   const handleRowClick = ({ id }: ExperienceConfigResponse) => {
-    // if (userCanUpdate) {
-    //   router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
-    // }
-    onOpen();
+    if (userCanUpdate) {
+      router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
+    }
   };
 
   const columns: Column<ExperienceConfigResponse>[] = useMemo(
@@ -121,7 +119,6 @@ const PrivacyExperiencesTable = () => {
         data={privacyExperiences}
         onRowClick={userCanUpdate ? handleRowClick : undefined}
       />
-      <ConfigurePrivacyExperienceModal isOpen={isOpen} onClose={onClose} />
     </Stack>
   );
 };
