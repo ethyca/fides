@@ -24,11 +24,11 @@ from fides.api.models.privacy_experience import (
 )
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
-    Language,
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
 from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.language import SupportedLanguage
 from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
     ExperienceConfigResponse,
@@ -282,13 +282,13 @@ def experience_config_update(
     dry_update: PrivacyExperienceConfig = experience_config.dry_update(
         data=experience_config_data_dict
     )
-    dry_update_translations: List[
-        ExperienceTranslation
-    ] = experience_config.dry_update_translations(
-        [
-            translation.dict(exclude_unset=True)
-            for translation in experience_config_data.translations
-        ]
+    dry_update_translations: List[ExperienceTranslation] = (
+        experience_config.dry_update_translations(
+            [
+                translation.dict(exclude_unset=True)
+                for translation in experience_config_data.translations
+            ]
+        )
     )
 
     try:
@@ -392,5 +392,5 @@ def validate_translation_fields_for_ux_type(
             if not getattr(translation, field, None):
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=f"Missing '{field}' needed for language '{translation.language.value if isinstance(translation.language, Language) else translation.language}' for UX type '{component_type.value}'.",
+                    detail=f"Missing '{field}' needed for language '{translation.language.value if isinstance(translation.language, SupportedLanguage) else translation.language}' for UX type '{component_type.value}'.",
                 )

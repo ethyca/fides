@@ -10,7 +10,7 @@ privacy_notices:
   disabled: False
   has_gpc_flag: True
   translations:
-    - language: en_us
+    - language: en
       title: Test Privacy Notice
       description: This is my updated test description!
 - name: Other Privacy Notice
@@ -24,6 +24,6 @@ privacy_notices:
   disabled: True
   has_gpc_flag: False
   translations:
-    - language: en_us
+    - language: en
       title: Other Privacy Notice Title
       description: Other description

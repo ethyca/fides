@@ -15,12 +15,12 @@ from fides.api.db.base_class import Base
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
-    Language,
     PrivacyNotice,
     PrivacyNoticeRegion,
     create_historical_data_from_record,
     update_if_modified,
 )
+from fides.api.schemas.language import SupportedLanguage
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -115,7 +115,16 @@ class ExperienceConfigTemplate(Base):
 class ExperienceTranslationBase:
     """Base schema for Experience translations"""
 
-    language = Column(EnumColumn(Language, native_enum=False), nullable=False)
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # allows enum _values_ to be stored rather than name
+        ),
+        nullable=False,
+    )
 
     accept_button_label = Column(String)
     acknowledge_button_label = Column(String)
@@ -216,7 +225,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
 
     def get_translation_by_language(
-        self, db: Session, language: Optional[Language]
+        self, db: Session, language: Optional[SupportedLanguage]
     ) -> Optional[ExperienceTranslation]:
         """Lookup a translation on an ExperienceConfig by language if it exists"""
         if not language:
@@ -299,9 +308,9 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         config_updated = update_if_modified(self, db=db, data=data)
 
         for translation_data in request_translations:
-            existing_translation: Optional[
-                ExperienceTranslation
-            ] = self.get_translation_by_language(db, translation_data.get("language"))
+            existing_translation: Optional[ExperienceTranslation] = (
+                self.get_translation_by_language(db, translation_data.get("language"))
+            )
             if existing_translation:
                 translation_updated: bool = update_if_modified(
                     existing_translation,
@@ -336,7 +345,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
                 )
 
         experience_translations: List[ExperienceTranslation] = self.translations
-        translations_to_remove: Set[Language] = set(  # type: ignore[assignment]
+        translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
             translation.language for translation in experience_translations
         ).difference(
             set(translation.get("language") for translation in request_translations)
@@ -612,14 +621,14 @@ def upsert_privacy_experiences_after_config_update(
     Assumes that components on the ExperienceConfig do not change after they're updated.
     """
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
-    removed_regions: List[
-        PrivacyNoticeRegion
-    ] = [  # Regions that were not in the request, but currently attached to the Config
-        PrivacyNoticeRegion(reg)
-        for reg in {reg.value for reg in current_regions}.difference(
-            {reg.value for reg in regions}
-        )
-    ]
+    removed_regions: List[PrivacyNoticeRegion] = (
+        [  # Regions that were not in the request, but currently attached to the Config
+            PrivacyNoticeRegion(reg)
+            for reg in {reg.value for reg in current_regions}.difference(
+                {reg.value for reg in regions}
+            )
+        ]
+    )
 
     experience_config.experiences.filter(  # type: ignore[call-arg]
         PrivacyExperience.region.in_(removed_regions)

@@ -14,10 +14,10 @@ from fides.api.models.privacy_experience import (
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
-    Language,
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
+from fides.api.schemas.language import SupportedLanguage
 
 
 class TestExperienceConfig:
@@ -30,7 +30,7 @@ class TestExperienceConfig:
                 "banner_enabled": "enabled_where_required",
                 "translations": [
                     {
-                        "language": "en_us",
+                        "language": "en",
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
@@ -110,7 +110,7 @@ class TestExperienceConfig:
                 "banner_enabled": "enabled_where_required",
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
@@ -135,7 +135,7 @@ class TestExperienceConfig:
                 "component": "privacy_center",
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our privacy policy",
@@ -187,7 +187,7 @@ class TestExperienceConfig:
             data={
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "accept_button_label": "Accept all",
                         "acknowledge_button_label": "Confirm",
                         "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -201,7 +201,7 @@ class TestExperienceConfig:
                         "title": "Manage your consent",
                     },
                     {
-                        "language": Language.en_gb,
+                        "language": SupportedLanguage.spanish,
                         "accept_button_label": "Accept all",
                         "acknowledge_button_label": "Confirm",
                         "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -222,11 +222,11 @@ class TestExperienceConfig:
 
         assert len(experience_config_overlay.translations) == 2
         translation = experience_config_overlay.translations[0]
-        assert translation.language == Language.en_us
+        assert translation.language == SupportedLanguage.english
         assert translation.histories.count() == 1
 
         translation_gb = experience_config_overlay.translations[1]
-        assert translation_gb.language == Language.en_gb
+        assert translation_gb.language == SupportedLanguage.spanish
         assert translation_gb.histories.count() == 1
 
     def test_update_privacy_experience_config_update_translation(
@@ -239,7 +239,7 @@ class TestExperienceConfig:
             data={
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "accept_button_label": "Accept all",
                         "acknowledge_button_label": "Confirm",
                         "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -260,7 +260,7 @@ class TestExperienceConfig:
 
         assert len(experience_config_overlay.translations) == 1
         translation = experience_config_overlay.translations[0]
-        assert translation.language == Language.en_us
+        assert translation.language == SupportedLanguage.english
         assert translation.histories.count() == 2
         assert translation.title == "Manage your consent!"
         assert translation.histories.count() == 2
@@ -308,7 +308,7 @@ class TestExperienceConfig:
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "accept_button_label": "Accept all",
                         "acknowledge_button_label": "Confirm",
                         "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -338,7 +338,7 @@ class TestExperienceConfig:
                 "privacy_notice_ids": [],
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "accept_button_label": "Accept all",
                         "acknowledge_button_label": "Confirm",
                         "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -369,7 +369,7 @@ class TestExperienceConfig:
                 "regions": [PrivacyNoticeRegion.us_ca],
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "accept_button_label": "Accept all",
                         "acknowledge_button_label": "Confirm",
                         "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -401,7 +401,7 @@ class TestExperienceConfig:
                 "regions": [],
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "accept_button_label": "Accept all",
                         "acknowledge_button_label": "Confirm",
                         "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -530,7 +530,7 @@ class TestPrivacyExperience:
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
                     {
-                        "language": Language.en_us,
+                        "language": SupportedLanguage.english,
                         "privacy_preferences_link_label": "Manage preferences",
                         "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                         "privacy_policy_url": "https://example.com/privacy",
@@ -609,9 +609,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             data={
                 "component": "privacy_center",
                 "banner_enabled": "always_disabled",
-                "translations": [
-                    {"language": "en_us", "title": "Control your privacy"}
-                ],
+                "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )
 
@@ -654,9 +652,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             data={
                 "component": "privacy_center",
                 "banner_enabled": "always_disabled",
-                "translations": [
-                    {"language": "en_us", "title": "Control your privacy"}
-                ],
+                "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )
 
@@ -700,9 +696,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             data={
                 "component": "privacy_center",
                 "banner_enabled": "always_disabled",
-                "translations": [
-                    {"language": "en_us", "title": "Control your privacy"}
-                ],
+                "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )
 
@@ -749,9 +743,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             data={
                 "component": "privacy_center",
                 "banner_enabled": "always_disabled",
-                "translations": [
-                    {"language": "en_us", "title": "Control your privacy"}
-                ],
+                "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )
 

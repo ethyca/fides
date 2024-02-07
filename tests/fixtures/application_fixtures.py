@@ -1478,7 +1478,7 @@ def privacy_notice(db: Session) -> Generator:
             "enforcement_level": EnforcementLevel.system_wide,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "Example privacy notice",
                     "description": "user&#x27;s description &lt;script /&gt;",
                 }
@@ -1503,7 +1503,7 @@ def privacy_notice(db: Session) -> Generator:
             "origin": template.id,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "Example privacy notice",
                     "description": "user&#x27;s description &lt;script /&gt;",
                 }
@@ -1558,7 +1558,7 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
             # "displayed_in_api": False,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "example privacy notice us_ca provide",
                 }
             ],
@@ -1619,7 +1619,7 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
             # "displayed_in_api": False,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "example privacy notice us_co third_party_sharing",
                     "description": "a sample privacy notice configuration",
                 }
@@ -1646,7 +1646,7 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
             # "displayed_in_api": False,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "example privacy notice us_co provide.service.operations",
                     "description": "a sample privacy notice configuration",
                 }
@@ -1706,7 +1706,7 @@ def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
             # "displayed_in_api": False,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "example privacy notice us_co provide.service.operations",
                     "description": "a sample privacy notice configuration",
                 }
@@ -1730,7 +1730,7 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
             "enforcement_level": EnforcementLevel.frontend,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "example privacy notice eu_cy provide.service.operations",
                     "description": "a sample privacy notice configuration",
                 }
@@ -2394,7 +2394,7 @@ def experience_config_banner(db: Session) -> Generator:
             "disabled": False,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "reject_button_label": "Reject all",
                     "save_button_label": "Save",
                     "title": "Control your privacy",
@@ -2421,7 +2421,7 @@ def experience_config_privacy_center(db: Session) -> Generator:
             "component": "privacy_center",
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "reject_button_label": "Reject all",
                     "save_button_label": "Save",
                     "title": "Control your privacy",
@@ -2466,7 +2466,7 @@ def experience_config_overlay(db: Session) -> Generator:
             "allow_language_selection": False,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "accept_button_label": "Accept all",
                     "acknowledge_button_label": "Confirm",
                     "banner_description": "You can accept, reject, or manage your preferences in detail.",
@@ -2501,7 +2501,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
             "banner_enabled": "enabled_where_required",
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "privacy_preferences_link_label": "Manage preferences",
                     "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                     "privacy_policy_url": "https://example.com/privacy",
@@ -2575,7 +2575,7 @@ def privacy_notice_france(db: Session) -> Generator:
             # "displayed_in_api": False,
             "translations": [
                 {
-                    "language": "en_us",
+                    "language": "en",
                     "title": "example privacy notice",
                     "description": "user description",
                 }

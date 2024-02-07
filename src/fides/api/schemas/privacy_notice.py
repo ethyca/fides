@@ -7,8 +7,8 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
 from pydantic import Extra, root_validator
 
-from fides.api.custom_types import GPPMechanismConsentValue, HtmlStr
-from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel, Language
+from fides.api.custom_types import GPPMechanismConsentValue
+from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import (
     PrivacyNoticeFramework,
@@ -16,12 +16,13 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.language import SupportedLanguage
 
 
 class NoticeTranslation(FidesSchema):
     """Notice Translation Schema"""
 
-    language: Language
+    language: SupportedLanguage
     title: str
     description: Optional[str] = None
 
@@ -36,10 +37,12 @@ class NoticeTranslationCreate(NoticeTranslation):
 class NoticeTranslationResponse(FidesSchema):
     """Notice Translation Response Schema"""
 
-    language: Language
+    language: SupportedLanguage
     title: str
     description: Optional[str] = None
-    privacy_notice_history_id: str  # Preferences should be saved against the privacy notice history id
+    privacy_notice_history_id: (
+        str  # Preferences should be saved against the privacy notice history id
+    )
 
     class Config:
         use_enum_values = True

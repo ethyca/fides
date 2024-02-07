@@ -13,7 +13,7 @@ privacy_notices:
   has_gpc_flag: True
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Data sales and sharing
       description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   gpp_field_mapping:
@@ -44,7 +44,7 @@ privacy_notices:
   has_gpc_flag: True
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Targeted Advertising
       description: We may transfer or share your personal information to third parties for the purposes of targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   gpp_field_mapping:
@@ -96,7 +96,7 @@ privacy_notices:
   has_gpc_flag: False
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Data sharing
       description: We may transfer or share your personal information. You can learn more about what information is used for this purpose in our privacy notice.
   gpp_field_mapping:
@@ -124,7 +124,7 @@ privacy_notices:
   has_gpc_flag: True
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Data sales
       description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration. You can learn more about what information is used for this purpose in our privacy notice.
   gpp_field_mapping:
@@ -176,7 +176,7 @@ privacy_notices:
   has_gpc_flag: False
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Sensitive Personal Data Sharing
       description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about what information is used for this purpose in our privacy notice. Opt-out to limit the use of your sensitive personal information.
   gpp_field_mapping:
@@ -200,7 +200,7 @@ privacy_notices:
   has_gpc_flag: False
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Sensitive Personal Data Sharing
       description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about how this information is used in our privacy notice.
   gpp_field_mapping:
@@ -224,7 +224,7 @@ privacy_notices:
   has_gpc_flag: False
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Sensitive Personal Data Sharing
       description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about how this information is used in our privacy notice.
   gpp_field_mapping:
@@ -261,7 +261,7 @@ privacy_notices:
   has_gpc_flag: False
   framework: gpp_us_state
   translations:
-    - language: en_us
+    - language: en
       title: Known Child Sensitive Data Consents
       description: We may process the personal information of children under 16. You can learn more in our privacy policy.
   gpp_field_mapping:
@@ -317,7 +317,7 @@ privacy_notices:
   has_gpc_flag: True
   framework: gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       title: Sales, Sharing, Targeted Advertising
       description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   gpp_field_mapping:
@@ -347,7 +347,7 @@ privacy_notices:
   has_gpc_flag: False
   framework: gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       title: Sensitive Personal Data Sharing
       description: We may transfer or share Sensitive Personal Data about you with third parties. You can learn more about how this information is used in our privacy notice.
   gpp_field_mapping:
@@ -372,7 +372,7 @@ privacy_notices:
   has_gpc_flag: False
   framework: gpp_us_national
   translations:
-    - language: en_us
+    - language: en
       title: Known Child Sensitive Data Consents
       description: We may process the personal information of children under 16. You can learn more in our privacy policy.
   gpp_field_mapping:
@@ -399,7 +399,7 @@ privacy_notices:
   disabled: True
   has_gpc_flag: False
   translations:
-    - language: en_us
+    - language: en
       title: Essential
       description: This website uses essential cookies and services to enable core website features and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website.
 - name: Functional
@@ -413,7 +413,7 @@ privacy_notices:
   disabled: True
   has_gpc_flag: False
   translations:
-    - language: en_us
+    - language: en
       title: Functional
       description: This website uses functional cookies and services to remember your preferences and choices, such as language preferences, font sizes, region selections, and customized layouts. They enable this website to offer enhanced and personalized functionalities.
 - name: Analytics
@@ -427,7 +427,7 @@ privacy_notices:
   disabled: True
   has_gpc_flag: False
   translations:
-    - language: en_us
+    - language: en
       title: Analytics
       description: This website uses analytics cookies and services for collecting aggregated data and statistical information. This data helps us analyze and optimize site performance, identify popular content, detect navigation issues, and make informed decisions to enhance the user experience.
 - name: Marketing
@@ -442,7 +442,7 @@ privacy_notices:
   disabled: True
   has_gpc_flag: True
   translations:
-    - language: en_us
+    - language: en
       title: Marketing
       description: This website uses marketing cookies and services to deliver personalized advertisements, promotions, and offers that are relevant to you. They help optimize ad delivery, measure campaign effectiveness, and enable advertisers to reach specific target audiences.
 - name: Data Sales and Sharing
@@ -457,6 +457,6 @@ privacy_notices:
   disabled: True
   has_gpc_flag: True
   translations:
-    - language: en_us
+    - language: en
       title: Data Sales and Sharing
       description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
