@@ -75,19 +75,16 @@ const categorizeFieldModifications = (
       return;
     }
 
-    // If both values are null or empty, skip
-    if (
-      (_.isNil(beforeValue) || _.isEmpty(beforeValue)) &&
-      (_.isNil(afterValue) || _.isEmpty(afterValue))
-    ) {
+    // If both values are empty string, false, 0, null, undefined; skip
+    if (!beforeValue && !afterValue) {
       return;
     }
 
     // For all other types
     if (!_.isEqual(beforeValue, afterValue)) {
-      if (_.isNil(beforeValue) || _.isEmpty(beforeValue)) {
+      if (!beforeValue) {
         addedFields.push(key);
-      } else if (_.isNil(afterValue) || _.isEmpty(afterValue)) {
+      } else if (!afterValue) {
         removedFields.push(key);
       } else {
         changedFields.push(key);
