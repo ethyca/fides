@@ -11,6 +11,9 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useState } from "react";
+import NewPrivacyExperienceForm, {
+  PrivacyExperienceTranslation,
+} from "~/features/privacy-experience/NewPrivacyExperienceForm";
 
 type ModalState = "none" | "configure" | "style";
 
@@ -22,12 +25,15 @@ const ConfigurePrivacyExperienceModal = ({
   onClose: () => void;
 }) => {
   const [modalState, setModalState] = useState<ModalState>("none");
+  const [languageToEdit, setLanguageToEdit] = useState<string | undefined>(
+    undefined
+  );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
       <ModalContent p={2}>
         <ModalCloseButton />
-        <Flex as={Box} gap={2} grow={1} h="full">
+        <Flex as={Box} p={2} gap={2} grow={1} h="full">
           <VStack
             w="25%"
             border="1px"
@@ -51,26 +57,20 @@ const ConfigurePrivacyExperienceModal = ({
                   Style
                 </Button>
               </>
-            ) : null}
+            ) : (
+              <Button
+                leftIcon={<ArrowBackIcon />}
+                variant="ghost"
+                onClick={() => setModalState("none")}
+              >
+                Back
+              </Button>
+            )}
             {modalState == "configure" ? (
-              <>
-                <Button
-                  leftIcon={<ArrowBackIcon />}
-                  onClick={() => setModalState("none")}
-                >
-                  Back
-                </Button>
-                <Text>Configure screen (coming soon)</Text>
-              </>
+              <NewPrivacyExperienceForm onCancel={onClose} />
             ) : null}
             {modalState == "style" ? (
-              <>
-                <Button
-                  leftIcon={<ArrowBackIcon />}
-                  onClick={() => setModalState("none")}
-                />
-                <Text>Style screen (coming soon)</Text>
-              </>
+              <Text>Style screen (coming soon)</Text>
             ) : null}
           </VStack>
           <Flex
@@ -80,7 +80,7 @@ const ConfigurePrivacyExperienceModal = ({
             borderColor="gray.200"
             borderRadius="sm"
           >
-            test
+            Coming soon (TM)
           </Flex>
         </Flex>
       </ModalContent>
