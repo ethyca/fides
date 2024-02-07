@@ -1,1 +1,1 @@
-/*eslint-disable*/ module.exports = { messages: JSON.parse("{}") };
+/*eslint-disable*/module.exports={messages:JSON.parse("{\"test.title\":\"Title in English\"}")};

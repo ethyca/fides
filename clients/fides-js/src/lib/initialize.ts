@@ -48,6 +48,17 @@ import {
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
 
+// TODO: i18n POC
+import { i18n } from "@lingui/core";
+import { messages as messagesEn } from "../locales/en/messages";
+import { messages as messagesFr } from "../locales/fr/messages";
+import { messages as messagesCs } from "../locales/cs/messages";
+const messages = {
+  en: messagesEn,
+  fr: messagesFr,
+  cs: messagesCs,
+};
+
 export type Fides = {
   consent: CookieKeyConsent;
   experience?: PrivacyExperience | EmptyExperience;
@@ -359,6 +370,14 @@ export const initialize = async ({
       debugLog(options.debug, "Updated experience", updatedExperience);
       Object.assign(effectiveExperience, updatedExperience);
       if (shouldInitOverlay) {
+
+        // TODO: i18n POC
+        const locale = "fr";
+        console.warn("loading i18n messages = ", messages);
+        i18n.load(messages);
+        console.warn("initializing i18n to locale = ", locale);
+        i18n.activate(locale);
+
         await initOverlay({
           experience: effectiveExperience,
           fidesRegionString: fidesRegionString as string,

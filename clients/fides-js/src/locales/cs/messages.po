@@ -6,3 +6,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: cs\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. This title is shown on the consent banner
+#. js-lingui-explicit-id
+#: src/components/ConsentBanner.tsx:101
+msgid "test.title"
+msgstr "Title in Czech"

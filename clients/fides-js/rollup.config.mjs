@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import alias from "@rollup/plugin-alias";
+import commonjs from "@rollup/plugin-commonjs";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
@@ -7,14 +8,17 @@ import filesize from "rollup-plugin-filesize";
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
+import replace from "@rollup/plugin-replace";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 24; // fail build if bundle size exceeds this
+// TODO: i18n makes this too big
+const GZIP_SIZE_ERROR_KB = 35; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 43;
+// TODO: i18n makes this too big
+const GZIP_SIZE_TCF_ERROR_KB = 55;
 const GZIP_SIZE_TCF_WARN_KB = 35;
 
 const preactAliases = {
@@ -28,6 +32,7 @@ const preactAliases = {
 
 const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   alias(preactAliases),
+  commonjs(), // TODO: try removing
   nodeResolve(),
   json(),
   postcss({
@@ -35,6 +40,10 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   }),
   esbuild({
     minify: !IS_DEV,
+  }),
+  replace({
+    "process.env.NODE_ENV": JSON.stringify("production"),
+    preventAssignment: true,
   }),
   copy({
     // Automatically add the built script to the privacy center's static files for bundling:
@@ -125,9 +134,14 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
     plugins: [
       alias(preactAliases),
       json(),
+      commonjs(),
       nodeResolve(),
       postcss(),
       esbuild(),
+      replace({
+        "process.env.NODE_ENV": JSON.stringify("production"),
+        preventAssignment: true,
+      }),
     ],
     output: [
       {

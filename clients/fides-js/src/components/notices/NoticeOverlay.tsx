@@ -25,14 +25,6 @@ import { resolveConsentValue } from "../../lib/consent-value";
 import { getConsentContext } from "../../lib/consent-context";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 
-// TODO: i18n POC
-import { i18n } from "@lingui/core";
-import { I18nProvider } from "@lingui/react";
-import { messages } from "../../locales/en/messages";
-
-i18n.load("en", messages);
-i18n.activate("en");
-
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   options,
@@ -142,7 +134,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const experienceConfig = experience.experience_config;
 
   return (
-    <I18nProvider i18n={i18n}>
       <Overlay
         options={options}
         experience={experience}
@@ -216,7 +207,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           </Fragment>
         )}
       />
-    </I18nProvider>
   );
 };
 
