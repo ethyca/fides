@@ -97,6 +97,10 @@ export type FidesOptions = {
 
   // Allows providing rich HTML descriptions
   allowHTMLDescription: boolean | null;
+
+  // Allows specifying the preferred locale used for translations
+  // TODO: a lot of these types should be ? and not nullable...?
+  fidesLocale?: string;
 };
 
 /**
@@ -439,20 +443,22 @@ export type UserGeolocation = {
 };
 
 export type OverrideOptions = {
-  fides_string: string;
-  fides_disable_save_api: boolean;
-  fides_disable_banner: boolean;
-  fides_embed: boolean;
-  fides_tcf_gdpr_applies: boolean;
+  fides_string?: string;
+  fides_disable_save_api?: boolean;
+  fides_disable_banner?: boolean;
+  fides_embed?: boolean;
+  fides_tcf_gdpr_applies?: boolean;
+  fides_locale?: string;
 };
 
 export type FidesOptionsOverrides = Pick<
   FidesOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
-  | "fidesEmbed"
   | "fidesDisableBanner"
+  | "fidesEmbed"
   | "fidesTcfGdprApplies"
+  | "fidesLocale"
 >;
 
 export type FidesOverrides = {

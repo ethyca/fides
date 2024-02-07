@@ -372,9 +372,10 @@ export const initialize = async ({
       if (shouldInitOverlay) {
 
         // TODO: i18n POC
-        const locale = "fr";
         console.warn("loading i18n messages = ", messages);
         i18n.load(messages);
+        console.warn("using fidesLocale = ", options.fidesLocale);
+        const locale = options.fidesLocale || "en";
         console.warn("initializing i18n to locale = ", locale);
         i18n.activate(locale);
 

@@ -42,4 +42,10 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     fidesOverrideKey: "fides_tcf_gdpr_applies",
     validationRegex: /^(true|false)$/,
   },
+  {
+    fidesOption: "fidesLocale",
+    fidesOptionType: "string",
+    fidesOverrideKey: "fides_locale",
+    validationRegex: /^(.*)$/, // TODO: slightly tighter on this for safety
+  },
 ];
