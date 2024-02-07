@@ -16,17 +16,17 @@ from fides.api.app_setup import (
     PRIVACY_EXPERIENCE_CONFIGS_PATH,
 )
 from fides.api.common_exceptions import ValidationError as FidesValidationError
-from fides.api.models.privacy_experience import BannerEnabled, ComponentType
+from fides.api.models.privacy_experience import ComponentType
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
-    Language,
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import DataUse as sql_DataUse
+from fides.api.schemas.language import SupportedLanguage
 from fides.api.schemas.privacy_experience import (
     ExperienceConfigCreate,
     ExperienceConfigCreateTemplate,
@@ -538,7 +538,7 @@ class TestCreatePrivacyNoticeUtils:
             enforcement_level=EnforcementLevel.not_applicable,
             translations=[
                 {
-                    "language": Language.english,
+                    "language": SupportedLanguage.english,
                     "title": "A",
                     "description": "A description",
                 }
@@ -560,7 +560,7 @@ class TestCreatePrivacyNoticeUtils:
         translation = notice.translations[0]
         assert translation.title == "A"
         assert translation.description == "A description"
-        assert translation.language == Language.english
+        assert translation.language == SupportedLanguage.english
 
         history = translation.histories[0]
 
@@ -575,7 +575,7 @@ class TestCreatePrivacyNoticeUtils:
 
         assert history.description == "A description"
         assert history.title == "A"
-        assert history.language == Language.english
+        assert history.language == SupportedLanguage.english
 
         db.delete(history)
         db.delete(translation)
@@ -598,7 +598,7 @@ class TestCreatePrivacyNoticeUtils:
                         enforcement_level=EnforcementLevel.system_wide,
                         translations=[
                             {
-                                "language": Language.english,
+                                "language": SupportedLanguage.english,
                                 "title": "A",
                                 "description": "A description",
                             }
@@ -676,14 +676,14 @@ class TestLoadDefaultNotices:
 
         assert translation.title == "Test Privacy Notice"
         assert translation.description == "This is my test&#x27;s description."
-        assert translation.language == Language.english
+        assert translation.language == SupportedLanguage.english
 
         history = translation.histories[0]
 
         assert history.name == "Test Privacy Notice"
         assert history.notice_key == "test_privacy_notice"
         assert history.title == "Test Privacy Notice"
-        assert history.language == Language.english
+        assert history.language == SupportedLanguage.english
         assert history.description == "This is my test&#x27;s description."
         assert (
             unescape(history.internal_description)
@@ -779,7 +779,7 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.id != notice.id
         assert len(new_privacy_notice.translations) == 1
         new_translation = new_privacy_notice.translations[0]
-        assert new_translation.language == Language.english
+        assert new_translation.language == SupportedLanguage.english
         assert new_translation.title == "Other Privacy Notice Title"
         assert new_translation.description == "Other description"
 
@@ -816,7 +816,7 @@ class TestLoadDefaultNotices:
 
         assert translation.title == "Test Privacy Notice"
         assert translation.description == "This is my test&#x27;s description."
-        assert translation.language == Language.english
+        assert translation.language == SupportedLanguage.english
 
         assert translation.histories.count() == 1
 
@@ -833,7 +833,7 @@ class TestLoadDefaultNotices:
         assert history.disabled is False
         assert history.has_gpc_flag is True
         assert history.version == 1.0
-        assert history.language == Language.english
+        assert history.language == SupportedLanguage.english
         assert history.title == "Test Privacy Notice"
         assert history.id != new_history.id
 
@@ -882,7 +882,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         enforcement_level=EnforcementLevel.system_wide,
                         translations=[
                             {
-                                "language": Language.english,
+                                "language": SupportedLanguage.english,
                                 "title": "A",
                                 "description": "A description",
                             }
@@ -964,8 +964,8 @@ class TestUpsertPrivacyNoticeTemplates:
                         data_uses=["marketing"],
                         enforcement_level=EnforcementLevel.system_wide,
                         translations=[
-                            {"language": Language.english, "title": "A"},
-                            {"language": Language.english, "title": "B"},
+                            {"language": SupportedLanguage.english, "title": "A"},
+                            {"language": SupportedLanguage.english, "title": "B"},
                         ],
                     )
                 ],
@@ -990,7 +990,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     enforcement_level=EnforcementLevel.system_wide,
                     translations=[
                         {
-                            "language": Language.english,
+                            "language": SupportedLanguage.english,
                             "title": "A",
                             "description": "A description",
                         }
@@ -1006,7 +1006,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     disabled=True,
                     translations=[
                         {
-                            "language": Language.english,
+                            "language": SupportedLanguage.english,
                             "title": "B",
                             "description": "B description",
                         }
@@ -1027,7 +1027,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert first_template.enforcement_level == EnforcementLevel.system_wide
         assert first_template.translations == [
             {
-                "language": Language.english.value,
+                "language": SupportedLanguage.english.value,
                 "title": "A",
                 "description": "A description",
             }
@@ -1041,7 +1041,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert second_template.disabled
         assert second_template.translations == [
             {
-                "language": Language.english.value,
+                "language": SupportedLanguage.english.value,
                 "title": "B",
                 "description": "B description",
             }
@@ -1148,7 +1148,7 @@ class TestLoadDefaultExperienceConfigs:
         translation = experience_config.translations[0]
 
         assert translation.experience_config_id == experience_config.id
-        assert translation.language == Language.english
+        assert translation.language == SupportedLanguage.english
         assert translation.title == "Manage your consent preferences"
         assert translation.description.startswith(
             "We use your organization&#x27;s cookies and similar methods"
@@ -1162,7 +1162,7 @@ class TestLoadDefaultExperienceConfigs:
 
         assert history.dismissable
         assert history.origin == template.id
-        assert history.language == Language.english
+        assert history.language == SupportedLanguage.english
         assert history.title == "Manage your consent preferences"
         assert history.description.startswith(
             "We use your organization&#x27;s cookies and similar methods"
@@ -1323,7 +1323,7 @@ class TestUpsertDefaultExperienceConfig:
         assert history.title == "I"
         assert history.updated_at is not None
         assert history.version == 1.0
-        assert history.language == Language.english
+        assert history.language == SupportedLanguage.english
 
         db.delete(translation)
         db.delete(history)
