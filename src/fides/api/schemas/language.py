@@ -31,9 +31,9 @@ def _load_supported_languages() -> Dict[str, Language]:
         return language_dict
 
 
-supported_languages_by_id: Dict[str, Language] = (
-    _load_supported_languages()
-)  # should only be accessed for read-only access
+supported_languages_by_id: Dict[
+    str, Language
+] = _load_supported_languages()  # should only be accessed for read-only access
 
 
 # dynamically create an enum based on definitions loaded from YAML

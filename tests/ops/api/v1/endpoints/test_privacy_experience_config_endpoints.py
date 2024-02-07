@@ -454,7 +454,7 @@ class TestCreateExperienceConfig:
         assert response.status_code == 404
         assert response.json()["detail"] == "Privacy Notice Id Not Found."
 
-    @pytest.mark.usefixtures("experience_config_banner")
+    @pytest.mark.usefixtures("experience_config_modal")
     def test_create_experience_config_region_exists_on_another_config(
         self,
         api_client: TestClient,
@@ -1092,16 +1092,16 @@ class TestUpdateExperienceConfig:
 
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
 
-    @pytest.mark.usefixtures("experience_config_banner")
+    @pytest.mark.usefixtures("experience_config_modal")
     def test_update_experience_config_region_exists_on_another_config(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
-        experience_config_banner,
+        experience_config_modal,
         overlay_experience_config,
     ) -> None:
-        assert not experience_config_banner.disabled
+        assert not experience_config_modal.disabled
         assert not overlay_experience_config.disabled
 
         auth_header = generate_auth_header(
@@ -1241,45 +1241,15 @@ class TestUpdateExperienceConfig:
             == "Missing 'privacy_preferences_link_label' needed for language 'en' for UX type 'overlay'."
         )
 
-    def test_update_overlay_experience_config_missing_banner_specific_fields(
-        self,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-        experience_config_banner,
-        privacy_notice,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
-
-        assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
-        response = api_client.patch(
-            url,
-            json={
-                "privacy_notice_ids": [privacy_notice.id],  # has opt in mechanism
-                "translations": [
-                    {"accept_button_label": "", "language": "en", "is_default": True}
-                ],
-                "regions": ["us_ca"],
-                "allow_language_selection": False,
-            },
-            headers=auth_header,
-        )
-        assert response.status_code == 422
-        assert (
-            response.json()["detail"]
-            == "Missing 'accept_button_label' needed for language 'en' for UX type 'banner'."
-        )
-
     def test_no_translations_marked_as_the_default(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
-        experience_config_banner,
+        experience_config_modal,
     ) -> None:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_modal.id}"
 
         response = api_client.patch(
             url,
@@ -1315,10 +1285,10 @@ class TestUpdateExperienceConfig:
         api_client: TestClient,
         url,
         generate_auth_header,
-        experience_config_banner,
+        experience_config_modal,
     ) -> None:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_modal.id}"
 
         response = api_client.patch(
             url,
@@ -1369,10 +1339,10 @@ class TestUpdateExperienceConfig:
         api_client: TestClient,
         url,
         generate_auth_header,
-        experience_config_banner,
+        experience_config_modal,
     ) -> None:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
-        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_banner.id}"
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_modal.id}"
 
         response = api_client.patch(
             url,

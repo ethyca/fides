@@ -72,15 +72,12 @@ class ComponentType(Enum):
 
     overlay = "overlay"  # Overlay means banner + modal combined.
     privacy_center = "privacy_center"
-    banner = "banner"
     modal = "modal"
-    api = "api"
     tcf_overlay = "tcf_overlay"  # TCF Banner + modal combined
 
 
 FidesJSUXTypes: List = [
     ComponentType.overlay,
-    ComponentType.banner,
     ComponentType.modal,
 ]
 
@@ -308,9 +305,9 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         config_updated = update_if_modified(self, db=db, data=data)
 
         for translation_data in request_translations:
-            existing_translation: Optional[ExperienceTranslation] = (
-                self.get_translation_by_language(db, translation_data.get("language"))
-            )
+            existing_translation: Optional[
+                ExperienceTranslation
+            ] = self.get_translation_by_language(db, translation_data.get("language"))
             if existing_translation:
                 translation_updated: bool = update_if_modified(
                     existing_translation,
@@ -621,14 +618,14 @@ def upsert_privacy_experiences_after_config_update(
     Assumes that components on the ExperienceConfig do not change after they're updated.
     """
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
-    removed_regions: List[PrivacyNoticeRegion] = (
-        [  # Regions that were not in the request, but currently attached to the Config
-            PrivacyNoticeRegion(reg)
-            for reg in {reg.value for reg in current_regions}.difference(
-                {reg.value for reg in regions}
-            )
-        ]
-    )
+    removed_regions: List[
+        PrivacyNoticeRegion
+    ] = [  # Regions that were not in the request, but currently attached to the Config
+        PrivacyNoticeRegion(reg)
+        for reg in {reg.value for reg in current_regions}.difference(
+            {reg.value for reg in regions}
+        )
+    ]
 
     experience_config.experiences.filter(  # type: ignore[call-arg]
         PrivacyExperience.region.in_(removed_regions)

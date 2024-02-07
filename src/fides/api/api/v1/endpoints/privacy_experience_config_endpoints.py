@@ -282,13 +282,13 @@ def experience_config_update(
     dry_update: PrivacyExperienceConfig = experience_config.dry_update(
         data=experience_config_data_dict
     )
-    dry_update_translations: List[ExperienceTranslation] = (
-        experience_config.dry_update_translations(
-            [
-                translation.dict(exclude_unset=True)
-                for translation in experience_config_data.translations
-            ]
-        )
+    dry_update_translations: List[
+        ExperienceTranslation
+    ] = experience_config.dry_update_translations(
+        [
+            translation.dict(exclude_unset=True)
+            for translation in experience_config_data.translations
+        ]
     )
 
     try:
@@ -351,24 +351,6 @@ def validate_translation_fields_for_ux_type(
     from the database for others, let's just define all this in one place here.
     """
     required_fields: List[str] = []
-
-    if component_type == ComponentType.banner:
-        if privacy_notices.filter(
-            PrivacyNotice.consent_mechanism.in_(
-                [ConsentMechanism.opt_in, ConsentMechanism.opt_out]
-            )
-        ).first():
-            required_fields = [
-                "title",
-                "description",
-                "accept_button_label",
-                "reject_button_label",
-            ]
-
-        if privacy_notices.filter(
-            PrivacyNotice.consent_mechanism == ConsentMechanism.notice_only
-        ).first():
-            required_fields = ["title", "description", "acknowledge_button_label"]
 
     if component_type in [ComponentType.overlay, ComponentType.tcf_overlay]:
         required_fields = [

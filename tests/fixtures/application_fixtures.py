@@ -2385,11 +2385,11 @@ def consent_records(
 
 
 @pytest.fixture(scope="function")
-def experience_config_banner(db: Session) -> Generator:
+def experience_config_modal(db: Session) -> Generator:
     exp = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "component": "banner",
+            "component": "modal",
             "regions": [PrivacyNoticeRegion.it],
             "disabled": False,
             "translations": [
