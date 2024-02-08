@@ -31,6 +31,7 @@
     "@iabgpp/cmpapi": "^3.1.0",
     "@iabtechlabtcf/cmpapi": "^1.5.8",
     "@iabtechlabtcf/core": "^1.5.7",
+    "@lingui/core": "^4.7.0",
     "a11y-dialog": "^7.5.2",
     "preact": "^10.13.2",
     "react": "^17.0.2",
