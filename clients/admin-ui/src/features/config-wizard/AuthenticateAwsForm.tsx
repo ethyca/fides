@@ -33,6 +33,7 @@ import ScannerLoading from "./ScannerLoading";
 const initialValues = {
   aws_access_key_id: "",
   aws_secret_access_key: "",
+  aws_session_token: "",
   region_name: "",
 };
 
@@ -49,6 +50,11 @@ const ValidationSchema = Yup.object().shape({
     .trim()
     .matches(/^[^\s]+$/, "Cannot contain spaces")
     .label("Secret"),
+  aws_session_token: Yup.string()
+    .optional()
+    .trim()
+    .matches(/^[^\s]+$/, "Cannot contain spaces")
+    .label("Session Token (for temporary credentials)"),
   region_name: Yup.string().required().label("Default Region"),
 });
 
@@ -143,6 +149,13 @@ const AuthenticateAwsForm = () => {
                     label="Secret"
                     // "You can find more about creating access keys and secrets on AWS docs here."
                     tooltip="The secret associated with the Access Key ID used for authentication."
+                  />
+                  <CustomTextInput
+                    type="password"
+                    name="aws_session_token"
+                    label="Session Token (if applicable)"
+                    // "You can find more about creating access keys and secrets on AWS docs here."
+                    tooltip="The session token for temporary credentials."
                   />
                   <CustomSelect
                     name="region_name"

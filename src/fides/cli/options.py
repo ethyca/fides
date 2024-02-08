@@ -224,6 +224,7 @@ def aws_session_token_option(command: Callable) -> Callable:
     command = click.option(
         "--session_token",
         type=str,
+        default="",
         help="Connect to AWS using a temporary `Access Key`. _Requires options `--access_key_id`, `--secret_access_key`, `--session_token`, & `--region`._",
     )(
         command
