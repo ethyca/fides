@@ -621,6 +621,7 @@ class TestConsentEmailBatchSend:
         requeue_privacy_requests,
         send_single_consent_email,
         db,
+        privacy_notice,
         privacy_request_awaiting_consent_email_send,
         second_privacy_request_awaiting_consent_email_send,
         generic_consent_email_connection_config,
@@ -676,6 +677,9 @@ class TestConsentEmailBatchSend:
                             has_gpc_flag=False,
                             id=privacy_preference_history.privacy_notice_history.id,
                             version=1.0,
+                            origin=privacy_notice.translations[
+                                0
+                            ].privacy_notice_history.origin,
                             translation_id=privacy_preference_history.privacy_notice_history.translation_id,
                         ),
                     )

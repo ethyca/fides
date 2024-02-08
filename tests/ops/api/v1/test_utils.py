@@ -5,7 +5,7 @@ import pytest
 from fastapi import HTTPException
 
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.privacy_notice import NoticeTranslation, PrivacyNotice
+from fides.api.schemas.privacy_notice import NoticeTranslation
 from fides.api.util.endpoint_utils import (
     human_friendly_list,
     transform_fields,

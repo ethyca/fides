@@ -29,7 +29,7 @@ class NoticeTranslation(FidesSchema):
 
 class NoticeTranslationCreate(NoticeTranslation):
     class Config:
-        """For when we're creating templates - so the Notice Translation Language can be serialized into JSON"""
+        """For when we're creating templates - so the Notice Translation SupportedLanguage can be serialized into JSON"""
 
         use_enum_values = True
 
@@ -40,9 +40,7 @@ class NoticeTranslationResponse(FidesSchema):
     language: SupportedLanguage
     title: str
     description: Optional[str] = None
-    privacy_notice_history_id: (
-        str  # Preferences should be saved against the privacy notice history id
-    )
+    privacy_notice_history_id: str  # Preferences should be saved against the privacy notice history id
 
     class Config:
         use_enum_values = True
