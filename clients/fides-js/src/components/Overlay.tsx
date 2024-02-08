@@ -31,7 +31,6 @@ interface Props {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   onOpen: () => void;
-  onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
   renderModalFooter: (props: RenderModalFooter) => VNode;
@@ -43,7 +42,6 @@ const Overlay: FunctionComponent<Props> = ({
   options,
   cookie,
   onOpen,
-  onDismiss,
   renderBanner,
   renderModalContent,
   renderModalFooter,
@@ -58,10 +56,9 @@ const Overlay: FunctionComponent<Props> = ({
     ({ saved = false }: { saved?: boolean }) => {
       dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
       if (!saved) {
-        onDismiss();
       }
     },
-    [cookie, onDismiss, options.debug]
+    [cookie, options.debug]
   );
 
   const { instance, attributes } = useA11yDialog({
