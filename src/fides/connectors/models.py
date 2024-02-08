@@ -14,6 +14,7 @@ class AWSConfig(BaseModel):
     region_name: str
     aws_secret_access_key: str
     aws_access_key_id: str
+    aws_session_token: str
 
 
 class KeyfileCreds(BaseModel):
