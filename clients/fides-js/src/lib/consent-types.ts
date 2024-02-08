@@ -320,7 +320,7 @@ export type PrivacyExperience = {
   id: string;
   created_at: string;
   updated_at: string;
-  show_banner?: boolean;
+  show_banner?: boolean; // todo- is this going away?
   privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
@@ -438,9 +438,8 @@ export enum UserConsentPreference {
 }
 
 export enum ComponentType {
-  BANNER = "banner",
+  OVERLAY = "overlay",
   MODAL = "modal",
-  BANNER_AND_MODAL = "banner_and_modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
 }

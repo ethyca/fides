@@ -38,35 +38,37 @@
           id: "132345243",
           region: "us_ca",
           show_banner: true,
-          component: "banner_and_modal",
           disabled: false,
           created_at: "2023-04-24T21:29:08.870351+00:00",
           updated_at: "2023-04-24T21:29:08.870351+00:00",
           experience_config: {
-            translations: [{
-              language: "en",
-              accept_button_label: "Accept Test",
-              acknowledge_button_label: "OK",
-              banner_description:
-                      "We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads and analyze site traffic. Learn more about these methods, including how to manage them, by clicking ‘Manage Preferences.’ By clicking ‘accept’ you consent to the of these methods by us and our third parties. By clicking ‘reject’ you decline the use of these methods.",
-              banner_enabled: "enabled_where_required",
-              banner_title: "Manage your consent",
-              description:
-                      "We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads and analyze site traffic. Learn more about these methods, including how to manage them, by clicking ‘Manage Preferences.’ By clicking ‘accept’ you consent to the of these methods by us and our third parties. By clicking ‘reject’ you decline the use of these methods.",
-              is_default: false,
-              privacy_policy_link_label: "Privacy policy",
-              privacy_policy_url: "https://privacy.ethyca.com/",
-              privacy_preferences_link_label: "Manage preferences",
-              reject_button_label: "Reject Test",
-              save_button_label: "Save test",
-              title: "Manage your consent",
-              experience_config_history_id: "pri_c5fe6e6c-1c73-4540-a088-4e1d9e273b28",
-            }],
+            translations: [
+              {
+                language: "en",
+                accept_button_label: "Accept Test",
+                acknowledge_button_label: "OK",
+                banner_description:
+                  "We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads and analyze site traffic. Learn more about these methods, including how to manage them, by clicking ‘Manage Preferences.’ By clicking ‘accept’ you consent to the of these methods by us and our third parties. By clicking ‘reject’ you decline the use of these methods.",
+                banner_enabled: "enabled_where_required",
+                banner_title: "Manage your consent",
+                description:
+                  "We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads and analyze site traffic. Learn more about these methods, including how to manage them, by clicking ‘Manage Preferences.’ By clicking ‘accept’ you consent to the of these methods by us and our third parties. By clicking ‘reject’ you decline the use of these methods.",
+                is_default: true,
+                privacy_policy_link_label: "Privacy policy",
+                privacy_policy_url: "https://privacy.ethyca.com/",
+                privacy_preferences_link_label: "Manage preferences",
+                reject_button_label: "Reject Test",
+                save_button_label: "Save test",
+                title: "Manage your consent",
+                experience_config_history_id:
+                  "pri_c5fe6e6c-1c73-4540-a088-4e1d9e273b28",
+              },
+            ],
+            component: "overlay",
             banner_enabled: "enabled_where_required",
             dismissable: true,
-            allow_language_selection: true,
+            allow_language_selection: false,
             id: "2348571y34",
-            component: "banner_and_modal",
             created_at: "2023-04-24T21:29:08.870351+00:00",
             updated_at: "2023-04-24T21:29:08.870351+00:00",
           },
@@ -75,7 +77,7 @@
               name: "Test privacy notice",
               notice_key: "advertising",
               internal_description:
-                      "a test sample privacy notice configuration for internal use",
+                "a test sample privacy notice configuration for internal use",
               origin: "12435134",
               consent_mechanism: "opt_in",
               data_uses: ["advertising", "third_party_sharing"],
@@ -88,21 +90,23 @@
               default_preference: "opt_out",
               systems_applicable: true,
               cookies: [{ name: "testCookie", path: "/", domain: null }],
-              translations: [{
-                id: "pri_sdafsf",
-                language: "en",
-                title: "Data Sales and Sharing",
-                description: "a test sample privacy notice configuration",
-                version: 1.0,
-                privacy_notice_history_id:
-                        "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-              }]
+              translations: [
+                {
+                  id: "pri_sdafsf",
+                  language: "en",
+                  title: "Data Sales and Sharing",
+                  description: "a test sample privacy notice configuration",
+                  version: 1.0,
+                  privacy_notice_history_id:
+                    "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+                },
+              ],
             },
             {
               name: "Essential",
               notice_key: "essential",
               internal_description:
-                      "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+                "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
               origin: "124352454",
               consent_mechanism: "notice_only",
               data_uses: "provide.service",
@@ -115,15 +119,18 @@
               default_preference: "opt_in",
               systems_applicable: true,
               cookies: [],
-              translations: [{
-                id: "pri_sdasdfafsf",
-                language: "en",
-                title: "Essential Notice",
-                description: "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
-                version: 1.0,
-                privacy_notice_history_id:
-                        "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
-              }]
+              translations: [
+                {
+                  id: "pri_sdasdfafsf",
+                  language: "en",
+                  title: "Essential Notice",
+                  description:
+                    "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+                  version: 1.0,
+                  privacy_notice_history_id:
+                    "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+                },
+              ],
             },
           ],
         },

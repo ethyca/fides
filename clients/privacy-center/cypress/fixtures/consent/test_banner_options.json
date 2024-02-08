@@ -17,61 +17,66 @@
     "id": "132345243",
     "created_at": "2023-04-24T21:29:08.870351+00:00",
     "updated_at": "2023-04-24T21:29:08.870351+00:00",
-    "component": "overlay",
     "region": "us_ca",
     "show_banner": true,
     "experience_config": {
-      "accept_button_label": "Accept Test",
-      "acknowledge_button_label": "OK",
+      "translations": [
+        {
+          "language": "en",
+          "accept_button_label": "Accept Test",
+          "acknowledge_button_label": "OK",
+          "banner_enabled": "enabled_where_required",
+          "banner_description": "This test website is overriding the banner description label.",
+          "banner_title": "Manage your consent",
+          "description": "This test website is overriding the banner description label.",
+          "is_default": true,
+          "privacy_policy_link_label": "Privacy policy",
+          "privacy_policy_url": "https://privacy.ethyca.com/",
+          "privacy_preferences_link_label": "Manage preferences",
+          "reject_button_label": "Reject Test",
+          "save_button_label": "Save test",
+          "title": "Manage your consent",
+          "experience_config_history_id": "2345324"
+        }
+      ],
+      "allow_language_selection": false,
       "banner_enabled": "enabled_where_required",
-      "description": "This test website is overriding the banner description label.",
       "disabled": false,
-      "is_default": false,
-      "privacy_policy_link_label": "Privacy policy",
-      "privacy_policy_url": "https://privacy.ethyca.com/",
-      "privacy_preferences_link_label": "Manage preferences",
-      "reject_button_label": "Reject Test",
-      "save_button_label": "Save test",
-      "title": "Manage your consent",
       "id": "2348571y34",
       "component": "overlay",
-      "experience_config_history_id": "2345324",
-      "version": 2.0,
       "created_at": "2023-04-24T21:29:08.870351+00:00",
-      "updated_at": "2023-04-24T21:29:08.870351+00:00",
-      "regions": ["us_ca"]
+      "updated_at": "2023-04-24T21:29:08.870351+00:00"
     },
     "privacy_notices": [
       {
         "name": "Test privacy notice",
-        "description": "a test sample privacy notice configuration",
         "internal_description": "a test sample privacy notice configuration for internal use",
-        "regions": ["us_ca"],
         "consent_mechanism": "opt_in",
         "default_preference": "opt_out",
-        "current_preference": null,
-        "outdated_preference": null,
         "has_gpc_flag": false,
         "disabled": false,
         "origin": "12435134",
         "data_uses": ["advertising", "third_party_sharing"],
         "enforcement_level": "system_wide",
-        "displayed_in_overlay": true,
-        "displayed_in_api": true,
-        "displayed_in_privacy_center": false,
         "id": "pri_4bed96d0-b9e3-4596-a807-26b783836374",
         "created_at": "2023-04-24T21:29:08.870351+00:00",
         "updated_at": "2023-04-24T21:29:08.870351+00:00",
-        "version": 1.0,
-        "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
         "notice_key": "advertising",
-        "cookies": []
+        "cookies": [],
+        "translations": [
+          {
+            "id": "pri_sdafsf",
+            "language": "en",
+            "title": "Test privacy notice",
+            "description": "a test sample privacy notice configuration",
+            "version": 1.0,
+            "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4f"
+          }
+        ]
       },
       {
         "name": "Test privacy notice opt out",
-        "description": "a test sample privacy notice configuration",
         "internal_description": "a test sample privacy notice configuration for internal use",
-        "regions": ["us_ca"],
         "consent_mechanism": "opt_out",
         "default_preference": "opt_in",
         "current_preference": null,
@@ -87,15 +92,21 @@
         "id": "pri_4bed96d0-b9e3-4596-a807-26b783836374",
         "created_at": "2023-04-24T21:29:08.870351+00:00",
         "updated_at": "2023-04-24T21:29:08.870351+00:00",
-        "version": 1.0,
-        "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e89123fd",
         "notice_key": "analytics_opt_out",
-        "cookies": []
+        "cookies": [],
+        "translations": [
+          {
+            "id": "pri_sdqwff",
+            "language": "en",
+            "title": "Test privacy notice opt out",
+            "description": "a test sample privacy notice configuration",
+            "version": 1.0,
+            "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e89123fd"
+          }
+        ]
       },
       {
         "name": "Essential",
-        "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
-        "regions": ["us_ca"],
         "consent_mechanism": "notice_only",
         "default_preference": "opt_in",
         "current_preference": null,
@@ -109,10 +120,18 @@
         "id": "pri_4bed96d0-b9e3-4596-a807-26b783836375",
         "created_at": "2023-04-24T21:29:08.870351+00:00",
         "updated_at": "2023-04-24T21:29:08.870351+00:00",
-        "version": 1.0,
-        "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
         "notice_key": "essential",
-        "cookies": []
+        "cookies": [],
+        "translations": [
+          {
+            "id": "pri_sd234afsf",
+            "language": "en",
+            "name": "Essential",
+            "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+            "version": 1.0,
+            "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e"
+          }
+        ]
       }
     ]
   },

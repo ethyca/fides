@@ -105,23 +105,20 @@ const Overlay: FunctionComponent<Props> = ({
 
   const showBanner = useMemo(
     () =>
-      (!options.fidesDisableBanner &&
-        experience.show_banner &&
-        experience?.experience_config?.component === ComponentType.BANNER) ||
-      (experience?.experience_config?.component ===
-        ComponentType.BANNER_AND_MODAL &&
-        shouldResurfaceConsent(experience, cookie) &&
-        !options.fidesEmbed),
+      !options.fidesDisableBanner &&
+      experience.experience_config?.component !== ComponentType.MODAL &&
+      shouldResurfaceConsent(experience, cookie) &&
+      !options.fidesEmbed,
     [cookie, experience, options]
   );
 
   useEffect(() => {
-    if (showBanner) {
-      const delayBanner = setTimeout(() => {
+    const delayBanner = setTimeout(() => {
+      if (showBanner) {
         setBannerIsOpen(true);
-      }, delayBannerMilliseconds);
-      return () => clearTimeout(delayBanner);
-    }
+      }
+    }, delayBannerMilliseconds);
+    return () => clearTimeout(delayBanner);
   }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {

@@ -149,10 +149,11 @@ export const experienceIsValid = (
     return false;
   }
   if (
-    effectiveExperience.component !== ComponentType.MODAL &&
-    effectiveExperience.component !== ComponentType.BANNER &&
-    effectiveExperience.component !== ComponentType.BANNER_AND_MODAL &&
-    effectiveExperience.component !== ComponentType.TCF_OVERLAY
+    effectiveExperience.experience_config?.component !== ComponentType.MODAL &&
+    effectiveExperience.experience_config?.component !==
+      ComponentType.OVERLAY &&
+    effectiveExperience.experience_config?.component !==
+      ComponentType.TCF_OVERLAY
   ) {
     debugLog(
       options.debug,
@@ -161,9 +162,9 @@ export const experienceIsValid = (
     return false;
   }
   if (
-    effectiveExperience.component === ComponentType.MODAL ||
-    effectiveExperience.component === ComponentType.BANNER ||
-    (effectiveExperience.component === ComponentType.BANNER_AND_MODAL &&
+    effectiveExperience.experience_config?.component === ComponentType.MODAL ||
+    (effectiveExperience.experience_config?.component ===
+      ComponentType.OVERLAY &&
       !(
         effectiveExperience.privacy_notices &&
         effectiveExperience.privacy_notices.length > 0
@@ -201,7 +202,7 @@ export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie
 ): boolean => {
-  if (experience.component === ComponentType.TCF_OVERLAY) {
+  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }

@@ -29,7 +29,8 @@ async function savePreferencesApi(
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
   const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
-    privacy_notice_history_id: preference.notice.privacy_notice_history_id,
+    privacy_notice_history_id:
+      preference.notice.translations[0].privacy_notice_history_id,
     preference: preference.consentPreference,
   }));
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
