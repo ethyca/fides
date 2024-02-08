@@ -71,7 +71,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       className={`fides-banner fides-banner-bottom 
         ${bannerIsOpen ? "" : "fides-banner-hidden"} 
         ${className || ""}`}
-      ref={ref}
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">
