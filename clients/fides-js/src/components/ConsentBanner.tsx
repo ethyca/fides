@@ -1,5 +1,5 @@
 import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
@@ -35,8 +35,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   renderButtonGroup,
   className,
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
