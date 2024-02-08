@@ -134,6 +134,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     });
   }, [cookie, options.debug]);
 
+  const handleDismiss = useCallback(() => {
+    handleUpdatePreferences(ConsentMethod.dismiss, initialEnabledNoticeKeys);
+  }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
+
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
     return null;
@@ -152,6 +156,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           onOpen={dispatchOpenBannerEvent}
           onClose={() => {
             onClose();
+            handleDismiss();
           }}
           experience={experienceConfig}
           renderButtonGroup={({ isMobile }) => (

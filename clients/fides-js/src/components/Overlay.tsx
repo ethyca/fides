@@ -58,7 +58,7 @@ const Overlay: FunctionComponent<Props> = ({
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
-    role: "alertdialog",
+    role: window.Fides.options.preventDismissal ? "alertdialog" : "dialog",
     title: experience?.experience_config?.title || "",
     onClose: () => {
       dispatchCloseEvent({ saved: false });
@@ -142,6 +142,9 @@ const Overlay: FunctionComponent<Props> = ({
 
   return (
     <div>
+      {bannerIsOpen && window.Fides.options.preventDismissal && (
+        <div className="fides-modal-overlay" />
+      )}
       {showBanner
         ? renderBanner({
             isOpen: bannerIsOpen,
