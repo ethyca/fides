@@ -103,6 +103,7 @@ class ExperienceConfigTemplate(Base):
         ARRAY(String)
     )  # A list of notice keys which should correspond to a subset of out-of-the-box notice keys
     translations = Column(ARRAY(JSONB))
+    disabled = Column(Boolean, nullable=False, default=True)
     dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
     allow_language_selection = Column(
         Boolean, nullable=False, default=True, server_default="t"

@@ -1488,16 +1488,9 @@ def privacy_notice(db: Session) -> Generator:
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            # "regions": [
-            #     PrivacyNoticeRegion.us_ca,
-            #     PrivacyNoticeRegion.us_co,
-            # ],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            # "displayed_in_privacy_center": True,
-            # "displayed_in_overlay": True,
-            # "displayed_in_api": False,
             "origin": template.id,
             "translations": [
                 {
@@ -1547,13 +1540,9 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
             "notice_key": "example_privacy_notice_us_ca_provide",
             # no description or origin on this privacy notice to help
             # cover edge cases due to column nullability
-            # "regions": [PrivacyNoticeRegion.us_ca],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential"],
             "enforcement_level": EnforcementLevel.system_wide,
-            # "displayed_in_overlay": True,
-            # "displayed_in_privacy_center": False,
-            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en",
@@ -1608,13 +1597,9 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co third_party_sharing",
             "notice_key": "example_privacy_notice_us_co_third_party_sharing",
-            # "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            # "displayed_in_overlay": True,
-            # "displayed_in_privacy_center": True,
-            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en",
@@ -2459,7 +2444,6 @@ def experience_config_overlay(db: Session) -> Generator:
     config = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "banner_enabled": "enabled_where_required",
             "component": "overlay",
             "allow_language_selection": False,
             "translations": [
@@ -2562,15 +2546,9 @@ def privacy_notice_france(db: Session) -> Generator:
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            # "regions": [
-            #     PrivacyNoticeRegion.fr,
-            # ],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            # "displayed_in_privacy_center": True,
-            # "displayed_in_overlay": False,
-            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en",
