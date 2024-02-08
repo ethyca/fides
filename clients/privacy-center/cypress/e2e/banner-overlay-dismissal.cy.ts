@@ -175,20 +175,20 @@ describe("Banner and overlay dismissal", () => {
         assertDismissCalled();
       });
 
-      it("Should dismiss the banner by clicking outside", () => {
+      it("Should not dismiss the banner by clicking outside", () => {
         cy.get("#fides-banner").should("be.visible");
         cy.get("h1").click(); // click outside
-        cy.get("#fides-banner").should("not.be.visible");
+        cy.get("#fides-banner").should("be.visible");
 
-        assertDismissCalled();
+        cy.get("@FidesUpdated").should("not.have.been.called");
       });
 
-      it("Should dismiss the banner by hitting ESC", () => {
+      it("Should not dismiss the banner by hitting ESC", () => {
         cy.get("#fides-banner").should("be.visible");
         cy.get("body").type("{esc}");
-        cy.get("#fides-banner").should("not.be.visible");
+        cy.get("#fides-banner").should("be.visible");
 
-        assertDismissCalled();
+        cy.get("@FidesUpdated").should("not.have.been.called");
       });
     });
 
@@ -205,24 +205,24 @@ describe("Banner and overlay dismissal", () => {
         assertDismissCalled();
       });
 
-      it("Should dismiss the overlay by clicking outside", () => {
+      it("Should not dismiss the overlay by clicking outside", () => {
         cy.get("#fides-banner").should("be.visible");
         cy.getByTestId("Manage preferences-btn").click();
         cy.get(".fides-modal-content").should("be.visible");
         cy.get(".fides-modal-overlay").click({ force: true });
-        cy.get(".fides-modal-content").should("not.be.visible");
+        cy.get(".fides-modal-content").should("be.visible");
 
-        assertDismissCalled();
+        cy.get("@FidesUpdated").should("not.have.been.called");
       });
 
-      it("Should dismiss the overlay by hitting ESC", () => {
+      it("Should not dismiss the overlay by hitting ESC", () => {
         cy.get("#fides-banner").should("be.visible");
         cy.getByTestId("Manage preferences-btn").click();
         cy.get(".fides-modal-content").should("be.visible");
         cy.get("body").type("{esc}");
-        cy.get(".fides-modal-content").should("not.be.visible");
+        cy.get(".fides-modal-content").should("be.visible");
 
-        assertDismissCalled();
+        cy.get("@FidesUpdated").should("not.have.been.called");
       });
     });
   });
