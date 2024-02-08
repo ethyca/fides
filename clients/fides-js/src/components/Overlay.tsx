@@ -152,15 +152,15 @@ const Overlay: FunctionComponent<Props> = ({
       )}
       {showBanner
         ? renderBanner({
-          isOpen: bannerIsOpen,
-          onClose: () => {
-            setBannerIsOpen(false);
-          },
-          onSave: () => {
-            setBannerIsOpen(false);
-          },
-          onManagePreferencesClick: handleManagePreferencesClick,
-        })
+            isOpen: bannerIsOpen,
+            onClose: () => {
+              setBannerIsOpen(false);
+            },
+            onSave: () => {
+              setBannerIsOpen(false);
+            },
+            onManagePreferencesClick: handleManagePreferencesClick,
+          })
         : null}
       {options.fidesEmbed ? (
         <ConsentContent
