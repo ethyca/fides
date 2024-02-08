@@ -28,7 +28,6 @@ interface Props {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   onOpen: () => void;
-  onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
   renderModalFooter: (props: RenderModalFooter) => VNode;
@@ -40,7 +39,6 @@ const Overlay: FunctionComponent<Props> = ({
   options,
   cookie,
   onOpen,
-  onDismiss,
   renderBanner,
   renderModalContent,
   renderModalFooter,
@@ -54,23 +52,17 @@ const Overlay: FunctionComponent<Props> = ({
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
       dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
-      if (!saved) {
-        onDismiss();
-      }
     },
     [cookie, options.debug]
   );
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
-    role: window.Fides.options.preventDismissal ? "alertdialog" : "dialog",
+    role: "alertdialog",
     title: experience?.experience_config?.title || "",
     onClose: () => {
       dispatchCloseEvent({ saved: false });
-    },
-    onEsc: () => {
-      dispatchCloseEvent({ saved: false });
-    },
+    }
   });
 
   const handleOpenModal = useCallback(() => {
@@ -150,20 +142,17 @@ const Overlay: FunctionComponent<Props> = ({
 
   return (
     <div>
-      {bannerIsOpen && window.Fides.options.preventDismissal && (
-        <div className="fides-modal-overlay" />
-      )}
       {showBanner
         ? renderBanner({
-            isOpen: bannerIsOpen,
-            onClose: () => {
-              setBannerIsOpen(false);
-            },
-            onSave: () => {
-              setBannerIsOpen(false);
-            },
-            onManagePreferencesClick: handleManagePreferencesClick,
-          })
+          isOpen: bannerIsOpen,
+          onClose: () => {
+            setBannerIsOpen(false);
+          },
+          onSave: () => {
+            setBannerIsOpen(false);
+          },
+          onManagePreferencesClick: handleManagePreferencesClick,
+        })
         : null}
       {options.fidesEmbed ? (
         <ConsentContent
