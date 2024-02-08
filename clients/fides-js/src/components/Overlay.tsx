@@ -62,7 +62,7 @@ const Overlay: FunctionComponent<Props> = ({
     title: experience?.experience_config?.title || "",
     onClose: () => {
       dispatchCloseEvent({ saved: false });
-    }
+    },
   });
 
   const handleOpenModal = useCallback(() => {
@@ -144,15 +144,15 @@ const Overlay: FunctionComponent<Props> = ({
     <div>
       {showBanner
         ? renderBanner({
-          isOpen: bannerIsOpen,
-          onClose: () => {
-            setBannerIsOpen(false);
-          },
-          onSave: () => {
-            setBannerIsOpen(false);
-          },
-          onManagePreferencesClick: handleManagePreferencesClick,
-        })
+            isOpen: bannerIsOpen,
+            onClose: () => {
+              setBannerIsOpen(false);
+            },
+            onSave: () => {
+              setBannerIsOpen(false);
+            },
+            onManagePreferencesClick: handleManagePreferencesClick,
+          })
         : null}
       {options.fidesEmbed ? (
         <ConsentContent
