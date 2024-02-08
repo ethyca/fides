@@ -150,6 +150,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       experience={experience}
       cookie={cookie}
       onOpen={dispatchOpenOverlayEvent}
+      onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}

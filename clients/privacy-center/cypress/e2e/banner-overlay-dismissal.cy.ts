@@ -65,7 +65,7 @@ describe("Banner and overlay dismissal", () => {
       it("Should not dismiss the banner by clicking outside", () => {
         cy.get("#fides-banner").should("be.visible");
         cy.get("h1").click({ force: true }); // click outside
-        cy.get(".fides-modal-content").should("be.visible");
+        cy.get("#fides-banner").should("be.visible");
         cy.get("@FidesUpdated").should("not.have.been.called");
       });
 
