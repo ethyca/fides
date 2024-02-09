@@ -29,7 +29,10 @@ import ConsentToggles from "~/components/consent/ConsentToggles";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import ConsentHeading from "~/components/consent/ConsentHeading";
 import ConsentDescription from "~/components/consent/ConsentDescription";
-import { selectIsNoticeDriven, useSettings } from "~/features/common/settings.slice";
+import {
+  selectIsNoticeDriven,
+  useSettings,
+} from "~/features/common/settings.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const Consent: NextPage = () => {
