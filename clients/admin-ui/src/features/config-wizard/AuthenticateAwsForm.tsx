@@ -149,15 +149,17 @@ const AuthenticateAwsForm = () => {
                     label="Secret"
                     // "You can find more about creating access keys and secrets on AWS docs here."
                     tooltip="The secret associated with the Access Key ID used for authentication."
+                    isRequired
                   />
                   <CustomTextInput
                     type="password"
                     name="aws_session_token"
-                    label="Session Token (if applicable)"
+                    label="Session Token"
                     // "You can find more about creating access keys and secrets on AWS docs here."
-                    tooltip="The session token for temporary credentials."
+                    tooltip="The session token when using temporary credentials."
                   />
                   <CustomSelect
+                    isRequired
                     name="region_name"
                     label="AWS Region"
                     // "You can learn more about regions in AWS docs here."
