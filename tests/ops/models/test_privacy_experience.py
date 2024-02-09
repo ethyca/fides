@@ -27,7 +27,6 @@ class TestExperienceConfig:
             db=db,
             data={
                 "component": "overlay",
-                "banner_enabled": "enabled_where_required",
                 "translations": [
                     {
                         "language": "en",
@@ -46,7 +45,6 @@ class TestExperienceConfig:
                 ],
             },
         )
-        assert config.banner_enabled == BannerEnabled.enabled_where_required
         assert config.component == ComponentType.overlay
 
         translation = config.translations[0]
@@ -77,7 +75,6 @@ class TestExperienceConfig:
 
         assert history.accept_button_label == "Accept all"
         assert history.acknowledge_button_label == "OK"
-        assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.component == ComponentType.overlay
         assert (
             history.description
@@ -107,7 +104,6 @@ class TestExperienceConfig:
             db=db,
             data={
                 "component": "overlay",
-                "banner_enabled": "enabled_where_required",
                 "translations": [
                     {
                         "language": SupportedLanguage.english,
@@ -440,6 +436,8 @@ class TestPrivacyExperience:
 
         assert exp.region == PrivacyNoticeRegion.us_tx
         assert exp.experience_config_id is None
+        assert exp.component is None
+        assert exp.show_banner is False
 
         exp.delete(db=db)
 
@@ -466,6 +464,8 @@ class TestPrivacyExperience:
         assert exp.component == ComponentType.overlay
         assert exp.region == PrivacyNoticeRegion.us_ca
         assert exp.experience_config == experience_config_overlay
+        assert exp.component == ComponentType.overlay
+        assert exp.show_banner is True
         assert exp.id is not None
         assert exp.created_at == exp_created_at
         assert exp.updated_at > exp_updated_at
@@ -525,7 +525,6 @@ class TestPrivacyExperience:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "enabled_where_required",
                 "regions": [PrivacyNoticeRegion.us],
                 "privacy_notice_ids": [privacy_notice.id],
                 "translations": [
@@ -608,7 +607,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "always_disabled",
                 "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )
@@ -651,7 +649,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "always_disabled",
                 "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )
@@ -695,7 +692,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "always_disabled",
                 "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )
@@ -742,7 +738,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             db=db,
             data={
                 "component": "privacy_center",
-                "banner_enabled": "always_disabled",
                 "translations": [{"language": "en", "title": "Control your privacy"}],
             },
         )

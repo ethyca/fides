@@ -2480,7 +2480,6 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
         db=db,
         data={
             "component": "tcf_overlay",
-            "banner_enabled": "enabled_where_required",
             "translations": [
                 {
                     "language": "en",

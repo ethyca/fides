@@ -525,9 +525,22 @@ class PrivacyExperience(Base):
 
     @property
     def component(self) -> Optional[ComponentType]:
+        """For backwards compatibility, returns the component from the attached Privacy Experience Config"""
         if not self.experience_config_id:
             return None
         return self.experience_config.component  # type: ignore[return-value]
+
+    @property
+    def show_banner(self) -> bool:
+        """Backwards compatible property for whether the banner should be shown.
+
+        Logic used to be much more complex and calculated at runtime.  Now only certain
+        UX types load banners.
+        """
+        if self.component in [ComponentType.tcf_overlay, ComponentType.overlay]:
+            return True
+
+        return False
 
     # Attribute that can be added as the result of "get_related_privacy_notices". Privacy notices aren't directly
     # related to experiences.
