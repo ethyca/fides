@@ -29,7 +29,8 @@ class NoticeTranslation(FidesSchema):
 
 class NoticeTranslationCreate(NoticeTranslation):
     class Config:
-        """For when we're creating templates - so the Notice Translation SupportedLanguage can be serialized into JSON"""
+        """For when we're creating templates - so the Notice Translation SupportedLanguage
+        can be serialized into JSON"""
 
         use_enum_values = True
 
@@ -71,7 +72,6 @@ class GPPFieldMappingCreate(GPPFieldMapping):
         """For when we're creating templates - so values can be better converted into JSON"""
 
         use_enum_values = True
-
 
 
 class PrivacyNotice(FidesSchema):
@@ -161,32 +161,37 @@ class PrivacyNoticeCreation(PrivacyNotice):
         """
         Ensure no two translations with the same language are supplied
         """
-        return validate_translations(values)
+        translations: List[NoticeTranslation] = values.get("translations", [])
+        if not translations:
+            return values
+
+        languages = [translation.language for translation in translations]
+        if len(languages) != len(set(languages)):
+            raise ValueError("Multiple translations supplied for the same language")
+
+        return values
+
+    @root_validator()
+    def validate_enabled_has_data_uses(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Validated that enabled privacy notices have data uses"""
+        disabled = values.get("disabled")
+        data_uses = values.get("data_uses")
+
+        if not disabled and not data_uses:
+            raise ValueError(
+                "A privacy notice must have at least one data use assigned in order to be enabled."
+            )
+
+        return values
 
 
-class PrivacyNoticeWithId(PrivacyNotice):
+class PrivacyNoticeTemplateSchema(PrivacyNoticeCreation):
     """
     An API representation of a PrivacyNotice that includes an `id` field, useful
     for creating privacy notices from a template
     """
 
     id: str
-    translations: List[NoticeTranslationCreate] = []
-    gpp_field_mapping: Optional[List[GPPFieldMappingCreate]] = None
-
-    @root_validator()
-    def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Ensure no two translations with the same language are supplied
-        """
-        return validate_translations(values)
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        orm_mode = True
-        extra = Extra.forbid
-        use_enum_values = True
 
 
 class UserSpecificConsentDetails(FidesSchema):
@@ -210,29 +215,15 @@ class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNotice):
     translations: List[NoticeTranslationResponse] = []
 
 
-class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
+class PrivacyNoticeHistorySchema(PrivacyNoticeCreation):
     """
     An API representation of a PrivacyNoticeHistory used for response payloads
     """
 
+    id: str
     version: float
     translation_id: str
 
     class Config:
         use_enum_values = True
         orm_mode = True
-
-
-def validate_translations(values: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Ensure no two translations with the same language are supplied
-    """
-    translations: List[NoticeTranslation] = values.get("translations", [])
-    if not translations:
-        return values
-
-    languages = [translation.language for translation in translations]
-    if len(languages) != len(set(languages)):
-        raise ValueError("Multiple translations supplied for the same language")
-
-    return values

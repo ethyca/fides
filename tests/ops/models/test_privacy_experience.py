@@ -705,7 +705,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         )
         assert pc_exp.experience_config_id == config.id
 
-
         assert config.experiences.count() == 1
         assert config.experiences.first() == pc_exp
 

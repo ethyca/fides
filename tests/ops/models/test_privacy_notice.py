@@ -1,11 +1,12 @@
 import pytest
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import ValidationError
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
+    EnforcementLevel,
     NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
@@ -16,6 +17,7 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.sql_models import Cookies
 from fides.api.schemas.language import SupportedLanguage
+from fides.api.schemas.privacy_notice import PrivacyNoticeCreation
 
 
 class TestPrivacyNoticeModel:
@@ -603,7 +605,6 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
                 framework=PrivacyNoticeFramework.gpp_us_national.value,
             ).is_gpp
             is True
@@ -614,7 +615,6 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
                 framework=PrivacyNoticeFramework.gpp_us_state.value,
             ).is_gpp
             is True
@@ -625,7 +625,6 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
                 framework="bogus_framework",
             ).is_gpp
             is False
@@ -636,52 +635,56 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
             ).is_gpp
             is False
         )
 
     def test_validate_enabled_has_data_uses(self):
-        PrivacyNotice(
+        PrivacyNoticeCreation(
             name="pn_1",
             disabled=False,
             notice_key="pn_1",
             data_uses=["marketing.advertising"],
-            regions=[PrivacyNoticeRegion.us_ca],
-        ).validate_enabled_has_data_uses()
+            consent_mechanism=ConsentMechanism.opt_in,
+            enforcement_level=EnforcementLevel.frontend,
+        )
 
-        PrivacyNotice(
+        PrivacyNoticeCreation(
             name="pn_1",
             disabled=True,
             notice_key="pn_1",
             data_uses=[],  # disabled, so no data uses is OK
-            regions=[PrivacyNoticeRegion.us_ca],
-        ).validate_enabled_has_data_uses()
+            consent_mechanism=ConsentMechanism.opt_in,
+            enforcement_level=EnforcementLevel.frontend,
+        )
 
         with pytest.raises(ValidationError):
-            PrivacyNotice(
+            PrivacyNoticeCreation(
                 name="pn_1",
                 disabled=False,
                 notice_key="pn_1",
                 data_uses=[],
-                regions=[PrivacyNoticeRegion.us_ca],
-            ).validate_enabled_has_data_uses()
+                consent_mechanism=ConsentMechanism.opt_in,
+                enforcement_level=EnforcementLevel.frontend,
+            )
 
         with pytest.raises(ValidationError):
-            PrivacyNotice(
+            PrivacyNoticeCreation(
                 name="pn_1",
                 disabled=False,
                 notice_key="pn_1",
-                regions=[PrivacyNoticeRegion.us_ca],
-            ).validate_enabled_has_data_uses()
+                enforcement_level=EnforcementLevel.frontend,
+                consent_mechanism=ConsentMechanism.opt_in,
+            )
 
         with pytest.raises(ValidationError):
             # default is enabled, so this should error
-            PrivacyNotice(
+            PrivacyNoticeCreation(
                 name="pn_1",
                 notice_key="pn_1",
-                regions=[PrivacyNoticeRegion.us_ca],
-            ).validate_enabled_has_data_uses()
+                consent_mechanism=ConsentMechanism.opt_in,
+                enforcement_level=EnforcementLevel.frontend,
+            )
 
 
 class TestDataUseConflictFound:
