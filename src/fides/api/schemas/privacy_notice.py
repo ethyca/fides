@@ -92,7 +92,6 @@ class PrivacyNotice(FidesSchema):
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
     framework: Optional[PrivacyNoticeFramework] = None
-    gpp_field_mapping: Optional[List[GPPFieldMapping]] = None
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -133,6 +132,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
     consent_mechanism: ConsentMechanism
     enforcement_level: EnforcementLevel
     translations: Optional[List[NoticeTranslationCreate]]
+    gpp_field_mapping: Optional[List[GPPFieldMappingCreate]] = None
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -188,7 +188,9 @@ class PrivacyNoticeCreation(PrivacyNotice):
 class PrivacyNoticeTemplateSchema(PrivacyNoticeCreation):
     """
     An API representation of a PrivacyNotice that includes an `id` field, useful
-    for creating privacy notices from a template
+    for creating privacy notices from a template.
+
+    GPP Field Mappings are in a format that can be more easily saved as JSON for templates
     """
 
     id: str
@@ -213,6 +215,7 @@ class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNotice):
     cookies: List[CookieSchema]
     systems_applicable: bool = False
     translations: List[NoticeTranslationResponse] = []
+    gpp_field_mapping: Optional[List[GPPFieldMapping]] = None
 
 
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation):
