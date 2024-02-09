@@ -705,10 +705,11 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         )
         assert pc_exp.experience_config_id == config.id
 
+
         assert config.experiences.count() == 1
         assert config.experiences.first() == pc_exp
 
-        linked = upsert_privacy_experiences_after_config_update(
+        upsert_privacy_experiences_after_config_update(
             db, config, regions=[PrivacyNoticeRegion.us_ak]
         )
 

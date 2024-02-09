@@ -59,6 +59,21 @@ class GPPFieldMapping(FidesSchema):
     mechanism: Optional[List[GPPMechanismMapping]]
 
 
+class GPPMechanismMappingCreate(GPPMechanismMapping):
+    class Config:
+        """For when we're creating templates - so values can be saved as JSON"""
+
+        use_enum_values = True
+
+
+class GPPFieldMappingCreate(GPPFieldMapping):
+    class Config:
+        """For when we're creating templates - so values can be better converted into JSON"""
+
+        use_enum_values = True
+
+
+
 class PrivacyNotice(FidesSchema):
     """
     Base for PrivacyNotice API objects
@@ -157,6 +172,7 @@ class PrivacyNoticeWithId(PrivacyNotice):
 
     id: str
     translations: List[NoticeTranslationCreate] = []
+    gpp_field_mapping: Optional[List[GPPFieldMappingCreate]] = None
 
     @root_validator()
     def validate_translations(cls, values: Dict[str, Any]) -> Dict[str, Any]:
