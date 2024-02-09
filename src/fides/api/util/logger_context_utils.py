@@ -10,6 +10,8 @@ from requests.exceptions import (  # pylint: disable=redefined-builtin
     TooManyRedirects,
 )
 
+from fides.api.schemas.policy import ActionType
+
 if TYPE_CHECKING:
     from fides.api.service.connectors.saas_connector import SaaSConnector
 
@@ -25,17 +27,22 @@ class ErrorGroup(Enum):
     server_error = "Server-side error"
 
 
-def saas_connector_details(connector: "SaaSConnector") -> Dict[str, Any]:
+def saas_connector_details(
+    connector: "SaaSConnector",
+    action_type: Optional[ActionType],
+) -> Dict[str, Any]:
     """Maps the system and connection info details. Includes the collection and privacy request ID if available."""
 
     details = {
-        "system_id": (
-            connector.configuration.system.id
+        "system_key": (
+            connector.configuration.system.fides_key
             if connector.configuration.system
             else None
         ),
         "connection_key": connector.configuration.key,
     }
+    if action_type:
+        details["action_type"] = action_type.value
     if connector.current_collection_name:
         details["collection"] = connector.current_collection_name
     if connector.current_privacy_request:

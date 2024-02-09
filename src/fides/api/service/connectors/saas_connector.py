@@ -16,6 +16,7 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConsentRequestMap,
@@ -286,7 +287,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
 
         client: AuthenticatedClient = self.create_client()
-        with logger.contextualize(**saas_connector_details(self)):
+        with logger.contextualize(
+            **saas_connector_details(self, action_type=ActionType.access)
+        ):
             response: Response = client.send(
                 prepared_request, saas_request.ignore_errors
             )
@@ -438,7 +441,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     )
                     continue
                 raise exc
-            with logger.contextualize(**saas_connector_details(self)):
+            with logger.contextualize(
+                **saas_connector_details(self, action_type=ActionType.erasure)
+            ):
                 client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
 
@@ -542,7 +547,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     continue
                 raise exc
             client: AuthenticatedClient = self.create_client()
-            with logger.contextualize(**saas_connector_details(self)):
+            with logger.contextualize(
+                **saas_connector_details(self, action_type=ActionType.consent)
+            ):
                 client.send(prepared_request)
             fired = True
         self.unset_connector_state()
