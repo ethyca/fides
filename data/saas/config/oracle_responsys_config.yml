@@ -1,0 +1,53 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Oracle Responsys
+  type: oracle_responsys
+  description: A sample schema representing the Oracle Responsys connector for Fides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: username
+    - name: password
+      sensitive: True
+
+  external_references:
+    - name: responsys_id
+      label: Responsys ID
+      description: The location in your owned database where you store Responsys IDs
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: oracle_responsys
+      configuration:
+        username: <username>
+        password: <password>
+
+  test_request:
+    method: GET
+    path: /rest/api/v1.3/lists
+
+  endpoints:
+    - name: profile_list
+      requests:
+        read: ...
+    - name: profile_list_recipient
+      requests:
+        read:
+          request_override: profile_list_recipients_read
+          param_values:
+            - name: profile_list_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: profile_list.id
+                  direction: from
+            - name: recipient_id
+              references:
+                - responsys_id
+            - name: email
+              identity: email
+        delete:
+          request_override: profile_list_recipient_delete
+          ...
