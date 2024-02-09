@@ -689,7 +689,8 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-gpc-label {
   font-weight: 600;
   font-size: var(--fides-overlay-font-size-body);
-  text-wrap: nowrap;
+  white-space: nowrap;
+  padding: 0 8px;
 }
 
 .fides-gpc-badge {
