@@ -17,6 +17,12 @@ if TYPE_CHECKING:
     from fides.api.service.connectors.saas_connector import SaaSConnector
 
 
+class LoggerContextKeys(Enum):
+    privacy_request_id = "privacy_request_id"
+    error_group = "error_group"
+    error_details = "error_details"
+
+
 class ErrorGroup(Enum):
     """A collection of user-friendly error labels to be used in contextualized logs."""
 
@@ -45,7 +51,9 @@ def saas_connector_details(
     if connector.current_collection_name:
         details["collection"] = connector.current_collection_name
     if connector.current_privacy_request:
-        details["privacy_request_id"] = connector.current_privacy_request.id
+        details[LoggerContextKeys.privacy_request_id.value] = (
+            connector.current_privacy_request.id
+        )
     return details
 
 
@@ -72,11 +80,17 @@ def request_details(
         # assign error group only if error should not be ignored
         if not ignore_error:
             if response.status_code in [401, 403]:
-                details["error_group"] = ErrorGroup.authentication_error.value
+                details[LoggerContextKeys.error_group.value] = (
+                    ErrorGroup.authentication_error.value
+                )
             elif 400 <= response.status_code < 500:
-                details["error_group"] = ErrorGroup.client_error.value
+                details[LoggerContextKeys.error_group.value] = (
+                    ErrorGroup.client_error.value
+                )
             elif 500 <= response.status_code:
-                details["error_group"] = ErrorGroup.server_error.value
+                details[LoggerContextKeys.error_group.value] = (
+                    ErrorGroup.server_error.value
+                )
     return details
 
 
@@ -84,19 +98,25 @@ def connection_exception_details(exception: Exception, url: str) -> Dict[str, An
     """Maps select connection exceptions to user-friendly error details."""
 
     details = {
-        "error_group": ErrorGroup.network_error.value,
-        "error_details": f"Unknown exception connecting to {url}.",
+        LoggerContextKeys.error_group.value: ErrorGroup.network_error.value,
+        LoggerContextKeys.error_details.value: f"Unknown exception connecting to {url}.",
     }
     if isinstance(exception, ConnectTimeout):
-        details["error_details"] = f"Timeout occurred connecting to {url}."
+        details[LoggerContextKeys.error_details.value] = (
+            f"Timeout occurred connecting to {url}."
+        )
     elif isinstance(exception, ReadTimeout):
-        details["error_details"] = (
+        details[LoggerContextKeys.error_details.value] = (
             f"Timeout occurred waiting for a response from {url}."
         )
     elif isinstance(exception, SSLError):
-        details["error_details"] = f"SSL exception occurred connecting to {url}."
+        details[LoggerContextKeys.error_details.value] = (
+            f"SSL exception occurred connecting to {url}."
+        )
     elif isinstance(exception, TooManyRedirects):
-        details["error_details"] = f"Too many redirects occurred connecting to {url}."
+        details[LoggerContextKeys.error_details.value] = (
+            f"Too many redirects occurred connecting to {url}."
+        )
     elif isinstance(exception, ConnectionError):
-        details["error_details"] = f"Unable to connect to {url}."
+        details[LoggerContextKeys.error_details.value] = f"Unable to connect to {url}."
     return details
