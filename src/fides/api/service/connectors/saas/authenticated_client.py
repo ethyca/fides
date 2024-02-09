@@ -21,7 +21,10 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
-from fides.api.util.logger_context_utils import exception_details, request_details
+from fides.api.util.logger_context_utils import (
+    connection_exception_details,
+    request_details,
+)
 from fides.api.util.saas_util import deny_unsafe_hosts
 from fides.config import CONFIG
 
@@ -130,9 +133,9 @@ class AuthenticatedClient:
                         last_exception = ConnectionException(
                             f"Operational Error connecting to '{self.configuration.key}'{dev_mode_log}"
                         )
-                        logger.bind(**exception_details(exc, self.uri)).error(
-                            "Connector request failed."
-                        )
+                        logger.bind(
+                            **connection_exception_details(exc, self.uri)
+                        ).error("Connector request failed.")
                         # requests library can raise ConnectionError, Timeout or TooManyRedirects
                         # we will not retry these as they don't usually point to intermittent issues
                         break

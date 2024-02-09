@@ -11,11 +11,10 @@ from requests.exceptions import (  # pylint: disable=redefined-builtin
 )
 
 from fides.api.schemas.policy import ActionType
+from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.service.connectors.saas_connector import SaaSConnector
-
-from fides.config import CONFIG
 
 
 class ErrorGroup(Enum):
@@ -29,7 +28,7 @@ class ErrorGroup(Enum):
 
 def saas_connector_details(
     connector: "SaaSConnector",
-    action_type: Optional[ActionType],
+    action_type: Optional[ActionType] = None,
 ) -> Dict[str, Any]:
     """Maps the system and connection info details. Includes the collection and privacy request ID if available."""
 
@@ -57,7 +56,7 @@ def request_details(
 ) -> Dict[str, Any]:
     """Maps the request details and includes response details when "dev mode" is enabled."""
 
-    details = {
+    details: Dict[str, Any] = {
         "method": prepared_request.method,
         "url": prepared_request.url,
     }
@@ -81,10 +80,13 @@ def request_details(
     return details
 
 
-def exception_details(exception: Exception, url: str) -> Dict[str, Any]:
+def connection_exception_details(exception: Exception, url: str) -> Dict[str, Any]:
     """Maps select connection exceptions to user-friendly error details."""
 
-    details = {"error_group": ErrorGroup.network_error.value}
+    details = {
+        "error_group": ErrorGroup.network_error.value,
+        "error_details": f"Unknown exception connecting to {url}.",
+    }
     if isinstance(exception, ConnectTimeout):
         details["error_details"] = f"Timeout occurred connecting to {url}."
     elif isinstance(exception, ReadTimeout):
