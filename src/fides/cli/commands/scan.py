@@ -6,6 +6,7 @@ from fides.cli.options import (
     aws_access_key_id_option,
     aws_region_option,
     aws_secret_access_key_option,
+    aws_session_token_option,
     connection_string_option,
     coverage_threshold_option,
     credentials_id_option,
@@ -128,6 +129,7 @@ def scan_system_okta(
 @credentials_id_option
 @aws_access_key_id_option
 @aws_secret_access_key_option
+@aws_session_token_option
 @aws_region_option
 @organization_fides_key_option
 @coverage_threshold_option
@@ -138,6 +140,7 @@ def scan_system_aws(
     credentials_id: str,
     access_key_id: str,
     secret_access_key: str,
+    session_token: str,
     region: str,
     org_key: str,
     coverage_threshold: int,
@@ -152,6 +155,7 @@ def scan_system_aws(
         fides_config=config,
         access_key_id=access_key_id,
         secret_access_key=secret_access_key,
+        session_token=session_token,
         region=region,
         credentials_id=credentials_id,
     )
