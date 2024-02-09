@@ -1,10 +1,12 @@
 """Contains the generate group of CLI commands for fides."""
+
 import rich_click as click
 
 from fides.cli.options import (
     aws_access_key_id_option,
     aws_region_option,
     aws_secret_access_key_option,
+    aws_session_token_option,
     connection_string_option,
     credentials_id_option,
     include_null_flag,
@@ -125,6 +127,7 @@ def generate_dataset_aws(ctx: click.Context) -> None:
 @credentials_id_option
 @aws_access_key_id_option
 @aws_secret_access_key_option
+@aws_session_token_option
 @aws_region_option
 @include_null_flag
 @with_analytics
@@ -135,6 +138,7 @@ def generate_dataset_dynamodb(
     credentials_id: str,
     access_key_id: str,
     secret_access_key: str,
+    session_token: str,
     region: str,
 ) -> None:
     """
@@ -146,6 +150,7 @@ def generate_dataset_dynamodb(
         fides_config=config,
         access_key_id=access_key_id,
         secret_access_key=secret_access_key,
+        session_token=session_token,
         region=region,
         credentials_id=credentials_id,
     )
@@ -213,6 +218,7 @@ def generate_system_okta(
 @credentials_id_option
 @aws_access_key_id_option
 @aws_secret_access_key_option
+@aws_session_token_option
 @aws_region_option
 @include_null_flag
 @organization_fides_key_option
@@ -225,6 +231,7 @@ def generate_system_aws(
     credentials_id: str,
     access_key_id: str,
     secret_access_key: str,
+    session_token: str,
     region: str,
 ) -> None:
     """
@@ -236,6 +243,7 @@ def generate_system_aws(
         fides_config=config,
         access_key_id=access_key_id,
         secret_access_key=secret_access_key,
+        session_token=session_token,
         region=region,
         credentials_id=credentials_id,
     )
