@@ -155,6 +155,7 @@ export default async function handler(
       customOptionsPath: null,
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
+      base64Cookie: environment.settings.BASE_64_COOKIE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

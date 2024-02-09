@@ -22,6 +22,7 @@ The types of changes are:
 - Add enum and registry of supported languages [#4592](https://github.com/ethyca/fides/pull/4592)
 - Access and erasure support for Talkable [#4589](https://github.com/ethyca/fides/pull/4589)
 - Support temporary credentials in AWS generate + scan features [#4607](https://github.com/ethyca/fides/pull/4603), [#4608](https://github.com/ethyca/fides/pull/4608)
+- Add ability to store and read Fides cookie in Base64 format [#4556](https://github.com/ethyca/fides/pull/4556)
 
 ### Fixed
 

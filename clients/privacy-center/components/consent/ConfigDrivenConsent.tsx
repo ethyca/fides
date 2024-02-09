@@ -27,8 +27,10 @@ import SaveCancel from "./SaveCancel";
 
 const ConfigDrivenConsent = ({
   storePreferences,
+  base64Cookie,
 }: {
   storePreferences: (data: ConsentPreferences) => void;
+  base64Cookie: boolean;
 }) => {
   const config = useConfig();
   const consentOptions = useMemo(
@@ -77,7 +79,7 @@ const ConfigDrivenConsent = ({
       };
     });
     const cookie: FidesCookie = getOrMakeFidesCookie();
-    saveFidesCookie({ ...cookie, consent: newConsent });
+    saveFidesCookie({ ...cookie, consent: newConsent }, base64Cookie);
 
     const executableOptions = consentOptions.map((option) => ({
       data_use: option.fidesDataUseKey,
@@ -104,6 +106,7 @@ const ConfigDrivenConsent = ({
     fidesKeyToConsent,
     updateConsentRequestPreferencesMutationTrigger,
     verificationCode,
+    base64Cookie,
   ]);
 
   const toastError = useCallback(
