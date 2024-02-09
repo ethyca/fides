@@ -1866,12 +1866,20 @@ Will also automatically initialize a fresh database.
 <span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
   --access_key_id TEXT      Connect to AWS using an `Access Key ID`. _Requires
                             options `--access_key_id`, `--secret_access_key` &amp;
                             `--region`._
   --secret_access_key TEXT  Connect to AWS using an `Access Key`. _Requires
                             options `--access_key_id`, `--secret_access_key` &amp;
+                            `--region`._
+  --session_token TEXT      Connect to AWS using a temporary `Access Key`.
+                            _Requires options `--access_key_id`,
+                            `--secret_access_key`, `--session_token`, &amp;
                             `--region`._
   --region TEXT             Connect to AWS using a specific `Region`.
                             _Requires options `--access_key_id`,
@@ -1952,12 +1960,20 @@ tracked resource.
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
   --access_key_id TEXT      Connect to AWS using an `Access Key ID`. _Requires
                             options `--access_key_id`, `--secret_access_key` &amp;
                             `--region`._
   --secret_access_key TEXT  Connect to AWS using an `Access Key`. _Requires
                             options `--access_key_id`, `--secret_access_key` &amp;
+                            `--region`._
+  --session_token TEXT      Connect to AWS using a temporary `Access Key`.
+                            _Requires options `--access_key_id`,
+                            `--secret_access_key`, `--session_token`, &amp;
                             `--region`._
   --region TEXT             Connect to AWS using a specific `Region`.
                             _Requires options `--access_key_id`,
@@ -2153,7 +2169,11 @@ _Scannable resources: [Redshift, RDS, DynamoDb, S3]_
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials keys defined within Fides
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials keys defined within Fides
                                   config.
   --access_key_id TEXT            Connect to AWS using an `Access Key ID`.
                                   _Requires options `--access_key_id`,
@@ -2161,6 +2181,10 @@ _Scannable resources: [Redshift, RDS, DynamoDb, S3]_
   --secret_access_key TEXT        Connect to AWS using an `Access Key`.
                                   _Requires options `--access_key_id`,
                                   `--secret_access_key` &amp; `--region`._
+  --session_token TEXT            Connect to AWS using a temporary `Access
+                                  Key`. _Requires options `--access_key_id`,
+                                  `--secret_access_key`, `--session_token`, &amp;
+                                  `--region`._
   --region TEXT                   Connect to AWS using a specific `Region`.
                                   _Requires options `--access_key_id`,
                                   `--secret_access_key` &amp; `--region`._
