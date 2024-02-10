@@ -14,7 +14,6 @@ from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.util import hybridproperty
 
-from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
@@ -223,13 +222,6 @@ class PrivacyNoticeBase:
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
         return FidesKey(FidesKey.validate(notice_key))
 
-    def validate_enabled_has_data_uses(self) -> None:
-        """Validated that enabled privacy notices have data uses"""
-        if not self.disabled and not self.data_uses:
-            raise ValidationError(
-                "A privacy notice must have at least one data use assigned in order to be enabled."
-            )
-
 
 class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
     """
@@ -391,9 +383,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyNotice:
         """
-        Updates the Privacy Notice
+        Updates the Privacy Notice along with updates to other related resources:
         - Upserts or deletes supplied translations to match translations in the request
-        - For each remaining translation, create a historical record if the base notice or translation changed.
+        - For each remaining translation, create a historical record if the base notice
+        or translation changed.
         """
         request_translations = data.pop("translations", [])
 

@@ -289,7 +289,7 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyExperienceConfig:
         """
-        Updates a PrivacyExperienceConfig which is a large exercise!
+        Updates a PrivacyExperienceConfig and related resources which is a large exercise!
 
         - Updates the PrivacyExperienceConfig details
         - For each supplied translation, add, update, or delete translations so they match

@@ -1,12 +1,10 @@
 import pytest
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
-    EnforcementLevel,
     NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
@@ -17,7 +15,6 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.sql_models import Cookies
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.privacy_notice import PrivacyNoticeCreation
 
 
 class TestPrivacyNoticeModel:
@@ -638,53 +635,6 @@ class TestPrivacyNoticeModel:
             ).is_gpp
             is False
         )
-
-    def test_validate_enabled_has_data_uses(self):
-        PrivacyNoticeCreation(
-            name="pn_1",
-            disabled=False,
-            notice_key="pn_1",
-            data_uses=["marketing.advertising"],
-            consent_mechanism=ConsentMechanism.opt_in,
-            enforcement_level=EnforcementLevel.frontend,
-        )
-
-        PrivacyNoticeCreation(
-            name="pn_1",
-            disabled=True,
-            notice_key="pn_1",
-            data_uses=[],  # disabled, so no data uses is OK
-            consent_mechanism=ConsentMechanism.opt_in,
-            enforcement_level=EnforcementLevel.frontend,
-        )
-
-        with pytest.raises(ValidationError):
-            PrivacyNoticeCreation(
-                name="pn_1",
-                disabled=False,
-                notice_key="pn_1",
-                data_uses=[],
-                consent_mechanism=ConsentMechanism.opt_in,
-                enforcement_level=EnforcementLevel.frontend,
-            )
-
-        with pytest.raises(ValidationError):
-            PrivacyNoticeCreation(
-                name="pn_1",
-                disabled=False,
-                notice_key="pn_1",
-                enforcement_level=EnforcementLevel.frontend,
-                consent_mechanism=ConsentMechanism.opt_in,
-            )
-
-        with pytest.raises(ValidationError):
-            # default is enabled, so this should error
-            PrivacyNoticeCreation(
-                name="pn_1",
-                notice_key="pn_1",
-                consent_mechanism=ConsentMechanism.opt_in,
-                enforcement_level=EnforcementLevel.frontend,
-            )
 
 
 class TestDataUseConflictFound:
