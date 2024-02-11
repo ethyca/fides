@@ -1508,7 +1508,6 @@ def privacy_notice(db: Session) -> Generator:
             history.delete(db)
         translation.delete(db)
     privacy_notice.delete(db)
-    # template.delete(db)
 
 
 @pytest.fixture(scope="function")
