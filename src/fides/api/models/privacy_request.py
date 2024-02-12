@@ -523,6 +523,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
+
+        if not keys:
+            identity = self.get_persisted_identity()
+            self.cache_identity(identity)
+            keys = cache.keys(prefix)
+
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
@@ -530,6 +536,19 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         prefix = f"id-{self.id}-custom-privacy-request-field-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
+
+        if not keys:
+            custom_privacy_request_fields = (
+                self.get_persisted_custom_privacy_request_fields()
+            )
+            self.cache_custom_privacy_request_fields(
+                {
+                    key: CustomPrivacyRequestFieldSchema(**value)
+                    for key, value in custom_privacy_request_fields.items()
+                }
+            )
+            keys = cache.keys(prefix)
+
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
     def get_results(self) -> Dict[str, Any]:

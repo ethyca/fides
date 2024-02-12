@@ -29,7 +29,12 @@ from fides.api.models.privacy_request import (
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.manual_connector import ManualAction
-from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
+from fides.api.util.cache import (
+    FidesopsRedis,
+    get_all_cache_keys_for_privacy_request,
+    get_cache,
+    get_identity_cache_key,
+)
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 
@@ -1131,3 +1136,64 @@ class TestConsentRequestCustomFieldFunctions:
             },
         )
         assert consent_request.get_persisted_custom_privacy_request_fields() == {}
+
+
+class TestPullThroughCache:
+    def test_get_cached_identity_data_from_db(self, db, privacy_request):
+        identity_map = {"email": "test@mail.com", "phone_number": "+19515558593"}
+        identity = Identity(**identity_map)
+        privacy_request.persist_identity(db, identity)
+        privacy_request.cache_identity(identity)
+        assert privacy_request.get_persisted_identity() == identity
+        assert privacy_request.get_cached_identity_data() == identity_map
+
+        cache: FidesopsRedis = get_cache()
+        all_keys = get_all_cache_keys_for_privacy_request(
+            privacy_request_id=privacy_request.id
+        )
+        for key in all_keys:
+            cache.delete(key)
+
+        assert privacy_request.get_cached_identity_data() == identity_map
+
+    @pytest.mark.usefixtures(
+        "allow_custom_privacy_request_field_collection_enabled",
+        "allow_custom_privacy_request_fields_in_request_execution_enabled",
+    )
+    def test_get_cached_custom_privacy_request_fields_from_db(
+        self, db, privacy_request
+    ):
+        custom_field_map = {
+            "favorite_color": {"label": "Favorite color", "value": "blue"}
+        }
+        privacy_request.persist_custom_privacy_request_fields(
+            db,
+            {
+                key: CustomPrivacyRequestField(**value)
+                for key, value in custom_field_map.items()
+            },
+        )
+        privacy_request.cache_custom_privacy_request_fields(
+            {
+                key: CustomPrivacyRequestField(**value)
+                for key, value in custom_field_map.items()
+            }
+        )
+        assert (
+            privacy_request.get_persisted_custom_privacy_request_fields()
+            == custom_field_map
+        )
+        assert privacy_request.get_cached_custom_privacy_request_fields() == {
+            key: value["value"] for key, value in custom_field_map.items()
+        }
+
+        cache: FidesopsRedis = get_cache()
+        all_keys = get_all_cache_keys_for_privacy_request(
+            privacy_request_id=privacy_request.id
+        )
+        for key in all_keys:
+            cache.delete(key)
+
+        assert privacy_request.get_cached_custom_privacy_request_fields() == {
+            key: value["value"] for key, value in custom_field_map.items()
+        }
