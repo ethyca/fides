@@ -8,6 +8,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
+from fides.api.util.logger_context_utils import Contextualizable
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import (
@@ -181,7 +182,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     )
 
 
-class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
+class PrivacyRequest(IdentityVerificationMixin, Contextualizable, Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
@@ -949,6 +950,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         PrivacyRequestError.create(
             db=db, data={"message_sent": False, "privacy_request_id": self.id}
         )
+
+    def get_log_context(self):
+        return {"privacy_request_id": self.id}
 
 
 class PrivacyRequestError(Base):

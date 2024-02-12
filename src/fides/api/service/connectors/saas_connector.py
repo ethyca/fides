@@ -41,7 +41,7 @@ from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
     should_opt_in_to_service,
 )
-from fides.api.util.logger_context_utils import saas_connector_details
+from fides.api.util.logger_context_utils import Contextualizable, log_context, saas_connector_details
 from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     assign_placeholders,
@@ -49,8 +49,11 @@ from fides.api.util.saas_util import (
 )
 
 
-class SaaSConnector(BaseConnector[AuthenticatedClient]):
+class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     """A connector type to integrate with third-party SaaS APIs"""
+
+    def get_log_context(self):
+        return saas_connector_details(self)
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
@@ -125,6 +128,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.current_privacy_request = None
         self.current_saas_request = None
 
+    @log_context
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         test_request: SaaSRequest = self.saas_config.test_request
@@ -136,8 +140,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             self.secrets,
         )
         client: AuthenticatedClient = self.create_client()
-        with logger.contextualize(**saas_connector_details(self)):
-            client.send(prepared_request, test_request.ignore_errors)
+        client.send(prepared_request, test_request.ignore_errors)
         self.unset_connector_state()
         return ConnectionTestStatus.succeeded
 
@@ -158,6 +161,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             uri, self.configuration, client_config, rate_limit_config
         )
 
+    @log_context(action_type=ActionType.access.value)
     def retrieve_data(
         self,
         node: TraversalNode,
@@ -287,12 +291,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
 
         client: AuthenticatedClient = self.create_client()
-        with logger.contextualize(
-            **saas_connector_details(self, action_type=ActionType.access)
-        ):
-            response: Response = client.send(
-                prepared_request, saas_request.ignore_errors
-            )
+        response: Response = client.send(
+            prepared_request, saas_request.ignore_errors
+        )
         response = self._handle_errored_response(saas_request, response)
         response_data = self._unwrap_response_data(saas_request, response)
 
@@ -378,6 +379,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         return rows
 
+    @log_context(action_type=ActionType.erasure.value)
     def mask_data(
         self,
         node: TraversalNode,
@@ -434,17 +436,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 )
             except ValueError as exc:
                 if masking_request.skip_missing_param_values:
-                    logger.info(
+                    logger.debug(
                         "Skipping optional masking request on node {}: {}",
                         node.address.value,
                         exc,
                     )
                     continue
                 raise exc
-            with logger.contextualize(
-                **saas_connector_details(self, action_type=ActionType.erasure)
-            ):
-                client.send(prepared_request, masking_request.ignore_errors)
+            client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
 
         self.unset_connector_state()
@@ -467,6 +466,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     related_identities[identity_type] = identity_value
         return related_identities
 
+    @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
         node: TraversalNode,
@@ -547,10 +547,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     continue
                 raise exc
             client: AuthenticatedClient = self.create_client()
-            with logger.contextualize(
-                **saas_connector_details(self, action_type=ActionType.consent)
-            ):
-                client.send(prepared_request)
+            client.send(prepared_request)
             fired = True
         self.unset_connector_state()
         if not fired:
