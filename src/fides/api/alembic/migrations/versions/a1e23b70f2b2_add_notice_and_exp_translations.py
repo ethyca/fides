@@ -5,6 +5,7 @@ Revises: 68cb26f3492d
 Create Date: 2024-02-01 21:49:20.792733
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
@@ -208,7 +209,9 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("language", sa.String(), nullable=False),
+        sa.Column(
+            "language", sa.String(), server_default="en", nullable=False
+        ),  # set "en" as a server default for existing values ... TODO: maybe make temporarily nullable and set english 'manually' instead ??
     )
     op.add_column(
         "privacyexperienceconfighistory", sa.Column("name", sa.String(), nullable=True)
@@ -270,10 +273,16 @@ def upgrade():
         nullable=True,
     )
     op.add_column(
-        "privacynoticehistory", sa.Column("language", sa.String(), nullable=False)
+        "privacynoticehistory",
+        sa.Column(
+            "language", sa.String(), server_default="en", nullable=False
+        ),  # set "en" as a server default for existing values ... TODO: maybe make temporarily nullable and set english 'manually' instead ??
     )
     op.add_column(
-        "privacynoticehistory", sa.Column("title", sa.String(), nullable=False)
+        "privacynoticehistory",
+        sa.Column(
+            "title", sa.String(), nullable=True
+        ),  # temporarily nullable  for existing values
     )
     op.add_column(
         "privacynoticehistory", sa.Column("translation_id", sa.String(), nullable=True)
