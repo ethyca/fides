@@ -8,7 +8,6 @@ Create Date: 2024-01-09 21:17:13.115020
 
 import uuid
 
-import pandas as pd
 from alembic import op
 from sqlalchemy import text
 
@@ -33,21 +32,6 @@ def remove_existing_experience_data(bind):
     This means that any existing user-edited data on PrivacyExperienceConfig records will need to be
     _manually_ re-added to the post-migration state. It will not be migrated as part of the automatic migration.
     """
-
-    def drop_fk_constraint(bind):
-        """
-        Drops FK constraint between PrivacyExperienceConfigHistory and PrivacyExperienceConfig,
-        to allow us to delete PrivacyExperienceConfigs without removing their associated history records
-
-        NOTE: should we just remove the column altogether? will we want to keep it around in the "new" model,
-        given that our PrivacyExperienceConfigHistory records will now be pointing to ExperienceTranslation records?
-        On the other hand, it could be useful to help in performing manual reconciliation steps post-migration.
-        """
-        op.drop_constraint(
-            "privacyexperienceconfighistory_experience_config_id_fkey",
-            "privacyexperienceconfighistory",
-            type_="foreignkey",
-        )
 
     def delete_experiences(bind):
         """
@@ -124,10 +108,10 @@ def migrate_notices(bind):
     link_notice_history_to_translation_id = text(
         """
         UPDATE privacynoticehistory
-        SET translation_id = noticetranslation.id, title = privacynoticehistory.name
+        SET translation_id = noticetranslation.id, title = privacynoticehistory.name, language = "en"
         FROM noticetranslation
         WHERE noticetranslation.privacy_notice_id = privacynoticehistory.privacy_notice_id;
-    """
+        """
     )
 
     bind.execute(link_notice_history_to_translation_id)
@@ -139,12 +123,11 @@ def downward_migrate_notices(bind):
 
     Moves data in existing NoticeTranslation records back to the associated PrivacyNotice records,
     to match the old data model.
-    # NOTE: this won't work "well" if multiple translations are present. Should we even attempt it?
+    # NOTE: this won't work _well_ if multiple translations are present. Should we even attempt it?
 
     The existing PrivacyNoticeHistory records are adjusted to point back to the associated PrivacyNotice records,
     rather than the NoticeTranslation records, as is expected in the old data model.
 
-    # TODO: should we attempt to back-migrate region data from the ExperienceConfig records to the PrivacyNotice records? Feels dicey...
     """
 
     noticetranslation_data_to_notice_query = text(
