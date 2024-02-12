@@ -54,7 +54,12 @@ def upgrade():
         ["id"],
         unique=False,
     )
-    op.create_index(op.f('ix_experienceconfigtemplate_component'), 'experienceconfigtemplate', ['component'], unique=False)
+    op.create_index(
+        op.f("ix_experienceconfigtemplate_component"),
+        "experienceconfigtemplate",
+        ["component"],
+        unique=False,
+    )
     op.create_table(
         "experiencenotices",
         sa.Column(

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-from fidesplus.models.privacy_notice import PrivacyNoticeCreation
 from pydantic import ValidationError
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -507,52 +506,3 @@ class TestLoadTCFPurposeOverrides:
         for override in default_override_objects_added:
             assert override.is_included is True
             assert override.required_legal_basis is None
-
-
-class TestValidateEnabledHasDataUses:
-    def test_validate_enabled_has_data_uses(self):
-        PrivacyNoticeCreation(
-            name="pn_1",
-            disabled=False,
-            notice_key="pn_1",
-            data_uses=["marketing.advertising"],
-            consent_mechanism=ConsentMechanism.opt_in,
-            enforcement_level=EnforcementLevel.frontend,
-        )
-
-        PrivacyNoticeCreation(
-            name="pn_1",
-            disabled=True,
-            notice_key="pn_1",
-            data_uses=[],  # disabled, so no data uses is OK
-            consent_mechanism=ConsentMechanism.opt_in,
-            enforcement_level=EnforcementLevel.frontend,
-        )
-
-        with pytest.raises(ValidationError):
-            PrivacyNoticeCreation(
-                name="pn_1",
-                disabled=False,
-                notice_key="pn_1",
-                data_uses=[],
-                consent_mechanism=ConsentMechanism.opt_in,
-                enforcement_level=EnforcementLevel.frontend,
-            )
-
-        with pytest.raises(ValidationError):
-            PrivacyNoticeCreation(
-                name="pn_1",
-                disabled=False,
-                notice_key="pn_1",
-                enforcement_level=EnforcementLevel.frontend,
-                consent_mechanism=ConsentMechanism.opt_in,
-            )
-
-        with pytest.raises(ValidationError):
-            # default is enabled, so this should error
-            PrivacyNoticeCreation(
-                name="pn_1",
-                notice_key="pn_1",
-                consent_mechanism=ConsentMechanism.opt_in,
-                enforcement_level=EnforcementLevel.frontend,
-            )

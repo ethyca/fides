@@ -188,7 +188,7 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
-    language = language = Column(
+    language = Column(
         EnumColumn(
             SupportedLanguage,
             native_enum=False,
@@ -216,10 +216,10 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
         )
 
     # The specific experience under which the user was presented the relevant notice
-    # Minimal information stored here, mostly just region and component type
+    # Minimal information stored here, mostly just region
     privacy_experience_id = Column(
         String
-    )  # TODO will be removed.  Tentatively removing the FK to Privacy Experience
+    )  # TODO will be removed.  Preemptively removing the FK to Privacy Experience
 
     @declared_attr
     def privacy_notice_history_id(cls) -> Column:

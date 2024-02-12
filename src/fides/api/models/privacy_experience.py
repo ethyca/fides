@@ -7,7 +7,8 @@ from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship, declared_attr
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
 
 from fides.api.db.base_class import Base, generate_table_uuid
@@ -23,15 +24,14 @@ from fides.api.schemas.language import SupportedLanguage
 
 class ExperienceNotices(Base):
     """
-    This table links Privacy Notices to shared Privacy Experience Config
+    A many-to-many table that linkes Privacy Notices to shared Privacy Experience Configs.
     """
 
     def generate_uuid(self) -> str:
         """
-        Generates a uuid with a prefix based on the tablename to be used as the
-        record's ID value
+        Generates the experience notice id
         """
-        return generate_table_uuid(self.current_column.table.name)
+        return generate_table_uuid(self.current_column.table.name)  # type: ignore[attr-defined]
 
     # Overrides Base.id so this is not a primary key.
     # Instead, we have a composite PK of notice_id and experience_config_id
@@ -58,24 +58,30 @@ class ComponentType(Enum):
     The component type - not formalized in the db
     """
 
-    overlay = "overlay"  # Overlay means banner + modal combined.
-    privacy_center = "privacy_center"
+    overlay = "overlay"  # Deprecated. Leave here for backwards compat.
+    banner_and_modal = "banner_and_modal"
     modal = "modal"
+    privacy_center = "privacy_center"
     tcf_overlay = "tcf_overlay"  # TCF Banner + modal combined
 
 
 # Fides JS UX Types - there should only be one of these defined per region
 FidesJSUXTypes: List[ComponentType] = [
-    ComponentType.overlay,
+    ComponentType.banner_and_modal,
     ComponentType.modal,
 ]
 
 
 class PrivacyExperienceConfigBase:
     """
-    Common fields shared between the ExperienceConfigTemplate, PrivacyExperienceConfig
-    and the PrivacyExperienceConfigHistory
+    Common fields shared between:
+    - ExperienceConfigTemplate
+    - PrivacyExperienceConfig
+    - PrivacyExperienceConfigHistory
+
+    These are non-translated fields.
     """
+
     allow_language_selection = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )
@@ -102,12 +108,14 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
     )
-    translations = Column(ARRAY(JSONB))  # A list of all available out of the box translations
+    translations = Column(
+        ARRAY(JSONB)
+    )  # A list of all available out of the box translations
 
 
 class ExperienceTranslationBase:
-    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceHistory.
-    """
+    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceHistory."""
+
     accept_button_label = Column(String)
     acknowledge_button_label = Column(String)
     banner_description = Column(String)
@@ -150,9 +158,7 @@ class DeprecatedConfigFields:
     banner_description = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
-    banner_enabled = Column(
-        String(), index=True
-    )  # TODO pending removal
+    banner_enabled = Column(String(), index=True)  # TODO pending removal
     banner_title = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
@@ -179,31 +185,13 @@ class DeprecatedConfigFields:
     version = Column(Float, nullable=False, default=1.0)  # TODO pending removal
 
 
-class PrivacyExperienceConfigBase:
-    """Common fields shared between the PrivacyExperienceConfig and the PrivacyExperienceConfigHistory"""
-    allow_language_selection = Column(
-        Boolean, nullable=False, default=True, server_default="t"
-    )
-
-    @declared_attr
-    def component(cls) -> Column:
-        return Column(
-            EnumColumn(ComponentType),
-            nullable=False,
-            index=True,
-        )
-
-    disabled = Column(Boolean, nullable=False, default=True)
-    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
-    name = Column(String)
-
-
-class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBase, Base):
+class PrivacyExperienceConfig(
+    DeprecatedConfigFields, PrivacyExperienceConfigBase, Base
+):
     """
-    Privacy Experience Config Model
+    The Privacy Experience Configuration model that stores shared configuration for Privacy Experiences.
 
-    This stores shared configuration for Privacy Experiences.
-    Translations, Notices, and regions (Privacy Experiences) are linked to this resource.
+    - Translations, Notices, and Regions (via Privacy Experiences) are linked to this resource.
     """
 
     custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
@@ -265,7 +253,7 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
         record combining details from the translation and the Experience Config
         - Links regions to the ExperienceConfig (by creating/updating associated PrivacyExperiences
         and adding a FK back to the config)
-        - Adds/removes Notices to the Experience Config
+        - Adds/removes Notices to/from the Experience Config
         """
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
@@ -279,20 +267,21 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
         )
 
         for translation_data in translations:
-            data.pop(
-                "id", None
-            )  # Default Experience Configs have id specified but we don't want to use the same id for the historical record
+            # Create an ExperienceTranslation
             translation = ExperienceTranslation.create(
                 db,
                 data={**translation_data, "experience_config_id": experience_config.id},
             )
+            # Version the ExperienceTranslation and the original PrivacyExperienceConfig together.
             PrivacyExperienceConfigHistory.create(
                 db,
                 data={**data, **translation_data, "translation_id": translation.id},
                 check_name=False,
             )
 
+        # Link regions to this PrivacyExperienceConfig via the PrivacyExperience table
         upsert_privacy_experiences_after_config_update(db, experience_config, regions)
+        # Link Privacy Notices to this Privacy Experience config via the ExperienceNotices table
         link_notices_to_experience_config(
             db, notice_ids=privacy_notice_ids, experience_config=experience_config
         )
@@ -315,6 +304,7 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
         regions = data.pop("regions", [])
         privacy_notice_ids = data.pop("privacy_notice_ids", [])
 
+        # Do a patch update of the existing privacy experience config if applicable
         config_updated = update_if_modified(self, db=db, data=data)
 
         for translation_data in request_translations:
@@ -322,6 +312,7 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
                 ExperienceTranslation
             ] = self.get_translation_by_language(db, translation_data.get("language"))
             if existing_translation:
+                # Do a patch update of the existing experience translation if applicable
                 translation_updated: bool = update_if_modified(
                     existing_translation,
                     db=db,
@@ -330,6 +321,7 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
                 translation = existing_translation
             else:
                 translation_updated = True
+                # Create a new Experience Translation since one doesn't exist
                 translation = ExperienceTranslation.create(
                     db,
                     data={**translation_data, "experience_config_id": self.id},
@@ -343,6 +335,8 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
                 updated_translation_data: dict = create_historical_data_from_record(
                     translation
                 )
+                # Create a historical record for reporting purposes, which versions
+                # elements from both the PrivacyExperienceConfig and ExperienceTranslation
                 PrivacyExperienceConfigHistory.create(
                     db,
                     data={
@@ -354,6 +348,7 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
                     check_name=False,
                 )
 
+        # Deletes any Experience Translations that were not supplied in the request
         experience_translations: List[ExperienceTranslation] = self.translations
         translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
             translation.language for translation in experience_translations
@@ -367,7 +362,9 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
         ).delete()
         db.commit()
 
+        # Link regions to this PrivacyExperienceConfig via the PrivacyExperience table
         upsert_privacy_experiences_after_config_update(db, self, regions)
+        # Link Privacy Notices to this Privacy Experience config via the ExperienceNotices table
         link_notices_to_experience_config(
             db, notice_ids=privacy_notice_ids, experience_config=self
         )
@@ -410,20 +407,6 @@ class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBas
                 cloned_attributes = translation_data
             dry_updated_translations.append(ExperienceTranslation(**cloned_attributes))
         return dry_updated_translations
-
-    @classmethod
-    def get_default_config(
-        cls, db: Session, component: ComponentType
-    ) -> Optional[PrivacyExperienceConfig]:
-        """Load the first default config of a given component type
-        TODO pending removal - there is no longer a "default" config
-        """
-        return (
-            db.query(PrivacyExperienceConfig)
-            .filter(PrivacyExperienceConfig.component == component)
-            .filter(PrivacyExperienceConfig.is_default.is_(True))
-            .first()
-        )
 
 
 class ExperienceTranslation(ExperienceTranslationBase, Base):
@@ -479,13 +462,16 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         )
 
 
-class PrivacyExperienceConfigHistory(ExperienceTranslationBase, PrivacyExperienceConfigBase, Base):
-    """Experience Config History table for auditng purpose.
+class PrivacyExperienceConfigHistory(
+    ExperienceTranslationBase, PrivacyExperienceConfigBase, Base
+):
+    """Experience Config History table for auditing purposes.
 
     When an Experience Config and/or an Experience Translation is modified, a new version is
     created here that stores a snapshot of these records combined.  Consent reporting can contain
     an id to this resource which preserves the details of the Experience viewed by the end user.
     """
+
     custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
@@ -495,9 +481,7 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, PrivacyExperienc
 
     version = Column(Float, nullable=False, default=1.0)
 
-    banner_enabled = Column(
-        String(), index=True
-    )  # TODO pending removal
+    banner_enabled = Column(String(), index=True)  # TODO pending removal
 
     experience_config_id = Column(
         String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
@@ -505,13 +489,10 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, PrivacyExperienc
 
 
 class PrivacyExperience(Base):
-    """Stores Privacy Experiences for just a single region.
-    The Experience describes how to surface multiple Privacy Notices or TCF content to the
-    end user in a given region.
+    """Privacy Experiences connect a region to a shared PrivacyExperienceConfig.
 
-    There can only be one component per region.  Most of the details for a given Experience
-    are on the ExperienceConfig (which allows multiple Experiences to share the same
-    configuration options).
+    This resource should be queried for an end-user in a specific region, and the configuration
+    will be loaded from the shared Privacy Experience Config.
     """
 
     region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
@@ -531,7 +512,9 @@ class PrivacyExperience(Base):
 
     @property
     def component(self) -> Optional[ComponentType]:
-        """For backwards compatibility, returns the component from the attached Privacy Experience Config"""
+        """For backwards compatibility, returns the component from the attached Privacy Experience Config
+        This used to be stored at the PrivacyExperience level too.
+        """
         if not self.experience_config_id:
             return None
         return self.experience_config.component  # type: ignore[return-value]
@@ -540,10 +523,13 @@ class PrivacyExperience(Base):
     def show_banner(self) -> bool:
         """Backwards compatible property for whether the banner should be shown.
 
-        Logic used to be much more complex and calculated at runtime.  Now only certain
-        UX types load banners.
+        Logic used to be much more complex and calculated at runtime. Now this can be derived from just the component type
         """
-        if self.component in [ComponentType.tcf_overlay, ComponentType.overlay]:
+        if self.component in [
+            ComponentType.tcf_overlay,
+            ComponentType.banner_and_modal,
+            ComponentType.overlay,
+        ]:  # Overlay type is deprecated
             return True
 
         return False
@@ -583,46 +569,10 @@ class PrivacyExperience(Base):
             )
             .filter(
                 PrivacyExperience.region == region,
-                PrivacyExperienceConfig.component == component,
+                PrivacyExperienceConfig.component  # pylint: disable=comparison-with-callable
+                == component,
             )
         )
-
-
-def get_privacy_notices_by_region_and_component(
-    db: Session, regions: List[str], component: ComponentType
-) -> Query:
-    """
-    Return relevant privacy notices that should be displayed for a certain
-    region in a given component type
-    """
-    return (
-        db.query(PrivacyNotice)
-        .join(ExperienceNotices, PrivacyNotice.id == ExperienceNotices.notice_id)
-        .join(
-            PrivacyExperience,
-            PrivacyExperience.experience_config_id
-            == ExperienceNotices.experience_config_id,
-        )
-        .filter(
-            PrivacyExperience.region.in_(regions),
-            PrivacyExperienceConfig.component == component,
-        )
-    )
-
-
-def remove_regions_from_experience_config(
-    experience_config: PrivacyExperienceConfig,
-    regions_to_unlink: List[PrivacyNoticeRegion],
-) -> None:
-    """Remove regions from a PrivacyExperienceConfig by deleting the associated PrivacyExperiences"""
-    if not regions_to_unlink:
-        return None
-
-    experience_config.experiences.filter(  # type: ignore[call-arg]
-        PrivacyExperience.region.in_(regions_to_unlink)
-    ).delete()
-
-    return None
 
 
 def upsert_privacy_experiences_after_config_update(
@@ -631,11 +581,10 @@ def upsert_privacy_experiences_after_config_update(
     regions: List[PrivacyNoticeRegion],
 ) -> List[PrivacyNoticeRegion]:
     """
-    Keeps Privacy Experiences in sync with ExperienceConfig changes.
-    Create or update PrivacyExperiences for the regions we're attempting to link to the
-    ExperienceConfig.
+    Links regions to a PrivacyExperienceConfig via the PrivacyExperience table.
 
-    Assumes that components on the ExperienceConfig do not change after they're updated.
+    PrivacyExperiences are queried directly for the end-user in a specific region and pull
+    their configuration off of the linked PrivacyExperienceConfig.
     """
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
     removed_regions: List[
@@ -647,6 +596,7 @@ def upsert_privacy_experiences_after_config_update(
         )
     ]
 
+    # Delete any PrivacyExperiences whose regions are not in the request
     experience_config.experiences.filter(  # type: ignore[call-arg]
         PrivacyExperience.region.in_(removed_regions)
     ).delete()
@@ -661,8 +611,8 @@ def upsert_privacy_experiences_after_config_update(
             .first()
         )
 
-        # If existing experience exists, refresh data
         if not existing_experience:
+            # Create a Privacy Experience for any new regions
             PrivacyExperience.create(
                 db,
                 data={
@@ -689,8 +639,6 @@ def link_notices_to_experience_config(
 ) -> List[PrivacyNotice]:
     """
     Link supplied Notices to ExperienceConfig and unlink any notices not supplied.
-
-    Notices retrieved by Notice Key
     """
     new_notices: Query = db.query(PrivacyNotice).filter(
         PrivacyNotice.id.in_(notice_ids)

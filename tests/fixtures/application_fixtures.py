@@ -37,7 +37,6 @@ from fides.api.models.policy import (
     RuleTarget,
 )
 from fides.api.models.privacy_experience import (
-    ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
@@ -48,6 +47,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
+from fides.api.models.privacy_preference import ServingComponent
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
     CurrentPrivacyPreferenceV2,
@@ -1518,7 +1518,7 @@ def served_notice_history(
         db=db,
         data={
             "acknowledge_mode": False,
-            "serving_component": "overlay",
+            "serving_component": ServingComponent.overlay,
             "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
@@ -1619,13 +1619,9 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            # "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service.operations"],
             "enforcement_level": EnforcementLevel.system_wide,
-            # "displayed_in_privacy_center": False,
-            # "displayed_in_overlay": True,
-            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en",
@@ -1658,13 +1654,13 @@ def privacy_experience_france_tcf_overlay(
 
 @pytest.fixture(scope="function")
 def privacy_experience_france_overlay(
-    db: Session, experience_config_overlay
+    db: Session, experience_config_banner_and_modal
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "region": PrivacyNoticeRegion.fr,
-            "experience_config_id": experience_config_overlay.id,
+            "experience_config_id": experience_config_banner_and_modal.id,
         },
     )
 
@@ -1679,13 +1675,9 @@ def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            # "regions": [PrivacyNoticeRegion.fr],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
-            # "displayed_in_overlay": True,
-            # "displayed_in_privacy_center": False,
-            # "displayed_in_api": False,
             "translations": [
                 {
                     "language": "en",
@@ -1706,7 +1698,6 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
         data={
             "name": "example privacy notice eu_cy provide.service.operations",
             "notice_key": "example_privacy_notice_eu_cy_provide.service.operations",
-            # "regions": [PrivacyNoticeRegion.cy],
             "consent_mechanism": ConsentMechanism.opt_out,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
@@ -1716,10 +1707,7 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
                     "title": "example privacy notice eu_cy provide.service.operations",
                     "description": "a sample privacy notice configuration",
                 }
-            ]
-            # "displayed_in_overlay": False,
-            # "displayed_in_privacy_center": True,
-            # "displayed_in_api": False,
+            ],
         },
     )
 
@@ -2439,11 +2427,11 @@ def privacy_experience_privacy_center(
 
 
 @pytest.fixture(scope="function")
-def experience_config_overlay(db: Session) -> Generator:
+def experience_config_banner_and_modal(db: Session) -> Generator:
     config = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "component": "overlay",
+            "component": "banner_and_modal",
             "allow_language_selection": False,
             "translations": [
                 {
@@ -2508,12 +2496,14 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_overlay(db: Session, experience_config_overlay) -> Generator:
+def privacy_experience_overlay(
+    db: Session, experience_config_banner_and_modal
+) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "region": PrivacyNoticeRegion.us_ca,
-            "experience_config_id": experience_config_overlay.id,
+            "experience_config_id": experience_config_banner_and_modal.id,
         },
     )
 
@@ -2979,7 +2969,7 @@ def served_notice_history(
         db=db,
         data={
             "acknowledge_mode": False,
-            "serving_component": "overlay",
+            "serving_component": ServingComponent.overlay,
             "privacy_notice_history_id": privacy_notice.translations[
                 0
             ].privacy_notice_history_id,

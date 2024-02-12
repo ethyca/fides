@@ -7,7 +7,6 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
-    get_privacy_notices_by_region_and_component,
     upsert_privacy_experiences_after_config_update,
 )
 from fides.api.models.privacy_notice import (
@@ -20,12 +19,16 @@ from fides.api.schemas.language import SupportedLanguage
 
 
 class TestExperienceConfig:
-    def test_create_privacy_experience_config(self, db):
+    def test_create_privacy_experience_config(self, db, privacy_notice):
         """Assert PrivacyExperienceConfig, a translation, and its historical record are created"""
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
-                "component": "overlay",
+                "component": "banner_and_modal",
+                "regions": [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_co],
+                "privacy_notice_ids": [privacy_notice.id],
+                "name": "My New Experience Config",
+                "allow_language_selection": False,
                 "translations": [
                     {
                         "language": "en",
@@ -40,69 +43,97 @@ class TestExperienceConfig:
                         "acknowledge_button_label": "OK",
                         "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
                         "banner_title": "Control Your Privacy",
+                        "is_default": True,
                     }
                 ],
             },
         )
-        assert config.component == ComponentType.overlay
+        assert config.allow_language_selection is False
+        assert config.component == ComponentType.banner_and_modal
+        assert config.disabled is True
+        assert config.dismissable is True
+        assert config.name == "My New Experience Config"
+        assert config.regions == [
+            PrivacyNoticeRegion.us_ca,
+            PrivacyNoticeRegion.us_co,
+        ]  # Convenience property
+        assert config.privacy_notices == [privacy_notice]
 
+        assert len(config.translations) == 1
         translation = config.translations[0]
 
         assert translation.accept_button_label == "Accept all"
         assert translation.acknowledge_button_label == "OK"
         assert (
-            translation.description
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
-        assert (
             translation.banner_description
             == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
         )
         assert translation.banner_title == "Control Your Privacy"
-        assert translation.is_default is False
+        assert (
+            translation.description
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert translation.experience_config_id == config.id
+        assert translation.is_default is True
+        assert translation.language == SupportedLanguage.english
         assert translation.privacy_preferences_link_label == "Manage preferences"
         assert translation.privacy_policy_link_label == "View our privacy policy"
         assert translation.privacy_policy_url == "http://example.com/privacy"
         assert translation.reject_button_label == "Reject all"
         assert translation.save_button_label == "Save"
         assert translation.title == "Control your privacy"
+        assert translation.version == 1.0  # Convenience property
+        assert (
+            translation.experience_config_history == translation.histories.first()
+        )  # Convenience property
 
         assert translation.histories.count() == 1
 
+        # Historical record versions translation and notice combined
         history = translation.histories[0]
         assert translation.experience_config_history_id == history.id
 
         assert history.accept_button_label == "Accept all"
         assert history.acknowledge_button_label == "OK"
-        assert history.component == ComponentType.overlay
-        assert (
-            history.description
-            == "We care about your privacy. Opt in and opt out of the data use cases below."
-        )
+        assert history.allow_language_selection is False
         assert (
             history.banner_description
             == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
         )
         assert history.banner_title == "Control Your Privacy"
+        assert history.component == ComponentType.banner_and_modal
+        assert (
+            history.description
+            == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
         assert history.disabled is True
-        assert history.is_default is False
+        assert config.dismissable is True
+        assert history.is_default is True
+        assert history.language == SupportedLanguage.english
+        assert history.name == "My New Experience Config"
+        assert history.origin is None
         assert history.privacy_preferences_link_label == "Manage preferences"
         assert history.privacy_policy_link_label == "View our privacy policy"
         assert history.privacy_policy_url == "http://example.com/privacy"
         assert history.reject_button_label == "Reject all"
         assert history.save_button_label == "Save"
         assert history.title == "Control your privacy"
+        assert history.translation_id == translation.id
         assert history.version == 1.0
 
         history.delete(db)
         translation.delete(db)
         config.delete(db=db)
 
-    def test_update_privacy_experience_config_level(self, db):
+    def test_update_privacy_experience_config_level(self, db, privacy_notice):
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
-                "component": "overlay",
+                "component": "banner_and_modal",
+                "regions": [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_co],
+                "privacy_notice_ids": [privacy_notice.id],
+                "name": "My New Experience Config",
+                "allow_language_selection": False,
                 "translations": [
                     {
                         "language": SupportedLanguage.english,
@@ -127,8 +158,10 @@ class TestExperienceConfig:
         config.update(
             db=db,
             data={
-                "component": "privacy_center",
-                "translations": [
+                "component": "banner_and_modal",
+                "name": "Updated Privacy Experience Config",
+                "allow_language_selection": True,
+                "translations": [  # Contrived, only supplying one translation when allow language selection is True
                     {
                         "language": SupportedLanguage.english,
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
@@ -148,7 +181,8 @@ class TestExperienceConfig:
         )
         db.refresh(config)
 
-        assert config.component == ComponentType.privacy_center
+        assert config.name == "Updated Privacy Experience Config"
+        assert config.allow_language_selection is True
         assert config.created_at == config_created_at
         assert config.updated_at > config_updated_at
 
@@ -159,25 +193,27 @@ class TestExperienceConfig:
         history = translation.histories.order_by(
             PrivacyExperienceConfigHistory.created_at
         )[1]
-        assert history.component == ComponentType.privacy_center
+        assert history.name == "Updated Privacy Experience Config"
+        assert history.allow_language_selection is True
         assert translation.experience_config_history_id == history.id
 
         old_history = translation.histories.order_by(
             PrivacyExperienceConfigHistory.created_at
         )[0]
         assert old_history.version == 1.0
-        assert old_history.component == ComponentType.overlay
+        assert old_history.name == "My New Experience Config"
+        assert old_history.allow_language_selection is False
 
         translation.delete(db)
         old_history.delete(db)
         history.delete(db)
 
     def test_update_privacy_experience_config_add_translation(
-        self, db, experience_config_overlay
+        self, db, experience_config_banner_and_modal
     ):
-        updated_at = experience_config_overlay.updated_at
+        updated_at = experience_config_banner_and_modal.updated_at
 
-        experience_config_overlay.update(
+        experience_config_banner_and_modal.update(
             db=db,
             data={
                 "translations": [
@@ -196,40 +232,45 @@ class TestExperienceConfig:
                         "title": "Manage your consent",
                     },
                     {
-                        "language": SupportedLanguage.spanish,
-                        "accept_button_label": "Accept all",
-                        "acknowledge_button_label": "Confirm",
-                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
-                        "banner_title": "Manage Your Consent",
-                        "description": "On this page you can opt in and out of these data uses cases",
-                        "privacy_preferences_link_label": "Manage preferences",
-                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                        "language": SupportedLanguage.serbian_cyrillic,
+                        "accept_button_label": "Прихвати",
+                        "acknowledge_button_label": "Потврди",
+                        "banner_description": "Можете прихватити, одбити или детаљно управљати својим преференцама.",
+                        "banner_title": "Управљајте својим пристанком",
+                        "description": "На овој страници можете укључити и искључити ове случајеве коришћења података",
+                        "privacy_preferences_link_label": "Управљајте преференцама",
+                        "privacy_policy_link_label": "Погледајте политику приватности наше компаније",
                         "privacy_policy_url": "https://example.com/privacy",
-                        "reject_button_label": "Reject all",
-                        "save_button_label": "Save",
-                        "title": "Manage your consent",
+                        "reject_button_label": "Одбаци све",
+                        "save_button_label": "сачувати",
+                        "title": "Управљајте својим пристанком",
                     },
                 ],
             },
         )
-        db.refresh(experience_config_overlay)
-        assert experience_config_overlay.updated_at == updated_at
+        db.refresh(experience_config_banner_and_modal)
+        # Experience Config itself wasn't updated, just the translations, so the date is the same
+        assert experience_config_banner_and_modal.updated_at == updated_at
 
-        assert len(experience_config_overlay.translations) == 2
-        translation = experience_config_overlay.translations[0]
+        # Nothing changed on the original notice or the first translation, so the historical record is untouched
+        assert len(experience_config_banner_and_modal.translations) == 2
+        translation = experience_config_banner_and_modal.translations[0]
         assert translation.language == SupportedLanguage.english
         assert translation.histories.count() == 1
 
-        translation_gb = experience_config_overlay.translations[1]
-        assert translation_gb.language == SupportedLanguage.spanish
+        # This is a brand new historical record, because the translation was just added
+        translation_gb = experience_config_banner_and_modal.translations[1]
+        assert translation_gb.language == SupportedLanguage.serbian_cyrillic
+        assert translation_gb.save_button_label == "сачувати"
         assert translation_gb.histories.count() == 1
+        assert translation_gb.histories[0].save_button_label == "сачувати"
 
     def test_update_privacy_experience_config_update_translation(
-        self, db, experience_config_overlay
+        self, db, experience_config_banner_and_modal
     ):
-        updated_at = experience_config_overlay.updated_at
+        updated_at = experience_config_banner_and_modal.updated_at
 
-        experience_config_overlay.update(
+        experience_config_banner_and_modal.update(
             db=db,
             data={
                 "translations": [
@@ -250,12 +291,14 @@ class TestExperienceConfig:
                 ],
             },
         )
-        db.refresh(experience_config_overlay)
-        assert experience_config_overlay.updated_at == updated_at
+        db.refresh(experience_config_banner_and_modal)
+        assert experience_config_banner_and_modal.updated_at == updated_at
 
-        assert len(experience_config_overlay.translations) == 1
-        translation = experience_config_overlay.translations[0]
+        assert len(experience_config_banner_and_modal.translations) == 1
+        translation = experience_config_banner_and_modal.translations[0]
         assert translation.language == SupportedLanguage.english
+
+        # Translation was updated so we needed a new version
         assert translation.histories.count() == 2
         assert translation.title == "Manage your consent!"
         assert translation.histories.count() == 2
@@ -267,37 +310,41 @@ class TestExperienceConfig:
         assert translation.histories[1].version == 2.0
 
     def test_update_privacy_experience_config_remove_translation(
-        self, db, experience_config_overlay
+        self, db, experience_config_banner_and_modal
     ):
-        updated_at = copy(experience_config_overlay.updated_at)
+        updated_at = copy(experience_config_banner_and_modal.updated_at)
 
-        translation = experience_config_overlay.translations[0]
+        translation = experience_config_banner_and_modal.translations[0]
         history = translation.histories[0]
 
-        experience_config_overlay.update(
+        experience_config_banner_and_modal.update(
             db=db,
             data={
-                "component": "privacy_center",
+                "name": "New name",
                 "translations": [],
             },
         )
 
-        assert experience_config_overlay.updated_at != updated_at
-        assert experience_config_overlay.component == ComponentType.privacy_center
+        assert experience_config_banner_and_modal.updated_at != updated_at
+        assert experience_config_banner_and_modal.name == "New name"
 
-        assert len(experience_config_overlay.translations) == 0
+        # All translations have been deleted
+        assert len(experience_config_banner_and_modal.translations) == 0
 
+        # Historical record still exists for consent reporting but its translation id was set to null
         db.refresh(history)
         assert history.version == 1.0
         assert history.translation_id is None
 
     def test_update_privacy_experience_config_update_notices(
-        self, db, experience_config_overlay, privacy_notice
+        self, db, experience_config_banner_and_modal, privacy_notice
     ):
-        assert experience_config_overlay.privacy_notices == []
-        experience_config_overlay.save(db)
+        assert len(experience_config_banner_and_modal.translations) == 1
 
-        experience_config_overlay.update(
+        assert experience_config_banner_and_modal.privacy_notices == []
+        experience_config_banner_and_modal.save(db)
+
+        experience_config_banner_and_modal.update(
             db=db,
             data={
                 "privacy_notice_ids": [privacy_notice.id],
@@ -319,15 +366,16 @@ class TestExperienceConfig:
                 ],
             },
         )
-        db.refresh(experience_config_overlay)
-        assert experience_config_overlay.privacy_notices == [privacy_notice]
+        db.refresh(experience_config_banner_and_modal)
+        assert experience_config_banner_and_modal.privacy_notices == [privacy_notice]
 
-        db.refresh(experience_config_overlay)
-        assert len(experience_config_overlay.translations) == 1
-        translation = experience_config_overlay.translations[0]
+        # Notices linked changed only, which doesn't bump a new version
+        db.refresh(experience_config_banner_and_modal)
+        assert len(experience_config_banner_and_modal.translations) == 1
+        translation = experience_config_banner_and_modal.translations[0]
         assert translation.histories.count() == 1
 
-        experience_config_overlay.update(
+        experience_config_banner_and_modal.update(
             db=db,
             data={
                 "privacy_notice_ids": [],
@@ -350,15 +398,20 @@ class TestExperienceConfig:
             },
         )
 
-        db.refresh(experience_config_overlay)
-        assert experience_config_overlay.privacy_notices == []
+        db.refresh(experience_config_banner_and_modal)
+        assert experience_config_banner_and_modal.privacy_notices == []
+        db.refresh(experience_config_banner_and_modal)
+        assert len(experience_config_banner_and_modal.translations) == 1
+        translation = experience_config_banner_and_modal.translations[0]
+        assert translation.histories.count() == 1
 
     def test_update_privacy_experience_config_update_regions(
-        self, db, experience_config_overlay
+        self, db, experience_config_banner_and_modal
     ):
-        assert experience_config_overlay.experiences.count() == 0
-        updated_at = experience_config_overlay.updated_at
-        experience_config_overlay.update(
+        assert experience_config_banner_and_modal.experiences.count() == 0
+        updated_at = experience_config_banner_and_modal.updated_at
+
+        experience_config_banner_and_modal.update(
             db=db,
             data={
                 "regions": [PrivacyNoticeRegion.us_ca],
@@ -381,16 +434,16 @@ class TestExperienceConfig:
             },
         )
 
-        db.refresh(experience_config_overlay)
-        assert experience_config_overlay.regions == [PrivacyNoticeRegion.us_ca]
+        db.refresh(experience_config_banner_and_modal)
+        assert experience_config_banner_and_modal.regions == [PrivacyNoticeRegion.us_ca]
 
-        exp = experience_config_overlay.experiences.first()
+        exp = experience_config_banner_and_modal.experiences.first()
         exp_id = exp.id
 
-        assert exp.experience_config_id == experience_config_overlay.id
-        assert experience_config_overlay.updated_at == updated_at
+        assert exp.experience_config_id == experience_config_banner_and_modal.id
+        assert experience_config_banner_and_modal.updated_at == updated_at
 
-        experience_config_overlay.update(
+        experience_config_banner_and_modal.update(
             db=db,
             data={
                 "regions": [],
@@ -413,10 +466,11 @@ class TestExperienceConfig:
             },
         )
 
-        db.refresh(experience_config_overlay)
-        assert experience_config_overlay.regions == []
-        assert experience_config_overlay.experiences.count() == 0
+        db.refresh(experience_config_banner_and_modal)
+        assert experience_config_banner_and_modal.regions == []
+        assert experience_config_banner_and_modal.experiences.count() == 0
 
+        # Privacy Experience was deleted
         assert (
             db.query(PrivacyExperience).filter(PrivacyExperience.id == exp_id).first()
             is None
@@ -440,7 +494,7 @@ class TestPrivacyExperience:
 
         exp.delete(db=db)
 
-    def test_update_privacy_experience(self, db, experience_config_overlay):
+    def test_update_privacy_experience(self, db, experience_config_banner_and_modal):
         """Assert PrivacyExperience is updated as expected"""
         exp = PrivacyExperience.create(
             db=db,
@@ -455,19 +509,25 @@ class TestPrivacyExperience:
         exp.update(
             db=db,
             data={
-                "experience_config_id": experience_config_overlay.id,
+                "experience_config_id": experience_config_banner_and_modal.id,
             },
         )
         db.refresh(exp)
 
-        assert exp.component == ComponentType.overlay
+        assert exp.component == ComponentType.banner_and_modal  # Convenience property
         assert exp.region == PrivacyNoticeRegion.us_ca
-        assert exp.experience_config == experience_config_overlay
-        assert exp.component == ComponentType.overlay
-        assert exp.show_banner is True
+        assert exp.experience_config == experience_config_banner_and_modal
+        assert exp.show_banner is True  # Convenience property
         assert exp.id is not None
         assert exp.created_at == exp_created_at
         assert exp.updated_at > exp_updated_at
+
+        assert (
+            PrivacyExperience.get_experiences_by_region_and_component(
+                db, PrivacyNoticeRegion.us_ca, ComponentType.banner_and_modal
+            ).first()
+            == exp
+        )
 
         exp.delete(db)
 
@@ -494,113 +554,11 @@ class TestPrivacyExperience:
 
         exp.delete(db)
 
-    def test_get_privacy_notices_by_region_and_component(self, db):
-        """
-        Test that `get_privacy_notices_by_region_and_component` properly
-        finds notices against multiple regions.
-        """
-
-        privacy_notice = PrivacyNotice.create(
-            db=db,
-            data={
-                "name": "Test privacy notice",
-                "notice_key": "test_privacy_notice",
-                "description": "a test sample privacy notice configuration",
-                "consent_mechanism": ConsentMechanism.opt_out,
-                "data_uses": ["marketing.advertising", "third_party_sharing"],
-                "enforcement_level": EnforcementLevel.system_wide,
-            },
-        )
-        assert (
-            get_privacy_notices_by_region_and_component(
-                db,
-                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us],
-                ComponentType.privacy_center,
-            ).all()
-            == []
-        )
-
-        PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "privacy_center",
-                "regions": [PrivacyNoticeRegion.us],
-                "privacy_notice_ids": [privacy_notice.id],
-                "translations": [
-                    {
-                        "language": SupportedLanguage.english,
-                        "privacy_preferences_link_label": "Manage preferences",
-                        "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-                        "privacy_policy_url": "https://example.com/privacy",
-                        "reject_button_label": "Reject all",
-                        "save_button_label": "Save",
-                        "title": "Manage your consent",
-                        "description": "On this page you can opt in and out of these data uses cases",
-                        "accept_button_label": "Accept all",
-                        "acknowledge_button_label": "Confirm",
-                        "banner_description": "You can accept, reject, or manage your preferences in detail.",
-                        "banner_title": "Manage Your Consent",
-                    }
-                ],
-            },
-        )
-
-        assert (
-            get_privacy_notices_by_region_and_component(
-                db,
-                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us],
-                ComponentType.privacy_center,
-            ).all()[0]
-            == privacy_notice
-        )
-
-        assert (
-            get_privacy_notices_by_region_and_component(
-                db,
-                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us],
-                ComponentType.overlay,
-            ).all()
-            == []
-        )
-
-        assert (
-            get_privacy_notices_by_region_and_component(
-                db, [PrivacyNoticeRegion.us], ComponentType.privacy_center
-            ).all()[0]
-            == privacy_notice
-        )
-        assert (
-            get_privacy_notices_by_region_and_component(
-                db,
-                [PrivacyNoticeRegion.us, PrivacyNoticeRegion.fr],
-                ComponentType.privacy_center,
-            ).all()[0]
-            == privacy_notice
-        )
-        assert (
-            get_privacy_notices_by_region_and_component(
-                db, [PrivacyNoticeRegion.us_ca], ComponentType.privacy_center
-            ).all()
-            == []
-        )
-        assert (
-            get_privacy_notices_by_region_and_component(
-                db,
-                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_tx],
-                ComponentType.privacy_center,
-            ).all()
-            == []
-        )
-
-        for translation in privacy_notice.translations:
-            translation.histories[0].delete(db)
-            translation.delete(db)
-
 
 class TestUpsertPrivacyExperiencesOnConfigChange:
     def test_experience_config_created_no_matching_experience_exists(self, db):
-        """Test a privacy center ExperienceConfig is created and we attempt to link AK.
-        No PrivacyExperience exists yet so we create one.
+        """Test a privacy center ExperienceConfig is created and AK is linked via a PrivacyExperience
+        with a FK to PrivacyExperienceConfig
         """
         config = PrivacyExperienceConfig.create(
             db=db,
@@ -641,8 +599,8 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config.delete(db)
 
     def test_experience_config_created_matching_unlinked_experience_exists(self, db):
-        """Test ExperienceConfig created and we attempt to link AK to that ExperienceConfig.
-        Existing PrivacyExperiences of the same type aren't applicable here
+        """Test ExperienceConfig created with an Experience of something else in the db has no
+        effect on that existing experience
         """
         config = PrivacyExperienceConfig.create(
             db=db,

@@ -43,10 +43,12 @@ class ConsentMethod(Enum):
 class ServingComponent(Enum):
     # Not at the db level due to being subject to change.
     # Only add here, do not remove
-    overlay = "overlay"
+    # This differs from component type because we want to record exactly
+    # what was served, the banner or modal portion
+    overlay = "overlay"  # Modal, in this case
     banner = "banner"
     privacy_center = "privacy_center"
-    tcf_overlay = "tcf_overlay"
+    tcf_overlay = "tcf_overlay"  # TCF modal in this case
     tcf_banner = "tcf_banner"
 
 

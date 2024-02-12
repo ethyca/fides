@@ -11,7 +11,6 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
     UserConsentPreference,
-    new_data_use_conflicts_with_existing_use,
 )
 from fides.api.models.sql_models import Cookies
 from fides.api.schemas.language import SupportedLanguage
@@ -71,7 +70,7 @@ class TestPrivacyNoticeModel:
 
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """
-        Ensure our create override works as expected to create a history object
+        Ensure our create override works as expected to create a translation and a history object
         """
         # our fixture should have created a privacy notice and therefore a similar translation and history object
         assert len(PrivacyNotice.all(db)) == 1
@@ -88,6 +87,10 @@ class TestPrivacyNoticeModel:
 
         assert len(privacy_notice.translations) == 1
         translation = privacy_notice.translations[0]
+        assert (
+            privacy_notice.get_translation_by_language(db, SupportedLanguage.english)
+            == translation
+        )
 
         history_object = PrivacyNoticeHistory.all(db)[0]
         assert history_object.name == privacy_notice.name
@@ -110,7 +113,9 @@ class TestPrivacyNoticeModel:
         self, db: Session, privacy_notice: PrivacyNotice
     ):
         """
-        Ensure updating with no real updates doesn't actually add a history record
+        Ensure updating with no real updates doesn't actually add a history record.
+
+        Note that translations have to be supplied, otherwise they are removed.
         """
         assert len(PrivacyNotice.all(db)) == 1
         assert len(NoticeTranslation.all(db)) == 1
@@ -119,14 +124,25 @@ class TestPrivacyNoticeModel:
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
 
-        updated_privacy_notice = privacy_notice.update(db, data={})
+        orig_translations = {
+            "language": SupportedLanguage.english,
+            "title": "Example privacy notice",
+            "description": "user&#x27;s description &lt;script /&gt;",
+        }
+
+        # Nothing on the privacy notice itself is changing, and the patched translations are identical
+        updated_privacy_notice = privacy_notice.update(
+            db, data={"translations": [orig_translations]}
+        )
 
         # assert our returned object isn't updated
         assert updated_privacy_notice.name == old_name
         assert updated_privacy_notice.data_uses == old_data_uses
+        assert len(updated_privacy_notice.translations) == 1
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         db.refresh(privacy_notice)
@@ -134,8 +150,13 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.data_uses == old_data_uses
         assert privacy_notice.version == 1.0
 
-        # and let's run thru the same with a "no-op" update rather than empty data
-        updated_privacy_notice = privacy_notice.update(db, data={"name": old_name})
+        # and let's run thru the same with a "no-op" update rather than empty data at the privacy notice level
+        # Translations are identical
+        updated_privacy_notice = privacy_notice.update(
+            db, data={"name": old_name, "translations": [orig_translations]}
+        )
+
+        db.refresh(updated_privacy_notice)
 
         # assert our returned object isn't updated
         assert updated_privacy_notice.name == old_name
@@ -143,6 +164,7 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         db.refresh(privacy_notice)
@@ -151,10 +173,6 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.version == 1.0
 
     def test_update_notice_level(self, db: Session, privacy_notice: PrivacyNotice):
-        """
-        Evaluate the overridden update functionality
-        Specifically look at the history table and version changes
-        """
         assert len(PrivacyNotice.all(db)) == 1
         assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
@@ -268,10 +286,6 @@ class TestPrivacyNoticeModel:
     def test_update_translations_added(
         self, db: Session, privacy_notice: PrivacyNotice
     ):
-        """
-        Evaluate the overridden update functionality
-        Specifically look at the history table and version changes
-        """
         assert len(PrivacyNotice.all(db)) == 1
         assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
@@ -287,9 +301,8 @@ class TestPrivacyNoticeModel:
                         "description": "user&#x27;s description &lt;script /&gt;",
                     },
                     {
-                        # pretend this is spanish!
                         "language": SupportedLanguage.spanish,
-                        "title": "Example privacy notice!",
+                        "title": "¡Ejemplo de aviso de privacidad!",
                     },
                 ],
             },
@@ -308,17 +321,27 @@ class TestPrivacyNoticeModel:
 
         translation = privacy_notice.translations[0]
 
-        # US English translation unchanged
+        # English translation unchanged
         assert translation.language == SupportedLanguage.english
         assert translation.title == "Example privacy notice"
+        assert translation.histories.count() == 1
+        assert (
+            privacy_notice.get_translation_by_language(db, SupportedLanguage.english)
+            == translation
+        )
 
         # "Spanish" translation translation added
         translation_es = privacy_notice.translations[1]
-
         assert translation_es.language == SupportedLanguage.spanish
-        assert translation_es.title == "Example privacy notice!"
+        assert translation_es.title == "¡Ejemplo de aviso de privacidad!"
+        assert translation.histories.count() == 1
+        assert (
+            privacy_notice.get_translation_by_language(db, SupportedLanguage.spanish)
+            == translation_es
+        )
+        assert privacy_notice.get_translation_by_language(db, None) is None
 
-        # make sure our latest entry in history table corresponds to current record
+        # make sure our latest spanish entry in history table corresponds to current record
         notice_history = (
             PrivacyNoticeHistory.query(db)
             .filter(
@@ -327,7 +350,7 @@ class TestPrivacyNoticeModel:
             )
             .first()
         )
-        assert notice_history.title == "Example privacy notice!"
+        assert notice_history.title == "¡Ejemplo de aviso de privacidad!"
         assert notice_history.version == 1.0
 
         # and that other record hasn't changed
@@ -345,16 +368,12 @@ class TestPrivacyNoticeModel:
     def test_update_translations_modified(
         self, db: Session, privacy_notice: PrivacyNotice
     ):
-        """
-        Evaluate the overridden update functionality
-        Specifically look at the history table and version changes
-        """
         assert len(PrivacyNotice.all(db)) == 1
         assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
         privacy_notice_updated_at = privacy_notice.updated_at
 
-        updated_privacy_notice = privacy_notice.update(
+        privacy_notice.update(
             db,
             data={
                 "translations": [
@@ -402,10 +421,6 @@ class TestPrivacyNoticeModel:
     def test_update_translations_removed(
         self, db: Session, privacy_notice: PrivacyNotice
     ):
-        """
-        Evaluate the overridden update functionality
-        Specifically look at the history table and version changes
-        """
         assert len(PrivacyNotice.all(db)) == 1
         assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
@@ -483,7 +498,7 @@ class TestPrivacyNoticeModel:
         self, db: Session, privacy_notice: PrivacyNotice
     ):
         """
-        Ensure the dry_update method doesn't cleanly provides a "copied" object
+        Ensure the dry_update method cleanly provides a "copied" object
         that mimics the update, but does not actually impact the object being operated on
         """
 
@@ -634,31 +649,4 @@ class TestPrivacyNoticeModel:
                 data_uses=["marketing.advertising"],
             ).is_gpp
             is False
-        )
-
-
-class TestDataUseConflictFound:
-    @pytest.mark.parametrize(
-        "existing_use,new_use,conflict_found",
-        [
-            ("a", "a", True),
-            ("a", "a.b", True),
-            ("a", "a.b.c", True),
-            ("a.b.c", "a.b.c", True),
-            ("a.b.c", "a.b", True),
-            ("a.b.c", "a", True),
-            ("a.b", "a.b", True),
-            ("a.b", "a", True),
-            ("a", "c", False),
-            ("a.b", "c.d", False),
-            ("a.b", "a.c", False),
-            ("a.b.c", "a.b.d", False),
-            ("a.b", "a.c.d", False),
-            ("a.c.d", "a.b", False),
-        ],
-    )
-    def test_new_data_use_conflicts(self, existing_use, new_use, conflict_found):
-        assert (
-            new_data_use_conflicts_with_existing_use(existing_use, new_use)
-            is conflict_found
         )

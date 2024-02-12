@@ -8,7 +8,10 @@ from fides.api.schemas.base_class import FidesSchema
 
 class PrivacyNoticeHistorySchema(FidesSchema):
     """
-    An minimal API representation of a PrivacyNoticeHistory
+    An minimal API representation of a PrivacyNoticeHistory.
+
+    Some elements here are used to build a consent email. Most of the other notice
+    schemas are in Plus.
     """
 
     id: str
