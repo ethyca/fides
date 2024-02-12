@@ -63,7 +63,6 @@ def remove_existing_experience_data(bind):
             )
         )
 
-    drop_fk_constraint(bind)
     delete_experiences(bind)
     delete_experience_configs(bind)
 
