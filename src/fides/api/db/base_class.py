@@ -79,16 +79,7 @@ class FidesBase:
         Generates a uuid with a prefix based on the tablename to be used as the
         record's ID value
         """
-        try:
-            # `self` in this context is an instance of
-            # sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2
-            prefix = f"{self.current_column.table.name[:3]}_"  # type: ignore
-        except AttributeError:
-            # If the table name is unavailable for any reason, we don't
-            # need to use it
-            prefix = ""
-        uuid = str(uuid4())
-        return f"{prefix}{uuid}"
+        return generate_table_uuid(self.current_column.table.name)  # type: ignore
 
     @declared_attr
     def __tablename__(self) -> str:
@@ -332,3 +323,20 @@ class OrmWrappedFidesBase(FidesBase):
 
 
 Base = declarative_base(cls=OrmWrappedFidesBase)
+
+
+def generate_table_uuid(table_name: str) -> str:
+    """
+    Generates a uuid with a prefix based on the tablename to be used as the
+    record's ID value
+    """
+    try:
+        # `self` in this context is an instance of
+        # sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2
+        prefix = f"{table_name[:3]}_"  # type: ignore
+    except AttributeError:
+        # If the table name is unavailable for any reason, we don't
+        # need to use it
+        prefix = ""
+    uuid = str(uuid4())
+    return f"{prefix}{uuid}"

@@ -144,6 +144,10 @@ PrivacyNoticeRegion = Enum(
 
 
 class ConsentMechanism(Enum):
+    """
+    Enum is not formalized in the DB because it may be subject to frequent change
+    """
+
     opt_in = "opt_in"
     opt_out = "opt_out"
     notice_only = "notice_only"
@@ -163,17 +167,6 @@ class PrivacyNoticeBase:
     """
     This class contains the common fields between PrivacyNoticeTemplate, PrivacyNotice, and PrivacyNoticeHistory
     """
-
-    name = Column(String, nullable=False)
-    description = Column(
-        String
-    )  # TODO will be removed from PrivacyNoticeTemplate and PrivacyNotice in favor of NoticeTranslation.
-    internal_description = Column(String)  # Visible to internal users only
-    regions = Column(  # TODO will be removed in favor of configuring this on the Experience-side
-        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
-        index=True,
-        nullable=True,
-    )
     consent_mechanism = Column(EnumColumn(ConsentMechanism), nullable=False)
     data_uses = Column(
         ARRAY(String),
@@ -181,21 +174,33 @@ class PrivacyNoticeBase:
         server_default="{}",
         default=dict,
     )  # a list of `fides_key`s of `DataUse` records
-    enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
+
     disabled = Column(Boolean, nullable=False, default=False)
-    has_gpc_flag = Column(Boolean, nullable=False, default=False)
-    displayed_in_privacy_center = Column(
-        Boolean, nullable=False, default=False
-    )  # TODO will be removed
-    displayed_in_overlay = Column(
-        Boolean, nullable=False, default=False
-    )  # TODO will be removed
-    displayed_in_api = Column(
-        Boolean, nullable=False, default=False
-    )  # TODO will be removed
-    notice_key = Column(String, nullable=False)
+    enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
     framework = Column(String)
     gpp_field_mapping = Column(MutableList.as_mutable(JSONB), index=False, unique=False)
+    has_gpc_flag = Column(Boolean, nullable=False, default=False)
+    internal_description = Column(String)  # Visible to internal users only
+    name = Column(String, nullable=False)
+    notice_key = Column(String, nullable=False)
+
+    description = Column(
+        String
+    )  # TODO will be removed from PrivacyNoticeTemplate and PrivacyNotice in favor of NoticeTranslation.
+    displayed_in_privacy_center = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed in favor of configuring this Experience-side
+    displayed_in_overlay = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed in favor of configuring this Experience-side
+    displayed_in_api = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed in favor of configuring this Experience-side
+    regions = Column(  # TODO will be removed in favor of configuring this on the Experience-side
+        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
+        index=True,
+        nullable=True,
+    )
 
     @property
     def is_gpp(self) -> bool:
@@ -227,7 +232,7 @@ class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
     """
     This table contains the out-of-the-box Privacy Notice Templates that are shipped with Fides
     """
-
+    # All out-of-the-box Notice Translations, stored as a list of JSON
     translations = Column(ARRAY(JSONB))
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
@@ -483,6 +488,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
 
 class NoticeTranslationBase:
+    """Base fields for Notice Translations"""
     language = Column(
         EnumColumn(
             SupportedLanguage,
@@ -515,7 +521,7 @@ class NoticeTranslation(NoticeTranslationBase, Base):
 
     @property
     def version(self) -> Optional[float]:
-        """Convenience property that returns the latest version number of the translation"""
+        """Convenience property that returns the latest translation version number for this notice"""
         return (
             self.privacy_notice_history.version if self.privacy_notice_history else None  # type: ignore[return-value]
         )
@@ -534,7 +540,7 @@ class NoticeTranslation(NoticeTranslationBase, Base):
     def privacy_notice_history_id(self) -> Optional[str]:
         """Convenience property that returns the privacy notice history id for the current version.
 
-        Note that there are possibly many historical records for the given experience config translation, this just returns the current
+        Note that there are possibly many historical records for the given notice translation, this just returns the current
         corresponding historical record.
         """
         return self.privacy_notice_history.id if self.privacy_notice_history else None
@@ -561,11 +567,11 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
         String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
     )  # pointer back to the PrivacyNoticeTemplate
 
-    version = Column(Float, nullable=False, default=1.0)
-
     translation_id = Column(
         String, ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL")
     )  # pointer back to the NoticeTranslation
+
+    version = Column(Float, nullable=False, default=1.0)
 
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=True

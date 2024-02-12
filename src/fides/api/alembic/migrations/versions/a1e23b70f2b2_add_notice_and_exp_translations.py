@@ -33,6 +33,7 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("regions", postgresql.ARRAY(sa.String()), nullable=True),
+        sa.Column("name", sa.String(), nullable=True),
         sa.Column("component", sa.String(), nullable=False),
         sa.Column("privacy_notice_keys", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column(
@@ -53,6 +54,7 @@ def upgrade():
         ["id"],
         unique=False,
     )
+    op.create_index(op.f('ix_experienceconfigtemplate_component'), 'experienceconfigtemplate', ['component'], unique=False)
     op.create_table(
         "experiencenotices",
         sa.Column(

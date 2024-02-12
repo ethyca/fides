@@ -3,7 +3,6 @@ from copy import copy
 import pytest
 
 from fides.api.models.privacy_experience import (
-    BannerEnabled,
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,

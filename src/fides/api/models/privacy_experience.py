@@ -2,19 +2,17 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Type
-from uuid import uuid4
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
+from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship, declared_attr
 from sqlalchemy.orm.dynamic import AppenderQuery
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, generate_table_uuid
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.privacy_notice import (
-    ConsentMechanism,
     PrivacyNotice,
     PrivacyNoticeRegion,
     create_historical_data_from_record,
@@ -22,31 +20,21 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.schemas.language import SupportedLanguage
 
-BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
-    ConsentMechanism.notice_only,
-    ConsentMechanism.opt_in,
-}
-
 
 class ExperienceNotices(Base):
-    """Many-to-many table that stores which Notices are on which Experience Configs"""
+    """
+    This table links Privacy Notices to shared Privacy Experience Config
+    """
 
     def generate_uuid(self) -> str:
         """
         Generates a uuid with a prefix based on the tablename to be used as the
         record's ID value
         """
-        try:
-            # `self` in this context is an instance of
-            # sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2
-            prefix = f"{self.current_column.table.name[:3]}_"  # type: ignore
-        except AttributeError:
-            # If the table name is unavailable for any reason, we don't
-            # need to use it
-            prefix = ""
-        uuid = str(uuid4())
-        return f"{prefix}{uuid}"
+        return generate_table_uuid(self.current_column.table.name)
 
+    # Overrides Base.id so this is not a primary key.
+    # Instead, we have a composite PK of notice_id and experience_config_id
     id = Column(String(255), default=generate_uuid)
 
     notice_id = Column(
@@ -76,42 +64,56 @@ class ComponentType(Enum):
     tcf_overlay = "tcf_overlay"  # TCF Banner + modal combined
 
 
-FidesJSUXTypes: List = [
+# Fides JS UX Types - there should only be one of these defined per region
+FidesJSUXTypes: List[ComponentType] = [
     ComponentType.overlay,
     ComponentType.modal,
 ]
 
 
-class BannerEnabled(Enum):
+class PrivacyExperienceConfigBase:
     """
-    Whether the banner should display - not formalized in the db
+    Common fields shared between the ExperienceConfigTemplate, PrivacyExperienceConfig
+    and the PrivacyExperienceConfigHistory
     """
-
-    always_enabled = "always_enabled"
-    enabled_where_required = "enabled_where_required"  # If the user's region has at least one opt-in or notice-only notice
-    always_disabled = "always_disabled"
-
-
-class ExperienceConfigTemplate(Base):
-    """Table for out-of-the-box Experience Configurations"""
-
-    regions = Column(
-        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
-    )
-    component = Column(EnumColumn(ComponentType), nullable=False)
-    privacy_notice_keys = Column(
-        ARRAY(String)
-    )  # A list of notice keys which should correspond to a subset of out-of-the-box notice keys
-    translations = Column(ARRAY(JSONB))
-    disabled = Column(Boolean, nullable=False, default=True)
-    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
     allow_language_selection = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )
 
+    @declared_attr
+    def component(cls) -> Column:
+        return Column(
+            EnumColumn(ComponentType),
+            nullable=False,
+            index=True,
+        )
+
+    disabled = Column(Boolean, nullable=False, default=True)
+    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
+    name = Column(String)
+
+
+class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
+    """Table for out-of-the-box Experience Configurations"""
+
+    privacy_notice_keys = Column(
+        ARRAY(String)
+    )  # A list of notice keys which should correspond to a subset of out-of-the-box notice keys
+    regions = Column(
+        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
+    )
+    translations = Column(ARRAY(JSONB))  # A list of all available out of the box translations
+
 
 class ExperienceTranslationBase:
-    """Base schema for Experience translations"""
+    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceHistory.
+    """
+    accept_button_label = Column(String)
+    acknowledge_button_label = Column(String)
+    banner_description = Column(String)
+    banner_title = Column(String)
+    description = Column(String)
+    is_default = Column(Boolean, nullable=False, default=False)
 
     language = Column(
         EnumColumn(
@@ -124,13 +126,6 @@ class ExperienceTranslationBase:
         nullable=False,
     )
 
-    accept_button_label = Column(String)
-    acknowledge_button_label = Column(String)
-    banner_description = Column(String)
-    banner_title = Column(String)
-    description = Column(String)
-    is_default = Column(Boolean, nullable=False, default=False)
-
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
@@ -139,8 +134,12 @@ class ExperienceTranslationBase:
     title = Column(String)
 
 
-class ExperienceConfigBase:
-    """Base schema for PrivacyExperienceConfig."""
+class DeprecatedConfigFields:
+    """Experience Config fields that are pending removal
+
+    # TODO remove all fields from PrivacyExperienceConfig model.
+    # Some are moving to ExperienceTranslation, others are being removed entirely.
+    """
 
     accept_button_label = Column(
         String
@@ -152,16 +151,15 @@ class ExperienceConfigBase:
         String
     )  # TODO pending removal in favor of ExperienceTranslation
     banner_enabled = Column(
-        EnumColumn(BannerEnabled), index=True
+        String(), index=True
     )  # TODO pending removal
     banner_title = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
-    component = Column(EnumColumn(ComponentType), nullable=False, index=True)
     description = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
-    disabled = Column(Boolean, nullable=False, default=True)
+    is_default = Column(Boolean, nullable=False, default=False)  # TODO will be removed
     privacy_policy_link_label = Column(
         String
     )  # TODO pending removal in favor of ExperienceTranslation
@@ -181,21 +179,35 @@ class ExperienceConfigBase:
     version = Column(Float, nullable=False, default=1.0)  # TODO pending removal
 
 
-class PrivacyExperienceConfig(ExperienceConfigBase, Base):
-    """Experience Config are details shared among multiple Privacy Experiences.
-
-    An Experience Config can have multiple translations, multiple notices, and multiple
-    regions (Privacy Experiences) linked to it.
-    """
-
-    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
-    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
+class PrivacyExperienceConfigBase:
+    """Common fields shared between the PrivacyExperienceConfig and the PrivacyExperienceConfigHistory"""
     allow_language_selection = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )
-    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
-    is_default = Column(Boolean, nullable=False, default=False)  # TODO will be removed
+
+    @declared_attr
+    def component(cls) -> Column:
+        return Column(
+            EnumColumn(ComponentType),
+            nullable=False,
+            index=True,
+        )
+
+    disabled = Column(Boolean, nullable=False, default=True)
+    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
     name = Column(String)
+
+
+class PrivacyExperienceConfig(DeprecatedConfigFields, PrivacyExperienceConfigBase, Base):
+    """
+    Privacy Experience Config Model
+
+    This stores shared configuration for Privacy Experiences.
+    Translations, Notices, and regions (Privacy Experiences) are linked to this resource.
+    """
+
+    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
+    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     experiences = relationship(
         "PrivacyExperience",
@@ -467,24 +479,15 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         )
 
 
-class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
-    """Experience Config History - stores the history of how the config has changed over time
-    Both an ExperienceTranslation and its ExperienceConfig are versioned here together.
+class PrivacyExperienceConfigHistory(ExperienceTranslationBase, PrivacyExperienceConfigBase, Base):
+    """Experience Config History table for auditng purpose.
+
+    When an Experience Config and/or an Experience Translation is modified, a new version is
+    created here that stores a snapshot of these records combined.  Consent reporting can contain
+    an id to this resource which preserves the details of the Experience viewed by the end user.
     """
-
-    name = Column(String)
-
-    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
-    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
-    allow_language_selection = Column(
-        Boolean, nullable=False, default=True, server_default="t"
-    )
     custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
-    disabled = Column(Boolean, nullable=False, default=True)
-
-    experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
-    )  # TODO slated for removal after data migration
+    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     translation_id = Column(
         String, ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL")
@@ -493,9 +496,12 @@ class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
     version = Column(Float, nullable=False, default=1.0)
 
     banner_enabled = Column(
-        EnumColumn(BannerEnabled), index=True
+        String(), index=True
     )  # TODO pending removal
-    component = Column(EnumColumn(ComponentType), nullable=False, index=True)
+
+    experience_config_id = Column(
+        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
+    )  # TODO slated for removal after data migration
 
 
 class PrivacyExperience(Base):
@@ -513,7 +519,7 @@ class PrivacyExperience(Base):
     experience_config_id = Column(
         String,
         ForeignKey(PrivacyExperienceConfig.id_field_path),
-        nullable=True,  # Needs an ExperienceConfig to be valid
+        nullable=True,  # Needs an ExperienceConfig to be valid though
         index=True,
     )
 
