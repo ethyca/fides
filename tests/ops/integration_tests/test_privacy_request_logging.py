@@ -7,7 +7,11 @@ from requests import Response
 from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.util.logger_context_utils import ErrorGroup
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CREATE
-from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST,
+    PRIVACY_REQUESTS,
+    V1_URL_PREFIX,
+)
 from fides.config import CONFIG
 
 
@@ -59,13 +63,13 @@ class TestPrivacyRequestLogging:
         privacy_request = response.json()["succeeded"][0]
 
         extra = {
+            "action_type": "access",
             "system_key": None,
             "connection_key": "zendesk_instance",
-            "action_type": "access",
             "collection": "user",
             "privacy_request_id": privacy_request["id"],
             "method": "GET",
-            "url": "https://ethyca-test.zendesk.com/api/v2/users/search.json?query=test%40example.com",
+            "url": "https://ethyca-test.zendesk.com/api/v2/users/search.json?query=test%40email.com",
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }
@@ -104,14 +108,14 @@ class TestPrivacyRequestLogging:
         privacy_request = response.json()["succeeded"][0]
 
         extra = {
+            "action_type": "erasure",
             "system_key": None,
             "connection_key": "typeform_instance",
-            "action_type": "erasure",
             "collection": "user",
             "privacy_request_id": privacy_request["id"],
             "method": "DELETE",
             "url": f"https://api.typeform.com/rtbf/{typeform_secrets['account_id']}/responses",
-            "body": '["test@example.com"]\n',
+            "body": '["test@email.com"]\n',
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }
@@ -128,11 +132,7 @@ class TestPrivacyRequestLogging:
         self,
         mock_send,
         klaviyo_runner,
-        api_client,
-        url,
-        generate_auth_header,
         consent_policy,
-        provided_identity_and_consent_request,
         loguru_caplog,
         provided_identity_value,
     ):
@@ -144,9 +144,9 @@ class TestPrivacyRequestLogging:
             )
 
         extra = {
+            "action_type": "consent",
             "system_key": None,
             "connection_key": "klaviyo_instance",
-            "action_type": "consent",
             "collection": "klaviyo_instance",
             "privacy_request_id": "123",
             "method": "POST",

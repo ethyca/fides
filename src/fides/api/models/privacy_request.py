@@ -65,6 +65,7 @@ from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
+    get_all_masking_secret_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
     get_custom_privacy_request_field_cache_key,
@@ -76,6 +77,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
+from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.config import CONFIG
 
@@ -181,7 +183,9 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     )
 
 
-class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
+class PrivacyRequest(
+    IdentityVerificationMixin, Contextualizable, Base
+):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
@@ -949,6 +953,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         PrivacyRequestError.create(
             db=db, data={"message_sent": False, "privacy_request_id": self.id}
         )
+
+    def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+        return {LoggerContextKeys.privacy_request_id: self.id}
 
 
 class PrivacyRequestError(Base):

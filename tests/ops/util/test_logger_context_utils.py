@@ -1,17 +1,78 @@
+from typing import Any, Dict
+
 import pytest
+from loguru import logger
 from requests import PreparedRequest, Request, Response
 
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.policy import ActionType
-from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.util.logger_context_utils import (
+    Contextualizable,
     ErrorGroup,
+    LoggerContextKeys,
+    log_context,
     request_details,
-    saas_connector_details,
 )
 
 
-class TestLoggerContestUtils:
+class TestLogContextDecorator:
+    def test_log_context_without_contextualizable_params(self, loguru_caplog):
+        @log_context
+        def func():
+            logger.info("returning")
+            return
+
+        func()
+
+        assert loguru_caplog.records[0].extra == {}
+
+    def test_log_context_with_contextualizable_params(self, loguru_caplog):
+        class LoggableClass(Contextualizable):
+            def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+                return {LoggerContextKeys.privacy_request_id: "123"}
+
+        @log_context
+        def func(param: LoggableClass):
+            logger.info("returning")
+            return param
+
+        func(LoggableClass())
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.privacy_request_id.value: "123"
+        }
+
+    def test_log_context_with_additional_context(self, loguru_caplog):
+        @log_context(one_more_thing="456")
+        def func():
+            logger.info("returning")
+            return
+
+        func()
+
+        assert loguru_caplog.records[0].extra == {
+            "one_more_thing": "456",
+        }
+
+    def test_log_context_with_contextualizable_params_and_additional_context(
+        self, loguru_caplog
+    ):
+        class LoggableClass(Contextualizable):
+            def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+                return {LoggerContextKeys.privacy_request_id: "123"}
+
+        @log_context(one_more_thing="456")
+        def func(param: LoggableClass):
+            logger.info("returning")
+            return param
+
+        func(LoggableClass())
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.privacy_request_id.value: "123",
+            "one_more_thing": "456",
+        }
+
+
+class TestDetailFunctions:
     @pytest.fixture
     def prepared_request(self) -> PreparedRequest:
         return Request(
@@ -21,19 +82,6 @@ class TestLoggerContestUtils:
             params={"a": "b"},
             data={"name": "test"},
         ).prepare()
-
-    def test_saas_connector_details(self, saas_example_connection_config, system):
-        saas_example_connection_config.system_id = system.id
-        connector = SaaSConnector(saas_example_connection_config)
-        connector.current_collection_name = "customer"
-        connector.current_privacy_request = PrivacyRequest(id="123")
-        assert saas_connector_details(connector, action_type=ActionType.access) == {
-            "system_key": system.fides_key,
-            "connection_key": "saas_connector_example",
-            "action_type": "access",
-            "collection": "customer",
-            "privacy_request_id": "123",
-        }
 
     def test_request_details(self, prepared_request):
         response = Response()
