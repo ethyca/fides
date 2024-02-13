@@ -65,6 +65,7 @@ from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
+    get_all_masking_secret_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
     get_custom_privacy_request_field_cache_key,
@@ -559,20 +560,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
     def refresh_cached_masking_secrets(self) -> None:
         """
-        Refreshes the cache with persisted masking secrets when any secret is missing.
-        The secrets are stored as a batch operation so the absence of one value means all
-        of the values have expired.
+        Refreshes the cache with persisted masking secrets if the secrets have expired.
         """
 
-        cache: FidesopsRedis = get_cache()
-        masking_secret = cache.get(
-            get_encryption_cache_key(
-                privacy_request_id=self.id,
-                encryption_attr="key",
-            )
-        )
-
-        if not masking_secret:
+        masking_secrets = get_all_masking_secret_cache_keys_for_privacy_request(self.id)
+        if not masking_secrets:
             self.cache_masking_secrets(
                 [
                     MaskingSecretCache(

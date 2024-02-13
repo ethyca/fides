@@ -230,6 +230,14 @@ def get_masking_secret_cache_key(
     )
 
 
+def get_all_masking_secret_cache_keys_for_privacy_request(
+    privacy_request_id: str,
+) -> List[str]:
+    """Return all the cache keys for this privacy request's masking secrets."""
+    cache: FidesopsRedis = get_cache()
+    return cache.keys(f"id-{privacy_request_id}-masking-secret-*")
+
+
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:
     """Returns all cache keys related to this privacy request's cached identities"""
     cache: FidesopsRedis = get_cache()
