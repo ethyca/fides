@@ -107,7 +107,7 @@ def migrate_notices(bind):
     link_notice_history_to_translation_id = text(
         """
         UPDATE privacynoticehistory
-        SET translation_id = noticetranslation.id, title = privacynoticehistory.name, language = "en"
+        SET translation_id = noticetranslation.id, title = privacynoticehistory.name, language = 'en'
         FROM noticetranslation
         WHERE noticetranslation.privacy_notice_id = privacynoticehistory.privacy_notice_id;
         """
