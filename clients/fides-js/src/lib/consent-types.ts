@@ -97,6 +97,9 @@ export type FidesOptions = {
 
   // Allows providing rich HTML descriptions
   allowHTMLDescription: boolean | null;
+
+  // Encodes cookie as base64 on top of the default JSON string
+  base64Cookie: boolean;
 };
 
 /**
