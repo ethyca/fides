@@ -55,7 +55,7 @@ from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
-from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
@@ -275,6 +275,26 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     )
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
+    encryption = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=True,
+    )
+    masking_secrets = Column(
+        MutableList.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                CONFIG.security.app_encryption_key,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=True,
+    )
 
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
@@ -504,19 +524,65 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             encryption_key,
         )
 
-    def cache_masking_secret(self, masking_secret: MaskingSecretCache) -> None:
-        """Sets masking encryption secrets in the Fides app cache if provided"""
-        if not masking_secret:
-            return
+    def get_cached_encryption(self) -> Optional[str]:
         cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            get_masking_secret_cache_key(
-                self.id,
-                masking_strategy=masking_secret.masking_strategy,
-                secret_type=masking_secret.secret_type,
-            ),
-            FidesopsRedis.encode_obj(masking_secret.secret),
+        encryption = cache.get(
+            get_encryption_cache_key(
+                privacy_request_id=self.id,
+                encryption_attr="key",
+            )
         )
+
+        if not encryption:
+            encryption = self.encryption
+
+        return encryption
+
+    def cache_masking_secrets(
+        self, masking_secrets: Optional[List[MaskingSecretCache]] = None
+    ) -> None:
+        """Sets masking encryption secrets in the Fides app cache if provided"""
+        if not masking_secrets:
+            return
+
+        logger.info("Caching masking secrets for privacy request {}", self.id)
+        cache: FidesopsRedis = get_cache()
+        for masking_secret in masking_secrets:
+            cache.set_with_autoexpire(
+                get_masking_secret_cache_key(
+                    self.id,
+                    masking_strategy=masking_secret.masking_strategy,
+                    secret_type=masking_secret.secret_type,
+                ),
+                FidesopsRedis.encode_obj(masking_secret.secret),
+            )
+
+    def refresh_cached_masking_secrets(self) -> None:
+        """
+        Refreshes the cache with persisted masking secrets when any secret is missing.
+        The secrets are stored as a batch operation so the absence of one value means all
+        of the values have expired.
+        """
+
+        cache: FidesopsRedis = get_cache()
+        masking_secret = cache.get(
+            get_encryption_cache_key(
+                privacy_request_id=self.id,
+                encryption_attr="key",
+            )
+        )
+
+        if not masking_secret:
+            self.cache_masking_secrets(
+                [
+                    MaskingSecretCache(
+                        secret=secret["secret"],
+                        masking_strategy=secret["masking_strategy"],
+                        secret_type=SecretType(secret["secret_type"]),
+                    )
+                    for secret in self.masking_secrets
+                ]
+            )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""

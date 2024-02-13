@@ -23,7 +23,6 @@ from fides.api.schemas.storage.storage import (
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
-from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
@@ -34,17 +33,14 @@ from fides.config import CONFIG
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 
-def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> str:
+def encrypt_access_request_results(
+    data: Union[str, bytes], privacy_request: PrivacyRequest
+) -> str:
     """Encrypt data with encryption key if provided, otherwise return unencrypted data"""
-    cache = get_cache()
-    encryption_cache_key = get_encryption_cache_key(
-        privacy_request_id=request_id,
-        encryption_attr="key",
-    )
     if isinstance(data, bytes):
         data = data.decode(CONFIG.security.encoding)
 
-    encryption_key: str | None = cache.get(encryption_cache_key)
+    encryption_key: Optional[str] = privacy_request.get_cached_encryption()
     if not encryption_key:
         return data
 
@@ -74,7 +70,7 @@ def write_to_in_memory_buffer(
     if resp_format == ResponseFormat.json.value:
         json_str = json.dumps(data, indent=2, default=storage_json_encoder)
         return BytesIO(
-            encrypt_access_request_results(json_str, privacy_request.id).encode(
+            encrypt_access_request_results(json_str, privacy_request).encode(
                 CONFIG.security.encoding
             )
         )
@@ -89,9 +85,7 @@ def write_to_in_memory_buffer(
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",
-                    encrypt_access_request_results(
-                        buffer.getvalue(), privacy_request.id
-                    ),
+                    encrypt_access_request_results(buffer.getvalue(), privacy_request),
                 )
 
         zipped_csvs.seek(0)

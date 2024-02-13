@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Security
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -118,13 +119,23 @@ async def create_drp_privacy_request(
             identity=mapped_identity,
         )
 
+        masking_secrets = policy.create_masking_secrets()
+        if masking_secrets:
+            privacy_request.masking_secrets = jsonable_encoder(masking_secrets)
+            privacy_request.save(db=db)
+
         check_and_dispatch_error_notifications(db=db)
 
         logger.info(
             "Decrypting identity for DRP privacy request {}", privacy_request.id
         )
 
-        cache_data(privacy_request, policy, mapped_identity, None, data)
+        cache_data(
+            privacy_request=privacy_request,
+            identity=mapped_identity,
+            drp_request_body=data,
+            masking_secrets=masking_secrets,
+        )
 
         queue_privacy_request(privacy_request.id)
 

@@ -8,6 +8,7 @@ from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Se
 
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -68,6 +69,7 @@ from fides.api.models.privacy_request import (
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.messaging.messaging import (
     FidesopsMessage,
     MessagingActionType,
@@ -91,6 +93,7 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service._verification import send_verification_code_to_user
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     check_and_dispatch_error_notifications,
@@ -1783,17 +1786,22 @@ def create_privacy_request_func(
                 privacy_request_data.consent_request_id,
                 privacy_request_data.custom_privacy_request_fields,
             )
+
             for privacy_preference in privacy_preferences:
                 privacy_preference.privacy_request_id = privacy_request.id
                 privacy_preference.save(db=db)
 
+            masking_secrets = policy.create_masking_secrets()
+            if masking_secrets:
+                privacy_request.masking_secrets = jsonable_encoder(masking_secrets)
+                privacy_request.save(db=db)
+
             cache_data(
-                privacy_request,
-                policy,
-                privacy_request_data.identity,
-                privacy_request_data.encryption_key,
-                None,
-                privacy_request_data.custom_privacy_request_fields,
+                privacy_request=privacy_request,
+                identity=privacy_request_data.identity,
+                encryption_key=privacy_request_data.encryption_key,
+                custom_privacy_request_fields=privacy_request_data.custom_privacy_request_fields,
+                masking_secrets=masking_secrets,
             )
 
             check_and_dispatch_error_notifications(db=db)
@@ -1860,6 +1868,23 @@ def create_privacy_request_func(
         succeeded=created,
         failed=failed,
     )
+
+
+def create_masking_secrets(policy: Policy) -> Optional[List[MaskingSecretCache]]:
+    """Returns a list of masking secrets for the masking strategies in the given policy."""
+    masking_secrets: List[MaskingSecretCache] = []
+    erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
+    unique_masking_strategies_by_name: Set[str] = set()
+    for rule in erasure_rules:
+        strategy_name: str = rule.masking_strategy["strategy"]  # type: ignore
+        configuration = rule.masking_strategy["configuration"]  # type: ignore
+        if strategy_name in unique_masking_strategies_by_name:
+            continue
+        unique_masking_strategies_by_name.add(strategy_name)
+        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
+        if masking_strategy.secrets_required():
+            masking_secrets = masking_strategy.generate_secrets_for_cache()
+    return masking_secrets
 
 
 def _create_or_update_custom_fields(

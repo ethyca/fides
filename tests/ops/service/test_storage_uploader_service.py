@@ -512,7 +512,9 @@ class TestWriteToInMemoryBuffer:
 class TestEncryptResultsPackage:
     def test_no_encryption_keys_set(self):
         data = "test data"
-        ret = encrypt_access_request_results(data, request_id="test-request-id")
+        ret = encrypt_access_request_results(
+            data, privacy_request=PrivacyRequest(id="test-request-id")
+        )
 
         assert ret == data
 
@@ -520,7 +522,7 @@ class TestEncryptResultsPackage:
         key = "abvnfhrke8398398"
         privacy_request.cache_encryption("abvnfhrke8398398")
         data = "test data"
-        ret = encrypt_access_request_results(data, request_id=privacy_request.id)
+        ret = encrypt_access_request_results(data, privacy_request=privacy_request)
         decrypted = decrypt_combined_nonce_and_message(
             ret, key.encode(CONFIG.security.encoding)
         )

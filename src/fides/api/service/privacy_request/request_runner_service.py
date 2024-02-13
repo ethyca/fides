@@ -415,6 +415,8 @@ async def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
+                privacy_request.refresh_cached_masking_secrets()
+
                 # We only need to run the erasure once until masking strategies are handled
                 await run_erasure(
                     privacy_request=privacy_request,

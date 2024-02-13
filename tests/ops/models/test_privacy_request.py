@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import pytest
 import requests_mock
+from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -26,14 +27,18 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.manual_connector import ManualAction
+from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
     get_cache,
+    get_encryption_cache_key,
     get_identity_cache_key,
+    get_masking_secret_cache_key,
 )
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
@@ -1138,8 +1143,8 @@ class TestConsentRequestCustomFieldFunctions:
         assert consent_request.get_persisted_custom_privacy_request_fields() == {}
 
 
-class TestPullThroughCache:
-    def test_get_cached_identity_data_from_db(self, db, privacy_request):
+class TestCacheRefresh:
+    def test_get_cached_identity_data_from_db(self, db, cache, privacy_request):
         identity_map = {"email": "test@mail.com", "phone_number": "+19515558593"}
         identity = Identity(**identity_map)
         privacy_request.persist_identity(db, identity)
@@ -1147,7 +1152,6 @@ class TestPullThroughCache:
         assert privacy_request.get_persisted_identity() == identity
         assert privacy_request.get_cached_identity_data() == identity_map
 
-        cache: FidesopsRedis = get_cache()
         all_keys = get_all_cache_keys_for_privacy_request(
             privacy_request_id=privacy_request.id
         )
@@ -1161,7 +1165,7 @@ class TestPullThroughCache:
         "allow_custom_privacy_request_fields_in_request_execution_enabled",
     )
     def test_get_cached_custom_privacy_request_fields_from_db(
-        self, db, privacy_request
+        self, db, cache, privacy_request
     ):
         custom_field_map = {
             "favorite_color": {"label": "Favorite color", "value": "blue"}
@@ -1187,7 +1191,6 @@ class TestPullThroughCache:
             key: value["value"] for key, value in custom_field_map.items()
         }
 
-        cache: FidesopsRedis = get_cache()
         all_keys = get_all_cache_keys_for_privacy_request(
             privacy_request_id=privacy_request.id
         )
@@ -1197,3 +1200,76 @@ class TestPullThroughCache:
         assert privacy_request.get_cached_custom_privacy_request_fields() == {
             key: value["value"] for key, value in custom_field_map.items()
         }
+
+    def test_get_encryption_from_db(self, db, cache, privacy_request):
+        encryption = "123"
+        privacy_request.encryption = encryption
+        privacy_request.save(db=db)
+        privacy_request.cache_encryption(encryption)
+
+        assert privacy_request.get_cached_encryption() == encryption
+
+        all_keys = get_all_cache_keys_for_privacy_request(
+            privacy_request_id=privacy_request.id
+        )
+        for key in all_keys:
+            cache.delete(key)
+
+        assert privacy_request.get_cached_encryption() == encryption
+
+    def test_refresh_cached_masking_secrets(self, db, cache, privacy_request):
+        masking_secrets = [
+            MaskingSecretCache[str](
+                secret="test_key",
+                masking_strategy=HmacMaskingStrategy.name,
+                secret_type=SecretType.key,
+            )
+        ]
+
+        # persist and cache masking secrets
+        privacy_request.masking_secrets = jsonable_encoder(masking_secrets)
+        privacy_request.save(db=db)
+        privacy_request.cache_masking_secrets(masking_secrets)
+
+        assert (
+            cache.get(
+                get_masking_secret_cache_key(
+                    privacy_request_id=privacy_request.id,
+                    masking_strategy=masking_secrets[0].masking_strategy,
+                    secret_type=masking_secrets[0].secret_type,
+                )
+            )
+            == '"test_key"'
+        )
+
+        # clear cache and verify masking secret isn't found
+        all_keys = get_all_cache_keys_for_privacy_request(
+            privacy_request_id=privacy_request.id
+        )
+        for key in all_keys:
+            cache.delete(key)
+
+        assert (
+            cache.get(
+                get_masking_secret_cache_key(
+                    privacy_request_id=privacy_request.id,
+                    masking_strategy=masking_secrets[0].masking_strategy,
+                    secret_type=masking_secrets[0].secret_type,
+                )
+            )
+            is None
+        )
+
+        # trigger a refresh and verify masking secrets
+        # are re-cached from the database
+        privacy_request.refresh_cached_masking_secrets()
+        assert (
+            cache.get(
+                get_masking_secret_cache_key(
+                    privacy_request_id=privacy_request.id,
+                    masking_strategy=masking_secrets[0].masking_strategy,
+                    secret_type=masking_secrets[0].secret_type,
+                )
+            )
+            == '"test_key"'
+        )
