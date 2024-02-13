@@ -1,9 +1,11 @@
 import {
+  ArrowForwardIcon,
   Button,
   ButtonGroup,
   Divider,
   DragHandleIcon,
   Flex,
+  Heading,
   List,
   ListItem,
   Text,
@@ -28,6 +30,14 @@ import { Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 import PrivacyExperienceLanguageMenu from "~/features/privacy-experience/PrivacyExperienceLanguageMenu";
 import ScrollableList from "~/features/common/ScrollableList";
+import { AddIcon } from "@chakra-ui/icons";
+
+import localeCodes, { ILocale } from "locale-codes";
+import {
+  selectAllPrivacyNotices,
+  useGetAllPrivacyNoticesQuery,
+} from "~/features/privacy-notices/privacy-notices.slice";
+import { useAppSelector } from "~/app/hooks";
 
 enum NewComponentType {
   OVERLAY = "overlay",
@@ -63,24 +73,7 @@ export type PrivacyExperienceTranslation = {
   is_default: boolean;
 };
 
-const DragItem = ({ label }: { label: string }) => {
-  return (
-    <Flex
-      direction="row"
-      p={2}
-      gap={2}
-      align="center"
-      borderY="1px"
-      borderColor="gray.400"
-      bgColor="white"
-    >
-      <DragHandleIcon />
-      <Text>{label}</Text>
-    </Flex>
-  );
-};
-
-const NewPrivacyExperienceForm = ({ onCancel }: { onCancel: () => void }) => {
+const NewPrivacyExperienceForm = () => {
   const defaultInitialValues: NewPrivacyExperience = {
     regions: [],
     component: NewComponentType.OVERLAY,
@@ -167,34 +160,73 @@ const NewPrivacyExperienceForm = ({ onCancel }: { onCancel: () => void }) => {
         //   },
         // ],
       },
+      {
+        id: "pri_9bfcbf0a-6417-4778-9ce2-9bcdd8317453",
+        created_at: "2024-01-04T21:56:23.656562+00:00",
+        updated_at: "2024-01-04T21:57:35.009637+00:00",
+        name: "Another Data Sales and Sharing",
+        consent_mechanism: ConsentMechanism.OPT_OUT,
+        data_uses: [
+          "marketing.advertising.first_party.targeted",
+          "marketing.advertising.third_party.targeted",
+        ],
+        disabled: false,
+        enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+        has_gpc_flag: true,
+        internal_description:
+          "“Sale of personal“ data means the exchange of personal data for monetary or other valuable consideration. Data sharing refers to sharing of data with third parties for the purpose of cross contextual behavioral advertising. This is also closely analogous to “Targeted Advertising” as defined in other U.S. state laws and they have been combined here under one notice.",
+        notice_key: "data_sales_and_sharing",
+        origin: "pri_309d287c-b208-4fd1-93b2-7b2ff13eddat",
+        default_preference: UserConsentPreference.OPT_IN,
+        systems_applicable: true,
+        cookies: [],
+        version: 1,
+        privacy_notice_history_id: "test",
+        // translations: [
+        //   {
+        //     id: "pri_sdafsf",
+        //     language: "en",
+        //     title: "Data Sales and Sharing",
+        //     description:
+        //       "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.",
+        //     version: 3,
+        //     privacy_notice_history_id:
+        //       "pri_da253ad5-c870-495a-b1b5-19de864c0616",
+        //   },
+        // ],
+      },
     ],
   };
 
   const handleSubmit = (values: NewPrivacyExperience) => {
     console.log("submitting...");
     console.log(values);
-    onCancel();
   };
 
-  const testRegionOptions = ["us_va", "gb_wls", "at", "pl"].map((opt) => ({
-    label: opt,
-    value: opt,
-  }));
-
   const testComponentOptions = enumToOptions(NewComponentType);
-  const testNoticeOptions = [
-    "Analytics",
-    "Essential",
-    "Functional",
-    "Marketing",
-    "Something Else",
-    "Another Notice",
-    "So Many",
-    "Way Too Many Notices",
-  ].map((opt) => ({ label: opt, value: opt }));
 
-  const [noticeOptions, setNoticeOptions] =
-    useState<Option[]>(testNoticeOptions);
+  // TEMP
+  // const getLanguageOption = (locale: ILocale) => {
+  //   return {
+  //     label: locale.location
+  //       ? `${locale.name} (${locale.location})`
+  //       : locale.name,
+  //     value: locale.tag,
+  //   };
+  // };
+
+  const getLanguageDisplayName = (locale: ILocale) => {
+    return locale.location
+      ? `${locale.name} (${locale.location})`
+      : locale.name;
+  };
+
+  // const [noticeOptions, setNoticeOptions] = useState<Option[]>([]);
+  const [notices, setNotices] = useState<PrivacyNoticeResponse[]>([]);
+  const [regions, setRegions] = useState<PrivacyNoticeRegion[]>([]);
+  const [languages, setLanguages] = useState<PrivacyExperienceTranslation[]>(
+    []
+  );
 
   return (
     <Formik
@@ -206,31 +238,20 @@ const NewPrivacyExperienceForm = ({ onCancel }: { onCancel: () => void }) => {
       {({ dirty, values, isValid }) => {
         return (
           <Flex direction="column" gap={4} w="full">
+            <Heading fontSize="md" fontWeight="semibold">
+              Configure experience
+            </Heading>
             <CustomTextInput
               name="name"
               id="name"
-              label="Experience name (internal admin use only)"
+              label="Name (internal admin use only)"
               variant="stacked"
             />
-            <Text as="h2" fontWeight="600">
-              Locations
-            </Text>
-            <CustomSelect
-              name="regions"
-              id="regions"
-              options={testRegionOptions}
-              isMulti
-              label="Locations"
-              variant="stacked"
-            />
-            <Text as="h2" fontWeight="600">
-              Experience
-            </Text>
             <CustomSelect
               name="component"
               id="component"
               options={testComponentOptions}
-              label="Set the type of experience to display"
+              label="Experience Type"
               variant="stacked"
             />
             <CustomSwitch
@@ -239,37 +260,58 @@ const NewPrivacyExperienceForm = ({ onCancel }: { onCancel: () => void }) => {
               label="Overlay is dismissable"
               variant="stacked"
             />
+            <Button
+              size="sm"
+              variant="outline"
+              rightIcon={<ArrowForwardIcon />}
+            >
+              Customize appearance
+            </Button>
             <Divider />
-            <Text as="h2" fontWeight="600">
+            <Heading fontSize="md" fontWeight="semibold">
               Privacy notices
-            </Text>
+            </Heading>
             <ScrollableList
-              values={noticeOptions}
-              onReorder={setNoticeOptions}
+              addButtonLabel="Add privacy notice"
+              allItems={initialValues.privacy_notices}
+              values={notices}
+              setValues={setNotices}
+              idField="id"
+              nameField="name"
               draggable
             />
-            <Button>+ Add privacy notice</Button>
             <Divider />
             <Text as="h2" fontWeight="600">
-              Language
+              Locations & Languages
             </Text>
-            <PrivacyExperienceLanguageMenu translations={values.translations} />
-            <CustomSwitch
-              name="allow_language_selection"
-              id="allow_language_selection"
-              label="Allow language selection in overlay"
-              variant="stacked"
+            <ScrollableList
+              label="Locations for this experience"
+              addButtonLabel="Add location"
+              allItems={initialValues.regions}
+              values={regions}
+              setValues={setRegions}
+              draggable
             />
-            <ButtonGroup>
-              <Button
-                type="submit"
-                colorScheme="primary"
-                disabled={!dirty || !isValid}
-              >
-                Save
-              </Button>
-              <Button onClick={onCancel}>Cancel</Button>
-            </ButtonGroup>
+            <ScrollableList
+              label="Languages for this experience"
+              addButtonLabel="Add language"
+              values={languages}
+              setValues={setLanguages}
+              allItems={localeCodes.all.map((locale) => ({
+                language: locale.tag,
+                is_default: false,
+              }))}
+              getItemLabel={(translation) =>
+                getLanguageDisplayName(
+                  localeCodes.getByTag(translation.language)
+                )
+              }
+              createNewValue={(opt) => ({
+                language: opt.value,
+                is_default: false,
+              })}
+              draggable
+            />
           </Flex>
         );
       }}

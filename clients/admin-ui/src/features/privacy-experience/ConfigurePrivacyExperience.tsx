@@ -11,16 +11,14 @@ import {
 } from "@fidesui/react";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import NewPrivacyExperienceForm from "~/features/privacy-experience/NewPrivacyExperienceForm";
 
 const ConfigurePrivacyExperience = () => (
   <Flex w="full" h="full" direction="row">
     <Flex direction="column" h="full" w="25%" borderRight="1px solid #DEE5EE">
-      <Flex direction="column" h="full" overflow="scroll" pl={4}>
+      <Flex direction="column" h="full" overflow="scroll" px={4}>
         <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
-        <Heading fontSize="md" fontWeight="semibold" mb={4}>
-          Configure experience
-        </Heading>
-        <Text>Coming soon</Text>
+        <NewPrivacyExperienceForm />
       </Flex>
       <Spacer />
       <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
