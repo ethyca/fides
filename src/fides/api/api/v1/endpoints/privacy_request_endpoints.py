@@ -1870,23 +1870,6 @@ def create_privacy_request_func(
     )
 
 
-def create_masking_secrets(policy: Policy) -> Optional[List[MaskingSecretCache]]:
-    """Returns a list of masking secrets for the masking strategies in the given policy."""
-    masking_secrets: List[MaskingSecretCache] = []
-    erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
-    unique_masking_strategies_by_name: Set[str] = set()
-    for rule in erasure_rules:
-        strategy_name: str = rule.masking_strategy["strategy"]  # type: ignore
-        configuration = rule.masking_strategy["configuration"]  # type: ignore
-        if strategy_name in unique_masking_strategies_by_name:
-            continue
-        unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
-        if masking_strategy.secrets_required():
-            masking_secrets = masking_strategy.generate_secrets_for_cache()
-    return masking_secrets
-
-
 def _create_or_update_custom_fields(
     db: Session,
     privacy_request: PrivacyRequest,
