@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Type
+from uuid import uuid4
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -11,7 +12,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
 
-from fides.api.db.base_class import Base, generate_table_uuid
+from fides.api.db.base_class import Base
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
@@ -29,9 +30,15 @@ class ExperienceNotices(Base):
 
     def generate_uuid(self) -> str:
         """
-        Generates the experience notice id
+        Generates a uuid with a prefix based on the tablename to be used as the
+        record's ID value
         """
-        return generate_table_uuid(self.current_column.table.name)  # type: ignore[attr-defined]
+        try:
+            prefix = f"{self.current_column.table.name[:3]}_"  # type: ignore
+        except AttributeError:
+            prefix = ""
+        uuid = str(uuid4())
+        return f"{prefix}{uuid}"
 
     # Overrides Base.id so this is not a primary key.
     # Instead, we have a composite PK of notice_id and experience_config_id
