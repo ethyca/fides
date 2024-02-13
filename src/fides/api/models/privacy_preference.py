@@ -23,7 +23,9 @@ class RequestOrigin(Enum):
     # Not at the db level due to being subject to change.
     # Only add here, do not remove
     privacy_center = "privacy_center"
-    overlay = "overlay"
+    overlay = "overlay"  # DEPRECATED, but leave for backwards compat
+    modal = "modal"
+    banner_and_modal = "banner_and_modal"
     api = "api"
     tcf_overlay = "tcf_overlay"
 
