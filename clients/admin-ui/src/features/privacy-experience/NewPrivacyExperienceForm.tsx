@@ -1,13 +1,9 @@
 import {
   ArrowForwardIcon,
   Button,
-  ButtonGroup,
   Divider,
-  DragHandleIcon,
   Flex,
   Heading,
-  List,
-  ListItem,
   Text,
 } from "@fidesui/react";
 import { Formik } from "formik";
@@ -15,7 +11,6 @@ import {
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
-  Option,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import {
@@ -26,11 +21,8 @@ import {
   PrivacyNoticeResponse,
   UserConsentPreference,
 } from "~/types/api";
-import { Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
-import PrivacyExperienceLanguageMenu from "~/features/privacy-experience/PrivacyExperienceLanguageMenu";
 import ScrollableList from "~/features/common/ScrollableList";
-import { AddIcon } from "@chakra-ui/icons";
 
 import localeCodes, { ILocale } from "locale-codes";
 import {
@@ -297,6 +289,7 @@ const NewPrivacyExperienceForm = () => {
               addButtonLabel="Add language"
               values={languages}
               setValues={setLanguages}
+              idField="language"
               allItems={localeCodes.all.map((locale) => ({
                 language: locale.tag,
                 is_default: false,
