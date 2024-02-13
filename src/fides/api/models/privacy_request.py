@@ -65,7 +65,6 @@ from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
-    get_all_masking_secret_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
     get_custom_privacy_request_field_cache_key,
