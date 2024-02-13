@@ -5,7 +5,6 @@ from fides.api.schemas.language import SupportedLanguage, supported_languages_by
 
 
 class TestLanguageSchema:
-
     def test_languages_by_id(self):
         # some basic language lookups
         assert supported_languages_by_id["ar"].name == "Arabic"
@@ -37,7 +36,6 @@ class TestLanguageSchema:
         assert SupportedLanguage.serbian_latin.value == "sr-Latn"
 
     def test_language_enum_in_schema(self):
-
         class SamplePydanticSchema(BaseModel):
             test_prop: str
             language: SupportedLanguage
