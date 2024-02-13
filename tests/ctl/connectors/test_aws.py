@@ -77,6 +77,22 @@ def get_test_aws_config() -> AWSConfig:
     )
 
 
+def get_test_aws_config_temporary_credentials() -> AWSConfig:
+    # first get an STS client with our permanent credentials
+    client = aws_connector.get_aws_client(
+        service="sts", aws_config=get_test_aws_config()
+    )
+    # then use the STS client to get temporary credentials
+    temporary_credentials = client.get_session_token()["Credentials"]
+    # return an AWS config with the temporary credentials
+    return AWSConfig(
+        region_name=os.environ["AWS_DEFAULT_REGION"],
+        aws_access_key_id=temporary_credentials["AccessKeyId"],
+        aws_secret_access_key=temporary_credentials["SecretAccessKey"],
+        aws_session_token=temporary_credentials["SessionToken"],
+    )
+
+
 @pytest.fixture()
 def rds_systems() -> Generator:
     rds_systems = [
@@ -176,6 +192,24 @@ def test_describe_redshift_clusters(
     client = aws_connector.get_aws_client(
         service="redshift",
         aws_config=get_test_aws_config(),
+    )
+    actual_result = aws_connector.describe_redshift_clusters(client=client)
+    assert actual_result
+
+
+@pytest.mark.external
+def test_describe_redshift_clusters_temporary_credentials(
+    tmpdir: LocalPath, test_config: FidesConfig
+) -> None:
+    """
+    Test temporary credential (session token) auth mechanism.
+
+    The test is covering the auth mechanism.
+    We could use any operation to test this, it should work the same as permanent AWS credentials.
+    """
+    client = aws_connector.get_aws_client(
+        service="redshift",
+        aws_config=get_test_aws_config_temporary_credentials(),
     )
     actual_result = aws_connector.describe_redshift_clusters(client=client)
     assert actual_result
