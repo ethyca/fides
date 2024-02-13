@@ -63,9 +63,12 @@ class ExperienceNotices(Base):
 class ComponentType(Enum):
     """
     The component type - not formalized in the db
+
+    Overlay type has been deprecated but can't be removed for backwards compatibility
+    without significant data migrations.
     """
 
-    overlay = "overlay"  # Deprecated. Leave here for backwards compat.
+    overlay = "overlay"  # Deprecated. DO NOT REMOVE.
     banner_and_modal = "banner_and_modal"
     modal = "modal"
     privacy_center = "privacy_center"
@@ -536,7 +539,7 @@ class PrivacyExperience(Base):
             ComponentType.tcf_overlay,
             ComponentType.banner_and_modal,
             ComponentType.overlay,
-        ]:  # Overlay type is deprecated
+        ]:  # Overlay type is deprecated. For backwards compatibility.
             return True
 
         return False
