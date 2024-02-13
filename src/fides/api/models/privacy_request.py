@@ -580,7 +580,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                         masking_strategy=secret["masking_strategy"],
                         secret_type=SecretType(secret["secret_type"]),
                     )
-                    for secret in self.masking_secrets
+                    for secret in self.masking_secrets or []
                 ]
             )
 

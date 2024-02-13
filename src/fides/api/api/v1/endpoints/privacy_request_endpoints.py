@@ -69,7 +69,6 @@ from fides.api.models.privacy_request import (
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.messaging.messaging import (
     FidesopsMessage,
     MessagingActionType,
@@ -93,7 +92,6 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service._verification import send_verification_code_to_user
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     check_and_dispatch_error_notifications,
