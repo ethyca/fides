@@ -52,7 +52,6 @@ import {
 import { i18n } from "./i18n";
 import { messages as messagesEn } from "./i18n/locales/en/messages";
 import { messages as messagesFr } from "./i18n/locales/fr/messages";
-import { messages as messagesCs } from "./i18n/locales/cs/messages";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -368,7 +367,6 @@ export const initialize = async ({
         // TODO: i18n POC
         i18n.load("en", messagesEn);
         i18n.load("fr", messagesFr);
-        i18n.load("cs", messagesCs);
         console.warn("using fidesLocale = ", options.fidesLocale);
         const locale = options.fidesLocale || "en";
         console.warn("initializing i18n to locale = ", locale);
