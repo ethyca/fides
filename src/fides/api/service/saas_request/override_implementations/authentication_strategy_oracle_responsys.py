@@ -23,7 +23,6 @@ class OracleResponsysAuthenticationConfiguration(StrategyConfiguration):
 class OracleResponsysAuthenticationStrategy(AuthenticationStrategy):
     """
     Generates a token from the provided key and secret.
-    Stores the expiration time to know when to refresh the token.
     """
 
     name = "oracle_responsys"

@@ -7,8 +7,11 @@ saas_config:
 
   connector_params:
     - name: domain
+      description: Your Oracle Responsys domain
     - name: username
+      description: Your Oracle Responsys username
     - name: password
+      description: Your Oracle Responsys password
       sensitive: True
 
   external_references:
@@ -32,7 +35,8 @@ saas_config:
   endpoints:
     - name: profile_list
       requests:
-        read: ...
+        read:
+          request_override: profile_list_read
     - name: profile_list_recipient
       requests:
         read:
@@ -50,4 +54,14 @@ saas_config:
               identity: email
         delete:
           request_override: profile_list_recipient_delete
-          ...
+          param_values:
+            - name: profile_list_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: profile_list.id
+                  direction: from
+            - name: recipient_id
+              references:
+                - responsys_id
+            - name: email
+              identity: email
