@@ -1175,12 +1175,22 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
     privacy_request = relationship(PrivacyRequest)
 
+    def get_persisted_identity(self) -> Identity:
+        """
+        Retrieves persisted identity fields from the DB.
+        """
+        schema = Identity()
+        for field in self.provided_identities:  # type: ignore[attr-defined]
+            setattr(
+                schema,
+                field.field_name.value,
+                field.encrypted_value["value"],
+            )
+        return schema
+
     def get_identity_map(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""
-        prefix = f"id-{self.id}-identity-*"
-        cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
+        return self.get_persisted_identity().dict(exclude_none=True)
 
     def verify_identity(
         self,
