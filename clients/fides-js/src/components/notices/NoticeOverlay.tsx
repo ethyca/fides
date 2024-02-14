@@ -134,79 +134,74 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const experienceConfig = experience.experience_config;
 
   return (
-      <Overlay
-        options={options}
-        experience={experience}
-        cookie={cookie}
-        onOpen={dispatchOpenOverlayEvent}
-        onDismiss={handleDismiss}
-        renderBanner={({
-          isOpen,
-          onClose,
-          onSave,
-          onManagePreferencesClick,
-        }) => (
-          <ConsentBanner
-            bannerIsOpen={isOpen}
-            onOpen={dispatchOpenBannerEvent}
-            onClose={() => {
-              onClose();
-              handleDismiss();
-            }}
-            experience={experienceConfig}
-            renderButtonGroup={({ isMobile }) => (
-              <NoticeConsentButtons
-                experience={experience}
-                onManagePreferencesClick={onManagePreferencesClick}
-                enabledKeys={draftEnabledNoticeKeys}
-                onSave={(
-                  consentMethod: ConsentMethod,
-                  keys: Array<PrivacyNotice["notice_key"]>
-                ) => {
-                  handleUpdatePreferences(consentMethod, keys);
-                  onSave();
-                }}
-                isAcknowledge={isAllNoticeOnly}
-                isMobile={isMobile}
-              />
-            )}
-          />
-        )}
-        renderModalContent={() => (
-          <div>
-            <div className="fides-modal-notices">
-              <NoticeToggles
-                notices={privacyNotices}
-                enabledNoticeKeys={draftEnabledNoticeKeys}
-                onChange={(updatedKeys) => {
-                  setDraftEnabledNoticeKeys(updatedKeys);
-                  dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
-                }}
-              />
-            </div>
-          </div>
-        )}
-        renderModalFooter={({ onClose, isMobile }) => (
-          <Fragment>
+    <Overlay
+      options={options}
+      experience={experience}
+      cookie={cookie}
+      onOpen={dispatchOpenOverlayEvent}
+      onDismiss={handleDismiss}
+      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
+        <ConsentBanner
+          bannerIsOpen={isOpen}
+          onOpen={dispatchOpenBannerEvent}
+          onClose={() => {
+            onClose();
+            handleDismiss();
+          }}
+          experience={experienceConfig}
+          renderButtonGroup={({ isMobile }) => (
             <NoticeConsentButtons
               experience={experience}
+              onManagePreferencesClick={onManagePreferencesClick}
               enabledKeys={draftEnabledNoticeKeys}
               onSave={(
                 consentMethod: ConsentMethod,
                 keys: Array<PrivacyNotice["notice_key"]>
               ) => {
                 handleUpdatePreferences(consentMethod, keys);
-                onClose();
+                onSave();
               }}
-              isInModal
               isAcknowledge={isAllNoticeOnly}
               isMobile={isMobile}
-              saveOnly={privacyNotices.length === 1}
             />
-            <PrivacyPolicyLink experience={experience.experience_config} />
-          </Fragment>
-        )}
-      />
+          )}
+        />
+      )}
+      renderModalContent={() => (
+        <div>
+          <div className="fides-modal-notices">
+            <NoticeToggles
+              notices={privacyNotices}
+              enabledNoticeKeys={draftEnabledNoticeKeys}
+              onChange={(updatedKeys) => {
+                setDraftEnabledNoticeKeys(updatedKeys);
+                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+              }}
+            />
+          </div>
+        </div>
+      )}
+      renderModalFooter={({ onClose, isMobile }) => (
+        <Fragment>
+          <NoticeConsentButtons
+            experience={experience}
+            enabledKeys={draftEnabledNoticeKeys}
+            onSave={(
+              consentMethod: ConsentMethod,
+              keys: Array<PrivacyNotice["notice_key"]>
+            ) => {
+              handleUpdatePreferences(consentMethod, keys);
+              onClose();
+            }}
+            isInModal
+            isAcknowledge={isAllNoticeOnly}
+            isMobile={isMobile}
+            saveOnly={privacyNotices.length === 1}
+          />
+          <PrivacyPolicyLink experience={experience.experience_config} />
+        </Fragment>
+      )}
+    />
   );
 };
 

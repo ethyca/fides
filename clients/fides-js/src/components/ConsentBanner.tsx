@@ -7,7 +7,7 @@ import { GpcBadge } from "./GpcBadge";
 import ExperienceDescription from "./ExperienceDescription";
 
 // TODO: i18n POC
-import { i18n } from "@lingui/core"
+import { i18n } from "../lib/i18n";
 
 interface ButtonGroupProps {
   isMobile: boolean;
@@ -98,11 +98,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     experience.banner_description || experience.description;
   // const bannerTitle = experience.banner_title || experience.title;
 
-  const bannerTitle = i18n.t({
-    id: "test.title",
-    message: "Translate Me!",
-    comment: "This title is shown on the consent banner"
-  });
+  const bannerTitle = i18n.t({ id: "test.title" });
   console.warn("used i18n.t to translate 'test.title'", i18n, bannerTitle);
 
   return (
