@@ -9,8 +9,9 @@ export type ConnectorParam = {
   name: string;
   label?: string;
   options?: Array<string>;
-  default_value?: Array<string> | string;
+  default_value?: (string | Array<string>);
   multiselect?: boolean;
   description?: string;
   sensitive?: boolean;
 };
+

@@ -2,32 +2,37 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from "./ComponentType";
-import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
-import type { ExperienceMeta } from "./ExperienceMeta";
-import type { GPPSettings } from "./GPPSettings";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
-import type { TCFFeatureRecord } from "./TCFFeatureRecord";
-import type { TCFPurposeConsentRecord } from "./TCFPurposeConsentRecord";
-import type { TCFPurposeLegitimateInterestsRecord } from "./TCFPurposeLegitimateInterestsRecord";
-import type { TCFSpecialFeatureRecord } from "./TCFSpecialFeatureRecord";
-import type { TCFSpecialPurposeRecord } from "./TCFSpecialPurposeRecord";
-import type { TCFVendorConsentRecord } from "./TCFVendorConsentRecord";
-import type { TCFVendorLegitimateInterestsRecord } from "./TCFVendorLegitimateInterestsRecord";
-import type { TCFVendorRelationships } from "./TCFVendorRelationships";
+import type { ComponentType } from './ComponentType';
+import type { ExperienceConfigResponseNoNotices } from './ExperienceConfigResponseNoNotices';
+import type { ExperienceMeta } from './ExperienceMeta';
+import type { GPPApplicationConfigResponse } from './GPPApplicationConfigResponse';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { PrivacyNoticeResponse } from './PrivacyNoticeResponse';
+import type { TCFFeatureRecord } from './TCFFeatureRecord';
+import type { TCFPurposeConsentRecord } from './TCFPurposeConsentRecord';
+import type { TCFPurposeLegitimateInterestsRecord } from './TCFPurposeLegitimateInterestsRecord';
+import type { TCFSpecialFeatureRecord } from './TCFSpecialFeatureRecord';
+import type { TCFSpecialPurposeRecord } from './TCFSpecialPurposeRecord';
+import type { TCFVendorConsentRecord } from './TCFVendorConsentRecord';
+import type { TCFVendorLegitimateInterestsRecord } from './TCFVendorLegitimateInterestsRecord';
+import type { TCFVendorRelationships } from './TCFVendorRelationships';
 
 /**
  * An API representation of a PrivacyExperience used for response payloads
+ *
+ * Notices are extracted from the shared Experience Config and placed at the top-level here
+ * for backwards compatibility, and to reduce nesting due to notice translations.
+ *
+ * Additionally, the notices on the ExperienceConfig are further filtered.
  */
 export type PrivacyExperienceResponse = {
   region: PrivacyNoticeRegion;
   component?: ComponentType;
-  gpp_settings?: GPPSettings;
+  gpp_settings?: GPPApplicationConfigResponse;
   /**
-   * The Experience copy or language
+   * The Experience Config and its translations
    */
-  experience_config?: ExperienceConfigResponse;
+  experience_config?: ExperienceConfigResponseNoNotices;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -43,7 +48,7 @@ export type PrivacyExperienceResponse = {
   created_at: string;
   updated_at: string;
   /**
-   * Whether the experience should show a banner
+   * For backwards compatibility purposes, whether the Experience should show a banner.
    */
   show_banner?: boolean;
   /**
@@ -53,3 +58,4 @@ export type PrivacyExperienceResponse = {
   gvl?: any;
   meta?: ExperienceMeta;
 };
+

@@ -18,3 +18,4 @@ export type RecordsServedResponse = {
   privacy_notice_history_ids?: Array<string>;
   served_notice_history_id: string;
 };
+

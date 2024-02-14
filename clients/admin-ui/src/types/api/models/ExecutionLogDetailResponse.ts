@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from "./ActionType";
-import type { ExecutionLogStatus } from "./ExecutionLogStatus";
-import type { FieldsAffectedResponse } from "./FieldsAffectedResponse";
+import type { ActionType } from './ActionType';
+import type { ExecutionLogStatus } from './ExecutionLogStatus';
+import type { FieldsAffectedResponse } from './FieldsAffectedResponse';
 
 /**
  * Schema for the detailed ExecutionLogs when accessed directly
@@ -19,3 +19,4 @@ export type ExecutionLogDetailResponse = {
   connection_key?: string;
   dataset_name?: string;
 };
+

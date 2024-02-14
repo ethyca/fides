@@ -12,3 +12,4 @@ export type Consent = {
   has_gpc_flag?: boolean;
   conflicts_with_gpc?: boolean;
 };
+

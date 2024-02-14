@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ServiceHealth } from "./ServiceHealth";
+import type { ServiceHealth } from './ServiceHealth';
 
 /**
  * Dictionary status schema
@@ -12,3 +12,4 @@ export type DictionaryStatus = {
   service_health?: ServiceHealth;
   service_error?: string;
 };
+

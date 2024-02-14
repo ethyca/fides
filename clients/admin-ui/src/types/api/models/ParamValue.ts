@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { FidesDatasetReference } from "./FidesDatasetReference";
+import type { FidesDatasetReference } from './FidesDatasetReference';
 
 /**
  * A named variable which can be sourced from identities, dataset references, or connector params. These values
@@ -11,7 +11,8 @@ import type { FidesDatasetReference } from "./FidesDatasetReference";
 export type ParamValue = {
   name: string;
   identity?: string;
-  references?: Array<FidesDatasetReference | string>;
+  references?: Array<(FidesDatasetReference | string)>;
   connector_param?: string;
   unpack?: boolean;
 };
+

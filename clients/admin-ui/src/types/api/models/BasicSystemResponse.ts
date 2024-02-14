@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Cookies } from "./Cookies";
-import type { DataFlow } from "./DataFlow";
-import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
-import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
-import type { PrivacyDeclaration } from "./PrivacyDeclaration";
-import type { SystemMetadata } from "./SystemMetadata";
+import type { Cookies } from './Cookies';
+import type { DataFlow } from './DataFlow';
+import type { DataResponsibilityTitle } from './DataResponsibilityTitle';
+import type { LegalBasisForProfilingEnum } from './LegalBasisForProfilingEnum';
+import type { PrivacyDeclaration } from './PrivacyDeclaration';
+import type { SystemMetadata } from './SystemMetadata';
 
 /**
  * Extension of base pydantic model to include additional fields on the DB model that
@@ -183,3 +183,4 @@ export type BasicSystemResponse = {
   cookies?: Array<Cookies>;
   created_at: string;
 };
+

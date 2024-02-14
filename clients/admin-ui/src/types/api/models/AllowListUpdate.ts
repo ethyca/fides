@@ -8,3 +8,4 @@ export type AllowListUpdate = {
   allowed_values: Array<string>;
   id?: string;
 };
+

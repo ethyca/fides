@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { StatusEnum } from "./StatusEnum";
-import type { Violation } from "./Violation";
+import type { StatusEnum } from './StatusEnum';
+import type { Violation } from './Violation';
 
 /**
  * The Evaluation resource model.
@@ -28,3 +28,4 @@ export type Evaluation = {
    */
   message?: string;
 };
+

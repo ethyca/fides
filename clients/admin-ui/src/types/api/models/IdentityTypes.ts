@@ -6,3 +6,4 @@ export type IdentityTypes = {
   email: boolean;
   phone_number: boolean;
 };
+

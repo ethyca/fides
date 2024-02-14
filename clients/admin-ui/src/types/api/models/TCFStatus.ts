@@ -5,3 +5,4 @@
 export type TCFStatus = {
   enabled?: boolean;
 };
+

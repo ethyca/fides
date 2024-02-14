@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClassificationStatus } from "./ClassificationStatus";
-import type { ClassifyDataFlow } from "./ClassifyDataFlow";
+import type { ClassificationStatus } from './ClassificationStatus';
+import type { ClassifyDataFlow } from './ClassifyDataFlow';
 
 export type ClassifySystem = {
   fides_key: string;
@@ -12,3 +12,4 @@ export type ClassifySystem = {
   egress: Array<ClassifyDataFlow>;
   ingress: Array<ClassifyDataFlow>;
 };
+

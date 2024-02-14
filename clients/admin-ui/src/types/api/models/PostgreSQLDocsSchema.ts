@@ -35,3 +35,4 @@ export type PostgreSQLDocsSchema = {
    */
   ssh_required?: boolean;
 };
+

@@ -2,32 +2,27 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from "./ConsentMechanism";
-import type { EnforcementLevel } from "./EnforcementLevel";
-import type { GPPFieldMapping } from "./GPPFieldMapping";
-import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { ConsentMechanism } from './ConsentMechanism';
+import type { EnforcementLevel } from './EnforcementLevel';
+import type { GPPFieldMappingCreate } from './GPPFieldMappingCreate';
+import type { NoticeTranslationCreate } from './NoticeTranslationCreate';
+import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
 
 /**
- * An API representation of a PrivacyNotice.
- * This model doesn't include an `id` so that it can be used for creation.
- * It also establishes some fields _required_ for creation
+ * Establishes some fields required for creating and validation that can be performed up-front
  */
 export type PrivacyNoticeCreation = {
   name: string;
   notice_key?: string;
-  description?: string;
   internal_description?: string;
   origin?: string;
-  regions: Array<PrivacyNoticeRegion>;
   consent_mechanism: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level: EnforcementLevel;
   disabled?: boolean;
   has_gpc_flag?: boolean;
-  displayed_in_privacy_center?: boolean;
-  displayed_in_overlay?: boolean;
-  displayed_in_api?: boolean;
   framework?: PrivacyNoticeFramework;
-  gpp_field_mapping?: Array<GPPFieldMapping>;
+  gpp_field_mapping?: Array<GPPFieldMappingCreate>;
+  translations?: Array<NoticeTranslationCreate>;
 };
+

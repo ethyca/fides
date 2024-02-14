@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { TCMobileData } from "./TCMobileData";
+import type { TCMobileData } from './TCMobileData';
 
 /**
  * Supplements experience with developer-friendly meta information
@@ -23,3 +23,4 @@ export type ExperienceMeta = {
   reject_all_fides_string?: string;
   reject_all_fides_mobile_data?: TCMobileData;
 };
+

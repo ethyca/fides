@@ -7,11 +7,8 @@
  */
 export type SecurityApplicationConfig = {
   /**
-   * A list of HTTP origins allowed to communicate with the Fides webserver.
+   * A list of client addresses allowed to communicate with the Fides webserver.
    */
   cors_origins?: Array<string>;
-  /**
-   * An optional regex to allowlist wider patterns of HTTP origins to communicate with the Fides webserver.
-   */
-  cors_origin_regex?: string;
 };
+

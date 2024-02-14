@@ -11,3 +11,4 @@ export type AWSConfig = {
   aws_access_key_id: string;
   aws_session_token?: string;
 };
+

@@ -9,3 +9,4 @@ export type WorkerHealthCheck = {
   workers_enabled: boolean;
   workers: Array<string>;
 };
+

@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { RoleRegistryEnum } from "./RoleRegistryEnum";
-import type { ScopeRegistryEnum } from "./ScopeRegistryEnum";
+import type { RoleRegistryEnum } from './RoleRegistryEnum';
+import type { ScopeRegistryEnum } from './ScopeRegistryEnum';
 
 /**
  * Response after creating, editing, or retrieving a FidesUserPermissions record.
@@ -16,3 +16,4 @@ export type UserPermissionsPlusResponse = {
   user_id: string;
   total_scopes: Array<ScopeRegistryEnum>;
 };
+

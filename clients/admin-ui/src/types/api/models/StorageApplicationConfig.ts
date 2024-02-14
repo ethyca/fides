@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { StorageTypeApiAccepted } from "./StorageTypeApiAccepted";
+import type { StorageTypeApiAccepted } from './StorageTypeApiAccepted';
 
 /**
  * A base template for all other Fides Schemas to inherit from.
@@ -10,3 +10,4 @@ import type { StorageTypeApiAccepted } from "./StorageTypeApiAccepted";
 export type StorageApplicationConfig = {
   active_default_storage_type: StorageTypeApiAccepted;
 };
+

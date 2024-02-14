@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CollectionMeta } from "./CollectionMeta";
-import type { DatasetField } from "./DatasetField";
+import type { CollectionMeta } from './CollectionMeta';
+import type { DatasetField } from './DatasetField';
 
 /**
  * The DatasetCollection resource model.
@@ -29,3 +29,4 @@ export type DatasetCollection = {
   fields: Array<DatasetField>;
   fides_meta?: CollectionMeta;
 };
+

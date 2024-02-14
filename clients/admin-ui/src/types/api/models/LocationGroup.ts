@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Continent } from "./Continent";
+import type { Continent } from './Continent';
 
 /**
  * Used to represent location groups in API responses.
@@ -16,3 +16,4 @@ export type LocationGroup = {
   continent: Continent;
   belongs_to?: Array<string>;
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExtendedIdentityTypes } from "./ExtendedIdentityTypes";
+import type { ExtendedIdentityTypes } from './ExtendedIdentityTypes';
 
 /**
  * Overrides base AdvancedSettings to have extended IdentityTypes
@@ -10,3 +10,4 @@ import type { ExtendedIdentityTypes } from "./ExtendedIdentityTypes";
 export type AdvancedSettingsWithExtendedIdentityTypes = {
   identity_types: ExtendedIdentityTypes;
 };
+

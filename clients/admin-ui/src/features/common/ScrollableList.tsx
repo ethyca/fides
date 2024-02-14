@@ -20,11 +20,13 @@ const ScrollableListItem = <T extends unknown>({
   label,
   draggable,
   onDeleteItem,
+  onRowClick,
 }: {
   item: T;
   label: string;
-  onDeleteItem: (item: T) => void;
   draggable?: boolean;
+  onDeleteItem?: (item: T) => void;
+  onRowClick?: (item: T) => void;
 }) => {
   const dragControls = useDragControls();
 
@@ -32,13 +34,14 @@ const ScrollableListItem = <T extends unknown>({
     <Reorder.Item value={item} dragListener={false} dragControls={dragControls}>
       <Flex
         direction="row"
-        p={2}
         gap={2}
         maxH={10}
+        px={2}
         align="center"
         role="group"
         borderBottom="1px"
         borderColor="gray.200"
+        _hover={onRowClick ? { bgColor: "gray.100" } : undefined}
         bgColor="white"
       >
         {draggable ? (
@@ -47,17 +50,36 @@ const ScrollableListItem = <T extends unknown>({
             cursor="grab"
           />
         ) : null}
-        <Text fontSize="sm">{label}</Text>
-        <Spacer />
-        <IconButton
-          aria-label="Delete"
-          onClick={() => onDeleteItem(item)}
-          icon={<DeleteIcon />}
-          size="xs"
-          variant="outline"
-          visibility="hidden"
-          _groupHover={{ visibility: "visible" }}
-        />
+        <Flex
+          direction="row"
+          gap={2}
+          p={2}
+          align="center"
+          w="full"
+          cursor={onRowClick ? "pointer" : "auto"}
+          onClick={() => {
+            if (onRowClick) {
+              onRowClick(item);
+            }
+          }}
+        >
+          <Text fontSize="sm">{label}</Text>
+        </Flex>
+
+        {onDeleteItem ? (
+          <IconButton
+            aria-label="Delete"
+            onClick={() => onDeleteItem(item)}
+            icon={<DeleteIcon />}
+            size="xs"
+            variant="outline"
+            bgColor="white"
+            visibility="hidden"
+            alignSelf="end"
+            mb={2}
+            _groupHover={{ visibility: "visible" }}
+          />
+        ) : null}
       </Flex>
     </Reorder.Item>
   );
@@ -115,6 +137,8 @@ const ScrollableList = <T extends unknown>({
   nameField = idField,
   values,
   setValues,
+  canDeleteItem,
+  onRowClick,
   getItemLabel,
   createNewValue,
 }: {
@@ -127,6 +151,8 @@ const ScrollableList = <T extends unknown>({
   allItems: T[];
   values: T[];
   setValues: (newOrder: T[]) => void;
+  canDeleteItem?: (item: T) => boolean;
+  onRowClick?: (item: T) => void;
   getItemLabel?: (item: T) => string;
   createNewValue?: (opt: Option) => T;
 }) => {
@@ -141,10 +167,6 @@ const ScrollableList = <T extends unknown>({
     : allItems.filter((item) =>
         values.every((v) => getItemId(v) !== getItemId(item))
       );
-
-  // console.log("all: ", allItems);
-  // console.log("unselected: ", unselectedValues);
-  // console.log("selected: ", values);
 
   const handleDeleteItem = (item: T) => {
     setValues(values.filter((v) => v !== item));
@@ -162,13 +184,13 @@ const ScrollableList = <T extends unknown>({
       }
     });
 
-  const createOptionFromValue = (item: T) =>
-    item instanceof Object
-      ? { label: getItemDisplayName(item), value: item[idField!] as string }
-      : {
-          label: item as string,
-          value: item as string,
-        };
+  const createOptionFromValue = (item: T) => {
+    const value =
+      item instanceof Object && idField && idField in item
+        ? (item[idField] as string)
+        : (item as string);
+    return { label: getItemDisplayName(item), value };
+  };
 
   const getValueFromOption = (opt: Option) =>
     allItems.every((item) => typeof item === "string")
@@ -193,19 +215,18 @@ const ScrollableList = <T extends unknown>({
       maxH={44}
       overflowY="scroll"
     >
-      <Reorder.Group
-        values={values}
-        onReorder={(values) => {
-          console.log(values);
-          setValues(values);
-        }}
-      >
+      <Reorder.Group values={values} onReorder={(values) => setValues(values)}>
         {values.map((item) => (
           <ScrollableListItem
             key={getItemId(item)}
             item={item}
             label={getItemDisplayName(item)}
-            onDeleteItem={handleDeleteItem}
+            onDeleteItem={
+              !canDeleteItem || (canDeleteItem && canDeleteItem(item))
+                ? handleDeleteItem
+                : undefined
+            }
+            onRowClick={onRowClick}
             draggable
           />
         ))}
@@ -226,6 +247,7 @@ const ScrollableList = <T extends unknown>({
             key={idx}
             item={item}
             label={getItemDisplayName(item)}
+            onRowClick={onRowClick}
             onDeleteItem={handleDeleteItem}
           />
         ))}
@@ -242,13 +264,17 @@ const ScrollableList = <T extends unknown>({
       ) : null}
       {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       {innerList}
-      <ScrollableListAdd
-        label={addButtonLabel ?? "Add new"}
-        options={unselectedValues.map((value) => createOptionFromValue(value))}
-        onOptionSelected={(option) =>
-          setValues([...values, getValueFromOption(option)] as T[])
-        }
-      />
+      {unselectedValues.length ? (
+        <ScrollableListAdd
+          label={addButtonLabel ?? "Add new"}
+          options={unselectedValues.map((value) =>
+            createOptionFromValue(value)
+          )}
+          onOptionSelected={(option) =>
+            setValues([...values, getValueFromOption(option)] as T[])
+          }
+        />
+      ) : null}
     </Flex>
   ) : (
     <ScrollableListAdd

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClusterHealth } from "./ClusterHealth";
+import type { ClusterHealth } from './ClusterHealth';
 
 /**
  * System scanner status schema
@@ -12,3 +12,4 @@ export type SystemScannerStatus = {
   cluster_health?: ClusterHealth;
   cluster_error?: string;
 };
+

@@ -31,3 +31,4 @@ export type MySQLDocsSchema = {
    */
   ssh_required?: boolean;
 };
+

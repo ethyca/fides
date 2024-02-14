@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
+import type { ExperienceConfigResponse } from './ExperienceConfigResponse';
 
 export type Page_ExperienceConfigResponse_ = {
   items: Array<ExperienceConfigResponse>;
@@ -11,3 +11,4 @@ export type Page_ExperienceConfigResponse_ = {
   size: number;
   pages?: number;
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SystemSummary } from "./SystemSummary";
+import type { SystemSummary } from './SystemSummary';
 
 export type Page_SystemSummary_ = {
   items: Array<SystemSummary>;
@@ -11,3 +11,4 @@ export type Page_SystemSummary_ = {
   size: number;
   pages?: number;
 };
+

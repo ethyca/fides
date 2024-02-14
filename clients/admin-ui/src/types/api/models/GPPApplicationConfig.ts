@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { GPPUSApproach } from "./GPPUSApproach";
+import type { GPPUSApproach } from './GPPUSApproach';
 
 /**
  * A base template for all other Fides Schemas to inherit from.
@@ -14,3 +14,4 @@ export type GPPApplicationConfig = {
   mspa_covered_transactions?: boolean;
   enable_tcfeu_string?: boolean;
 };
+

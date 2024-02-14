@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Spinner,
-  Stack,
-  useDisclosure,
-} from "@fidesui/react";
+import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
 import Restrict, { useHasPermission } from "common/Restrict";
 import { DateCell, FidesTable } from "common/table";
@@ -22,7 +15,6 @@ import {
   EnablePrivacyExperienceCell,
   LocationCell,
 } from "~/features/privacy-experience/cells";
-import ConfigurePrivacyExperiencePage from "~/features/privacy-experience/ConfigurePrivacyExperience";
 import {
   selectAllExperienceConfigs,
   selectPage,

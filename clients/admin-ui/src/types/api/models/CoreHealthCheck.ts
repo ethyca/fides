@@ -12,9 +12,13 @@ export type CoreHealthCheck = {
 };
 
 export namespace CoreHealthCheck {
+
   export enum cache {
-    HEALTHY = "healthy",
-    UNHEALTHY = "unhealthy",
-    NO_CACHE_CONFIGURED = "no cache configured",
+    HEALTHY = 'healthy',
+    UNHEALTHY = 'unhealthy',
+    NO_CACHE_CONFIGURED = 'no cache configured',
   }
+
+
 }
+

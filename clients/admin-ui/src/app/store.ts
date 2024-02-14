@@ -32,6 +32,7 @@ import { datasetSlice } from "~/features/dataset";
 import { datastoreConnectionSlice } from "~/features/datastore-connections";
 import { locationsSlice } from "~/features/locations/locations.slice";
 import { organizationSlice } from "~/features/organization";
+import { languageSlice } from "~/features/privacy-experience/language.slice";
 import { privacyExperienceConfigSlice } from "~/features/privacy-experience/privacy-experience.slice";
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
@@ -78,6 +79,7 @@ const reducer = {
   [datasetSlice.name]: datasetSlice.reducer,
   [datastoreConnectionSlice.name]: datastoreConnectionSlice.reducer,
   [featuresSlice.name]: featuresSlice.reducer,
+  [languageSlice.name]: languageSlice.reducer,
   [locationsSlice.name]: locationsSlice.reducer,
   [organizationSlice.name]: organizationSlice.reducer,
   [privacyNoticesSlice.name]: privacyNoticesSlice.reducer,

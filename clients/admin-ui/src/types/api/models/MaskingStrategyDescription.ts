@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MaskingStrategyConfigurationDescription } from "./MaskingStrategyConfigurationDescription";
+import type { MaskingStrategyConfigurationDescription } from './MaskingStrategyConfigurationDescription';
 
 /**
  * The description model for a masking strategy
@@ -12,3 +12,4 @@ export type MaskingStrategyDescription = {
   description: string;
   configurations: Array<MaskingStrategyConfigurationDescription>;
 };
+
