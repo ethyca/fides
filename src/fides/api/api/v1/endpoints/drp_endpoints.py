@@ -120,9 +120,6 @@ async def create_drp_privacy_request(
         )
 
         masking_secrets = policy.create_masking_secrets()
-        if masking_secrets:
-            privacy_request.masking_secrets = jsonable_encoder(masking_secrets)
-            privacy_request.save(db=db)
 
         check_and_dispatch_error_notifications(db=db)
 

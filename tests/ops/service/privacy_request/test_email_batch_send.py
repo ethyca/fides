@@ -32,7 +32,7 @@ from tests.fixtures.application_fixtures import (
 CONFIG = get_config()
 
 
-def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
+def persist_identity_and_consent_preferences(privacy_request, db, reader_id):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
     privacy_request.persist_identity(db, identity)
     privacy_request.consent_preferences = [
@@ -41,7 +41,7 @@ def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
     privacy_request.save(db)
 
 
-def cache_identity_and_privacy_preferences(
+def persist_identity_and_privacy_preferences(
     privacy_request, db, reader_id, privacy_preference_history
 ):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
@@ -299,7 +299,7 @@ class TestConsentEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         sovrn_email_connection_config,
     ) -> None:
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             privacy_request_awaiting_consent_email_send, db, "12345"
         )
         exit_state = send_email_batch.delay().get()
@@ -371,7 +371,7 @@ class TestConsentEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         generic_consent_email_connection_config,
     ) -> None:
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             privacy_request_awaiting_consent_email_send, db, "12345"
         )
         exit_state = send_email_batch.delay().get()
@@ -447,7 +447,7 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config.system_id = system.id
         sovrn_email_connection_config.save(db)
 
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -504,7 +504,7 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config.save(db)
 
         # This preference matches on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -512,7 +512,7 @@ class TestConsentEmailBatchSend:
         )
 
         # This preference does not match on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -634,7 +634,7 @@ class TestConsentEmailBatchSend:
         generic_consent_email_connection_config.save(db)
 
         # This preference matches on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -642,7 +642,7 @@ class TestConsentEmailBatchSend:
         )
 
         # This preference does not match on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -757,10 +757,10 @@ class TestConsentEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         sovrn_email_connection_config,
     ) -> None:
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             privacy_request_awaiting_consent_email_send, db, "12345"
         )
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             second_privacy_request_awaiting_consent_email_send, db, "abcde"
         )
         exit_state = send_email_batch.delay().get()
@@ -825,13 +825,13 @@ class TestConsentEmailBatchSend:
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
     ) -> None:
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
             privacy_preference_history,
         )
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             second_privacy_request_awaiting_consent_email_send,
             db,
             "abcde",

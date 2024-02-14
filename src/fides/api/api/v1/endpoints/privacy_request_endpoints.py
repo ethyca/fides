@@ -835,6 +835,8 @@ def resume_privacy_request(
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     # We don't want to persist derived identities because they have not been provided
     # by the end user
+
+    # TODO verify this later
     privacy_request.persist_identity(db, webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:
@@ -1790,9 +1792,6 @@ def create_privacy_request_func(
                 privacy_preference.save(db=db)
 
             masking_secrets = policy.create_masking_secrets()
-            if masking_secrets:
-                privacy_request.masking_secrets = jsonable_encoder(masking_secrets)
-                privacy_request.save(db=db)
 
             cache_data(
                 privacy_request=privacy_request,

@@ -285,17 +285,6 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ),
         nullable=True,
     )
-    masking_secrets = Column(
-        MutableList.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
-        nullable=True,
-    )
 
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
@@ -504,24 +493,6 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     secret_type=masking_secret.secret_type,
                 ),
                 FidesopsRedis.encode_obj(masking_secret.secret),
-            )
-
-    def refresh_cached_masking_secrets(self) -> None:
-        """
-        Refreshes the cache with persisted masking secrets if the secrets have expired.
-        """
-
-        masking_secrets = get_all_masking_secret_cache_keys_for_privacy_request(self.id)
-        if not masking_secrets:
-            self.cache_masking_secrets(
-                [
-                    MaskingSecretCache(
-                        secret=secret["secret"],
-                        masking_strategy=secret["masking_strategy"],
-                        secret_type=SecretType(secret["secret_type"]),
-                    )
-                    for secret in self.masking_secrets or []
-                ]
             )
 
     def get_results(self) -> Dict[str, Any]:

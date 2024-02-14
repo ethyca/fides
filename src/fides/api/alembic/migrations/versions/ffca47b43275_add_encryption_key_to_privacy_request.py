@@ -26,16 +26,7 @@ def upgrade():
             nullable=True,
         ),
     )
-    op.add_column(
-        "privacyrequest",
-        sa.Column(
-            "masking_secrets",
-            sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
-            nullable=True,
-        ),
-    )
 
 
 def downgrade():
-    op.drop_column("privacyrequest", "masking_secrets")
     op.drop_column("privacyrequest", "encryption_key")
