@@ -1263,8 +1263,6 @@ def _create_privacy_request_for_policy(
         db=db,
         data=data,
     )
-    identity_kwargs = {"email": email_identity}
-    pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
         identity=Identity(
@@ -1434,7 +1432,6 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
         },
     )
     identity_kwargs = {"email": "email@example.com"}
-    pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
         identity=Identity(**identity_kwargs),

@@ -376,10 +376,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
-        identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
-        custom_privacy_request_fields: Dict[
-            str, Any
-        ] = privacy_request.get_cached_custom_privacy_request_fields()
+        identity_data: Dict[str, Any] = privacy_request.get_identity_map()
+        custom_privacy_request_fields: Dict[str, Any] = (
+            privacy_request.get_custom_privacy_request_field_map()
+        )
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body

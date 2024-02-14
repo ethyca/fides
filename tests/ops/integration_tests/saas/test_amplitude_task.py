@@ -36,7 +36,7 @@ async def test_amplitude_access_request_task(
         id=f"test_amplitude_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": amplitude_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = amplitude_connection_config.get_saas_config().fides_key
     merged_graph = amplitude_dataset_config.get_graph()
@@ -194,7 +194,7 @@ async def test_amplitude_erasure_request_task(
         id=f"test_amplitude_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": amplitude_erasure_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = amplitude_connection_config.get_saas_config().fides_key
     merged_graph = amplitude_dataset_config.get_graph()

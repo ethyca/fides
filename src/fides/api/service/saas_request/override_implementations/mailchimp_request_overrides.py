@@ -66,7 +66,7 @@ def mailchimp_messages_access(
             response_data = pydash.get(response.json(), "conversation_messages")
             filtered_data = pydash.filter_(
                 response_data,
-                {"from_email": privacy_request.get_cached_identity_data().get("email")},
+                {"from_email": privacy_request.get_identity_map().get("email")},
             )
 
             # build up final result

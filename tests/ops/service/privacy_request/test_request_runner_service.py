@@ -299,9 +299,9 @@ def get_privacy_request_results(
         except AttributeError:
             pass
     privacy_request = PrivacyRequest.create(db=db, data=kwargs)
-    privacy_request.cache_identity(privacy_request_data["identity"])
+    privacy_request.persist_identity(db, privacy_request_data["identity"])
     if "encryption_key" in privacy_request_data:
-        privacy_request.cache_encryption(privacy_request_data["encryption_key"])
+        privacy_request.encryption_key = privacy_request_data["encryption_key"]
 
     erasure_rules: List[Rule] = policy.get_rules_for_action(
         action_type=ActionType.erasure
@@ -315,9 +315,9 @@ def get_privacy_request_results(
         unique_masking_strategies_by_name.add(strategy_name)
         masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
         if masking_strategy.secrets_required():
-            masking_secrets: List[
-                MaskingSecretCache
-            ] = masking_strategy.generate_secrets_for_cache()
+            masking_secrets: List[MaskingSecretCache] = (
+                masking_strategy.generate_secrets_for_cache()
+            )
             for masking_secret in masking_secrets:
                 privacy_request.cache_masking_secret(masking_secret)
 
@@ -2254,7 +2254,7 @@ class TestConsentEmailStep:
         run_privacy_request_task,
     ):
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_request_with_consent_policy.persist_identity(db, identity)
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
@@ -2280,7 +2280,7 @@ class TestConsentEmailStep:
         privacy_preference_history,
     ):
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_request_with_consent_policy.persist_identity(db, identity)
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
@@ -2406,7 +2406,7 @@ class TestConsentEmailStep:
         privacy_preference_history_us_ca_provide.save(db)
 
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_request_with_consent_policy.persist_identity(db, identity)
 
         run_privacy_request_task.delay(
             privacy_request_id=privacy_request_with_consent_policy.id,

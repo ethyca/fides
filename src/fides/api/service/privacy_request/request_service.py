@@ -5,14 +5,12 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from httpx import AsyncClient
-from loguru import logger
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.privacy_request import PrivacyRequestResponse
-from fides.api.schemas.redis_cache import Identity
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
@@ -41,18 +39,11 @@ def build_required_privacy_request_kwargs(
 
 def cache_data(
     privacy_request: PrivacyRequest,
-    identity: Identity,
-    encryption_key: Optional[str] = None,
     drp_request_body: Optional[DrpPrivacyRequestCreate] = None,
-    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
     masking_secrets: Optional[List[MaskingSecretCache]] = None,
 ) -> None:
     """Cache privacy request data"""
-    # Store identity and encryption key in the cache
-    logger.info("Caching identity for privacy request {}", privacy_request.id)
-    privacy_request.cache_identity(identity)
-    privacy_request.cache_custom_privacy_request_fields(custom_privacy_request_fields)
-    privacy_request.cache_encryption(encryption_key)  # handles None already
+    # Store masking secrets and DRP request body (for local troubleshooting)
     privacy_request.cache_masking_secrets(masking_secrets)
     if drp_request_body:
         privacy_request.cache_drp_request_body(drp_request_body)

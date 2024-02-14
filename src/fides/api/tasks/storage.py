@@ -40,7 +40,7 @@ def encrypt_access_request_results(
     if isinstance(data, bytes):
         data = data.decode(CONFIG.security.encoding)
 
-    encryption_key: Optional[str] = privacy_request.get_cached_encryption()
+    encryption_key: Optional[str] = privacy_request.encryption_key
     if not encryption_key:
         return data
 

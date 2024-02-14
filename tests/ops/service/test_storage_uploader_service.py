@@ -343,7 +343,7 @@ class TestWriteToInMemoryBuffer:
 
     @pytest.fixture(scope="function")
     def privacy_request_with_encryption_keys(self, privacy_request) -> Generator:
-        privacy_request.cache_encryption(self.key)
+        privacy_request.encryption = self.key
         return privacy_request
 
     @pytest.fixture(scope="function")
@@ -520,7 +520,7 @@ class TestEncryptResultsPackage:
 
     def test_key_and_nonce_set(self, privacy_request):
         key = "abvnfhrke8398398"
-        privacy_request.cache_encryption("abvnfhrke8398398")
+        privacy_request.encryption = key
         data = "test data"
         ret = encrypt_access_request_results(data, privacy_request=privacy_request)
         decrypted = decrypt_combined_nonce_and_message(

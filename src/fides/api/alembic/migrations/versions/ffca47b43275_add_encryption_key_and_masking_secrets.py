@@ -1,4 +1,4 @@
-"""add encryption and masking secrets to privacy request
+"""add encryption key and masking secrets to privacy request
 
 Revision ID: ffca47b43275
 Revises: 68cb26f3492d
@@ -21,7 +21,7 @@ def upgrade():
     op.add_column(
         "privacyrequest",
         sa.Column(
-            "encryption",
+            "encryption_key",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
             nullable=True,
         ),
@@ -38,4 +38,4 @@ def upgrade():
 
 def downgrade():
     op.drop_column("privacyrequest", "masking_secrets")
-    op.drop_column("privacyrequest", "encryption")
+    op.drop_column("privacyrequest", "encryption_key")

@@ -232,14 +232,14 @@ def upload_access_results(  # pylint: disable=R0912
         storage_destination = rule.get_storage_destination(session)
 
         target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
-        filtered_results: Dict[
-            str, List[Dict[str, Optional[Any]]]
-        ] = filter_data_categories(
-            access_result,
-            target_categories,
-            dataset_graph.data_category_field_mapping,
-            rule.key,
-            fides_connector_datasets,
+        filtered_results: Dict[str, List[Dict[str, Optional[Any]]]] = (
+            filter_data_categories(
+                access_result,
+                target_categories,
+                dataset_graph.data_category_field_mapping,
+                rule.key,
+                fides_connector_datasets,
+            )
         )
 
         filtered_results.update(
@@ -379,7 +379,7 @@ async def run_privacy_request(
             datasets = DatasetConfig.all(db=session)
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
             dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = privacy_request.get_cached_identity_data()
+            identity_data = privacy_request.get_identity_map()
             connection_configs = ConnectionConfig.all(db=session)
             fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
                 connection_configs

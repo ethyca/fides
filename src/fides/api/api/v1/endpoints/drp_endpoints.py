@@ -132,7 +132,6 @@ async def create_drp_privacy_request(
 
         cache_data(
             privacy_request=privacy_request,
-            identity=mapped_identity,
             drp_request_body=data,
             masking_secrets=masking_secrets,
         )

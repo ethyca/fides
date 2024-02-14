@@ -37,7 +37,7 @@ async def test_salesforce_access_request_task_by_email(
         id=f"test_salesforce_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": salesforce_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = salesforce_connection_config.get_saas_config().fides_key
     merged_graph = salesforce_dataset_config.get_graph()
@@ -387,7 +387,7 @@ async def test_salesforce_access_request_task_by_phone_number(
         id=f"test_salesforce_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"phone_number": salesforce_identity_phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = salesforce_connection_config.get_saas_config().fides_key
     merged_graph = salesforce_dataset_config.get_graph()
@@ -743,7 +743,7 @@ async def test_salesforce_erasure_request_task(
         id=f"test_salesforce_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": salesforce_erasure_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = salesforce_connection_config.get_saas_config().fides_key
     merged_graph = salesforce_dataset_config.get_graph()

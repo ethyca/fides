@@ -88,7 +88,7 @@ class FidesConnector(BaseConnector[FidesClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Execute access request and fetch access data from remote Fides"""
-        identity_data = privacy_request.get_cached_identity_data()
+        identity_data = privacy_request.get_identity_map()
         if not identity_data:
             raise FidesError(
                 f"No identity data found for privacy request {privacy_request.id}, cannot execute Fides connector!"
@@ -136,7 +136,7 @@ class FidesConnector(BaseConnector[FidesClient]):
         input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute an erasure request on remote fides"""
-        identity_data = privacy_request.get_cached_identity_data()
+        identity_data = privacy_request.get_identity_map()
         if not identity_data:
             raise FidesError(
                 f"No identity data found for privacy request {privacy_request.id}, cannot execute Fides connector!"

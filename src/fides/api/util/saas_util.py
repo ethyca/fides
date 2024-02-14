@@ -424,7 +424,7 @@ def get_identity(privacy_request: Optional[PrivacyRequest]) -> Optional[str]:
         return None
 
     identities: List[str] = []
-    identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
+    identity_data: Dict[str, Any] = privacy_request.get_identity_map()
     # filters out keys where associated value is None or empty str
     identities = list({k for k, v in identity_data.items() if v})
     if len(identities) > 1:

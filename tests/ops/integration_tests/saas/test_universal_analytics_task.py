@@ -47,7 +47,7 @@ async def test_universal_analytics_consent_request_task_old_workflow(
     )
 
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = "universal_analytics_instance"
 
@@ -107,7 +107,7 @@ async def test_universal_analytics_consent_prepared_requests_old_workflow(
     )
 
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     await graph_task.run_consent_request(
         privacy_request,
@@ -280,7 +280,7 @@ async def test_universal_analytics_consent_request_task_new_workflow(
     privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = "universal_analytics_instance"
 
@@ -372,7 +372,7 @@ async def test_universal_analytics_consent_request_task_new_errored_workflow(
     privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = "universal_analytics_instance"
 
@@ -439,7 +439,7 @@ async def test_universal_analytics_consent_prepared_requests_new_workflow(
     privacy_preference_history.save(db=db)
 
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     await graph_task.run_consent_request(
         privacy_request,

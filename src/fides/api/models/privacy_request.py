@@ -276,7 +276,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     )
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
-    encryption = Column(
+    encryption_key = Column(
         StringEncryptedType(
             type_in=String(),
             key=CONFIG.security.app_encryption_key,
@@ -352,44 +352,6 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             provided_identity.delete(db=db)
         super().delete(db=db)
 
-    def cache_identity(self, identity: Identity) -> None:
-        """Sets the identity's values at their specific locations in the Fides app cache"""
-        cache: FidesopsRedis = get_cache()
-        identity_dict: Dict[str, Any] = dict(identity)
-        for key, value in identity_dict.items():
-            if value is not None:
-                cache.set_with_autoexpire(
-                    get_identity_cache_key(self.id, key),
-                    value,
-                )
-
-    def cache_custom_privacy_request_fields(
-        self,
-        custom_privacy_request_fields: Optional[
-            Dict[str, CustomPrivacyRequestFieldSchema]
-        ] = None,
-    ) -> None:
-        """Sets each of the custom privacy request fields values under their own key in the cache"""
-        if not custom_privacy_request_fields:
-            return
-
-        if not CONFIG.execution.allow_custom_privacy_request_field_collection:
-            return
-
-        if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
-            cache: FidesopsRedis = get_cache()
-            for key, item in custom_privacy_request_fields.items():
-                if item is not None:
-                    cache.set_with_autoexpire(
-                        get_custom_privacy_request_field_cache_key(self.id, key),
-                        item.value,
-                    )
-        else:
-            logger.info(
-                "Custom fields from privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution' is set to false and prevents their usage.",
-                self.id,
-            )
-
     def persist_identity(self, db: Session, identity: Identity) -> None:
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
@@ -409,6 +371,23 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                         "hashed_value": hashed_value,
                     },
                 )
+
+    def get_persisted_identity(self) -> Identity:
+        """
+        Retrieves persisted identity fields from the DB.
+        """
+        schema = Identity()
+        for field in self.provided_identities:  # type: ignore[attr-defined]
+            setattr(
+                schema,
+                field.field_name.value,
+                field.encrypted_value["value"],
+            )
+        return schema
+
+    def get_identity_map(self) -> Dict[str, Any]:
+        """Retrieves any identity data pertaining to this request from the cache"""
+        return self.get_persisted_identity().dict(exclude_none=True)
 
     def persist_custom_privacy_request_fields(
         self,
@@ -438,27 +417,21 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 self.id,
             )
 
-    def get_persisted_identity(self) -> Identity:
-        """
-        Retrieves persisted identity fields from the DB.
-        """
-        schema = Identity()
-        for field in self.provided_identities:  # type: ignore[attr-defined]
-            setattr(
-                schema,
-                field.field_name.value,
-                field.encrypted_value["value"],
-            )
-        return schema
-
-    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
-        return {
-            field.field_name: {
-                "label": field.field_label,
-                "value": field.encrypted_value["value"],
+    def get_custom_privacy_request_field_map(
+        self,
+    ) -> Dict[str, CustomPrivacyRequestField]:
+        if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
+            return {
+                field.field_name: {
+                    "label": field.field_label,
+                    "value": field.encrypted_value["value"],
+                }
+                for field in self.custom_fields  # type: ignore[attr-defined]
             }
-            for field in self.custom_fields  # type: ignore[attr-defined]
-        }
+        logger.info(
+            "Custom fields provided in privacy request, but config setting 'CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution' is set to false and prevents their usage."
+        )
+        return {}
 
     def verify_identity(self, db: Session, provided_code: str) -> "PrivacyRequest":
         """Verify the identification code supplied by the user
@@ -514,31 +487,6 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                         value,
                     )
 
-    def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
-        """Sets the encryption key in the Fides app cache if provided"""
-        if not encryption_key:
-            return
-
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            get_encryption_cache_key(self.id, "key"),
-            encryption_key,
-        )
-
-    def get_cached_encryption(self) -> Optional[str]:
-        cache: FidesopsRedis = get_cache()
-        encryption = cache.get(
-            get_encryption_cache_key(
-                privacy_request_id=self.id,
-                encryption_attr="key",
-            )
-        )
-
-        if not encryption:
-            encryption = self.encryption
-
-        return encryption
-
     def cache_masking_secrets(
         self, masking_secrets: Optional[List[MaskingSecretCache]] = None
     ) -> None:
@@ -575,39 +523,6 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     for secret in self.masking_secrets or []
                 ]
             )
-
-    def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache"""
-        prefix = f"id-{self.id}-identity-*"
-        cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
-
-        if not keys:
-            identity = self.get_persisted_identity()
-            self.cache_identity(identity)
-            keys = cache.keys(prefix)
-
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
-
-    def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
-        """Retrieves any custom fields pertaining to this request from the cache"""
-        prefix = f"id-{self.id}-custom-privacy-request-field-*"
-        cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
-
-        if not keys:
-            custom_privacy_request_fields = (
-                self.get_persisted_custom_privacy_request_fields()
-            )
-            self.cache_custom_privacy_request_fields(
-                {
-                    key: CustomPrivacyRequestFieldSchema(**value)
-                    for key, value in custom_privacy_request_fields.items()
-                }
-            )
-            keys = cache.keys(prefix)
-
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
 
     def get_results(self) -> Dict[str, Any]:
         """Retrieves all cached identity data associated with this Privacy Request"""
@@ -843,10 +758,10 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         This is for use by the *manual* connector which is integrated with the graph.
         """
         cache: FidesopsRedis = get_cache()
-        cached_results: Optional[
-            Dict[str, Optional[List[Row]]]
-        ] = cache.get_encoded_objects_by_prefix(
-            f"MANUAL_INPUT__{self.id}__{collection.value}"
+        cached_results: Optional[Dict[str, Optional[List[Row]]]] = (
+            cache.get_encoded_objects_by_prefix(
+                f"MANUAL_INPUT__{self.id}__{collection.value}"
+            )
         )
         return list(cached_results.values())[0] if cached_results else None
 
@@ -884,9 +799,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     def get_cached_access_graph(self) -> Optional[GraphRepr]:
         """Fetch the graph built for the access request"""
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[GraphRepr]]
-        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
+        value_dict: Optional[Dict[str, Optional[GraphRepr]]] = (
+            cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
+        )
         return list(value_dict.values())[0] if value_dict else None
 
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
@@ -902,9 +817,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         Fetch the collection -> data use map cached for this privacy request
         """
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[Dict[str, Set[str]]]]
-        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        value_dict: Optional[Dict[str, Optional[Dict[str, Set[str]]]]] = (
+            cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        )
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(
@@ -927,7 +842,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             privacy_request_status=self.status,
             direction=webhook.direction.value,  # type: ignore
             callback_type=webhook.prefix,
-            identity=self.get_cached_identity_data(),
+            identity=self.get_identity_map(),
             policy_action=policy_action,
         )
 
@@ -964,7 +879,8 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             )
             # Don't persist derived identities because they aren't provided directly
             # by the end user
-            self.cache_identity(response_body.derived_identity)
+            db = Session.object_session(self)
+            self.persist_derived_identity(db, response_body.derived_identity)
 
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
@@ -1049,10 +965,10 @@ def _get_manual_access_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[
-        Optional[Dict[str, Any]]
-    ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    cached_results: Optional[Optional[Dict[str, Any]]] = (
+        cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        )
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -1065,10 +981,10 @@ def _get_manual_erasure_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[
-        Optional[Dict[str, Any]]
-    ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    cached_results: Optional[Optional[Dict[str, Any]]] = (
+        cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        )
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -1288,7 +1204,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
     privacy_request = relationship(PrivacyRequest)
 
-    def get_cached_identity_data(self) -> Dict[str, Any]:
+    def get_identity_map(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
@@ -1338,7 +1254,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
                 self.id,
             )
 
-    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
+    def get_custom_privacy_request_field_map(self) -> Dict[str, Any]:
         return {
             field.field_name: {
                 "label": field.field_label,

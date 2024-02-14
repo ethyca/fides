@@ -37,7 +37,7 @@ async def test_delighted_access_request_task(
         id=f"test_delighted_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": delighted_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = delighted_connection_config.get_saas_config().fides_key
     merged_graph = delighted_dataset_config.get_graph()
@@ -116,7 +116,7 @@ async def test_delighted_erasure_request_task(
         id=f"test_delighted_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": delighted_erasure_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = delighted_connection_config.get_saas_config().fides_key
     merged_graph = delighted_dataset_config.get_graph()

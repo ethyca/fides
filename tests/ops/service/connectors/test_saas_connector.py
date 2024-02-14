@@ -180,7 +180,7 @@ class TestSaasConnector:
 
         # this request requires the email identity in the filter postprocessor so we include it here
         privacy_request = PrivacyRequest(id="123")
-        privacy_request.cache_identity(Identity(email="test@example.com"))
+        privacy_request.persist_identity(db, identity(email="test@example.com"))
 
         assert connector.retrieve_data(
             traversal_node,
@@ -321,9 +321,7 @@ class TestSaasConnector:
         )
 
         #  Mock adding a new placeholder to the request body for which we don't have a value
-        connector.endpoints[
-            "data_management"
-        ].requests.update.body = (
+        connector.endpoints["data_management"].requests.update.body = (
             '{\n  "unique_id": "<privacy_request_id>", "email": "<test_val>"\n}\n'
         )
 
@@ -409,14 +407,14 @@ class TestConsentRequests:
             mailchimp_transactional_connection_config
         )
 
-        opt_in_request: List[
-            SaaSRequest
-        ] = connector._get_consent_requests_by_preference(opt_in=True)
+        opt_in_request: List[SaaSRequest] = (
+            connector._get_consent_requests_by_preference(opt_in=True)
+        )
         assert opt_in_request[0].path == "/allowlists/add"
 
-        opt_out_request: List[
-            SaaSRequest
-        ] = connector._get_consent_requests_by_preference(opt_in=False)
+        opt_out_request: List[SaaSRequest] = (
+            connector._get_consent_requests_by_preference(opt_in=False)
+        )
 
         assert opt_out_request[0].path == "/allowlists/delete"
         assert opt_out_request[1].path == "/rejects/add"

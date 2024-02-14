@@ -34,7 +34,7 @@ CONFIG = get_config()
 
 def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
     privacy_request.consent_preferences = [
         Consent(data_use="marketing.advertising", opt_in=False).dict()
     ]
@@ -45,7 +45,7 @@ def cache_identity_and_privacy_preferences(
     privacy_request, db, reader_id, privacy_preference_history
 ):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db)
 
@@ -158,12 +158,13 @@ class TestConsentEmailBatchSend:
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_send_consent_email_no_consent_or_privacy_preferences_saved(
         self,
+        db,
         requeue_privacy_requests,
         send_single_consent_email,
         privacy_request_awaiting_consent_email_send,
     ) -> None:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_awaiting_consent_email_send.cache_identity(identity)
+        privacy_request_awaiting_consent_email_send.persist_identity(db, identity)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
@@ -187,7 +188,7 @@ class TestConsentEmailBatchSend:
                 db=db, service_type=CONFIG.notifications.notification_service_type
             )
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_awaiting_consent_email_send.cache_identity(identity)
+        privacy_request_awaiting_consent_email_send.persist_identity(db, identity)
         privacy_request_awaiting_consent_email_send.consent_preferences = [
             Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
@@ -232,7 +233,7 @@ class TestConsentEmailBatchSend:
                 db=db, service_type=CONFIG.notifications.notification_service_type
             )
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_awaiting_consent_email_send.cache_identity(identity)
+        privacy_request_awaiting_consent_email_send.persist_identity(db, identity)
         # This preference matches on data use
         privacy_preference_history.privacy_request_id = (
             privacy_request_awaiting_consent_email_send.id
@@ -953,7 +954,7 @@ class TestErasureEmailBatchSend:
                 db=db, service_type=CONFIG.notifications.notification_service_type
             )
         identity = Identity(email="customer_1#@example.com")
-        privacy_request_awaiting_erasure_email_send.cache_identity(identity)
+        privacy_request_awaiting_erasure_email_send.persist_identity(db, identity)
         privacy_request_awaiting_erasure_email_send.save(db)
 
         exit_state = send_email_batch.delay().get()

@@ -37,7 +37,7 @@ async def test_domo_access_request_task(
     )
     identity_kwargs = {"email": domo_identity_email}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = domo_connection_config.get_saas_config().fides_key
     merged_graph = domo_dataset_config.get_graph()
@@ -93,7 +93,7 @@ async def test_domo_erasure_request_task(
     )
     identity_kwargs = {"email": domo_erasure_identity_email}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = domo_connection_config.get_saas_config().fides_key
     merged_graph = domo_dataset_config.get_graph()

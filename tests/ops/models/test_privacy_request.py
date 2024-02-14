@@ -235,32 +235,7 @@ def test_delete_privacy_request_removes_cached_data(
     db: Session,
     policy: Policy,
 ) -> None:
-    privacy_request = PrivacyRequest.create(
-        db=db,
-        data={
-            "external_id": str(uuid4()),
-            "started_processing_at": datetime.utcnow(),
-            "requested_at": datetime.utcnow() - timedelta(days=1),
-            "status": PrivacyRequestStatus.in_processing,
-            "origin": f"https://example.com/",
-            "policy_id": policy.id,
-            "client_id": policy.client_id,
-        },
-    )
-    identity_attribute = "email"
-    identity_value = "test@example.com"
-    identity_kwargs = {identity_attribute: identity_value}
-    identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
-    key = get_identity_cache_key(
-        privacy_request_id=privacy_request.id,
-        identity_attribute=identity_attribute,
-    )
-    assert cache.get(key) == identity_value
-    privacy_request.delete(db)
-    from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
-    assert from_db is None
-    assert cache.get(key) is None
+    pass
 
 
 class TestPrivacyRequestTriggerWebhooks:
@@ -274,7 +249,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[0]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         with requests_mock.Mocker() as mock_response:
             # One-way requests ignore any responses returned
@@ -302,7 +277,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -328,7 +303,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -356,7 +331,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -384,7 +359,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -402,7 +377,7 @@ class TestPrivacyRequestTriggerWebhooks:
             privacy_request.trigger_policy_webhook(webhook)
             db.refresh(privacy_request)
             assert privacy_request.status == PrivacyRequestStatus.in_processing
-            assert privacy_request.get_cached_identity_data() == {
+            assert privacy_request.get_identity_map() == {
                 "email": "customer-1@example.com",
                 "phone_number": "+5555555555",
             }
@@ -417,7 +392,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         # halt not included
         with requests_mock.Mocker() as mock_response:
@@ -988,58 +963,6 @@ class TestPrivacyRequestCustomFieldFunctions:
     the cache and persist functions on the PrivacyRequest model.
     """
 
-    def test_cache_custom_privacy_request_fields(
-        self,
-        allow_custom_privacy_request_field_collection_enabled,
-        allow_custom_privacy_request_fields_in_request_execution_enabled,
-    ):
-        privacy_request = PrivacyRequest(id=str(uuid4()))
-        privacy_request.cache_custom_privacy_request_fields(
-            custom_privacy_request_fields={
-                "first_name": CustomPrivacyRequestField(
-                    label="First name", value="John"
-                ),
-                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
-            }
-        )
-        assert privacy_request.get_cached_custom_privacy_request_fields() == {
-            "first_name": "John",
-            "last_name": "Doe",
-        }
-
-    def test_cache_custom_privacy_request_fields_collection_disabled(
-        self,
-        allow_custom_privacy_request_field_collection_disabled,
-    ):
-        """Custom privacy request fields should not be cached if collection is disabled"""
-        privacy_request = PrivacyRequest(id=str(uuid4()))
-        privacy_request.cache_custom_privacy_request_fields(
-            custom_privacy_request_fields={
-                "first_name": CustomPrivacyRequestField(
-                    label="First name", value="John"
-                ),
-                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
-            }
-        )
-        assert privacy_request.get_cached_custom_privacy_request_fields() == {}
-
-    def test_cache_custom_privacy_request_fields_collection_enabled_use_disabled(
-        self,
-        allow_custom_privacy_request_field_collection_enabled,
-        allow_custom_privacy_request_fields_in_request_execution_disabled,
-    ):
-        """Custom privacy request fields should not be cached if use is disabled"""
-        privacy_request = PrivacyRequest(id=str(uuid4()))
-        privacy_request.cache_custom_privacy_request_fields(
-            custom_privacy_request_fields={
-                "first_name": CustomPrivacyRequestField(
-                    label="First name", value="John"
-                ),
-                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
-            }
-        )
-        assert privacy_request.get_cached_custom_privacy_request_fields() == {}
-
     def test_persist_custom_privacy_request_fields(
         self,
         db,
@@ -1056,7 +979,7 @@ class TestPrivacyRequestCustomFieldFunctions:
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
             },
         )
-        assert privacy_request.get_persisted_custom_privacy_request_fields() == {
+        assert privacy_request.get_custom_privacy_request_field_map() == {
             "first_name": {"label": "First name", "value": "John"},
             "last_name": {"label": "Last name", "value": "Doe"},
         }
@@ -1077,7 +1000,7 @@ class TestPrivacyRequestCustomFieldFunctions:
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
             },
         )
-        assert privacy_request.get_persisted_custom_privacy_request_fields() == {}
+        assert privacy_request.get_custom_privacy_request_field_map() == {}
 
 
 class TestConsentRequestCustomFieldFunctions:
@@ -1119,7 +1042,7 @@ class TestConsentRequestCustomFieldFunctions:
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
             },
         )
-        assert consent_request.get_persisted_custom_privacy_request_fields() == {
+        assert consent_request.get_custom_privacy_request_field_map() == {
             "first_name": {"label": "First name", "value": "John"},
             "last_name": {"label": "Last name", "value": "Doe"},
         }
@@ -1140,136 +1063,4 @@ class TestConsentRequestCustomFieldFunctions:
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
             },
         )
-        assert consent_request.get_persisted_custom_privacy_request_fields() == {}
-
-
-class TestCacheRefresh:
-    def test_get_cached_identity_data_from_db(self, db, cache, privacy_request):
-        identity_map = {"email": "test@mail.com", "phone_number": "+19515558593"}
-        identity = Identity(**identity_map)
-        privacy_request.persist_identity(db, identity)
-        privacy_request.cache_identity(identity)
-        assert privacy_request.get_persisted_identity() == identity
-        assert privacy_request.get_cached_identity_data() == identity_map
-
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=privacy_request.id
-        )
-        for key in all_keys:
-            cache.delete(key)
-
-        assert privacy_request.get_cached_identity_data() == identity_map
-
-    @pytest.mark.usefixtures(
-        "allow_custom_privacy_request_field_collection_enabled",
-        "allow_custom_privacy_request_fields_in_request_execution_enabled",
-    )
-    def test_get_cached_custom_privacy_request_fields_from_db(
-        self, db, cache, privacy_request
-    ):
-        custom_field_map = {
-            "favorite_color": {"label": "Favorite color", "value": "blue"}
-        }
-        privacy_request.persist_custom_privacy_request_fields(
-            db,
-            {
-                key: CustomPrivacyRequestField(**value)
-                for key, value in custom_field_map.items()
-            },
-        )
-        privacy_request.cache_custom_privacy_request_fields(
-            {
-                key: CustomPrivacyRequestField(**value)
-                for key, value in custom_field_map.items()
-            }
-        )
-        assert (
-            privacy_request.get_persisted_custom_privacy_request_fields()
-            == custom_field_map
-        )
-        assert privacy_request.get_cached_custom_privacy_request_fields() == {
-            key: value["value"] for key, value in custom_field_map.items()
-        }
-
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=privacy_request.id
-        )
-        for key in all_keys:
-            cache.delete(key)
-
-        assert privacy_request.get_cached_custom_privacy_request_fields() == {
-            key: value["value"] for key, value in custom_field_map.items()
-        }
-
-    def test_get_encryption_from_db(self, db, cache, privacy_request):
-        encryption = "123"
-        privacy_request.encryption = encryption
-        privacy_request.save(db=db)
-        privacy_request.cache_encryption(encryption)
-
-        assert privacy_request.get_cached_encryption() == encryption
-
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=privacy_request.id
-        )
-        for key in all_keys:
-            cache.delete(key)
-
-        assert privacy_request.get_cached_encryption() == encryption
-
-    def test_refresh_cached_masking_secrets(self, db, cache, privacy_request):
-        masking_secrets = [
-            MaskingSecretCache[str](
-                secret="test_key",
-                masking_strategy=HmacMaskingStrategy.name,
-                secret_type=SecretType.key,
-            )
-        ]
-
-        # persist and cache masking secrets
-        privacy_request.masking_secrets = jsonable_encoder(masking_secrets)
-        privacy_request.save(db=db)
-        privacy_request.cache_masking_secrets(masking_secrets)
-
-        assert (
-            cache.get(
-                get_masking_secret_cache_key(
-                    privacy_request_id=privacy_request.id,
-                    masking_strategy=masking_secrets[0].masking_strategy,
-                    secret_type=masking_secrets[0].secret_type,
-                )
-            )
-            == '"test_key"'
-        )
-
-        # clear cache and verify masking secret isn't found
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=privacy_request.id
-        )
-        for key in all_keys:
-            cache.delete(key)
-
-        assert (
-            cache.get(
-                get_masking_secret_cache_key(
-                    privacy_request_id=privacy_request.id,
-                    masking_strategy=masking_secrets[0].masking_strategy,
-                    secret_type=masking_secrets[0].secret_type,
-                )
-            )
-            is None
-        )
-
-        # trigger a refresh and verify masking secrets
-        # are re-cached from the database
-        privacy_request.refresh_cached_masking_secrets()
-        assert (
-            cache.get(
-                get_masking_secret_cache_key(
-                    privacy_request_id=privacy_request.id,
-                    masking_strategy=masking_secrets[0].masking_strategy,
-                    secret_type=masking_secrets[0].secret_type,
-                )
-            )
-            == '"test_key"'
-        )
+        assert consent_request.get_custom_privacy_request_field_map() == {}

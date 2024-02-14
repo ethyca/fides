@@ -175,9 +175,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
         #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
         read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
-        delete_request: Optional[
-            SaaSRequest
-        ] = query_config.get_erasure_request_by_action("delete")
+        delete_request: Optional[SaaSRequest] = (
+            query_config.get_erasure_request_by_action("delete")
+        )
 
         if not read_requests:
             # if a delete request is specified for this endpoint without a read request
@@ -195,7 +195,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )
 
         custom_privacy_request_fields = (
-            privacy_request.get_cached_custom_privacy_request_fields()
+            privacy_request.get_custom_privacy_request_field_map()
         )
         if custom_privacy_request_fields:
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
@@ -232,7 +232,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 while next_request:
                     processed_rows, next_request = self.execute_prepared_request(  # type: ignore
                         next_request,
-                        privacy_request.get_cached_identity_data(),
+                        privacy_request.get_identity_map(),
                         read_request,
                     )
                     rows.extend(processed_rows)
@@ -413,7 +413,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # post-process access request response specific to masking request needs
         rows = self.process_response_data(
             rows,
-            privacy_request.get_cached_identity_data(),
+            privacy_request.get_identity_map(),
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 
@@ -489,9 +489,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
             )
 
-        matching_consent_requests: List[
-            SaaSRequest
-        ] = self._get_consent_requests_by_preference(should_opt_in)
+        matching_consent_requests: List[SaaSRequest] = (
+            self._get_consent_requests_by_preference(should_opt_in)
+        )
 
         query_config.action = (
             "opt_in" if should_opt_in else "opt_out"
@@ -600,10 +600,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType.READ
+        override_function: Callable[..., Union[List[Row], int]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.READ
+            )
         )
         try:
             return override_function(
@@ -640,10 +640,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType(query_config.action)
+        override_function: Callable[..., Union[List[Row], int]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType(query_config.action)
+            )
         )
         try:
             # if using a saas override, we still need to use the core framework
@@ -672,9 +672,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
-        consent_requests: Optional[
-            ConsentRequestMap
-        ] = self.saas_config.consent_requests
+        consent_requests: Optional[ConsentRequestMap] = (
+            self.saas_config.consent_requests
+        )
 
         if not consent_requests:
             return []

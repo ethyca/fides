@@ -46,7 +46,7 @@ async def test_friendbuy_access_request_task(
     identity_value = friendbuy_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = friendbuy_connection_config.get_saas_config().fides_key
     merged_graph = friendbuy_dataset_config.get_graph()
@@ -104,7 +104,7 @@ async def test_friendbuy_erasure_request_task(
     identity_value = friendbuy_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = friendbuy_connection_config.get_saas_config().fides_key
     merged_graph = friendbuy_dataset_config.get_graph()
