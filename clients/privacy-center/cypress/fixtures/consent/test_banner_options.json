@@ -36,6 +36,7 @@
           "experience_config_history_id": "2345324"
         }
       ],
+      "dismissable": true,
       "allow_language_selection": false,
       "disabled": false,
       "id": "2348571y34",

@@ -11,6 +11,8 @@
         "reject_all_fides_mobile_data": null
       },
       "experience_config": {
+        "language": "en",
+        "dismissable": true,
         "accept_button_label": "Opt in to all",
         "acknowledge_button_label": "OK",
         "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",

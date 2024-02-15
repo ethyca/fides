@@ -21,6 +21,8 @@
             "experience_config_history_id": "pri_28b66138-e92e-43b7-b2aa-8507cf5fb900"
           }
         ],
+        "language": "en",
+        "dismissable": true,
         "allow_language_selection": false,
         "disabled": false,
         "id": "pri_a85e9d28-a848-4ac8-8321-33bc0400f57a",
