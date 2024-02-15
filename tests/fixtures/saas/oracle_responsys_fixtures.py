@@ -40,15 +40,6 @@ def oracle_responsys_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-@pytest.fixture
-def oracle_responsys_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def oracle_responsys_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
 @pytest.fixture(scope="function")
 def oracle_responsys_token(oracle_responsys_secrets) -> Generator:
     secrets = oracle_responsys_secrets
