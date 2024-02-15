@@ -72,7 +72,8 @@ def profile_list_recipients_read(
             )
         )
         response_data = pydash.get(members_response.json(), 'recordData')
-        serialized_data = [dict(zip(response_data["fieldNames"],records)) for records in response_data["records"]]
+        normalized_field_names = [field.lower() for field in response_data["fieldNames"]]
+        serialized_data = [dict(zip(normalized_field_names, records)) for records in response_data["records"]]
 
         results.append(serialized_data)
     return results
@@ -86,23 +87,28 @@ def profile_list_recipients_delete(
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
 ) -> int:
+    """
+    Deletes data from each profile list. Upon deletion from the list, PET data is also deleted. 
+    """
     rows_deleted = 0
     # each delete_params dict correspond to a record that needs to be deleted
     for row_param_values in param_values_per_row:
         # get params to be used in delete request
-        user_email = row_param_values.get("email")
+        list_id = row_param_values.get("profile_list_id")
+        responsys_id = row_param_values.get("riid_")
 
-        # Since we get email like this ['<email>'], we convert it into <email> to proceed
-        user_email = str(user_email)[2:-2]
-        # check if the privacy_request targeted emails for erasure,
-        # if so rewrite with a format that can be accepted by friendbuy_nextgen
-        # regardless of the masking strategy in use
+        body = {
+            "fieldList": ["all"],
+            "ids": responsys_id,
+            "queryAttribute": "r" # query by Responsys id (RIID_)
+        }
 
         client.send(
             SaaSRequestParams(
-                method=HTTPMethod.DELETE,
-                path="/v1/user-data",
-                query_params={"email": user_email},
+                method=HTTPMethod.POST,
+                path=f"/rest/api/v1.3/lists/{list_id}/members",
+                query_params={"action": "delete"},
+                body=body
             )
         )
 

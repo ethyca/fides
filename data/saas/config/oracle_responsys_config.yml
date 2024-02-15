@@ -58,15 +58,15 @@ saas_config:
               - name: phone_number
                 identity: phone_number
         delete:
-          request_override: profile_list_recipient_delete
-          param_values:
-            - name: profile_list_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: profile_list.name
-                  direction: from
-            - name: recipient_id
-              references:
-                - responsys_id
-            - name: email
-              identity: email
+          - request_override: profile_list_recipient_delete
+            param_values:
+              - name: profile_list_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: profile_list.name
+                    direction: from
+              - name: responsys_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: profile_list_recipient.riid_
+                    direction: from
