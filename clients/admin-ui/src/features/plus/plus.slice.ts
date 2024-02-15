@@ -11,6 +11,8 @@ import {
 import { CreateSaasConnectionConfig } from "~/features/datastore-connections";
 import { CreateSaasConnectionConfigResponse } from "~/features/datastore-connections/types";
 import { selectSystemsToClassify } from "~/features/system";
+import { Page_Property_ } from "~/pages/inventory/InventoryTable";
+import { Property } from "~/pages/inventory/types";
 import {
   AllowList,
   AllowListUpdate,
@@ -448,6 +450,29 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["TCF Purpose Override"],
     }),
+    getProperties: build.query<
+      Page_Property_,
+      { pageIndex: number; pageSize: number; search?: string }
+    >({
+      queryFn: ({ pageIndex, pageSize, search }) => {
+        const properties: Page_Property_ = {
+          items: [
+            {
+              name: "Property1",
+              type: "Type1",
+              domains: ["Domain1", "Domain2"],
+            },
+          ],
+          total: 1,
+          page: 1,
+          size: 25,
+          pages: 1,
+        };
+
+        // Return the static list
+        return { data: properties };
+      },
+    }),
   }),
 });
 
@@ -487,6 +512,7 @@ export const {
   useCreatePlusSaasConnectionConfigMutation,
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
+  useGetPropertiesQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

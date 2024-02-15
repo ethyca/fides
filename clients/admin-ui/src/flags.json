@@ -41,5 +41,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "dataInventory": {
+    "description": "Page to view data inventory",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
