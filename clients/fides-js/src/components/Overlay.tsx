@@ -14,6 +14,7 @@ import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
 import ConsentContent from "./ConsentContent";
+import { showModal as defaultShowModal } from "~/fides";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ const Overlay: FunctionComponent<Props> = ({
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
+  const [isModalLinkFound, setIsModalLinkFound] = useState(false);
 
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
@@ -100,7 +102,16 @@ const Overlay: FunctionComponent<Props> = ({
     return () => clearTimeout(delayBanner);
   }, [setBannerIsOpen]);
 
+  const showModal = () => {
+    if (!isModalLinkFound) {
+      document.body.classList.add("fides-modal-link-shown");
+    }
+    setBannerIsOpen(false);
+    handleOpenModal();
+  };
+
   useEffect(() => {
+    window.Fides.showModal = showModal;
     // use a delay to ensure that link exists in the DOM
     const delayModalLinkBinding = setTimeout(() => {
       const modalLinkId = options.modalLinkId || "fides-modal-link";
@@ -110,19 +121,20 @@ const Overlay: FunctionComponent<Props> = ({
           options.debug,
           "Modal link element found, updating it to show and trigger modal on click."
         );
+        setIsModalLinkFound(true);
         // Update modal link to trigger modal on click
         const modalLink = modalLinkEl;
-        modalLink.onclick = () => {
-          setBannerIsOpen(false);
-          handleOpenModal();
-        };
+        modalLink.onclick = window.Fides.showModal;
         // Update to show the pre-existing modal link in the DOM
         modalLink.classList.add("fides-modal-link-shown");
       } else {
         debugLog(options.debug, "Modal link element not found.");
       }
     }, delayModalLinkMilliseconds);
-    return () => clearTimeout(delayModalLinkBinding);
+    return () => {
+      clearTimeout(delayModalLinkBinding);
+      window.Fides.showModal = defaultShowModal;
+    };
   }, [options.modalLinkId, options.debug, handleOpenModal]);
 
   const showBanner = useMemo(
