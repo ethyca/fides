@@ -1,7 +1,7 @@
 import { setupI18n } from "~/lib/i18n";
 import type { I18n, Messages } from "~/lib/i18n";
 
-describe("i18n", () => {
+describe("i18n-utils", () => {
   describe("module exports", () => {
     it("exports a valid i18n object", () => {
       // NOTE: using require() here to avoid importing i18n and accidentally using it!
