@@ -1,6 +1,8 @@
 from typing import Any, Dict, List
 
+import pydash
 
+from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -11,29 +13,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
-
-@register("profile_lists_read", [SaaSRequestType.READ])
-def profile_list_read(
-    client: AuthenticatedClient,
-    node: TraversalNode,
-    policy: Policy,
-    privacy_request: PrivacyRequest,
-    input_data: Dict[str, List[Any]],
-    secrets: Dict[str, Any],
-) -> List[Row]:
-    """
-        Retrieve a list of profile lists to be used in downstream requests.
-    """
-
-    response = client.send(
-        SaaSRequestParams(
-            method=HTTPMethod.GET,
-            path="/rest/api/v1.3/lists",
-        )
-    )
-
-    lists = [list['name'] for list in response.json()]
-    return [] if lists is None else lists
+from fides.api.util.saas_util import get_identity
 
 @register("profile_list_recipients_read", [SaaSRequestType.READ])
 def profile_list_recipients_read(
@@ -45,15 +25,56 @@ def profile_list_recipients_read(
     secrets: Dict[str, Any],
 ) -> List[Row]:
     """
-    Convert the statsig_user_ids from the input_data into rows. We do this because erasure
-    requests only receive input data that the access request received, or data returned from
-    the access request. Erasure requests can't specify data in other datasets as dependencies.
+    Retrieve data from each profile list. 
+
+    The members endpoint returns data in two separate arrays: one for the keys and one for the values for each result.
+    {
+    "recordData": {
+        "fieldNames": [
+        <list of field names>
+        ],
+        "records": [
+            [
+                <list of field values, corresponding to the fieldNames>
+            ]
+        ]
+    }
     """
 
-    statsig_user_ids = input_data.get("user_id", [])
+    list_ids = input_data.get("profile_list_id", [])
     results = []
-    for statsig_user_id in statsig_user_ids:
-        results.append({"id": statsig_user_id})
+    
+    identity = get_identity(privacy_request)
+    if identity == "email":
+        query_ids = input_data.get("email", [])
+        query_attribute = "e"
+    elif identity == "phone_number":
+        query_ids = input_data.get("phone_number", [])
+        query_attribute = "m"
+    else:
+        raise FidesopsException(
+            "Unsupported identity type for Oracle Responsys connector. Currently only `email` and `phone_number` are supported"
+        )
+    
+    body = {
+        "fieldList": ["all"],
+        "ids": query_ids,
+        "queryAttribute": query_attribute
+    }
+
+    for list_id in list_ids:
+        members_response = client.send(
+            SaaSRequestParams(
+                method=HTTPMethod.POST,
+                path=f"/rest/api/v1.3/lists/{list_id}/members",
+                query_params={"action": "get"},
+                body=body
+            )
+        )
+        response_data = pydash.get(members_response.json(), 'recordData')
+        serialized_data = [dict(zip(response_data["fieldNames"],records)) for records in response_data["records"]]
+
+        results.append(serialized_data)
     return results
 
 
