@@ -84,6 +84,9 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         enabledPrivacyNoticeKeys
       );
 
+      console.log("served notice");
+      console.log(JSON.stringify(servedNotice));
+
       updateConsentPreferences({
         consentPreferencesToSave,
         experience,

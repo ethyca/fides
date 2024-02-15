@@ -2,106 +2,113 @@
   "items": [
     {
       "region": "us_ca",
-      "component": "privacy_center",
       "experience_config": {
-        "accept_button_label": "sounds good",
-        "acknowledge_button_label": "ok",
-        "banner_enabled": "always_enabled",
-        "description": "Manage all of your notices here.",
+        "translations": [
+          {
+            "language": "en",
+            "accept_button_label": "sounds good",
+            "acknowledge_button_label": "ok",
+            "banner_description": "Manage all of your notices here.",
+            "banner_title": "Privacy notice driven",
+            "description": "Manage all of your notices here.",
+            "is_default": true,
+            "privacy_policy_link_label": "Privacy policy",
+            "privacy_policy_url": "https://privacy.ethyca.com/",
+            "privacy_preferences_link_label": "Manage preferences",
+            "reject_button_label": "nah",
+            "save_button_label": "Save pls",
+            "title": "Privacy notice driven",
+            "experience_config_history_id": "pri_28b66138-e92e-43b7-b2aa-8507cf5fb900"
+          }
+        ],
+        "allow_language_selection": false,
         "disabled": false,
-        "is_default": true,
-        "privacy_policy_link_label": "Privacy policy",
-        "privacy_policy_url": "https://privacy.ethyca.com/",
-        "privacy_preferences_link_label": "Manage preferences",
-        "reject_button_label": "nah",
-        "save_button_label": "Save pls",
-        "title": "Privacy notice driven",
         "id": "pri_a85e9d28-a848-4ac8-8321-33bc0400f57a",
         "component": "privacy_center",
-        "experience_config_history_id": "pri_28b66138-e92e-43b7-b2aa-8507cf5fb900",
-        "version": 2.0,
         "created_at": "2023-06-02T15:23:19.869399+00:00",
-        "updated_at": "2023-06-02T15:28:28.452058+00:00",
-        "regions": ["us_ca"]
+        "updated_at": "2023-06-02T15:28:28.452058+00:00"
       },
       "id": "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f",
       "created_at": "2023-06-02T15:22:02.604734+00:00",
       "updated_at": "2023-06-02T15:28:28.469659+00:00",
-      "show_banner": false,
       "privacy_notices": [
         {
           "name": "Data Sales",
           "notice_key": "data_sales",
-          "description": "Provide opt-out consent for the use of data in ways that may be considered “data sales” under US state privacy regulations.",
           "internal_description": null,
           "origin": null,
-          "regions": ["us_ca", "us_co"],
           "consent_mechanism": "opt_in",
           "data_uses": ["advertising.third_party.personalized"],
           "enforcement_level": "frontend",
           "disabled": false,
           "has_gpc_flag": false,
-          "displayed_in_privacy_center": true,
-          "displayed_in_overlay": false,
-          "displayed_in_api": false,
           "id": "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061",
           "created_at": "2023-06-02T15:22:02.590469+00:00",
           "updated_at": "2023-06-02T15:22:02.590469+00:00",
-          "version": 1.0,
-          "privacy_notice_history_id": "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e",
           "default_preference": "opt_out",
-          "cookies": [{ "name": "sales", "path": null, "domain": null }]
+          "cookies": [{ "name": "sales", "path": null, "domain": null }],
+          "translations": [
+            {
+              "id": "pri_sdsf",
+              "language": "en",
+              "description": "Provide opt-out consent for the use of data in ways that may be considered “data sales” under US state privacy regulations.",
+              "version": 2.0,
+              "privacy_notice_history_id": "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e"
+            }
+          ]
         },
         {
           "name": "Advertising",
           "notice_key": "advertising",
-          "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
           "internal_description": null,
           "origin": null,
-          "regions": ["eu_ie", "eu_fr", "us_ca"],
           "consent_mechanism": "opt_out",
           "data_uses": ["advertising.first_party.contextual"],
           "enforcement_level": "system_wide",
           "disabled": false,
           "has_gpc_flag": false,
-          "displayed_in_privacy_center": true,
-          "displayed_in_overlay": true,
-          "displayed_in_api": false,
           "id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821",
           "created_at": "2023-06-02T15:22:02.587793+00:00",
           "updated_at": "2023-06-02T15:46:47.946409+00:00",
-          "version": 2.0,
-          "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707",
           "default_preference": "opt_in",
           "cookies": [
             { "name": "_ga", "path": null, "domain": null },
             { "name": "advertisingCookie", "path": null, "domain": null }
+          ],
+          "translations": [
+            {
+              "id": "pri_sd3f",
+              "language": "en",
+              "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
+              "version": 2.0,
+              "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707"
+            }
           ]
         },
         {
           "name": "Essential",
           "notice_key": "essential",
-          "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
           "internal_description": null,
           "origin": null,
-          "regions": ["us_ca"],
           "consent_mechanism": "notice_only",
           "data_uses": ["provide.service"],
           "enforcement_level": "system_wide",
           "disabled": false,
           "has_gpc_flag": false,
-          "displayed_in_privacy_center": true,
-          "displayed_in_overlay": true,
-          "displayed_in_api": true,
           "id": "pri_4bed96d0-b9e3-4596-a807-26b783836375",
           "created_at": "2023-04-24T21:29:08.870351+00:00",
           "updated_at": "2023-04-24T21:29:08.870351+00:00",
-          "version": 1.0,
-          "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
           "default_preference": "opt_in",
-          "current_preference": null,
-          "outdated_preference": null,
-          "cookies": []
+          "cookies": [],
+          "translations": [
+            {
+              "id": "pri_sd1f",
+              "language": "en",
+              "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+              "version": 1.0,
+              "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e"
+            }
+          ]
         }
       ]
     }

@@ -110,8 +110,9 @@ export const useConsentServed = ({
         privacy_experience_id: privacyExperience.id,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
+        // TODO: pass in specific language shown in UI
         privacy_notice_history_ids: notices.map(
-          (n) => n.privacy_notice_history_id
+          (n: PrivacyNotice) => n.translations[0].privacy_notice_history_id
         ),
         tcf_purpose_consents: extractIds(
           privacyExperience?.tcf_purpose_consents
@@ -140,7 +141,11 @@ export const useConsentServed = ({
         request,
         options,
       });
+      console.log("served notice?");
+      console.log(JSON.stringify(result));
       if (result) {
+        console.log("served notice result");
+        console.log(JSON.stringify(result));
         setServedNotice(result);
       }
     },

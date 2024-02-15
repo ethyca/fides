@@ -162,13 +162,12 @@ export const experienceIsValid = (
     return false;
   }
   if (
-    effectiveExperience.experience_config?.component === ComponentType.MODAL ||
-    (effectiveExperience.experience_config?.component ===
+    effectiveExperience.experience_config?.component ===
       ComponentType.OVERLAY &&
-      !(
-        effectiveExperience.privacy_notices &&
-        effectiveExperience.privacy_notices.length > 0
-      ))
+    !(
+      effectiveExperience.privacy_notices &&
+      effectiveExperience.privacy_notices.length > 0
+    )
   ) {
     debugLog(
       options.debug,

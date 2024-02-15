@@ -11,7 +11,7 @@ const PrivacyPolicyLink = ({
     return null;
   }
   const { privacy_policy_link_label: label, privacy_policy_url: url } =
-    experience.experience_config;
+    experience.experience_config?.translations[0];
 
   if (!label || !url) {
     return null;

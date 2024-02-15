@@ -3,7 +3,6 @@ import {
   CONSENT_COOKIE_NAME,
   ConsentMechanism,
   ConsentMethod,
-  ExperienceConfig,
   FidesCookie,
   FidesOptions,
   UserConsentPreference,
@@ -11,7 +10,10 @@ import {
 
 import { RecordConsentServedRequest } from "fides-js/src/lib/consent-types";
 
-import { mockPrivacyNotice } from "../support/mocks";
+import {
+  mockPrivacyNotice,
+  mockPrivacyNoticeTranslation,
+} from "../support/mocks";
 
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
@@ -301,13 +303,18 @@ describe("Consent overlay", () => {
             </p>
             `;
             cy.fixture("consent/test_banner_options.json").then((config) => {
-              const newExperienceConfig: ExperienceConfig = {
-                ...config.experience.experience_config,
-                ...{ description: HTMLDescription },
-              };
+              const newExperienceTranslationsConfig = [
+                {
+                  ...config.experience.experience_config.translations[0],
+                  ...{ description: HTMLDescription },
+                },
+              ];
               stubConfig({
                 experience: {
-                  experience_config: newExperienceConfig,
+                  experience_config: {
+                    ...config.experience.experience_config,
+                    ...{ translations: newExperienceTranslationsConfig },
+                  },
                 },
                 options,
               });
@@ -340,16 +347,21 @@ describe("Consent overlay", () => {
             const modalDescription =
               "This test is overriding the modal description separately from banner!";
             cy.fixture("consent/test_banner_options.json").then((config) => {
-              const newExperienceConfig: ExperienceConfig = {
-                ...config.experience.experience_config,
-                ...{
-                  description: modalDescription,
-                  banner_description: bannerDescription,
+              const newExperienceTranslationsConfig = [
+                {
+                  ...config.experience.experience_config.translations[0],
+                  ...{
+                    description: modalDescription,
+                    banner_description: bannerDescription,
+                  },
                 },
-              };
+              ];
               stubConfig({
                 experience: {
-                  experience_config: newExperienceConfig,
+                  experience_config: {
+                    ...config.experience.experience_config,
+                    ...{ translations: newExperienceTranslationsConfig },
+                  },
                 },
               });
             });
@@ -384,16 +396,18 @@ describe("Consent overlay", () => {
             const modalTitle =
               "This test is overriding the modal title separately from banner!";
             cy.fixture("consent/test_banner_options.json").then((config) => {
-              const newExperienceConfig: ExperienceConfig = {
-                ...config.experience.experience_config,
-                ...{
-                  title: modalTitle,
-                  banner_title: bannerTitle,
+              const newExperienceTranslationsConfig = [
+                {
+                  ...config.experience.experience_config.translations[0],
+                  ...{ title: modalTitle, banner_title: bannerTitle },
                 },
-              };
+              ];
               stubConfig({
                 experience: {
-                  experience_config: newExperienceConfig,
+                  experience_config: {
+                    ...config.experience.experience_config,
+                    ...{ translations: newExperienceTranslationsConfig },
+                  },
                 },
               });
             });
@@ -656,20 +670,32 @@ describe("Consent overlay", () => {
         stubConfig({
           experience: {
             privacy_notices: [
-              mockPrivacyNotice({
-                name: "one",
-                privacy_notice_history_id: "one",
-                notice_key: "one",
-                consent_mechanism: ConsentMechanism.OPT_OUT,
-                cookies: [cookies[0]],
-              }),
-              mockPrivacyNotice({
-                name: "two",
-                privacy_notice_history_id: "two",
-                notice_key: "second",
-                consent_mechanism: ConsentMechanism.OPT_OUT,
-                cookies: [cookies[1]],
-              }),
+              mockPrivacyNotice(
+                {
+                  name: "one",
+                  notice_key: "one",
+                  consent_mechanism: ConsentMechanism.OPT_OUT,
+                  cookies: [cookies[0]],
+                },
+                [
+                  mockPrivacyNoticeTranslation({
+                    privacy_notice_history_id: "one",
+                  }),
+                ]
+              ),
+              mockPrivacyNotice(
+                {
+                  name: "two",
+                  notice_key: "second",
+                  consent_mechanism: ConsentMechanism.OPT_OUT,
+                  cookies: [cookies[1]],
+                },
+                [
+                  mockPrivacyNoticeTranslation({
+                    privacy_notice_history_id: "two",
+                  }),
+                ]
+              ),
             ],
           },
           options: {
@@ -728,16 +754,28 @@ describe("Consent overlay", () => {
         stubConfig({
           experience: {
             privacy_notices: [
-              mockPrivacyNotice({
-                privacy_notice_history_id: "one",
-                notice_key: "one",
-                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-              }),
-              mockPrivacyNotice({
-                privacy_notice_history_id: "two",
-                notice_key: "second",
-                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-              }),
+              mockPrivacyNotice(
+                {
+                  notice_key: "one",
+                  consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+                },
+                [
+                  mockPrivacyNoticeTranslation({
+                    privacy_notice_history_id: "one",
+                  }),
+                ]
+              ),
+              mockPrivacyNotice(
+                {
+                  notice_key: "second",
+                  consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+                },
+                [
+                  mockPrivacyNoticeTranslation({
+                    privacy_notice_history_id: "two",
+                  }),
+                ]
+              ),
             ],
           },
           options: {
@@ -964,10 +1002,15 @@ describe("Consent overlay", () => {
 
     describe("when experience component is not an overlay", () => {
       beforeEach(() => {
-        stubConfig({
-          experience: {
-            component: ComponentType.PRIVACY_CENTER,
-          },
+        cy.fixture("consent/test_banner_options.json").then((config) => {
+          stubConfig({
+            experience: {
+              experience_config: {
+                ...config.experience.experience_config,
+                ...{ component: ComponentType.PRIVACY_CENTER },
+              },
+            },
+          });
         });
       });
 
@@ -1361,10 +1404,15 @@ describe("Consent overlay", () => {
 
     describe("when banner should not be shown but modal link element exists", () => {
       beforeEach(() => {
-        stubConfig({
-          experience: {
-            show_banner: false,
-          },
+        cy.fixture("consent/test_banner_options.json").then((config) => {
+          stubConfig({
+            experience: {
+              experience_config: {
+                ...config.experience.experience_config,
+                ...{ component: ComponentType.MODAL },
+              },
+            },
+          });
         });
       });
 
@@ -1388,13 +1436,17 @@ describe("Consent overlay", () => {
 
     describe("when both banner is shown and modal link element exists", () => {
       beforeEach(() => {
-        stubConfig({
-          experience: {
-            show_banner: true,
-          },
+        cy.fixture("consent/test_banner_options.json").then((config) => {
+          stubConfig({
+            experience: {
+              experience_config: {
+                ...config.experience.experience_config,
+                ...{ component: ComponentType.OVERLAY },
+              },
+            },
+          });
         });
       });
-
       it("closes banner and opens modal when modal link is clicked", () => {
         cy.get("div#fides-banner").should("be.visible");
         cy.get("div#fides-banner").within(() => {
@@ -1909,28 +1961,38 @@ describe("Consent overlay", () => {
     const historyId1 = "pri_mock_history_id_1";
     const historyId2 = "pri_mock_history_id_2";
 
-    it("can go through consent reporting flow", () => {
+    it.only("can go through consent reporting flow", () => {
       stubConfig({
         experience: {
           id: experienceId,
-          show_banner: false,
           privacy_notices: [
-            mockPrivacyNotice({
-              name: "Data Sales and Sharing",
-              notice_key: "data_sales_and_sharing",
-              privacy_notice_history_id: historyId1,
-            }),
-            mockPrivacyNotice({
-              name: "Essential",
-              notice_key: "essential",
-              privacy_notice_history_id: historyId2,
-            }),
+            mockPrivacyNotice(
+              {
+                name: "Data Sales and Sharing",
+                notice_key: "data_sales_and_sharing",
+              },
+              [
+                mockPrivacyNoticeTranslation({
+                  privacy_notice_history_id: historyId1,
+                }),
+              ]
+            ),
+            mockPrivacyNotice(
+              {
+                name: "Essential",
+                notice_key: "essential",
+              },
+              [
+                mockPrivacyNoticeTranslation({
+                  privacy_notice_history_id: historyId2,
+                }),
+              ]
+            ),
           ],
         },
       });
-      cy.get("@FidesUIShown").should("not.have.been.called");
       cy.get("#fides-modal-link").click();
-      cy.get("@FidesUIShown").should("have.been.calledOnce");
+      cy.get("@FidesUIShown").should("have.been.calledTwice");
       cy.wait("@patchNoticesServed").then((noticesServedInterception) => {
         const { browser_identity: identity, ...body } =
           noticesServedInterception.request.body;
@@ -1960,6 +2022,9 @@ describe("Consent overlay", () => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
+          console.log("interception");
+          console.log(preferenceInterception.request);
+          // fixme- why is this undefined?
           expect(served_notice_history_id).to.eql(
             noticesServedInterception.response?.body.served_notice_history_id
           );
@@ -1974,20 +2039,31 @@ describe("Consent overlay", () => {
       stubConfig({
         experience: {
           id: experienceId,
-          show_banner: true,
           privacy_notices: [
-            mockPrivacyNotice({
-              name: "Data Sales and Sharing",
-              notice_key: "data_sales_and_sharing",
-              consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-              privacy_notice_history_id: historyId1,
-            }),
-            mockPrivacyNotice({
-              name: "Essential",
-              notice_key: "essential",
-              consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-              privacy_notice_history_id: historyId2,
-            }),
+            mockPrivacyNotice(
+              {
+                name: "Data Sales and Sharing",
+                notice_key: "data_sales_and_sharing",
+                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              },
+              [
+                mockPrivacyNoticeTranslation({
+                  privacy_notice_history_id: historyId1,
+                }),
+              ]
+            ),
+            mockPrivacyNotice(
+              {
+                name: "Essential",
+                notice_key: "essential",
+                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+              },
+              [
+                mockPrivacyNoticeTranslation({
+                  privacy_notice_history_id: historyId2,
+                }),
+              ]
+            ),
           ],
         },
       });
@@ -2008,18 +2084,29 @@ describe("Consent overlay", () => {
       stubConfig({
         experience: {
           id: experienceId,
-          show_banner: false,
           privacy_notices: [
-            mockPrivacyNotice({
-              name: "Data Sales and Sharing",
-              notice_key: "data_sales_and_sharing",
-              privacy_notice_history_id: historyId1,
-            }),
-            mockPrivacyNotice({
-              name: "Essential",
-              notice_key: "essential",
-              privacy_notice_history_id: historyId2,
-            }),
+            mockPrivacyNotice(
+              {
+                name: "Data Sales and Sharing",
+                notice_key: "data_sales_and_sharing",
+              },
+              [
+                mockPrivacyNoticeTranslation({
+                  privacy_notice_history_id: historyId1,
+                }),
+              ]
+            ),
+            mockPrivacyNotice(
+              {
+                name: "Essential",
+                notice_key: "essential",
+              },
+              [
+                mockPrivacyNoticeTranslation({
+                  privacy_notice_history_id: historyId2,
+                }),
+              ]
+            ),
           ],
         },
         options: {

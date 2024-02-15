@@ -20,8 +20,10 @@ import { ExperienceMeta } from "fides-js";
  * An API representation of a PrivacyExperience used for response payloads
  */
 export type PrivacyExperienceResponse = {
+  // TODO- update with new BE resp body
   region: PrivacyNoticeRegion;
-  component?: ComponentType;
+  disabled?: boolean;
+  component?: ComponentType; // deprecated- don't use
   /**
    * The Experience copy or language
    */
@@ -40,10 +42,6 @@ export type PrivacyExperienceResponse = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   created_at: string;
   updated_at: string;
-  /**
-   * Whether the experience should show a banner
-   */
-  show_banner?: boolean;
   /**
    * The Privacy Notices associated with this experience, if applicable
    */

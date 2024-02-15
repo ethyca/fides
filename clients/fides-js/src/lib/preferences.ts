@@ -28,11 +28,14 @@ async function savePreferencesApi(
 ) {
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
+  // TODO: pass in specific language shown in UI
   const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
     privacy_notice_history_id:
       preference.notice.translations[0].privacy_notice_history_id,
     preference: preference.consentPreference,
   }));
+  console.log("served notice id ");
+  console.log(JSON.stringify(servedNoticeHistoryId));
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,

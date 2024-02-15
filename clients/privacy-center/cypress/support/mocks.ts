@@ -1,6 +1,8 @@
 import {
   PrivacyNotice,
+  PrivacyNoticeTranslations,
   EnforcementLevel,
+  ExperienceConfig,
   ConsentMechanism,
   UserConsentPreference,
   FidesCookie,
@@ -12,32 +14,67 @@ import {
   TCFVendorRelationships,
 } from "~/types/api";
 
-export const mockPrivacyNotice = (params: Partial<PrivacyNotice>) => {
+export const mockPrivacyNoticeTranslation = (
+  params?: Partial<PrivacyNoticeTranslations>
+) => {
+  const translation = {
+    id: "pri_sdafsf",
+    language: "en",
+    title: "Test privacy notice",
+    description: "a test sample privacy notice configuration",
+    version: 1.0,
+    privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+  };
+  return { ...translation, ...params };
+};
+
+/**
+ * Mocks the privacy notice, optionally pass in custom translations that override the default translation
+ */
+export const mockPrivacyNotice = (
+  params: Partial<PrivacyNotice>,
+  translations?: PrivacyNoticeTranslations[]
+) => {
+  const defaultTranslations = [mockPrivacyNoticeTranslation()];
   const notice = {
     name: "Test privacy notice with GPC enabled",
-    disabled: false,
-    origin: "12435134",
-    description: "a test sample privacy notice configuration",
     internal_description:
       "a test sample privacy notice configuration for internal use",
-    regions: ["us_ca"],
     consent_mechanism: ConsentMechanism.OPT_OUT,
     default_preference: UserConsentPreference.OPT_IN,
     has_gpc_flag: true,
+    disabled: false,
+    origin: "12435134",
     data_uses: ["advertising", "third_party_sharing"],
     enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-    displayed_in_overlay: true,
-    displayed_in_api: true,
-    displayed_in_privacy_center: false,
     id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
     created_at: "2023-04-24T21:29:08.870351+00:00",
     updated_at: "2023-04-24T21:29:08.870351+00:00",
-    version: 1.0,
-    privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
     notice_key: "advertising",
     cookies: [],
+    translations: translations || defaultTranslations,
   };
   return { ...notice, ...params };
+};
+
+export const mockExperienceConfig = (params: Partial<ExperienceConfig>) => {
+  const experienceConfig = {
+    language: "en",
+    accept_button_label: "Accept Test",
+    acknowledge_button_label: "OK",
+    banner_title: "Manage your consent",
+    description:
+      "This test website is overriding the banner description label.",
+    is_default: true,
+    privacy_policy_link_label: "Privacy policy",
+    privacy_policy_url: "https://privacy.ethyca.com/",
+    privacy_preferences_link_label: "Manage preferences",
+    reject_button_label: "Reject Test",
+    save_button_label: "Save test",
+    title: "Manage your consent",
+    experience_config_history_id: "2345324",
+  };
+  return { ...experienceConfig, params };
 };
 
 export const mockCookie = (params: Partial<FidesCookie>) => {

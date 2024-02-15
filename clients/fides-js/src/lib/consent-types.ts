@@ -314,13 +314,13 @@ export type ExperienceMeta = {
 
 export type PrivacyExperience = {
   region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
-  component?: ComponentType;
+  component?: ComponentType; // deprecated- don't use
   disabled?: boolean;
   experience_config?: ExperienceConfig;
   id: string;
   created_at: string;
   updated_at: string;
-  show_banner?: boolean; // todo- is this going away?
+  show_banner?: boolean; // deprecated- don't use
   privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
@@ -335,12 +335,12 @@ export type PrivacyExperience = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
-  gpp_settings?: GPPSettings; // todo- is this going to stay here?
+  gpp_settings?: GPPSettings;
 };
 
 export type ExperienceConfig = {
   translations: Array<ExperienceConfigTranslation>;
-  banner_enabled?: BannerEnabled;
+  banner_enabled?: BannerEnabled; // deprecated- don't use
   dismissable?: boolean;
   allow_language_selection?: boolean;
   custom_asset_id?: string;
@@ -355,9 +355,9 @@ export type ExperienceConfigTranslation = {
   language: string;
   accept_button_label?: string;
   acknowledge_button_label?: string;
-  banner_description?: string; // diff between banner_description and description?
-  banner_enabled?: BannerEnabled; // todo- duplicate from experienceconfig level?
-  banner_title?: string; // diff between banner_title and title?
+  banner_description?: string;
+  banner_enabled?: BannerEnabled; // deprecated - don't use
+  banner_title?: string;
   description?: string;
   is_default?: boolean;
   privacy_policy_link_label?: string;
@@ -390,11 +390,8 @@ export type PrivacyNotice = {
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
   has_gpc_flag?: boolean;
-  displayed_in_privacy_center?: boolean; // todo- is this going to stay here?
-  displayed_in_overlay?: boolean; // todo- is this going to stay here?
-  displayed_in_api?: boolean; // todo- is this going to stay here?
-  framework?: PrivacyNoticeFramework; // todo- is this going to stay here?
-  gpp_field_mapping?: Array<GPPFieldMapping>; // todo- is this going to stay here?
+  framework?: PrivacyNoticeFramework;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
   id: string;
   created_at: string;
   updated_at: string;

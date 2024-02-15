@@ -72,6 +72,7 @@ describe("Privacy notice driven consent", () => {
       cy.clearAllCookies();
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.visit("/consent");
+      cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
       cy.getByTestId("consent");
       cy.wait("@getVerificationConfig");

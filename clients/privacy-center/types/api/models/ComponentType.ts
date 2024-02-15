@@ -7,6 +7,7 @@
  */
 export enum ComponentType {
   OVERLAY = "overlay",
+  MODAL = "modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
 }

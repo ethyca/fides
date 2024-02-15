@@ -9,7 +9,6 @@
             "accept_button_label": "Accept Test",
             "acknowledge_button_label": "Got it",
             "banner_description": "Config from mocked Fides API is overriding this banner description.",
-            "banner_enabled": "enabled_where_required",
             "banner_title": "Manage your consent",
             "description": "Config from mocked Fides API is overriding this banner description.",
             "is_default": true,
@@ -23,7 +22,6 @@
           }
         ],
         "allow_language_selection": false,
-        "banner_enabled": "enabled_where_required",
         "disabled": false,
         "id": "pri_e0b9b2fd-4ba9-4940-881c-49858d5eeb0a",
         "component": "overlay",
@@ -33,7 +31,6 @@
       "id": "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
       "created_at": "2023-06-02T15:18:56.110785+00:00",
       "updated_at": "2023-06-02T16:40:37.340905+00:00",
-      "show_banner": true,
       "privacy_notices": [
         {
           "name": "Advertising",

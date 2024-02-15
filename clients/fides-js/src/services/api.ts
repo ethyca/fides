@@ -1,5 +1,4 @@
 import {
-  ComponentType,
   ConsentMethod,
   EmptyExperience,
   FidesApiOptions,
@@ -141,6 +140,8 @@ export const patchUserPreference = async (
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(preferences),
   };
+  console.log("fetch options");
+  console.log(JSON.stringify(fetchOptions.body));
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
     fetchOptions
@@ -181,6 +182,8 @@ export const patchNoticesServed = async ({
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(request),
   };
+  console.log("fetching with options");
+  console.log(JSON.stringify(request));
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
     fetchOptions
