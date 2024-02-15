@@ -14,7 +14,7 @@ import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
 import ConsentContent from "./ConsentContent";
-import { showModal as defaultShowModal } from "~/fides";
+import { showModal as defaultShowModal } from "../fides";
 
 interface RenderBannerProps {
   isOpen: boolean;
