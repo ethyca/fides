@@ -59,7 +59,8 @@ export const initOverlay = async ({
 
       if (
         experience.experience_config?.component === ComponentType.MODAL ||
-        experience.experience_config?.component === ComponentType.OVERLAY ||
+        experience.experience_config?.component ===
+          ComponentType.BANNER_AND_MODAL ||
         experience.experience_config?.component === ComponentType.TCF_OVERLAY
       ) {
         // Render the Overlay to the DOM!

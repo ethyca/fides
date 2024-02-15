@@ -435,7 +435,8 @@ export enum UserConsentPreference {
 }
 
 export enum ComponentType {
-  OVERLAY = "overlay",
+  OVERLAY = "overlay", // deprecated, replaced by BANNER_AND_MODAL
+  BANNER_AND_MODAL = "banner_and_modal",
   MODAL = "modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
@@ -543,7 +544,8 @@ export enum GpcStatus {
 
 // Consent reporting
 export enum ServingComponent {
-  OVERLAY = "overlay",
+  OVERLAY = "overlay", // deprecated, use "modal" instead
+  MODAL = "modal",
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",

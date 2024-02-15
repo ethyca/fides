@@ -32,7 +32,7 @@
         "allow_language_selection": false,
         "disabled": false,
         "id": "pri-7ae3-f06b-4096-970f-0bbbdef-over",
-        "component": "overlay",
+        "component": "banner_and_modal",
         "created_at": "2023-12-06T20:45:50.357132+00:00",
         "updated_at": "2023-12-06T20:45:50.357132+00:00"
       },

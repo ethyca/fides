@@ -1,4 +1,5 @@
 import {
+  ComponentType,
   ConsentMethod,
   EmptyExperience,
   FidesApiOptions,
@@ -56,7 +57,9 @@ export const fetchExperience = async (
   let params: any = {
     show_disabled: "false",
     region: userLocationString,
-    // todo- need diff endpoint signature to call list of component types
+    // ComponentType.OVERLAY is deprecated but “overlay” is still a backwards compatible filter.
+    // Backend will filter to component that matches modal, banner_and_modal, or tcf_overlay
+    component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",

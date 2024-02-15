@@ -1441,7 +1441,7 @@ describe("Consent overlay", () => {
             experience: {
               experience_config: {
                 ...config.experience.experience_config,
-                ...{ component: ComponentType.OVERLAY },
+                ...{ component: ComponentType.BANNER_AND_MODAL },
               },
             },
           });
@@ -1999,7 +1999,7 @@ describe("Consent overlay", () => {
           privacy_experience_id: "2345324",
           user_geography: "us_ca",
           acknowledge_mode: false,
-          serving_component: "overlay",
+          serving_component: "modal",
           privacy_notice_history_ids: [historyId1, historyId2],
           tcf_purpose_consents: [],
           tcf_purpose_legitimate_interests: [],
@@ -2118,7 +2118,7 @@ describe("Consent overlay", () => {
           const spy = spyObject.getCalls();
           const { args } = spy[0];
           expect(args[0]).to.contains({
-            serving_component: "overlay",
+            serving_component: "modal",
           });
           // timeout means API call not made, which is expected
           cy.on("fail", (error) => {

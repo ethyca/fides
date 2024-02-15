@@ -151,7 +151,7 @@ export const experienceIsValid = (
   if (
     effectiveExperience.experience_config?.component !== ComponentType.MODAL &&
     effectiveExperience.experience_config?.component !==
-      ComponentType.OVERLAY &&
+      ComponentType.BANNER_AND_MODAL &&
     effectiveExperience.experience_config?.component !==
       ComponentType.TCF_OVERLAY
   ) {
@@ -163,7 +163,7 @@ export const experienceIsValid = (
   }
   if (
     effectiveExperience.experience_config?.component ===
-      ComponentType.OVERLAY &&
+      ComponentType.BANNER_AND_MODAL &&
     !(
       effectiveExperience.privacy_notices &&
       effectiveExperience.privacy_notices.length > 0

@@ -39,7 +39,7 @@
       "allow_language_selection": false,
       "disabled": false,
       "id": "2348571y34",
-      "component": "overlay",
+      "component": "banner_and_modal",
       "created_at": "2023-04-24T21:29:08.870351+00:00",
       "updated_at": "2023-04-24T21:29:08.870351+00:00"
     },

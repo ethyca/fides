@@ -122,7 +122,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const dispatchOpenOverlayEvent = useCallback(() => {
     dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.OVERLAY,
+      servingComponent: ServingComponent.MODAL,
     });
   }, [cookie, options.debug]);
 
