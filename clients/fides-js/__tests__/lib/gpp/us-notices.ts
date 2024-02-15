@@ -49,13 +49,17 @@ const mockPrivacyNotice = (override?: Partial<PrivacyNotice>) => {
   const base: PrivacyNotice = {
     notice_key: "data_sales_and_sharing",
     id: "123",
-    privacy_notice_history_id: "321",
     created_at: "",
     updated_at: "",
-    version: 1,
     cookies: [],
     default_preference: UserConsentPreference.OPT_OUT,
     gpp_field_mapping: [mockGppField()],
+    translations: [{
+      id: "234r23",
+      language: "en",
+      version: 1,
+      privacy_notice_history_id: "321",
+    }]
   };
   if (!override) {
     return base;
