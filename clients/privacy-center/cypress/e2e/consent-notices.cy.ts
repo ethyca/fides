@@ -12,7 +12,7 @@ const PRIVACY_NOTICE_ID_3 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
 const PRIVACY_NOTICE_HISTORY_ID_1 = "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e";
 const PRIVACY_NOTICE_HISTORY_ID_2 = "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707";
 const PRIVACY_NOTICE_HISTORY_ID_3 = "pri_b09058a7-9f54-4360-8da5-4521e8975d4e";
-const PRIVACY_EXPERIENCE_ID = "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f";
+const PRIVACY_CONFIG_HISTORY_ID = "pri_28b66138-e92e-43b7-b2aa-8507cf5fb900";
 const GEOLOCATION_API_URL = "https://www.example.com/location";
 const SETTINGS = {
   IS_OVERLAY_ENABLED: true,
@@ -134,7 +134,7 @@ describe("Privacy notice driven consent", () => {
         const { preferences, code, method, privacy_experience_id: id } = body;
         expect(method).to.eql("save");
         expect(code).to.eql(VERIFICATION_CODE);
-        expect(id).to.eql(PRIVACY_EXPERIENCE_ID);
+        expect(id).to.eql(PRIVACY_CONFIG_HISTORY_ID);
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);

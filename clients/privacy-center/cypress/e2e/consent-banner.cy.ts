@@ -230,7 +230,7 @@ describe("Consent overlay", () => {
                   preference: "acknowledge",
                 },
               ],
-              privacy_experience_id: "132345243",
+              privacy_experience_id: "2345324",
               user_geography: "us_ca",
               method: ConsentMethod.SAVE,
               served_notice_history_id:
@@ -534,7 +534,7 @@ describe("Consent overlay", () => {
                 preference: "acknowledge",
               },
             ],
-            privacy_experience_id: "132345243",
+            privacy_experience_id: "2345324",
             user_geography: "us_ca",
 
             method: ConsentMethod.SAVE,
@@ -626,7 +626,7 @@ describe("Consent overlay", () => {
                 preference: "opt_in",
               },
             ],
-            privacy_experience_id: "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
+            privacy_experience_id: "pri_638ed140-8dc5-4a0e-949c-abe576f8eb8f",
             user_geography: "us_ca",
             method: ConsentMethod.SAVE,
             served_notice_history_id:
@@ -843,7 +843,7 @@ describe("Consent overlay", () => {
                 preference: "opt_out",
               },
             ],
-            privacy_experience_id: "132345243",
+            privacy_experience_id: "2345324",
             user_geography: "us_ca",
 
             method: ConsentMethod.GPC,
@@ -1957,14 +1957,11 @@ describe("Consent overlay", () => {
   });
 
   describe("consent reporting", () => {
-    const experienceId = "experience-id";
     const historyId1 = "pri_mock_history_id_1";
     const historyId2 = "pri_mock_history_id_2";
-
-    it.only("can go through consent reporting flow", () => {
+    it("can go through consent reporting flow", () => {
       stubConfig({
         experience: {
-          id: experienceId,
           privacy_notices: [
             mockPrivacyNotice(
               {
@@ -1998,7 +1995,8 @@ describe("Consent overlay", () => {
           noticesServedInterception.request.body;
         expect(identity.fides_user_device_id).to.be.a("string");
         expect(body).to.eql({
-          privacy_experience_id: experienceId,
+          // This is the experience_config_history_id of the associated translation
+          privacy_experience_id: "2345324",
           user_geography: "us_ca",
           acknowledge_mode: false,
           serving_component: "overlay",
@@ -2038,7 +2036,6 @@ describe("Consent overlay", () => {
     it("can set acknowledge mode to true", () => {
       stubConfig({
         experience: {
-          id: experienceId,
           privacy_notices: [
             mockPrivacyNotice(
               {
@@ -2083,7 +2080,6 @@ describe("Consent overlay", () => {
       const spyObject = cy.spy(apiOptions, "patchNoticesServedFn");
       stubConfig({
         experience: {
-          id: experienceId,
           privacy_notices: [
             mockPrivacyNotice(
               {

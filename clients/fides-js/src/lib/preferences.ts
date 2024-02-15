@@ -39,7 +39,10 @@ async function savePreferencesApi(
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
-    privacy_experience_id: experience.id,
+    // TODO: pass in specific language shown in UI
+    privacy_experience_id:
+      experience.experience_config?.translations[0]
+        .experience_config_history_id,
     user_geography: userLocationString,
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
