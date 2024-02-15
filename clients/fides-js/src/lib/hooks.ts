@@ -143,11 +143,7 @@ export const useConsentServed = ({
         request,
         options,
       });
-      console.log("served notice?");
-      console.log(JSON.stringify(result));
       if (result) {
-        console.log("served notice result");
-        console.log(JSON.stringify(result));
         setServedNotice(result);
       }
     },

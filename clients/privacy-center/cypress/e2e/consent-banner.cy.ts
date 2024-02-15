@@ -2020,8 +2020,6 @@ describe("Consent overlay", () => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
-          console.log("interception");
-          console.log(preferenceInterception.request);
           // fixme- why is this undefined?
           expect(served_notice_history_id).to.eql(
             noticesServedInterception.response?.body.served_notice_history_id

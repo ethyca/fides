@@ -34,8 +34,6 @@ async function savePreferencesApi(
       preference.notice.translations[0].privacy_notice_history_id,
     preference: preference.consentPreference,
   }));
-  console.log("served notice id ");
-  console.log(JSON.stringify(servedNoticeHistoryId));
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
