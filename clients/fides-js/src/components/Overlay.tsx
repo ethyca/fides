@@ -77,6 +77,7 @@ const Overlay: FunctionComponent<Props> = ({
 
   const handleOpenModal = useCallback(() => {
     if (instance) {
+      setBannerIsOpen(false);
       instance.show();
       onOpen();
     }
@@ -104,9 +105,8 @@ const Overlay: FunctionComponent<Props> = ({
 
   const showModal = () => {
     if (!isModalLinkFound) {
-      document.body.classList.add("fides-modal-link-shown");
+      document.body.classList.add("fides-overlay-modal-link-shown");
     }
-    setBannerIsOpen(false);
     handleOpenModal();
   };
 
@@ -124,7 +124,7 @@ const Overlay: FunctionComponent<Props> = ({
         setIsModalLinkFound(true);
         // Update modal link to trigger modal on click
         const modalLink = modalLinkEl;
-        modalLink.onclick = window.Fides.showModal;
+        modalLink.addEventListener("click", window.Fides.showModal);
         // Update to show the pre-existing modal link in the DOM
         modalLink.classList.add("fides-modal-link-shown");
       } else {
@@ -133,6 +133,11 @@ const Overlay: FunctionComponent<Props> = ({
     }, delayModalLinkMilliseconds);
     return () => {
       clearTimeout(delayModalLinkBinding);
+      const modalLinkId = options.modalLinkId || "fides-modal-link";
+      const modalLinkEl = document.getElementById(modalLinkId);
+      if (modalLinkEl) {
+        modalLinkEl.removeEventListener("click", window.Fides.showModal);
+      }
       window.Fides.showModal = defaultShowModal;
     };
   }, [options.modalLinkId, options.debug, handleOpenModal]);
@@ -148,7 +153,6 @@ const Overlay: FunctionComponent<Props> = ({
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
-    setBannerIsOpen(false);
   };
 
   if (!hasMounted) {
