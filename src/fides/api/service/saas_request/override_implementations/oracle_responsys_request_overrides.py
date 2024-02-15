@@ -15,6 +15,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import get_identity
 
+
 @register("profile_list_recipients_read", [SaaSRequestType.READ])
 def profile_list_recipients_read(
     client: AuthenticatedClient,
@@ -25,7 +26,7 @@ def profile_list_recipients_read(
     secrets: Dict[str, Any],
 ) -> List[Row]:
     """
-    Retrieve data from each profile list. 
+    Retrieve data from each profile list.
 
     The members endpoint returns data in two separate arrays: one for the keys and one for the values for each result.
     {
@@ -43,7 +44,7 @@ def profile_list_recipients_read(
 
     list_ids = input_data.get("profile_list_id", [])
     results = []
-    
+
     identity = get_identity(privacy_request)
     if identity == "email":
         query_ids = input_data.get("email", [])
@@ -55,12 +56,8 @@ def profile_list_recipients_read(
         raise FidesopsException(
             "Unsupported identity type for Oracle Responsys connector. Currently only `email` and `phone_number` are supported"
         )
-    
-    body = {
-        "fieldList": ["all"],
-        "ids": query_ids,
-        "queryAttribute": query_attribute
-    }
+
+    body = {"fieldList": ["all"], "ids": query_ids, "queryAttribute": query_attribute}
 
     for list_id in list_ids:
         members_response = client.send(
@@ -68,12 +65,17 @@ def profile_list_recipients_read(
                 method=HTTPMethod.POST,
                 path=f"/rest/api/v1.3/lists/{list_id}/members",
                 query_params={"action": "get"},
-                body=body
+                body=body,
             )
         )
-        response_data = pydash.get(members_response.json(), 'recordData')
-        normalized_field_names = [field.lower() for field in response_data["fieldNames"]]
-        serialized_data = [dict(zip(normalized_field_names, records)) for records in response_data["records"]]
+        response_data = pydash.get(members_response.json(), "recordData")
+        normalized_field_names = [
+            field.lower() for field in response_data["fieldNames"]
+        ]
+        serialized_data = [
+            dict(zip(normalized_field_names, records))
+            for records in response_data["records"]
+        ]
 
         results.append(serialized_data)
     return results
@@ -88,7 +90,7 @@ def profile_list_recipients_delete(
     secrets: Dict[str, Any],
 ) -> int:
     """
-    Deletes data from each profile list. Upon deletion from the list, PET data is also deleted. 
+    Deletes data from each profile list. Upon deletion from the list, PET data is also deleted.
     """
     rows_deleted = 0
     # each delete_params dict correspond to a record that needs to be deleted
@@ -100,7 +102,7 @@ def profile_list_recipients_delete(
         body = {
             "fieldList": ["all"],
             "ids": responsys_id,
-            "queryAttribute": "r" # query by Responsys id (RIID_)
+            "queryAttribute": "r",  # query by Responsys id (RIID_)
         }
 
         client.send(
@@ -108,7 +110,7 @@ def profile_list_recipients_delete(
                 method=HTTPMethod.POST,
                 path=f"/rest/api/v1.3/lists/{list_id}/members",
                 query_params={"action": "delete"},
-                body=body
+                body=body,
             )
         )
 
