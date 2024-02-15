@@ -1,5 +1,3 @@
-import { BannerEnabled } from "~/types/api";
-
 export type ExperienceConfigTranslation = {
   language: string;
   /**
@@ -19,10 +17,6 @@ export type ExperienceConfigTranslation = {
    * Overlay 'Banner Description' or Privacy Center 'Description'
    */
   description?: string;
-  /**
-   * Overlay 'Banner'
-   */
-  banner_enabled?: BannerEnabled;
   banner_title?: string;
   /**
    * Overlay 'Banner title' or Privacy Center 'title'

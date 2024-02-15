@@ -20,10 +20,7 @@ import { ExperienceMeta } from "fides-js";
  * An API representation of a PrivacyExperience used for response payloads
  */
 export type PrivacyExperienceResponse = {
-  // TODO- update with new BE resp body
   region: PrivacyNoticeRegion;
-  disabled?: boolean;
-  component?: ComponentType; // deprecated- don't use
   /**
    * The Experience copy or language
    */

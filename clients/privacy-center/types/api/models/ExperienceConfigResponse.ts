@@ -9,6 +9,7 @@ import type { ExperienceConfigTranslation } from "./ExperienceConfigTranslation"
  * An API representation of ExperienceConfig used for response payloads
  */
 export type ExperienceConfigResponse = {
+  language: string;
   translations: Array<ExperienceConfigTranslation>;
   dismissable?: boolean;
   allow_language_selection?: boolean;

@@ -314,13 +314,10 @@ export type ExperienceMeta = {
 
 export type PrivacyExperience = {
   region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
-  component?: ComponentType; // deprecated- don't use
-  disabled?: boolean;
   experience_config?: ExperienceConfig;
   id: string;
   created_at: string;
   updated_at: string;
-  show_banner?: boolean; // deprecated- don't use
   privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
@@ -339,8 +336,8 @@ export type PrivacyExperience = {
 };
 
 export type ExperienceConfig = {
+  language: string;
   translations: Array<ExperienceConfigTranslation>;
-  banner_enabled?: BannerEnabled; // deprecated- don't use
   dismissable?: boolean;
   allow_language_selection?: boolean;
   custom_asset_id?: string;
@@ -351,12 +348,10 @@ export type ExperienceConfig = {
 };
 
 export type ExperienceConfigTranslation = {
-  // will this have an id?
   language: string;
   accept_button_label?: string;
   acknowledge_button_label?: string;
   banner_description?: string;
-  banner_enabled?: BannerEnabled; // deprecated - don't use
   banner_title?: string;
   description?: string;
   is_default?: boolean;

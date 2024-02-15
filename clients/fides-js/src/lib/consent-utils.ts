@@ -157,7 +157,7 @@ export const experienceIsValid = (
   ) {
     debugLog(
       options.debug,
-      "No experience found with overlay component. Skipping overlay initialization."
+      "No experience found with modal, banner_and_modal, or tcf_overlay component. Skipping overlay initialization."
     );
     return false;
   }
