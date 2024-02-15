@@ -1,5 +1,11 @@
 import { h, FunctionComponent, VNode } from "preact";
-import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from "preact/hooks";
 import {
   FidesCookie,
   FidesOptions,
@@ -54,7 +60,7 @@ const Overlay: FunctionComponent<Props> = ({
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
-  const [isModalLinkFound, setIsModalLinkFound] = useState(false);
+  const modalLinkRef = useRef<HTMLElement | null>(null);
 
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
@@ -104,7 +110,7 @@ const Overlay: FunctionComponent<Props> = ({
   }, [setBannerIsOpen]);
 
   const showModal = () => {
-    if (!isModalLinkFound) {
+    if (!modalLinkRef.current) {
       document.body.classList.add("fides-overlay-modal-link-shown");
     }
     handleOpenModal();
@@ -121,7 +127,7 @@ const Overlay: FunctionComponent<Props> = ({
           options.debug,
           "Modal link element found, updating it to show and trigger modal on click."
         );
-        setIsModalLinkFound(true);
+        modalLinkRef.current = modalLinkEl;
         // Update modal link to trigger modal on click
         const modalLink = modalLinkEl;
         modalLink.addEventListener("click", window.Fides.showModal);
@@ -133,10 +139,11 @@ const Overlay: FunctionComponent<Props> = ({
     }, delayModalLinkMilliseconds);
     return () => {
       clearTimeout(delayModalLinkBinding);
-      const modalLinkId = options.modalLinkId || "fides-modal-link";
-      const modalLinkEl = document.getElementById(modalLinkId);
-      if (modalLinkEl) {
-        modalLinkEl.removeEventListener("click", window.Fides.showModal);
+      if (modalLinkRef.current) {
+        modalLinkRef.current.removeEventListener(
+          "click",
+          window.Fides.showModal
+        );
       }
       window.Fides.showModal = defaultShowModal;
     };
