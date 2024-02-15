@@ -1,4 +1,4 @@
-import { setupI18n } from "./setupI18n";
+import { setupI18n } from "./i18n-utils";
 
 /**
  * Declare some generic i18n types that should be compatible with most i18n

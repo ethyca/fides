@@ -1,4 +1,36 @@
+import { PrivacyExperience } from "../consent-types";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
+import { i18n } from "./index";
+
+/**
+ * Initialize the global i18n object with the statically defined messages from
+ * local files.
+ */
+export function initializeI18n(): void {
+  i18n.activate("en");
+}
+
+/**
+ * Detect the user's preferred locale and activate the best match in the current
+ * dictionary.
+ */
+export function activateUserLocale(): Locale {
+  i18n.activate("en");
+  return "en";
+}
+
+/**
+ * Load the statically-compiled messages from source into the message dictionary.
+ */
+export function updateMessagesFromFiles(): void {
+}
+
+/**
+ * Parse the provided PrivacyExperience object and load all translated strings
+ * into the message dictionary.
+ */
+export function updateMessagesFromExperience(experience: PrivacyExperience): void {
+}
 
 /**
  * Factory function that returns a new I18n instance that is the *simplest*
