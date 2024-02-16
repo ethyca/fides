@@ -1,0 +1,108 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: oracle_responsys
+    description: A sample dataset representing the Oracle Responsys connector for Fides
+    collections:
+      - name: profile_list_recipient
+        fields:
+          - name: riid_
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: customer_id_
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: email_address_
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: email_domain_
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: email_isp_
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: email_format_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email_permission_status_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email_deliverability_status_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email_permission_reason_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email_md5_hash_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email_sha256_hash_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: mobile_number_
+            data_categories: [user.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+          - name: mobile_country_
+            data_categories: [user.contact.address.country]
+            fidesops_meta:
+              data_type: string
+          - name: mobile_permission_status_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: mobile_permission_reason_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: mobile_deliverability_status_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: postal_street_1_
+            data_categories: [user.contact.address.street]
+            fidesops_meta:
+              data_type: string
+          - name: postal_street_2_
+            data_categories: [user.contact.address.street]
+            fidesops_meta:
+              data_type: string
+          - name: city_
+            data_categories: [user.contact.address.city]
+            fidesops_meta:
+              data_type: string
+          - name: state_
+            data_categories: [user.contact.address.state]
+            fidesops_meta:
+              data_type: string
+          - name: postal_code_
+            data_categories: [user.contact.address.postal_code]
+            fidesops_meta:
+              data_type: string
+          - name: country_
+            data_categories: [user.contact.address.country]
+            fidesops_meta:
+              data_type: string
+          - name: postal_permission_status_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: postal_permission_reason_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: postal_deliverability_status_
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
