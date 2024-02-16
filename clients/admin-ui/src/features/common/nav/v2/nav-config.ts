@@ -38,13 +38,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Data inventory",
     routes: [
       {
-        title: "Inventory",
-        path: routes.INVENTORY_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
-        requiresFlag: "dataInventory",
-      },
-      {
         title: "Data lineage",
         path: routes.DATAMAP_ROUTE,
         requiresPlus: true,
@@ -101,6 +94,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Consent",
     routes: [
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        requiresFlag: "dataInventory",
+      },
       {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,

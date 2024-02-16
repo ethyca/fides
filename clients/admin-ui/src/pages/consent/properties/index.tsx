@@ -1,11 +1,12 @@
-import type { NextPage } from "next";
 import { Box, Flex, Heading, Text } from "@fidesui/react";
-import Layout from "~/features/common/Layout";
-import { InventoryTable } from "./InventoryTable";
+import type { NextPage } from "next";
 
-const Inventory: NextPage = () => {
-  return (
-    <Layout title="Inventory">
+import Layout from "~/features/common/Layout";
+
+import { PropertiesTable } from "./components/PropertiesTable";
+
+const Properties: NextPage = () => (
+    <Layout title="Properties">
       <>
         <Box mb={4}>
           <Heading
@@ -14,20 +15,19 @@ const Inventory: NextPage = () => {
             mb={2}
             data-testid="header"
           >
-            Inventory
+            Properties
           </Heading>
         </Box>
         <Flex>
           <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "60%" }}>
             Review and manage your properties below. Properties are the
-            locations you have configured to manage data governance and detect
-            potential data governance risks.
+            locations you have configured for consent management such as a
+            website or mobile app.
           </Text>
         </Flex>
       </>
-      <InventoryTable />
+      <PropertiesTable />
     </Layout>
   );
-};
 
-export default Inventory;
+export default Properties;

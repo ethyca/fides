@@ -1,19 +1,18 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Button, Flex, HStack } from "@fidesui/react";
+import { Flex, HStack } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
-  getGroupedRowModel,
   getExpandedRowModel,
+  getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  BadgeCell,
   DefaultCell,
   DefaultHeaderCell,
-  GroupCountBadgeCell,
   FidesTableV2,
   GlobalFilterV2,
+  GroupCountBadgeCell,
   PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
@@ -21,13 +20,17 @@ import {
 } from "common/table/v2";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import AddVendor from "~/features/configure-consent/AddVendor";
-import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
+
+import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
+import EmptyTableState from "~/features/common/table/v2/EmptyTableState";
 import {
   useGetHealthQuery,
   useGetPropertiesQuery,
 } from "~/features/plus/plus.slice";
-import { Property } from "./types";
+
+import { Property } from "../types";
+import AddProperty from "./AddProperty";
+import PropertyActions from "./PropertyActions";
 
 const columnHelper = createColumnHelper<Property>();
 
@@ -39,14 +42,14 @@ export type Page_Property_ = {
   pages?: number;
 };
 
-const emptyInventoriesReportResponse: Page_Property_ = {
+const emptyPropertiesResponse: Page_Property_ = {
   items: [],
   total: 0,
   page: 1,
   size: 25,
   pages: 1,
 };
-export const InventoryTable = () => {
+export const PropertiesTable = () => {
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
 
   const router = useRouter();
@@ -74,9 +77,9 @@ export const InventoryTable = () => {
   };
 
   const {
-    isFetching: isReportFetching,
-    isLoading: isReportLoading,
-    data: inventoriesReport,
+    isFetching,
+    isLoading,
+    data: properties,
   } = useGetPropertiesQuery({
     pageIndex,
     pageSize,
@@ -87,10 +90,7 @@ export const InventoryTable = () => {
     items: data,
     total: totalRows,
     pages: totalPages,
-  } = useMemo(
-    () => inventoriesReport || emptyInventoriesReportResponse,
-    [inventoriesReport]
-  );
+  } = useMemo(() => properties || emptyPropertiesResponse, [properties]);
 
   useEffect(() => {
     setTotalPages(totalPages);
@@ -108,20 +108,25 @@ export const InventoryTable = () => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Type" {...props} />,
       }),
-      columnHelper.accessor((row) => row.domains, {
-        id: "domains",
+      columnHelper.accessor((row) => row.experiences, {
+        id: "experiences",
         cell: (props) => (
           <GroupCountBadgeCell
-            suffix="domains"
+            suffix="experiences"
             value={props.getValue()}
             {...props}
           />
         ),
-        header: (props) => <DefaultHeaderCell value="Domains" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Experience" {...props} />,
         meta: {
-          displayText: "Domains",
+          displayText: "Experience",
           showHeaderMenu: true,
         },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => <PropertyActions id={row.id} />,
       }),
     ],
     []
@@ -139,43 +144,61 @@ export const InventoryTable = () => {
     },
   });
 
-  const onRowClick = (property: Property) => {};
-
-  const goToAddMultiple = () => {
-    router.push(ADD_MULTIPLE_VENDORS_ROUTE);
+  const onRowClick = (property: Property) => {
+    console.log(property.id);
   };
 
-  if (isReportLoading || isLoadingHealthCheck) {
+  const goToAddProperty = () => {
+    router.push(ADD_PROPERTY_ROUTE);
+  };
+
+  if (isLoading || isLoadingHealthCheck) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
   return (
-    <Flex flex={1} direction="column" overflow="auto">
-      <TableActionBar>
-        <GlobalFilterV2
-          globalFilter={globalFilter}
-          setGlobalFilter={updateGlobalFilter}
-          placeholder="Search property or domain"
+    <div>
+      {data.length === 0 ? (
+        <EmptyTableState
+          title="No properties"
+          description="You have not created any properties. Click “Add property” to add your first property to Fides."
+          button={
+            <AddProperty
+              buttonLabel="Add property"
+              buttonVariant="primary"
+              onButtonClick={goToAddProperty}
+            />
+          }
         />
-        <HStack alignItems="center" spacing={4}>
-          <AddVendor
-            buttonLabel="Add property"
-            buttonVariant="outline"
-            onButtonClick={goToAddMultiple}
+      ) : (
+        <Flex flex={1} direction="column" overflow="auto">
+          <TableActionBar>
+            <GlobalFilterV2
+              globalFilter={globalFilter}
+              setGlobalFilter={updateGlobalFilter}
+              placeholder="Search property"
+            />
+            <HStack alignItems="center" spacing={4}>
+              <AddProperty
+                buttonLabel="Add property"
+                buttonVariant="outline"
+                onButtonClick={goToAddProperty}
+              />
+            </HStack>
+          </TableActionBar>
+          <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
+          <PaginationBar
+            totalRows={totalRows}
+            pageSizes={PAGE_SIZES}
+            setPageSize={setPageSize}
+            onPreviousPageClick={onPreviousPageClick}
+            isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+            onNextPageClick={onNextPageClick}
+            isNextPageDisabled={isNextPageDisabled || isFetching}
+            startRange={startRange}
+            endRange={endRange}
           />
-        </HStack>
-      </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
-      <PaginationBar
-        totalRows={totalRows}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isReportFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isReportFetching}
-        startRange={startRange}
-        endRange={endRange}
-      />
-    </Flex>
+        </Flex>
+      )}
+    </div>
   );
 };
