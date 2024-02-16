@@ -62,6 +62,7 @@ export type Fides = {
   initialized: boolean;
   meta: typeof meta;
   shopify: typeof shopify;
+  showModal: () => void;
 };
 
 const retrieveEffectiveRegionString = async (
