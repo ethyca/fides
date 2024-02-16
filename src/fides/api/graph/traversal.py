@@ -17,13 +17,14 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.util.collection_util import Row, append
+from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
 
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
 
 
-class TraversalNode:
+class TraversalNode(Contextualizable):
     """Base traversal traversal_node type. This type will never be used directly."""
 
     def __init__(self, node: Node):
@@ -160,6 +161,9 @@ class TraversalNode:
             "from": {k: set(v) for k, v in _from.items()},
             "to": {k: set(v) for k, v in to.items()},
         }
+
+    def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+        return {LoggerContextKeys.collection: self.node.collection.name}
 
 
 def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
