@@ -394,8 +394,13 @@ class PrivacyExperienceConfig(
         cloned_attributes.pop("_sa_instance_state")
         cloned_attributes.pop("regions", [])
         cloned_attributes.pop("translations", [])
+        # Updated privacy notice ids from the request will be in this format
         cloned_attributes.pop("privacy_notice_ids", [])
+        # Existing privacy notices on the ExperienceConfig need to be popped off here as well
+        # to prevent the ExperienceConfig "dry_update" from being added to Session.new
+        cloned_attributes.pop("privacy_notices", [])
         cloned_attributes.pop("id", None)
+
         return PrivacyExperienceConfig(**cloned_attributes)
 
     def dry_update_translations(
