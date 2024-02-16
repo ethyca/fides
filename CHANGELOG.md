@@ -26,6 +26,7 @@ The types of changes are:
 - Support temporary credentials in AWS generate + scan features [#4607](https://github.com/ethyca/fides/pull/4603), [#4608](https://github.com/ethyca/fides/pull/4608)
 - Add ability to store and read Fides cookie in Base64 format [#4556](https://github.com/ethyca/fides/pull/4556)
 - Structured logging for SaaS connector requests [#4594](https://github.com/ethyca/fides/pull/4594)
+- Added Fides.showModal() to fides.js to allow programmatic opening of consent modals [#4617](https://github.com/ethyca/fides/pull/4617)
 
 ### Fixed
 
