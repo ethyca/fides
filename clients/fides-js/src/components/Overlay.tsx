@@ -20,7 +20,7 @@ import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
 import ConsentContent from "./ConsentContent";
-import { showModal as defaultShowModal } from "../fides";
+import { defaultShowModal } from "../fides";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -109,15 +109,9 @@ const Overlay: FunctionComponent<Props> = ({
     return () => clearTimeout(delayBanner);
   }, [setBannerIsOpen]);
 
-  const showModal = () => {
-    if (!modalLinkRef.current) {
-      document.body.classList.add("fides-overlay-modal-link-shown");
-    }
-    handleOpenModal();
-  };
-
   useEffect(() => {
-    window.Fides.showModal = showModal;
+    window.Fides.showModal = handleOpenModal;
+    document.body.classList.add("fides-overlay-modal-link-shown");
     // use a delay to ensure that link exists in the DOM
     const delayModalLinkBinding = setTimeout(() => {
       const modalLinkId = options.modalLinkId || "fides-modal-link";
@@ -128,11 +122,9 @@ const Overlay: FunctionComponent<Props> = ({
           "Modal link element found, updating it to show and trigger modal on click."
         );
         modalLinkRef.current = modalLinkEl;
-        // Update modal link to trigger modal on click
-        const modalLink = modalLinkEl;
-        modalLink.addEventListener("click", window.Fides.showModal);
+        modalLinkRef.current.addEventListener("click", window.Fides.showModal);
         // Update to show the pre-existing modal link in the DOM
-        modalLink.classList.add("fides-modal-link-shown");
+        modalLinkRef.current.classList.add("fides-modal-link-shown");
       } else {
         debugLog(options.debug, "Modal link element not found.");
       }

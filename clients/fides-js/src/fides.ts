@@ -162,7 +162,7 @@ const init = async (config: FidesConfig) => {
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 
-export const showModal = () => {
+export const defaultShowModal = () => {
   debugLog(
     window.Fides.options.debug,
     "The current experience does not support displaying a modal."
@@ -206,7 +206,7 @@ _Fides = {
   initialized: false,
   meta,
   shopify,
-  showModal,
+  showModal: defaultShowModal,
 };
 
 if (typeof window !== "undefined") {
