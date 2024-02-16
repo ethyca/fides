@@ -39,7 +39,7 @@ saas_config:
     - name: profile_list_recipient
       requests:
         read:
-          - request_override: profile_list_recipient_read
+          - request_override: oracle_responsys_profile_list_recipients_read
             param_values:
               - name: profile_list_id
                 references:
@@ -48,7 +48,7 @@ saas_config:
                     direction: from
               - name: email
                 identity: email
-          - request_override: profile_list_recipient_read
+          - request_override: oracle_responsys_profile_list_recipients_read
             param_values:
               - name: profile_list_id
                 references:
@@ -58,15 +58,15 @@ saas_config:
               - name: phone_number
                 identity: phone_number
         delete:
-          - request_override: profile_list_recipient_delete
-            param_values:
-              - name: profile_list_id
-                references:
-                  - dataset: <instance_fides_key>
-                    field: profile_list.name
-                    direction: from
-              - name: responsys_id
-                references:
-                  - dataset: <instance_fides_key>
-                    field: profile_list_recipient.riid
-                    direction: from
+          request_override: oracle_responsys_profile_list_recipients_delete
+          param_values:
+            - name: profile_list_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: profile_list.name
+                  direction: from
+            - name: responsys_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: profile_list_recipient.riid
+                  direction: from

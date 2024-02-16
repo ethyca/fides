@@ -16,8 +16,8 @@ from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import get_identity
 
 
-@register("profile_list_recipients_read", [SaaSRequestType.READ])
-def profile_list_recipients_read(
+@register("oracle_responsys_profile_list_recipients_read", [SaaSRequestType.READ])
+def oracle_responsys_profile_list_recipients_read(
     client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,
@@ -81,8 +81,8 @@ def profile_list_recipients_read(
     return results
 
 
-@register("profile_list_recipients_delete", [SaaSRequestType.DELETE])
-def profile_list_recipients_delete(
+@register("oracle_responsys_profile_list_recipients_delete", [SaaSRequestType.DELETE])
+def oracle_responsys_profile_list_recipients_delete(
     client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
