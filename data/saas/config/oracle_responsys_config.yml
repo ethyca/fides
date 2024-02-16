@@ -68,5 +68,5 @@ saas_config:
               - name: responsys_id
                 references:
                   - dataset: <instance_fides_key>
-                    field: profile_list_recipient.riid_
+                    field: profile_list_recipient.riid
                     direction: from

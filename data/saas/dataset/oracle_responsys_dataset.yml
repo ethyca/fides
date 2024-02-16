@@ -5,104 +5,104 @@ dataset:
     collections:
       - name: profile_list_recipient
         fields:
-          - name: riid_
+          - name: riid
             data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
               data_type: string
-          - name: customer_id_
+          - name: customer_id
             data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
-          - name: email_address_
+          - name: email_address
             data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
-          - name: email_domain_
+          - name: email_domain
             data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
-          - name: email_isp_
+          - name: email_isp
             data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
-          - name: email_format_
+          - name: email_format
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: email_permission_status_
+          - name: email_permission_status
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: email_deliverability_status_
+          - name: email_deliverability_status
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: email_permission_reason_
+          - name: email_permission_reason
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: email_md5_hash_
+          - name: email_md5_hash
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: email_sha256_hash_
+          - name: email_sha256_hash
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: mobile_number_
+          - name: mobile_number
             data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
-          - name: mobile_country_
+          - name: mobile_country
             data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
-          - name: mobile_permission_status_
+          - name: mobile_permission_status
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: mobile_permission_reason_
+          - name: mobile_permission_reason
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: mobile_deliverability_status_
+          - name: mobile_deliverability_status
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: postal_street_1_
+          - name: postal_street_1
             data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
-          - name: postal_street_2_
+          - name: postal_street_2
             data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
-          - name: city_
+          - name: city
             data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
-          - name: state_
+          - name: state
             data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
-          - name: postal_code_
+          - name: postal_code
             data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
-          - name: country_
+          - name: country
             data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
-          - name: postal_permission_status_
+          - name: postal_permission_status
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: postal_permission_reason_
+          - name: postal_permission_reason
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: postal_deliverability_status_
+          - name: postal_deliverability_status
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string

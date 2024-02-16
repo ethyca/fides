@@ -70,7 +70,7 @@ def profile_list_recipients_read(
         )
         response_data = pydash.get(members_response.json(), "recordData")
         normalized_field_names = [
-            field.lower() for field in response_data["fieldNames"]
+            field.lower().rstrip("_") for field in response_data["fieldNames"]
         ]
         serialized_data = [
             dict(zip(normalized_field_names, records))
@@ -97,7 +97,7 @@ def profile_list_recipients_delete(
     for row_param_values in param_values_per_row:
         # get params to be used in delete request
         list_id = row_param_values.get("profile_list_id")
-        responsys_id = row_param_values.get("riid_")
+        responsys_id = row_param_values.get("riid")
 
         body = {
             "fieldList": ["all"],
