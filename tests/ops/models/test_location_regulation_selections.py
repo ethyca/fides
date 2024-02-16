@@ -1,4 +1,3 @@
-from json import dumps
 from typing import Any, Dict
 
 import pytest

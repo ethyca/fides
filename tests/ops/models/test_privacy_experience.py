@@ -2,6 +2,7 @@ from copy import copy
 
 import pytest
 
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -9,12 +10,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfigHistory,
     upsert_privacy_experiences_after_config_update,
 )
-from fides.api.models.privacy_notice import (
-    ConsentMechanism,
-    EnforcementLevel,
-    PrivacyNotice,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -124,6 +120,22 @@ class TestExperienceConfig:
         history.delete(db)
         translation.delete(db)
         config.delete(db=db)
+
+    def test_privacy_experience_config_regions_property(
+        self, db, experience_config_modal
+    ):
+        assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
+
+        LocationRegulationSelections.set_selected_locations(db, ["us_ca"])
+
+        # It region is suppressed from the regions property because there are locations configured and It is not one of them
+        assert experience_config_modal.regions == []
+
+        LocationRegulationSelections.set_selected_locations(db, ["us_ca", "it"])
+
+        assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
+
+        LocationRegulationSelections.set_selected_locations(db, [])
 
     def test_update_privacy_experience_config_level(self, db, privacy_notice):
         config = PrivacyExperienceConfig.create(

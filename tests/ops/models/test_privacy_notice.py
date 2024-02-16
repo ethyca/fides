@@ -3,6 +3,7 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     NoticeTranslation,
@@ -17,7 +18,7 @@ from fides.api.schemas.language import SupportedLanguage
 
 
 class TestPrivacyNoticeModel:
-    def test_configured_regions(
+    def test_configured_regions_no_locations_set(
         self,
         db,
         privacy_notice,
@@ -65,6 +66,52 @@ class TestPrivacyNoticeModel:
             PrivacyNoticeRegion.fr,
             PrivacyNoticeRegion.us_ca,
         ]
+
+        reset_notices()
+
+    def test_configured_regions_locations_set(
+        self,
+        db,
+        privacy_notice,
+        privacy_experience_overlay,
+        privacy_experience_privacy_center_france,
+        privacy_experience_france_tcf_overlay,
+    ):
+        def reset_notices():
+            privacy_experience_overlay.experience_config.privacy_notices = []
+            privacy_experience_overlay.experience_config.save(db)
+            privacy_experience_privacy_center_france.experience_config.privacy_notices = (
+                []
+            )
+            privacy_experience_privacy_center_france.experience_config.save(db)
+            privacy_experience_france_tcf_overlay.experience_config.privacy_notices = []
+            privacy_experience_france_tcf_overlay.experience_config.save(db)
+
+        reset_notices()
+
+        # Set TX as the configured location
+        LocationRegulationSelections.set_selected_locations(db, ["us_tx"])
+        assert privacy_notice.configured_regions == []
+
+        privacy_experience_overlay.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_overlay.experience_config.save(db)
+
+        # The CA region is not returned because it is not a configured location
+        assert privacy_notice.configured_regions == []
+
+        privacy_experience_privacy_center_france.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_privacy_center_france.experience_config.save(db)
+
+        # Set CA as the configured location. FR is suppressed because it is not a configured location
+        LocationRegulationSelections.set_selected_locations(db, ["us_ca"])
+        assert privacy_notice.configured_regions == [
+            PrivacyNoticeRegion.us_ca,
+        ]
+        LocationRegulationSelections.set_selected_locations(db, [])
 
         reset_notices()
 

@@ -14,6 +14,7 @@ from sqlalchemy.orm.dynamic import AppenderQuery
 
 from fides.api.db.base_class import Base
 from fides.api.models.custom_asset import CustomAsset
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
@@ -229,7 +230,15 @@ class PrivacyExperienceConfig(
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
-        """Return the regions using this experience config"""
+        """Return the regions using this experience config
+
+        If locations are configured, then whatever regions are on the ExperienceConfig
+        are further filtered to just those that match locations.
+        """
+        db = Session.object_session(self)
+        locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
+        if locations:
+            return [exp.region for exp in self.experiences if exp.region.value in locations]  # type: ignore[attr-defined]
         return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
 
     def get_translation_by_language(

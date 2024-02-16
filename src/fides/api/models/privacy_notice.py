@@ -15,6 +15,7 @@ from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
@@ -337,13 +338,18 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     @property
     def configured_regions(self) -> List[PrivacyNoticeRegion]:
-        """Convenience property to look up which regions are using these Notices."""
+        """Convenience property to look up which regions are using these Notices.
+
+        If using locations, further filters so just these regions are on these Notices
+        """
         from fides.api.models.privacy_experience import (
             ExperienceNotices,
             PrivacyExperience,
         )
 
         db = Session.object_session(self)
+        locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
+
         configured_regions = (
             db.query(PrivacyExperience.region)
             .join(
@@ -355,6 +361,13 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             .group_by(PrivacyExperience.region)
             .order_by(PrivacyExperience.region.asc())
         )
+
+        if locations:
+            return [
+                region[0]
+                for region in configured_regions
+                if region[0].value in locations
+            ]
         return [region[0] for region in configured_regions]
 
     @classmethod
