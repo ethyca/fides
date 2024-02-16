@@ -18,14 +18,11 @@ describe("Fides.showModal", () => {
     });
 
     it("Should allow showModal", () => {
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.window().then((win) => {
-          win.Fides.showModal();
-          cy.wait(1000);
-          cy.get("@FidesUIShown").should("have.been.calledOnce");
-          cy.get(".fides-modal-content").should("be.visible");
-        });
-      });
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(100);
+      cy.window().its("Fides").invoke("showModal");
+      cy.get("@FidesUIShown").should("have.been.calledOnce");
+      cy.get(".fides-modal-content").should("be.visible");
     });
   });
 
@@ -46,14 +43,11 @@ describe("Fides.showModal", () => {
     });
 
     it("Should not allow showModal", () => {
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.window().then((win) => {
-          win.Fides.showModal();
-          cy.wait(1000);
-          cy.get("@FidesUIShown").should("not.have.been.called");
-          cy.get(".fides-modal-content").should("not.exist");
-        });
-      });
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(100);
+      cy.window().its("Fides").invoke("showModal");
+      cy.get("@FidesUIShown").should("not.have.been.called");
+      cy.get(".fides-modal-content").should("not.exist");
     });
   });
 });
