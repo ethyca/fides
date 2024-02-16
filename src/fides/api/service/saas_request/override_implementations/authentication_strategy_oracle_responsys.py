@@ -1,4 +1,5 @@
 from typing import Dict, Optional, cast
+from loguru import logger
 
 from requests import PreparedRequest, post
 
@@ -52,7 +53,7 @@ class OracleResponsysAuthenticationStrategy(AuthenticationStrategy):
 
         if response.ok:
             json_response = response.json()
-            token = json_response.get("access_token")
+            token = json_response.get("authToken")
         else:
             raise FidesopsException(f"Unable to get token {response.json()}")
 
