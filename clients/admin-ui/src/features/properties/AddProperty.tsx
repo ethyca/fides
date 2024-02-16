@@ -2,7 +2,7 @@ import { Button, ButtonProps } from "@fidesui/react";
 
 type ButtonVariant = "primary" | "outline";
 
-const AddProperty = ({
+const AddPropertyButton = ({
   buttonLabel,
   buttonVariant = "primary",
   onButtonClick,
@@ -30,13 +30,13 @@ const AddProperty = ({
 
   return (
     <Button
-        onClick={handleOpenButtonClicked}
-        data-testid="add-property-btn"
-        {...openButtonStyles}
-      >
-        {buttonLabel}
-      </Button>
+      onClick={handleOpenButtonClicked}
+      data-testid="add-property-btn"
+      {...openButtonStyles}
+    >
+      {buttonLabel}
+    </Button>
   );
 };
 
-export default AddProperty;
+export default AddPropertyButton;

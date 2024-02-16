@@ -9,13 +9,13 @@ import PropertyForm from "~/features/properties/PropertyForm";
 const Header = () => (
   <Box display="flex" alignItems="center" data-testid="header">
     <Heading fontSize="2xl" fontWeight="semibold">
-      Add property
+      Edit property
     </Heading>
   </Box>
 );
 
 const AddPropertyPage: NextPage = () => (
-  <Layout title="Add property">
+  <Layout title="Edit property">
     <BackButton backPath={PROPERTIES_ROUTE} />
     <Header />
     <Box maxWidth="720px">

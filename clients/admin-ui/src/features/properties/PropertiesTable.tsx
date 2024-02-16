@@ -27,8 +27,7 @@ import {
   useGetHealthQuery,
   useGetPropertiesQuery,
 } from "~/features/plus/plus.slice";
-
-import { Property } from "../types";
+import { Property } from "~/pages/consent/properties/types";
 import AddProperty from "./AddProperty";
 import PropertyActions from "./PropertyActions";
 
@@ -126,7 +125,7 @@ export const PropertiesTable = () => {
       columnHelper.display({
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => <PropertyActions id={row.id} />,
+        cell: ({ row }) => <PropertyActions property={row.original} />,
       }),
     ],
     []
