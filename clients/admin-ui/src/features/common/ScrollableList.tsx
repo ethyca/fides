@@ -6,12 +6,12 @@ import {
   Flex,
   IconButton,
   List,
-  Spacer,
   Text,
 } from "@fidesui/react";
 import { Select } from "chakra-react-select";
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
+
 import { Label, Option, SELECT_STYLES } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -156,11 +156,10 @@ const ScrollableList = <T extends unknown>({
   getItemLabel?: (item: T) => string;
   createNewValue?: (opt: Option) => T;
 }) => {
-  const getItemId = (item: T) => {
-    return item instanceof Object && idField && idField in item
+  const getItemId = (item: T) =>
+    item instanceof Object && idField && idField in item
       ? (item[idField] as string)
       : (item as string);
-  };
 
   const unselectedValues = allItems.every((item) => typeof item === "string")
     ? allItems.filter((item) => values.every((v) => v !== item))
@@ -179,9 +178,8 @@ const ScrollableList = <T extends unknown>({
         return (
           nameField && nameField in item ? item[nameField] : item[idField]
         ) as string;
-      } else {
-        return item as string;
       }
+      return item as string;
     });
 
   const createOptionFromValue = (item: T) => {
@@ -215,7 +213,10 @@ const ScrollableList = <T extends unknown>({
       maxH={44}
       overflowY="scroll"
     >
-      <Reorder.Group values={values} onReorder={(values) => setValues(values)}>
+      <Reorder.Group
+        values={values}
+        onReorder={(newValues) => setValues(newValues)}
+      >
         {values.map((item) => (
           <ScrollableListItem
             key={getItemId(item)}
@@ -242,9 +243,9 @@ const ScrollableList = <T extends unknown>({
       overflowY="scroll"
     >
       <List>
-        {values.map((item, idx) => (
+        {values.map((item) => (
           <ScrollableListItem
-            key={idx}
+            key={getItemId(item)}
             item={item}
             label={getItemDisplayName(item)}
             onRowClick={onRowClick}

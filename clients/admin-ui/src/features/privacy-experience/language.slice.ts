@@ -1,5 +1,6 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "~/app/store";
+
+import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import { Language, Page_Language_ } from "~/types/api";
 

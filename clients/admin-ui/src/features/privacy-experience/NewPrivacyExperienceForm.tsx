@@ -7,68 +7,46 @@ import {
   Text,
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
+import { useState } from "react";
+
+import { useAppSelector } from "~/app/hooks";
 import {
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import { enumToOptions } from "~/features/common/helpers";
-import {
-  ExperienceConfigCreate,
-  ExperienceTranslation,
-  PrivacyNoticeRegion,
-  PrivacyNoticeResponse,
-  SupportedLanguage,
-} from "~/types/api";
-import { useState } from "react";
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
-import {
-  selectAllPrivacyNotices,
-  selectPage as selectNoticePage,
-  selectPageSize as selectNoticePageSize,
-  useGetAllPrivacyNoticesQuery,
-} from "~/features/privacy-notices/privacy-notices.slice";
-import { useAppSelector } from "~/app/hooks";
 import {
   selectAllLanguages,
   selectPage as selectLanguagePage,
   selectPageSize as selectLanguagePageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
-import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import {
+  selectAllPrivacyNotices,
+  selectPage as selectNoticePage,
+  selectPageSize as selectNoticePageSize,
+  useGetAllPrivacyNoticesQuery,
+} from "~/features/privacy-notices/privacy-notices.slice";
+import {
+  ComponentType,
+  ExperienceConfigCreate,
+  ExperienceTranslation,
+  PrivacyNoticeRegion,
+  SupportedLanguage,
+} from "~/types/api";
 
-enum NewComponentType {
-  OVERLAY = "overlay",
-  PRIVACY_CENTER = "privacy_center",
-  BOTH = "both",
-}
-
-// export type NewPrivacyExperience = {
-//   name?: string;
-//   regions: PrivacyNoticeRegion[];
-//   component: NewComponentType; // maybe?
-//   dismissable: boolean;
-//   allow_language_selection: boolean;
-//   translations: PrivacyExperienceTranslation[];
-//   privacy_notices: PrivacyNoticeResponse[];
-// };
-
-// export type PrivacyExperienceTranslation = {
-//   language: string;
-//   accept_button_label?: string;
-//   acknowledge_button_label?: string;
-//   banner_description?: string;
-//   banner_title?: string;
-//   description?: string;
-//   privacy_policy_link_label?: string;
-//   privacy_policy_url?: string;
-//   privacy_preferences_link_label?: string;
-//   reject_button_label?: string;
-//   save_button_label?: string;
-//   title?: string;
-//   version?: number;
-//   is_default: boolean;
-// };
+const componentTypeOptions = [
+  {
+    label: "Banner and modal",
+    value: ComponentType.BANNER_AND_MODAL,
+  },
+  {
+    label: "Banner",
+    value: ComponentType.MODAL,
+  },
+];
 
 const NewPrivacyExperienceForm = () => {
   const [translationToEdit, setTranslationToEdit] = useState<
@@ -76,8 +54,6 @@ const NewPrivacyExperienceForm = () => {
   >(undefined);
   const [editingStyle, setEditingStyle] = useState<boolean>(false);
   const { values, setFieldValue } = useFormikContext<ExperienceConfigCreate>();
-
-  const testComponentOptions = enumToOptions(NewComponentType);
 
   const languagePage = useAppSelector(selectLanguagePage);
   const languagePageSize = useAppSelector(selectLanguagePageSize);
@@ -89,7 +65,7 @@ const NewPrivacyExperienceForm = () => {
       (lang) => lang.id === translation.language
     );
     const name = language ? language.name : translation.language;
-    return `${name}` + (translation.is_default ? " (Default)" : "");
+    return `${name}${translation.is_default ? " (Default)" : ""}`;
   };
 
   const noticePage = useAppSelector(selectNoticePage);
@@ -98,7 +74,7 @@ const NewPrivacyExperienceForm = () => {
   const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
 
   const getPrivacyNoticeName = (id: string) => {
-    const notice = allPrivacyNotices.find((notice) => notice.id === id);
+    const notice = allPrivacyNotices.find((n) => n.id === id);
     return notice?.name ?? id;
   };
 
@@ -118,7 +94,9 @@ const NewPrivacyExperienceForm = () => {
         </Text>
       </>
     );
-  } else if (editingStyle) {
+  }
+
+  if (editingStyle) {
     return (
       <>
         <Button onClick={() => setEditingStyle(false)}>
@@ -143,7 +121,7 @@ const NewPrivacyExperienceForm = () => {
       <CustomSelect
         name="component"
         id="component"
-        options={testComponentOptions}
+        options={componentTypeOptions}
         label="Experience Type"
         variant="stacked"
         isRequired
@@ -195,9 +173,7 @@ const NewPrivacyExperienceForm = () => {
         values={values.translations ?? []}
         setValues={(newValues) => setFieldValue("translations", newValues)}
         idField="language"
-        canDeleteItem={(item) => {
-          return !item.is_default;
-        }}
+        canDeleteItem={(item) => !item.is_default}
         allItems={allLanguages.map((lang) => ({
           language: lang.id as SupportedLanguage,
           is_default: false,

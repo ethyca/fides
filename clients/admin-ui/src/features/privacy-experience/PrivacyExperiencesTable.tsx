@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
+import { Button, Flex, Spacer, Spinner, Stack } from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
 import Restrict, { useHasPermission } from "common/Restrict";
 import { DateCell, FidesTable } from "common/table";
@@ -98,14 +98,23 @@ const PrivacyExperiencesTable = () => {
   }
   return (
     <Stack spacing={3} width="70%">
-      <Box alignSelf="end">
+      <Flex direction="row">
+        <Button
+          size="sm"
+          colorScheme="primary"
+          alignSelf="start"
+          onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
+        >
+          Create new experience
+        </Button>
+        <Spacer />
         <JavaScriptTag />
         <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
           <CustomAssetUploadButton
             assetType={CustomAssetType.CUSTOM_FIDES_CSS}
           />
         </Restrict>
-      </Box>
+      </Flex>
       <FidesTable<ExperienceConfigResponse>
         columns={columns}
         data={privacyExperiences}

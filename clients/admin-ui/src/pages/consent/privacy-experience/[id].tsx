@@ -37,7 +37,7 @@ const PrivacyExperienceDetailPage = () => {
 
   return (
     <Layout title={`Privacy experience ${data.component}`} padded={false}>
-      <ConfigurePrivacyExperience />
+      <ConfigurePrivacyExperience passedInExperience={data} />
     </Layout>
   );
 };

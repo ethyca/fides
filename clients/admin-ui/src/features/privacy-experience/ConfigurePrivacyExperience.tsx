@@ -6,45 +6,83 @@ import {
   NotAllowedIcon,
   Spacer,
   Text,
+  useToast,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
-import NewPrivacyExperienceForm from "~/features/privacy-experience/NewPrivacyExperienceForm";
-import {
-  ComponentType,
-  ExperienceConfigCreate,
-  SupportedLanguage,
-} from "~/types/api";
+import { useRouter } from "next/router";
 import * as Yup from "yup";
 
-const defaultInitialValues: ExperienceConfigCreate = {
-  disabled: false,
-  allow_language_selection: false,
-  regions: [],
-  translations: [
-    {
-      language: SupportedLanguage.EN,
-      is_default: true,
-      description: "",
-      title: "",
-    },
-  ],
-  component: ComponentType.MODAL,
-};
+import { getErrorMessage } from "~/features/common/helpers";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import {
+  defaultInitialValues,
+  transformConfigResponseToCreate,
+} from "~/features/privacy-experience/form/helpers";
+import NewPrivacyExperienceForm from "~/features/privacy-experience/NewPrivacyExperienceForm";
+import {
+  usePatchExperienceConfigMutation,
+  usePostExperienceConfigMutation,
+} from "~/features/privacy-experience/privacy-experience.slice";
+import { ExperienceConfigCreate, ExperienceConfigResponse } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 const validationSchema = Yup.object().shape({
   component: Yup.string().required().label("Experience type"),
 });
 
-const ConfigurePrivacyExperience = () => {
-  const handleSubmit = (values: ExperienceConfigCreate) => {
-    console.log(values);
+const ConfigurePrivacyExperience = ({
+  passedInExperience,
+}: {
+  passedInExperience?: ExperienceConfigResponse;
+}) => {
+  const [postExperienceConfigMutation] = usePostExperienceConfigMutation();
+  const [patchExperienceConfigMutation] = usePatchExperienceConfigMutation();
+
+  const toast = useToast();
+
+  const router = useRouter();
+
+  const handleSubmit = async (values: ExperienceConfigCreate) => {
+    const valuesToSubmit = {
+      ...values,
+      allow_language_selection:
+        values.translations && values.translations.length > 1,
+    };
+
+    let result;
+    if (!passedInExperience) {
+      result = await postExperienceConfigMutation(valuesToSubmit);
+    } else {
+      const { component, ...payload } = valuesToSubmit;
+      result = await patchExperienceConfigMutation({
+        ...payload,
+        id: passedInExperience.id,
+      });
+    }
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(
+        successToastParams(
+          `Privacy experience successfully ${
+            passedInExperience ? "updated" : "created"
+          }`
+        )
+      );
+      router.push(PRIVACY_EXPERIENCE_ROUTE);
+    }
   };
+
+  const initialValues = passedInExperience
+    ? transformConfigResponseToCreate(passedInExperience)
+    : defaultInitialValues;
 
   return (
     <Formik
-      initialValues={defaultInitialValues}
+      initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
@@ -64,7 +102,12 @@ const ConfigurePrivacyExperience = () => {
               </Flex>
               <Spacer />
               <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-                <Button variant="outline">Cancel</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}
+                >
+                  Cancel
+                </Button>
                 <Button
                   type="submit"
                   colorScheme="primary"
@@ -91,12 +134,12 @@ const ConfigurePrivacyExperience = () => {
                   <IconButton
                     // TODO: replace with "mobile" icon
                     icon={<NotAllowedIcon />}
-                    aria-label={"View mobile preview"}
+                    aria-label="View mobile preview"
                   />
                   <IconButton
                     // TODO: replace with "desktop" icon
                     icon={<NotAllowedIcon />}
-                    aria-label={"View desktop preview"}
+                    aria-label="View desktop preview"
                   />
                 </ButtonGroup>
               </Flex>

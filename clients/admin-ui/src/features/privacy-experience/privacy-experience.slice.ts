@@ -4,7 +4,6 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   ExperienceConfigCreate,
-  ExperienceConfigCreateOrUpdateResponse,
   ExperienceConfigResponse,
   ExperienceConfigUpdate,
   Page_ExperienceConfigResponse_,
@@ -69,7 +68,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       providesTags: () => ["Privacy Experience Configs"],
     }),
     patchExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
+      ExperienceConfigResponse,
       ExperienceConfigUpdateParams
     >({
       query: (payload) => {
@@ -91,8 +90,8 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       ],
     }),
     postExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
-      ExperienceConfigCreateParams
+      ExperienceConfigResponse,
+      ExperienceConfigCreate
     >({
       query: (payload) => ({
         method: "POST",

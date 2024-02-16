@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceTranslation } from './ExperienceTranslation';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ExperienceTranslation } from "./ExperienceTranslation";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * Updating ExperienceConfig. Note that component cannot be updated once its created.
@@ -21,4 +21,3 @@ export type ExperienceConfigUpdate = {
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;
 };
-
