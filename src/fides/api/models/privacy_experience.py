@@ -682,7 +682,7 @@ def delete_experience_config_translations(
     db: Session,
     privacy_experience_config: PrivacyExperienceConfig,
     request_translations: Dict,
-):
+) -> None:
     """Removes any translations that are currently stored on the PrivacyExperienceConfig but not in the update request"""
     experience_translations: List[
         ExperienceTranslation

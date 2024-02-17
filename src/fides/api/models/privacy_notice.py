@@ -557,7 +557,7 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
 
 def create_historical_record_for_notice_and_translation(
     db: Session, privacy_notice: PrivacyNotice, notice_translation: NoticeTranslation
-):
+) -> None:
     existing_version: float = notice_translation.version or 0.0
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
@@ -582,7 +582,7 @@ def delete_notice_translations(
     db: Session,
     privacy_notice: PrivacyNotice,
     request_translations: Dict,
-):
+) -> None:
     """Removes any translations that are currently stored on the PrivacyNotice but not in the update request"""
     notice_translations: List[NoticeTranslation] = privacy_notice.translations
     translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
