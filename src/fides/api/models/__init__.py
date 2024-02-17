@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fides.api.db.base_class import Base
 
 
-def update_if_modified(resource: Base, db: Session, *, data: dict[str, Any]) -> bool:
+def update_if_modified(resource: Base, db: Session, *, data: Dict[str, Any]) -> bool:
     """Updates a resource and returns whether it was modified.
 
     This is used when deciding whether to save a new version for a privacy notice or privacy experience config.
