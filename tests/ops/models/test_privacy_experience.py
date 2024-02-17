@@ -4,11 +4,11 @@ import pytest
 
 from fides.api.models.privacy_experience import (
     ComponentType,
+    ExperienceTranslation,
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
     upsert_privacy_experiences_after_config_update,
-    ExperienceTranslation,
 )
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
