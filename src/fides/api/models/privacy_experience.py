@@ -538,6 +538,7 @@ class PrivacyExperience(Base):
     tcf_system_consents: List = []
     tcf_system_legitimate_interests: List = []
     gvl: Optional[Dict] = {}
+    gvl_translations: Optional[Dict] = {}
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}
 
