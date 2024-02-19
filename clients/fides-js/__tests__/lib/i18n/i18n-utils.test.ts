@@ -1,7 +1,62 @@
-import { setupI18n } from "~/lib/i18n";
+import { FidesOptions } from "~/fides";
+import {
+  setupI18n,
+  initializeI18n,
+  updateMessagesFromFiles,
+  updateMessagesFromExperience,
+  detectUserLocale,
+  activateBestLocaleMatch
+} from "~/lib/i18n";
 import type { I18n, Messages } from "~/lib/i18n";
 
 describe("i18n-utils", () => {
+  describe("initializeI18n", () => {
+    it("initializes the i18n singleton with static messages and a default locale", () => {
+
+    });
+  });
+
+  describe("updateMessagesFromFiles", () => {
+    it("reads all static messages from source and loads into the i18n dictionary", () => {
+
+    });
+  });
+
+  describe("updateMessagesFromExperience", () => {
+    it("reads all messages from experience API response and loads into the i18n dictionary", () => {
+
+    });
+  });
+
+  // TODO: unskip when ready
+  describe.skip("detectUserLocale", () => {
+    const mockNavigator: Partial<Navigator> = {
+      language: "es"
+    };
+
+    it("returns the browser locale by default", () => {
+      expect(detectUserLocale(mockNavigator)).toEqual("es");
+    });
+
+    it("returns the fides_locale override if present in options", () => {
+      const mockOptions: Partial<FidesOptions> = {
+        // TODO: update types
+        // fidesLocale: "fr",
+      };
+      expect(detectUserLocale(mockNavigator, mockOptions)).toEqual("fr");
+    });
+  });
+
+  describe("activateBestLocaleMatch", () => {
+    it("foo", () => {
+
+    });
+  });
+
+});
+
+// Additional tests for the i18n module itself, to guarantee how we expect it to behave
+describe("i18n module", () => {
   describe("module exports", () => {
     it("exports a valid i18n object", () => {
       // NOTE: using require() here to avoid importing i18n and accidentally using it!
@@ -20,7 +75,7 @@ describe("i18n-utils", () => {
     });
   });
 
-  describe("when loading a test dictionary", () => {
+  describe("when loading a test messages dictionary", () => {
     const messagesEn: Messages = {
       "test.greeting": "Hello, Jest!",
       "test.phrase": "Move purposefully and fix things",

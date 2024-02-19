@@ -1,4 +1,4 @@
-import { PrivacyExperience } from "../consent-types";
+import { FidesOptions, PrivacyExperience } from "../consent-types";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import { i18n } from "./index";
 
@@ -8,15 +8,6 @@ import { i18n } from "./index";
  */
 export function initializeI18n(): void {
   i18n.activate("en");
-}
-
-/**
- * Detect the user's preferred locale and activate the best match in the current
- * dictionary.
- */
-export function activateUserLocale(): Locale {
-  i18n.activate("en");
-  return "en";
 }
 
 /**
@@ -30,6 +21,22 @@ export function updateMessagesFromFiles(): void {
  * into the message dictionary.
  */
 export function updateMessagesFromExperience(experience: PrivacyExperience): void {
+}
+
+/**
+ * Detect the user's preferred locale from the browser or any overrides.
+ */
+export function detectUserLocale(navigator: Partial<Navigator>, options?: Partial<FidesOptions>): Locale {
+  return "en";
+}
+
+/**
+ * Detect the user's preferred locale and activate the best match in the current
+ * dictionary.
+ */
+export function activateBestLocaleMatch(navigator: Partial<Navigator>, options?: Partial<FidesOptions>): Locale {
+  i18n.activate("en");
+  return "en";
 }
 
 /**
