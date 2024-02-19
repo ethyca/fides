@@ -5,7 +5,7 @@ import {
   updateMessagesFromFiles,
   updateMessagesFromExperience,
   detectUserLocale,
-  activateBestLocaleMatch
+  matchAvailableLocales,
 } from "~/lib/i18n";
 import type { I18n, Messages } from "~/lib/i18n";
 
@@ -47,12 +47,26 @@ describe("i18n-utils", () => {
     });
   });
 
-  describe("activateBestLocaleMatch", () => {
-    it("foo", () => {
+  // TODO: unskip when ready
+  describe.skip("matchAvailableLocales", () => {
+    it("returns an exact match when able", () => {
+      const availableLocales = ["en", "es", "fr-CA"];
+      expect(matchAvailableLocales("fr-CA", availableLocales)).toEqual("fr-CA");
+      expect(matchAvailableLocales("es", availableLocales)).toEqual("es");
+    });
 
+    it("falls back to langauge when language+region is not available", () => {
+      const availableLocales = ["en", "es", "fr"];
+      expect(matchAvailableLocales("fr-CA", availableLocales)).toEqual("fr");
+      expect(matchAvailableLocales("es-ES", availableLocales)).toEqual("es");
+    });
+
+    it("falls back to default language when no match is found", () => {
+      const availableLocales = ["en", "es", "fr"];
+      expect(matchAvailableLocales("zh", availableLocales)).toEqual("en");
+      expect(matchAvailableLocales("foo", availableLocales)).toEqual("en");
     });
   });
-
 });
 
 // Additional tests for the i18n module itself, to guarantee how we expect it to behave

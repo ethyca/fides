@@ -31,12 +31,10 @@ export function detectUserLocale(navigator: Partial<Navigator>, options?: Partia
 }
 
 /**
- * Detect the user's preferred locale and activate the best match in the current
- * dictionary.
+ * Match the user's preferred locale to the best match from the given locales.
  */
-export function activateBestLocaleMatch(navigator: Partial<Navigator>, options?: Partial<FidesOptions>): Locale {
-  i18n.activate("en");
-  return "en";
+export function matchAvailableLocales(requestedLocale: Locale, availableLocales: Locale[]): Locale {
+  return availableLocales[0];
 }
 
 /**
