@@ -215,7 +215,7 @@ def enable_override_vendor_purposes_api_set(db):
 
 @pytest.fixture
 def loguru_caplog(caplog):
-    handler_id = logger.add(caplog.handler, format="{message}")
+    handler_id = logger.add(caplog.handler, format="{message} | {extra}")
     yield caplog
     logger.remove(handler_id)
 

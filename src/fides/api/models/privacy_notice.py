@@ -15,6 +15,11 @@ from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.models import (
+    create_historical_data_from_record,
+    dry_update_data,
+    update_if_modified,
+)
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
@@ -241,23 +246,16 @@ class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """
-        A utility method to get an updated object without saving it to the db.
+        A utility method to dry update the PrivacyNoticeTemplate
 
         This is used to see what an object update would look like, in memory,
         without actually persisting the update to the db
         """
-        # Update our attributes with values in data
-        cloned_attributes = self.__dict__.copy()
-        for key, val in data.items():
-            cloned_attributes[key] = val
-
-        # remove protected fields from the cloned dict
-        cloned_attributes.pop("_sa_instance_state", None)
-        cloned_attributes.pop("id", None)
+        updated_attributes: Dict = dry_update_data(resource=self, data_updates=data)
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
-        return PrivacyNoticeTemplate(**cloned_attributes)
+        return PrivacyNoticeTemplate(**updated_attributes)
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
@@ -442,38 +440,14 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 )
 
             if base_notice_updated or translation_updated:
-                existing_version: float = translation.version or 0.0
-                history_data: dict = create_historical_data_from_record(self)
-                history_data.pop("translations", None)
-                updated_translation_data: dict = create_historical_data_from_record(
-                    translation
-                )
-                # Creates a historical record of the Notice and the translation combined. Preferences are saved
-                # against this resource.
-                PrivacyNoticeHistory.create(
-                    db,
-                    data={
-                        **history_data,
-                        **updated_translation_data,
-                        "translation_id": translation.id,
-                        "version": existing_version + 1.0,
-                    },
-                    check_name=False,
+                create_historical_record_for_notice_and_translation(
+                    db=db, privacy_notice=self, notice_translation=translation
                 )
 
         # Removes any translations not supplied in the request from the Notice
-        notice_translations: List[NoticeTranslation] = self.translations
-        translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
-            translation.language for translation in notice_translations
-        ).difference(
-            set(translation.get("language") for translation in request_translations)
+        delete_notice_translations(
+            db, privacy_notice=self, request_translations=request_translations
         )
-
-        db.query(NoticeTranslation).filter(
-            NoticeTranslation.language.in_(translations_to_remove),
-            NoticeTranslation.privacy_notice_id == self.id,
-        ).delete()
-        db.commit()
 
         return self  # type: ignore[return-value]
 
@@ -484,19 +458,15 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         This is used to see what an object update would look like, in memory,
         without actually persisting the update to the db
         """
-        # Update our attributes with values in data
-        cloned_attributes = self.__dict__.copy()
-        for key, val in data.items():
-            cloned_attributes[key] = val
+        updated_attributes: Dict = dry_update_data(resource=self, data_updates=data)
 
-        # remove protected fields from the cloned dict
-        cloned_attributes.pop("_sa_instance_state", None)
-        cloned_attributes.pop("id", None)
-        cloned_attributes.pop("translations", [])
+        # This relationship needs to be removed before the dry_update
+        # to prevent the dry update from being added to Session.new
+        updated_attributes.pop("translations", [])
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
-        return PrivacyNotice(**cloned_attributes)
+        return PrivacyNotice(**updated_attributes)
 
     def get_translation_by_language(
         self, db: Session, language: Optional[SupportedLanguage]
@@ -598,29 +568,44 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     )  # TODO Will be removed.  This now points to just the translation.
 
 
-def update_if_modified(resource: Base, db: Session, *, data: dict[str, Any]) -> bool:
-    """Returns whether the resource was modified on save (which determines if we should create
-    a corresponding historical record).
-    """
-    # run through potential updates now
-    for key, value in data.items():
-        setattr(resource, key, value)
+def create_historical_record_for_notice_and_translation(
+    db: Session, privacy_notice: PrivacyNotice, notice_translation: NoticeTranslation
+) -> None:
+    existing_version: float = notice_translation.version or 0.0
+    history_data: dict = create_historical_data_from_record(privacy_notice)
+    history_data.pop("translations", None)
+    updated_translation_data: dict = create_historical_data_from_record(
+        notice_translation
+    )
+    # Creates a historical record of the Notice and the translation combined. Preferences are saved
+    # against this resource.
+    PrivacyNoticeHistory.create(
+        db,
+        data={
+            **history_data,
+            **updated_translation_data,
+            "translation_id": notice_translation.id,
+            "version": existing_version + 1.0,
+        },
+        check_name=False,
+    )
 
-    if db.is_modified(resource):
-        resource.save(db)
-        return True
 
-    return False
+def delete_notice_translations(
+    db: Session,
+    privacy_notice: PrivacyNotice,
+    request_translations: Dict,
+) -> None:
+    """Removes any translations that are currently stored on the PrivacyNotice but not in the update request"""
+    notice_translations: List[NoticeTranslation] = privacy_notice.translations
+    translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
+        translation.language for translation in notice_translations
+    ).difference(
+        set(translation.get("language") for translation in request_translations)
+    )
 
-
-def create_historical_data_from_record(resource: Base) -> Dict:
-    """Prep data to be saved in a historical table for record keeping"""
-    # Resource attributes are being lazy loaded and not showing up in the dict.  Accessing
-    # an attribute causes them to be loaded.
-    resource.id  # pylint: disable=pointless-statement
-    history_data = resource.__dict__.copy()
-    history_data.pop("_sa_instance_state", None)
-    history_data.pop("id", None)
-    history_data.pop("created_at", None)
-    history_data.pop("updated_at", None)
-    return history_data
+    db.query(NoticeTranslation).filter(
+        NoticeTranslation.language.in_(translations_to_remove),
+        NoticeTranslation.privacy_notice_id == privacy_notice.id,
+    ).delete()
+    db.commit()

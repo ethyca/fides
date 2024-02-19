@@ -13,14 +13,14 @@ from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
 
 from fides.api.db.base_class import Base
-from fides.api.models.custom_asset import CustomAsset
-from fides.api.models.location_regulation_selections import LocationRegulationSelections
-from fides.api.models.privacy_notice import (
-    PrivacyNotice,
-    PrivacyNoticeRegion,
+from fides.api.models import (
     create_historical_data_from_record,
+    dry_update_data,
     update_if_modified,
 )
+from fides.api.models.custom_asset import CustomAsset
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
+from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -347,42 +347,22 @@ class PrivacyExperienceConfig(
                 )
 
             if config_updated or translation_updated:
-                existing_version: float = translation.version or 0.0
-                history_data: dict = create_historical_data_from_record(self)
-                history_data.pop("privacy_notices", None)
-                history_data.pop("translations", None)
-                updated_translation_data: dict = create_historical_data_from_record(
-                    translation
-                )
-                # Create a historical record for reporting purposes, which versions
-                # elements from both the PrivacyExperienceConfig and ExperienceTranslation
-                PrivacyExperienceConfigHistory.create(
+                create_historical_record_for_config_and_translation(
                     db,
-                    data={
-                        **history_data,
-                        **updated_translation_data,
-                        "translation_id": translation.id,
-                        "version": existing_version + 1.0,
-                    },
-                    check_name=False,
+                    privacy_experience_config=self,
+                    experience_translation=translation,
                 )
 
         # Deletes any Experience Translations that were not supplied in the request
-        experience_translations: List[ExperienceTranslation] = self.translations
-        translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
-            translation.language for translation in experience_translations
-        ).difference(
-            set(translation.get("language") for translation in request_translations)
+        delete_experience_config_translations(
+            db=db,
+            privacy_experience_config=self,
+            request_translations=request_translations,
         )
-
-        db.query(ExperienceTranslation).filter(
-            ExperienceTranslation.language.in_(translations_to_remove),
-            ExperienceTranslation.experience_config_id == self.id,
-        ).delete()
-        db.commit()
 
         # Link regions to this PrivacyExperienceConfig via the PrivacyExperience table
         upsert_privacy_experiences_after_config_update(db, self, regions)
+
         # Link Privacy Notices to this Privacy Experience config via the ExperienceNotices table
         link_notices_to_experience_config(
             db, notice_ids=privacy_notice_ids, experience_config=self
@@ -397,15 +377,17 @@ class PrivacyExperienceConfig(
         This is used to see what an object update would look like, in memory,
         without actually persisting the update to the db
         """
-        cloned_attributes = self.__dict__.copy()
-        for key, val in data.items():
-            cloned_attributes[key] = val
-        cloned_attributes.pop("_sa_instance_state")
-        cloned_attributes.pop("regions", [])
-        cloned_attributes.pop("translations", [])
-        cloned_attributes.pop("privacy_notice_ids", [])
-        cloned_attributes.pop("id", None)
-        return PrivacyExperienceConfig(**cloned_attributes)
+        updated_attributes = dry_update_data(resource=self, data_updates=data)
+        updated_attributes.pop("regions", [])
+        updated_attributes.pop("translations", [])
+        # Updated privacy notice ids from the request will be in this format
+        updated_attributes.pop("privacy_notice_ids", [])
+        # Existing privacy notices on the ExperienceConfig need to be popped off here as well
+        # to prevent the ExperienceConfig "dry_update" from being added to Session.new
+        # (which would cause another PrivacyExperienceConfig to be created!)
+        updated_attributes.pop("privacy_notices", [])
+
+        return PrivacyExperienceConfig(**updated_attributes)
 
     def dry_update_translations(
         self, data: list[dict[str, Any]]
@@ -417,14 +399,12 @@ class PrivacyExperienceConfig(
                 Session.object_session(self), translation_data.get("language")
             )
             if existing_translation:
-                cloned_attributes = existing_translation.__dict__.copy()
-                for key, val in translation_data.items():
-                    cloned_attributes[key] = val
-                cloned_attributes.pop("_sa_instance_state")
-                cloned_attributes.pop("id")
+                updated_attributes: Dict = dry_update_data(
+                    existing_translation, translation_data
+                )
             else:
-                cloned_attributes = translation_data
-            dry_updated_translations.append(ExperienceTranslation(**cloned_attributes))
+                updated_attributes = translation_data
+            dry_updated_translations.append(ExperienceTranslation(**updated_attributes))
         return dry_updated_translations
 
 
@@ -510,8 +490,8 @@ class PrivacyExperienceConfigHistory(
 class PrivacyExperience(Base):
     """Privacy Experiences connect a region to a shared PrivacyExperienceConfig.
 
-    This resource should be queried for an end-user in a specific region, and the configuration
-    will be loaded from the shared Privacy Experience Config.
+    Privacy Experiences are queried by end-users in a specific region.  The configuration is loaded
+    from their PrivacyExperienceConfig.
     """
 
     region = Column(EnumColumn(PrivacyNoticeRegion), nullable=False, index=True)
@@ -519,7 +499,7 @@ class PrivacyExperience(Base):
     experience_config_id = Column(
         String,
         ForeignKey(PrivacyExperienceConfig.id_field_path),
-        nullable=True,  # Needs an ExperienceConfig to be valid though
+        nullable=True,  # Privacy Experiences should always have ExperienceConfigs linked, but for historical reasons, it is possible to not have an ExperienceConfig
         index=True,
     )
 
@@ -600,10 +580,7 @@ def upsert_privacy_experiences_after_config_update(
     regions: List[PrivacyNoticeRegion],
 ) -> List[PrivacyNoticeRegion]:
     """
-    Links regions to a PrivacyExperienceConfig via the PrivacyExperience table.
-
-    PrivacyExperiences are queried directly for the end-user in a specific region and pull
-    their configuration off of the linked PrivacyExperienceConfig.
+    Links regions to a PrivacyExperienceConfig by adding or removing PrivacyExperience records.
     """
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
     removed_regions: List[
@@ -676,3 +653,57 @@ def link_notices_to_experience_config(
 
     experience_config.save(db)
     return experience_config.privacy_notices
+
+
+def create_historical_record_for_config_and_translation(
+    db: Session,
+    privacy_experience_config: PrivacyExperienceConfig,
+    experience_translation: ExperienceTranslation,
+) -> None:
+    """
+    Create a PrivacyExperienceConfigHistory record that preserves changes from the ExperienceTranslation and/or its
+    PrivacyExperienceConfig for consent reporting purposes.
+
+    The id of this record is used to save more context around what an end user was shown when saving privacy preferences.
+    """
+    existing_version: float = experience_translation.version or 0.0
+    history_data: dict = create_historical_data_from_record(privacy_experience_config)
+    history_data.pop("privacy_notices", None)
+    history_data.pop("translations", None)
+    updated_translation_data: dict = create_historical_data_from_record(
+        experience_translation
+    )
+    # Create a historical record for reporting purposes, which versions
+    # elements from both the PrivacyExperienceConfig and ExperienceTranslation
+    PrivacyExperienceConfigHistory.create(
+        db,
+        data={
+            **history_data,
+            **updated_translation_data,
+            "translation_id": experience_translation.id,
+            "version": existing_version + 1.0,
+        },
+        check_name=False,
+    )
+
+
+def delete_experience_config_translations(
+    db: Session,
+    privacy_experience_config: PrivacyExperienceConfig,
+    request_translations: Dict,
+) -> None:
+    """Removes any translations that are currently stored on the PrivacyExperienceConfig but not in the update request"""
+    experience_translations: List[
+        ExperienceTranslation
+    ] = privacy_experience_config.translations
+    translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
+        translation.language for translation in experience_translations
+    ).difference(
+        set(translation.get("language") for translation in request_translations)
+    )
+
+    db.query(ExperienceTranslation).filter(
+        ExperienceTranslation.language.in_(translations_to_remove),
+        ExperienceTranslation.experience_config_id == privacy_experience_config.id,
+    ).delete()
+    db.commit()
