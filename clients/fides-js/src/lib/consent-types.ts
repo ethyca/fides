@@ -100,6 +100,9 @@ export type FidesOptions = {
 
   // Encodes cookie as base64 on top of the default JSON string
   base64Cookie: boolean;
+
+  // Allows specifying the preferred locale used for translations
+  fidesLocale?: string;
 };
 
 /**
@@ -447,6 +450,7 @@ export type OverrideOptions = {
   fides_disable_banner: boolean;
   fides_embed: boolean;
   fides_tcf_gdpr_applies: boolean;
+  fides_locale: string;
 };
 
 export type FidesOptionsOverrides = Pick<
@@ -456,6 +460,7 @@ export type FidesOptionsOverrides = Pick<
   | "fidesEmbed"
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
+  | "fidesLocale"
 >;
 
 export type FidesOverrides = {
