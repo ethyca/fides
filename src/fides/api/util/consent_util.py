@@ -5,11 +5,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_notice import (
-    EnforcementLevel,
-    PrivacyNoticeRegion,
-    UserConsentPreference,
-)
+from fides.api.models.privacy_notice import EnforcementLevel, UserConsentPreference
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
@@ -246,45 +242,6 @@ def get_or_create_fides_user_device_id_provided_identity(
         )
 
     return identity  # type: ignore[return-value]
-
-
-EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
-    PrivacyNoticeRegion.be,
-    PrivacyNoticeRegion.bg,
-    PrivacyNoticeRegion.cz,
-    PrivacyNoticeRegion.dk,
-    PrivacyNoticeRegion.de,
-    PrivacyNoticeRegion.ee,
-    PrivacyNoticeRegion.ie,
-    PrivacyNoticeRegion.gr,
-    PrivacyNoticeRegion.es,
-    PrivacyNoticeRegion.fr,
-    PrivacyNoticeRegion.hr,
-    PrivacyNoticeRegion.it,
-    PrivacyNoticeRegion.cy,
-    PrivacyNoticeRegion.lv,
-    PrivacyNoticeRegion.lt,
-    PrivacyNoticeRegion.lu,
-    PrivacyNoticeRegion.hu,
-    PrivacyNoticeRegion.mt,
-    PrivacyNoticeRegion.nl,
-    PrivacyNoticeRegion.at,
-    PrivacyNoticeRegion.pl,
-    PrivacyNoticeRegion.pt,
-    PrivacyNoticeRegion.ro,
-    PrivacyNoticeRegion.si,
-    PrivacyNoticeRegion.sk,
-    PrivacyNoticeRegion.fi,
-    PrivacyNoticeRegion.se,
-    PrivacyNoticeRegion.gb_eng,
-    PrivacyNoticeRegion.gb_sct,
-    PrivacyNoticeRegion.gb_wls,
-    PrivacyNoticeRegion.gb_nir,
-    PrivacyNoticeRegion.no,
-    PrivacyNoticeRegion["is"],
-    PrivacyNoticeRegion.li,
-    PrivacyNoticeRegion.eea,  # Catch-all region - can query this Experience directly to get a generic TCF experience
-]
 
 
 def create_default_tcf_purpose_overrides_on_startup(

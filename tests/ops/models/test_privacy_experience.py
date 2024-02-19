@@ -11,8 +11,8 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfigHistory,
     upsert_privacy_experiences_after_config_update,
 )
-from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.language import SupportedLanguage
+from fides.api.schemas.locations import PrivacyNoticeRegion
 
 
 class TestExperienceConfig:

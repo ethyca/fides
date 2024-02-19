@@ -20,8 +20,9 @@ from fides.api.models import (
 )
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.schemas.language import SupportedLanguage
+from fides.api.schemas.locations import PrivacyNoticeRegion
 
 
 class ExperienceNotices(Base):
@@ -232,8 +233,8 @@ class PrivacyExperienceConfig(
     def regions(self) -> List[PrivacyNoticeRegion]:
         """Return the regions using this experience config
 
-        If locations are configured, then whatever regions are on the ExperienceConfig
-        are further filtered to just those that match locations.
+        If "locations" are configured, regions linked to this PrivacyExperienceConfig
+        are further filtered to be a subset of locations.
         """
         db = Session.object_session(self)
         locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
