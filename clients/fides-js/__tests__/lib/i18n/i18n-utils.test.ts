@@ -1,4 +1,4 @@
-import { FidesOptions } from "~/fides";
+import { FidesOptions, PrivacyExperience } from "~/fides";
 import {
   setupI18n,
   initializeI18n,
@@ -6,25 +6,72 @@ import {
   updateMessagesFromExperience,
   detectUserLocale,
   matchAvailableLocales,
+  i18n,
 } from "~/lib/i18n";
-import type { I18n, Messages } from "~/lib/i18n";
+import messagesEn from "~/lib/i18n/locales/en/messages.json";
+import messagesFr from "~/lib/i18n/locales/fr/messages.json";
+import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
 
 describe("i18n-utils", () => {
-  describe("initializeI18n", () => {
+  // Define a mock implementation of the i18n singleton for tests
+  const mockI18n  = {
+    activate: jest.fn((locale: Locale): void => {}),
+    load: jest.fn((locale: Locale, messages: Messages): void => {}),
+    t: jest.fn((idOrDescriptor: string | MessageDescriptor): string => "mock translate"),
+  };
+
+  // TODO: unskip when ready
+  describe.skip("initializeI18n", () => {
     it("initializes the i18n singleton with static messages and a default locale", () => {
-
+      initializeI18n(mockI18n);
+      expect(mockI18n.load.mock.calls).toHaveBeenCalled();
+      expect(mockI18n.activate.mock.calls).toHaveBeenCalled();
     });
   });
 
-  describe("updateMessagesFromFiles", () => {
+  // TODO: unskip when ready
+  describe.skip("updateMessagesFromFiles", () => {
     it("reads all static messages from source and loads into the i18n dictionary", () => {
+      updateMessagesFromFiles(mockI18n);
+      const EXPECTED_NUM_LOCALE_FILES = 2; // TODO: make this autodetect from lib/i18n/locales
+      expect(mockI18n.load.mock.calls).toHaveBeenCalledTimes(EXPECTED_NUM_LOCALE_FILES);
 
+      // Check the first & second locales are what we expect
+      const [ firstLocale, firstMessages ] = mockI18n.load.mock.calls[0];
+      const [ secondLocale, secondMessages ] = mockI18n.load.mock.calls[1];
+      expect(firstLocale).toEqual("en");
+      expect(firstMessages).toEqual(messagesEn);
+      expect(secondLocale).toEqual("fr");
+      expect(secondMessages).toEqual(messagesFr);
     });
   });
 
-  describe("updateMessagesFromExperience", () => {
-    it("reads all messages from experience API response and loads into the i18n dictionary", () => {
+  // TODO: unskip when ready
+  describe.skip("updateMessagesFromExperience", () => {
+    // TODO: update with translation values
+    const mockExperience: PrivacyExperience = {
+      "region": "us_ca",
+      "id": "pri_abc",
+      "created_at": "2024-01-01T12:00:00",
+      "updated_at": "2024-01-01T12:00:00",
+    };
 
+    it("reads all messages from experience API response and loads into the i18n dictionary", () => {
+      updateMessagesFromExperience(mockI18n, mockExperience);
+      const EXPECTED_NUM_TRANSLATIONS = 1;
+      expect(mockI18n.load.mock.calls).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+      const [ locale, messages ] = mockI18n.load.mock.calls[0];
+      expect(locale).toEqual("zh");
+      // TODO: update expected format
+      expect(messages).toEqual({
+        "experience.accept_button_label": "foo",
+        "experience.acknowledge_button_label": "foo",
+        "experience.description": "foo",
+        "experience.privacy_policy_link_label": "foo",
+        "experience.reject_button_label": "foo",
+        "experience.save_button_label": "foo",
+        "experience.title": "foo",
+      });
     });
   });
 

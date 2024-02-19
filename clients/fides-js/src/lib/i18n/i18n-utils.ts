@@ -1,26 +1,26 @@
 import { FidesOptions, PrivacyExperience } from "../consent-types";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
-import { i18n } from "./index";
 
 /**
- * Initialize the global i18n object with the statically defined messages from
+ * Initialize a global i18n object with the statically defined messages from
  * local files.
  */
-export function initializeI18n(): void {
+export function initializeI18n(i18n: I18n): void {
   i18n.activate("en");
+  return; 
 }
 
 /**
  * Load the statically-compiled messages from source into the message dictionary.
  */
-export function updateMessagesFromFiles(): void {
+export function updateMessagesFromFiles(i18n: I18n): void {
 }
 
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
  * into the message dictionary.
  */
-export function updateMessagesFromExperience(experience: PrivacyExperience): void {
+export function updateMessagesFromExperience(i18n: I18n, experience: PrivacyExperience): void {
 }
 
 /**
