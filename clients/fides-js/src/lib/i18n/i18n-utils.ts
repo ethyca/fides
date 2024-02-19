@@ -2,6 +2,18 @@ import { FidesOptions, PrivacyExperience } from "../consent-types";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 
 /**
+ * Statically load all the pre-localized dictionaries from the ./locales directory.
+ * 
+ * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
+ * 1) Update the STATIC_LOCALE_FILES const with the locale
+ * 2) Add the static import of the new ./locales/{locale}/messages.json file
+ * 3) Add the locale to the updateMessagesFromFiles() function below
+ */
+export const STATIC_LOCALE_FILES = ["en", "fr"];
+import messagesEn from "./locales/en/messages.json";
+import messagesFr from "./locales/fr/messages.json";
+
+/**
  * Initialize a global i18n object with the statically defined messages from
  * local files.
  */
@@ -14,6 +26,8 @@ export function initializeI18n(i18n: I18n): void {
  * Load the statically-compiled messages from source into the message dictionary.
  */
 export function updateMessagesFromFiles(i18n: I18n): void {
+  i18n.load("en", messagesEn);
+  i18n.load("fr", messagesFr);
 }
 
 /**

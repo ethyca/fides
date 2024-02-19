@@ -1,12 +1,12 @@
 import { FidesOptions, PrivacyExperience } from "~/fides";
 import {
+  STATIC_LOCALE_FILES,
   setupI18n,
   initializeI18n,
   updateMessagesFromFiles,
   updateMessagesFromExperience,
   detectUserLocale,
   matchAvailableLocales,
-  i18n,
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesFr from "~/lib/i18n/locales/fr/messages.json";
@@ -29,14 +29,12 @@ describe("i18n-utils", () => {
     });
   });
 
-  // TODO: unskip when ready
-  describe.skip("updateMessagesFromFiles", () => {
+  describe("updateMessagesFromFiles", () => {
     it("reads all static messages from source and loads into the i18n dictionary", () => {
       updateMessagesFromFiles(mockI18n);
-      const EXPECTED_NUM_LOCALE_FILES = 2; // TODO: make this autodetect from lib/i18n/locales
-      expect(mockI18n.load.mock.calls).toHaveBeenCalledTimes(EXPECTED_NUM_LOCALE_FILES);
 
       // Check the first & second locales are what we expect
+      expect(mockI18n.load).toHaveBeenCalledTimes(STATIC_LOCALE_FILES.length);
       const [ firstLocale, firstMessages ] = mockI18n.load.mock.calls[0];
       const [ secondLocale, secondMessages ] = mockI18n.load.mock.calls[1];
       expect(firstLocale).toEqual("en");
