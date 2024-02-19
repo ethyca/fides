@@ -232,6 +232,11 @@ class PrivacyExperienceConfig(
     def all_regions(self) -> List[PrivacyNoticeRegion]:
         """All regions physically linked to the PrivacyExperienceConfig regardless of which locations
         have been configured"""
+        db = Session.object_session(self)
+        if not db:
+            # For dry update scenarios, where PrivacyExperienceConfig is not bound to a session
+            return []
+
         return [
             exp.region for exp in self.experiences.order_by(PrivacyExperience.region)
         ]
@@ -240,6 +245,9 @@ class PrivacyExperienceConfig(
     def regions(self) -> List[PrivacyNoticeRegion]:
         """Filters regions on configured location if applicable"""
         db = Session.object_session(self)
+        if not db:
+            # For dry update scenarios
+            return []
 
         return filter_regions_by_location(db, self.all_regions)  # type: ignore[attr-defined]
 

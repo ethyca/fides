@@ -236,11 +236,15 @@ class TestExperienceConfig:
                 }
             ],
         }
-        config.dry_update(data=update_data)
+
+        dry_update = config.dry_update(data=update_data)
+        # These dry updates aren't bound to a Session, but we want to assert that
+        # accessing these properties doesn't fail
+        assert dry_update.regions == []
+        assert dry_update.all_regions == []
         config.dry_update_translations(
             [translation for translation in update_data["translations"]]
         )
-
         assert orig_count == db.query(PrivacyExperienceConfig).count()
         assert orig_translation_count == db.query(ExperienceTranslation).count()
 
