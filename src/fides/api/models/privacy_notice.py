@@ -20,14 +20,13 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
     System,
 )
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.locations import PrivacyNoticeRegion
+from fides.api.schemas.locations import PrivacyNoticeRegion, filter_regions_by_location
 
 
 class PrivacyNoticeFramework(Enum):
@@ -239,7 +238,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         )
 
         db = Session.object_session(self)
-        locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
 
         configured_regions = (
             db.query(PrivacyExperience.region)
@@ -253,13 +251,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             .order_by(PrivacyExperience.region.asc())
         )
 
-        if locations:
-            return [
-                region[0]
-                for region in configured_regions
-                if region[0].value in locations
-            ]
-        return [region[0] for region in configured_regions]
+        return filter_regions_by_location(
+            db, [region[0] for region in configured_regions]
+        )
 
     @classmethod
     def create(

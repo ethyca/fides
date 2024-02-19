@@ -674,7 +674,6 @@ locations:
 - continent: North America
   id: bz
   name: Belize
-  belongs_to: [caribbean]
   belongs_to: [mexico_central_america]
 - continent: North America
   id: ht

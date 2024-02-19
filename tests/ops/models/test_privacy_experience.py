@@ -125,16 +125,60 @@ class TestExperienceConfig:
     def test_privacy_experience_config_regions_property(
         self, db, experience_config_modal
     ):
+        # all_regions shows every region physically linked
+        assert experience_config_modal.all_regions == [PrivacyNoticeRegion.it]
+        # regions further filters on configured locations where applicable
         assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
 
         LocationRegulationSelections.set_selected_locations(db, ["us_ca"])
 
         # It region is suppressed from the regions property because there are locations configured and It is not one of them
+        assert experience_config_modal.all_regions == [PrivacyNoticeRegion.it]
         assert experience_config_modal.regions == []
 
         LocationRegulationSelections.set_selected_locations(db, ["us_ca", "it"])
 
+        assert experience_config_modal.all_regions == [PrivacyNoticeRegion.it]
         assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
+
+        # Locations are saved at the "location" level, not location group level
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
+        )
+
+        # Regions can be saved at the location group level
+        experience_config_modal.update(
+            db, data={"regions": [PrivacyNoticeRegion.mexico_central_america]}
+        )
+        db.refresh(experience_config_modal)
+
+        assert experience_config_modal.all_regions == [
+            PrivacyNoticeRegion.mexico_central_america
+        ]
+        assert experience_config_modal.regions == [
+            PrivacyNoticeRegion.mexico_central_america
+        ]
+
+        # Regions can technically overlap
+        experience_config_modal.update(
+            db,
+            data={
+                "regions": [
+                    PrivacyNoticeRegion.mexico_central_america,
+                    PrivacyNoticeRegion.gt,
+                ]
+            },
+        )
+
+        # Locations must match the full subset - so mexico_central_america is not a region
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr"]
+        )
+        assert experience_config_modal.all_regions == [
+            PrivacyNoticeRegion.gt,
+            PrivacyNoticeRegion.mexico_central_america,
+        ]
+        assert experience_config_modal.regions == [PrivacyNoticeRegion.gt]
 
         LocationRegulationSelections.set_selected_locations(db, [])
 
