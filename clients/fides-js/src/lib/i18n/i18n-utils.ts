@@ -2,6 +2,20 @@ import { FidesOptions, PrivacyExperience } from "../consent-types";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 
 /**
+ * General-purpose regex used to validate a locale, as defined in RFC-5646
+ * (see https://datatracker.ietf.org/doc/html/rfc5646)
+ * 
+ * For our purposes we only handle locales that are simple {language}-{region} codes like:
+ *   "en-GB",
+ *   "fr",
+ *   "es-ES"
+ * 
+ * In theory there are much more complex locales available, and we'll always end
+ * up falling back to the parent language prefix.
+ */
+export const SIMPLIFIED_LOCALE_REGEX = /^([A-Za-z]{2,3})(?:[_-]([A-Za-z]{2,3}))?$/
+
+/**
  * Statically load all the pre-localized dictionaries from the ./locales directory.
  * 
  * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
@@ -14,12 +28,14 @@ import messagesEn from "./locales/en/messages.json";
 import messagesFr from "./locales/fr/messages.json";
 
 /**
- * Initialize a global i18n object with the statically defined messages from
- * local files.
+ * Initialize the given i18n singleton by:
+ * 1) Loading all static messages from locale files
+ * 2) Detecting the user's locale
+ * 3) Activating the best match for the user's locale
  */
-export function initializeI18n(i18n: I18n): void {
+export function initializeI18n(i18n: I18n, navigator: Partial<Navigator>, options?: Partial<FidesOptions>): void {
+  updateMessagesFromFiles(i18n);
   i18n.activate("en");
-  return; 
 }
 
 /**
@@ -35,6 +51,7 @@ export function updateMessagesFromFiles(i18n: I18n): void {
  * into the message dictionary.
  */
 export function updateMessagesFromExperience(i18n: I18n, experience: PrivacyExperience): void {
+  console.warn("updateMessagesFromExperience not implemented!");
 }
 
 /**

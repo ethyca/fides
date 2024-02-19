@@ -1,5 +1,6 @@
 import { FidesOptions, PrivacyExperience } from "~/fides";
 import {
+  SIMPLIFIED_LOCALE_REGEX,
   STATIC_LOCALE_FILES,
   setupI18n,
   initializeI18n,
@@ -20,12 +21,23 @@ describe("i18n-utils", () => {
     t: jest.fn((idOrDescriptor: string | MessageDescriptor): string => "mock translate"),
   };
 
-  // TODO: unskip when ready
+  afterEach(() => {
+    mockI18n.activate.mockClear();
+    mockI18n.load.mockClear();
+    mockI18n.t.mockClear();
+  });
+
+  // TODO: unskip
   describe.skip("initializeI18n", () => {
-    it("initializes the i18n singleton with static messages and a default locale", () => {
-      initializeI18n(mockI18n);
-      expect(mockI18n.load.mock.calls).toHaveBeenCalled();
-      expect(mockI18n.activate.mock.calls).toHaveBeenCalled();
+    it("initializes the i18n singleton with static messages and best match for user's locale", () => {
+      const mockNavigator: Partial<Navigator> = {
+        language: "fr-CA",
+      };
+
+      initializeI18n(mockI18n, mockNavigator);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
+      expect(mockI18n.load).toHaveBeenCalledWith("fr", messagesFr);
+      expect(mockI18n.activate).toHaveBeenCalledWith("fr");
     });
   });
 
@@ -73,10 +85,9 @@ describe("i18n-utils", () => {
     });
   });
 
-  // TODO: unskip when ready
   describe.skip("detectUserLocale", () => {
     const mockNavigator: Partial<Navigator> = {
-      language: "es"
+      language: "es",
     };
 
     it("returns the browser locale by default", () => {
@@ -110,6 +121,34 @@ describe("i18n-utils", () => {
       const availableLocales = ["en", "es", "fr"];
       expect(matchAvailableLocales("zh", availableLocales)).toEqual("en");
       expect(matchAvailableLocales("foo", availableLocales)).toEqual("en");
+    });
+  });
+
+  describe("SIMPLIFIED_LOCALE_REGEX", () => {
+    it("validates simple locale strings correctly", () => {
+      /**
+       * Define a key/value dictionary of test cases where:
+       * key = input locale string (e.g. "en-GB")
+       * value = expected array results of String.match() (e.g. ["en-GB", "en", "GB"])
+       */
+      const tests: Record<string, (string | undefined)[] | null> = {
+        "es": ["es", "es", undefined],
+        "en-GB": ["en-GB", "en", "GB"],
+        "en_GB": ["en_GB", "en", "GB"],
+        "zh-CN": ["zh-CN", "zh", "CN"],
+        "not a real locale": null,
+        "four-TOOMANY": null,
+        "en-INVALID": null,
+      };
+
+      for (const [locale, expectedResults] of Object.entries(tests)) {
+        const match = locale.match(SIMPLIFIED_LOCALE_REGEX);
+        if (match) {
+          expect(Array.from(match)).toEqual(expectedResults);
+        } else {
+          expect(match).toEqual(expectedResults);
+        }
+      }
     });
   });
 });
