@@ -1,6 +1,6 @@
 import { FidesOptions, PrivacyExperience } from "~/fides";
 import {
-  SIMPLIFIED_LOCALE_REGEX,
+  LOCALE_REGEX,
   STATIC_LOCALE_FILES,
   setupI18n,
   initializeI18n,
@@ -124,7 +124,7 @@ describe("i18n-utils", () => {
     });
   });
 
-  describe("SIMPLIFIED_LOCALE_REGEX", () => {
+  describe("LOCALE_REGEX", () => {
     it("validates simple locale strings correctly", () => {
       /**
        * Define a key/value map of test cases where:
@@ -132,17 +132,32 @@ describe("i18n-utils", () => {
        * value = expected array results of String.match() (e.g. ["en-GB", "en", "GB"])
        */
       const tests: Record<string, (string | undefined)[] | null> = {
+        // Language only
         "es": ["es", "es", undefined],
+        // Language + region
         "en-GB": ["en-GB", "en", "GB"],
         "en_GB": ["en_GB", "en", "GB"],
         "zh-CN": ["zh-CN", "zh", "CN"],
+        // 3-letter languages or regions
+        "yue": ["yue", "yue", undefined],
+        "es-419": ["es-419", "es", "419"],
+        // Language + script
+        "zh-Hans": ["zh-Hans", "zh", "Hans"],
+        "az-Cyrl": ["az-Cyrl", "az", "Cyrl"],
+        // Language + script + region
+        "zh-Hans-HK": ["zh-Hans-HK", "zh", undefined],
+        "en-US-POSIX": ["en-US-POSIX", "en", undefined],
+        // Not real, but should still be parsed
+        "en-FAKE": ["en-FAKE", "en", "FAKE"],
+        "en_FAKE": ["en_FAKE", "en", "FAKE"],
+        // Invalid
         "not a real locale": null,
-        "four-TOOMANY": null,
-        "en-INVALID": null,
+        "four-INVALID": null,
+        "123-english": null,
       };
 
       for (const [locale, expectedResults] of Object.entries(tests)) {
-        const match = locale.match(SIMPLIFIED_LOCALE_REGEX);
+        const match = locale.match(LOCALE_REGEX);
         if (match) {
           expect(Array.from(match)).toEqual(expectedResults);
         } else {

@@ -5,15 +5,18 @@ import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
  * General-purpose regex used to validate a locale, as defined in RFC-5646
  * (see https://datatracker.ietf.org/doc/html/rfc5646)
  * 
- * For our purposes we only handle locales that are simple {language}-{region} codes like:
+ * For our purposes we parse locales that are simple {language}-{region} codes like:
  *   "en-GB",
  *   "fr",
- *   "es-ES"
+ *   "es-ES",
+ *   "es-419",
  * 
- * In theory there are much more complex locales available, and we'll always end
- * up falling back to the parent language prefix.
+ * We also handle other codes like "zh-Hans-HK", but fallback to only capturing
+ * the 2-3 letter language code in these variants instead of attempting to parse
+ * out all the various combinations of languages, scripts, regions, variants...
  */
-export const SIMPLIFIED_LOCALE_REGEX = /^([A-Za-z]{2,3})(?:[_-]([A-Za-z]{2,3}))?$/
+export const LOCALE_REGEX = /^([A-Za-z]{2,3})(?:(?:[_-]([A-Za-z0-9]{2,4}))?$|(?:(?:[_-]\w+)+))/
+//                            ^^^language^^^^   ^^^^^^^^^^region^^^^^^^^^^^^ ^^^^^^other^^^^^^
 
 /**
  * Statically load all the pre-localized dictionaries from the ./locales directory.

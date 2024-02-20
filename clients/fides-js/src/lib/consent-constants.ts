@@ -1,5 +1,5 @@
 import { FidesOptionsOverrides, OverrideOptions } from "./consent-types";
-import { SIMPLIFIED_LOCALE_REGEX } from "./i18n";
+import { LOCALE_REGEX } from "./i18n";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")
@@ -47,6 +47,6 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     fidesOption: "fidesLocale",
     fidesOptionType: "string",
     fidesOverrideKey: "fides_locale",
-    validationRegex: SIMPLIFIED_LOCALE_REGEX,
+    validationRegex: LOCALE_REGEX,
   },
 ];
