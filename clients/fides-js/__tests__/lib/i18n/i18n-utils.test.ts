@@ -1,7 +1,6 @@
 import { FidesOptions, PrivacyExperience } from "~/fides";
 import {
   LOCALE_REGEX,
-  STATIC_LOCALE_FILES,
   setupI18n,
   initializeI18n,
   updateMessagesFromFiles,
@@ -46,7 +45,8 @@ describe("i18n-utils", () => {
       updateMessagesFromFiles(mockI18n);
 
       // Check the first & second locales are what we expect
-      expect(mockI18n.load).toHaveBeenCalledTimes(STATIC_LOCALE_FILES.length);
+      const EXPECTED_NUM_STATIC_LOCALES = 2; // NOTE: manually update this as new locales added
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
       const [ firstLocale, firstMessages ] = mockI18n.load.mock.calls[0];
       const [ secondLocale, secondMessages ] = mockI18n.load.mock.calls[1];
       expect(firstLocale).toEqual("en");
@@ -85,7 +85,7 @@ describe("i18n-utils", () => {
     });
   });
 
-  describe.skip("detectUserLocale", () => {
+  describe("detectUserLocale", () => {
     const mockNavigator: Partial<Navigator> = {
       language: "es",
     };
@@ -94,10 +94,15 @@ describe("i18n-utils", () => {
       expect(detectUserLocale(mockNavigator)).toEqual("es");
     });
 
+    it("returns a default fallback if browser locale is missing", () => {
+      expect(detectUserLocale({})).toEqual("en");
+      expect(detectUserLocale({ language: "" })).toEqual("en");
+      expect(detectUserLocale({ language: undefined })).toEqual("en");
+    });
+
     it("returns the fides_locale override if present in options", () => {
       const mockOptions: Partial<FidesOptions> = {
-        // TODO: update types
-        // fidesLocale: "fr",
+        fidesLocale: "fr",
       };
       expect(detectUserLocale(mockNavigator, mockOptions)).toEqual("fr");
     });
@@ -111,7 +116,7 @@ describe("i18n-utils", () => {
       expect(matchAvailableLocales("es", availableLocales)).toEqual("es");
     });
 
-    it("falls back to langauge when language+region is not available", () => {
+    it("falls back to language when language+region is not available", () => {
       const availableLocales = ["en", "es", "fr"];
       expect(matchAvailableLocales("fr-CA", availableLocales)).toEqual("fr");
       expect(matchAvailableLocales("es-ES", availableLocales)).toEqual("es");

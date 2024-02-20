@@ -22,11 +22,9 @@ export const LOCALE_REGEX = /^([A-Za-z]{2,3})(?:(?:[_-]([A-Za-z0-9]{2,4}))?$|(?:
  * Statically load all the pre-localized dictionaries from the ./locales directory.
  * 
  * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
- * 1) Update the STATIC_LOCALE_FILES const with the locale
- * 2) Add the static import of the new ./locales/{locale}/messages.json file
- * 3) Add the locale to the updateMessagesFromFiles() function below
+ * 1) Add the static import of the new ./locales/{locale}/messages.json file
+ * 2) Add the locale to the updateMessagesFromFiles() function below
  */
-export const STATIC_LOCALE_FILES = ["en", "fr"];
 import messagesEn from "./locales/en/messages.json";
 import messagesFr from "./locales/fr/messages.json";
 
@@ -62,7 +60,9 @@ export function updateMessagesFromExperience(i18n: I18n, experience: PrivacyExpe
  * Detect the user's preferred locale from the browser or any overrides.
  */
 export function detectUserLocale(navigator: Partial<Navigator>, options?: Partial<FidesOptions>): Locale {
-  return "en";
+  const browserLocale = navigator?.language;
+  const fidesLocaleOverride = options?.fidesLocale;
+  return fidesLocaleOverride || browserLocale || "en";
 }
 
 /**
