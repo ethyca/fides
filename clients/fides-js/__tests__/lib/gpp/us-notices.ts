@@ -58,7 +58,6 @@ const mockPrivacyNotice = (override?: Partial<PrivacyNotice>) => {
       {
         id: "234r23",
         language: "en",
-        version: 1,
         privacy_notice_history_id: "321",
       },
     ],

@@ -109,7 +109,7 @@ export const useConsentServed = ({
         browser_identity: event.detail.identity,
         privacy_experience_id:
           privacyExperience.experience_config?.translations[0]
-            .experience_config_history_id,
+            .privacy_experience_config_history_id,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
         // TODO: pass in specific language shown in UI

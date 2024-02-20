@@ -361,7 +361,7 @@ export type ExperienceConfigTranslation = {
   reject_button_label?: string;
   save_button_label?: string;
   title?: string;
-  experience_config_history_id: string;
+  privacy_experience_config_history_id: string;
 };
 
 export type Cookies = {
@@ -401,7 +401,6 @@ export type PrivacyNoticeTranslations = {
   language: string;
   title?: string;
   description?: string;
-  version: number;
   privacy_notice_history_id: string;
 };
 

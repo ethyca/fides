@@ -131,7 +131,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
           browser_identity: browserIdentities,
           privacy_experience_id:
             experience?.experience_config?.translations[0]
-              .experience_config_history_id,
+              .privacy_experience_config_history_id,
           // TODO: pass in specific language shown in UI
           privacy_notice_history_ids: experience.privacy_notices.map(
             // @ts-ignore
@@ -229,7 +229,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       // todo- pass in specific language shown
       privacy_experience_id:
         experience?.experience_config?.translations[0]
-          .experience_config_history_id,
+          .privacy_experience_config_history_id,
       method: ConsentMethod.SAVE,
       code: verificationCode,
       served_notice_history_id: servedNotice?.served_notice_history_id,

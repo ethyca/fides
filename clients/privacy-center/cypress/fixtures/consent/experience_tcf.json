@@ -38,7 +38,7 @@
             "reject_button_label": "Opt out of all",
             "save_button_label": "Save",
             "title": "Manage your consent preferences",
-            "experience_config_history_id": "pri_2dc8a774-6f58-435a-99dd-49a85f36a8e7"
+            "privacy_experience_config_history_id": "pri_2dc8a774-6f58-435a-99dd-49a85f36a8e7"
           }
         ],
         "allow_language_selection": false,

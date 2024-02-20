@@ -22,7 +22,6 @@ export const mockPrivacyNoticeTranslation = (
     language: "en",
     title: "Test privacy notice",
     description: "a test sample privacy notice configuration",
-    version: 1.0,
     privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
   };
   return { ...translation, ...params };
@@ -72,7 +71,7 @@ export const mockExperienceConfig = (params: Partial<ExperienceConfig>) => {
     reject_button_label: "Reject Test",
     save_button_label: "Save test",
     title: "Manage your consent",
-    experience_config_history_id: "2345324",
+    privacy_experience_config_history_id: "2345324",
   };
   return { ...experienceConfig, params };
 };

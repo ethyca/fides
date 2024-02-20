@@ -26,7 +26,7 @@
             "reject_button_label": "Opt out of all",
             "save_button_label": "Save",
             "title": "Manage your consent preferences",
-            "experience_config_history_id": "pri_a49a8154-ce8f-4ba7-a32f-668fb7b400c1"
+            "privacy_experience_config_history_id": "pri_a49a8154-ce8f-4ba7-a32f-668fb7b400c1"
           }
         ],
         "language": "en",
@@ -99,7 +99,6 @@
               "language": "en",
               "title": "Data sales and sharing",
               "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of [cross-context behavioral targeted advertising]. You can learn more about what information is used for this purpose in our privacy notice.",
-              "version": 2,
               "privacy_notice_history_id": "pri_18d9f174-f842-4e05-9cbf-09fd9eb33e33"
             }
           ]

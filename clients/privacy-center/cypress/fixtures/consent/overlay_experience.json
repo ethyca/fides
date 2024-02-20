@@ -18,7 +18,7 @@
             "reject_button_label": "No thanks",
             "save_button_label": "Confirm",
             "title": "Manage your consent",
-            "experience_config_history_id": "pri_638ed140-8dc5-4a0e-949c-abe576f8eb8f"
+            "privacy_experience_config_history_id": "pri_638ed140-8dc5-4a0e-949c-abe576f8eb8f"
           }
         ],
         "language": "en",
@@ -55,7 +55,6 @@
               "language": "en",
               "title": "Advertising",
               "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
-              "version": 2.0,
               "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707"
             }
           ]
@@ -82,7 +81,6 @@
               "language": "en",
               "title": "Analytics",
               "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
-              "version": 2.0,
               "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076239"
             }
           ]

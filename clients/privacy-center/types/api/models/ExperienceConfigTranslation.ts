@@ -43,6 +43,5 @@ export type ExperienceConfigTranslation = {
    */
   save_button_label?: string;
 
-  experience_config_history_id: string;
-  version: number;
+  privacy_experience_config_history_id: string;
 };

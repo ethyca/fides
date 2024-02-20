@@ -40,7 +40,7 @@ async function savePreferencesApi(
     // TODO: pass in specific language shown in UI
     privacy_experience_id:
       experience.experience_config?.translations[0]
-        .experience_config_history_id,
+        .privacy_experience_config_history_id,
     user_geography: userLocationString,
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
