@@ -56,36 +56,43 @@ export function updateMessagesFromExperience(
   experience: Partial<PrivacyExperience>
 ): Locale[] {
   // TODO: update types
-  const anyExperience = (experience as any);
+  const anyExperience = experience as any;
   const allMessages: Record<Locale, Messages> = {};
 
   // Extract messages from experience_config.translations
+  // TODO: extract into a helper
   if (anyExperience?.experience_config) {
     if (anyExperience?.experience_config?.translations) {
-      anyExperience.experience_config.translations.forEach((translation: any) => {
-        // TODO: define keys and generate this?
-        const locale = translation.language;
-        const messages: Messages = {
-          "experience.accept_button_label": translation.accept_button_label,
-          "experience.acknowledge_button_label": translation.acknowledge_button_label,
-          "experience.banner_description": translation.banner_description,
-          "experience.banner_title": translation.banner_title,
-          "experience.description": translation.description,
-          "experience.privacy_policy_link_label": translation.privacy_policy_link_label,
-          "experience.privacy_policy_url": translation.privacy_policy_url,
-          "experience.privacy_preferences_link_label": translation.privacy_preferences_link_label,
-          "experience.reject_button_label": translation.reject_button_label,
-          "experience.save_button_label": translation.save_button_label,
-          "experience.title": translation.title,
-        };
-        allMessages[locale] = { ...messages, ...allMessages[locale] };
-      });
+      anyExperience.experience_config.translations.forEach(
+        (translation: any) => {
+          // TODO: define keys and generate this?
+          const locale = translation.language;
+          const messages: Messages = {
+            "experience.accept_button_label": translation.accept_button_label,
+            "experience.acknowledge_button_label":
+              translation.acknowledge_button_label,
+            "experience.banner_description": translation.banner_description,
+            "experience.banner_title": translation.banner_title,
+            "experience.description": translation.description,
+            "experience.privacy_policy_link_label":
+              translation.privacy_policy_link_label,
+            "experience.privacy_policy_url": translation.privacy_policy_url,
+            "experience.privacy_preferences_link_label":
+              translation.privacy_preferences_link_label,
+            "experience.reject_button_label": translation.reject_button_label,
+            "experience.save_button_label": translation.save_button_label,
+            "experience.title": translation.title,
+          };
+          allMessages[locale] = { ...messages, ...allMessages[locale] };
+        }
+      );
     } else {
       // TODO: No translations available, extract default "en" strings
     }
   }
 
   // Extract messages from privacy_notices[].translations
+  // TODO: extract into a helper
   if (anyExperience?.privacy_notices) {
     anyExperience.privacy_notices.forEach((notice: any) => {
       if (notice?.translations) {
@@ -96,11 +103,11 @@ export function updateMessagesFromExperience(
           const messages: Messages = {
             [`${prefix}.title`]: translation.title,
             [`${prefix}.description`]: translation.description,
-          }
+          };
           allMessages[locale] = { ...messages, ...allMessages[locale] };
         });
       } else {
-      // TODO: No translations available, extract default "en" strings
+        // TODO: No translations available, extract default "en" strings
       }
     });
   }
@@ -187,10 +194,10 @@ export function initializeI18n(
   experience: Partial<PrivacyExperience>,
   options?: Partial<FidesOptions>
 ): void {
-  const staticLocales = updateMessagesFromFiles(i18n);
-  const dynamicLocales = updateMessagesFromExperience(i18n, experience);
+  updateMessagesFromFiles(i18n);
+  const availableLocales = updateMessagesFromExperience(i18n, experience);
   const userLocale = detectUserLocale(navigator, options);
-  const bestLocale = matchAvailableLocales(userLocale, dynamicLocales);
+  const bestLocale = matchAvailableLocales(userLocale, availableLocales);
   i18n.activate(bestLocale);
 }
 

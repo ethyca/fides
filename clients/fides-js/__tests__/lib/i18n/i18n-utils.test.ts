@@ -28,7 +28,7 @@ describe("i18n-utils", () => {
   };
 
   // TODO: Improve this mock experience fixture?
-  const mockExperience: Partial<PrivacyExperience> = (mockExperienceJSON as any);
+  const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
 
   afterEach(() => {
     mockI18n.activate.mockClear();
@@ -97,9 +97,11 @@ describe("i18n-utils", () => {
         "experience.title": "Title Test",
         // TODO: I'm unconvinced that flattening the notices like this makes sense
         "experience.privacy_notices.pri_555.title": "Advertising Test",
-        "experience.privacy_notices.pri_555.description": "Advertising Description Test",
+        "experience.privacy_notices.pri_555.description":
+          "Advertising Description Test",
         "experience.privacy_notices.pri_888.title": "Analytics Test",
-        "experience.privacy_notices.pri_888.description": "Analytics Description Test",
+        "experience.privacy_notices.pri_888.description":
+          "Analytics Description Test",
       });
       const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
       expect(secondLocale).toEqual("es");
@@ -109,25 +111,29 @@ describe("i18n-utils", () => {
         "experience.banner_description": "Descripción del Banner de Prueba",
         "experience.banner_title": "Título del Banner de Prueba",
         "experience.description": "Descripción de la Prueba",
-        "experience.privacy_policy_link_label": "Política de Privacidad de Prueba",
+        "experience.privacy_policy_link_label":
+          "Política de Privacidad de Prueba",
         "experience.privacy_policy_url": "https://privacy.example.com/es",
-        "experience.privacy_preferences_link_label": "Administrar Preferencias de Prueba",
+        "experience.privacy_preferences_link_label":
+          "Administrar Preferencias de Prueba",
         "experience.reject_button_label": "Rechazar Prueba",
         "experience.save_button_label": "Guardar Prueba",
         "experience.title": "Título de la Prueba",
         // TODO: I'm unconvinced that flattening the notices like this makes sense
         "experience.privacy_notices.pri_555.title": "Prueba de Publicidad",
-        "experience.privacy_notices.pri_555.description": "Descripción de la Publicidad de Prueba",
+        "experience.privacy_notices.pri_555.description":
+          "Descripción de la Publicidad de Prueba",
         "experience.privacy_notices.pri_888.title": "Prueba de Analítica",
-        "experience.privacy_notices.pri_888.description": "Descripción de la Analítica de Prueba",
+        "experience.privacy_notices.pri_888.description":
+          "Descripción de la Analítica de Prueba",
       });
     });
 
     // TODO: implement & test
-    it.skip("handles missing translations by falling back to experience_config properties", () => {});
-    
+    it.skip("handles missing experience translations by falling back to experience_config properties", () => {});
+
     // TODO: this logic should likely be in the presentation layer
-    it.skip("handles missing notice translations by falling back to default language", () => {});
+    it.skip("handles mismatched notice translations by falling back to default language", () => {});
   });
 
   describe("detectUserLocale", () => {
