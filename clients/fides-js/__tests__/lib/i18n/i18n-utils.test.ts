@@ -9,8 +9,10 @@ import {
   matchAvailableLocales,
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
-import messagesFr from "~/lib/i18n/locales/fr/messages.json";
+import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
+
+import mockExperienceJSON from "./mock_experience.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
@@ -25,6 +27,9 @@ describe("i18n-utils", () => {
     ),
   };
 
+  // TODO: Improve this mock experience fixture?
+  const mockExperience: Partial<PrivacyExperience> = (mockExperienceJSON as any);
+
   afterEach(() => {
     mockI18n.activate.mockClear();
     mockI18n.load.mockClear();
@@ -32,16 +37,20 @@ describe("i18n-utils", () => {
   });
 
   describe("initializeI18n", () => {
-    it("initializes the i18n singleton with static messages and best match for user's locale", () => {
+    it("initializes the i18n singleton with messages (from both files and experience API) and activates the best match for user's locale", () => {
       const mockNavigator: Partial<Navigator> = {
-        language: "fr-CA",
+        language: "es-419",
       };
 
-      initializeI18n(mockI18n, mockNavigator);
+      initializeI18n(mockI18n, mockNavigator, mockExperience);
+      // TODO: add additional assertions to expect the dynamic strings too
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
-      expect(mockI18n.load).toHaveBeenCalledWith("fr", messagesFr);
-      expect(mockI18n.activate).toHaveBeenCalledWith("fr");
+      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
+      expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
+
+    // TODO: implement
+    it.skip("does not automatically detect the user's locale when the experience disables auto-detection", () => {});
   });
 
   describe("updateMessagesFromFiles", () => {
@@ -49,8 +58,8 @@ describe("i18n-utils", () => {
       const updatedLocales = updateMessagesFromFiles(mockI18n);
 
       // Check the updated locales list is what we expect
-      const EXPECTED_NUM_STATIC_LOCALES = 2; // NOTE: manually update this as new locales added
-      expect(updatedLocales).toEqual(["en", "fr"]);
+      const EXPECTED_NUM_STATIC_LOCALES = 3; // NOTE: manually update this as new locales added
+      expect(updatedLocales).toEqual(["en", "es", "fr"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
 
       // Verify the first two locales match the expected catalogues, too
@@ -58,42 +67,67 @@ describe("i18n-utils", () => {
       const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
       expect(firstLocale).toEqual("en");
       expect(firstMessages).toEqual(messagesEn);
-      expect(secondLocale).toEqual("fr");
-      expect(secondMessages).toEqual(messagesFr);
+      expect(secondLocale).toEqual("es");
+      expect(secondMessages).toEqual(messagesEs);
     });
   });
 
-  // TODO: unskip when ready
-  describe.skip("updateMessagesFromExperience", () => {
-    // TODO: update with translation values
-    const mockExperience: PrivacyExperience = {
-      region: "us_ca",
-      id: "pri_abc",
-      created_at: "2024-01-01T12:00:00",
-      updated_at: "2024-01-01T12:00:00",
-    };
-
+  describe("updateMessagesFromExperience", () => {
     it("reads all messages from experience API response and loads into the i18n catalog", () => {
       const updatedLocales = updateMessagesFromExperience(
         mockI18n,
         mockExperience
       );
-      const EXPECTED_NUM_TRANSLATIONS = 1;
-      expect(updatedLocales).toEqual(["zh"]);
+      const EXPECTED_NUM_TRANSLATIONS = 2;
+      expect(updatedLocales).toEqual(["en", "es"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      const [locale, messages] = mockI18n.load.mock.calls[0];
-      expect(locale).toEqual("zh");
-      // TODO: update expected format
-      expect(messages).toEqual({
-        "experience.accept_button_label": "foo",
-        "experience.acknowledge_button_label": "foo",
-        "experience.description": "foo",
-        "experience.privacy_policy_link_label": "foo",
-        "experience.reject_button_label": "foo",
-        "experience.save_button_label": "foo",
-        "experience.title": "foo",
+      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
+      expect(firstLocale).toEqual("en");
+      expect(firstMessages).toEqual({
+        "experience.accept_button_label": "Accept Test",
+        "experience.acknowledge_button_label": "Acknowledge Test",
+        "experience.banner_description": "Banner Description Test",
+        "experience.banner_title": "Banner Title Test",
+        "experience.description": "Description Test",
+        "experience.privacy_policy_link_label": "Privacy Policy Test",
+        "experience.privacy_policy_url": "https://privacy.example.com/",
+        "experience.privacy_preferences_link_label": "Manage Preferences Test",
+        "experience.reject_button_label": "Reject Test",
+        "experience.save_button_label": "Save Test",
+        "experience.title": "Title Test",
+        // TODO: I'm unconvinced that flattening the notices like this makes sense
+        "experience.privacy_notices.pri_555.title": "Advertising Test",
+        "experience.privacy_notices.pri_555.description": "Advertising Description Test",
+        "experience.privacy_notices.pri_888.title": "Analytics Test",
+        "experience.privacy_notices.pri_888.description": "Analytics Description Test",
+      });
+      const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
+      expect(secondLocale).toEqual("es");
+      expect(secondMessages).toEqual({
+        "experience.accept_button_label": "Aceptar Prueba",
+        "experience.acknowledge_button_label": "Reconocer Prueba",
+        "experience.banner_description": "Descripción del Banner de Prueba",
+        "experience.banner_title": "Título del Banner de Prueba",
+        "experience.description": "Descripción de la Prueba",
+        "experience.privacy_policy_link_label": "Política de Privacidad de Prueba",
+        "experience.privacy_policy_url": "https://privacy.example.com/es",
+        "experience.privacy_preferences_link_label": "Administrar Preferencias de Prueba",
+        "experience.reject_button_label": "Rechazar Prueba",
+        "experience.save_button_label": "Guardar Prueba",
+        "experience.title": "Título de la Prueba",
+        // TODO: I'm unconvinced that flattening the notices like this makes sense
+        "experience.privacy_notices.pri_555.title": "Prueba de Publicidad",
+        "experience.privacy_notices.pri_555.description": "Descripción de la Publicidad de Prueba",
+        "experience.privacy_notices.pri_888.title": "Prueba de Analítica",
+        "experience.privacy_notices.pri_888.description": "Descripción de la Analítica de Prueba",
       });
     });
+
+    // TODO: implement & test
+    it.skip("handles missing translations by falling back to experience_config properties", () => {});
+    
+    // TODO: this logic should likely be in the presentation layer
+    it.skip("handles missing notice translations by falling back to default language", () => {});
   });
 
   describe("detectUserLocale", () => {
@@ -268,10 +302,18 @@ describe("i18n module", () => {
     });
 
     describe("load", () => {
-      it("allows loading additional dictionaries", () => {
+      it("allows loading additional catalogues", () => {
         testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
         testI18n.activate("zz");
         expect(testI18n.t({ id: "test.greeting" })).toEqual("Zalloz, Jest!");
+      });
+
+      it("combines catalogues for the same locale", () => {
+        testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
+        testI18n.load("zz", { "test.another": "Zam!" });
+        testI18n.activate("zz");
+        expect(testI18n.t({ id: "test.greeting" })).toEqual("Zalloz, Jest!");
+        expect(testI18n.t({ id: "test.another" })).toEqual("Zam!");
       });
     });
   });

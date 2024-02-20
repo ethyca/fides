@@ -364,7 +364,7 @@ export const initialize = async ({
 
       if (shouldInitOverlay) {
         // Initialize the i18n singleton before we render the overlay
-        initializeI18n(i18n, window?.navigator, options);
+        initializeI18n(i18n, window?.navigator, effectiveExperience, options);
 
         // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({

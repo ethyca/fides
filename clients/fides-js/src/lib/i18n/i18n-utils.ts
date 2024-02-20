@@ -9,6 +9,7 @@ import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
  * 2) Add the locale to the updateMessagesFromFiles() function below
  */
 import messagesEn from "./locales/en/messages.json";
+import messagesEs from "./locales/es/messages.json";
 import messagesFr from "./locales/fr/messages.json";
 
 /**
@@ -41,24 +42,78 @@ export function updateMessagesFromFiles(i18n: I18n): Locale[] {
   // NOTE: This doesn't automatically infer the list of locale files from
   // source, so you'll need to manually add any new locales here!
   i18n.load("en", messagesEn);
+  i18n.load("es", messagesEs);
   i18n.load("fr", messagesFr);
-  return ["en", "fr"];
+  return ["en", "es", "fr"];
 }
 
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
  * into the message catalog.
  */
-// TODO: remove these eslint-disable once implemented
-/* eslint-disable @typescript-eslint/no-unused-vars, no-console */
 export function updateMessagesFromExperience(
   i18n: I18n,
-  experience: PrivacyExperience
+  experience: Partial<PrivacyExperience>
 ): Locale[] {
-  console.warn("updateMessagesFromExperience not implemented!");
-  return [];
+  // TODO: update types
+  const anyExperience = (experience as any);
+  const allMessages: Record<Locale, Messages> = {};
+
+  // Extract messages from experience_config.translations
+  if (anyExperience?.experience_config) {
+    if (anyExperience?.experience_config?.translations) {
+      anyExperience.experience_config.translations.forEach((translation: any) => {
+        // TODO: define keys and generate this?
+        const locale = translation.language;
+        const messages: Messages = {
+          "experience.accept_button_label": translation.accept_button_label,
+          "experience.acknowledge_button_label": translation.acknowledge_button_label,
+          "experience.banner_description": translation.banner_description,
+          "experience.banner_title": translation.banner_title,
+          "experience.description": translation.description,
+          "experience.privacy_policy_link_label": translation.privacy_policy_link_label,
+          "experience.privacy_policy_url": translation.privacy_policy_url,
+          "experience.privacy_preferences_link_label": translation.privacy_preferences_link_label,
+          "experience.reject_button_label": translation.reject_button_label,
+          "experience.save_button_label": translation.save_button_label,
+          "experience.title": translation.title,
+        };
+        allMessages[locale] = { ...messages, ...allMessages[locale] };
+      });
+    } else {
+      // TODO: No translations available, extract default "en" strings
+    }
+  }
+
+  // Extract messages from privacy_notices[].translations
+  if (anyExperience?.privacy_notices) {
+    anyExperience.privacy_notices.forEach((notice: any) => {
+      if (notice?.translations) {
+        notice.translations.forEach((translation: any) => {
+          // TODO: define keys and generate this?
+          const locale = translation.language;
+          const prefix = `experience.privacy_notices.${notice.id}`;
+          const messages: Messages = {
+            [`${prefix}.title`]: translation.title,
+            [`${prefix}.description`]: translation.description,
+          }
+          allMessages[locale] = { ...messages, ...allMessages[locale] };
+        });
+      } else {
+      // TODO: No translations available, extract default "en" strings
+      }
+    });
+  }
+
+  // Load all the extracted messages into the i18n module
+  const updatedLocales: Locale[] = Object.keys(allMessages);
+  updatedLocales.forEach((locale) => {
+    i18n.load(locale, allMessages[locale]);
+  });
+
+  // Return all the locales we extracted & updated
+  return updatedLocales;
 }
-/* eslint-enable @typescript-eslint/no-unused-vars, no-console */
 
 /**
  * Detect the user's preferred locale from the browser or any overrides.
@@ -129,11 +184,13 @@ export function matchAvailableLocales(
 export function initializeI18n(
   i18n: I18n,
   navigator: Partial<Navigator>,
+  experience: Partial<PrivacyExperience>,
   options?: Partial<FidesOptions>
 ): void {
-  const availableLocales = updateMessagesFromFiles(i18n);
+  const staticLocales = updateMessagesFromFiles(i18n);
+  const dynamicLocales = updateMessagesFromExperience(i18n, experience);
   const userLocale = detectUserLocale(navigator, options);
-  const bestLocale = matchAvailableLocales(userLocale, availableLocales);
+  const bestLocale = matchAvailableLocales(userLocale, dynamicLocales);
   i18n.activate(bestLocale);
 }
 
