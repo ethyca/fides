@@ -42,7 +42,7 @@ describe("i18n-utils", () => {
   });
 
   describe("updateMessagesFromFiles", () => {
-    it("reads all static messages from source and loads into the i18n dictionary", () => {
+    it("reads all static messages from source and loads into the i18n catalog", () => {
       updateMessagesFromFiles(mockI18n);
 
       // Check the first & second locales are what we expect
@@ -66,7 +66,7 @@ describe("i18n-utils", () => {
       "updated_at": "2024-01-01T12:00:00",
     };
 
-    it("reads all messages from experience API response and loads into the i18n dictionary", () => {
+    it("reads all messages from experience API response and loads into the i18n catalog", () => {
       updateMessagesFromExperience(mockI18n, mockExperience);
       const EXPECTED_NUM_TRANSLATIONS = 1;
       expect(mockI18n.load.mock.calls).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
@@ -127,7 +127,7 @@ describe("i18n-utils", () => {
   describe("SIMPLIFIED_LOCALE_REGEX", () => {
     it("validates simple locale strings correctly", () => {
       /**
-       * Define a key/value dictionary of test cases where:
+       * Define a key/value map of test cases where:
        * key = input locale string (e.g. "en-GB")
        * value = expected array results of String.match() (e.g. ["en-GB", "en", "GB"])
        */
@@ -173,7 +173,7 @@ describe("i18n module", () => {
     });
   });
 
-  describe("when loading a test messages dictionary", () => {
+  describe("when loading a test messages catalog", () => {
     const messagesEn: Messages = {
       "test.greeting": "Hello, Jest!",
       "test.phrase": "Move purposefully and fix things",

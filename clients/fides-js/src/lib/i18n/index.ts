@@ -11,7 +11,7 @@ import { setupI18n } from "./i18n-utils";
 type Locale = string;
 
 /**
- * Basic definition of a i18n messages dictionary. This works for a simple example like:
+ * Basic definition of a i18n messages catalog. This works for a simple example like:
  * ```
  * {
  *   "en": {
@@ -57,7 +57,7 @@ interface I18n {
   activate(locale: Locale): void;
 
   /**
-   * "Load" a message dictionary for a particular locale. This can be either a
+   * "Load" a message catalog for a particular locale. This can be either a
    * static object (e.g. "lib/i18n/locales/en/messages.js") or a dynamic
    * object received at runtime from an API.
    */

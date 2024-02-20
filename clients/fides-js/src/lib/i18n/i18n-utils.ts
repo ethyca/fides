@@ -39,16 +39,17 @@ export function initializeI18n(i18n: I18n, navigator: Partial<Navigator>, option
 }
 
 /**
- * Load the statically-compiled messages from source into the message dictionary.
+ * Load the statically-compiled messages from source into the message catalog.
  */
 export function updateMessagesFromFiles(i18n: I18n): void {
+  // NOTE: This doesn't automatically infer 
   i18n.load("en", messagesEn);
   i18n.load("fr", messagesFr);
 }
 
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
- * into the message dictionary.
+ * into the message catalog.
  */
 export function updateMessagesFromExperience(i18n: I18n, experience: PrivacyExperience): void {
   console.warn("updateMessagesFromExperience not implemented!");
@@ -80,7 +81,7 @@ export function setupI18n(): I18n {
   // Currently active locale; default this to English
   let currentLocale: Locale = "en";
 
-  // Messages dictionary, which stores i18n-ized messages grouped by locale
+  // Messages catalog, which stores i18n-ized messages grouped by locale
   const allMessages: Record<Locale, Messages> = {};
 
   // Return a new I18n instance
@@ -110,7 +111,7 @@ export function setupI18n(): I18n {
         return "";
       }
 
-      // Lookup the string in our messages dictionary by locale & id
+      // Lookup the string in our messages catalog by locale & id
       if (
         currentLocale &&
         currentLocale in allMessages &&
