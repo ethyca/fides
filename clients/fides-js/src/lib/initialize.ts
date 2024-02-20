@@ -4,8 +4,8 @@ import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
+  i18n,
   initializeI18n,
-  updateMessagesFromExperience,
 } from "./i18n";
 import { getConsentContext } from "./consent-context";
 import {
@@ -364,7 +364,12 @@ export const initialize = async ({
       });
       debugLog(options.debug, "Updated experience", updatedExperience);
       Object.assign(effectiveExperience, updatedExperience);
+
       if (shouldInitOverlay) {
+        // Initialize the i18n singleton before we render the overlay
+        initializeI18n(i18n, window?.navigator, options);
+
+        // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({
           experience: effectiveExperience,
           fidesRegionString: fidesRegionString as string,
