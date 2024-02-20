@@ -32,15 +32,17 @@ const DEFAULT_LOCALE: Locale = "en";
  */
 export const LOCALE_REGEX =
   /^([A-Za-z]{2,3})(?:(?:[_-]([A-Za-z0-9]{2,4}))?$|(?:(?:[_-]\w+)+))/;
-//                            ^^^language^^^^   ^^^^^^^^^^region^^^^^^^^^^^^ ^^^^^^other^^^^^^
+//  ^^^language^^^^   ^^^^^^^^^^region^^^^^^^^^^^^ ^^^^^^other^^^^^^
 
 /**
  * Load the statically-compiled messages from source into the message catalog.
  */
-export function updateMessagesFromFiles(i18n: I18n): void {
-  // NOTE: This doesn't automatically infer
+export function updateMessagesFromFiles(i18n: I18n): Locale[] {
+  // NOTE: This doesn't automatically infer the list of locale files from
+  // source, so you'll need to manually add any new locales here! 
   i18n.load("en", messagesEn);
   i18n.load("fr", messagesFr);
+  return ["en", "fr"];
 }
 
 /**
@@ -50,8 +52,9 @@ export function updateMessagesFromFiles(i18n: I18n): void {
 export function updateMessagesFromExperience(
   i18n: I18n,
   experience: PrivacyExperience
-): void {
+): Locale[] {
   console.warn("updateMessagesFromExperience not implemented!");
+  return [];
 }
 
 /**
@@ -125,8 +128,10 @@ export function initializeI18n(
   navigator: Partial<Navigator>,
   options?: Partial<FidesOptions>
 ): void {
-  updateMessagesFromFiles(i18n);
-  i18n.activate(DEFAULT_LOCALE);
+  const availableLocales = updateMessagesFromFiles(i18n);
+  const userLocale = detectUserLocale(navigator, options);
+  const bestLocale = matchAvailableLocales(userLocale, ["en", "fr"]); // TODO
+  i18n.activate(bestLocale);
 }
 
 /**

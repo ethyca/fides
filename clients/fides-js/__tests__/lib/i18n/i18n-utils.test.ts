@@ -31,8 +31,7 @@ describe("i18n-utils", () => {
     mockI18n.t.mockClear();
   });
 
-  // TODO: unskip
-  describe.skip("initializeI18n", () => {
+  describe("initializeI18n", () => {
     it("initializes the i18n singleton with static messages and best match for user's locale", () => {
       const mockNavigator: Partial<Navigator> = {
         language: "fr-CA",
@@ -47,11 +46,14 @@ describe("i18n-utils", () => {
 
   describe("updateMessagesFromFiles", () => {
     it("reads all static messages from source and loads into the i18n catalog", () => {
-      updateMessagesFromFiles(mockI18n);
+      const updatedLocales = updateMessagesFromFiles(mockI18n);
 
-      // Check the first & second locales are what we expect
+      // Check the updated locales list is what we expect
       const EXPECTED_NUM_STATIC_LOCALES = 2; // NOTE: manually update this as new locales added
+      expect(updatedLocales).toEqual(["en", "fr"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
+
+      // Verify the first two locales match the expected catalogues, too
       const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
       const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
       expect(firstLocale).toEqual("en");
@@ -72,9 +74,10 @@ describe("i18n-utils", () => {
     };
 
     it("reads all messages from experience API response and loads into the i18n catalog", () => {
-      updateMessagesFromExperience(mockI18n, mockExperience);
+      const updatedLocales = updateMessagesFromExperience(mockI18n, mockExperience);
       const EXPECTED_NUM_TRANSLATIONS = 1;
-      expect(mockI18n.load.mock.calls).toHaveBeenCalledTimes(
+      expect(updatedLocales).toEqual(["zh"]);
+      expect(mockI18n.load).toHaveBeenCalledTimes(
         EXPECTED_NUM_TRANSLATIONS
       );
       const [locale, messages] = mockI18n.load.mock.calls[0];
