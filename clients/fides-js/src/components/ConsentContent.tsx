@@ -1,10 +1,12 @@
 import { ComponentChildren, VNode, h, Fragment } from "preact";
 import type { HTMLAttributes } from "react";
+
 import { ExperienceConfig } from "../lib/consent-types";
+import { getConsentContext } from "../lib/consent-context";
+import { i18n } from "../lib/i18n";
 
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
-import { getConsentContext } from "../lib/consent-context";
 
 export interface ConsentContentProps {
   title: HTMLAttributes<HTMLHeadingElement>;
@@ -38,7 +40,7 @@ const ConsentModal = ({
             {...title}
             className="fides-modal-title"
           >
-            {experience.title}
+            {i18n.t("experience.title")}
           </div>
           <p
             data-testid="fides-modal-description"
@@ -46,7 +48,7 @@ const ConsentModal = ({
           >
             <ExperienceDescription
               onVendorPageClick={onVendorPageClick}
-              description={experience.description}
+              description={i18n.t("experience.description")}
               allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>

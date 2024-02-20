@@ -6,21 +6,22 @@ import {
   useMemo,
   useRef,
 } from "preact/hooks";
+
+import { defaultShowModal } from "../fides";
+import { useA11yDialog } from "../lib/a11y-dialog";
 import {
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
-
 import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
-
-import "./fides.css";
-import { useA11yDialog } from "../lib/a11y-dialog";
-import ConsentModal from "./ConsentModal";
-import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
+import { useHasMounted } from "../lib/hooks";
+import { i18n } from "../lib/i18n";
+
+import ConsentModal from "./ConsentModal";
 import ConsentContent from "./ConsentContent";
-import { defaultShowModal } from "../fides";
+import "./fides.css";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -72,10 +73,13 @@ const Overlay: FunctionComponent<Props> = ({
     [cookie, onDismiss, options.debug]
   );
 
+  const title = i18n.t("experience.title");
+  console.warn("Overlay.render, title=", title);
+
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: experience?.experience_config?.title || "",
+    title: title || "",
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },
