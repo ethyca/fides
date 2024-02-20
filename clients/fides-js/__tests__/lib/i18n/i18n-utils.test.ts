@@ -14,10 +14,15 @@ import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
-  const mockI18n  = {
+  const mockI18n = {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     activate: jest.fn((locale: Locale): void => {}),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
-    t: jest.fn((idOrDescriptor: string | MessageDescriptor): string => "mock translate"),
+    t: jest.fn(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
+    ),
   };
 
   afterEach(() => {
@@ -47,8 +52,8 @@ describe("i18n-utils", () => {
       // Check the first & second locales are what we expect
       const EXPECTED_NUM_STATIC_LOCALES = 2; // NOTE: manually update this as new locales added
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
-      const [ firstLocale, firstMessages ] = mockI18n.load.mock.calls[0];
-      const [ secondLocale, secondMessages ] = mockI18n.load.mock.calls[1];
+      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
+      const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
       expect(firstLocale).toEqual("en");
       expect(firstMessages).toEqual(messagesEn);
       expect(secondLocale).toEqual("fr");
@@ -60,17 +65,19 @@ describe("i18n-utils", () => {
   describe.skip("updateMessagesFromExperience", () => {
     // TODO: update with translation values
     const mockExperience: PrivacyExperience = {
-      "region": "us_ca",
-      "id": "pri_abc",
-      "created_at": "2024-01-01T12:00:00",
-      "updated_at": "2024-01-01T12:00:00",
+      region: "us_ca",
+      id: "pri_abc",
+      created_at: "2024-01-01T12:00:00",
+      updated_at: "2024-01-01T12:00:00",
     };
 
     it("reads all messages from experience API response and loads into the i18n catalog", () => {
       updateMessagesFromExperience(mockI18n, mockExperience);
       const EXPECTED_NUM_TRANSLATIONS = 1;
-      expect(mockI18n.load.mock.calls).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      const [ locale, messages ] = mockI18n.load.mock.calls[0];
+      expect(mockI18n.load.mock.calls).toHaveBeenCalledTimes(
+        EXPECTED_NUM_TRANSLATIONS
+      );
+      const [locale, messages] = mockI18n.load.mock.calls[0];
       expect(locale).toEqual("zh");
       // TODO: update expected format
       expect(messages).toEqual({
@@ -108,8 +115,7 @@ describe("i18n-utils", () => {
     });
   });
 
-  // TODO: unskip when ready
-  describe.skip("matchAvailableLocales", () => {
+  describe("matchAvailableLocales", () => {
     it("returns an exact match when able", () => {
       const availableLocales = ["en", "es", "fr-CA"];
       expect(matchAvailableLocales("fr-CA", availableLocales)).toEqual("fr-CA");
@@ -127,6 +133,18 @@ describe("i18n-utils", () => {
       expect(matchAvailableLocales("zh", availableLocales)).toEqual("en");
       expect(matchAvailableLocales("foo", availableLocales)).toEqual("en");
     });
+
+    it("performs a case-insensitive lookup", () => {
+      expect(matchAvailableLocales("fr-ca", ["es", "fr-CA"])).toEqual("fr-CA");
+      expect(matchAvailableLocales("Fr-Ca", ["es", "fr-CA"])).toEqual("fr-CA");
+      expect(matchAvailableLocales("fr-CA", ["es", "FR-CA"])).toEqual("FR-CA");
+    });
+
+    it("handles both underscore and dash-separated locales", () => {
+      expect(matchAvailableLocales("fr-CA", ["es", "fr_CA"])).toEqual("fr_CA");
+      expect(matchAvailableLocales("fr_CA", ["es", "fr_CA"])).toEqual("fr_CA");
+      expect(matchAvailableLocales("fr_ca", ["es", "fr-CA"])).toEqual("fr-CA");
+    });
   });
 
   describe("LOCALE_REGEX", () => {
@@ -138,13 +156,13 @@ describe("i18n-utils", () => {
        */
       const tests: Record<string, (string | undefined)[] | null> = {
         // Language only
-        "es": ["es", "es", undefined],
+        es: ["es", "es", undefined],
         // Language + region
         "en-GB": ["en-GB", "en", "GB"],
-        "en_GB": ["en_GB", "en", "GB"],
+        en_GB: ["en_GB", "en", "GB"],
         "zh-CN": ["zh-CN", "zh", "CN"],
         // 3-letter languages or regions
-        "yue": ["yue", "yue", undefined],
+        yue: ["yue", "yue", undefined],
         "es-419": ["es-419", "es", "419"],
         // Language + script
         "zh-Hans": ["zh-Hans", "zh", "Hans"],
@@ -154,21 +172,24 @@ describe("i18n-utils", () => {
         "en-US-POSIX": ["en-US-POSIX", "en", undefined],
         // Not real, but should still be parsed
         "en-FAKE": ["en-FAKE", "en", "FAKE"],
-        "en_FAKE": ["en_FAKE", "en", "FAKE"],
+        en_FAKE: ["en_FAKE", "en", "FAKE"],
         // Invalid
         "not a real locale": null,
         "four-INVALID": null,
         "123-english": null,
       };
 
-      for (const [locale, expectedResults] of Object.entries(tests)) {
+      Object.keys(tests).forEach(locale => {
+        const expectedResults = tests[locale];
         const match = locale.match(LOCALE_REGEX);
         if (match) {
+          // eslint-disable-next-line jest/no-conditional-expect
           expect(Array.from(match)).toEqual(expectedResults);
         } else {
+          // eslint-disable-next-line jest/no-conditional-expect
           expect(match).toEqual(expectedResults);
         }
-      }
+      });
     });
   });
 });
@@ -194,12 +215,12 @@ describe("i18n module", () => {
   });
 
   describe("when loading a test messages catalog", () => {
-    const messagesEn: Messages = {
+    const testMessagesEn: Messages = {
       "test.greeting": "Hello, Jest!",
       "test.phrase": "Move purposefully and fix things",
     };
 
-    const messagesFr: Messages = {
+    const testMessagesFr: Messages = {
       "test.greeting": "Bonjour, Jest!",
       "test.phrase": "Déplacez-vous délibérément et réparez les choses",
     };
@@ -208,8 +229,8 @@ describe("i18n module", () => {
 
     beforeEach(() => {
       testI18n = setupI18n();
-      testI18n.load("en", messagesEn);
-      testI18n.load("fr", messagesFr);
+      testI18n.load("en", testMessagesEn);
+      testI18n.load("fr", testMessagesFr);
       testI18n.activate("en");
     });
 

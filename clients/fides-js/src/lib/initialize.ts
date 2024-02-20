@@ -4,10 +4,9 @@ import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
-  activateUserLocale,
   initializeI18n,
   updateMessagesFromExperience,
-} from "../lib/i18n";
+} from "./i18n";
 import { getConsentContext } from "./consent-context";
 import {
   getCookieByName,
