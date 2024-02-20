@@ -1,18 +1,19 @@
 import { VNode, h } from "preact";
+
 import { Attributes } from "../lib/a11y-dialog";
-import { ExperienceConfig } from "../lib/consent-types";
+import type { I18n } from "../lib/i18n";
 
 import CloseButton from "./CloseButton";
 import ConsentContent from "./ConsentContent";
 
 const ConsentModal = ({
   attributes,
-  experience,
+  i18n,
   renderModalFooter,
   renderModalContent,
 }: {
   attributes: Attributes;
-  experience: ExperienceConfig;
+  i18n: I18n;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode;
   renderModalContent: () => VNode;
@@ -42,7 +43,7 @@ const ConsentModal = ({
         </div>
         <ConsentContent
           title={title}
-          experience={experience}
+          i18n={i18n}
           renderModalFooter={renderModalFooter}
         >
           {renderModalContent()}

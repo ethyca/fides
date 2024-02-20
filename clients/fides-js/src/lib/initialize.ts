@@ -3,10 +3,7 @@ import { ContainerNode } from "preact";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
-import {
-  i18n,
-  initializeI18n,
-} from "./i18n";
+import { i18n, initializeI18n } from "./i18n";
 import { getConsentContext } from "./consent-context";
 import {
   getCookieByName,
@@ -371,10 +368,11 @@ export const initialize = async ({
 
         // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({
+          options,
           experience: effectiveExperience,
+          i18n,
           fidesRegionString: fidesRegionString as string,
           cookie,
-          options,
           renderOverlay,
         }).catch(() => {});
       }

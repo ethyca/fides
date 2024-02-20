@@ -1,16 +1,15 @@
 import { ComponentChildren, VNode, h, Fragment } from "preact";
 import type { HTMLAttributes } from "react";
 
-import { ExperienceConfig } from "../lib/consent-types";
 import { getConsentContext } from "../lib/consent-context";
-import { i18n } from "../lib/i18n";
+import type { I18n } from "../lib/i18n";
 
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
 
 export interface ConsentContentProps {
   title: HTMLAttributes<HTMLHeadingElement>;
-  experience: ExperienceConfig;
+  i18n: I18n;
   children: ComponentChildren;
   className?: string;
   onVendorPageClick?: () => void;
@@ -20,7 +19,7 @@ export interface ConsentContentProps {
 const ConsentModal = ({
   title,
   className,
-  experience,
+  i18n,
   renderModalFooter,
   children,
   onVendorPageClick,

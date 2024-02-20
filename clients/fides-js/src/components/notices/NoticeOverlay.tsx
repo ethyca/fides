@@ -26,8 +26,9 @@ import { getConsentContext } from "../../lib/consent-context";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
-  experience,
   options,
+  experience,
+  i18n,
   fidesRegionString,
   cookie,
 }) => {
@@ -137,6 +138,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     <Overlay
       options={options}
       experience={experience}
+      i18n={i18n}
       cookie={cookie}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}

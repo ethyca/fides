@@ -74,12 +74,13 @@ describe("i18n-utils", () => {
     };
 
     it("reads all messages from experience API response and loads into the i18n catalog", () => {
-      const updatedLocales = updateMessagesFromExperience(mockI18n, mockExperience);
+      const updatedLocales = updateMessagesFromExperience(
+        mockI18n,
+        mockExperience
+      );
       const EXPECTED_NUM_TRANSLATIONS = 1;
       expect(updatedLocales).toEqual(["zh"]);
-      expect(mockI18n.load).toHaveBeenCalledTimes(
-        EXPECTED_NUM_TRANSLATIONS
-      );
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
       const [locale, messages] = mockI18n.load.mock.calls[0];
       expect(locale).toEqual("zh");
       // TODO: update expected format
@@ -182,7 +183,7 @@ describe("i18n-utils", () => {
         "123-english": null,
       };
 
-      Object.keys(tests).forEach(locale => {
+      Object.keys(tests).forEach((locale) => {
         const expectedResults = tests[locale];
         const match = locale.match(LOCALE_REGEX);
         if (match) {

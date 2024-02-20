@@ -39,7 +39,7 @@ export const LOCALE_REGEX =
  */
 export function updateMessagesFromFiles(i18n: I18n): Locale[] {
   // NOTE: This doesn't automatically infer the list of locale files from
-  // source, so you'll need to manually add any new locales here! 
+  // source, so you'll need to manually add any new locales here!
   i18n.load("en", messagesEn);
   i18n.load("fr", messagesFr);
   return ["en", "fr"];
@@ -49,6 +49,8 @@ export function updateMessagesFromFiles(i18n: I18n): Locale[] {
  * Parse the provided PrivacyExperience object and load all translated strings
  * into the message catalog.
  */
+// TODO: remove these eslint-disable once implemented
+/* eslint-disable @typescript-eslint/no-unused-vars, no-console */
 export function updateMessagesFromExperience(
   i18n: I18n,
   experience: PrivacyExperience
@@ -56,6 +58,7 @@ export function updateMessagesFromExperience(
   console.warn("updateMessagesFromExperience not implemented!");
   return [];
 }
+/* eslint-enable @typescript-eslint/no-unused-vars, no-console */
 
 /**
  * Detect the user's preferred locale from the browser or any overrides.
@@ -130,7 +133,7 @@ export function initializeI18n(
 ): void {
   const availableLocales = updateMessagesFromFiles(i18n);
   const userLocale = detectUserLocale(navigator, options);
-  const bestLocale = matchAvailableLocales(userLocale, ["en", "fr"]); // TODO
+  const bestLocale = matchAvailableLocales(userLocale, availableLocales);
   i18n.activate(bestLocale);
 }
 
