@@ -37,6 +37,11 @@ class LocationRegulationSelections(Base):
         nullable=False,
         default={},
     )
+    selected_location_groups = Column(
+        ARRAY(String),
+        nullable=False,
+        default={},
+    )
     selected_regulations = Column(
         ARRAY(String),
         nullable=False,
@@ -144,6 +149,34 @@ class LocationRegulationSelections(Base):
             record = results.scalars().first()
             if record:
                 return set(record.selected_locations)
+            return set()
+
+    @classmethod
+    def get_selected_location_groups(
+        cls,
+        db: Session,
+    ) -> Set[str]:
+        """
+        Utility method to get the selected_locations_groups, returned as a Set.
+        """
+        record = db.query(cls).first()
+        if record:
+            return set(record.selected_location_groups)
+        return set()
+
+    @classmethod
+    async def get_selected_location_groups_async(
+        cls,
+        async_session: AsyncSession,
+    ) -> Set[str]:
+        """
+        Utility method to get the selected_location_groups, returned as a Set.
+        """
+        async with async_session.begin():
+            results = await async_session.execute(select(cls))  # type: ignore[arg-type]
+            record = results.scalars().first()
+            if record:
+                return set(record.selected_location_groups)
             return set()
 
     @classmethod
