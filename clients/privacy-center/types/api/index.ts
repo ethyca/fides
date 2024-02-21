@@ -29,6 +29,9 @@ export type { PrivacyPreferencesRequest } from "./models/PrivacyPreferencesReque
 export type { SavePrivacyPreferencesResponse } from "./models/SavePrivacyPreferencesResponse";
 export { ServingComponent } from "./models/ServingComponent";
 export { SupportedLanguage } from "./models/SupportedLanguage";
+export type { GPPFieldMapping } from "./models/GPPFieldMapping";
+export type { GPPMechanismMapping } from "./models/GPPMechanismMapping";
+export type { PrivacyNoticeFramework } from "./models/PrivacyNoticeFramework";
 export type { TCFFeatureRecord } from "./models/TCFFeatureRecord";
 export type { TCFFeatureSave } from "./models/TCFFeatureSave";
 export type { TCFPurposeConsentRecord } from "./models/TCFPurposeConsentRecord";
