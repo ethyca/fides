@@ -62,7 +62,6 @@
         "cookies": [],
         "translations": [
           {
-            "id": "pri_sdafsf",
             "language": "en",
             "title": "Test privacy notice",
             "description": "a test sample privacy notice configuration",
@@ -92,7 +91,6 @@
         "cookies": [],
         "translations": [
           {
-            "id": "pri_sdqwff",
             "language": "en",
             "title": "Test privacy notice opt out",
             "description": "a test sample privacy notice configuration",
@@ -119,7 +117,6 @@
         "cookies": [],
         "translations": [
           {
-            "id": "pri_sd234afsf",
             "language": "en",
             "name": "Essential",
             "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",

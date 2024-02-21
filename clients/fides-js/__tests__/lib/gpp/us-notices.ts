@@ -56,7 +56,6 @@ const mockPrivacyNotice = (override?: Partial<PrivacyNotice>) => {
     gpp_field_mapping: [mockGppField()],
     translations: [
       {
-        id: "234r23",
         language: "en",
         privacy_notice_history_id: "321",
       },

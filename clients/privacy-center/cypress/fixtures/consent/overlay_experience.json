@@ -51,7 +51,6 @@
           "cookies": [],
           "translations": [
             {
-              "id": "pri_sdaf42rfsf",
               "language": "en",
               "title": "Advertising",
               "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
@@ -77,7 +76,6 @@
           "cookies": [{ "name": "_ga", "path": null, "domain": null }],
           "translations": [
             {
-              "id": "pri_sda123sf",
               "language": "en",
               "title": "Analytics",
               "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
