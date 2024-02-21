@@ -21,7 +21,7 @@ export type { RecordsServedResponse } from "./models/RecordsServedResponse";
 export type { RecordConsentServedRequest } from "./models/RecordConsentServedRequest";
 export type { Page_PrivacyExperienceResponse_ } from "./models/Page_PrivacyExperienceResponse_";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
-export  type { NoticeTranslationResponse } from "./models/NoticeTranslationResponse";
+export type { NoticeTranslationResponse } from "./models/NoticeTranslationResponse";
 export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";
 export type { PrivacyNoticeResponse } from "./models/PrivacyNoticeResponse";
 export type { PrivacyNoticeResponseWithUserPreferences } from "./models/PrivacyNoticeResponseWithUserPreferences";

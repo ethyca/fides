@@ -16,7 +16,8 @@ import {
   RecordConsentServedRequest,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
-  PrivacyPreferencesRequest, Consent,
+  PrivacyPreferencesRequest,
+  Consent,
 } from "~/types/api";
 import { selectSettings } from "../common/settings.slice";
 

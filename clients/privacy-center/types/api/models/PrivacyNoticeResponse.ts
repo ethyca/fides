@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from './ConsentMechanism';
-import type { Cookies } from './Cookies';
-import type { EnforcementLevel } from './EnforcementLevel';
-import type { GPPFieldMapping } from './GPPFieldMapping';
-import type { NoticeTranslationResponse } from './NoticeTranslationResponse';
-import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
-import type { UserConsentPreference } from './UserConsentPreference';
+import type { ConsentMechanism } from "./ConsentMechanism";
+import type { Cookies } from "./Cookies";
+import type { EnforcementLevel } from "./EnforcementLevel";
+import type { GPPFieldMapping } from "./GPPFieldMapping";
+import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
+import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
+import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
  * An API representation of a PrivacyNotice used for response payloads
@@ -33,4 +33,3 @@ export type PrivacyNoticeResponse = {
   translations?: Array<NoticeTranslationResponse>;
   gpp_field_mapping?: Array<GPPFieldMapping>;
 };
-
