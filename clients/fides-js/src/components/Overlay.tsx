@@ -122,41 +122,35 @@ const Overlay: FunctionComponent<Props> = ({
   }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (
-        experience?.experience_config?.component === ComponentType.MODAL ||
-        experience?.experience_config?.component ===
-        ComponentType.BANNER_AND_MODAL
-    ) {
-      window.Fides.showModal = handleOpenModal;
-      document.body.classList.add("fides-overlay-modal-link-shown");
-      // use a delay to ensure that link exists in the DOM
-      const delayModalLinkBinding = setTimeout(() => {
-        const modalLinkId = options.modalLinkId || "fides-modal-link";
-        const modalLinkEl = document.getElementById(modalLinkId);
-        if (modalLinkEl) {
-          debugLog(
-              options.debug,
-              "Modal link element found, updating it to show and trigger modal on click."
-          );
-          modalLinkRef.current = modalLinkEl;
-          modalLinkRef.current.addEventListener("click", window.Fides.showModal);
-          // Update to show the pre-existing modal link in the DOM
-          modalLinkRef.current.classList.add("fides-modal-link-shown");
-        } else {
-          debugLog(options.debug, "Modal link element not found.");
-        }
-      }, delayModalLinkMilliseconds);
-      return () => {
-        clearTimeout(delayModalLinkBinding);
-        if (modalLinkRef.current) {
-          modalLinkRef.current.removeEventListener(
-              "click",
-              window.Fides.showModal
-          );
-        }
-        window.Fides.showModal = defaultShowModal;
-      };
-    }
+    window.Fides.showModal = handleOpenModal;
+    document.body.classList.add("fides-overlay-modal-link-shown");
+    // use a delay to ensure that link exists in the DOM
+    const delayModalLinkBinding = setTimeout(() => {
+      const modalLinkId = options.modalLinkId || "fides-modal-link";
+      const modalLinkEl = document.getElementById(modalLinkId);
+      if (modalLinkEl) {
+        debugLog(
+          options.debug,
+          "Modal link element found, updating it to show and trigger modal on click."
+        );
+        modalLinkRef.current = modalLinkEl;
+        modalLinkRef.current.addEventListener("click", window.Fides.showModal);
+        // Update to show the pre-existing modal link in the DOM
+        modalLinkRef.current.classList.add("fides-modal-link-shown");
+      } else {
+        debugLog(options.debug, "Modal link element not found.");
+      }
+    }, delayModalLinkMilliseconds);
+    return () => {
+      clearTimeout(delayModalLinkBinding);
+      if (modalLinkRef.current) {
+        modalLinkRef.current.removeEventListener(
+          "click",
+          window.Fides.showModal
+        );
+      }
+      window.Fides.showModal = defaultShowModal;
+    };
   }, [options.modalLinkId, options.debug, handleOpenModal, experience]);
 
   const handleManagePreferencesClick = (): void => {
