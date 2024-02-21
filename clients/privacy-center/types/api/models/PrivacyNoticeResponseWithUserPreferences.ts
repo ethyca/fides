@@ -6,7 +6,7 @@ import type { ConsentMechanism } from "./ConsentMechanism";
 import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
 import type { UserConsentPreference } from "./UserConsentPreference";
-import type { PrivacyNoticeTranslations } from "./PrivacyNoticeTranslations";
+import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
 
 export enum PrivacyNoticeFramework {
   GPP_US_NATIONAL = "gpp_us_national",
@@ -31,7 +31,7 @@ export type GPPFieldMapping = {
  * and any saved preferences.
  */
 export type PrivacyNoticeResponseWithUserPreferences = {
-  translations: Array<PrivacyNoticeTranslations>;
+  translations: Array<NoticeTranslationResponse>;
   name?: string;
   notice_key?: string;
   internal_description?: string;

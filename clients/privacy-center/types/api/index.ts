@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export { BannerEnabled } from "./models/BannerEnabled";
 export { ComponentType } from "./models/ComponentType";
 export type { Consent } from "./models/Consent";
 export { ConsentMechanism } from "./models/ConsentMechanism";
@@ -11,6 +10,7 @@ export type { ConsentOptionCreate } from "./models/ConsentOptionCreate";
 export type { ConsentPreferences } from "./models/ConsentPreferences";
 export type { ConsentPreferencesWithVerificationCode } from "./models/ConsentPreferencesWithVerificationCode";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
+// missing this
 export type { CurrentPrivacyPreferenceSchema } from "./models/CurrentPrivacyPreferenceSchema";
 export type { EmbeddedLineItem } from "./models/EmbeddedLineItem";
 export type { EmbeddedVendor } from "./models/EmbeddedVendor";
@@ -22,7 +22,7 @@ export type { RecordsServedResponse } from "./models/RecordsServedResponse";
 export type { RecordConsentServedRequest } from "./models/RecordConsentServedRequest";
 export type { Page_PrivacyExperienceResponse_ } from "./models/Page_PrivacyExperienceResponse_";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
-export type { PrivacyNoticeHistorySchema } from "./models/PrivacyNoticeHistorySchema";
+export  type { NoticeTranslationResponse } from "./models/NoticeTranslationResponse";
 export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";
 export type { PrivacyNoticeResponse } from "./models/PrivacyNoticeResponse";
 export type { PrivacyNoticeResponseWithUserPreferences } from "./models/PrivacyNoticeResponseWithUserPreferences";
