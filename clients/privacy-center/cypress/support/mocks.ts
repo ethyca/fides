@@ -56,26 +56,6 @@ export const mockPrivacyNotice = (
   return { ...notice, ...params };
 };
 
-export const mockExperienceConfig = (params: Partial<ExperienceConfig>) => {
-  const experienceConfig = {
-    language: "en",
-    accept_button_label: "Accept Test",
-    acknowledge_button_label: "OK",
-    banner_title: "Manage your consent",
-    description:
-      "This test website is overriding the banner description label.",
-    is_default: true,
-    privacy_policy_link_label: "Privacy policy",
-    privacy_policy_url: "https://privacy.ethyca.com/",
-    privacy_preferences_link_label: "Manage preferences",
-    reject_button_label: "Reject Test",
-    save_button_label: "Save test",
-    title: "Manage your consent",
-    privacy_experience_config_history_id: "2345324",
-  };
-  return { ...experienceConfig, params };
-};
-
 export const mockCookie = (params: Partial<FidesCookie>) => {
   const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
   const CREATED_DATE = "2022-12-24T12:00:00.000Z";

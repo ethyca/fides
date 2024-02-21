@@ -101,7 +101,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
           cookie
         );
         if (pref) {
-          // todo- set to default language
+          // todo- set to default language, extract into helper util fn to keep this logic centralized.
           newPreferences[notice.translations[0].privacy_notice_history_id] =
             pref;
         } else {
