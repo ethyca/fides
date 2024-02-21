@@ -1570,7 +1570,7 @@ def privacy_preference_history_us_ca_provide(
             "method": "button",
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                 0
-            ].experience_config_history_id,
+            ].privacy_experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_in",
             "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
@@ -1729,7 +1729,7 @@ def privacy_preference_history_fr_provide_service_frontend_only(
             "method": "button",
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                 0
-            ].experience_config_history_id,
+            ].privacy_experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.translations[
@@ -2271,7 +2271,7 @@ def privacy_preference_history(
             "method": "button",
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                 0
-            ].experience_config_history_id,
+            ].privacy_experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
