@@ -152,6 +152,29 @@ class LocationRegulationSelections(Base):
             return set()
 
     @classmethod
+    def set_selected_location_groups(
+        cls,
+        db: Session,
+        selected_location_groups: Iterable[str],
+    ) -> None:
+        """Utility method to set the selected location groups"""
+        cls.create_or_update(
+            db, data={"selected_location_groups": set(selected_location_groups)}
+        )
+
+    @classmethod
+    async def set_selected_location_groups_async(
+        cls,
+        async_session: AsyncSession,
+        selected_location_groups: Iterable[str],
+    ) -> None:
+        """Utility method to set the selected location groups with an async session"""
+        await cls.create_or_update_async(
+            async_session,
+            data={"selected_location_groups": set(selected_location_groups)},
+        )
+
+    @classmethod
     def get_selected_location_groups(
         cls,
         db: Session,

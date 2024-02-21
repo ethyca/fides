@@ -43,18 +43,10 @@ class Location(LocationRegulationBase):
     regulation: List[str] = []
 
 
-class LocationGroup(BaseModel):
+class LocationGroup(Location):
     """
     Used to represent location groups in API responses.
-
-    Only differs from a Location in that it has no `selected`
-    field.
     """
-
-    id: str
-    name: str
-    continent: Continent
-    belongs_to: List[str] = []
 
 
 @lru_cache(maxsize=1)
