@@ -1995,7 +1995,7 @@ describe("Consent overlay", () => {
           noticesServedInterception.request.body;
         expect(identity.fides_user_device_id).to.be.a("string");
         expect(body).to.eql({
-          // This is the experience_config_history_id of the associated translation
+          // This is the privacy_experience_config_history_id of the associated translation
           privacy_experience_id: "2345324",
           user_geography: "us_ca",
           acknowledge_mode: false,

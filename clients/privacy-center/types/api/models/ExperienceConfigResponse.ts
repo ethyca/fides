@@ -2,20 +2,26 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from "./ComponentType";
-import type { ExperienceConfigTranslation } from "./ExperienceConfigTranslation";
+import type { ComponentType } from './ComponentType';
+import type { ExperienceTranslationResponse } from './ExperienceTranslationResponse';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { PrivacyNoticeResponse } from './PrivacyNoticeResponse';
 
 /**
  * An API representation of ExperienceConfig used for response payloads
  */
 export type ExperienceConfigResponse = {
-  language: string;
-  translations: Array<ExperienceConfigTranslation>;
+  name?: string;
+  disabled?: boolean;
   dismissable?: boolean;
   allow_language_selection?: boolean;
-  custom_asset_id?: string;
+  regions: Array<PrivacyNoticeRegion>;
   id: string;
-  component: ComponentType;
   created_at: string;
   updated_at: string;
+  origin?: string;
+  component: ComponentType;
+  privacy_notices?: Array<PrivacyNoticeResponse>;
+  translations?: Array<ExperienceTranslationResponse>;
 };
+

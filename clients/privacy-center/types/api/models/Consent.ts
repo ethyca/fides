@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Schema for consent.
+ * Deprecated: This used to be populated and sent to the server by a `config.json` in the UI
  */
 export type Consent = {
   data_use: string;
@@ -12,3 +12,4 @@ export type Consent = {
   has_gpc_flag?: boolean;
   conflicts_with_gpc?: boolean;
 };
+
