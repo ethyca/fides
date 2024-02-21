@@ -20,7 +20,7 @@ import {
   defaultInitialValues,
   transformConfigResponseToCreate,
 } from "~/features/privacy-experience/form/helpers";
-import NewPrivacyExperienceForm from "~/features/privacy-experience/NewPrivacyExperienceForm";
+import PrivacyExperienceForm from "~/features/privacy-experience/NewPrivacyExperienceForm";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
@@ -110,7 +110,7 @@ const ConfigurePrivacyExperience = ({
             >
               <Flex direction="column" h="full" overflow="scroll" px={4}>
                 <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
-                <NewPrivacyExperienceForm />
+                <PrivacyExperienceForm />
               </Flex>
               <Spacer />
               <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>

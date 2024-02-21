@@ -150,7 +150,7 @@ const PrivacyExperienceTranslationForm = ({
 //   );
 // };
 
-const NewPrivacyExperienceForm = () => {
+const PrivacyExperienceForm = () => {
   const [translationToEdit, setTranslationToEdit] = useState<
     ExperienceTranslation | undefined
   >(undefined);
@@ -298,4 +298,4 @@ const NewPrivacyExperienceForm = () => {
   );
 };
 
-export default NewPrivacyExperienceForm;
+export default PrivacyExperienceForm;
