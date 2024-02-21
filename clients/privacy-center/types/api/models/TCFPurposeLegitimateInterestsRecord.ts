@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EmbeddedVendor } from "./EmbeddedVendor";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { EmbeddedVendor } from './EmbeddedVendor';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience
@@ -30,10 +30,7 @@ export type TCFPurposeLegitimateInterestsRecord = {
    */
   data_uses: Array<string>;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };
+

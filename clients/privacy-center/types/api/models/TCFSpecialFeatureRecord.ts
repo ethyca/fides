@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EmbeddedVendor } from "./EmbeddedVendor";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { EmbeddedVendor } from './EmbeddedVendor';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * Schema for a TCF Special Feature: returned in the TCF Overlay Experience
@@ -22,10 +22,7 @@ export type TCFSpecialFeatureRecord = {
    */
   description: string;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };
+
