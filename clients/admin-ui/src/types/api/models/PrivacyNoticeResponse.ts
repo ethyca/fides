@@ -17,7 +17,6 @@ export type PrivacyNoticeResponse = {
   name?: string;
   notice_key?: string;
   internal_description?: string;
-  origin?: string;
   consent_mechanism?: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
@@ -26,6 +25,7 @@ export type PrivacyNoticeResponse = {
   framework?: PrivacyNoticeFramework;
   default_preference?: UserConsentPreference;
   id: string;
+  origin?: string;
   created_at: string;
   updated_at: string;
   cookies: Array<Cookies>;

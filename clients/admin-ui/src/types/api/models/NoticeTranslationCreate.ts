@@ -5,7 +5,8 @@
 import type { SupportedLanguage } from './SupportedLanguage';
 
 /**
- * Notice Translation Schema
+ * Notice Translation Create Schema
+ * Makes title non-optional on create
  */
 export type NoticeTranslationCreate = {
   language: SupportedLanguage;

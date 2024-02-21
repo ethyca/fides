@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SupportedLanguage } from "./SupportedLanguage";
+import type { SupportedLanguage } from './SupportedLanguage';
 
 /**
  * Overrides ExperienceTranslation fields to make some fields required on create
@@ -10,45 +10,46 @@ import type { SupportedLanguage } from "./SupportedLanguage";
 export type ExperienceTranslationCreate = {
   language: SupportedLanguage;
   /**
-   * Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'
+   * Accept or confirmation button label
    */
   accept_button_label?: string;
   /**
-   * Overlay 'Acknowledge button label for notice only banner'
+   * Acknowledge button label for notice only
    */
   acknowledge_button_label?: string;
   /**
-   * Overlay 'Banner Description'
-   */
-  banner_description?: string;
-  /**
-   * Overlay 'Banner title'
+   * Banner title
    */
   banner_title?: string;
-  description: string;
   /**
    * Whether the given translation is the default
    */
   is_default?: boolean;
   /**
-   * Overlay and Privacy Center 'Privacy policy link label'
+   * Privacy policy link label
    */
   privacy_policy_link_label?: string;
   /**
-   * Overlay and Privacy Center 'Privacy policy URL
+   * Privacy policy URL
    */
   privacy_policy_url?: string;
   /**
-   * Overlay 'Privacy preferences link label'
+   * Privacy preferences link label
    */
   privacy_preferences_link_label?: string;
   /**
-   * Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'
+   * Reject button label
    */
   reject_button_label?: string;
   /**
-   * Overlay 'Privacy preferences 'Save' button label
+   * Save button label
    */
   save_button_label?: string;
   title: string;
+  /**
+   * Banner description. HTML descriptions are supported so links can be included.
+   */
+  banner_description?: string;
+  description: string;
 };
+

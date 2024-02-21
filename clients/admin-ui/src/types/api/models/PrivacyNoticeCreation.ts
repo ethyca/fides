@@ -15,7 +15,6 @@ export type PrivacyNoticeCreation = {
   name: string;
   notice_key?: string;
   internal_description?: string;
-  origin?: string;
   consent_mechanism: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level: EnforcementLevel;

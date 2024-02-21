@@ -8,6 +8,8 @@ import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
 
 /**
  * Schema for creating Experience Configs via the API
+ *
+ * Privacy notices are specified as a list of ids instead of keys like the template
  */
 export type ExperienceConfigCreate = {
   name?: string;
@@ -15,8 +17,8 @@ export type ExperienceConfigCreate = {
   dismissable?: boolean;
   allow_language_selection?: boolean;
   regions?: Array<PrivacyNoticeRegion>;
-  translations?: Array<ExperienceTranslationCreate>;
   component: ComponentType;
   privacy_notice_ids?: Array<string>;
+  translations?: Array<ExperienceTranslationCreate>;
 };
 

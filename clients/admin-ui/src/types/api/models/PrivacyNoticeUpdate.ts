@@ -10,13 +10,14 @@ import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
 
 /**
  * Overriding Privacy Notice schema for updates - translations must be supplied or they will
- * be removed
+ * be removed.
+ *
+ * Other aspects will be validated on a dry update after patch updates are applied against PrivacyNoticeCreation
  */
 export type PrivacyNoticeUpdate = {
   name?: string;
   notice_key?: string;
   internal_description?: string;
-  origin?: string;
   consent_mechanism?: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;

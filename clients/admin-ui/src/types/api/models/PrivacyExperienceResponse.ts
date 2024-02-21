@@ -26,13 +26,12 @@ import type { TCFVendorRelationships } from './TCFVendorRelationships';
  * Additionally, the notices on the ExperienceConfig are further filtered.
  */
 export type PrivacyExperienceResponse = {
+  id: string;
+  created_at: string;
+  updated_at: string;
   region: PrivacyNoticeRegion;
   component?: ComponentType;
   gpp_settings?: GPPApplicationConfigResponse;
-  /**
-   * The Experience Config and its translations
-   */
-  experience_config?: ExperienceConfigResponseNoNotices;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -44,9 +43,6 @@ export type PrivacyExperienceResponse = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
-  id: string;
-  created_at: string;
-  updated_at: string;
   /**
    * For backwards compatibility purposes, whether the Experience should show a banner.
    */
@@ -55,7 +51,12 @@ export type PrivacyExperienceResponse = {
    * The Privacy Notices associated with this experience, if applicable
    */
   privacy_notices?: Array<PrivacyNoticeResponse>;
+  /**
+   * The Experience Config and its translations
+   */
+  experience_config?: ExperienceConfigResponseNoNotices;
   gvl?: any;
+  gvl_translations?: any;
   meta?: ExperienceMeta;
 };
 

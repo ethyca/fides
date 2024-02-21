@@ -2,11 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceTranslation } from "./ExperienceTranslation";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { ExperienceTranslation } from './ExperienceTranslation';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
 
 /**
- * Updating ExperienceConfig. Note that component cannot be updated once its created.
+ * The schema to update an ExperienceConfig via the API.
+ *
+ * Note that component cannot be updated once its created.
  * Translations, regions, and privacy_notice_ids must be supplied or they will be removed.
  *
  * Experience Config Updates are also re-validated with the ExperienceConfigCreate
@@ -21,3 +23,4 @@ export type ExperienceConfigUpdate = {
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;
 };
+
