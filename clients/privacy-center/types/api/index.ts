@@ -28,6 +28,7 @@ export type { PrivacyNoticeResponseWithUserPreferences } from "./models/PrivacyN
 export type { PrivacyPreferencesRequest } from "./models/PrivacyPreferencesRequest";
 export type { SavePrivacyPreferencesResponse } from "./models/SavePrivacyPreferencesResponse";
 export { ServingComponent } from "./models/ServingComponent";
+export { SupportedLanguage } from "./models/SupportedLanguage";
 export type { TCFFeatureRecord } from "./models/TCFFeatureRecord";
 export type { TCFFeatureSave } from "./models/TCFFeatureSave";
 export type { TCFPurposeConsentRecord } from "./models/TCFPurposeConsentRecord";
