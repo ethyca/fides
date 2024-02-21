@@ -314,10 +314,16 @@ export type ExperienceMeta = {
 
 export type PrivacyExperience = {
   region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
+  /**
+   * The Experience Config and its translations
+   */
   experience_config?: ExperienceConfig;
   id: string;
   created_at: string;
   updated_at: string;
+  /**
+   * The Privacy Notices associated with this experience, if applicable
+   */
   privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
@@ -330,6 +336,10 @@ export type PrivacyExperience = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  /**
+   * For backwards compatibility purposes, whether the Experience should show a banner.
+   */
+  show_banner?: boolean;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
   gpp_settings?: GPPSettings;
@@ -391,13 +401,12 @@ export type PrivacyNotice = {
   created_at: string;
   updated_at: string;
   cookies: Array<Cookies>;
-  default_preference: UserConsentPreference;
+  default_preference?: UserConsentPreference;
   systems_applicable?: boolean;
   translations: Array<PrivacyNoticeTranslations>;
 };
 
 export type PrivacyNoticeTranslations = {
-  id: string;
   language: string;
   title?: string;
   description?: string;
@@ -426,6 +435,7 @@ export enum UserConsentPreference {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
   ACKNOWLEDGE = "acknowledge",
+  TCF = "tcf",
 }
 
 export enum ComponentType {

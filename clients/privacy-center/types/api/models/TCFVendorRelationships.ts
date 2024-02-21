@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EmbeddedLineItem } from './EmbeddedLineItem';
-import type { EmbeddedPurpose } from './EmbeddedPurpose';
+import type { EmbeddedLineItem } from "./EmbeddedLineItem";
+import type { EmbeddedPurpose } from "./EmbeddedPurpose";
 
 /**
  * Collects the other relationships for a given vendor - no preferences are saved here
@@ -23,4 +23,3 @@ export type TCFVendorRelationships = {
   legitimate_interest_disclosure_url?: string;
   privacy_policy_url?: string;
 };
-
