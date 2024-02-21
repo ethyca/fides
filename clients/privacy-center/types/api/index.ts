@@ -26,7 +26,6 @@ export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";
 export type { PrivacyNoticeResponse } from "./models/PrivacyNoticeResponse";
 export type { PrivacyNoticeResponseWithUserPreferences } from "./models/PrivacyNoticeResponseWithUserPreferences";
 export type { PrivacyPreferencesRequest } from "./models/PrivacyPreferencesRequest";
-export type { SavePrivacyPreferencesResponse } from "./models/SavePrivacyPreferencesResponse";
 export { ServingComponent } from "./models/ServingComponent";
 export { SupportedLanguage } from "./models/SupportedLanguage";
 export type { GPPFieldMapping } from "./models/GPPFieldMapping";
