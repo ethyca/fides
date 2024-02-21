@@ -2,7 +2,6 @@ import {
   PrivacyNotice,
   PrivacyNoticeTranslations,
   EnforcementLevel,
-  ExperienceConfig,
   ConsentMechanism,
   UserConsentPreference,
   FidesCookie,
