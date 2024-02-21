@@ -51,7 +51,21 @@ describe("i18n-utils", () => {
     });
 
     // TODO: implement
-    it.skip("does not automatically detect the user's locale when the experience disables auto-detection", () => {});
+    it.only("does not automatically detect the user's locale when the experience disables auto-detection", () => {
+      // Make a deep copy of the mock experience using a dirty JSON serialization trick
+      // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
+      const mockExperienceNoAutoDetectLanguage = JSON.parse(JSON.stringify(mockExperience));
+      mockExperienceNoAutoDetectLanguage.experience_config.auto_detect_language = false;
+
+      const mockNavigator: Partial<Navigator> = {
+        language: "es-419",
+      };
+
+      initializeI18n(mockI18n, mockNavigator, mockExperienceNoAutoDetectLanguage);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
+      expect(mockI18n.activate).toHaveBeenCalledWith("en");
+    });
   });
 
   describe("updateMessagesFromFiles", () => {
@@ -157,7 +171,7 @@ describe("i18n-utils", () => {
       });
     });
     
-    // TODO: this logic should likely be in the presentation layer
+    // TODO: this logic needs to be in the presentation layer and affect reporting
     it.skip("handles mismatched notice translations by falling back to default language", () => {});
   });
 

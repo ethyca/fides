@@ -264,9 +264,18 @@ export function initializeI18n(
   experience: Partial<PrivacyExperience>,
   options?: Partial<FidesOptions>
 ): void {
+  // Extract & update all the translated messages from both our static files and the experience API
   updateMessagesFromFiles(i18n);
   const availableLocales = updateMessagesFromExperience(i18n, experience);
-  const userLocale = detectUserLocale(navigator, options);
+  
+  // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
+  let userLocale = DEFAULT_LOCALE;
+  // TODO: update types and remove any
+  if (!((experience as any)?.experience_config?.auto_detect_language === false)) {
+    userLocale = detectUserLocale(navigator, options);
+  }
+
+  // Match the user locale to the "best" available locale from the experience API and activate it!
   const bestLocale = matchAvailableLocales(userLocale, availableLocales);
   i18n.activate(bestLocale);
 }
