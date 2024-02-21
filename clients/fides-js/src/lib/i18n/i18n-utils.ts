@@ -1,4 +1,4 @@
-import { FidesOptions, PrivacyExperience } from "../consent-types";
+import { ExperienceConfig, FidesOptions, PrivacyExperience } from "../consent-types";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 
 /**
@@ -36,6 +36,110 @@ export const LOCALE_REGEX =
 //  ^^^language^^^^   ^^^^^^^^^^region^^^^^^^^^^^^ ^^^^^^other^^^^^^
 
 /**
+ * Helper function to extract all the translated messages from an
+ * ExperienceConfig API response. Returns an object that maps locales -> messages, e.g.
+ * {
+ *   "en": {
+ *     "exp.accept_button_label": "Accept",
+ *     "exp.acknowledge_button_label": "OK",
+ *     ...
+ *   },
+ *   "es": {
+ *     ...
+ *   }
+ * }
+ */
+// TODO: use ExperienceConfig type instead of any
+function extractMessagesFromExperienceConfig(experienceConfig: any /*ExperienceConfig*/): Record<Locale, Messages> {
+  const extractedMessages: Record<Locale, Messages> = {};
+  const EXPERIENCE_TRANSLATION_FIELDS = [
+    "accept_button_label",
+    "acknowledge_button_label",
+    "banner_description",
+    "banner_title",
+    "description",
+    "privacy_policy_link_label",
+    "privacy_policy_url",
+    "privacy_preferences_link_label",
+    "reject_button_label",
+    "save_button_label",
+    "title",
+  ] as const;
+  if (experienceConfig.translations) {
+    experienceConfig.translations.forEach(
+      // For each translation, extract each of the translated fields
+      (translation: any) => {
+        const locale = translation.language;
+        const messages: Messages = {};
+        EXPERIENCE_TRANSLATION_FIELDS.forEach(key => messages[`exp.${key}`] = translation[key])
+
+        // Combine these extracted messages with all the other locales
+        extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+      }
+    );
+  } else {
+    // For backwards-compatibility, when "translations" don't exist, look for
+    // the fields on the ExperienceConfig itself
+    const locale = DEFAULT_LOCALE;
+    const messages: Messages = {};
+    EXPERIENCE_TRANSLATION_FIELDS.forEach(key => messages[`exp.${key}`] = experienceConfig[key])
+
+    // Combine these extracted messages with all the other locales
+    extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+  }
+  return extractedMessages;
+};
+
+/**
+ * Helper function to extract all the translated messages from a PrivacyNotice
+ * API response.  Returns an object that maps locales -> messages, using the
+ * PrivacyNotice's id to prefix each message like "exp.notices.{id}.title"
+ * 
+ * For example, returns a message catalog like:
+ * {
+ *   "en": {
+ *     "exp.notices.pri_123.title": "Advertising",
+ *     "exp.notices.pri_123.description": "We perform advertising based on...",
+ *     ...
+ *   },
+ *   "es": {
+ *     ...
+ *   }
+ * }
+ */
+// TODO: use PrivacyNotice type instead of any
+function extractMessagesFromNotice(notice: any /*PrivacyNotice*/): Record<Locale, Messages> {
+  const extractedMessages: Record<Locale, Messages> = {};
+  const NOTICE_TRANSLATION_FIELDS = [
+    "description",
+    "title",
+  ] as const;
+  if (notice?.translations) {
+    notice.translations.forEach((translation: any) => {
+      // For each translation, extract each of the translated fields
+      const locale = translation.language;
+      const messages: Messages = {};
+      NOTICE_TRANSLATION_FIELDS.forEach(key => messages[`exp.notices.${notice.id}.${key}`] = translation[key])
+
+      // Combine these extracted messages with all the other locales
+      extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+    });
+  } else {
+    // For backwards-compatibility, when "translations" don't exist, look for
+    // the fields on the PrivacyNotice itself
+    const locale = DEFAULT_LOCALE;
+    const messages: Messages = {
+      [`exp.notices.${notice.id}.description`]: notice.description,
+      [`exp.notices.${notice.id}.title`]: notice.name, // NOTE: for backwards-compatibility; we used to use "name" for the title :)
+    }
+
+    // Combine these extracted messages with all the other locales
+    extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+  }
+  return extractedMessages;
+};
+
+/**
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function updateMessagesFromFiles(i18n: I18n): Locale[] {
@@ -55,59 +159,25 @@ export function updateMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>
 ): Locale[] {
-  // TODO: update types
+  // TODO: update types to remove use of "any" in here!
   const anyExperience = experience as any;
-  const allMessages: Record<Locale, Messages> = {};
+  let allMessages: Record<Locale, Messages> = {};
 
   // Extract messages from experience_config.translations
-  // TODO: extract into a helper
   if (anyExperience?.experience_config) {
-    if (anyExperience?.experience_config?.translations) {
-      anyExperience.experience_config.translations.forEach(
-        (translation: any) => {
-          // TODO: define keys and generate this?
-          const locale = translation.language;
-          const messages: Messages = {
-            "experience.accept_button_label": translation.accept_button_label,
-            "experience.acknowledge_button_label":
-              translation.acknowledge_button_label,
-            "experience.banner_description": translation.banner_description,
-            "experience.banner_title": translation.banner_title,
-            "experience.description": translation.description,
-            "experience.privacy_policy_link_label":
-              translation.privacy_policy_link_label,
-            "experience.privacy_policy_url": translation.privacy_policy_url,
-            "experience.privacy_preferences_link_label":
-              translation.privacy_preferences_link_label,
-            "experience.reject_button_label": translation.reject_button_label,
-            "experience.save_button_label": translation.save_button_label,
-            "experience.title": translation.title,
-          };
-          allMessages[locale] = { ...messages, ...allMessages[locale] };
-        }
-      );
-    } else {
-      // TODO: No translations available, extract default "en" strings
+    const extractedMessages: Record<Locale, Messages> = extractMessagesFromExperienceConfig(anyExperience.experience_config);
+    for (let locale in extractedMessages) {
+      allMessages[locale] = { ...extractedMessages[locale], ...allMessages[locale] };
     }
   }
 
   // Extract messages from privacy_notices[].translations
-  // TODO: extract into a helper
   if (anyExperience?.privacy_notices) {
+    // TODO: update types to remove use of "any" in here!
     anyExperience.privacy_notices.forEach((notice: any) => {
-      if (notice?.translations) {
-        notice.translations.forEach((translation: any) => {
-          // TODO: define keys and generate this?
-          const locale = translation.language;
-          const prefix = `experience.privacy_notices.${notice.id}`;
-          const messages: Messages = {
-            [`${prefix}.title`]: translation.title,
-            [`${prefix}.description`]: translation.description,
-          };
-          allMessages[locale] = { ...messages, ...allMessages[locale] };
-        });
-      } else {
-        // TODO: No translations available, extract default "en" strings
+      const extractedMessages: Record<Locale, Messages> = extractMessagesFromNotice(notice);
+      for (let locale in extractedMessages) {
+        allMessages[locale] = { ...extractedMessages[locale], ...allMessages[locale] };
       }
     });
   }

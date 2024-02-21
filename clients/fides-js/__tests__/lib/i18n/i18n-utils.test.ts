@@ -12,7 +12,8 @@ import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
 
-import mockExperienceJSON from "./mock_experience.json";
+import mockExperienceJSON from "./fixtures/mock_experience.json";
+import mockExperienceNoTranslationsJSON from "./fixtures/mock_experience_no_translations.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
@@ -27,8 +28,8 @@ describe("i18n-utils", () => {
     ),
   };
 
-  // TODO: Improve this mock experience fixture?
-  const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
+  // TODO: Improve this mock experience fixture type
+  const mockExperience: any /*Partial<PrivacyExperience>*/ = (mockExperienceJSON as any);
 
   afterEach(() => {
     mockI18n.activate.mockClear();
@@ -84,54 +85,78 @@ describe("i18n-utils", () => {
       const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
       expect(firstLocale).toEqual("en");
       expect(firstMessages).toEqual({
-        "experience.accept_button_label": "Accept Test",
-        "experience.acknowledge_button_label": "Acknowledge Test",
-        "experience.banner_description": "Banner Description Test",
-        "experience.banner_title": "Banner Title Test",
-        "experience.description": "Description Test",
-        "experience.privacy_policy_link_label": "Privacy Policy Test",
-        "experience.privacy_policy_url": "https://privacy.example.com/",
-        "experience.privacy_preferences_link_label": "Manage Preferences Test",
-        "experience.reject_button_label": "Reject Test",
-        "experience.save_button_label": "Save Test",
-        "experience.title": "Title Test",
+        "exp.accept_button_label": "Accept Test",
+        "exp.acknowledge_button_label": "Acknowledge Test",
+        "exp.banner_description": "Banner Description Test",
+        "exp.banner_title": "Banner Title Test",
+        "exp.description": "Description Test",
+        "exp.privacy_policy_link_label": "Privacy Policy Test",
+        "exp.privacy_policy_url": "https://privacy.example.com/",
+        "exp.privacy_preferences_link_label": "Manage Preferences Test",
+        "exp.reject_button_label": "Reject Test",
+        "exp.save_button_label": "Save Test",
+        "exp.title": "Title Test",
         // TODO: I'm unconvinced that flattening the notices like this makes sense
-        "experience.privacy_notices.pri_555.title": "Advertising Test",
-        "experience.privacy_notices.pri_555.description":
-          "Advertising Description Test",
-        "experience.privacy_notices.pri_888.title": "Analytics Test",
-        "experience.privacy_notices.pri_888.description":
-          "Analytics Description Test",
+        "exp.notices.pri_555.title": "Advertising Test",
+        "exp.notices.pri_555.description": "Advertising Description Test",
+        "exp.notices.pri_888.title": "Analytics Test",
+        "exp.notices.pri_888.description": "Analytics Description Test",
       });
       const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
       expect(secondLocale).toEqual("es");
       expect(secondMessages).toEqual({
-        "experience.accept_button_label": "Aceptar Prueba",
-        "experience.acknowledge_button_label": "Reconocer Prueba",
-        "experience.banner_description": "Descripción del Banner de Prueba",
-        "experience.banner_title": "Título del Banner de Prueba",
-        "experience.description": "Descripción de la Prueba",
-        "experience.privacy_policy_link_label":
-          "Política de Privacidad de Prueba",
-        "experience.privacy_policy_url": "https://privacy.example.com/es",
-        "experience.privacy_preferences_link_label":
-          "Administrar Preferencias de Prueba",
-        "experience.reject_button_label": "Rechazar Prueba",
-        "experience.save_button_label": "Guardar Prueba",
-        "experience.title": "Título de la Prueba",
+        "exp.accept_button_label": "Aceptar Prueba",
+        "exp.acknowledge_button_label": "Reconocer Prueba",
+        "exp.banner_description": "Descripción del Banner de Prueba",
+        "exp.banner_title": "Título del Banner de Prueba",
+        "exp.description": "Descripción de la Prueba",
+        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
+        "exp.privacy_policy_url": "https://privacy.example.com/es",
+        "exp.privacy_preferences_link_label": "Administrar Preferencias de Prueba",
+        "exp.reject_button_label": "Rechazar Prueba",
+        "exp.save_button_label": "Guardar Prueba",
+        "exp.title": "Título de la Prueba",
         // TODO: I'm unconvinced that flattening the notices like this makes sense
-        "experience.privacy_notices.pri_555.title": "Prueba de Publicidad",
-        "experience.privacy_notices.pri_555.description":
-          "Descripción de la Publicidad de Prueba",
-        "experience.privacy_notices.pri_888.title": "Prueba de Analítica",
-        "experience.privacy_notices.pri_888.description":
-          "Descripción de la Analítica de Prueba",
+        "exp.notices.pri_555.title": "Prueba de Publicidad",
+        "exp.notices.pri_555.description": "Descripción de la Publicidad de Prueba",
+        "exp.notices.pri_888.title": "Prueba de Analítica",
+        "exp.notices.pri_888.description": "Descripción de la Analítica de Prueba",
       });
     });
 
-    // TODO: implement & test
-    it.skip("handles missing experience translations by falling back to experience_config properties", () => {});
+    it("handles missing experience translations by falling back to experience_config properties", () => {
+      // TODO: Improve this mock experience fixture type
+      const mockExperienceNoTranslations: any /*Partial<PrivacyExperience>*/ = (mockExperienceNoTranslationsJSON as any);
+      const updatedLocales = updateMessagesFromExperience(
+        mockI18n,
+        mockExperienceNoTranslations,
+      );
 
+      const EXPECTED_NUM_TRANSLATIONS = 1;
+      expect(updatedLocales).toEqual(["en"]);
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
+      expect(firstLocale).toEqual("en");
+      expect(firstMessages).toEqual({
+        "exp.accept_button_label": "Accept Test",
+        "exp.acknowledge_button_label": "Acknowledge Test",
+        "exp.banner_description": "Banner Description Test",
+        "exp.banner_title": "Banner Title Test",
+        "exp.description": "Description Test",
+        "exp.privacy_policy_link_label": "Privacy Policy Test",
+        "exp.privacy_policy_url": "https://privacy.example.com/",
+        "exp.privacy_preferences_link_label": "Manage Preferences Test",
+        "exp.reject_button_label": "Reject Test",
+        "exp.save_button_label": "Save Test",
+        "exp.title": "Title Test",
+        // TODO: I'm unconvinced that flattening the notices like this makes sense
+        "exp.notices.pri_555.title": "Advertising Test",
+        "exp.notices.pri_555.description": "Advertising Description Test",
+        "exp.notices.pri_888.title": "Analytics Test",
+        "exp.notices.pri_888.description": "Analytics Description Test",
+      });
+    });
+    
     // TODO: this logic should likely be in the presentation layer
     it.skip("handles mismatched notice translations by falling back to default language", () => {});
   });
