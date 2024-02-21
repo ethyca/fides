@@ -10,8 +10,7 @@ export type { ConsentOptionCreate } from "./models/ConsentOptionCreate";
 export type { ConsentPreferences } from "./models/ConsentPreferences";
 export type { ConsentPreferencesWithVerificationCode } from "./models/ConsentPreferencesWithVerificationCode";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
-// missing this
-export type { CurrentPrivacyPreferenceSchema } from "./models/CurrentPrivacyPreferenceSchema";
+export type { PreferencesSaved } from "./models/PreferencesSaved";
 export type { EmbeddedLineItem } from "./models/EmbeddedLineItem";
 export type { EmbeddedVendor } from "./models/EmbeddedVendor";
 export { EnforcementLevel } from "./models/EnforcementLevel";

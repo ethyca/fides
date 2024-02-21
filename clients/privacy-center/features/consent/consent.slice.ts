@@ -16,7 +16,7 @@ import {
   RecordConsentServedRequest,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
-  PrivacyPreferencesRequest,
+  PrivacyPreferencesRequest, Consent,
 } from "~/types/api";
 import { selectSettings } from "../common/settings.slice";
 
@@ -163,7 +163,7 @@ export const consentSlice = createSlice({
       { payload }: PayloadAction<ConsentPreferences>
     ) {
       const consentPreferences = payload.consent ?? [];
-      consentPreferences.forEach((consent) => {
+      consentPreferences.forEach((consent: Consent) => {
         draftState.fidesKeyToConsent[consent.data_use] = consent.opt_in;
         draftState.persistedFidesKeyToConsent[consent.data_use] =
           consent.opt_in;
