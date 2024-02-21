@@ -49,15 +49,12 @@ const componentTypeOptions = [
   },
 ];
 
-const PrivacyExperienceTranslationForm = ({
+export const PrivacyExperienceTranslationForm = ({
   name,
-  onCancel,
 }: {
   name: string;
-  onCancel: () => void;
 }) => (
   <Flex direction="column" gap={4} w="full">
-    <Button onClick={onCancel}>Back to main form</Button>
     <Text>Editing the {name} translation...</Text>
   </Flex>
 );
@@ -150,25 +147,15 @@ const PrivacyExperienceTranslationForm = ({
 //   );
 // };
 
-const PrivacyExperienceForm = () => {
-  const [translationToEdit, setTranslationToEdit] = useState<
-    ExperienceTranslation | undefined
-  >(undefined);
+const PrivacyExperienceForm = ({
+  translation,
+  onSelectTranslation,
+}: {
+  translation?: ExperienceTranslation;
+  onSelectTranslation: (t: ExperienceTranslation) => void;
+}) => {
   const [editingStyle, setEditingStyle] = useState<boolean>(false);
   const { values, setFieldValue } = useFormikContext<ExperienceConfigCreate>();
-
-  const languagePage = useAppSelector(selectLanguagePage);
-  const languagePageSize = useAppSelector(selectLanguagePageSize);
-  useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
-  const allLanguages = useAppSelector(selectAllLanguages);
-
-  const getTranslationLanguageName = (translation: ExperienceTranslation) => {
-    const language = allLanguages.find(
-      (lang) => lang.id === translation.language
-    );
-    const name = language ? language.name : translation.language;
-    return `${name}${translation.is_default ? " (Default)" : ""}`;
-  };
 
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
@@ -191,15 +178,25 @@ const PrivacyExperienceForm = () => {
   //   setFieldValue("translations", newTranslations, true);
   // };
 
-  if (translationToEdit) {
+  const languagePage = useAppSelector(selectLanguagePage);
+  const languagePageSize = useAppSelector(selectLanguagePageSize);
+  useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
+  const allLanguages = useAppSelector(selectAllLanguages);
+
+  const getTranslationDisplayName = (t: ExperienceTranslation) => {
+    const language = allLanguages.find((lang) => lang.id === t.language);
+    const name = language ? language.name : t.language;
+    return `${name}${t.is_default ? " (Default)" : ""}`;
+  };
+
+  if (translation) {
     return (
       <PrivacyExperienceTranslationForm
         // idx={values.translations!.findIndex(
         //   (translation) => translation.language === translationToEdit.language
         // )}
-        name={getTranslationLanguageName(translationToEdit)}
+        name={getTranslationDisplayName(translation)}
         // onSetDefault={handleSetNewDefaultLanguage}
-        onCancel={() => setTranslationToEdit(undefined)}
       />
     );
   }
@@ -286,12 +283,12 @@ const PrivacyExperienceForm = () => {
           language: lang.id as SupportedLanguage,
           is_default: false,
         }))}
-        getItemLabel={getTranslationLanguageName}
+        getItemLabel={getTranslationDisplayName}
         createNewValue={(opt) => ({
           language: opt.value as SupportedLanguage,
           is_default: false,
         })}
-        onRowClick={(item) => setTranslationToEdit(item)}
+        onRowClick={onSelectTranslation}
         draggable
       />
     </Flex>

@@ -35,4 +35,29 @@ const BackButton = ({
   </Flex>
 );
 
+export const BackButtonNonLink = ({
+  onClick,
+  ...props
+}: { onClick: () => void } & FlexProps) => (
+  <Flex
+    alignItems="center"
+    mt={-4}
+    mb={3}
+    onClick={onClick}
+    cursor="pointer"
+    {...props}
+  >
+    <IconButton
+      aria-label="Back"
+      icon={<ArrowBackIcon />}
+      mr={2}
+      size="xs"
+      variant="outline"
+    />
+    <Text as="a" fontSize="sm" fontWeight="500">
+      Back
+    </Text>
+  </Flex>
+);
+
 export default BackButton;

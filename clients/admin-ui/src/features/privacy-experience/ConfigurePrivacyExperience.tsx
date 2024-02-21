@@ -3,29 +3,37 @@ import {
   ButtonGroup,
   Flex,
   IconButton,
-  NotAllowedIcon,
   Spacer,
   Text,
   useToast,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import BackButton from "~/features/common/nav/v2/BackButton";
+import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
+import { MobileIcon } from "~/features/common/Icon/MobileIcon";
+import BackButton, {
+  BackButtonNonLink,
+} from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   defaultInitialValues,
   transformConfigResponseToCreate,
 } from "~/features/privacy-experience/form/helpers";
-import PrivacyExperienceForm from "~/features/privacy-experience/NewPrivacyExperienceForm";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { ExperienceConfigCreate, ExperienceConfigResponse } from "~/types/api";
+import PrivacyExperienceForm from "~/features/privacy-experience/PrivacyExperienceForm";
+import {
+  ExperienceConfigCreate,
+  ExperienceConfigResponse,
+  ExperienceTranslation,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const validationSchema = Yup.object().shape({
@@ -87,6 +95,12 @@ const ConfigurePrivacyExperience = ({
     ? transformConfigResponseToCreate(passedInExperience)
     : defaultInitialValues;
 
+  const [translationToEdit, setTranslationToEdit] = useState<
+    ExperienceTranslation | undefined
+  >(undefined);
+
+  // const [isEditingStyle, setIsEditingStyle] = useState<boolean>(false);
+
   return (
     <Formik
       initialValues={initialValues}
@@ -109,26 +123,52 @@ const ConfigurePrivacyExperience = ({
               borderRight="1px solid #DEE5EE"
             >
               <Flex direction="column" h="full" overflow="scroll" px={4}>
-                <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
-                <PrivacyExperienceForm />
+                {translationToEdit ? (
+                  <BackButtonNonLink
+                    onClick={() => setTranslationToEdit(undefined)}
+                    mt={4}
+                  />
+                ) : (
+                  <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
+                )}
+                <PrivacyExperienceForm
+                  translation={translationToEdit}
+                  onSelectTranslation={(translation) =>
+                    setTranslationToEdit(translation)
+                  }
+                />
               </Flex>
               <Spacer />
               <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
                 <Button
                   variant="outline"
-                  onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}
+                  onClick={
+                    translationToEdit
+                      ? () => setTranslationToEdit(undefined)
+                      : () => router.push(PRIVACY_EXPERIENCE_ROUTE)
+                  }
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  colorScheme="primary"
-                  data-testid="save-btn"
-                  isDisabled={isSubmitting || !dirty || !isValid}
-                  isLoading={isSubmitting}
-                >
-                  Save
-                </Button>
+                {translationToEdit ? (
+                  <Button
+                    colorScheme="primary"
+                    data-testid="save-btn"
+                    onClick={() => setTranslationToEdit(undefined)}
+                  >
+                    Save
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    colorScheme="primary"
+                    data-testid="save-btn"
+                    isDisabled={isSubmitting || !dirty || !isValid}
+                    isLoading={isSubmitting}
+                  >
+                    Save
+                  </Button>
+                )}
               </ButtonGroup>
             </Flex>
             <Flex direction="column" w="75%" bgColor="gray.50">
@@ -145,13 +185,11 @@ const ConfigurePrivacyExperience = ({
                 <Spacer />
                 <ButtonGroup size="sm" variant="outline" isAttached>
                   <IconButton
-                    // TODO: replace with "mobile" icon
-                    icon={<NotAllowedIcon />}
+                    icon={<MobileIcon />}
                     aria-label="View mobile preview"
                   />
                   <IconButton
-                    // TODO: replace with "desktop" icon
-                    icon={<NotAllowedIcon />}
+                    icon={<DesktopIcon />}
                     aria-label="View desktop preview"
                   />
                 </ButtonGroup>
