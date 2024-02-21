@@ -1,4 +1,4 @@
-import { ExperienceConfig, FidesOptions, PrivacyExperience } from "../consent-types";
+import { FidesOptions, PrivacyExperience } from "../consent-types";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 
 /**
@@ -50,7 +50,9 @@ export const LOCALE_REGEX =
  * }
  */
 // TODO: use ExperienceConfig type instead of any
-function extractMessagesFromExperienceConfig(experienceConfig: any /*ExperienceConfig*/): Record<Locale, Messages> {
+function extractMessagesFromExperienceConfig(
+  experienceConfig: any
+): Record<Locale, Messages> {
   const extractedMessages: Record<Locale, Messages> = {};
   const EXPERIENCE_TRANSLATION_FIELDS = [
     "accept_button_label",
@@ -71,10 +73,15 @@ function extractMessagesFromExperienceConfig(experienceConfig: any /*ExperienceC
       (translation: any) => {
         const locale = translation.language;
         const messages: Messages = {};
-        EXPERIENCE_TRANSLATION_FIELDS.forEach(key => messages[`exp.${key}`] = translation[key])
+        EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
+          messages[`exp.${key}`] = translation[key];
+        });
 
         // Combine these extracted messages with all the other locales
-        extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+        extractedMessages[locale] = {
+          ...messages,
+          ...extractedMessages[locale],
+        };
       }
     );
   } else {
@@ -82,19 +89,21 @@ function extractMessagesFromExperienceConfig(experienceConfig: any /*ExperienceC
     // the fields on the ExperienceConfig itself
     const locale = DEFAULT_LOCALE;
     const messages: Messages = {};
-    EXPERIENCE_TRANSLATION_FIELDS.forEach(key => messages[`exp.${key}`] = experienceConfig[key])
+    EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
+      messages[`exp.${key}`] = experienceConfig[key];
+    });
 
     // Combine these extracted messages with all the other locales
     extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
   }
   return extractedMessages;
-};
+}
 
 /**
  * Helper function to extract all the translated messages from a PrivacyNotice
  * API response.  Returns an object that maps locales -> messages, using the
  * PrivacyNotice's id to prefix each message like "exp.notices.{id}.title"
- * 
+ *
  * For example, returns a message catalog like:
  * {
  *   "en": {
@@ -108,18 +117,17 @@ function extractMessagesFromExperienceConfig(experienceConfig: any /*ExperienceC
  * }
  */
 // TODO: use PrivacyNotice type instead of any
-function extractMessagesFromNotice(notice: any /*PrivacyNotice*/): Record<Locale, Messages> {
+function extractMessagesFromNotice(notice: any): Record<Locale, Messages> {
   const extractedMessages: Record<Locale, Messages> = {};
-  const NOTICE_TRANSLATION_FIELDS = [
-    "description",
-    "title",
-  ] as const;
+  const NOTICE_TRANSLATION_FIELDS = ["description", "title"] as const;
   if (notice?.translations) {
     notice.translations.forEach((translation: any) => {
       // For each translation, extract each of the translated fields
       const locale = translation.language;
       const messages: Messages = {};
-      NOTICE_TRANSLATION_FIELDS.forEach(key => messages[`exp.notices.${notice.id}.${key}`] = translation[key])
+      NOTICE_TRANSLATION_FIELDS.forEach((key) => {
+        messages[`exp.notices.${notice.id}.${key}`] = translation[key];
+      });
 
       // Combine these extracted messages with all the other locales
       extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
@@ -131,13 +139,13 @@ function extractMessagesFromNotice(notice: any /*PrivacyNotice*/): Record<Locale
     const messages: Messages = {
       [`exp.notices.${notice.id}.description`]: notice.description,
       [`exp.notices.${notice.id}.title`]: notice.name, // NOTE: for backwards-compatibility; we used to use "name" for the title :)
-    }
+    };
 
     // Combine these extracted messages with all the other locales
     extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
   }
   return extractedMessages;
-};
+}
 
 /**
  * Load the statically-compiled messages from source into the message catalog.
@@ -161,24 +169,32 @@ export function updateMessagesFromExperience(
 ): Locale[] {
   // TODO: update types to remove use of "any" in here!
   const anyExperience = experience as any;
-  let allMessages: Record<Locale, Messages> = {};
+  const allMessages: Record<Locale, Messages> = {};
 
   // Extract messages from experience_config.translations
   if (anyExperience?.experience_config) {
-    const extractedMessages: Record<Locale, Messages> = extractMessagesFromExperienceConfig(anyExperience.experience_config);
-    for (let locale in extractedMessages) {
-      allMessages[locale] = { ...extractedMessages[locale], ...allMessages[locale] };
-    }
+    const extractedMessages: Record<Locale, Messages> =
+      extractMessagesFromExperienceConfig(anyExperience.experience_config);
+    Object.keys(extractedMessages).forEach((locale) => {
+      allMessages[locale] = {
+        ...extractedMessages[locale],
+        ...allMessages[locale],
+      };
+    });
   }
 
   // Extract messages from privacy_notices[].translations
   if (anyExperience?.privacy_notices) {
     // TODO: update types to remove use of "any" in here!
     anyExperience.privacy_notices.forEach((notice: any) => {
-      const extractedMessages: Record<Locale, Messages> = extractMessagesFromNotice(notice);
-      for (let locale in extractedMessages) {
-        allMessages[locale] = { ...extractedMessages[locale], ...allMessages[locale] };
-      }
+      const extractedMessages: Record<Locale, Messages> =
+        extractMessagesFromNotice(notice);
+      Object.keys(extractedMessages).forEach((locale) => {
+        allMessages[locale] = {
+          ...extractedMessages[locale],
+          ...allMessages[locale],
+        };
+      });
     });
   }
 
@@ -267,11 +283,13 @@ export function initializeI18n(
   // Extract & update all the translated messages from both our static files and the experience API
   updateMessagesFromFiles(i18n);
   const availableLocales = updateMessagesFromExperience(i18n, experience);
-  
+
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
   let userLocale = DEFAULT_LOCALE;
   // TODO: update types and remove any
-  if (!((experience as any)?.experience_config?.auto_detect_language === false)) {
+  if (
+    !((experience as any)?.experience_config?.auto_detect_language === false)
+  ) {
     userLocale = detectUserLocale(navigator, options);
   }
 

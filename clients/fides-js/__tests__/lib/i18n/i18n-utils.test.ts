@@ -1,4 +1,4 @@
-import { FidesOptions, PrivacyExperience } from "~/fides";
+import { FidesOptions } from "~/fides";
 import {
   LOCALE_REGEX,
   setupI18n,
@@ -28,8 +28,8 @@ describe("i18n-utils", () => {
     ),
   };
 
-  // TODO: Improve this mock experience fixture type
-  const mockExperience: any /*Partial<PrivacyExperience>*/ = (mockExperienceJSON as any);
+  // TODO: Improve this mock experience fixture type: Partial<PrivacyExperience>
+  const mockExperience: any = mockExperienceJSON as any;
 
   afterEach(() => {
     mockI18n.activate.mockClear();
@@ -51,17 +51,24 @@ describe("i18n-utils", () => {
     });
 
     // TODO: implement
-    it.only("does not automatically detect the user's locale when the experience disables auto-detection", () => {
+    it("does not automatically detect the user's locale when the experience disables auto-detection", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
-      const mockExperienceNoAutoDetectLanguage = JSON.parse(JSON.stringify(mockExperience));
-      mockExperienceNoAutoDetectLanguage.experience_config.auto_detect_language = false;
+      const mockExperienceNoAutoDetectLanguage = JSON.parse(
+        JSON.stringify(mockExperience)
+      );
+      mockExperienceNoAutoDetectLanguage.experience_config.auto_detect_language =
+        false;
 
       const mockNavigator: Partial<Navigator> = {
         language: "es-419",
       };
 
-      initializeI18n(mockI18n, mockNavigator, mockExperienceNoAutoDetectLanguage);
+      initializeI18n(
+        mockI18n,
+        mockNavigator,
+        mockExperienceNoAutoDetectLanguage
+      );
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.activate).toHaveBeenCalledWith("en");
@@ -126,24 +133,28 @@ describe("i18n-utils", () => {
         "exp.description": "Descripción de la Prueba",
         "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
         "exp.privacy_policy_url": "https://privacy.example.com/es",
-        "exp.privacy_preferences_link_label": "Administrar Preferencias de Prueba",
+        "exp.privacy_preferences_link_label":
+          "Administrar Preferencias de Prueba",
         "exp.reject_button_label": "Rechazar Prueba",
         "exp.save_button_label": "Guardar Prueba",
         "exp.title": "Título de la Prueba",
         // TODO: I'm unconvinced that flattening the notices like this makes sense
         "exp.notices.pri_555.title": "Prueba de Publicidad",
-        "exp.notices.pri_555.description": "Descripción de la Publicidad de Prueba",
+        "exp.notices.pri_555.description":
+          "Descripción de la Publicidad de Prueba",
         "exp.notices.pri_888.title": "Prueba de Analítica",
-        "exp.notices.pri_888.description": "Descripción de la Analítica de Prueba",
+        "exp.notices.pri_888.description":
+          "Descripción de la Analítica de Prueba",
       });
     });
 
     it("handles missing experience translations by falling back to experience_config properties", () => {
-      // TODO: Improve this mock experience fixture type
-      const mockExperienceNoTranslations: any /*Partial<PrivacyExperience>*/ = (mockExperienceNoTranslationsJSON as any);
+      // TODO: Improve this mock experience fixture type (Partial<PrivacyExperience>)
+      const mockExperienceNoTranslations: any =
+        mockExperienceNoTranslationsJSON as any;
       const updatedLocales = updateMessagesFromExperience(
         mockI18n,
-        mockExperienceNoTranslations,
+        mockExperienceNoTranslations
       );
 
       const EXPECTED_NUM_TRANSLATIONS = 1;
@@ -170,7 +181,7 @@ describe("i18n-utils", () => {
         "exp.notices.pri_888.description": "Analytics Description Test",
       });
     });
-    
+
     // TODO: this logic needs to be in the presentation layer and affect reporting
     it.skip("handles mismatched notice translations by falling back to default language", () => {});
   });
