@@ -85,6 +85,7 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.SK]: "Slovakia (EU)",
     [PrivacyNoticeRegion.FI]: "Finland (EU)",
     [PrivacyNoticeRegion.SE]: "Sweden (EU)",
+    [PrivacyNoticeRegion.GB]: "Great Britain",
     [PrivacyNoticeRegion.GB_ENG]: "England",
     [PrivacyNoticeRegion.GB_SCT]: "Scotland",
     [PrivacyNoticeRegion.GB_WLS]: "Wales",
