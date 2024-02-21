@@ -30,6 +30,13 @@ import { isErrorResult } from "~/types/errors";
 
 const validationSchema = Yup.object().shape({
   component: Yup.string().required().label("Experience type"),
+  // translations: Yup.array().of(
+  //   Yup.object().shape({
+  //     title: Yup.string().required().label("Title"),
+  //     description: Yup.string().required().label("Description"),
+  //     is_default: Yup.boolean(),
+  //   })
+  // ),
 });
 
 const ConfigurePrivacyExperience = ({
@@ -89,7 +96,12 @@ const ConfigurePrivacyExperience = ({
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form style={{ height: "100vh" }}>
-          <Flex w="full" minH="full" direction="row">
+          <Flex
+            w="full"
+            minH="full"
+            direction="row"
+            data-testid="privacy-experience-detail-page"
+          >
             <Flex
               direction="column"
               minH="full"
@@ -111,6 +123,7 @@ const ConfigurePrivacyExperience = ({
                 <Button
                   type="submit"
                   colorScheme="primary"
+                  data-testid="save-btn"
                   isDisabled={isSubmitting || !dirty || !isValid}
                   isLoading={isSubmitting}
                 >

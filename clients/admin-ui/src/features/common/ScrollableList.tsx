@@ -168,7 +168,7 @@ const ScrollableList = <T extends unknown>({
       );
 
   const handleDeleteItem = (item: T) => {
-    setValues(values.filter((v) => v !== item));
+    setValues(values.filter((v) => v !== item).slice());
   };
 
   const getItemDisplayName =
@@ -198,7 +198,7 @@ const ScrollableList = <T extends unknown>({
   const handleAddNewValue = (opt: Option) => {
     setValues([
       createNewValue ? createNewValue(opt) : getValueFromOption(opt),
-      ...values,
+      ...values.slice(),
     ]);
   };
 
@@ -215,7 +215,7 @@ const ScrollableList = <T extends unknown>({
     >
       <Reorder.Group
         values={values}
-        onReorder={(newValues) => setValues(newValues)}
+        onReorder={(newValues) => setValues(newValues.slice())}
       >
         {values.map((item) => (
           <ScrollableListItem

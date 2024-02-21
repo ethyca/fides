@@ -13,6 +13,7 @@ import { useAppSelector } from "~/app/hooks";
 import {
   CustomSelect,
   CustomSwitch,
+  // CustomTextArea,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -48,6 +49,107 @@ const componentTypeOptions = [
   },
 ];
 
+const PrivacyExperienceTranslationForm = ({
+  name,
+  onCancel,
+}: {
+  name: string;
+  onCancel: () => void;
+}) => (
+  <Flex direction="column" gap={4} w="full">
+    <Button onClick={onCancel}>Back to main form</Button>
+    <Text>Editing the {name} translation...</Text>
+  </Flex>
+);
+
+// WIP, don't mind me!
+
+// const PrivacyExperienceTranslationForm = ({
+//   name,
+//   idx,
+//   onSetDefault,
+//   onCancel,
+// }: {
+//   name: string;
+//   idx: number;
+//   onSetDefault: (index: number) => void;
+//   onCancel: () => void;
+// }) => {
+//   const { values } = useFormikContext<ExperienceConfigCreate>();
+//   return (
+//     <Flex direction="column" gap={4} w="full">
+//       <Button onClick={onCancel}>Back to main form</Button>
+//       <Heading fontSize="md" fontWeight="semibold">
+//         {name}
+//       </Heading>
+//       <CustomSwitch
+//         name={`translations.${idx}.is_default`}
+//         id={`translations.${idx}.is_default`}
+//         label="Default language"
+//         isDisabled={values.translations![idx].is_default}
+//         onChange={() => onSetDefault(idx)}
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.title`}
+//         id={`translations.${idx}.title`}
+//         label="Title"
+//         isRequired
+//         variant="stacked"
+//       />
+//       <CustomTextArea
+//         name={`translations.${idx}.description`}
+//         id={`translations.${idx}.description`}
+//         label="Description"
+//         isRequired
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.accept_button_label`}
+//         id={`translations.${idx}.accept_button_label`}
+//         label={`"Accept" button label`}
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.reject_button_label`}
+//         id={`translations.${idx}.reject_button_label`}
+//         label={`"Reject" button label`}
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.privacy_preferences_link_label`}
+//         id={`translations.${idx}.privacy_preferences_link_label`}
+//         label={`"Manage privacy preferences" button label`}
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.save_button_label`}
+//         id={`translations.${idx}.save_button_label`}
+//         label={`"Save" button label`}
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.acknowledge_button_label`}
+//         id={`translations.${idx}.acknowledge_button_label`}
+//         label={`"Acknowledge" button label`}
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.privacy_policy_link_label`}
+//         id={`translations.${idx}.privacy_policy_link_label`}
+//         label="Privacy policy link label"
+//         variant="stacked"
+//       />
+//       <CustomTextInput
+//         name={`translations.${idx}.privacy_policy_url`}
+//         id={`translations.${idx}.privacy_policy_url`}
+//         label="Privacy policy link URL"
+//         variant="stacked"
+//       />
+//     </Flex>
+//   );
+// };
+
 const NewPrivacyExperienceForm = () => {
   const [translationToEdit, setTranslationToEdit] = useState<
     ExperienceTranslation | undefined
@@ -82,17 +184,23 @@ const NewPrivacyExperienceForm = () => {
     (entry) => entry[1]
   ) as PrivacyNoticeRegion[];
 
+  // const handleSetNewDefaultLanguage = (newDefaultIndex: number) => {
+  //   const newTranslations = values.translations!.slice();
+  //   newTranslations.find((t) => t.is_default)!.is_default = false;
+  //   newTranslations[newDefaultIndex].is_default = true;
+  //   setFieldValue("translations", newTranslations, true);
+  // };
+
   if (translationToEdit) {
     return (
-      <>
-        <Button onClick={() => setTranslationToEdit(undefined)}>
-          Back to main form
-        </Button>
-        <Text>
-          Editing the {getTranslationLanguageName(translationToEdit)}{" "}
-          translation coming soon™
-        </Text>
-      </>
+      <PrivacyExperienceTranslationForm
+        // idx={values.translations!.findIndex(
+        //   (translation) => translation.language === translationToEdit.language
+        // )}
+        name={getTranslationLanguageName(translationToEdit)}
+        // onSetDefault={handleSetNewDefaultLanguage}
+        onCancel={() => setTranslationToEdit(undefined)}
+      />
     );
   }
 
