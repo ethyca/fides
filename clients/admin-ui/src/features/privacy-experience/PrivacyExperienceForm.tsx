@@ -18,12 +18,7 @@ import {
 } from "~/features/common/form/inputs";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
-import {
-  selectAllLanguages,
-  selectPage as selectLanguagePage,
-  selectPageSize as selectLanguagePageSize,
-  useGetAllLanguagesQuery,
-} from "~/features/privacy-experience/language.slice";
+import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
   selectAllPrivacyNotices,
   selectPage as selectNoticePage,
@@ -148,10 +143,8 @@ export const PrivacyExperienceTranslationForm = ({
 // };
 
 const PrivacyExperienceForm = ({
-  translation,
   onSelectTranslation,
 }: {
-  translation?: ExperienceTranslation;
   onSelectTranslation: (t: ExperienceTranslation) => void;
 }) => {
   const [editingStyle, setEditingStyle] = useState<boolean>(false);
@@ -171,16 +164,6 @@ const PrivacyExperienceForm = ({
     (entry) => entry[1]
   ) as PrivacyNoticeRegion[];
 
-  // const handleSetNewDefaultLanguage = (newDefaultIndex: number) => {
-  //   const newTranslations = values.translations!.slice();
-  //   newTranslations.find((t) => t.is_default)!.is_default = false;
-  //   newTranslations[newDefaultIndex].is_default = true;
-  //   setFieldValue("translations", newTranslations, true);
-  // };
-
-  const languagePage = useAppSelector(selectLanguagePage);
-  const languagePageSize = useAppSelector(selectLanguagePageSize);
-  useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
   const allLanguages = useAppSelector(selectAllLanguages);
 
   const getTranslationDisplayName = (t: ExperienceTranslation) => {
@@ -188,18 +171,6 @@ const PrivacyExperienceForm = ({
     const name = language ? language.name : t.language;
     return `${name}${t.is_default ? " (Default)" : ""}`;
   };
-
-  if (translation) {
-    return (
-      <PrivacyExperienceTranslationForm
-        // idx={values.translations!.findIndex(
-        //   (translation) => translation.language === translationToEdit.language
-        // )}
-        name={getTranslationDisplayName(translation)}
-        // onSetDefault={handleSetNewDefaultLanguage}
-      />
-    );
-  }
 
   if (editingStyle) {
     return (

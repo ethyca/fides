@@ -2,8 +2,10 @@ import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigResponse,
+  ExperienceTranslation,
   ExperienceTranslationCreate,
   ExperienceTranslationResponse,
+  Language,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -25,6 +27,17 @@ export const defaultInitialValues: ExperienceConfigCreate = {
   regions: [],
   translations: defaultTranslations,
   component: ComponentType.MODAL,
+};
+// utility type to pass as a prop to the translation form
+export type TranslationWithLanguageName = ExperienceTranslation &
+  Pick<Language, "name">;
+
+export const findLanguageDisplayName = (
+  translation: ExperienceTranslation,
+  langs: Language[]
+) => {
+  const language = langs.find((lang) => lang.id === translation.language);
+  return language ? language.name : translation.language;
 };
 
 export const transformTranslationResponseToCreate = (

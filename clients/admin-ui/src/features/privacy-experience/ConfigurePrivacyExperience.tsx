@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import * as Yup from "yup";
 
+import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
@@ -22,13 +23,22 @@ import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   defaultInitialValues,
+  findLanguageDisplayName,
   transformConfigResponseToCreate,
+  TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
+import {
+  selectAllLanguages,
+  selectPage as selectLanguagePage,
+  selectPageSize as selectLanguagePageSize,
+  useGetAllLanguagesQuery,
+} from "~/features/privacy-experience/language.slice";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import PrivacyExperienceForm from "~/features/privacy-experience/PrivacyExperienceForm";
+import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
@@ -58,6 +68,11 @@ const ConfigurePrivacyExperience = ({
   const toast = useToast();
 
   const router = useRouter();
+
+  const languagePage = useAppSelector(selectLanguagePage);
+  const languagePageSize = useAppSelector(selectLanguagePageSize);
+  useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
+  const allLanguages = useAppSelector(selectAllLanguages);
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
     const valuesToSubmit = {
@@ -96,8 +111,15 @@ const ConfigurePrivacyExperience = ({
     : defaultInitialValues;
 
   const [translationToEdit, setTranslationToEdit] = useState<
-    ExperienceTranslation | undefined
+    TranslationWithLanguageName | undefined
   >(undefined);
+
+  const handleNewTranslationSelected = (translation: ExperienceTranslation) => {
+    setTranslationToEdit({
+      ...translation,
+      name: findLanguageDisplayName(translation, allLanguages),
+    });
+  };
 
   // const [isEditingStyle, setIsEditingStyle] = useState<boolean>(false);
 
@@ -108,7 +130,7 @@ const ConfigurePrivacyExperience = ({
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
-      {({ dirty, isValid, isSubmitting }) => (
+      {({ dirty, errors, isValid, isSubmitting }) => (
         <Form style={{ height: "100vh" }}>
           <Flex
             w="full"
@@ -116,61 +138,66 @@ const ConfigurePrivacyExperience = ({
             direction="row"
             data-testid="privacy-experience-detail-page"
           >
-            <Flex
-              direction="column"
-              minH="full"
-              w="25%"
-              borderRight="1px solid #DEE5EE"
-            >
-              <Flex direction="column" h="full" overflow="scroll" px={4}>
-                {translationToEdit ? (
-                  <BackButtonNonLink
-                    onClick={() => setTranslationToEdit(undefined)}
-                    mt={4}
+            {translationToEdit ? (
+              <PrivacyExperienceTranslationForm
+                translation={translationToEdit}
+                onReturnToMainForm={() => setTranslationToEdit(undefined)}
+              />
+            ) : (
+              <Flex
+                direction="column"
+                minH="full"
+                w="25%"
+                borderRight="1px solid #DEE5EE"
+              >
+                <Flex direction="column" h="full" overflow="scroll" px={4}>
+                  {translationToEdit ? (
+                    <BackButtonNonLink
+                      onClick={() => setTranslationToEdit(undefined)}
+                      mt={4}
+                    />
+                  ) : (
+                    <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
+                  )}
+                  <PrivacyExperienceForm
+                    onSelectTranslation={handleNewTranslationSelected}
                   />
-                ) : (
-                  <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
-                )}
-                <PrivacyExperienceForm
-                  translation={translationToEdit}
-                  onSelectTranslation={(translation) =>
-                    setTranslationToEdit(translation)
-                  }
-                />
+                </Flex>
+                <Spacer />
+                <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
+                  <Button
+                    variant="outline"
+                    onClick={
+                      translationToEdit
+                        ? () => setTranslationToEdit(undefined)
+                        : () => router.push(PRIVACY_EXPERIENCE_ROUTE)
+                    }
+                  >
+                    Cancel
+                  </Button>
+                  {translationToEdit ? (
+                    <Button
+                      colorScheme="primary"
+                      data-testid="save-btn"
+                      onClick={() => setTranslationToEdit(undefined)}
+                      isDisabled={!!errors.translations}
+                    >
+                      Add translation
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      colorScheme="primary"
+                      data-testid="save-btn"
+                      isDisabled={isSubmitting || !dirty || !isValid}
+                      isLoading={isSubmitting}
+                    >
+                      Save
+                    </Button>
+                  )}
+                </ButtonGroup>
               </Flex>
-              <Spacer />
-              <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-                <Button
-                  variant="outline"
-                  onClick={
-                    translationToEdit
-                      ? () => setTranslationToEdit(undefined)
-                      : () => router.push(PRIVACY_EXPERIENCE_ROUTE)
-                  }
-                >
-                  Cancel
-                </Button>
-                {translationToEdit ? (
-                  <Button
-                    colorScheme="primary"
-                    data-testid="save-btn"
-                    onClick={() => setTranslationToEdit(undefined)}
-                  >
-                    Save
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    colorScheme="primary"
-                    data-testid="save-btn"
-                    isDisabled={isSubmitting || !dirty || !isValid}
-                    isLoading={isSubmitting}
-                  >
-                    Save
-                  </Button>
-                )}
-              </ButtonGroup>
-            </Flex>
+            )}
             <Flex direction="column" w="75%" bgColor="gray.50">
               <Flex
                 direction="row"
