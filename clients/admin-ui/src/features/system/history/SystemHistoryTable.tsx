@@ -128,6 +128,7 @@ const SystemHistoryTable = ({ system }: Props) => {
                 </Tr>
               );
             }
+            return null;
           })}
         </Tbody>
       </Table>
