@@ -386,7 +386,7 @@ export type ExperienceConfig = {
   /**
    * @deprecated see fields on translations instead
    */
-  language: string; // NOTE: uses a generic string instead of a language enum, as this changes often
+  language?: string; // NOTE: uses a generic string instead of a language enum, as this changes often
   /**
    * @deprecated see fields on translations instead
    */
@@ -550,6 +550,8 @@ export enum UserConsentPreference {
   TCF = "tcf",
 }
 
+// NOTE: This (and most enums!) could reasonably be replaced by string union
+// types in Typescript and would be a bit easier to handle...
 export enum ComponentType {
   OVERLAY = "overlay", // deprecated, replaced by BANNER_AND_MODAL
   BANNER_AND_MODAL = "banner_and_modal",
@@ -735,4 +737,97 @@ export type ConsentOption = {
 
 export type LegacyConsentConfig = {
   options: ConsentOption[];
+};
+
+const expTest: PrivacyExperience = {
+  id: "132345243",
+  region: "us_ca",
+  created_at: "2023-04-24T21:29:08.870351+00:00",
+  updated_at: "2023-04-24T21:29:08.870351+00:00",
+  experience_config: {
+    translations: [
+      {
+        language: "en",
+        accept_button_label: "Accept Test",
+        acknowledge_button_label: "OK",
+        banner_description:
+          "We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads and analyze site traffic. Learn more about these methods, including how to manage them, by clicking ‘Manage Preferences.’ By clicking ‘accept’ you consent to the of these methods by us and our third parties. By clicking ‘reject’ you decline the use of these methods.",
+        banner_title: "Manage your consent",
+        description:
+          "We use cookies and similar methods to recognize visitors and remember their preferences. We also use them to measure ad campaign effectiveness, target ads and analyze site traffic. Learn more about these methods, including how to manage them, by clicking ‘Manage Preferences.’ By clicking ‘accept’ you consent to the of these methods by us and our third parties. By clicking ‘reject’ you decline the use of these methods.",
+        is_default: true,
+        privacy_policy_link_label: "Privacy policy",
+        privacy_policy_url: "https://privacy.ethyca.com/",
+        privacy_preferences_link_label: "Manage preferences",
+        reject_button_label: "Reject Test",
+        save_button_label: "Save test",
+        title: "Manage your consent",
+        experience_config_history_id:
+          "pri_c5fe6e6c-1c73-4540-a088-4e1d9e273b28",
+      },
+    ],
+    component: ComponentType.BANNER_AND_MODAL,
+    regions: ["us_ca"],
+    disabled: false,
+    dismissable: true,
+    allow_language_selection: true,
+    id: "2348571y34",
+    created_at: "2023-04-24T21:29:08.870351+00:00",
+    updated_at: "2023-04-24T21:29:08.870351+00:00",
+  },
+  privacy_notices: [
+    {
+      name: "Test privacy notice",
+      notice_key: "advertising",
+      internal_description:
+        "a test sample privacy notice configuration for internal use",
+      origin: "12435134",
+      //consent_mechanism: "opt_in",
+      data_uses: ["advertising", "third_party_sharing"],
+      // enforcement_level: "system_wide",
+      disabled: false,
+      has_gpc_flag: true,
+      id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
+      created_at: "2023-04-24T21:29:08.870351+00:00",
+      updated_at: "2023-04-24T21:29:08.870351+00:00",
+      // default_preference: "opt_out",
+      systems_applicable: true,
+      cookies: [{ name: "testCookie", path: "/" }],
+      translations: [
+        {
+          language: "en",
+          title: "Data Sales and Sharing",
+          description: "a test sample privacy notice configuration",
+          privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+        },
+      ],
+    },
+    {
+      name: "Essential",
+      notice_key: "essential",
+      internal_description:
+        "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+      origin: "124352454",
+      // consent_mechanism: "notice_only",
+      data_uses: ["provide.service"],
+      // enforcement_level: "system_wide",
+      disabled: false,
+      has_gpc_flag: true,
+      id: "pri_4bed96d0-b9e3-4596-a807-26b783836375",
+      created_at: "2023-04-24T21:29:08.870351+00:00",
+      updated_at: "2023-04-24T21:29:08.870351+00:00",
+      // default_preference: "opt_in",
+      systems_applicable: true,
+      cookies: [],
+      translations: [
+        {
+          language: "en",
+          title: "Essential Notice",
+          description:
+            "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
+          privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+        },
+      ],
+    },
+  ],
 };

@@ -1,8 +1,9 @@
 import {
   getWindowObjFromPath,
   isPrivacyExperience,
-} from "../../src/lib/consent-utils";
+} from "~/lib/consent-utils";
 
+// TODO: update to shared fixture with future i18n tests
 const MOCK_EXPERIENCE = {
   id: "132345243",
   region: "us_ca",
