@@ -387,26 +387,26 @@ export enum PrivacyNoticeFramework {
 
 export type PrivacyNotice = {
   name?: string;
-  notice_key: string;
+  notice_key: string; // NOTE: not strictly required on BE API?
   internal_description?: string;
-  origin?: string;
   consent_mechanism?: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
   has_gpc_flag?: boolean;
   framework?: PrivacyNoticeFramework;
-  gpp_field_mapping?: Array<GPPFieldMapping>;
+  default_preference?: UserConsentPreference;
   id: string;
+  origin?: string;
   created_at: string;
   updated_at: string;
   cookies: Array<Cookies>;
-  default_preference?: UserConsentPreference;
   systems_applicable?: boolean;
-  translations: Array<PrivacyNoticeTranslations>;
+  translations?: Array<PrivacyNoticeTranslation>;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
 };
 
-export type PrivacyNoticeTranslations = {
+export type PrivacyNoticeTranslation = {
   language: string;
   title?: string;
   description?: string;

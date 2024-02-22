@@ -1,6 +1,6 @@
 import {
   PrivacyNotice,
-  PrivacyNoticeTranslations,
+  PrivacyNoticeTranslation,
   EnforcementLevel,
   ConsentMechanism,
   UserConsentPreference,
@@ -14,7 +14,7 @@ import {
 } from "~/types/api";
 
 export const mockPrivacyNoticeTranslation = (
-  params?: Partial<PrivacyNoticeTranslations>
+  params?: Partial<PrivacyNoticeTranslation>
 ) => {
   const translation = {
     id: "pri_sdafsf",
@@ -31,7 +31,7 @@ export const mockPrivacyNoticeTranslation = (
  */
 export const mockPrivacyNotice = (
   params: Partial<PrivacyNotice>,
-  translations?: PrivacyNoticeTranslations[]
+  translations?: PrivacyNoticeTranslation[]
 ) => {
   const defaultTranslations = [mockPrivacyNoticeTranslation()];
   const notice = {
