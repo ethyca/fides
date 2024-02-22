@@ -127,6 +127,7 @@ export const initializeGppCmpApi = () => {
   });
 
   window.addEventListener("FidesUIShown", () => {
+    // fixme- update this to "ready" if no existing preferences and notices are all opt-out (all are default opted in)
     cmpApi.setSignalStatus(SignalStatus.NOT_READY);
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
 
