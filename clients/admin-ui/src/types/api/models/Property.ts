@@ -6,4 +6,5 @@ export type Property = {
   key: string;
   name: string;
   type: string;
+  experiences?: Array<string>;
 };
