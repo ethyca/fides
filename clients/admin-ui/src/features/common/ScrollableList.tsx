@@ -139,6 +139,7 @@ const ScrollableList = <T extends unknown>({
   setValues,
   canDeleteItem,
   onRowClick,
+  selectOnAdd,
   getItemLabel,
   createNewValue,
 }: {
@@ -153,6 +154,7 @@ const ScrollableList = <T extends unknown>({
   setValues: (newOrder: T[]) => void;
   canDeleteItem?: (item: T) => boolean;
   onRowClick?: (item: T) => void;
+  selectOnAdd?: boolean;
   getItemLabel?: (item: T) => string;
   createNewValue?: (opt: Option) => T;
 }) => {
@@ -196,10 +198,13 @@ const ScrollableList = <T extends unknown>({
       : allItems.find((item) => (item[idField!] as string) === opt.value)!;
 
   const handleAddNewValue = (opt: Option) => {
-    setValues([
-      createNewValue ? createNewValue(opt) : getValueFromOption(opt),
-      ...values.slice(),
-    ]);
+    const newValue = createNewValue
+      ? createNewValue(opt)
+      : getValueFromOption(opt);
+    setValues([newValue, ...values.slice()]);
+    if (selectOnAdd && onRowClick) {
+      onRowClick(newValue);
+    }
   };
 
   const innerList = draggable ? (
@@ -271,9 +276,7 @@ const ScrollableList = <T extends unknown>({
           options={unselectedValues.map((value) =>
             createOptionFromValue(value)
           )}
-          onOptionSelected={(option) =>
-            setValues([...values, getValueFromOption(option)] as T[])
-          }
+          onOptionSelected={handleAddNewValue}
         />
       ) : null}
     </Flex>

@@ -7,6 +7,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
+import { isEqual } from "lodash";
 import { useMemo } from "react";
 
 import {
@@ -17,7 +18,7 @@ import {
 import WarningModal from "~/features/common/modals/WarningModal";
 import { BackButtonNonLink } from "~/features/common/nav/v2/BackButton";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
-import { ExperienceConfigCreate } from "~/types/api";
+import { ExperienceConfigCreate, ExperienceTranslation } from "~/types/api";
 
 const PrivacyExperienceTranslationForm = ({
   translation,
@@ -30,21 +31,31 @@ const PrivacyExperienceTranslationForm = ({
     useFormikContext<ExperienceConfigCreate>();
 
   // store the initial translation so we can undo changes on discard
-  const initialTranslation = useMemo(() => translation, [translation]);
+  const initialTranslation = useMemo(() => {
+    const { name, ...rest } = translation;
+    return rest as ExperienceTranslation;
+  }, [translation]);
 
   const translationIndex = values.translations!.findIndex(
     (t) => t.language === translation.language
   );
 
-  const translationIsTouched =
-    // TS thinks touched.translations is a bool because of how the
-    // FormikTouched type is computed and because values.translations is
-    // possibly undefined; from this component, values.translations is always
-    // an array, so touched.translations is too
-    // @ts-ignore
-    touched.translations && touched.translations[translationIndex];
+  const translationIsTouched = !isEqual(
+    values.translations![translationIndex],
+    initialTranslation
+  );
 
-  const { onOpen, isOpen, onClose } = useDisclosure();
+  const {
+    onOpen: onOpenUnsavedChanges,
+    isOpen: unsavedChangesIsOpen,
+    onClose: onCloseUnsavedChanges,
+  } = useDisclosure();
+
+  const {
+    onOpen: onOpenNewDefault,
+    isOpen: newDefaultIsOpen,
+    onClose: onCloseNewDefault,
+  } = useDisclosure();
 
   const discardChanges = () => {
     const newTranslations = values.translations!.slice();
@@ -58,7 +69,7 @@ const PrivacyExperienceTranslationForm = ({
     }
     // when creating, just get rid of it
     else {
-      newTranslations.splice(translationIndex);
+      newTranslations.splice(translationIndex, 1);
     }
     setFieldValue("translations", newTranslations);
     const { translations, ...rest } = touched;
@@ -70,18 +81,19 @@ const PrivacyExperienceTranslationForm = ({
 
   const handleLeaveForm = () => {
     if (translationIsTouched || !initialTranslation.title) {
-      onOpen();
+      onOpenUnsavedChanges();
     } else {
       onReturnToMainForm();
     }
   };
 
-  const setNewDefaultTranslation = (index: number) => {
-    const newTranslations = values.translations!.slice();
-    const currentDefault = newTranslations.find((t) => t.is_default);
-    currentDefault!.is_default = false;
-    newTranslations[index].is_default = true;
+  const setNewDefaultTranslation = (newDefaultIndex: number) => {
+    const newTranslations = values.translations!.map((t, idx) => ({
+      ...t,
+      is_default: idx === newDefaultIndex,
+    }));
     setFieldValue("translations", newTranslations);
+    onReturnToMainForm();
   };
 
   const handleSaveTranslation = () => {
@@ -89,9 +101,10 @@ const PrivacyExperienceTranslationForm = ({
       values.translations![translationIndex].is_default &&
       !initialTranslation.is_default
     ) {
-      setNewDefaultTranslation(translationIndex);
+      onOpenNewDefault();
+    } else {
+      onReturnToMainForm();
     }
-    onReturnToMainForm();
   };
 
   return (
@@ -105,8 +118,8 @@ const PrivacyExperienceTranslationForm = ({
         <Flex direction="column" gap={4} w="full">
           <BackButtonNonLink onClick={handleLeaveForm} mt={4} />
           <WarningModal
-            isOpen={isOpen}
-            onClose={onClose}
+            isOpen={unsavedChangesIsOpen}
+            onClose={onCloseUnsavedChanges}
             title="Translation not saved"
             message={
               <Text>
@@ -116,6 +129,18 @@ const PrivacyExperienceTranslationForm = ({
             confirmButtonText="Discard"
             handleConfirm={discardChanges}
           />
+          <WarningModal
+            isOpen={newDefaultIsOpen}
+            onClose={onCloseNewDefault}
+            title="Update default language"
+            message={
+              <Text>
+                Are you sure you want to update the default language of this
+                experience?
+              </Text>
+            }
+            handleConfirm={() => setNewDefaultTranslation(translationIndex)}
+          />
           <Heading fontSize="md" fontWeight="semibold">
             {translation.name}
           </Heading>
@@ -123,7 +148,7 @@ const PrivacyExperienceTranslationForm = ({
             name={`translations.${translationIndex}.is_default`}
             id={`translations.${translationIndex}.is_default`}
             label="Default language"
-            isDisabled={values.translations![translationIndex].is_default}
+            disabled={initialTranslation.is_default}
             variant="stacked"
           />
           <CustomTextInput
@@ -144,12 +169,14 @@ const PrivacyExperienceTranslationForm = ({
             name={`translations.${translationIndex}.accept_button_label`}
             id={`translations.${translationIndex}.accept_button_label`}
             label={`"Accept" button label`}
+            isRequired
             variant="stacked"
           />
           <CustomTextInput
             name={`translations.${translationIndex}.reject_button_label`}
             id={`translations.${translationIndex}.reject_button_label`}
             label={`"Reject" button label`}
+            isRequired
             variant="stacked"
           />
           <CustomTextInput
@@ -190,8 +217,7 @@ const PrivacyExperienceTranslationForm = ({
         </Button>
         <Button
           colorScheme="primary"
-          // @ts-ignore - same issue as touched.translations above
-          isDisabled={!translationIsTouched || errors.translations}
+          isDisabled={!translationIsTouched || !!errors.translations}
           data-testid="save-btn"
           onClick={handleSaveTranslation}
         >
