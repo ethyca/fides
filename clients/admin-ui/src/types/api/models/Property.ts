@@ -2,9 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import { PropertyType } from "./PropertyTypes";
+
 export type Property = {
   key: string;
   name: string;
-  type: string;
+  type: PropertyType;
   experiences?: Array<string>;
 };

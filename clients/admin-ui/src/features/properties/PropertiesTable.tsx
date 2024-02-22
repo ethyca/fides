@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Flex, HStack } from "@fidesui/react";
+import { Flex, HStack, Text, VStack } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -19,15 +19,13 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import _ from "lodash";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetPropertiesQuery } from "~/features/properties/property.slice";
 import { Page_Property_, Property } from "~/types/api";
 
-import AddProperty from "./AddPropertyButton";
+import AddPropertyButton from "./AddPropertyButton";
 import PropertyActions from "./PropertyActions";
 
 const columnHelper = createColumnHelper<Property>();
@@ -39,10 +37,32 @@ const emptyPropertiesResponse: Page_Property_ = {
   size: 25,
   pages: 1,
 };
+
+const EmptyTableNotice = () => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    borderRadius="base"
+    maxW="70%"
+    data-testid="no-results-notice"
+    alignSelf="center"
+    margin="auto"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        No properties found.
+      </Text>
+      <Text fontSize="sm">
+        Click “Add property” to add your first property to Fides.
+      </Text>
+    </VStack>
+    <AddPropertyButton buttonLabel="Add property" buttonVariant="primary" />
+  </VStack>
+);
+
 export const PropertiesTable = () => {
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
-
-  const router = useRouter();
 
   const {
     PAGE_SIZES,
@@ -136,10 +156,6 @@ export const PropertiesTable = () => {
 
   const onRowClick = () => {};
 
-  const goToAddProperty = () => {
-    router.push(ADD_PROPERTY_ROUTE);
-  };
-
   if (isLoading || isLoadingHealthCheck) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
@@ -153,14 +169,17 @@ export const PropertiesTable = () => {
             placeholder="Search property"
           />
           <HStack alignItems="center" spacing={4}>
-            <AddProperty
+            <AddPropertyButton
               buttonLabel="Add property"
               buttonVariant="outline"
-              onButtonClick={goToAddProperty}
             />
           </HStack>
         </TableActionBar>
-        <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
+        <FidesTableV2
+          tableInstance={tableInstance}
+          onRowClick={onRowClick}
+          emptyTableNotice={<EmptyTableNotice />}
+        />
         <PaginationBar
           totalRows={totalRows}
           pageSizes={PAGE_SIZES}

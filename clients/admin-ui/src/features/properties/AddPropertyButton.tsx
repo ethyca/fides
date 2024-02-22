@@ -1,22 +1,18 @@
 import { Button, ButtonProps } from "@fidesui/react";
+import { useRouter } from "next/router";
+
+import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
 
 type ButtonVariant = "primary" | "outline";
 
 const AddPropertyButton = ({
   buttonLabel,
   buttonVariant = "primary",
-  onButtonClick,
 }: {
   buttonLabel?: string;
   buttonVariant?: ButtonVariant;
-  onButtonClick?: () => void;
 }) => {
-  const handleOpenButtonClicked = () => {
-    if (onButtonClick) {
-      onButtonClick();
-    }
-  };
-
+  const router = useRouter();
   const openButtonStyles: ButtonProps =
     buttonVariant === "primary"
       ? {
@@ -30,7 +26,7 @@ const AddPropertyButton = ({
 
   return (
     <Button
-      onClick={handleOpenButtonClicked}
+      onClick={() => router.push(ADD_PROPERTY_ROUTE)}
       data-testid="add-property-btn"
       {...openButtonStyles}
     >

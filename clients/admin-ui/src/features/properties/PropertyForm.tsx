@@ -11,6 +11,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
+import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "../common/toast";
 import { useCreatePropertyMutation } from "./property.slice";
@@ -35,13 +36,16 @@ const PropertyForm = ({ property }: Props) => {
   );
 
   const handleSubmit = async (values: FormValues) => {
-    try {
-      const prop = await createProperty(values).unwrap();
-      toast(successToastParams(`Property ${values.name} created successfully`));
-      router.push(`${PROPERTIES_ROUTE}/${prop.key}`);
-    } catch (error) {
-      toast(errorToastParams(`Failed to create property.`));
+    const result = await createProperty(values);
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      return;
     }
+
+    const prop = result.data;
+    toast(successToastParams(`Property ${values.name} created successfully`));
+    router.push(`${PROPERTIES_ROUTE}/${prop.key}`);
   };
 
   return (

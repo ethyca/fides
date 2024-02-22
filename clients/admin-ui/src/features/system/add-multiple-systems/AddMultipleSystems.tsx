@@ -87,11 +87,11 @@ const EmptyTableNotice = () => (
     mt={6}
     p={10}
     spacing={4}
-    boxShadow="md"
     borderRadius="base"
     maxW="70%"
     data-testid="no-results-notice"
     alignSelf="center"
+    margin="auto"
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
