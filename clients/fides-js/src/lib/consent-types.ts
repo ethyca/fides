@@ -368,7 +368,16 @@ export type ExperienceConfig = {
   disabled?: boolean;
   dismissable?: boolean;
   allow_language_selection?: boolean;
-  regions: Array<string>; // NOTE: uses generic strings instead of region enums, as these change often
+
+  /**
+   * List of regions that apply to this ExperienceConfig.
+   * 
+   * NOTE: we modify this type on the client to be an array of strings instead
+   * of region enums, as those will change often. We also mark it as an optional
+   * array, even though the API provides it, since we want to avoid relying on
+   * these regions on the client.
+   */
+  regions?: Array<string>;
   id: string;
   created_at: string;
   updated_at: string;
