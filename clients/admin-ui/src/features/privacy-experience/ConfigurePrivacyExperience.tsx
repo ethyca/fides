@@ -1,5 +1,4 @@
 import {
-  Button,
   ButtonGroup,
   Flex,
   IconButton,
@@ -16,9 +15,6 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
-import BackButton, {
-  BackButtonNonLink,
-} from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -132,101 +128,49 @@ const ConfigurePrivacyExperience = ({
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
-      {({ dirty, errors, isValid, isSubmitting }) => (
-        <Form style={{ height: "100vh" }}>
-          <Flex
-            w="full"
-            minH="full"
-            direction="row"
-            data-testid="privacy-experience-detail-page"
-          >
-            {translationToEdit ? (
-              <PrivacyExperienceTranslationForm
-                translation={translationToEdit}
-                onReturnToMainForm={() => setTranslationToEdit(undefined)}
-              />
-            ) : (
-              <Flex
-                direction="column"
-                minH="full"
-                w="25%"
-                borderRight="1px solid #DEE5EE"
-              >
-                <Flex direction="column" h="full" overflow="scroll" px={4}>
-                  {translationToEdit ? (
-                    <BackButtonNonLink
-                      onClick={() => setTranslationToEdit(undefined)}
-                      mt={4}
-                    />
-                  ) : (
-                    <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
-                  )}
-                  <PrivacyExperienceForm
-                    onSelectTranslation={handleNewTranslationSelected}
-                  />
-                </Flex>
-                <Spacer />
-                <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-                  <Button
-                    variant="outline"
-                    onClick={
-                      translationToEdit
-                        ? () => setTranslationToEdit(undefined)
-                        : () => router.push(PRIVACY_EXPERIENCE_ROUTE)
-                    }
-                  >
-                    Cancel
-                  </Button>
-                  {translationToEdit ? (
-                    <Button
-                      colorScheme="primary"
-                      data-testid="save-btn"
-                      onClick={() => setTranslationToEdit(undefined)}
-                      isDisabled={!!errors.translations}
-                    >
-                      Add translation
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      colorScheme="primary"
-                      data-testid="save-btn"
-                      isDisabled={isSubmitting || !dirty || !isValid}
-                      isLoading={isSubmitting}
-                    >
-                      Save
-                    </Button>
-                  )}
-                </ButtonGroup>
-              </Flex>
-            )}
-            <Flex direction="column" w="75%" bgColor="gray.50">
-              <Flex
-                direction="row"
-                p={4}
-                align="center"
-                bgColor="white"
-                borderBottom="1px solid #DEE5EE"
-              >
-                <Text fontSize="md" fontWeight="semibold">
-                  PREVIEW
-                </Text>
-                <Spacer />
-                <ButtonGroup size="sm" variant="outline" isAttached>
-                  <IconButton
-                    icon={<MobileIcon />}
-                    aria-label="View mobile preview"
-                  />
-                  <IconButton
-                    icon={<DesktopIcon />}
-                    aria-label="View desktop preview"
-                  />
-                </ButtonGroup>
-              </Flex>
+      <Form style={{ height: "100vh" }}>
+        <Flex
+          w="full"
+          minH="full"
+          direction="row"
+          data-testid="privacy-experience-detail-page"
+        >
+          {translationToEdit ? (
+            <PrivacyExperienceTranslationForm
+              translation={translationToEdit}
+              onReturnToMainForm={() => setTranslationToEdit(undefined)}
+            />
+          ) : (
+            <PrivacyExperienceForm
+              onSelectTranslation={handleNewTranslationSelected}
+            />
+          )}
+          <Flex direction="column" w="75%" bgColor="gray.50">
+            <Flex
+              direction="row"
+              p={4}
+              align="center"
+              bgColor="white"
+              borderBottom="1px solid #DEE5EE"
+            >
+              <Text fontSize="md" fontWeight="semibold">
+                PREVIEW
+              </Text>
+              <Spacer />
+              <ButtonGroup size="sm" variant="outline" isAttached>
+                <IconButton
+                  icon={<MobileIcon />}
+                  aria-label="View mobile preview"
+                />
+                <IconButton
+                  icon={<DesktopIcon />}
+                  aria-label="View desktop preview"
+                />
+              </ButtonGroup>
             </Flex>
           </Flex>
-        </Form>
-      )}
+        </Flex>
+      </Form>
     </Formik>
   );
 };
