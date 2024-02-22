@@ -201,6 +201,8 @@ export { MessagingServiceType } from "./models/MessagingServiceType";
 export type { MessagingTemplateRequest } from "./models/MessagingTemplateRequest";
 export type { MessagingTemplateResponse } from "./models/MessagingTemplateResponse";
 export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
+export type { Property } from "./models/Property";
+export type { Page_Property_ } from "./models/Page_Property_";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";
 export type { NotificationApplicationConfig } from "./models/NotificationApplicationConfig";

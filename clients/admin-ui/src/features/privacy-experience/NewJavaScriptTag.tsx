@@ -17,7 +17,7 @@ import ClipboardButton from "~/features/common/ClipboardButton";
 import { useFeatures } from "~/features/common/features";
 import { GearLightIcon } from "~/features/common/Icon";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
-import { Property } from "~/pages/consent/properties/types";
+import { Property } from "~/types/api";
 
 const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
 const PROPERTY_UNIQUE_ID_TEMPLATE = "{property-unique-id}";
@@ -41,9 +41,9 @@ const NewJavaScriptTag = ({ property }: Props) => {
   );
 
   const fidesJsScriptTag = useMemo(() => {
-    let script = FIDES_JS_SCRIPT_TEMPLATE.replace(
+    const script = FIDES_JS_SCRIPT_TEMPLATE.replace(
       PROPERTY_UNIQUE_ID_TEMPLATE,
-      property.id.toString()
+      property.key.toString()
     );
     if (isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url) {
       script.replace(

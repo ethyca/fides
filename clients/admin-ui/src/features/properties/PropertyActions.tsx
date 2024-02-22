@@ -1,9 +1,11 @@
 import { Box, EditIcon, IconButton } from "@fidesui/react";
-import React from "react";
 import { useRouter } from "next/router";
-import NewJavaScriptTag from "../privacy-experience/NewJavaScriptTag";
-import { Property } from "~/pages/consent/properties/types";
+import React from "react";
+
+import { Property } from "~/types/api";
+
 import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
+import NewJavaScriptTag from "../privacy-experience/NewJavaScriptTag";
 
 interface Props {
   property: Property;
@@ -13,7 +15,7 @@ const PropertyActions = ({ property }: Props) => {
   const router = useRouter();
 
   const handleEdit = () => {
-    router.push(`${PROPERTIES_ROUTE}/${property.id}`);
+    router.push(`${PROPERTIES_ROUTE}/${property.key}`);
   };
 
   return (

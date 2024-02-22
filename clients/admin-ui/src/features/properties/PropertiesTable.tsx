@@ -18,28 +18,19 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import _ from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
-import EmptyTableState from "~/features/common/table/v2/EmptyTableState";
-import {
-  useGetHealthQuery,
-  useGetPropertiesQuery,
-} from "~/features/plus/plus.slice";
-import { Property } from "~/pages/consent/properties/types";
-import AddProperty from "./AddProperty";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
+import { useGetPropertiesQuery } from "~/features/properties/property.slice";
+import { Page_Property_, Property } from "~/types/api";
+
+import AddProperty from "./AddPropertyButton";
 import PropertyActions from "./PropertyActions";
 
 const columnHelper = createColumnHelper<Property>();
-
-export type Page_Property_ = {
-  items: Array<Property>;
-  total: number;
-  page: number;
-  size: number;
-  pages?: number;
-};
 
 const emptyPropertiesResponse: Page_Property_ = {
   items: [],
@@ -104,7 +95,7 @@ export const PropertiesTable = () => {
       }),
       columnHelper.accessor((row) => row.type, {
         id: "type",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => <DefaultCell value={_.capitalize(props.getValue())} />,
         header: (props) => <DefaultHeaderCell value="Type" {...props} />,
       }),
       columnHelper.accessor((row) => row.experiences, {
@@ -143,9 +134,7 @@ export const PropertiesTable = () => {
     },
   });
 
-  const onRowClick = (property: Property) => {
-    console.log(property.id);
-  };
+  const onRowClick = () => {};
 
   const goToAddProperty = () => {
     router.push(ADD_PROPERTY_ROUTE);
@@ -156,48 +145,34 @@ export const PropertiesTable = () => {
   }
   return (
     <div>
-      {data.length === 0 ? (
-        <EmptyTableState
-          title="No properties"
-          description="You have not created any properties. Click “Add property” to add your first property to Fides."
-          button={
+      <Flex flex={1} direction="column" overflow="auto">
+        <TableActionBar>
+          <GlobalFilterV2
+            globalFilter={globalFilter}
+            setGlobalFilter={updateGlobalFilter}
+            placeholder="Search property"
+          />
+          <HStack alignItems="center" spacing={4}>
             <AddProperty
               buttonLabel="Add property"
-              buttonVariant="primary"
+              buttonVariant="outline"
               onButtonClick={goToAddProperty}
             />
-          }
+          </HStack>
+        </TableActionBar>
+        <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
+        <PaginationBar
+          totalRows={totalRows}
+          pageSizes={PAGE_SIZES}
+          setPageSize={setPageSize}
+          onPreviousPageClick={onPreviousPageClick}
+          isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+          onNextPageClick={onNextPageClick}
+          isNextPageDisabled={isNextPageDisabled || isFetching}
+          startRange={startRange}
+          endRange={endRange}
         />
-      ) : (
-        <Flex flex={1} direction="column" overflow="auto">
-          <TableActionBar>
-            <GlobalFilterV2
-              globalFilter={globalFilter}
-              setGlobalFilter={updateGlobalFilter}
-              placeholder="Search property"
-            />
-            <HStack alignItems="center" spacing={4}>
-              <AddProperty
-                buttonLabel="Add property"
-                buttonVariant="outline"
-                onButtonClick={goToAddProperty}
-              />
-            </HStack>
-          </TableActionBar>
-          <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
-          <PaginationBar
-            totalRows={totalRows}
-            pageSizes={PAGE_SIZES}
-            setPageSize={setPageSize}
-            onPreviousPageClick={onPreviousPageClick}
-            isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-            onNextPageClick={onNextPageClick}
-            isNextPageDisabled={isNextPageDisabled || isFetching}
-            startRange={startRange}
-            endRange={endRange}
-          />
-        </Flex>
-      )}
+      </Flex>
     </div>
   );
 };
