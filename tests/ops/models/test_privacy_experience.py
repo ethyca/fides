@@ -141,9 +141,11 @@ class TestExperienceConfig:
         assert experience_config_modal.all_regions == [PrivacyNoticeRegion.it]
         assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
 
-        # Locations are saved at the "location" level, not location group level
         LocationRegulationSelections.set_selected_locations(
             db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
+        )
+        LocationRegulationSelections.set_selected_location_groups(
+            db, ["mexico_central_america"]
         )
 
         # Regions can be saved at the location group level
@@ -174,6 +176,7 @@ class TestExperienceConfig:
         LocationRegulationSelections.set_selected_locations(
             db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr"]
         )
+        LocationRegulationSelections.set_selected_location_groups(db, [])
         assert experience_config_modal.all_regions == [
             PrivacyNoticeRegion.gt,
             PrivacyNoticeRegion.mexico_central_america,

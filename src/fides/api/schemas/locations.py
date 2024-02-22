@@ -135,26 +135,16 @@ def filter_regions_by_location(
     db: Session,
     regions: List[PrivacyNoticeRegion],
 ) -> List[PrivacyNoticeRegion]:
-    """Filter a list of PrivacyNoticeRegion to only ones that match at the configured Location or LocationGroup level.
+    """Filter a list of PrivacyNoticeRegion to only ones that match at the configured Location or LocationGroup level."""
 
-    Locations are stored at the Location level while regions can be saved at the Location level
-    or the Location group level.
-    """
+    saved_locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
+    saved_location_groups: Set[
+        str
+    ] = LocationRegulationSelections.get_selected_location_groups(db)
+    multilevel_locations: Set[str] = saved_locations.union(saved_location_groups)
 
-    locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
-
-    if not locations:
+    # If no locations set up, we don't filter
+    if not multilevel_locations:
         return regions  # type: ignore[attr-defined]
 
-    filtered_regions: List[PrivacyNoticeRegion] = []
-
-    for region in regions:
-        # Explode any Location Groups to Locations so they can be compared against apples to apples
-        # with locations
-        expanded_regions: Set[str] = location_group_to_location.get(
-            region.value, {region.value}
-        )
-        if expanded_regions.issubset(locations):
-            filtered_regions.append(region)
-
-    return filtered_regions
+    return [region for region in regions if region.value in multilevel_locations]
