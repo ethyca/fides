@@ -62,6 +62,7 @@ const ConfigurePrivacyExperience = ({
   const handleSubmit = async (values: ExperienceConfigCreate) => {
     const valuesToSubmit = {
       ...values,
+      disabled: passedInExperience?.disabled ?? true,
       allow_language_selection:
         values.translations && values.translations.length > 1,
     };
@@ -103,7 +104,7 @@ const ConfigurePrivacyExperience = ({
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={initialValues as ExperienceConfigCreate}
       enableReinitialize
       onSubmit={handleSubmit}
       validationSchema={validationSchema}

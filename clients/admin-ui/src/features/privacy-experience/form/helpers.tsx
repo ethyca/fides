@@ -1,5 +1,5 @@
 import {
-  ComponentType,
+  // ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslationCreate,
@@ -19,12 +19,11 @@ export const defaultTranslations: ExperienceTranslationCreate[] = [
   },
 ];
 
-export const defaultInitialValues: ExperienceConfigCreate = {
+export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   disabled: false,
   allow_language_selection: false,
   regions: [],
   translations: defaultTranslations,
-  component: ComponentType.MODAL,
 };
 
 export const transformTranslationResponseToCreate = (
