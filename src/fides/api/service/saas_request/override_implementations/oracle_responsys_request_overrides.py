@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List
 
 import pydash
@@ -41,7 +42,6 @@ def oracle_responsys_profile_list_recipients_read(
         ]
     }
     """
-
     list_ids = input_data.get("profile_list_id", [])
     results = []
 
@@ -58,26 +58,31 @@ def oracle_responsys_profile_list_recipients_read(
         )
 
     body = {"fieldList": ["all"], "ids": query_ids, "queryAttribute": query_attribute}
-
     for list_id in list_ids:
         members_response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 path=f"/rest/api/v1.3/lists/{list_id}/members",
                 query_params={"action": "get"},
-                body=body,
-            )
+                body=json.dumps(body),
+                headers={"Content-Type": "application/json"},
+            ),
+            [404],  # Returns a 404 if no list member is found
         )
         response_data = pydash.get(members_response.json(), "recordData")
-        normalized_field_names = [
-            field.lower().rstrip("_") for field in response_data["fieldNames"]
-        ]
-        serialized_data = [
-            dict(zip(normalized_field_names, records))
-            for records in response_data["records"]
-        ]
+        if response_data:
+            normalized_field_names = [
+                field.lower().rstrip("_") for field in response_data["fieldNames"]
+            ]
+            serialized_data = [
+                dict(zip(normalized_field_names, records))
+                for records in response_data["records"]
+            ]
 
-        results.append(serialized_data)
+            for record in serialized_data:
+                # Filter out the keys with falsy values and append it
+                results.append({key: value for key, value in record.items() if value})
+
     return results
 
 
@@ -110,6 +115,7 @@ def oracle_responsys_profile_list_recipients_delete(
                 method=HTTPMethod.POST,
                 path=f"/rest/api/v1.3/lists/{list_id}/members",
                 query_params={"action": "delete"},
+                headers={"Content-Type": "application/json"},
                 body=body,
             )
         )
