@@ -93,10 +93,6 @@ export const mockTcfVendorObjects = (
     name: "Test",
     description: "A longer description",
     default_preference: UserConsentPreference.OPT_OUT,
-    current_preference: undefined,
-    outdated_preference: undefined,
-    current_served: undefined,
-    outdated_served: undefined,
     purpose_consents: [
       {
         id: 4,
