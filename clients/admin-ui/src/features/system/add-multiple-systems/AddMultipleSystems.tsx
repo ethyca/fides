@@ -416,6 +416,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           }
           return undefined;
         }}
+        emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}
@@ -428,7 +429,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         startRange={startRange}
         endRange={endRange}
       />
-      {totalRows === 0 ? <EmptyTableNotice /> : null}
     </Flex>
   );
 };

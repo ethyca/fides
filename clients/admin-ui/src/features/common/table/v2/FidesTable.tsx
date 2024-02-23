@@ -136,12 +136,7 @@ const TableBody = <T,>({
     ))}
     {tableInstance.getRowModel().rows.length === 0 && emptyTableNotice && (
       <Tr>
-        <Td
-          colSpan={100}
-          borderLeftWidth="1px"
-          borderRightWidth="1px"
-          padding="auto"
-        >
+        <Td colSpan={100} borderLeftWidth="1px" borderRightWidth="1px">
           {emptyTableNotice}
         </Td>
       </Tr>

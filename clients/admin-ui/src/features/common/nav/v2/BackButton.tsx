@@ -15,8 +15,6 @@ const BackButton = ({
   backPath,
   ...props
 }: { backPath: string } & FlexProps) => (
-  // In general Layout provides a default top padding. But on pages with
-  // Back buttons, we want the Back button to be higher and for the page to be less top-padded
   <Flex alignItems="center" mb={6} {...props}>
     <NextLink href={backPath} passHref>
       <IconButton
