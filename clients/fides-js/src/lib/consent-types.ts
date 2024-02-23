@@ -371,7 +371,7 @@ export type ExperienceConfig = {
 
   /**
    * List of regions that apply to this ExperienceConfig.
-   * 
+   *
    * NOTE: we modify this type on the client to be an array of strings instead
    * of region enums, as those will change often. We also mark it as an optional
    * array, even though the API provides it, since we want to avoid relying on

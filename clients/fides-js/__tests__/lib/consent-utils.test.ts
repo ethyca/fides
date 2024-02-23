@@ -1,7 +1,4 @@
-import {
-  getWindowObjFromPath,
-  isPrivacyExperience,
-} from "~/lib/consent-utils";
+import { getWindowObjFromPath, isPrivacyExperience } from "~/lib/consent-utils";
 
 // TODO: update to shared fixture with future i18n tests
 const MOCK_EXPERIENCE = {
@@ -33,7 +30,7 @@ const MOCK_EXPERIENCE = {
         privacy_policy_url: "https://privacy.ethyca.com/",
         privacy_preferences_link_label: "Manage preferences",
         privacy_experience_config_history_id: "pri_111",
-      }
+      },
     ],
   },
   privacy_notices: [
@@ -57,8 +54,8 @@ const MOCK_EXPERIENCE = {
           title: "Test privacy notice",
           description: "a test sample privacy notice configuration",
           privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-        }
-      ]
+        },
+      ],
     },
     {
       name: "Essential",
@@ -79,8 +76,8 @@ const MOCK_EXPERIENCE = {
           description:
             "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
           privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
-        }
-      ]
+        },
+      ],
     },
   ],
 };
