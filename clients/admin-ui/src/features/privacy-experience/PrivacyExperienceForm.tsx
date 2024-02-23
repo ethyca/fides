@@ -1,6 +1,7 @@
 import {
   ArrowForwardIcon,
   Button,
+  ButtonGroup,
   Collapse,
   Divider,
   Flex,
@@ -8,6 +9,7 @@ import {
   Text,
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -16,14 +18,11 @@ import {
   CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
-import {
-  selectAllLanguages,
-  selectPage as selectLanguagePage,
-  selectPageSize as selectLanguagePageSize,
-  useGetAllLanguagesQuery,
-} from "~/features/privacy-experience/language.slice";
+import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
   selectAllPrivacyNotices,
   selectPage as selectNoticePage,
@@ -49,25 +48,33 @@ const componentTypeOptions = [
   },
 ];
 
-export const PrivacyExperienceTranslationForm = ({
-  name,
+export const PrivacyExperienceConfigColumnLayout = ({
+  buttonPanel,
+  children,
 }: {
-  name: string;
+  buttonPanel: React.ReactNode;
+  children: React.ReactNode;
 }) => (
-  <Flex direction="column" gap={4} w="full">
-    <Text>Editing the {name} translation...</Text>
+  <Flex direction="column" minH="full" w="25%" borderRight="1px solid #DEE5EE">
+    <Flex direction="column" h="full" overflow="scroll" px={4}>
+      <Flex direction="column" gap={4} w="full">
+        {children}
+      </Flex>
+    </Flex>
+    {buttonPanel}
   </Flex>
 );
 
-const PrivacyExperienceForm = ({
-  translation,
+export const PrivacyExperienceForm = ({
   onSelectTranslation,
 }: {
-  translation?: ExperienceTranslation;
   onSelectTranslation: (t: ExperienceTranslation) => void;
 }) => {
+  const router = useRouter();
+
   const [editingStyle, setEditingStyle] = useState<boolean>(false);
-  const { values, setFieldValue } = useFormikContext<ExperienceConfigCreate>();
+  const { values, setFieldValue, dirty, isValid, isSubmitting } =
+    useFormikContext<ExperienceConfigCreate>();
 
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
@@ -83,9 +90,6 @@ const PrivacyExperienceForm = ({
     (entry) => entry[1]
   ) as PrivacyNoticeRegion[];
 
-  const languagePage = useAppSelector(selectLanguagePage);
-  const languagePageSize = useAppSelector(selectLanguagePageSize);
-  useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
   const allLanguages = useAppSelector(selectAllLanguages);
 
   const getTranslationDisplayName = (t: ExperienceTranslation) => {
@@ -93,14 +97,6 @@ const PrivacyExperienceForm = ({
     const name = language ? language.name : t.language;
     return `${name}${t.is_default ? " (Default)" : ""}`;
   };
-
-  if (translation) {
-    return (
-      <PrivacyExperienceTranslationForm
-        name={getTranslationDisplayName(translation)}
-      />
-    );
-  }
 
   if (editingStyle) {
     return (
@@ -113,8 +109,29 @@ const PrivacyExperienceForm = ({
     );
   }
 
+  const buttonPanel = (
+    <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
+      <Button
+        variant="outline"
+        onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}
+      >
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        colorScheme="primary"
+        data-testid="save-btn"
+        isDisabled={isSubmitting || !dirty || !isValid}
+        isLoading={isSubmitting}
+      >
+        Save
+      </Button>
+    </ButtonGroup>
+  );
+
   return (
-    <Flex direction="column" gap={4} w="full">
+    <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
+      <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
       <Heading fontSize="md" fontWeight="semibold">
         Configure experience
       </Heading>
@@ -195,6 +212,7 @@ const PrivacyExperienceForm = ({
           is_default: false,
         })}
         onRowClick={onSelectTranslation}
+        selectOnAdd
         draggable
       />
       {/* <CustomSwitch
@@ -203,8 +221,7 @@ const PrivacyExperienceForm = ({
         label="Auto detect language"
         variant="stacked"
       /> */}
-    </Flex>
+    </PrivacyExperienceConfigColumnLayout>
   );
 };
-
 export default PrivacyExperienceForm;
