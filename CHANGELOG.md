@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
 
+### Changed
+- Bumped supported Python versions to `3.10.13`, `3.9.18`, and `3.8.18`. Bumped Debian base image from `-bullseye` to `-bookworm`. [#4630](https://github.com/ethyca/fides/pull/4630)
+
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
 
 ### Fixed
