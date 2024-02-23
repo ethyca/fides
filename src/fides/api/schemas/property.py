@@ -4,8 +4,9 @@ import re
 from enum import Enum
 from typing import Any, Dict
 
-from pydantic import ValidationError, root_validator
+from pydantic import root_validator
 
+from fides.api.common_exceptions import ValidationError
 from fides.api.schemas.base_class import FidesSchema
 
 
