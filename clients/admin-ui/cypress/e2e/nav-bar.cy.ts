@@ -10,7 +10,7 @@ describe("Nav Bar", () => {
     cy.getByTestId("Overview-nav-group").within(() => {
       cy.getByTestId("Home-nav-link");
     });
-    cy.getByTestId("Data map-nav-group").within(() => {
+    cy.getByTestId("Data inventory-nav-group").within(() => {
       cy.getByTestId("Systems & vendors-nav-link");
       cy.getByTestId("Add systems-nav-link");
       cy.getByTestId("Manage datasets-nav-link");
