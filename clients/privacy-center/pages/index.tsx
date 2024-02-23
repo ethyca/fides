@@ -160,17 +160,6 @@ const Home: NextPage = () => {
               {config.description}
             </Text>
           </Stack>
-          <Stack align="center" spacing={3}>
-            <Heading
-              fontSize={["3xl", "4xl"]}
-              color="red.600"
-              fontWeight="semibold"
-              textAlign="center"
-              data-testid="heading"
-            >
-              NOTICE: The privacy center will be undergoing scheduled maintenance starting on Feb 22 at 10:00 PM and ending at latest on Feb 23 at 10:00 PM. During this time, the privacy center will be unavailable; if you need to submit an access or erasure request, please wait until the service is available again. We apologize for any inconvenience this may cause.
-            </Heading>
-          </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
             {content}
           </Flex>
