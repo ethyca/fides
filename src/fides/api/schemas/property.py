@@ -4,8 +4,8 @@ from fides.api.schemas.base_class import FidesSchema
 
 
 class PropertyType(Enum):
-    website = "website"
-    other = "other"
+    website = "Website"
+    other = "Other"
 
 
 class PropertyCreate(FidesSchema):

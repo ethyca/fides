@@ -4,14 +4,18 @@ import { useRouter } from "next/router";
 import { useMemo } from "react";
 
 import FormSection from "~/features/common/form/FormSection";
-import { Property } from "~/types/api";
+import { Property, PropertyType } from "~/types/api";
 
 import {
   CustomClipboardCopy,
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import { getErrorMessage, isErrorResult } from "../common/helpers";
+import {
+  enumToOptions,
+  getErrorMessage,
+  isErrorResult,
+} from "../common/helpers";
 import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "../common/toast";
 import { useCreatePropertyMutation } from "./property.slice";
@@ -70,10 +74,7 @@ const PropertyForm = ({ property }: Props) => {
                 isRequired
                 label="Type"
                 name="type"
-                options={[
-                  { value: "website", label: "Website" },
-                  { value: "other", label: "Other" },
-                ]}
+                options={enumToOptions(PropertyType)}
                 variant="stacked"
               />
             </FormSection>
