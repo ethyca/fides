@@ -15,16 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.30.1...main)
-
-### Added
-- Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
-
-## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
-
-### Fixed
-- Configure logger correctly on worker initialization [#4624](https://github.com/ethyca/fides/pull/4624)
-
+## [Unreleased](https://github.com/ethyca/fides/compare/2.30.0...main)
 
 ## [2.30.0](https://github.com/ethyca/fides/compare/2.29.0...2.30.0)
 

@@ -42,8 +42,8 @@
     "test": true,
     "production": false
   },
-  "dataInventory": {
-    "description": "Page to view data inventory",
+  "properties": {
+    "description": "Page to view properties",
     "development": true,
     "test": true,
     "production": false

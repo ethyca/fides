@@ -99,7 +99,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PROPERTIES_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
-        requiresFlag: "dataInventory",
+        requiresFlag: "properties",
       },
       {
         title: "Vendors",
