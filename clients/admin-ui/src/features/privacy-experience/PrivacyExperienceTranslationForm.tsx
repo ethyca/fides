@@ -92,7 +92,8 @@ const PrivacyExperienceTranslationForm = ({
       ...t,
       is_default: idx === newDefaultIndex,
     }));
-    setFieldValue("translations", newTranslations);
+    // move the new default to first in the array
+    newTranslations.unshift(newTranslations.splice(newDefaultIndex, 1)[0]);
     onReturnToMainForm();
   };
 

@@ -2,6 +2,7 @@ import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
+  ChakraProps,
   DragHandleIcon,
   Flex,
   IconButton,
@@ -39,7 +40,8 @@ const ScrollableListItem = <T extends unknown>({
         px={2}
         align="center"
         role="group"
-        borderBottom="1px"
+        borderY="1px"
+        my="-1px"
         borderColor="gray.200"
         _hover={onRowClick ? { bgColor: "gray.100" } : undefined}
         bgColor="white"
@@ -63,7 +65,9 @@ const ScrollableListItem = <T extends unknown>({
             }
           }}
         >
-          <Text fontSize="sm">{label}</Text>
+          <Text fontSize="sm" userSelect="none">
+            {label}
+          </Text>
         </Flex>
 
         {onDeleteItem ? (
@@ -112,6 +116,7 @@ const ScrollableListAdd = ({
         options={options}
         onChange={(e: any) => handleElementSelected(e)}
         autoFocus
+        menuPlacement="auto"
       />
     </Box>
   ) : (
@@ -207,17 +212,17 @@ const ScrollableList = <T extends unknown>({
     }
   };
 
+  const listContainerProps = {
+    border: "1px",
+    borderColor: "gray.200",
+    borderRadius: "md",
+    w: "full",
+    maxH: 36,
+    overflowY: "scroll",
+  } as ChakraProps;
+
   const innerList = draggable ? (
-    <Box
-      as={motion.div}
-      w="full"
-      layoutScroll
-      borderRadius="md"
-      border="1px"
-      borderColor="gray.200"
-      maxH={44}
-      overflowY="scroll"
-    >
+    <Box as={motion.div} layoutScroll {...listContainerProps}>
       <Reorder.Group
         values={values}
         onReorder={(newValues) => setValues(newValues.slice())}
@@ -239,14 +244,7 @@ const ScrollableList = <T extends unknown>({
       </Reorder.Group>
     </Box>
   ) : (
-    <Box
-      borderRadius="md"
-      border="1px"
-      borderColor="gray.200"
-      minH={12}
-      maxH={44}
-      overflowY="scroll"
-    >
+    <Box {...listContainerProps}>
       <List>
         {values.map((item) => (
           <ScrollableListItem

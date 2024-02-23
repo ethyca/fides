@@ -47,6 +47,10 @@ const componentTypeOptions = [
     label: "Modal",
     value: ComponentType.MODAL,
   },
+  {
+    label: "Privacy center",
+    value: ComponentType.PRIVACY_CENTER,
+  },
 ];
 
 export const PrivacyExperienceConfigColumnLayout = ({
@@ -57,8 +61,8 @@ export const PrivacyExperienceConfigColumnLayout = ({
   children: React.ReactNode;
 }) => (
   <Flex direction="column" minH="full" w="25%" borderRight="1px solid #DEE5EE">
-    <Flex direction="column" h="full" overflow="scroll" px={4}>
-      <Flex direction="column" gap={4} w="full">
+    <Flex direction="column" h="full" overflowY="scroll" px={4}>
+      <Flex direction="column" gap={4} w="full" pb={4}>
         {children}
       </Flex>
     </Flex>
@@ -160,7 +164,7 @@ export const PrivacyExperienceForm = ({
           <CustomSwitch
             name="dismissable"
             id="dismissable"
-            label="Overlay is dismissable"
+            label="Modal is dismissable"
             variant="stacked"
           />
         </Box>

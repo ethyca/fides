@@ -132,7 +132,7 @@ const ConfigurePrivacyExperience = ({
       <Form style={{ height: "100vh" }}>
         <Flex
           w="full"
-          minH="full"
+          h="full"
           direction="row"
           data-testid="privacy-experience-detail-page"
         >
@@ -146,7 +146,7 @@ const ConfigurePrivacyExperience = ({
               onSelectTranslation={handleNewTranslationSelected}
             />
           )}
-          <Flex direction="column" w="75%" bgColor="gray.50">
+          <Flex direction="column" w="75%" bgColor="gray.50" overflowY="hidden">
             <Flex
               direction="row"
               p={4}
