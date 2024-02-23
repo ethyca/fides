@@ -5,6 +5,10 @@ dataset:
     collections:
       - name: profile_list_recipient
         fields:
+          - name: profile_list_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: riid
             data_categories: [user.unique_id]
             fidesops_meta:

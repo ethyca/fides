@@ -1,5 +1,6 @@
 import json
 from typing import Any, Dict, List
+from loguru import logger
 
 import pydash
 
@@ -81,7 +82,12 @@ def oracle_responsys_profile_list_recipients_read(
 
             for record in serialized_data:
                 # Filter out the keys with falsy values and append it
-                results.append({key: value for key, value in record.items() if value})
+                filtered_records = {
+                    key: value for key, value in record.items() if value
+                }
+                filtered_records["profile_list_id"] = list_id
+                logger.debug(filtered_records)
+                results.append(filtered_records)
 
     return results
 
@@ -101,24 +107,18 @@ def oracle_responsys_profile_list_recipients_delete(
     # each delete_params dict correspond to a record that needs to be deleted
     for row_param_values in param_values_per_row:
         # get params to be used in delete request
-        list_id = row_param_values.get("profile_list_id")
-        responsys_id = row_param_values.get("riid")
+        all_object_fields = row_param_values["all_object_fields"]
 
-        body = {
-            "fieldList": ["all"],
-            "ids": responsys_id,
-            "queryAttribute": "r",  # query by Responsys id (RIID_)
-        }
+        list_id = all_object_fields["profile_list_id"]
+        responsys_id = row_param_values.get("responsys_id")
 
-        client.send(
-            SaaSRequestParams(
-                method=HTTPMethod.POST,
-                path=f"/rest/api/v1.3/lists/{list_id}/members",
-                query_params={"action": "delete"},
-                headers={"Content-Type": "application/json"},
-                body=body,
+        if responsys_id:
+            client.send(
+                SaaSRequestParams(
+                    method=HTTPMethod.DELETE,
+                    path=f"/rest/api/v1.3/lists/{list_id}/members/{responsys_id}",
+                )
             )
-        )
 
-        rows_deleted += 1
+            rows_deleted += 1
     return rows_deleted

@@ -31,11 +31,16 @@ saas_config:
     - name: profile_list
       requests:
         read:
-          method: GET
-          path: /rest/api/v1.3/lists
-          param_values:
-            - name: placeholder
-              identity: email
+          - method: GET
+            path: /rest/api/v1.3/lists
+            param_values:
+              - name: placeholder_email
+                identity: email
+          - method: GET
+            path: /rest/api/v1.3/lists
+            param_values:
+              - name: placeholder_phone
+                identity: phone_number
     - name: profile_list_recipient
       requests:
         read:
@@ -63,7 +68,7 @@ saas_config:
             - name: profile_list_id
               references:
                 - dataset: <instance_fides_key>
-                  field: profile_list.name
+                  field: profile_list_recipient.profile_list_id
                   direction: from
             - name: responsys_id
               references:
