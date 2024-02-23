@@ -3,7 +3,7 @@ ARG PYTHON_VERSION="3.10.12"
 #########################
 ## Compile Python Deps ##
 #########################
-FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
+FROM python:${PYTHON_VERSION}-slim-bookworm as compile_image
 
 
 # Install auxiliary software
@@ -55,7 +55,7 @@ RUN pip install --no-cache-dir install -r dev-requirements.txt
 ##################
 ## Backend Base ##
 ##################
-FROM python:${PYTHON_VERSION}-slim-bullseye as backend
+FROM python:${PYTHON_VERSION}-slim-bookworm as backend
 
 # Add the fidesuser user but don't switch to it yet
 RUN addgroup --system --gid 1001 fidesgroup
