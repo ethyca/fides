@@ -8,7 +8,7 @@ import {
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import React, { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -33,7 +33,7 @@ import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import PrivacyExperienceForm from "~/features/privacy-experience/PrivacyExperienceForm";
+import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import {
   ExperienceConfigCreate,

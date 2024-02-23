@@ -47,17 +47,24 @@ const componentTypeOptions = [
   },
 ];
 
-export const PrivacyExperienceTranslationForm = ({
-  name,
+export const PrivacyExperienceConfigColumnLayout = ({
+  buttonPanel,
+  children,
 }: {
-  name: string;
+  buttonPanel: React.ReactNode;
+  children: React.ReactNode;
 }) => (
-  <Flex direction="column" gap={4} w="full">
-    <Text>Editing the {name} translation...</Text>
+  <Flex direction="column" minH="full" w="25%" borderRight="1px solid #DEE5EE">
+    <Flex direction="column" h="full" overflow="scroll" px={4}>
+      <Flex direction="column" gap={4} w="full">
+        {children}
+      </Flex>
+    </Flex>
+    {buttonPanel}
   </Flex>
 );
 
-const PrivacyExperienceForm = ({
+export const PrivacyExperienceForm = ({
   onSelectTranslation,
 }: {
   onSelectTranslation: (t: ExperienceTranslation) => void;
@@ -101,116 +108,108 @@ const PrivacyExperienceForm = ({
     );
   }
 
+  const buttonPanel = (
+    <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
+      <Button
+        variant="outline"
+        onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}
+      >
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        colorScheme="primary"
+        data-testid="save-btn"
+        isDisabled={isSubmitting || !dirty || !isValid}
+        isLoading={isSubmitting}
+      >
+        Save
+      </Button>
+    </ButtonGroup>
+  );
+
   return (
-    <Flex
-      direction="column"
-      minH="full"
-      w="25%"
-      borderRight="1px solid #DEE5EE"
-    >
-      <Flex direction="column" h="full" overflow="scroll" px={4}>
-        <Flex direction="column" gap={4} w="full">
-          {" "}
-          <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
-          <Heading fontSize="md" fontWeight="semibold">
-            Configure experience
-          </Heading>
-          <CustomTextInput
-            name="name"
-            id="name"
-            label="Name (internal admin use only)"
-            variant="stacked"
-          />
-          <CustomSelect
-            name="component"
-            id="component"
-            options={componentTypeOptions}
-            label="Experience Type"
-            variant="stacked"
-            isRequired
-          />
-          <CustomSwitch
-            name="dismissable"
-            id="dismissable"
-            label="Overlay is dismissable"
-            variant="stacked"
-          />
-          <Button
-            onClick={() => setEditingStyle(true)}
-            size="sm"
-            variant="outline"
-            rightIcon={<ArrowForwardIcon />}
-          >
-            Customize appearance
-          </Button>
-          <Divider />
-          <Heading fontSize="md" fontWeight="semibold">
-            Privacy notices
-          </Heading>
-          <ScrollableList
-            addButtonLabel="Add privacy notice"
-            allItems={allPrivacyNotices.map((n) => n.id)}
-            values={values.privacy_notice_ids ?? []}
-            setValues={(newValues) =>
-              setFieldValue("privacy_notice_ids", newValues)
-            }
-            getItemLabel={getPrivacyNoticeName}
-            draggable
-          />
-          <Divider />
-          <Text as="h2" fontWeight="600">
-            Locations & Languages
-          </Text>
-          <ScrollableList
-            label="Locations for this experience"
-            addButtonLabel="Add location"
-            allItems={allRegions}
-            values={values.regions ?? []}
-            setValues={(newValues) => setFieldValue("regions", newValues)}
-            getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
-            draggable
-          />
-          <ScrollableList
-            label="Languages for this experience"
-            addButtonLabel="Add language"
-            values={values.translations ?? []}
-            setValues={(newValues) => setFieldValue("translations", newValues)}
-            idField="language"
-            canDeleteItem={(item) => !item.is_default}
-            allItems={allLanguages.map((lang) => ({
-              language: lang.id as SupportedLanguage,
-              is_default: false,
-            }))}
-            getItemLabel={getTranslationDisplayName}
-            createNewValue={(opt) => ({
-              language: opt.value as SupportedLanguage,
-              is_default: false,
-            })}
-            onRowClick={onSelectTranslation}
-            selectOnAdd
-            draggable
-          />
-        </Flex>
-      </Flex>
-      <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-        <Button
-          variant="outline"
-          onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          colorScheme="primary"
-          data-testid="save-btn"
-          isDisabled={isSubmitting || !dirty || !isValid}
-          isLoading={isSubmitting}
-        >
-          Save
-        </Button>
-      </ButtonGroup>
-    </Flex>
+    <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
+      <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
+      <Heading fontSize="md" fontWeight="semibold">
+        Configure experience
+      </Heading>
+      <CustomTextInput
+        name="name"
+        id="name"
+        label="Name (internal admin use only)"
+        variant="stacked"
+      />
+      <CustomSelect
+        name="component"
+        id="component"
+        options={componentTypeOptions}
+        label="Experience Type"
+        variant="stacked"
+        isRequired
+      />
+      <CustomSwitch
+        name="dismissable"
+        id="dismissable"
+        label="Overlay is dismissable"
+        variant="stacked"
+      />
+      <Button
+        onClick={() => setEditingStyle(true)}
+        size="sm"
+        variant="outline"
+        rightIcon={<ArrowForwardIcon />}
+      >
+        Customize appearance
+      </Button>
+      <Divider />
+      <Heading fontSize="md" fontWeight="semibold">
+        Privacy notices
+      </Heading>
+      <ScrollableList
+        addButtonLabel="Add privacy notice"
+        allItems={allPrivacyNotices.map((n) => n.id)}
+        values={values.privacy_notice_ids ?? []}
+        setValues={(newValues) =>
+          setFieldValue("privacy_notice_ids", newValues)
+        }
+        getItemLabel={getPrivacyNoticeName}
+        draggable
+      />
+      <Divider />
+      <Text as="h2" fontWeight="600">
+        Locations & Languages
+      </Text>
+      <ScrollableList
+        label="Locations for this experience"
+        addButtonLabel="Add location"
+        allItems={allRegions}
+        values={values.regions ?? []}
+        setValues={(newValues) => setFieldValue("regions", newValues)}
+        getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
+        draggable
+      />
+      <ScrollableList
+        label="Languages for this experience"
+        addButtonLabel="Add language"
+        values={values.translations ?? []}
+        setValues={(newValues) => setFieldValue("translations", newValues)}
+        idField="language"
+        canDeleteItem={(item) => !item.is_default}
+        allItems={allLanguages.map((lang) => ({
+          language: lang.id as SupportedLanguage,
+          is_default: false,
+        }))}
+        getItemLabel={getTranslationDisplayName}
+        createNewValue={(opt) => ({
+          language: opt.value as SupportedLanguage,
+          is_default: false,
+        })}
+        onRowClick={onSelectTranslation}
+        selectOnAdd
+        draggable
+      />
+    </PrivacyExperienceConfigColumnLayout>
   );
 };
-
 export default PrivacyExperienceForm;
