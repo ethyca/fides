@@ -20,7 +20,7 @@ RUN apt-get update && \
     unixodbc-dev \
     freetds-dev \
     freetds-bin \
-    python-dev \
+    python-dev-is-python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
