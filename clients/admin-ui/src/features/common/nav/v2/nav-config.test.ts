@@ -41,9 +41,9 @@ describe("configureNavGroups", () => {
 
     // NOTE: the data map should _not_ include the Plus routes (/plus/datamap, /classify-systems, etc.)
     expect(navGroups[1]).toMatchObject({
-      title: "Data map",
+      title: "Data inventory",
       children: [
-        { title: "View systems", path: routes.SYSTEM_ROUTE },
+        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
       ],
@@ -78,14 +78,13 @@ describe("configureNavGroups", () => {
 
     // The data map _should_ include the actual "/plus/datamap".
     expect(navGroups[1]).toMatchObject({
-      title: "Data map",
+      title: "Data inventory",
       children: [
-        { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
-        { title: "View map", path: routes.DATAMAP_ROUTE },
-        { title: "View systems", path: routes.SYSTEM_ROUTE },
+        { title: "Data lineage", path: routes.DATAMAP_ROUTE },
+        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
-        { title: "Classify systems", path: routes.CLASSIFY_SYSTEMS_ROUTE },
+        { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
       ],
     });
   });
@@ -103,8 +102,8 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[1]).toMatchObject({
-        title: "Data map",
-        children: [{ title: "View systems", path: routes.SYSTEM_ROUTE }],
+        title: "Data inventory",
+        children: [{ title: "Systems & vendors", path: routes.SYSTEM_ROUTE }],
       });
     });
 
@@ -147,9 +146,9 @@ describe("configureNavGroups", () => {
 
       // The data map should _not_ include the actual "/plus/datamap".
       expect(navGroups[1]).toMatchObject({
-        title: "Data map",
+        title: "Data inventory",
         children: [
-          { title: "View systems", path: routes.SYSTEM_ROUTE },
+          { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
           { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
           { title: "Manage datasets", path: routes.DATASET_ROUTE },
         ],
@@ -318,21 +317,21 @@ describe("findActiveNav", () => {
     {
       path: routes.SYSTEM_ROUTE,
       expected: {
-        title: "Data map",
+        title: "Data inventory",
         path: routes.SYSTEM_ROUTE,
       },
     },
     {
       path: routes.DATAMAP_ROUTE,
       expected: {
-        title: "Data map",
+        title: "Data inventory",
         path: routes.DATAMAP_ROUTE,
       },
     },
     {
       path: routes.ADD_SYSTEMS_ROUTE,
       expected: {
-        title: "Data map",
+        title: "Data inventory",
         path: routes.ADD_SYSTEMS_ROUTE,
       },
     },
