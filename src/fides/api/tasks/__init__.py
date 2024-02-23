@@ -44,7 +44,6 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     """
     Returns a configured version of the Celery application
     """
-
     app = Celery(__name__)
 
     celery_config: Dict[str, Any] = {
