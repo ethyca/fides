@@ -1,7 +1,7 @@
 """add property table
 
 Revision ID: 26d5976531d6
-Revises: 68cb26f3492d
+Revises: a1e23b70f2b2
 Create Date: 2024-02-20 18:44:57.913009
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "26d5976531d6"
-down_revision = "68cb26f3492d"
+down_revision = "a1e23b70f2b2"
 branch_labels = None
 depends_on = None
 
