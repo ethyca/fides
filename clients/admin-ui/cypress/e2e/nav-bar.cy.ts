@@ -11,7 +11,7 @@ describe("Nav Bar", () => {
       cy.getByTestId("Home-nav-link");
     });
     cy.getByTestId("Data map-nav-group").within(() => {
-      cy.getByTestId("View systems-nav-link");
+      cy.getByTestId("Systems & vendors-nav-link");
       cy.getByTestId("Add systems-nav-link");
       cy.getByTestId("Manage datasets-nav-link");
     });
@@ -36,18 +36,18 @@ describe("Nav Bar", () => {
     cy.getByTestId("Home-nav-link")
       .should("have.css", "background-color")
       .should("eql", ACTIVE_COLOR);
-    cy.getByTestId("View systems-nav-link")
+    cy.getByTestId("Systems & vendors-nav-link")
       .should("have.css", "background-color")
       .should("not.eql", ACTIVE_COLOR);
 
     // Navigate by clicking a nav link.
-    cy.getByTestId("View systems-nav-link").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
 
     // The nav should update which page is active.
     cy.getByTestId("Home-nav-link")
       .should("have.css", "background-color")
       .should("not.eql", ACTIVE_COLOR);
-    cy.getByTestId("View systems-nav-link")
+    cy.getByTestId("Systems & vendors-nav-link")
       .should("have.css", "background-color")
       .should("eql", ACTIVE_COLOR);
   });
@@ -61,7 +61,7 @@ describe("Nav Bar", () => {
     cy.getByTestId("Request manager-nav-link").should("not.be.visible");
 
     // Move to another page
-    cy.getByTestId("View systems-nav-link").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("Request manager-nav-link").should("not.be.visible");
   });
 });
