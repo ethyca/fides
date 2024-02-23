@@ -1,5 +1,6 @@
 import {
   ArrowForwardIcon,
+  Box,
   Button,
   ButtonGroup,
   Collapse,
@@ -150,15 +151,19 @@ export const PrivacyExperienceForm = ({
         isRequired
       />
       <Collapse
-        in={values.component !== ComponentType.PRIVACY_CENTER}
+        in={
+          values.component && values.component !== ComponentType.PRIVACY_CENTER
+        }
         animateOpacity
       >
-        <CustomSwitch
-          name="dismissable"
-          id="dismissable"
-          label="Overlay is dismissable"
-          variant="stacked"
-        />
+        <Box p="1px">
+          <CustomSwitch
+            name="dismissable"
+            id="dismissable"
+            label="Overlay is dismissable"
+            variant="stacked"
+          />
+        </Box>
       </Collapse>
       <Button
         onClick={() => setEditingStyle(true)}
