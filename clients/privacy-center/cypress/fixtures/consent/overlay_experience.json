@@ -63,7 +63,6 @@
           "notice_key": "analytics_opt_out",
           "internal_description": null,
           "origin": null,
-          "regions": ["eu_ie", "eu_fr", "us_ca"],
           "consent_mechanism": "opt_out",
           "data_uses": ["analytics.reporting.ad_performance"],
           "enforcement_level": "system_wide",
