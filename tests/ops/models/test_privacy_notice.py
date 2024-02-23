@@ -3,35 +3,79 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import ValidationError
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
+    NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
     UserConsentPreference,
-    check_conflicting_notice_keys,
-    new_data_use_conflicts_with_existing_use,
 )
-from fides.api.models.sql_models import Cookies, DataUse
+from fides.api.models.sql_models import Cookies
+from fides.api.schemas.language import SupportedLanguage
 
 
 class TestPrivacyNoticeModel:
+    def test_configured_regions(
+        self,
+        db,
+        privacy_notice,
+        privacy_experience_overlay,
+        privacy_experience_privacy_center_france,
+        privacy_experience_france_tcf_overlay,
+    ):
+        def reset_notices():
+            privacy_experience_overlay.experience_config.privacy_notices = []
+            privacy_experience_overlay.experience_config.save(db)
+            privacy_experience_privacy_center_france.experience_config.privacy_notices = (
+                []
+            )
+            privacy_experience_privacy_center_france.experience_config.save(db)
+            privacy_experience_france_tcf_overlay.experience_config.privacy_notices = []
+            privacy_experience_france_tcf_overlay.experience_config.save(db)
+
+        reset_notices()
+        assert privacy_notice.configured_regions == []
+
+        privacy_experience_overlay.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_overlay.experience_config.save(db)
+
+        assert privacy_notice.configured_regions == [PrivacyNoticeRegion.us_ca]
+
+        privacy_experience_privacy_center_france.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_privacy_center_france.experience_config.save(db)
+
+        assert privacy_notice.configured_regions == [
+            PrivacyNoticeRegion.fr,
+            PrivacyNoticeRegion.us_ca,
+        ]
+
+        privacy_experience_france_tcf_overlay.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_france_tcf_overlay.experience_config.save(db)
+
+        # no duplicates
+        assert privacy_notice.configured_regions == [
+            PrivacyNoticeRegion.fr,
+            PrivacyNoticeRegion.us_ca,
+        ]
+
+        reset_notices()
+
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """
-        Ensure our create override works as expected to create a history object
+        Ensure our create override works as expected to create a translation and a history object
         """
-        # our fixture should have created a privacy notice and therefore a similar history object
+        # our fixture should have created a privacy notice and therefore a similar translation and history object
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
-
-        history_object = PrivacyNoticeHistory.all(db)[0]
-        assert history_object.name == privacy_notice.name
-        assert history_object.data_uses == privacy_notice.data_uses
-        assert history_object.version == privacy_notice.version
-        assert history_object.privacy_notice_id == privacy_notice.id
-        assert history_object.notice_key == privacy_notice.notice_key
 
         # make sure our create method still auto-populates as needed
         assert privacy_notice.created_at is not None
@@ -40,6 +84,20 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
         assert privacy_notice.default_preference == UserConsentPreference.opt_out
         assert privacy_notice.notice_key == "example_privacy_notice"
+
+        assert len(privacy_notice.translations) == 1
+        translation = privacy_notice.translations[0]
+        assert (
+            privacy_notice.get_translation_by_language(db, SupportedLanguage.english)
+            == translation
+        )
+
+        history_object = PrivacyNoticeHistory.all(db)[0]
+        assert history_object.name == privacy_notice.name
+        assert history_object.data_uses == privacy_notice.data_uses
+        assert history_object.version == 1.0
+        assert history_object.translation_id == translation.id
+        assert history_object.notice_key == privacy_notice.notice_key
 
     def test_default_preference_property(self, privacy_notice):
         assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
@@ -55,22 +113,36 @@ class TestPrivacyNoticeModel:
         self, db: Session, privacy_notice: PrivacyNotice
     ):
         """
-        Ensure updating with no real updates doesn't actually add a history record
+        Ensure updating with no real updates doesn't actually add a history record.
+
+        Note that translations have to be supplied, otherwise they are removed.
         """
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
 
-        updated_privacy_notice = privacy_notice.update(db, data={})
+        orig_translations = {
+            "language": SupportedLanguage.english,
+            "title": "Example privacy notice",
+            "description": "user&#x27;s description &lt;script /&gt;",
+        }
+
+        # Nothing on the privacy notice itself is changing, and the patched translations are identical
+        updated_privacy_notice = privacy_notice.update(
+            db, data={"translations": [orig_translations]}
+        )
 
         # assert our returned object isn't updated
         assert updated_privacy_notice.name == old_name
         assert updated_privacy_notice.data_uses == old_data_uses
+        assert len(updated_privacy_notice.translations) == 1
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         db.refresh(privacy_notice)
@@ -78,8 +150,13 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.data_uses == old_data_uses
         assert privacy_notice.version == 1.0
 
-        # and let's run thru the same with a "no-op" update rather than empty data
-        updated_privacy_notice = privacy_notice.update(db, data={"name": old_name})
+        # and let's run thru the same with a "no-op" update rather than empty data at the privacy notice level
+        # Translations are identical
+        updated_privacy_notice = privacy_notice.update(
+            db, data={"name": old_name, "translations": [orig_translations]}
+        )
+
+        db.refresh(updated_privacy_notice)
 
         # assert our returned object isn't updated
         assert updated_privacy_notice.name == old_name
@@ -87,6 +164,7 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         db.refresh(privacy_notice)
@@ -94,32 +172,61 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.data_uses == old_data_uses
         assert privacy_notice.version == 1.0
 
-    def test_update(self, db: Session, privacy_notice: PrivacyNotice):
-        """
-        Evaluate the overriden update functionality
-        Specifically look at the history table and version changes
-        """
+    def test_update_notice_level(self, db: Session, privacy_notice: PrivacyNotice):
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
+
+        orig_count = db.query(PrivacyNotice).count()
+        original_translations_count = db.query(NoticeTranslation).count()
+
+        dry_update_data = {
+            "name": "updated name",
+            "translations": [
+                {
+                    "language": SupportedLanguage.english,
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        }
+
+        privacy_notice.dry_update(data=dry_update_data)
 
         updated_privacy_notice = privacy_notice.update(
-            db, data={"name": "updated name"}
+            db,
+            data={
+                "name": "updated name",
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+            },
         )
+
+        assert db.query(PrivacyNotice).count() == orig_count
+        assert db.query(NoticeTranslation).count() == original_translations_count
+
         # assert our returned object is updated as we expect
         assert updated_privacy_notice.name == "updated name" != old_name
         assert updated_privacy_notice.data_uses == old_data_uses
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 2
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == "updated name"
         assert privacy_notice.data_uses == old_data_uses
-        assert privacy_notice.version == 2.0
+
+        assert len(privacy_notice.translations) == 1
 
         # make sure our latest entry in history table corresponds to current record
         notice_history = (
@@ -148,6 +255,12 @@ class TestPrivacyNoticeModel:
             data={
                 "name": "updated name again",
                 "data_uses": ["data_use_1", "data_use_2"],
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "Example privacy notice",
+                    }
+                ],
             },
         )
 
@@ -157,12 +270,17 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 3
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == "updated name again"
         assert privacy_notice.data_uses == ["data_use_1", "data_use_2"]
-        assert privacy_notice.version == 3.0
+        assert len(privacy_notice.translations) == 1
+        translation = privacy_notice.translations[0]
+        assert translation.description == "user&#x27;s description &lt;script /&gt;"
+
+        assert translation.privacy_notice_history.version == 3.0
 
         # make sure our latest entry in history table corresponds to current record
         notice_history = (
@@ -173,6 +291,7 @@ class TestPrivacyNoticeModel:
         assert notice_history.name == "updated name again"
         assert notice_history.data_uses == ["data_use_1", "data_use_2"]
         assert notice_history.version == 3.0
+        assert notice_history.description == "user&#x27;s description &lt;script /&gt;"
 
         # and that previous record hasn't changed
         notice_history = (
@@ -184,7 +303,178 @@ class TestPrivacyNoticeModel:
         assert notice_history.data_uses == old_data_uses
         assert notice_history.version == 2.0
 
-    def test_dry_update(self, db: Session, privacy_notice: PrivacyNotice):
+    def test_update_translations_added(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+        privacy_notice_updated_at = privacy_notice.updated_at
+
+        orig_count = db.query(PrivacyNotice).count()
+        original_translations_count = db.query(NoticeTranslation).count()
+
+        dry_update_data = {
+            "translations": [
+                {
+                    "language": SupportedLanguage.english,
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                },
+                {
+                    "language": SupportedLanguage.spanish,
+                    "title": "¡Ejemplo de aviso de privacidad!",
+                },
+            ]
+        }
+        privacy_notice.dry_update(data=dry_update_data)
+
+        privacy_notice.update(
+            db,
+            data=dry_update_data,
+        )
+
+        # assert we have expected db records
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 2
+        assert len(PrivacyNoticeHistory.all(db)) == 2
+
+        db.refresh(privacy_notice)
+        # Privacy notice itself unchanged
+        assert privacy_notice.updated_at == privacy_notice_updated_at
+
+        assert len(privacy_notice.translations) == 2
+
+        translation = privacy_notice.translations[0]
+
+        # English translation unchanged
+        assert translation.language == SupportedLanguage.english
+        assert translation.title == "Example privacy notice"
+        assert translation.histories.count() == 1
+        assert (
+            privacy_notice.get_translation_by_language(db, SupportedLanguage.english)
+            == translation
+        )
+
+        # "Spanish" translation translation added
+        translation_es = privacy_notice.translations[1]
+        assert translation_es.language == SupportedLanguage.spanish
+        assert translation_es.title == "¡Ejemplo de aviso de privacidad!"
+        assert translation.histories.count() == 1
+        assert (
+            privacy_notice.get_translation_by_language(db, SupportedLanguage.spanish)
+            == translation_es
+        )
+        assert privacy_notice.get_translation_by_language(db, None) is None
+
+        # make sure our latest spanish entry in history table corresponds to current record
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(
+                PrivacyNoticeHistory.version == 1.0,
+                PrivacyNoticeHistory.translation_id == translation_es.id,
+            )
+            .first()
+        )
+        assert notice_history.title == "¡Ejemplo de aviso de privacidad!"
+        assert notice_history.version == 1.0
+
+        # and that other record hasn't changed
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(
+                PrivacyNoticeHistory.version == 1.0,
+                PrivacyNoticeHistory.translation_id == translation.id,
+            )
+            .first()
+        )
+        assert notice_history.title == "Example privacy notice"
+        assert notice_history.version == 1.0
+
+    def test_update_translations_modified(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+        privacy_notice_updated_at = privacy_notice.updated_at
+
+        privacy_notice.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "Example privacy notice with updated title",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+            },
+        )
+
+        # assert we have expected db records
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 2
+
+        db.refresh(privacy_notice)
+        # Privacy notice itself unchanged
+        assert privacy_notice.updated_at == privacy_notice_updated_at
+
+        assert len(privacy_notice.translations) == 1
+        translation = privacy_notice.translations[0]
+        # Translation was updated though
+        assert translation.title == "Example privacy notice with updated title"
+
+        # make sure our latest entry in history table corresponds to current record
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.version == 2.0)
+            .first()
+        )
+        assert notice_history.title == "Example privacy notice with updated title"
+        assert notice_history.version == 2.0
+
+        # and that previous record hasn't changed
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.version == 1.0)
+            .first()
+        )
+        assert notice_history.title == "Example privacy notice"
+        assert notice_history.version == 1.0
+
+    def test_update_translations_removed(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+        privacy_notice_updated_at = privacy_notice.updated_at
+        history = db.query(PrivacyNoticeHistory).first()
+        assert history.translation_id == NoticeTranslation.all(db)[0].id
+
+        privacy_notice.update(
+            db,
+            data={"name": "New name"},
+        )
+
+        # assert we have expected db records
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+
+        db.refresh(privacy_notice)
+        assert privacy_notice.name == "New name"
+        assert privacy_notice.updated_at != privacy_notice_updated_at
+
+        assert not len(privacy_notice.translations) == 1
+
+        db.refresh(history)
+        # Translation id just removed, so it can stay linked to the Privacy Preference History record if applicable
+        assert history.translation_id is None
+
+    def test_dry_update(self, privacy_notice: PrivacyNotice):
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
 
@@ -234,11 +524,12 @@ class TestPrivacyNoticeModel:
         self, db: Session, privacy_notice: PrivacyNotice
     ):
         """
-        Ensure the dry_update method doesn't cleanly provides a "copied" object
+        Ensure the dry_update method cleanly provides a "copied" object
         that mimics the update, but does not actually impact the object being operated on
         """
 
         assert len(PrivacyNotice.all(db)) == 1
+        assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
         old_name = privacy_notice.name
 
@@ -252,6 +543,8 @@ class TestPrivacyNoticeModel:
         # and ensure it hasn't been impacted by the update
         assert privacy_notice.name == old_name
 
+        assert len(NoticeTranslation.all(db)) == 1
+
         # ensure no PrivacyNoticeHistory entries were created
         assert len(PrivacyNoticeHistory.all(db)) == 1
 
@@ -260,108 +553,6 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.name == old_name
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
-
-    @pytest.mark.parametrize(
-        "should_error,new_privacy_notices,existing_privacy_notices",
-        [
-            (
-                True,
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    )
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    )
-                ],
-            ),
-            (
-                True,
-                [
-                    PrivacyNotice(
-                        name="pn_2",
-                        notice_key="pn_2",
-                        data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    ),
-                    PrivacyNotice(
-                        name="pn_2",
-                        notice_key="pn_2",
-                        data_uses=["essential.service"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    ),
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    )
-                ],
-            ),
-            (
-                False,
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    )
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_2",
-                        notice_key="pn_2",
-                        data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    )
-                ],
-            ),
-            (
-                False,
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["marketing.advertising"],
-                        regions=[PrivacyNoticeRegion.us_ca],
-                    )
-                ],
-                [
-                    PrivacyNotice(
-                        name="pn_1",
-                        notice_key="pn_1",
-                        data_uses=["functional"],
-                        regions=[PrivacyNoticeRegion.us_va],
-                    )
-                ],
-            ),
-        ],
-    )
-    def test_check_conflicting_privacy_notice_keys(
-        self, should_error, new_privacy_notices, existing_privacy_notices
-    ):
-        if should_error:
-            with pytest.raises(ValidationError):
-                check_conflicting_notice_keys(
-                    new_privacy_notices=new_privacy_notices,
-                    existing_privacy_notices=existing_privacy_notices,
-                )
-        else:
-            check_conflicting_notice_keys(
-                new_privacy_notices=new_privacy_notices,
-                existing_privacy_notices=existing_privacy_notices,
-            )
 
     @pytest.mark.parametrize(
         "privacy_notice_data_use,declaration_cookies,expected_cookies,description",
@@ -452,7 +643,6 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
                 framework=PrivacyNoticeFramework.gpp_us_national.value,
             ).is_gpp
             is True
@@ -463,7 +653,6 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
                 framework=PrivacyNoticeFramework.gpp_us_state.value,
             ).is_gpp
             is True
@@ -474,7 +663,6 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
                 framework="bogus_framework",
             ).is_gpp
             is False
@@ -485,76 +673,6 @@ class TestPrivacyNoticeModel:
                 name="pn_1",
                 notice_key="pn_1",
                 data_uses=["marketing.advertising"],
-                regions=[PrivacyNoticeRegion.us_ca],
             ).is_gpp
             is False
-        )
-
-    def test_validate_enabled_has_data_uses(self):
-        PrivacyNotice(
-            name="pn_1",
-            disabled=False,
-            notice_key="pn_1",
-            data_uses=["marketing.advertising"],
-            regions=[PrivacyNoticeRegion.us_ca],
-        ).validate_enabled_has_data_uses()
-
-        PrivacyNotice(
-            name="pn_1",
-            disabled=True,
-            notice_key="pn_1",
-            data_uses=[],  # disabled, so no data uses is OK
-            regions=[PrivacyNoticeRegion.us_ca],
-        ).validate_enabled_has_data_uses()
-
-        with pytest.raises(ValidationError):
-            PrivacyNotice(
-                name="pn_1",
-                disabled=False,
-                notice_key="pn_1",
-                data_uses=[],
-                regions=[PrivacyNoticeRegion.us_ca],
-            ).validate_enabled_has_data_uses()
-
-        with pytest.raises(ValidationError):
-            PrivacyNotice(
-                name="pn_1",
-                disabled=False,
-                notice_key="pn_1",
-                regions=[PrivacyNoticeRegion.us_ca],
-            ).validate_enabled_has_data_uses()
-
-        with pytest.raises(ValidationError):
-            # default is enabled, so this should error
-            PrivacyNotice(
-                name="pn_1",
-                notice_key="pn_1",
-                regions=[PrivacyNoticeRegion.us_ca],
-            ).validate_enabled_has_data_uses()
-
-
-class TestDataUseConflictFound:
-    @pytest.mark.parametrize(
-        "existing_use,new_use,conflict_found",
-        [
-            ("a", "a", True),
-            ("a", "a.b", True),
-            ("a", "a.b.c", True),
-            ("a.b.c", "a.b.c", True),
-            ("a.b.c", "a.b", True),
-            ("a.b.c", "a", True),
-            ("a.b", "a.b", True),
-            ("a.b", "a", True),
-            ("a", "c", False),
-            ("a.b", "c.d", False),
-            ("a.b", "a.c", False),
-            ("a.b.c", "a.b.d", False),
-            ("a.b", "a.c.d", False),
-            ("a.c.d", "a.b", False),
-        ],
-    )
-    def test_new_data_use_conflicts(self, existing_use, new_use, conflict_found):
-        assert (
-            new_data_use_conflicts_with_existing_use(existing_use, new_use)
-            is conflict_found
         )
