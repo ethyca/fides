@@ -276,7 +276,6 @@ EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
     PrivacyNoticeRegion.sk,
     PrivacyNoticeRegion.fi,
     PrivacyNoticeRegion.se,
-    PrivacyNoticeRegion.gb,
     PrivacyNoticeRegion.gb_eng,
     PrivacyNoticeRegion.gb_sct,
     PrivacyNoticeRegion.gb_wls,

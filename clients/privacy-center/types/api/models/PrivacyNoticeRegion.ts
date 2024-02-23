@@ -85,7 +85,6 @@ export enum PrivacyNoticeRegion {
   SK = "sk",
   FI = "fi",
   SE = "se",
-  GB = "gb",
   GB_ENG = "gb_eng",
   GB_SCT = "gb_sct",
   GB_WLS = "gb_wls",
