@@ -15,7 +15,7 @@ import {
   mockPrivacyNoticeTranslation,
 } from "../support/mocks";
 
-import { OVERRIDE, stubConfig } from "../support/stubs";
+import { OVERRIDE, overrideTranslation, stubConfig } from "../support/stubs";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
@@ -304,10 +304,10 @@ describe("Consent overlay", () => {
             `;
             cy.fixture("consent/test_banner_options.json").then((config) => {
               const newExperienceTranslationsConfig = [
-                {
-                  ...config.experience.experience_config.translations[0],
-                  ...{ description: HTMLDescription },
-                },
+                overrideTranslation(
+                  config.experience.experience_config.translations[0],
+                  { description: HTMLDescription }
+                ),
               ];
               stubConfig({
                 experience: {
@@ -348,13 +348,13 @@ describe("Consent overlay", () => {
               "This test is overriding the modal description separately from banner!";
             cy.fixture("consent/test_banner_options.json").then((config) => {
               const newExperienceTranslationsConfig = [
-                {
-                  ...config.experience.experience_config.translations[0],
-                  ...{
+                overrideTranslation(
+                  config.experience.experience_config.translations[0],
+                  {
                     description: modalDescription,
                     banner_description: bannerDescription,
-                  },
-                },
+                  }
+                ),
               ];
               stubConfig({
                 experience: {
@@ -397,10 +397,10 @@ describe("Consent overlay", () => {
               "This test is overriding the modal title separately from banner!";
             cy.fixture("consent/test_banner_options.json").then((config) => {
               const newExperienceTranslationsConfig = [
-                {
-                  ...config.experience.experience_config.translations[0],
-                  ...{ title: modalTitle, banner_title: bannerTitle },
-                },
+                overrideTranslation(
+                  config.experience.experience_config.translations[0],
+                  { title: modalTitle, banner_title: bannerTitle }
+                ),
               ];
               stubConfig({
                 experience: {
@@ -2020,7 +2020,6 @@ describe("Consent overlay", () => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
-          // fixme- why is this undefined?
           expect(served_notice_history_id).to.eql(
             noticesServedInterception.response?.body.served_notice_history_id
           );

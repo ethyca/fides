@@ -102,9 +102,10 @@ const automaticallyApplyGPCPreferences = ({
   effectiveExperience?: PrivacyExperience;
   fidesOptions: FidesOptions;
 }): boolean => {
+  // Early-exit if there is no experience or notices, since we've nothing to do
   if (
     !effectiveExperience ||
-    effectiveExperience?.privacy_notices == null ||
+    !effectiveExperience.privacy_notices ||
     effectiveExperience.privacy_notices.length === 0
   ) {
     return false;
