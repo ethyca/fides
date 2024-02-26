@@ -90,11 +90,15 @@ class ConnectorRunner:
         self,
         access_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Dict[str, List[Row]]:
         """Access request for a given access policy and identities"""
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
-            id=f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            id=(
+                privacy_request_id
+                or f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            )
         )
         identity = Identity(**identities)
         privacy_request.persist_identity(db, identity)
@@ -131,6 +135,7 @@ class ConnectorRunner:
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to true,
@@ -142,7 +147,7 @@ class ConnectorRunner:
         CONFIG.execution.masking_strict = True
 
         access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities
+            access_policy, erasure_policy, identities, privacy_request_id
         )
 
         # reset masking_strict value
@@ -154,6 +159,7 @@ class ConnectorRunner:
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to false,
@@ -166,7 +172,7 @@ class ConnectorRunner:
         CONFIG.execution.masking_strict = False
 
         access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities
+            access_policy, erasure_policy, identities, privacy_request_id
         )
 
         # reset masking_strict value
@@ -215,13 +221,19 @@ class ConnectorRunner:
         return {"opt_in": opt_in.popitem()[1], "opt_out": opt_out.popitem()[1]}
 
     async def new_consent_request(
-        self, consent_policy: Policy, identities: Dict[str, Any]
+        self,
+        consent_policy: Policy,
+        identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ):
         """
         Consent requests using privacy preference history (new workflow)
         """
         privacy_request = PrivacyRequest(
-            id=f"test_{self.connection_config.key}_new_consent_request_{random.randint(0, 1000)}",
+            id=(
+                privacy_request_id
+                or f"test_{self.connection_config.key}_new_consent_request_{random.randint(0, 1000)}"
+            ),
             status=PrivacyRequestStatus.pending,
         )
         privacy_request.save(self.db)
@@ -256,10 +268,14 @@ class ConnectorRunner:
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Tuple[Dict, Dict]:
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
-            id=f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            id=(
+                privacy_request_id
+                or f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            )
         )
         identity = Identity(**identities)
         privacy_request.persist_identity(db, identity)
@@ -413,7 +429,6 @@ def _privacy_preference_history(
             "privacy_request_id": privacy_request.id,
             "preference": "opt_in" if opt_in else "opt_out",
             "privacy_notice_history_id": privacy_notice.histories[0].id,
-            "provided_identity_id": provided_identity.id,
         },
         check_name=False,
     )
