@@ -106,6 +106,9 @@ class PrivacyExperienceConfigBase:
 
     disabled = Column(Boolean, nullable=False, default=True)
     dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
+    auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )
     name = Column(String)
 
 
@@ -204,7 +207,6 @@ class PrivacyExperienceConfig(
     - Translations, Notices, and Regions (via Privacy Experiences) are linked to this resource.
     """
 
-    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     experiences = relationship(
@@ -462,7 +464,6 @@ class PrivacyExperienceConfigHistory(
     an id to this resource which preserves the details of the Experience viewed by the end user.
     """
 
-    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     translation_id = Column(

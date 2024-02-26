@@ -44,6 +44,9 @@ def upgrade():
         sa.Column("disabled", sa.Boolean(), nullable=False),
         sa.Column("dismissable", sa.Boolean(), server_default="t", nullable=False),
         sa.Column(
+            "auto_detect_language", sa.Boolean(), server_default="t", nullable=False
+        ),
+        sa.Column(
             "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
         ),
         sa.PrimaryKeyConstraint("id"),
@@ -187,7 +190,9 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfig",
-        sa.Column("custom_asset_id", sa.String(), nullable=True),
+        sa.Column(
+            "auto_detect_language", sa.Boolean(), server_default="t", nullable=False
+        ),
     )
     op.add_column(
         "privacyexperienceconfig", sa.Column("name", sa.String(), nullable=True)
@@ -197,13 +202,6 @@ def upgrade():
         "privacyexperienceconfig",
         "experienceconfigtemplate",
         ["origin"],
-        ["id"],
-    )
-    op.create_foreign_key(
-        "config_asset_id",
-        "privacyexperienceconfig",
-        "plus_custom_asset",
-        ["custom_asset_id"],
         ["id"],
     )
     op.add_column(
@@ -224,12 +222,14 @@ def upgrade():
     op.add_column(
         "privacyexperienceconfighistory",
         sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
+            "auto_detect_language", sa.Boolean(), server_default="t", nullable=False
         ),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("custom_asset_id", sa.String(), nullable=True),
+        sa.Column(
+            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
+        ),
     )
     op.add_column(
         "privacyexperienceconfighistory",
@@ -255,13 +255,6 @@ def upgrade():
         ["translation_id"],
         ["id"],
         ondelete="SET NULL",
-    )
-    op.create_foreign_key(
-        "confighistory_asset",
-        "privacyexperienceconfighistory",
-        "plus_custom_asset",
-        ["custom_asset_id"],
-        ["id"],
     )
     op.alter_column(
         "privacynotice",
@@ -434,8 +427,8 @@ def downgrade():
         nullable=True,
     )
     op.drop_column("privacyexperienceconfighistory", "translation_id")
-    op.drop_column("privacyexperienceconfighistory", "custom_asset_id")
     op.drop_column("privacyexperienceconfighistory", "allow_language_selection")
+    op.drop_column("privacyexperienceconfighistory", "auto_detect_language")
     op.drop_column("privacyexperienceconfighistory", "dismissable")
     op.drop_column("privacyexperienceconfighistory", "origin")
     op.drop_column("privacyexperienceconfighistory", "name")
@@ -445,9 +438,9 @@ def downgrade():
         "config_template_origin", "privacyexperienceconfig", type_="foreignkey"
     )
     op.drop_column("privacyexperienceconfig", "name")
-    op.drop_column("privacyexperienceconfig", "custom_asset_id")
     op.drop_column("privacyexperienceconfig", "allow_language_selection")
     op.drop_column("privacyexperienceconfig", "dismissable")
+    op.drop_column("privacyexperienceconfig", "auto_detect_language")
     op.drop_column("privacyexperienceconfig", "origin")
     op.add_column(
         "privacyexperience",
