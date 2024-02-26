@@ -12,8 +12,8 @@ import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
 
-import mockExperienceJSON from "./fixtures/mock_experience.json";
-import mockExperienceNoTranslationsJSON from "./fixtures/mock_experience_no_translations.json";
+import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
+import mockExperienceNoTranslationsJSON from "../../__fixtures__/mock_experience_no_translations.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
