@@ -37,10 +37,12 @@ class LocationRegulationSelections(Base):
         nullable=False,
         default={},
     )
-    selected_location_groups = Column(
-        ARRAY(String),
-        nullable=False,
-        default={},
+    selected_location_groups = (
+        Column(  # Don't save this directly, it is saved as a side-effect of locations
+            ARRAY(String),
+            nullable=False,
+            default={},
+        )
     )
     selected_regulations = Column(
         ARRAY(String),
@@ -196,6 +198,8 @@ class LocationRegulationSelections(Base):
     ) -> Set[str]:
         """
         Utility method to get the selected_location_groups, returned as a Set.
+
+        Location Groups aren't saved directly, but as a side-effect of saving locations
         """
         async with async_session.begin():
             results = await async_session.execute(select(cls))  # type: ignore[arg-type]

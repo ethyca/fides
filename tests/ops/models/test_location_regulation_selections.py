@@ -3,8 +3,15 @@ from typing import Any, Dict
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.location_regulation_selections import LocationRegulationSelections
-from fides.api.schemas.locations import PrivacyNoticeRegion, filter_regions_by_location
+from fides.api.models.location_regulation_selections import (
+    LocationRegulationSelections,
+    group_locations_into_location_groups,
+)
+from fides.api.schemas.locations import (
+    PrivacyNoticeRegion,
+    filter_regions_by_location,
+    location_group_to_location,
+)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -160,6 +167,7 @@ class TestFilterRegionsByLocation:
         PrivacyNoticeRegion.us_ca,
         PrivacyNoticeRegion.eea,
         PrivacyNoticeRegion.gb,
+        PrivacyNoticeRegion.mexico_central_america,
     ]
 
     def test_no_locations_or_location_groups_set(self, db):
@@ -172,3 +180,83 @@ class TestFilterRegionsByLocation:
         assert filter_regions_by_location(db, self.base_regions) == [
             PrivacyNoticeRegion.us_ca
         ]
+
+    def test_location_groups_set(self, db):
+        # Setting all "mexico_central_america" locations also saves the "mexico_central_america" group
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
+        )
+
+        assert filter_regions_by_location(db, self.base_regions) == [
+            PrivacyNoticeRegion.mexico_central_america
+        ]
+
+
+class TestGroupLocationsIntoLocationGroups:
+    def test_no_locations(self):
+        assert group_locations_into_location_groups([]) == set()
+
+    def test_locations_do_not_comprise_full_group(self):
+        assert group_locations_into_location_groups(["us_ca"]) == set()
+
+    def test_all_locations_from_a_group_supplied(self):
+        assert group_locations_into_location_groups(
+            ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
+        ) == {"mexico_central_america"}
+
+
+class TestLocationGroupToLocation:
+    def test_expected_keys(self):
+        """Testing mapping built on startup from location groups to a set of the contained locations from the locations.yml file"""
+        assert set(location_group_to_location.keys()) == {
+            "eea",
+            "mexico_central_america",
+            "caribbean",
+            "ca",
+            "us",
+            "non_eea",
+        }
+
+    def test_assert_selected_value(self):
+        assert location_group_to_location["ca"] == {
+            "ca_nb",
+            "ca_ab",
+            "ca_nt",
+            "ca_nu",
+            "ca_on",
+            "ca_yt",
+            "ca_ns",
+            "ca_sk",
+            "ca_bc",
+            "ca_mb",
+            "ca_nl",
+            "ca_pe",
+            "ca_qc",
+        }
+
+
+class TestPrivacyNoticeRegion:
+    def test_privacy_notice_region_enum(self):
+        with pytest.raises(AttributeError):
+            # Regulations not added to enum
+            PrivacyNoticeRegion.gdpr
+
+        # Location Groups added
+        assert PrivacyNoticeRegion.eea
+        assert PrivacyNoticeRegion.mexico_central_america
+        assert PrivacyNoticeRegion.caribbean
+        assert PrivacyNoticeRegion.us
+        assert PrivacyNoticeRegion.ca
+        assert PrivacyNoticeRegion.non_eea
+
+        # Locations added - just asserting selected locations
+        assert PrivacyNoticeRegion.us_ca
+        assert PrivacyNoticeRegion.ca_nl
+        assert PrivacyNoticeRegion.fr
+        assert PrivacyNoticeRegion.gb
+        assert PrivacyNoticeRegion.mx
+
+        # Continents not added
+        with pytest.raises(AttributeError):
+            # Regulations not added to enum
+            PrivacyNoticeRegion.Asia

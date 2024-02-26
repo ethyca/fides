@@ -243,7 +243,7 @@ class PrivacyExperienceConfig(
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
-        """Filters regions on configured location if applicable"""
+        """Filters regions attached to this Experience Config on configured location if applicable"""
         db = Session.object_session(self)
         if not db:
             # For dry update scenarios, where PrivacyExperienceConfig is not bound to a session
@@ -591,11 +591,11 @@ def upsert_privacy_experiences_after_config_update(
     regions: List[PrivacyNoticeRegion],
 ) -> List[PrivacyNoticeRegion]:
     """
-    Links regions to a PrivacyExperienceConfig by adding or removing PrivacyExperience records.
+    Physically links regions to a PrivacyExperienceConfig by adding or removing PrivacyExperience records.
     """
     regions_to_remove: List[
         PrivacyNoticeRegion
-    ] = [  # Regions that were not in the request, but currently attached to the Config.  Important to use "all_regions" here.
+    ] = [  # Regions that were not in the request, but currently attached to the Config.  Important to use "all_regions" here because we don't want the list suppressed by locations.
         PrivacyNoticeRegion(reg)
         for reg in {reg.value for reg in experience_config.all_regions}.difference(
             {reg.value for reg in regions}
@@ -627,6 +627,8 @@ def upsert_privacy_experiences_after_config_update(
                 },
             )
 
+    # ".all_regions" and ".regions" should match here, but returning ".all_regions" to reflect that "locations"
+    # aren't really the focus of this method.
     return experience_config.all_regions
 
 
