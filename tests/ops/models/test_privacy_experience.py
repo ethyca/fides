@@ -92,7 +92,7 @@ class TestExperienceConfig:
 
         # Historical record versions translation and notice combined
         history = translation.histories[0]
-        assert translation.experience_config_history_id == history.id
+        assert translation.privacy_experience_config_history_id == history.id
 
         assert history.accept_button_label == "Accept all"
         assert history.acknowledge_button_label == "OK"
@@ -232,7 +232,7 @@ class TestExperienceConfig:
         )[1]
         assert history.name == "Updated Privacy Experience Config"
         assert history.allow_language_selection is True
-        assert translation.experience_config_history_id == history.id
+        assert translation.privacy_experience_config_history_id == history.id
 
         old_history = translation.histories.order_by(
             PrivacyExperienceConfigHistory.created_at

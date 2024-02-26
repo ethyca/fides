@@ -439,7 +439,7 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         return self.histories[-1] if self.histories.count() else None
 
     @property
-    def experience_config_history_id(self) -> Optional[str]:
+    def privacy_experience_config_history_id(self) -> Optional[str]:
         """Convenience property that returns the experience config history id for the latest version.
 
         Note that there are possibly many historical records for the given experience config translation, this just returns the current
