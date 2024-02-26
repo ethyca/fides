@@ -1,4 +1,9 @@
-import { FidesOptions } from "~/fides";
+import {
+  ExperienceConfig,
+  FidesOptions,
+  PrivacyExperience,
+  PrivacyNoticeWithPreference,
+} from "~/fides";
 import {
   LOCALE_REGEX,
   setupI18n,
@@ -13,7 +18,6 @@ import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
-import mockExperienceNoTranslationsJSON from "../../__fixtures__/mock_experience_no_translations.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
@@ -28,8 +32,7 @@ describe("i18n-utils", () => {
     ),
   };
 
-  // TODO: Improve this mock experience fixture type: Partial<PrivacyExperience>
-  const mockExperience: any = mockExperienceJSON as any;
+  const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
 
   afterEach(() => {
     mockI18n.activate.mockClear();
@@ -44,10 +47,20 @@ describe("i18n-utils", () => {
       };
 
       initializeI18n(mockI18n, mockNavigator, mockExperience);
-      // TODO: add additional assertions to expect the dynamic strings too
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
+
+      // Expect that messages are loaded from both static files & experience API
+      const loadCallsEn = mockI18n.load.mock.calls.filter((e) => e[0] === "en");
+      expect(loadCallsEn).toHaveLength(2);
+      const fileMessagesEn = loadCallsEn[0][1];
+      const experienceMessagesEn = loadCallsEn[1][1];
+      expect(fileMessagesEn).toEqual(messagesEn);
+      expect(experienceMessagesEn).toMatchObject({
+        "exp.title": "Title Test",
+        "exp.accept_button_label": "Accept Test",
+      });
     });
 
     it("does not automatically detect the user's locale when the experience disables auto-detection", () => {
@@ -109,7 +122,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
-        // TODO: I'm unconvinced that flattening the notices like this makes sense
         "exp.notices.pri_555.title": "Advertising Test",
         "exp.notices.pri_555.description": "Advertising Description Test",
         "exp.notices.pri_888.title": "Analytics Test",
@@ -130,7 +142,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Rechazar Prueba",
         "exp.save_button_label": "Guardar Prueba",
         "exp.title": "Título de la Prueba",
-        // TODO: I'm unconvinced that flattening the notices like this makes sense
         "exp.notices.pri_555.title": "Prueba de Publicidad",
         "exp.notices.pri_555.description":
           "Descripción de la Publicidad de Prueba",
@@ -140,13 +151,25 @@ describe("i18n-utils", () => {
       });
     });
 
-    it("handles missing experience translations by falling back to experience_config properties", () => {
-      // TODO: Improve this mock experience fixture type (Partial<PrivacyExperience>)
-      const mockExperienceNoTranslations: any =
-        mockExperienceNoTranslationsJSON as any;
+    it("handles missing experience/notice translations by falling back to legacy properties", () => {
+      // Make a deep copy of the mock experience using a dirty JSON serialization trick
+      // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
+      const mockExpNoTranslations = JSON.parse(JSON.stringify(mockExperience));
+
+      // Edit the experience data to match the legacy format (w/o translations)
+      /* eslint-disable no-param-reassign */
+      delete mockExpNoTranslations.experience_config.translations;
+      mockExpNoTranslations.privacy_notices.forEach((notice: any) => {
+        notice.name = notice.translations[0].title;
+        notice.description = notice.translations[0].description;
+        delete notice.translations;
+      });
+      /* eslint-enable no-param-reassign */
+
+      // Load the "no translations" version of the experience and run tests
       const updatedLocales = loadMessagesFromExperience(
         mockI18n,
-        mockExperienceNoTranslations
+        mockExpNoTranslations as any
       );
 
       const EXPECTED_NUM_TRANSLATIONS = 1;
@@ -166,7 +189,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
-        // TODO: I'm unconvinced that flattening the notices like this makes sense
         "exp.notices.pri_555.title": "Advertising Test",
         "exp.notices.pri_555.description": "Advertising Description Test",
         "exp.notices.pri_888.title": "Analytics Test",
@@ -174,7 +196,7 @@ describe("i18n-utils", () => {
       });
     });
 
-    // TODO: this logic needs to be in the presentation layer and affect reporting
+    // TODO (PROD-1597): this logic needs to be in the presentation layer and affect reporting
     it.skip("handles mismatched notice translations by falling back to default language", () => {});
   });
 
@@ -276,6 +298,64 @@ describe("i18n-utils", () => {
           expect(match).toEqual(expectedResults);
         }
       });
+    });
+  });
+
+  describe("__fixtures__ mock data", () => {
+    /**
+     * Utility type to enforce some type-safety on our mock API fixtures.
+     *
+     * NOTE: This type looks complicated, but it essentially just surgically
+     * replaces enum types (e.g. ConsentMechanism) with basic strings instead. This
+     * is because our test data is in JSON format so it won't natively be converted
+     * to Typescript enums!
+     *
+     * In other words, this makes strings like this valid:
+     * ```
+     * component: "banner_and_modal"
+     * ```
+     *
+     * ...where our regular type would expect this as an enum:
+     * ```
+     * component: ComponentType.BANNER_AND_MODAL
+     * ```
+     */
+    type MockPrivacyExperience = Omit<
+      PrivacyExperience,
+      "component" | "experience_config" | "privacy_notices"
+    > & {
+      component: string;
+      experience_config: Omit<ExperienceConfig, "component"> & {
+        component: string;
+      };
+      privacy_notices: Array<
+        Omit<
+          PrivacyNoticeWithPreference,
+          | "consent_mechanism"
+          | "enforcement_level"
+          | "framework"
+          | "default_preference"
+          | "cookies"
+        > & {
+          consent_mechanism: string;
+          enforcement_level: string;
+          framework: string | null;
+          default_preference: string;
+          cookies: Array<any>;
+        }
+      >;
+    };
+
+    it("ensures that our test fixtures match our expected types", () => {
+      // Assign our JSON import object to the MockPrivacyExperience type to
+      // check that the test data matches the latest API
+      const mockExpTyped: MockPrivacyExperience = mockExperienceJSON;
+
+      // This test is 99% just for the build-time check above, but throw an
+      // assertion in there to keep Jest happy!
+      expect(mockExpTyped.experience_config.component).toEqual(
+        "banner_and_modal"
+      );
     });
   });
 });

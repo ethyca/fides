@@ -42,7 +42,7 @@
         "reject_button_label": "Reject Test",
         "save_button_label": "Save Test",
         "title": "Title Test",
-        "experience_config_history_id": "pri_333"
+        "privacy_experience_config_history_id": "pri_333"
       },
       {
         "language": "es",
@@ -58,7 +58,7 @@
         "reject_button_label": "Rechazar Prueba",
         "save_button_label": "Guardar Prueba",
         "title": "Título de la Prueba",
-        "experience_config_history_id": "pri_444"
+        "privacy_experience_config_history_id": "pri_444"
       }
     ]
   },
