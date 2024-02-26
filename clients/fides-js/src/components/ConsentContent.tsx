@@ -22,6 +22,7 @@ const ConsentModal = ({
   title,
   className,
   experience,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO: disabled while integrating with API, re-enable with PROD-1597
   i18n,
   renderModalFooter,
   children,
