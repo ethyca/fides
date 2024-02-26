@@ -149,17 +149,21 @@ export const experienceIsValid = (
     return false;
   }
   if (
-    effectiveExperience.component !== ComponentType.OVERLAY &&
-    effectiveExperience.component !== ComponentType.TCF_OVERLAY
+    effectiveExperience.experience_config?.component !== ComponentType.MODAL &&
+    effectiveExperience.experience_config?.component !==
+      ComponentType.BANNER_AND_MODAL &&
+    effectiveExperience.experience_config?.component !==
+      ComponentType.TCF_OVERLAY
   ) {
     debugLog(
       options.debug,
-      "No experience found with overlay component. Skipping overlay initialization."
+      "No experience found with modal, banner_and_modal, or tcf_overlay component. Skipping overlay initialization."
     );
     return false;
   }
   if (
-    effectiveExperience.component === ComponentType.OVERLAY &&
+    effectiveExperience.experience_config?.component ===
+      ComponentType.BANNER_AND_MODAL &&
     !(
       effectiveExperience.privacy_notices &&
       effectiveExperience.privacy_notices.length > 0
@@ -197,7 +201,7 @@ export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie
 ): boolean => {
-  if (experience.component === ComponentType.TCF_OVERLAY) {
+  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }

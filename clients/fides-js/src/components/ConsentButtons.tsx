@@ -1,4 +1,4 @@
-import { Fragment, VNode, h } from "preact";
+import { h, Fragment, VNode } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
@@ -34,7 +34,9 @@ export const ConsentButtons = ({
       <div style={{ display: "flex" }}>
         <Button
           buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
-          label={experienceConfig.privacy_preferences_link_label}
+          label={
+            experienceConfig.translations[0].privacy_preferences_link_label
+          }
           onClick={onManagePreferencesClick}
           className="fides-manage-preferences-button"
         />
@@ -53,13 +55,13 @@ export const ConsentButtons = ({
         <Fragment>
           <Button
             buttonType={ButtonType.PRIMARY}
-            label={experienceConfig.reject_button_label}
+            label={experienceConfig.translations[0].reject_button_label}
             onClick={onRejectAll}
             className="fides-reject-all-button"
           />
           <Button
             buttonType={ButtonType.PRIMARY}
-            label={experienceConfig.accept_button_label}
+            label={experienceConfig.translations[0].accept_button_label}
             onClick={onAcceptAll}
             className="fides-accept-all-button"
           />
@@ -126,7 +128,7 @@ export const NoticeConsentButtons = ({
       >
         <Button
           buttonType={ButtonType.PRIMARY}
-          label={config.acknowledge_button_label}
+          label={config?.translations[0].acknowledge_button_label}
           onClick={handleAcceptAll}
           className="fides-acknowledge-button"
         />
@@ -144,7 +146,7 @@ export const NoticeConsentButtons = ({
         isInModal ? (
           <Button
             buttonType={saveOnly ? ButtonType.PRIMARY : ButtonType.SECONDARY}
-            label={config.save_button_label}
+            label={config?.translations[0].save_button_label}
             onClick={handleSave}
             className="fides-save-button"
           />
