@@ -151,6 +151,26 @@ describe("i18n-utils", () => {
       });
     });
 
+    it("handles nulls and empty strings in API responses", () => {
+      // Make a deep copy of the mock experience using a dirty JSON serialization trick
+      // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
+      const mockExpWithNulls = JSON.parse(JSON.stringify(mockExperience));
+
+      // Test that an empty string is treated as a valid message and is loaded
+      mockExpWithNulls.experience_config.translations[0].save_button_label = "";
+      
+      // Test that a null value is treated as an invalid message and is ignored
+      mockExpWithNulls.experience_config.translations[0].banner_title = null;
+
+      // Load the "no translations" version of the experience and run tests
+      loadMessagesFromExperience(mockI18n, mockExpWithNulls as any);
+      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
+      expect(firstLocale).toEqual("en");
+      expect(firstMessages).toHaveProperty(["exp.title"], "Title Test");
+      expect(firstMessages).toHaveProperty(["exp.save_button_label"], ""); // empty
+      expect(firstMessages).not.toHaveProperty(["exp.banner_title"]); // null
+    });
+
     it("handles missing experience/notice translations by falling back to legacy properties", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)

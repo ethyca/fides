@@ -1,4 +1,8 @@
-import { FidesOptions, PrivacyExperience } from "../consent-types";
+import {
+  ExperienceConfig,
+  FidesOptions,
+  PrivacyExperience,
+} from "../consent-types";
 import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
@@ -28,11 +32,10 @@ import messagesFr from "./locales/fr/messages.json";
  *   }
  * }
  */
-// TODO: use ExperienceConfig type instead of any
 function extractMessagesFromExperienceConfig(
-  experienceConfig: any
+  experienceConfig: ExperienceConfig
 ): Record<Locale, Messages> {
-  const extractedMessages: Record<Locale, Messages> = {};
+  const extracted: Record<Locale, Messages> = {};
   const EXPERIENCE_TRANSLATION_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
@@ -53,29 +56,32 @@ function extractMessagesFromExperienceConfig(
         const locale = translation.language;
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
-          messages[`exp.${key}`] = translation[key];
+          const message = translation[key];
+          if (typeof(message) === "string") {
+            messages[`exp.${key}`] = message;
+          }
         });
 
         // Combine these extracted messages with all the other locales
-        extractedMessages[locale] = {
-          ...messages,
-          ...extractedMessages[locale],
-        };
+        extracted[locale] = { ...messages, ...extracted[locale] };
       }
     );
   } else {
-    // For backwards-compatibility, when "translations" don't exist, look for
+    // For backwards-compatibility, when "translations" doesn't exist, look for
     // the fields on the ExperienceConfig itself
     const locale = DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
-      messages[`exp.${key}`] = experienceConfig[key];
+      const message = experienceConfig[key];
+      if (typeof(message) === "string") {
+        messages[`exp.${key}`] = message;
+      }
     });
 
     // Combine these extracted messages with all the other locales
-    extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+    extracted[locale] = { ...messages, ...extracted[locale] };
   }
-  return extractedMessages;
+  return extracted;
 }
 
 /**
