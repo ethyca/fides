@@ -1921,6 +1921,8 @@ dataset:
       data_categories: [system.operations]
     - name: selected_locations
       data_categories: [system.operations]
+    - name: selected_location_groups
+      data_categories: [ system.operations ]
     - name: selected_regulations
       data_categories: [system.operations]
     - name: single_row

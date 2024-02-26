@@ -135,7 +135,11 @@ def filter_regions_by_location(
     db: Session,
     regions: List[PrivacyNoticeRegion],
 ) -> List[PrivacyNoticeRegion]:
-    """Filter a list of PrivacyNoticeRegion to only ones that match at the configured Location or LocationGroup level."""
+    """Filter a list of PrivacyNoticeRegion to only ones that match at the configured Location or
+    LocationGroup level.
+
+    Only Experiences with these regions will be shown to the end-user
+    """
 
     saved_locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
     saved_location_groups: Set[
@@ -143,7 +147,8 @@ def filter_regions_by_location(
     ] = LocationRegulationSelections.get_selected_location_groups(db)
     multilevel_locations: Set[str] = saved_locations.union(saved_location_groups)
 
-    # If no locations set up, we don't filter
+    # For backwards-compatibility, if no system-wide locations or location groups are set
+    # all PrivacyNoticeRegions are available for use on Experiences
     if not multilevel_locations:
         return regions  # type: ignore[attr-defined]
 

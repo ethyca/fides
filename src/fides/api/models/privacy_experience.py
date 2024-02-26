@@ -246,7 +246,7 @@ class PrivacyExperienceConfig(
         """Filters regions on configured location if applicable"""
         db = Session.object_session(self)
         if not db:
-            # For dry update scenarios
+            # For dry update scenarios, where PrivacyExperienceConfig is not bound to a session
             return []
 
         return filter_regions_by_location(db, self.all_regions)  # type: ignore[attr-defined]
@@ -595,7 +595,7 @@ def upsert_privacy_experiences_after_config_update(
     """
     regions_to_remove: List[
         PrivacyNoticeRegion
-    ] = [  # Regions that were not in the request, but currently attached to the Config
+    ] = [  # Regions that were not in the request, but currently attached to the Config.  Important to use "all_regions" here.
         PrivacyNoticeRegion(reg)
         for reg in {reg.value for reg in experience_config.all_regions}.difference(
             {reg.value for reg in regions}

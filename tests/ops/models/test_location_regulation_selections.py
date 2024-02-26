@@ -4,15 +4,18 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
+from fides.api.schemas.locations import PrivacyNoticeRegion, filter_regions_by_location
 
 
 @pytest.fixture(scope="function", autouse=True)
 def reset_location_regulation_selections(db):
     LocationRegulationSelections.set_selected_locations(db, [])
     LocationRegulationSelections.set_selected_regulations(db, [])
+    LocationRegulationSelections.set_selected_location_groups(db, [])
     yield
     LocationRegulationSelections.set_selected_locations(db, [])
     LocationRegulationSelections.set_selected_regulations(db, [])
+    LocationRegulationSelections.set_selected_location_groups(db, [])
 
 
 class TestLocationRegulationSelections:
@@ -123,3 +126,40 @@ class TestLocationRegulationSelections:
             "ccpa",
             "gdpr",
         }
+
+        # set location groups
+        LocationRegulationSelections.set_selected_location_groups(
+            db, ["mexico_central_america", "mexico_central_america", "eea"]
+        )
+
+        # Location groups returned as expected, also deduplicated
+        assert LocationRegulationSelections.get_selected_location_groups(db) == {
+            "mexico_central_america",
+            "eea",
+        }
+
+
+class TestFilterRegionsByLocation:
+    base_regions = [
+        PrivacyNoticeRegion.us_ca,
+        PrivacyNoticeRegion.eea,
+        PrivacyNoticeRegion.gb,
+    ]
+
+    def test_no_locations_or_location_groups_set(self, db):
+        """For backwards compatibility if no locations are set, all PrivacyNoticeRegions are available"""
+        assert filter_regions_by_location(db, self.base_regions) == self.base_regions
+
+    def test_locations_set(self, db):
+        LocationRegulationSelections.set_selected_locations(db, ["us_ca"])
+
+        assert filter_regions_by_location(db, self.base_regions) == [
+            PrivacyNoticeRegion.us_ca
+        ]
+
+    def test_location_groups_set(self, db):
+        LocationRegulationSelections.set_selected_location_groups(db, ["eea"])
+
+        assert filter_regions_by_location(db, self.base_regions) == [
+            PrivacyNoticeRegion.eea
+        ]

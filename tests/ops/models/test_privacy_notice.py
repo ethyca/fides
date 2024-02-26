@@ -26,17 +26,6 @@ class TestPrivacyNoticeModel:
         privacy_experience_privacy_center_france,
         privacy_experience_france_tcf_overlay,
     ):
-        def reset_notices():
-            privacy_experience_overlay.experience_config.privacy_notices = []
-            privacy_experience_overlay.experience_config.save(db)
-            privacy_experience_privacy_center_france.experience_config.privacy_notices = (
-                []
-            )
-            privacy_experience_privacy_center_france.experience_config.save(db)
-            privacy_experience_france_tcf_overlay.experience_config.privacy_notices = []
-            privacy_experience_france_tcf_overlay.experience_config.save(db)
-
-        reset_notices()
         assert privacy_notice.configured_regions == []
 
         privacy_experience_overlay.experience_config.privacy_notices.append(
@@ -67,28 +56,13 @@ class TestPrivacyNoticeModel:
             PrivacyNoticeRegion.us_ca,
         ]
 
-        reset_notices()
-
     def test_configured_regions_locations_set(
         self,
         db,
         privacy_notice,
         privacy_experience_overlay,
         privacy_experience_privacy_center_france,
-        privacy_experience_france_tcf_overlay,
     ):
-        def reset_notices():
-            privacy_experience_overlay.experience_config.privacy_notices = []
-            privacy_experience_overlay.experience_config.save(db)
-            privacy_experience_privacy_center_france.experience_config.privacy_notices = (
-                []
-            )
-            privacy_experience_privacy_center_france.experience_config.save(db)
-            privacy_experience_france_tcf_overlay.experience_config.privacy_notices = []
-            privacy_experience_france_tcf_overlay.experience_config.save(db)
-
-        reset_notices()
-
         # Set TX as the configured location
         LocationRegulationSelections.set_selected_locations(db, ["us_tx"])
         assert privacy_notice.configured_regions == []
@@ -111,9 +85,26 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.configured_regions == [
             PrivacyNoticeRegion.us_ca,
         ]
-        LocationRegulationSelections.set_selected_locations(db, [])
 
-        reset_notices()
+        # Set privacy experience config to use just the EEA region
+        exp_config = privacy_experience_overlay.experience_config
+        exp_config.update(
+            db,
+            data={
+                "regions": [PrivacyNoticeRegion.eea],
+                "privacy_notice_ids": [privacy_notice.id],
+            },
+        )
+
+        # Set EEA location groups
+        LocationRegulationSelections.set_selected_location_groups(db, ["eea"])
+        # Now EEA shows up as a configured region for the privacy notice
+        assert privacy_notice.configured_regions == [PrivacyNoticeRegion.eea]
+
+        LocationRegulationSelections.set_selected_location_groups(db, [])
+        assert privacy_notice.configured_regions == []
+
+        LocationRegulationSelections.set_selected_locations(db, [])
 
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """
