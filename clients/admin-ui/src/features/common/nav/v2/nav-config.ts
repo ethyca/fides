@@ -35,23 +35,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Data map",
+    title: "Data inventory",
     routes: [
       {
-        title: "Reporting",
-        path: routes.REPORTING_DATAMAP_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
-        requiresFlag: "datamapReportingPage",
-      },
-      {
-        title: "View map",
+        title: "Data lineage",
         path: routes.DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
       {
-        title: "View systems",
+        title: "Systems & vendors",
         path: routes.SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
@@ -69,10 +62,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Classify systems",
-        path: routes.CLASSIFY_SYSTEMS_ROUTE,
+        title: "Reporting",
+        path: routes.REPORTING_DATAMAP_ROUTE,
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        requiresFlag: "datamapReportingPage",
       },
     ],
   },
@@ -100,6 +94,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Consent",
     routes: [
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        requiresFlag: "properties",
+      },
       {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,

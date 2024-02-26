@@ -10,6 +10,7 @@ import {
   Table,
   TableContainer,
   Tbody,
+  Td,
   Th,
   Thead,
   Tr,
@@ -111,6 +112,7 @@ type Props<T> = {
   footer?: ReactNode;
   onRowClick?: (row: T) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
+  emptyTableNotice?: ReactNode;
 };
 
 const TableBody = <T,>({
@@ -119,6 +121,7 @@ const TableBody = <T,>({
   onRowClick,
   renderRowTooltipLabel,
   displayAllColumns,
+  emptyTableNotice,
 }: Omit<Props<T>, "footer"> & { displayAllColumns: string[] }) => (
   <Tbody data-testid="fidesTable-body">
     {rowActionBar}
@@ -131,6 +134,13 @@ const TableBody = <T,>({
         displayAllColumns={displayAllColumns}
       />
     ))}
+    {tableInstance.getRowModel().rows.length === 0 && emptyTableNotice && (
+      <Tr>
+        <Td colSpan={100} borderLeftWidth="1px" borderRightWidth="1px">
+          {emptyTableNotice}
+        </Td>
+      </Tr>
+    )}
   </Tbody>
 );
 
@@ -153,6 +163,7 @@ export const FidesTableV2 = <T,>({
   footer,
   onRowClick,
   renderRowTooltipLabel,
+  emptyTableNotice,
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useState<string[]>([]);
 
@@ -260,6 +271,7 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
+            emptyTableNotice={emptyTableNotice}
           />
         ) : (
           <TableBody
@@ -268,6 +280,7 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
+            emptyTableNotice={emptyTableNotice}
           />
         )}
         {footer}
