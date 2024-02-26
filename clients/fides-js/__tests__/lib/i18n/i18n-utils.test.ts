@@ -154,21 +154,25 @@ describe("i18n-utils", () => {
     it("handles nulls and empty strings in API responses", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
-      const mockExpWithNulls = JSON.parse(JSON.stringify(mockExperience));
+      const mockExpEdited = JSON.parse(JSON.stringify(mockExperience));
 
       // Test that an empty string is treated as a valid message and is loaded
-      mockExpWithNulls.experience_config.translations[0].save_button_label = "";
-      
+      mockExpEdited.experience_config.translations[0].save_button_label = "";
+      mockExpEdited.privacy_notices[0].translations[0].title = "";
+
       // Test that a null value is treated as an invalid message and is ignored
-      mockExpWithNulls.experience_config.translations[0].banner_title = null;
+      mockExpEdited.experience_config.translations[0].banner_title = null;
+      mockExpEdited.privacy_notices[0].translations[0].description = null;
 
       // Load the "no translations" version of the experience and run tests
-      loadMessagesFromExperience(mockI18n, mockExpWithNulls as any);
-      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
-      expect(firstLocale).toEqual("en");
-      expect(firstMessages).toHaveProperty(["exp.title"], "Title Test");
-      expect(firstMessages).toHaveProperty(["exp.save_button_label"], ""); // empty
-      expect(firstMessages).not.toHaveProperty(["exp.banner_title"]); // null
+      loadMessagesFromExperience(mockI18n, mockExpEdited as any);
+      const [locale, messages] = mockI18n.load.mock.calls[0];
+      expect(locale).toEqual("en");
+      expect(messages).toHaveProperty(["exp.title"], "Title Test");
+      expect(messages).toHaveProperty(["exp.save_button_label"], "");
+      expect(messages).toHaveProperty(["exp.notices.pri_555.title"], "");
+      expect(messages).not.toHaveProperty(["exp.banner_title"]);
+      expect(messages).not.toHaveProperty(["exp.notices.pri_555.description"]);
     });
 
     it("handles missing experience/notice translations by falling back to legacy properties", () => {

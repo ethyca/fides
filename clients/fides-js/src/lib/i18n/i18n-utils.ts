@@ -2,6 +2,7 @@ import {
   ExperienceConfig,
   FidesOptions,
   PrivacyExperience,
+  PrivacyNotice,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
@@ -57,7 +58,7 @@ function extractMessagesFromExperienceConfig(
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
           const message = translation[key];
-          if (typeof(message) === "string") {
+          if (typeof message === "string") {
             messages[`exp.${key}`] = message;
           }
         });
@@ -73,7 +74,7 @@ function extractMessagesFromExperienceConfig(
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
       const message = experienceConfig[key];
-      if (typeof(message) === "string") {
+      if (typeof message === "string") {
         messages[`exp.${key}`] = message;
       }
     });
@@ -101,9 +102,10 @@ function extractMessagesFromExperienceConfig(
  *   }
  * }
  */
-// TODO: use PrivacyNotice type instead of any
-function extractMessagesFromNotice(notice: any): Record<Locale, Messages> {
-  const extractedMessages: Record<Locale, Messages> = {};
+function extractMessagesFromNotice(
+  notice: PrivacyNotice
+): Record<Locale, Messages> {
+  const extracted: Record<Locale, Messages> = {};
   const NOTICE_TRANSLATION_FIELDS = ["description", "title"] as const;
   if (notice?.translations) {
     notice.translations.forEach((translation: any) => {
@@ -111,25 +113,33 @@ function extractMessagesFromNotice(notice: any): Record<Locale, Messages> {
       const locale = translation.language;
       const messages: Messages = {};
       NOTICE_TRANSLATION_FIELDS.forEach((key) => {
-        messages[`exp.notices.${notice.id}.${key}`] = translation[key];
+        const message = translation[key];
+        if (typeof message === "string") {
+          messages[`exp.notices.${notice.id}.${key}`] = message;
+        }
       });
 
       // Combine these extracted messages with all the other locales
-      extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+      extracted[locale] = { ...messages, ...extracted[locale] };
     });
   } else {
     // For backwards-compatibility, when "translations" don't exist, look for
     // the fields on the PrivacyNotice itself
     const locale = DEFAULT_LOCALE;
-    const messages: Messages = {
-      [`exp.notices.${notice.id}.description`]: notice.description,
-      [`exp.notices.${notice.id}.title`]: notice.name, // NOTE: for backwards-compatibility; we used to use "name" for the title :)
-    };
+    const anyNotice = notice as any;
+    const messages: Messages = {};
+    if (typeof anyNotice.description === "string") {
+      messages[`exp.notices.${notice.id}.description`] = anyNotice.description;
+    }
+    // NOTE: for backwards-compatibility; we used to use "name" for the title :)
+    if (typeof anyNotice.name === "string") {
+      messages[`exp.notices.${notice.id}.title`] = anyNotice.name;
+    }
 
     // Combine these extracted messages with all the other locales
-    extractedMessages[locale] = { ...messages, ...extractedMessages[locale] };
+    extracted[locale] = { ...messages, ...extracted[locale] };
   }
-  return extractedMessages;
+  return extracted;
 }
 
 /**
