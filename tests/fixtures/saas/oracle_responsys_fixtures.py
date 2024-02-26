@@ -53,7 +53,8 @@ def oracle_responsys_token(oracle_responsys_secrets) -> Generator:
 @pytest.fixture
 def oracle_responsys_erasure_data(
     oracle_responsys_erasure_identity_email: str,
-    oracle_responsys_token: str
+    oracle_responsys_token: str,
+    oracle_responsys_secrets
 ) -> Generator:
     """
     Creates a dynamic test data record for erasure tests.
@@ -86,7 +87,7 @@ def oracle_responsys_erasure_data(
         url=f"{base_url}/rest/api/v1.3/lists/{oracle_responsys_secrets['test_list']}/members", json=member_body, headers=headers
     )
     assert create_member_response.ok
-    member_riid = create_member_response.json()["records"][0]
+    member_riid = create_member_response.json()['recordData']['records'][0]
 
     yield member_riid
 
@@ -96,14 +97,10 @@ def oracle_responsys_runner(
     db,
     cache,
     oracle_responsys_secrets,
-    oracle_responsys_external_references,
-    oracle_responsys_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "oracle_responsys",
         oracle_responsys_secrets,
-        external_references=oracle_responsys_external_references,
-        erasure_external_references=oracle_responsys_erasure_external_references,
     )

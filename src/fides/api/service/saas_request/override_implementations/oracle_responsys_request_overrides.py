@@ -1,7 +1,6 @@
-import json
 from typing import Any, Dict, List
-from loguru import logger
 
+import json
 import pydash
 
 from fides.api.common_exceptions import FidesopsException
@@ -86,7 +85,6 @@ def oracle_responsys_profile_list_recipients_read(
                     key: value for key, value in record.items() if value
                 }
                 filtered_records["profile_list_id"] = list_id
-                logger.debug(filtered_records)
                 results.append(filtered_records)
 
     return results
