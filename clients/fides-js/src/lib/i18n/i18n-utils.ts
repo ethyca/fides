@@ -6,7 +6,7 @@ import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
  *
  * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
  * 1) Add the static import of the new ./locales/{locale}/messages.json file
- * 2) Add the locale to the updateMessagesFromFiles() function below
+ * 2) Add the locale to the loadMessagesFromFiles() function below
  */
 import messagesEn from "./locales/en/messages.json";
 import messagesEs from "./locales/es/messages.json";
@@ -150,7 +150,7 @@ function extractMessagesFromNotice(notice: any): Record<Locale, Messages> {
 /**
  * Load the statically-compiled messages from source into the message catalog.
  */
-export function updateMessagesFromFiles(i18n: I18n): Locale[] {
+export function loadMessagesFromFiles(i18n: I18n): Locale[] {
   // NOTE: This doesn't automatically infer the list of locale files from
   // source, so you'll need to manually add any new locales here!
   i18n.load("en", messagesEn);
@@ -163,7 +163,7 @@ export function updateMessagesFromFiles(i18n: I18n): Locale[] {
  * Parse the provided PrivacyExperience object and load all translated strings
  * into the message catalog.
  */
-export function updateMessagesFromExperience(
+export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>
 ): Locale[] {
@@ -281,8 +281,8 @@ export function initializeI18n(
   options?: Partial<FidesOptions>
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
-  updateMessagesFromFiles(i18n);
-  const availableLocales = updateMessagesFromExperience(i18n, experience);
+  loadMessagesFromFiles(i18n);
+  const availableLocales = loadMessagesFromExperience(i18n, experience);
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
   let userLocale = DEFAULT_LOCALE;

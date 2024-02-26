@@ -3,8 +3,8 @@ import {
   LOCALE_REGEX,
   setupI18n,
   initializeI18n,
-  updateMessagesFromFiles,
-  updateMessagesFromExperience,
+  loadMessagesFromFiles,
+  loadMessagesFromExperience,
   detectUserLocale,
   matchAvailableLocales,
 } from "~/lib/i18n";
@@ -75,9 +75,9 @@ describe("i18n-utils", () => {
     });
   });
 
-  describe("updateMessagesFromFiles", () => {
+  describe("loadMessagesFromFiles", () => {
     it("reads all static messages from source and loads into the i18n catalog", () => {
-      const updatedLocales = updateMessagesFromFiles(mockI18n);
+      const updatedLocales = loadMessagesFromFiles(mockI18n);
 
       // Check the updated locales list is what we expect
       const EXPECTED_NUM_STATIC_LOCALES = 3; // NOTE: manually update this as new locales added
@@ -94,9 +94,9 @@ describe("i18n-utils", () => {
     });
   });
 
-  describe("updateMessagesFromExperience", () => {
+  describe("loadMessagesFromExperience", () => {
     it("reads all messages from experience API response and loads into the i18n catalog", () => {
-      const updatedLocales = updateMessagesFromExperience(
+      const updatedLocales = loadMessagesFromExperience(
         mockI18n,
         mockExperience
       );
@@ -152,7 +152,7 @@ describe("i18n-utils", () => {
       // TODO: Improve this mock experience fixture type (Partial<PrivacyExperience>)
       const mockExperienceNoTranslations: any =
         mockExperienceNoTranslationsJSON as any;
-      const updatedLocales = updateMessagesFromExperience(
+      const updatedLocales = loadMessagesFromExperience(
         mockI18n,
         mockExperienceNoTranslations
       );
