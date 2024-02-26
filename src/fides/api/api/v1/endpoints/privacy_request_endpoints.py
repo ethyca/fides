@@ -101,7 +101,6 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
-    cache_data,
 )
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
@@ -287,7 +286,7 @@ def privacy_request_csv_download(
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
                 pr.get_persisted_identity().dict(),
-                pr.get_persisted_custom_privacy_request_fields(),
+                pr.get_custom_privacy_request_field_map(),
                 pr.created_at,
                 pr.reviewed_by,
                 pr.id,
@@ -298,9 +297,9 @@ def privacy_request_csv_download(
 
     f.seek(0)
     response = StreamingResponse(f, media_type="text/csv")
-    response.headers[
-        "Content-Disposition"
-    ] = f"attachment; filename=privacy_requests_download_{datetime.today().strftime('%Y-%m-%d')}.csv"
+    response.headers["Content-Disposition"] = (
+        f"attachment; filename=privacy_requests_download_{datetime.today().strftime('%Y-%m-%d')}.csv"
+    )
     return response
 
 
@@ -613,7 +612,7 @@ def get_request_status(
 
         if include_custom_privacy_request_fields:
             item.custom_privacy_request_fields = (
-                item.get_persisted_custom_privacy_request_fields()
+                item.get_custom_privacy_request_field_map()
             )
 
         attach_resume_instructions(item)
@@ -834,7 +833,9 @@ def resume_privacy_request(
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     # We don't want to persist derived identities because they have not been provided
     # by the end user
-    privacy_request.cache_identity(webhook_callback.derived_identity)  # type: ignore
+
+    # TODO verify this later
+    privacy_request.persist_identity(db, webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
@@ -899,9 +900,9 @@ def resume_privacy_request_with_manual_input(
             f"status = {privacy_request.status.value}. Privacy request is not paused.",
         )
 
-    paused_details: Optional[
-        CheckpointActionRequired
-    ] = privacy_request.get_paused_collection_details()
+    paused_details: Optional[CheckpointActionRequired] = (
+        privacy_request.get_paused_collection_details()
+    )
     if not paused_details:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -1060,9 +1061,9 @@ def bulk_restart_privacy_request_from_failure(
             )
             continue
 
-        failed_details: Optional[
-            CheckpointActionRequired
-        ] = privacy_request.get_failed_checkpoint_details()
+        failed_details: Optional[CheckpointActionRequired] = (
+            privacy_request.get_failed_checkpoint_details()
+        )
 
         succeeded.append(
             _process_privacy_request_restart(
@@ -1100,9 +1101,9 @@ def restart_privacy_request_from_failure(
             detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
-    failed_details: Optional[
-        CheckpointActionRequired
-    ] = privacy_request.get_failed_checkpoint_details()
+    failed_details: Optional[CheckpointActionRequired] = (
+        privacy_request.get_failed_checkpoint_details()
+    )
 
     return _process_privacy_request_restart(
         privacy_request,
@@ -1180,11 +1181,11 @@ def _send_privacy_request_review_message_to_user(
         kwargs={
             "message_meta": FidesopsMessage(
                 action_type=action_type,
-                body_params=RequestReviewDenyBodyParams(
-                    rejection_reason=rejection_reason
-                )
-                if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
-                else None,
+                body_params=(
+                    RequestReviewDenyBodyParams(rejection_reason=rejection_reason)
+                    if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
+                    else None
+                ),
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
@@ -1289,7 +1290,7 @@ def approve_privacy_request(
         if config_proxy.notifications.send_request_review_notification:
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
-                identity_data=privacy_request.get_cached_identity_data(),
+                identity_data=privacy_request.get_identity_map(),
                 rejection_reason=None,
                 service_type=config_proxy.notifications.notification_service_type,
             )
@@ -1341,7 +1342,7 @@ def deny_privacy_request(
         if config_proxy.notifications.send_request_review_notification:
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
-                identity_data=privacy_request.get_cached_identity_data(),
+                identity_data=privacy_request.get_identity_map(),
                 rejection_reason=privacy_requests.reason,
                 service_type=config_proxy.notifications.notification_service_type,
             )
@@ -1783,18 +1784,10 @@ def create_privacy_request_func(
                 privacy_request_data.consent_request_id,
                 privacy_request_data.custom_privacy_request_fields,
             )
+
             for privacy_preference in privacy_preferences:
                 privacy_preference.privacy_request_id = privacy_request.id
                 privacy_preference.save(db=db)
-
-            cache_data(
-                privacy_request,
-                policy,
-                privacy_request_data.identity,
-                privacy_request_data.encryption_key,
-                None,
-                privacy_request_data.custom_privacy_request_fields,
-            )
 
             check_and_dispatch_error_notifications(db=db)
 

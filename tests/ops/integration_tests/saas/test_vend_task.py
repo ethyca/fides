@@ -37,7 +37,7 @@ async def test_vend_access_request_task(
         id=f"test_vend_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": vend_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = vend_connection_config.get_saas_config().fides_key
     merged_graph = vend_dataset_config.get_graph()
@@ -174,7 +174,7 @@ async def test_vend_erasure_request_task(
         id=f"test_vend_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": vend_erasure_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = vend_connection_config.get_saas_config().fides_key
     merged_graph = vend_dataset_config.get_graph()

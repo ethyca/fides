@@ -180,7 +180,7 @@ class TestSaasConnector:
 
         # this request requires the email identity in the filter postprocessor so we include it here
         privacy_request = PrivacyRequest(id="123")
-        privacy_request.cache_identity(Identity(email="test@example.com"))
+        privacy_request.persist_identity(db, identity(email="test@example.com"))
 
         assert connector.retrieve_data(
             traversal_node,

@@ -39,7 +39,7 @@ async def test_braze_access_request_task_with_email(
     identity_value = braze_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = braze_connection_config.get_saas_config().fides_key
     merged_graph = braze_dataset_config.get_graph()
@@ -113,7 +113,7 @@ async def test_braze_access_request_task_with_phone_number(
     )
     identity_kwargs = {"phone_number": braze_identity_phone_number}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = braze_connection_config.get_saas_config().fides_key
     merged_graph = braze_dataset_config.get_graph()
@@ -175,7 +175,7 @@ async def test_braze_erasure_request_task(
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
 
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = braze_connection_config.get_saas_config().fides_key
     merged_graph = braze_dataset_config.get_graph()

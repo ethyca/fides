@@ -99,6 +99,7 @@ class TestFidesConnectorIntegration:
     )
     def test_retrieve_data(
         self,
+        db,
         test_fides_connector: FidesConnector,
         policy_local_storage: Policy,
         monkeypatch,
@@ -115,7 +116,8 @@ class TestFidesConnectorIntegration:
             policy=policy_local_storage,
             status=PrivacyRequestStatus.pending,
         )
-        privacy_request.cache_identity(
+        privacy_request.persist_identity(
+            db=db,
             identity={"email": "customer-1@example.com"},
         )
 

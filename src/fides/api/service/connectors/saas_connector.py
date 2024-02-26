@@ -213,7 +213,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
 
         custom_privacy_request_fields = (
-            privacy_request.get_cached_custom_privacy_request_fields()
+            privacy_request.get_custom_privacy_request_field_map()
         )
         if custom_privacy_request_fields:
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
@@ -250,7 +250,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 while next_request:
                     processed_rows, next_request = self.execute_prepared_request(  # type: ignore
                         next_request,
-                        privacy_request.get_cached_identity_data(),
+                        privacy_request.get_identity_map(),
                         read_request,
                     )
                     rows.extend(processed_rows)
@@ -432,7 +432,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # post-process access request response specific to masking request needs
         rows = self.process_response_data(
             rows,
-            privacy_request.get_cached_identity_data(),
+            privacy_request.get_identity_map(),
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 

@@ -80,7 +80,7 @@ async def test_saas_erasure_order_request_task(
     identity_value = "test@ethyca.com"
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = saas_erasure_order_connection_config.get_saas_config().fides_key
     merged_graph = saas_erasure_order_dataset_config.get_graph()
@@ -171,7 +171,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
     identity_value = "test@ethyca.com"
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     # add a dependency on labels to be erased before orders to create a non-traversable cycle
     # this won't affect the access traversal
@@ -249,7 +249,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     identity_value = "test@ethyca.com"
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = saas_erasure_order_connection_config.get_saas_config().fides_key
     merged_graph = saas_erasure_order_dataset_config.get_graph()

@@ -238,7 +238,7 @@ async def test_rate_limiter_full_integration(
         id=f"test_zendesk_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": zendesk_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
     merged_graph = zendesk_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 

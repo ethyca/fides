@@ -38,7 +38,7 @@ async def test_yotpo_loyalty_access_request_task_with_email(
         id=f"test_yotpo_loyalty_access_request_task_with_email_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": yotpo_loyalty_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = yotpo_loyalty_connection_config.get_saas_config().fides_key
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
@@ -102,7 +102,7 @@ async def test_yotpo_loyalty_access_request_task_with_phone_number(
         id=f"test_yotpo_loyalty_access_request_task_with_phone_number_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"phone_number": yotpo_loyalty_identity_phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = yotpo_loyalty_connection_config.get_saas_config().fides_key
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
@@ -175,7 +175,7 @@ async def test_yotpo_loyalty_erasure_request_task(
         id=f"test_yotpo_loyalty_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": yotpo_loyalty_erasure_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = yotpo_loyalty_connection_config.get_saas_config().fides_key
     merged_graph = yotpo_loyalty_dataset_config.get_graph()

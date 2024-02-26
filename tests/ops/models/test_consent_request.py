@@ -127,7 +127,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         custom_fields = {"first_name": {"label": "First name", "value": "John"}}
         mock_consent_request = MagicMock(spec=ConsentRequest)
         mock_consent_request.id = "123"
-        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
+        mock_consent_request.get_custom_privacy_request_field_map.return_value = (
             custom_fields
         )
         mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
@@ -192,7 +192,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         custom_fields = {"first_name": {"label": "First name", "value": "John"}}
         mock_consent_request = MagicMock(spec=ConsentRequest)
         mock_consent_request.id = "123"
-        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
+        mock_consent_request.get_custom_privacy_request_field_map.return_value = (
             custom_fields
         )
         mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
@@ -240,7 +240,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         custom_fields = {"first_name": {"label": "First name", "value": "John"}}
         mock_consent_request = MagicMock(spec=ConsentRequest)
         mock_consent_request.id = "123"
-        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
+        mock_consent_request.get_custom_privacy_request_field_map.return_value = (
             custom_fields
         )
         mock_create_privacy_request.return_value = BulkPostPrivacyRequests(

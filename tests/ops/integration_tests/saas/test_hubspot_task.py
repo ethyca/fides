@@ -40,7 +40,7 @@ async def test_hubspot_access_request_task(
     identity_value = hubspot_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = connection_config_hubspot.get_saas_config().fides_key
     merged_graph = dataset_config_hubspot.get_graph()
@@ -145,7 +145,7 @@ async def test_hubspot_erasure_request_task(
     identity_attribute = "email"
     identity_kwargs = {identity_attribute: (hubspot_erasure_identity_email)}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = connection_config_hubspot.get_saas_config().fides_key
     merged_graph = dataset_config_hubspot.get_graph()

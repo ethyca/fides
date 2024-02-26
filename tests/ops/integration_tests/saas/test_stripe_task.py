@@ -37,7 +37,7 @@ async def test_stripe_access_request_task_with_email(
         id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": stripe_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = stripe_connection_config.get_saas_config().fides_key
     merged_graph = stripe_dataset_config.get_graph()
@@ -656,7 +656,7 @@ async def test_stripe_access_request_task_with_phone_number(
         id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"phone_number": stripe_identity_phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = stripe_connection_config.get_saas_config().fides_key
     merged_graph = stripe_dataset_config.get_graph()
@@ -723,7 +723,7 @@ async def test_stripe_erasure_request_task(
         id=f"test_stripe_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": stripe_erasure_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = stripe_connection_config.get_saas_config().fides_key
     merged_graph = stripe_dataset_config.get_graph()

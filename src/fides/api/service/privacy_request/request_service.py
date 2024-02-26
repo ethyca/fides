@@ -2,20 +2,15 @@ from __future__ import annotations
 
 from asyncio import sleep
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from httpx import AsyncClient
-from loguru import logger
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
-from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestResponse
-from fides.api.schemas.redis_cache import Identity
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
@@ -40,42 +35,6 @@ def build_required_privacy_request_kwargs(
         "policy_id": policy_id,
         "status": status,
     }
-
-
-def cache_data(
-    privacy_request: PrivacyRequest,
-    policy: Policy,
-    identity: Identity,
-    encryption_key: Optional[str],
-    drp_request_body: Optional[DrpPrivacyRequestCreate],
-    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
-) -> None:
-    """Cache privacy request data"""
-    # Store identity and encryption key in the cache
-    logger.info("Caching identity for privacy request {}", privacy_request.id)
-    privacy_request.cache_identity(identity)
-    privacy_request.cache_custom_privacy_request_fields(custom_privacy_request_fields)
-    privacy_request.cache_encryption(encryption_key)  # handles None already
-
-    # Store masking secrets in the cache
-    logger.info("Caching masking secrets for privacy request {}", privacy_request.id)
-    erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
-    unique_masking_strategies_by_name: Set[str] = set()
-    for rule in erasure_rules:
-        strategy_name: str = rule.masking_strategy["strategy"]  # type: ignore
-        configuration = rule.masking_strategy["configuration"]  # type: ignore
-        if strategy_name in unique_masking_strategies_by_name:
-            continue
-        unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
-        if masking_strategy.secrets_required():
-            masking_secrets: List[
-                MaskingSecretCache
-            ] = masking_strategy.generate_secrets_for_cache()
-            for masking_secret in masking_secrets:
-                privacy_request.cache_masking_secret(masking_secret)
-    if drp_request_body:
-        privacy_request.cache_drp_request_body(drp_request_body)
 
 
 def get_async_client() -> AsyncClient:

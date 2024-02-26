@@ -31,7 +31,7 @@ async def test_firebase_auth_access_request(
 
     privacy_request = PrivacyRequest(id=f"test_firebase_access_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
@@ -116,7 +116,7 @@ async def test_firebase_auth_access_request_non_existent_users(
     """Ensure that firebase access request task gracefully handles non-existent users"""
     privacy_request = PrivacyRequest(id=f"test_firebase_access_request_task_{uuid4()}")
     identity = Identity(**identity_info)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
@@ -160,7 +160,7 @@ async def test_firebase_auth_access_request_phone_number_identity(
 
     privacy_request = PrivacyRequest(id=f"test_firebase_access_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
@@ -241,7 +241,7 @@ async def test_firebase_auth_update_request(
 
     privacy_request = PrivacyRequest(id=f"test_firebase_update_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
@@ -331,7 +331,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
 
     privacy_request = PrivacyRequest(id=f"test_firebase_update_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
@@ -418,7 +418,7 @@ async def test_firebase_auth_delete_request(
 
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
@@ -490,7 +490,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
 
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
@@ -561,7 +561,7 @@ async def test_firebase_auth_user_delete_function(
     """Tests delete functionality by explicitly invoking the delete override function"""
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     param_values_per_row = [{"email": firebase_auth_user.email}]
     app = initialize_firebase(firebase_auth_secrets)
@@ -599,7 +599,7 @@ async def test_firebase_auth_user_delete_function_with_phone_number_identity(
     """Tests delete functionality by explicitly invoking the delete override function"""
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     param_values_per_row = [{"phone_number": firebase_auth_user.phone_number}]
     app = initialize_firebase(firebase_auth_secrets)

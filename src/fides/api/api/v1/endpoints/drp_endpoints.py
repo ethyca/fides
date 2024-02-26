@@ -40,7 +40,6 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
-    cache_data,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
@@ -124,7 +123,7 @@ async def create_drp_privacy_request(
             "Decrypting identity for DRP privacy request {}", privacy_request.id
         )
 
-        cache_data(privacy_request, policy, mapped_identity, None, data)
+        privacy_request.cache_drp_request_body(data)
 
         queue_privacy_request(privacy_request.id)
 
