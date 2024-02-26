@@ -2,78 +2,85 @@
   "items": [
     {
       "region": "us_ca",
-      "component": "overlay",
       "experience_config": {
-        "accept_button_label": "Accept Test",
-        "acknowledge_button_label": "Got it",
-        "banner_enabled": "enabled_where_required",
-        "description": "Config from mocked Fides API is overriding this banner description.",
+        "translations": [
+          {
+            "language": "en",
+            "accept_button_label": "Accept Test",
+            "acknowledge_button_label": "Got it",
+            "banner_description": "Config from mocked Fides API is overriding this banner description.",
+            "banner_title": "Manage your consent",
+            "description": "Config from mocked Fides API is overriding this banner description.",
+            "is_default": true,
+            "privacy_policy_link_label": "Privacy policy",
+            "privacy_policy_url": "https://privacy.ethyca.com/",
+            "privacy_preferences_link_label": "Manage preferences",
+            "reject_button_label": "No thanks",
+            "save_button_label": "Confirm",
+            "title": "Manage your consent",
+            "privacy_experience_config_history_id": "pri_638ed140-8dc5-4a0e-949c-abe576f8eb8f"
+          }
+        ],
+        "language": "en",
+        "dismissable": true,
+        "allow_language_selection": false,
         "disabled": false,
-        "is_default": true,
-        "privacy_policy_link_label": "Privacy policy",
-        "privacy_policy_url": "https://privacy.ethyca.com/",
-        "privacy_preferences_link_label": "Manage preferences",
-        "reject_button_label": "No thanks",
-        "save_button_label": "Confirm",
-        "title": "Manage your consent",
         "id": "pri_e0b9b2fd-4ba9-4940-881c-49858d5eeb0a",
-        "component": "overlay",
-        "experience_config_history_id": "pri_638ed140-8dc5-4a0e-949c-abe576f8eb8f",
-        "version": 2.0,
+        "component": "banner_and_modal",
         "created_at": "2023-06-02T15:18:56.103032+00:00",
-        "updated_at": "2023-06-02T16:40:37.323170+00:00",
-        "regions": ["us_ca"]
+        "updated_at": "2023-06-02T16:40:37.323170+00:00"
       },
       "id": "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
       "created_at": "2023-06-02T15:18:56.110785+00:00",
       "updated_at": "2023-06-02T16:40:37.340905+00:00",
-      "show_banner": true,
       "privacy_notices": [
         {
           "name": "Advertising",
           "notice_key": "advertising",
-          "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
           "internal_description": null,
           "origin": null,
-          "regions": ["eu_ie", "eu_fr", "us_ca"],
           "consent_mechanism": "opt_in",
           "data_uses": ["advertising.first_party.contextual"],
           "enforcement_level": "system_wide",
           "disabled": false,
           "has_gpc_flag": false,
-          "displayed_in_privacy_center": true,
-          "displayed_in_overlay": true,
-          "displayed_in_api": false,
           "id": "pri_959597a1-931a-4298-aa6f-ca35f67f0dee",
           "created_at": "2023-06-02T15:22:02.587793+00:00",
           "updated_at": "2023-06-02T15:46:47.946409+00:00",
-          "version": 2.0,
-          "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707",
           "default_preference": "opt_out",
-          "cookies": []
+          "cookies": [],
+          "translations": [
+            {
+              "language": "en",
+              "title": "Advertising",
+              "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
+              "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707"
+            }
+          ]
         },
         {
           "name": "Analytics",
           "notice_key": "analytics_opt_out",
-          "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
           "internal_description": null,
           "origin": null,
-          "regions": ["eu_ie", "eu_fr", "us_ca"],
           "consent_mechanism": "opt_out",
           "data_uses": ["analytics.reporting.ad_performance"],
           "enforcement_level": "system_wide",
           "disabled": false,
           "has_gpc_flag": false,
-          "displayed_in_privacy_center": true,
-          "displayed_in_overlay": true,
-          "displayed_in_api": false,
           "id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae822",
           "created_at": "2023-06-02T15:22:02.587793+00:00",
           "updated_at": "2023-06-02T15:46:47.946409+00:00",
-          "version": 2.0,
-          "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076239",
           "default_preference": "opt_in",
-          "cookies": [{ "name": "_ga", "path": null, "domain": null }]
+          "cookies": [{ "name": "_ga", "path": null, "domain": null }],
+          "translations": [
+            {
+              "language": "en",
+              "title": "Analytics",
+              "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
+              "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076239"
+            }
+          ]
         }
       ]
     }

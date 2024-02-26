@@ -2,7 +2,6 @@
   "items": [
     {
       "region": "us_ca",
-      "component": "overlay",
       "gpp_settings": {
         "enabled": true,
         "us_approach": "state",
@@ -12,64 +11,30 @@
         "enable_tcfeu_string": true
       },
       "experience_config": {
-        "accept_button_label": "Opt in to all",
-        "acknowledge_button_label": "OK",
-        "banner_enabled": "always_enabled",
-        "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
-        "disabled": false,
-        "is_default": true,
-        "privacy_policy_link_label": "Privacy Policy",
-        "privacy_policy_url": null,
-        "privacy_preferences_link_label": "Manage preferences",
-        "regions": [
-          "us_co",
-          "se",
-          "ee",
-          "pl",
-          "no",
-          "fi",
-          "lv",
-          "fr",
-          "be",
-          "bg",
-          "ro",
-          "mt",
-          "hr",
-          "us_ct",
-          "is",
-          "dk",
-          "pt",
-          "es",
-          "li",
-          "gb_eng",
-          "us_ia",
-          "at",
-          "us_ca",
-          "de",
-          "gb_sct",
-          "cy",
-          "lt",
-          "us_va",
-          "gb_wls",
-          "lu",
-          "si",
-          "ie",
-          "nl",
-          "sk",
-          "cz",
-          "it",
-          "hu",
-          "gr",
-          "gb_nir",
-          "us_ut"
+        "translations": [
+          {
+            "language": "en",
+            "accept_button_label": "Opt in to all",
+            "acknowledge_button_label": "OK",
+            "banner_description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+            "banner_title": "Manage your consent preferences",
+            "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+            "is_default": true,
+            "privacy_policy_link_label": "Privacy Policy",
+            "privacy_policy_url": null,
+            "privacy_preferences_link_label": "Manage preferences",
+            "reject_button_label": "Opt out of all",
+            "save_button_label": "Save",
+            "title": "Manage your consent preferences",
+            "privacy_experience_config_history_id": "pri_a49a8154-ce8f-4ba7-a32f-668fb7b400c1"
+          }
         ],
-        "reject_button_label": "Opt out of all",
-        "save_button_label": "Save",
-        "title": "Manage your consent preferences",
+        "language": "en",
+        "dismissable": true,
+        "allow_language_selection": false,
+        "disabled": false,
         "id": "pri-7ae3-f06b-4096-970f-0bbbdef-over",
-        "component": "overlay",
-        "experience_config_history_id": "pri_a49a8154-ce8f-4ba7-a32f-668fb7b400c1",
-        "version": 1,
+        "component": "banner_and_modal",
         "created_at": "2023-12-06T20:45:50.357132+00:00",
         "updated_at": "2023-12-06T20:45:50.357132+00:00"
       },
@@ -87,15 +52,12 @@
       "id": "pri_3a693a0a-95cc-431e-a10b-e20086095f12",
       "created_at": "2023-12-06T22:03:25.950052+00:00",
       "updated_at": "2023-12-06T22:03:25.950052+00:00",
-      "show_banner": true,
       "privacy_notices": [
         {
           "name": "Data sales and sharing",
           "notice_key": "data_sales_sharing_gpp_us_state",
-          "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of [cross-context behavioral targeted advertising]. You can learn more about what information is used for this purpose in our privacy notice.",
           "internal_description": "Data sales and sharing (GPP, California)",
           "origin": "pri_gpp_1",
-          "regions": ["us_ca"],
           "consent_mechanism": "opt_out",
           "data_uses": [
             "marketing.advertising.first_party.targeted",
@@ -104,9 +66,6 @@
           "enforcement_level": "not_applicable",
           "disabled": false,
           "has_gpc_flag": false,
-          "displayed_in_privacy_center": true,
-          "displayed_in_overlay": true,
-          "displayed_in_api": false,
           "framework": "gpp_us_state",
           "gpp_field_mapping": [
             {
@@ -132,10 +91,16 @@
           "default_preference": "opt_in",
           "created_at": "2024-01-16T20:39:01.906126+00:00",
           "updated_at": "2024-01-16T20:41:30.396281+00:00",
-          "version": 2,
-          "privacy_notice_history_id": "pri_18d9f174-f842-4e05-9cbf-09fd9eb33e33",
           "cookies": [],
-          "systems_applicable": true
+          "systems_applicable": true,
+          "translations": [
+            {
+              "language": "en",
+              "title": "Data sales and sharing",
+              "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of [cross-context behavioral targeted advertising]. You can learn more about what information is used for this purpose in our privacy notice.",
+              "privacy_notice_history_id": "pri_18d9f174-f842-4e05-9cbf-09fd9eb33e33"
+            }
+          ]
         }
       ],
       "gvl": {},

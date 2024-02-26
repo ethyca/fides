@@ -15,7 +15,7 @@ const ConsentHeading = () => {
       return config.consent?.page.title;
     }
 
-    return experience?.experience_config?.title;
+    return experience?.experience_config?.translations[0].title;
   }, [config, isNoticeDriven, experience]);
 
   return (

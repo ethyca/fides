@@ -10,6 +10,7 @@ import {
 import { defaultShowModal } from "../fides";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import {
+  ComponentType,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -75,12 +76,10 @@ const Overlay: FunctionComponent<Props> = ({
     [cookie, onDismiss, options.debug]
   );
 
-  const title = i18n.t("experience.title");
-
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: title || "",
+    title: experience?.experience_config?.translations[0].title || "", // fixme- use internationalization lib
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },
@@ -107,12 +106,23 @@ const Overlay: FunctionComponent<Props> = ({
     }
   }, [options, onOpen]);
 
+  const showBanner = useMemo(
+    () =>
+      !options.fidesDisableBanner &&
+      experience.experience_config?.component !== ComponentType.MODAL &&
+      shouldResurfaceConsent(experience, cookie) &&
+      !options.fidesEmbed,
+    [cookie, experience, options]
+  );
+
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      setBannerIsOpen(true);
+      if (showBanner) {
+        setBannerIsOpen(true);
+      }
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [setBannerIsOpen]);
+  }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
     window.Fides.showModal = handleOpenModal;
@@ -144,16 +154,7 @@ const Overlay: FunctionComponent<Props> = ({
       }
       window.Fides.showModal = defaultShowModal;
     };
-  }, [options.modalLinkId, options.debug, handleOpenModal]);
-
-  const showBanner = useMemo(
-    () =>
-      !options.fidesDisableBanner &&
-      experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie) &&
-      !options.fidesEmbed,
-    [cookie, experience, options]
-  );
+  }, [options.modalLinkId, options.debug, handleOpenModal, experience]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
@@ -189,6 +190,7 @@ const Overlay: FunctionComponent<Props> = ({
         <ConsentContent
           title={attributes.title}
           className="fides-embed"
+          experience={experience.experience_config}
           i18n={i18n}
           renderModalFooter={() =>
             renderModalFooter({
@@ -202,6 +204,7 @@ const Overlay: FunctionComponent<Props> = ({
       ) : (
         <ConsentModal
           attributes={attributes}
+          experience={experience.experience_config}
           i18n={i18n}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>

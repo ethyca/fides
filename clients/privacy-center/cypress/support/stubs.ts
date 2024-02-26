@@ -1,4 +1,6 @@
 import {
+  ExperienceConfigTranslation,
+  PrivacyNoticeTranslation,
   LegacyConsentConfig,
   PrivacyExperience,
   UserGeolocation,
@@ -39,6 +41,17 @@ interface FidesConfigTesting {
   options: Partial<FidesOptions> | OVERRIDE;
 }
 
+/**
+ * Helper function to override translations for Experience Configs / Notices
+ * @example overrideTranslation({language: "en", privacy_experience_config_history_id: "1342314"}, { description: "hello" })
+ */
+export const overrideTranslation = (
+  translation: ExperienceConfigTranslation | PrivacyNoticeTranslation,
+  override: Partial<ExperienceConfigTranslation | PrivacyNoticeTranslation>
+): ExperienceConfigTranslation | PrivacyNoticeTranslation => ({
+  ...translation,
+  ...override,
+});
 /**
  * Helper function to swap out config
  * @example stubExperience({experience: {component: ComponentType.PRIVACY_CENTER}})

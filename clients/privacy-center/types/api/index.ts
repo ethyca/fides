@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export { BannerEnabled } from "./models/BannerEnabled";
 export { ComponentType } from "./models/ComponentType";
 export type { Consent } from "./models/Consent";
 export { ConsentMechanism } from "./models/ConsentMechanism";
@@ -11,7 +10,7 @@ export type { ConsentOptionCreate } from "./models/ConsentOptionCreate";
 export type { ConsentPreferences } from "./models/ConsentPreferences";
 export type { ConsentPreferencesWithVerificationCode } from "./models/ConsentPreferencesWithVerificationCode";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
-export type { CurrentPrivacyPreferenceSchema } from "./models/CurrentPrivacyPreferenceSchema";
+export type { PreferencesSaved } from "./models/PreferencesSaved";
 export type { EmbeddedLineItem } from "./models/EmbeddedLineItem";
 export type { EmbeddedVendor } from "./models/EmbeddedVendor";
 export { EnforcementLevel } from "./models/EnforcementLevel";
@@ -22,13 +21,16 @@ export type { RecordsServedResponse } from "./models/RecordsServedResponse";
 export type { RecordConsentServedRequest } from "./models/RecordConsentServedRequest";
 export type { Page_PrivacyExperienceResponse_ } from "./models/Page_PrivacyExperienceResponse_";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
-export type { PrivacyNoticeHistorySchema } from "./models/PrivacyNoticeHistorySchema";
+export type { NoticeTranslationResponse } from "./models/NoticeTranslationResponse";
 export { PrivacyNoticeRegion } from "./models/PrivacyNoticeRegion";
 export type { PrivacyNoticeResponse } from "./models/PrivacyNoticeResponse";
 export type { PrivacyNoticeResponseWithUserPreferences } from "./models/PrivacyNoticeResponseWithUserPreferences";
 export type { PrivacyPreferencesRequest } from "./models/PrivacyPreferencesRequest";
-export type { SavePrivacyPreferencesResponse } from "./models/SavePrivacyPreferencesResponse";
 export { ServingComponent } from "./models/ServingComponent";
+export { SupportedLanguage } from "./models/SupportedLanguage";
+export type { GPPFieldMapping } from "./models/GPPFieldMapping";
+export type { GPPMechanismMapping } from "./models/GPPMechanismMapping";
+export type { PrivacyNoticeFramework } from "./models/PrivacyNoticeFramework";
 export type { TCFFeatureRecord } from "./models/TCFFeatureRecord";
 export type { TCFFeatureSave } from "./models/TCFFeatureSave";
 export type { TCFPurposeConsentRecord } from "./models/TCFPurposeConsentRecord";
