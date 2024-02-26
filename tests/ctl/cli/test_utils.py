@@ -211,6 +211,7 @@ class TestHandleAWSCredentialsOptions:
                 fides_config=test_config,
                 access_key_id=input_access_key_id,
                 secret_access_key=input_access_key,
+                session_token=None,
                 region=input_region,
                 credentials_id=input_credentials_id,
             )
@@ -229,6 +230,7 @@ class TestHandleAWSCredentialsOptions:
                 fides_config=test_config,
                 access_key_id=input_access_key_id,
                 secret_access_key=input_access_key,
+                session_token=None,
                 region=input_region,
                 credentials_id=input_credentials_id,
             )
@@ -237,7 +239,7 @@ class TestHandleAWSCredentialsOptions:
         self,
         test_config: FidesConfig,
     ) -> None:
-        "Check for an exception if credentials dont exist"
+        "Verify credentials specified in config dict"
         input_access_key = ""
         input_access_key_id = ""
         input_region = ""
@@ -246,6 +248,7 @@ class TestHandleAWSCredentialsOptions:
             fides_config=test_config,
             access_key_id=input_access_key_id,
             secret_access_key=input_access_key,
+            session_token=None,
             region=input_region,
             credentials_id=input_credentials_id,
         )
@@ -254,13 +257,14 @@ class TestHandleAWSCredentialsOptions:
             "aws_access_key_id": "redacted_id_override_in_tests",
             "aws_secret_access_key": "redacted_override_in_tests",
             "region_name": "us-east-1",
+            "aws_session_token": None,
         }
 
     def test_returns_input_dict(
         self,
         test_config: FidesConfig,
     ) -> None:
-        "Check for an exception if credentials dont exist"
+        "Verify credentials specified directly as an input args"
         input_access_key = "access_key"
         input_access_key_id = "access_key_id"
         input_region = "us-east-1"
@@ -269,6 +273,7 @@ class TestHandleAWSCredentialsOptions:
             fides_config=test_config,
             access_key_id=input_access_key_id,
             secret_access_key=input_access_key,
+            session_token=None,
             region=input_region,
             credentials_id=input_credentials_id,
         )
@@ -276,6 +281,32 @@ class TestHandleAWSCredentialsOptions:
             "aws_access_key_id": input_access_key_id,
             "aws_secret_access_key": input_access_key,
             "region_name": input_region,
+            "aws_session_token": None,
+        }
+
+    def test_session_token_temporary_credentials(
+        self,
+        test_config: FidesConfig,
+    ) -> None:
+        "Verify AWS temporary credential support, i.e. passing a session token"
+        input_access_key = "access_key"
+        input_access_key_id = "access_key_id"
+        input_region = "us-east-1"
+        session_token = "session_token"
+        input_credentials_id = ""
+        aws_config = utils.handle_aws_credentials_options(
+            fides_config=test_config,
+            access_key_id=input_access_key_id,
+            secret_access_key=input_access_key,
+            session_token=session_token,
+            region=input_region,
+            credentials_id=input_credentials_id,
+        )
+        assert aws_config == {
+            "aws_access_key_id": input_access_key_id,
+            "aws_secret_access_key": input_access_key,
+            "region_name": input_region,
+            "aws_session_token": session_token,
         }
 
 

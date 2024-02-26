@@ -105,11 +105,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.endpoints[collection_name].requests, action
         )
         if request:
-            logger.info(
+            logger.debug(
                 "Found matching endpoint to {} '{}' collection", action, collection_name
             )
         else:
-            logger.info(
+            logger.debug(
                 "Unable to find matching endpoint to {} '{}' collection",
                 action,
                 collection_name,
@@ -146,7 +146,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             # store action name for logging purposes
             self.action = action_type
 
-            logger.info(
+            logger.debug(
                 "Selecting '{}' action to perform masking request for '{}' collection.",
                 action_type,
                 self.collection_name,
@@ -319,7 +319,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, self.current_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", self.current_request.path)
+        logger.debug("Populated request params for {}", self.current_request.path)
 
         return saas_request_params
 
@@ -450,7 +450,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, update_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", update_request.path)
+        logger.debug("Populated request params for {}", update_request.path)
         return saas_request_params
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:

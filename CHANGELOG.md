@@ -15,13 +15,27 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.29.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.30.1...main)
+
+### Added
+- Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
+
+## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
+
+### Fixed
+- Configure logger correctly on worker initialization [#4624](https://github.com/ethyca/fides/pull/4624)
+
+
+## [2.30.0](https://github.com/ethyca/fides/compare/2.29.0...2.30.0)
 
 ### Added
 
 - Add enum and registry of supported languages [#4592](https://github.com/ethyca/fides/pull/4592)
 - Access and erasure support for Talkable [#4589](https://github.com/ethyca/fides/pull/4589)
+- Support temporary credentials in AWS generate + scan features [#4607](https://github.com/ethyca/fides/pull/4603), [#4608](https://github.com/ethyca/fides/pull/4608)
 - Add ability to store and read Fides cookie in Base64 format [#4556](https://github.com/ethyca/fides/pull/4556)
+- Structured logging for SaaS connector requests [#4594](https://github.com/ethyca/fides/pull/4594)
+- Added Fides.showModal() to fides.js to allow programmatic opening of consent modals [#4617](https://github.com/ethyca/fides/pull/4617)
 
 ### Fixed
 
