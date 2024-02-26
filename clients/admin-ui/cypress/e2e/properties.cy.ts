@@ -1,4 +1,5 @@
 import { stubPlus } from "cypress/support/stubs";
+
 import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
 
 describe("Properties page", () => {
