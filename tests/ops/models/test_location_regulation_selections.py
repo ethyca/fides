@@ -11,11 +11,9 @@ from fides.api.schemas.locations import PrivacyNoticeRegion, filter_regions_by_l
 def reset_location_regulation_selections(db):
     LocationRegulationSelections.set_selected_locations(db, [])
     LocationRegulationSelections.set_selected_regulations(db, [])
-    LocationRegulationSelections.set_selected_location_groups(db, [])
     yield
     LocationRegulationSelections.set_selected_locations(db, [])
     LocationRegulationSelections.set_selected_regulations(db, [])
-    LocationRegulationSelections.set_selected_location_groups(db, [])
 
 
 class TestLocationRegulationSelections:
@@ -53,6 +51,7 @@ class TestLocationRegulationSelections:
         assert len(db.query(LocationRegulationSelections).all()) == 1
         config_record_db = db.query(LocationRegulationSelections).first()
         assert config_record_db.selected_locations == ["us_ca", "fr"]
+        assert config_record_db.selected_location_groups == []
         assert config_record_db.selected_regulations == ["ccpa", "gdpr"]
         assert config_record_db.id == config_record.id
 
@@ -65,6 +64,7 @@ class TestLocationRegulationSelections:
             LocationRegulationSelections.create_or_update(db, data=data_dict)
         )
         assert new_config_record.selected_locations == ["us_co"]
+        assert config_record_db.selected_location_groups == []
         assert new_config_record.selected_regulations == [
             "ccpa",
             "gdpr",
@@ -119,24 +119,40 @@ class TestLocationRegulationSelections:
         }
 
         # ensure that values are deduplicated as expected
-        LocationRegulationSelections.set_selected_locations(
+        LocationRegulationSelections.set_selected_regulations(
             db, ["ccpa", "gdpr", "ccpa"]
         )
         assert LocationRegulationSelections.get_selected_regulations(db) == {
             "ccpa",
             "gdpr",
         }
+        assert LocationRegulationSelections.get_selected_location_groups(db) == set()
 
-        # set location groups
-        LocationRegulationSelections.set_selected_location_groups(
-            db, ["mexico_central_america", "mexico_central_america", "eea"]
+        # set locations that make up an entire location group
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "mx", "sv", "hn", "cr", "us_ca"]
         )
 
-        # Location groups returned as expected, also deduplicated
         assert LocationRegulationSelections.get_selected_location_groups(db) == {
             "mexico_central_america",
-            "eea",
         }
+        assert LocationRegulationSelections.get_selected_locations(db) == {
+            "gt",
+            "pa",
+            "ni",
+            "bz",
+            "mx",
+            "sv",
+            "hn",
+            "cr",
+            "us_ca",
+        }
+
+        # Set locations where we are shy of building a full location group
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "mx", "sv"]
+        )
+        assert LocationRegulationSelections.get_selected_location_groups(db) == set()
 
 
 class TestFilterRegionsByLocation:
@@ -155,11 +171,4 @@ class TestFilterRegionsByLocation:
 
         assert filter_regions_by_location(db, self.base_regions) == [
             PrivacyNoticeRegion.us_ca
-        ]
-
-    def test_location_groups_set(self, db):
-        LocationRegulationSelections.set_selected_location_groups(db, ["eea"])
-
-        assert filter_regions_by_location(db, self.base_regions) == [
-            PrivacyNoticeRegion.eea
         ]

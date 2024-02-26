@@ -60,9 +60,17 @@ class TestPrivacyNoticeModel:
         self,
         db,
         privacy_notice,
-        privacy_experience_overlay,
+        privacy_experience_overlay,  # Already has CA using the privacy notice
         privacy_experience_privacy_center_france,
     ):
+        privacy_experience_privacy_center_france.experience_config.privacy_notices.append(
+            privacy_notice
+        )
+        privacy_experience_privacy_center_france.experience_config.save(db)
+        # A french privacy experience is now using this notice, so it is surfaced as a configured region.
+        # No locations are set, so locations have no effect.
+        assert privacy_notice.configured_regions == [PrivacyNoticeRegion.fr]
+
         # Set TX as the configured location
         LocationRegulationSelections.set_selected_locations(db, ["us_tx"])
         assert privacy_notice.configured_regions == []
@@ -72,13 +80,8 @@ class TestPrivacyNoticeModel:
         )
         privacy_experience_overlay.experience_config.save(db)
 
-        # The CA region is not returned because it is not a configured location
+        # The Fr or CA regions are not returned because they are no longer configured locations.
         assert privacy_notice.configured_regions == []
-
-        privacy_experience_privacy_center_france.experience_config.privacy_notices.append(
-            privacy_notice
-        )
-        privacy_experience_privacy_center_france.experience_config.save(db)
 
         # Set CA as the configured location. FR is suppressed because it is not a configured location
         LocationRegulationSelections.set_selected_locations(db, ["us_ca"])
@@ -86,25 +89,34 @@ class TestPrivacyNoticeModel:
             PrivacyNoticeRegion.us_ca,
         ]
 
-        # Set privacy experience config to use just the EEA region
+        # Set privacy experience config to use just mexico central america region
         exp_config = privacy_experience_overlay.experience_config
         exp_config.update(
             db,
             data={
-                "regions": [PrivacyNoticeRegion.eea],
+                "regions": [PrivacyNoticeRegion.mexico_central_america],
                 "privacy_notice_ids": [privacy_notice.id],
             },
         )
+        db.refresh(exp_config)
 
-        # Set EEA location groups
-        LocationRegulationSelections.set_selected_location_groups(db, ["eea"])
-        # Now EEA shows up as a configured region for the privacy notice
-        assert privacy_notice.configured_regions == [PrivacyNoticeRegion.eea]
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "mx", "sv", "hn", "cr"]
+        )
+        assert LocationRegulationSelections.get_selected_location_groups(db) == {
+            "mexico_central_america"
+        }
+        # Now mexico_central_america shows up as a configured region for the privacy notice
+        assert privacy_notice.configured_regions == [
+            PrivacyNoticeRegion.mexico_central_america
+        ]
 
-        LocationRegulationSelections.set_selected_location_groups(db, [])
-        assert privacy_notice.configured_regions == []
-
+        # When we remove locations, we revert to having no location filtering
         LocationRegulationSelections.set_selected_locations(db, [])
+        assert privacy_notice.configured_regions == [
+            PrivacyNoticeRegion.fr,
+            PrivacyNoticeRegion.mexico_central_america,
+        ]
 
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """

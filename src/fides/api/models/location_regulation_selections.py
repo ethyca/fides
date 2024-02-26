@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Dict, Iterable, List, Set
 
 from sqlalchemy import (
     ARRAY,
@@ -109,8 +109,22 @@ class LocationRegulationSelections(Base):
         db: Session,
         selected_locations: Iterable[str],
     ) -> None:
-        """Utility method to set the selected locations"""
-        cls.create_or_update(db, data={"selected_locations": set(selected_locations)})
+        """Utility method to set the selected locations
+
+        Calculates "location groups" from locations and saves this too. Since an allowed region on a Privacy Experience
+        can be a location or a location group, precalculating location groups will make this a faster lookup.
+        """
+        selected_location_groups: Set[str] = group_locations_into_location_groups(
+            selected_locations
+        )
+
+        cls.create_or_update(
+            db,
+            data={
+                "selected_locations": set(selected_locations),
+                "selected_location_groups": selected_location_groups,
+            },
+        )
 
     @classmethod
     async def set_selected_locations_async(
@@ -118,9 +132,18 @@ class LocationRegulationSelections(Base):
         async_session: AsyncSession,
         selected_locations: Iterable[str],
     ) -> None:
-        """Utility method to set the selected locations"""
+        """Utility method to set the selected locations.  Location groups are calculated from locations and saved
+        here as well"""
+        selected_location_groups: Set[str] = group_locations_into_location_groups(
+            selected_locations
+        )
+
         await cls.create_or_update_async(
-            async_session, data={"selected_locations": set(selected_locations)}
+            async_session,
+            data={
+                "selected_locations": set(selected_locations),
+                "selected_location_groups": selected_location_groups,
+            },
         )
 
     @classmethod
@@ -152,35 +175,14 @@ class LocationRegulationSelections(Base):
             return set()
 
     @classmethod
-    def set_selected_location_groups(
-        cls,
-        db: Session,
-        selected_location_groups: Iterable[str],
-    ) -> None:
-        """Utility method to set the selected location groups"""
-        cls.create_or_update(
-            db, data={"selected_location_groups": set(selected_location_groups)}
-        )
-
-    @classmethod
-    async def set_selected_location_groups_async(
-        cls,
-        async_session: AsyncSession,
-        selected_location_groups: Iterable[str],
-    ) -> None:
-        """Utility method to set the selected location groups with an async session"""
-        await cls.create_or_update_async(
-            async_session,
-            data={"selected_location_groups": set(selected_location_groups)},
-        )
-
-    @classmethod
     def get_selected_location_groups(
         cls,
         db: Session,
     ) -> Set[str]:
         """
         Utility method to get the selected_locations_groups, returned as a Set.
+
+        Location Groups aren't saved directly, but as a side-effect of saving locations
         """
         record = db.query(cls).first()
         if record:
@@ -251,3 +253,18 @@ class LocationRegulationSelections(Base):
             if record:
                 return set(record.selected_regulations)
             return set()
+
+
+def group_locations_into_location_groups(saved_locations: Iterable[str]) -> Set[str]:
+    """Combines saved Locations into Location groups if applicable
+    All Locations must be present for a Location Group to be valid.
+    """
+    from fides.api.schemas.locations import location_group_to_location
+
+    saved_location_groups: List[str] = []
+
+    for location_group, mapped_locations in location_group_to_location.items():
+        if mapped_locations.issubset(saved_locations):
+            saved_location_groups.append(location_group)
+
+    return set(saved_location_groups)

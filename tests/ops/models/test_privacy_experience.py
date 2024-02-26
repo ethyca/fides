@@ -147,16 +147,12 @@ class TestExperienceConfig:
         # Now Italy is surfaced again because it is a configured location
         assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
 
-        # To mimic what the PATCH locations endpoint does, setting all individual
+        # Setting all individual
         # mexico_central_america_regions. Backend detects that these are all the
         # countries in the "mexico_central_america" group and saves the location group as well
         LocationRegulationSelections.set_selected_locations(
             db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
         )
-        LocationRegulationSelections.set_selected_location_groups(
-            db, ["mexico_central_america"]
-        )
-
         # Privacy Notice Regions can be saved at the Location or Location Group level. Let's
         # save a Location Group here.
         experience_config_modal.update(
@@ -187,7 +183,6 @@ class TestExperienceConfig:
         LocationRegulationSelections.set_selected_locations(
             db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr"]
         )
-        LocationRegulationSelections.set_selected_location_groups(db, [])
 
         assert experience_config_modal.all_regions == [
             PrivacyNoticeRegion.gt,
