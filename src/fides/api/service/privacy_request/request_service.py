@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from asyncio import sleep
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from httpx import AsyncClient
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
-from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.privacy_request import PrivacyRequestResponse
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 

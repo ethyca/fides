@@ -318,8 +318,7 @@ def get_privacy_request_results(
             masking_secrets: List[
                 MaskingSecretCache
             ] = masking_strategy.generate_secrets_for_cache()
-            for masking_secret in masking_secrets:
-                privacy_request.cache_masking_secret(masking_secret)
+            privacy_request.cache_masking_secrets(masking_secrets)
 
     run_privacy_request_task.delay(privacy_request.id).get(
         timeout=task_timeout,

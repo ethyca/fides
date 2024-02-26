@@ -407,7 +407,7 @@ class PrivacyRequest(
 
     def get_custom_privacy_request_field_map(
         self,
-    ) -> Dict[str, CustomPrivacyRequestField]:
+    ) -> Dict[str, Any]:
         if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
             return {
                 field.field_name: {
@@ -847,10 +847,8 @@ class PrivacyRequest(
                 self.id,
                 webhook.key,
             )
-            # Don't persist derived identities because they aren't provided directly
-            # by the end user
             db = Session.object_session(self)
-            self.persist_derived_identity(db, response_body.derived_identity)
+            self.persist_identity(db, response_body.derived_identity)
 
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
