@@ -18,7 +18,6 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.schemas.language import SupportedLanguage
 
