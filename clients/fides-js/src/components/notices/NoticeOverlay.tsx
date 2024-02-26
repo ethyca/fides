@@ -1,5 +1,5 @@
-import { h, FunctionComponent, Fragment } from "preact";
-import { useState, useCallback, useMemo } from "preact/hooks";
+import { h, Fragment, FunctionComponent } from "preact";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -119,7 +119,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const dispatchOpenOverlayEvent = useCallback(() => {
     dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.OVERLAY,
+      servingComponent: ServingComponent.MODAL,
     });
   }, [cookie, options.debug]);
 

@@ -44,7 +44,7 @@ const NoticeToggles = ({
                 notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
               }
             >
-              {notice.description}
+              {notice.translations[0].description}
             </DataUseToggle>
             {!isLast ? <Divider /> : null}
           </div>

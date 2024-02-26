@@ -61,9 +61,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   // If explicit "banner_description" or "banner_title" values are set, use
   // those to populate the banner. Otherwise, use the generic "description" and
   // "title" values that are shared with the modal component
+  // fixme- replace with lib methods
   const bannerDescription =
-    experience.banner_description || experience.description;
-  const bannerTitle = experience.banner_title || experience.title;
+    experience.translations[0].banner_description ||
+    experience.translations[0].description;
+  const bannerTitle =
+    experience.translations[0].banner_title || experience.translations[0].title;
 
   return (
     <div

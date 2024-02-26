@@ -2787,10 +2787,6 @@ describe("Fides-js TCF", () => {
           name: "Test",
           description: "A longer description",
           default_preference: "opt_out",
-          current_preference: null,
-          outdated_preference: null,
-          current_served: null,
-          outdated_served: null,
           purpose_consents: [
             {
               id: 4,

@@ -7,6 +7,7 @@ import {
   useRef,
 } from "preact/hooks";
 import {
+  ComponentType,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -75,7 +76,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: experience?.experience_config?.title || "",
+    title: experience?.experience_config?.translations[0].title || "", // fixme- use internationalization lib
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },
@@ -102,12 +103,23 @@ const Overlay: FunctionComponent<Props> = ({
     }
   }, [options, onOpen]);
 
+  const showBanner = useMemo(
+    () =>
+      !options.fidesDisableBanner &&
+      experience.experience_config?.component !== ComponentType.MODAL &&
+      shouldResurfaceConsent(experience, cookie) &&
+      !options.fidesEmbed,
+    [cookie, experience, options]
+  );
+
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      setBannerIsOpen(true);
+      if (showBanner) {
+        setBannerIsOpen(true);
+      }
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [setBannerIsOpen]);
+  }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
     window.Fides.showModal = handleOpenModal;
@@ -139,16 +151,7 @@ const Overlay: FunctionComponent<Props> = ({
       }
       window.Fides.showModal = defaultShowModal;
     };
-  }, [options.modalLinkId, options.debug, handleOpenModal]);
-
-  const showBanner = useMemo(
-    () =>
-      !options.fidesDisableBanner &&
-      experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie) &&
-      !options.fidesEmbed,
-    [cookie, experience, options]
-  );
+  }, [options.modalLinkId, options.debug, handleOpenModal, experience]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
