@@ -123,6 +123,7 @@ PrivacyNoticeRegion = Enum(
         ("sk", "sk"),  # slovakia
         ("fi", "fi"),  # finland
         ("se", "se"),  # sweden
+        ("gb", "gb"),  # great britain
         ("gb_eng", "gb_eng"),  # england
         ("gb_sct", "gb_sct"),  # scotland
         ("gb_wls", "gb_wls"),  # wales
