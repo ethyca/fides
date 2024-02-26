@@ -1,5 +1,5 @@
 import { FidesOptionsOverrides, OverrideOptions } from "./consent-types";
-import { LOCALE_REGEX } from "./i18n";
+import { LOCALE_REGEX } from "./i18n/i18n-constants";
 
 // Regex to validate a location string, which must:
 // 1) Start with a 2-3 character country code (e.g. "US")

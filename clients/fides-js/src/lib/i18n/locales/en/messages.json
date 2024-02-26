@@ -1,3 +1,7 @@
 {
-  "static.gpc.label": "Global Privacy Control"
+  "static.gpc": "Global Privacy Control",
+  "static.gpc.title": "Global Privacy Control detected",
+  "static.gpc.description": "Your global privacy control preference has been honored. You have been automatically opted out of data uses cases which adhere to global privacy control.",
+  "static.gpc.status.applied": "Applied",
+  "static.gpc.status.overridden": "Overridden"
 }

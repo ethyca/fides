@@ -50,25 +50,17 @@ describe("i18n-utils", () => {
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
 
-    // TODO: implement
     it("does not automatically detect the user's locale when the experience disables auto-detection", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
-      const mockExperienceNoAutoDetectLanguage = JSON.parse(
-        JSON.stringify(mockExperience)
-      );
-      mockExperienceNoAutoDetectLanguage.experience_config.auto_detect_language =
-        false;
+      const mockExpNoAutoDetect = JSON.parse(JSON.stringify(mockExperience));
+      mockExpNoAutoDetect.experience_config.auto_detect_language = false;
 
       const mockNavigator: Partial<Navigator> = {
         language: "es-419",
       };
 
-      initializeI18n(
-        mockI18n,
-        mockNavigator,
-        mockExperienceNoAutoDetectLanguage
-      );
+      initializeI18n(mockI18n, mockNavigator, mockExpNoAutoDetect);
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.activate).toHaveBeenCalledWith("en");

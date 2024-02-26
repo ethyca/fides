@@ -1,5 +1,7 @@
 import { FidesOptions, PrivacyExperience } from "../consent-types";
+import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
+import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
 
 /**
  * Statically load all the pre-localized dictionaries from the ./locales directory.
@@ -11,29 +13,6 @@ import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import messagesEn from "./locales/en/messages.json";
 import messagesEs from "./locales/es/messages.json";
 import messagesFr from "./locales/fr/messages.json";
-
-/**
- * Default locale to fallback to is always English ("en")
- */
-const DEFAULT_LOCALE: Locale = "en";
-
-/**
- * General-purpose regex used to validate a locale, as defined in RFC-5646
- * (see https://datatracker.ietf.org/doc/html/rfc5646)
- *
- * For our purposes we parse locales that are simple {language}-{region} codes like:
- *   "en-GB",
- *   "fr",
- *   "es-ES",
- *   "es-419",
- *
- * We also handle other codes like "zh-Hans-HK", but fallback to only capturing
- * the 2-3 letter language code in these variants instead of attempting to parse
- * out all the various combinations of languages, scripts, regions, variants...
- */
-export const LOCALE_REGEX =
-  /^([A-Za-z]{2,3})(?:(?:[_-]([A-Za-z0-9]{2,4}))?$|(?:(?:[_-]\w+)+))/;
-//  ^^^language^^^^   ^^^^^^^^^^region^^^^^^^^^^^^ ^^^^^^other^^^^^^
 
 /**
  * Helper function to extract all the translated messages from an
@@ -283,6 +262,10 @@ export function initializeI18n(
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
   const availableLocales = loadMessagesFromExperience(i18n, experience);
+  debugLog(
+    options?.debug,
+    `Loaded Fides i18n with available locales = ${availableLocales}`
+  );
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
   let userLocale = DEFAULT_LOCALE;
@@ -291,11 +274,16 @@ export function initializeI18n(
     !((experience as any)?.experience_config?.auto_detect_language === false)
   ) {
     userLocale = detectUserLocale(navigator, options);
+    debugLog(options?.debug, `Detected Fides i18n user locale = ${userLocale}`);
   }
 
   // Match the user locale to the "best" available locale from the experience API and activate it!
   const bestLocale = matchAvailableLocales(userLocale, availableLocales);
   i18n.activate(bestLocale);
+  debugLog(
+    options?.debug,
+    `Initialized fides-js i18n with best locale = ${bestLocale}`
+  );
 }
 
 /**

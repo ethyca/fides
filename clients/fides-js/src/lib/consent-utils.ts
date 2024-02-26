@@ -22,7 +22,7 @@ import { noticeHasConsentInCookie } from "./shared-consent-utils";
  */
 type ConsoleLogParameters = Parameters<typeof console.log>;
 export const debugLog = (
-  enabled: boolean,
+  enabled: boolean = false,
   ...args: ConsoleLogParameters
 ): void => {
   if (enabled) {
