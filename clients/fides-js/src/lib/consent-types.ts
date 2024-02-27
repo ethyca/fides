@@ -371,6 +371,7 @@ export type ExperienceConfig = {
   disabled?: boolean;
   dismissable?: boolean;
   allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
 
   /**
    * List of regions that apply to this ExperienceConfig.

@@ -1,8 +1,11 @@
 import {
   ExperienceConfig,
+  ExperienceConfigTranslation,
   FidesOptions,
   PrivacyExperience,
   PrivacyNotice,
+  PrivacyNoticeTranslation,
+  PrivacyNoticeWithPreference,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
@@ -53,7 +56,7 @@ function extractMessagesFromExperienceConfig(
   if (experienceConfig.translations) {
     experienceConfig.translations.forEach(
       // For each translation, extract each of the translated fields
-      (translation: any) => {
+      (translation: ExperienceConfigTranslation) => {
         const locale = translation.language;
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
@@ -108,7 +111,7 @@ function extractMessagesFromNotice(
   const extracted: Record<Locale, Messages> = {};
   const NOTICE_TRANSLATION_FIELDS = ["description", "title"] as const;
   if (notice?.translations) {
-    notice.translations.forEach((translation: any) => {
+    notice.translations.forEach((translation: PrivacyNoticeTranslation) => {
       // For each translation, extract each of the translated fields
       const locale = translation.language;
       const messages: Messages = {};
@@ -125,8 +128,8 @@ function extractMessagesFromNotice(
   } else {
     // For backwards-compatibility, when "translations" don't exist, look for
     // the fields on the PrivacyNotice itself
-    const locale = DEFAULT_LOCALE;
     const anyNotice = notice as any;
+    const locale = DEFAULT_LOCALE;
     const messages: Messages = {};
     if (typeof anyNotice.description === "string") {
       messages[`exp.notices.${notice.id}.description`] = anyNotice.description;
@@ -162,35 +165,34 @@ export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>
 ): Locale[] {
-  // TODO: update types to remove use of "any" in here!
-  const anyExperience = experience as any;
   const allMessages: Record<Locale, Messages> = {};
 
   // Extract messages from experience_config.translations
-  if (anyExperience?.experience_config) {
-    const extractedMessages: Record<Locale, Messages> =
-      extractMessagesFromExperienceConfig(anyExperience.experience_config);
-    Object.keys(extractedMessages).forEach((locale) => {
+  if (experience?.experience_config) {
+    const extracted: Record<Locale, Messages> =
+      extractMessagesFromExperienceConfig(experience.experience_config);
+    Object.keys(extracted).forEach((locale) => {
       allMessages[locale] = {
-        ...extractedMessages[locale],
+        ...extracted[locale],
         ...allMessages[locale],
       };
     });
   }
 
   // Extract messages from privacy_notices[].translations
-  if (anyExperience?.privacy_notices) {
-    // TODO: update types to remove use of "any" in here!
-    anyExperience.privacy_notices.forEach((notice: any) => {
-      const extractedMessages: Record<Locale, Messages> =
-        extractMessagesFromNotice(notice);
-      Object.keys(extractedMessages).forEach((locale) => {
-        allMessages[locale] = {
-          ...extractedMessages[locale],
-          ...allMessages[locale],
-        };
-      });
-    });
+  if (experience?.privacy_notices) {
+    experience.privacy_notices.forEach(
+      (notice: PrivacyNoticeWithPreference) => {
+        const extracted: Record<Locale, Messages> =
+          extractMessagesFromNotice(notice);
+        Object.keys(extracted).forEach((locale) => {
+          allMessages[locale] = {
+            ...extracted[locale],
+            ...allMessages[locale],
+          };
+        });
+      }
+    );
   }
 
   // Load all the extracted messages into the i18n module
@@ -285,10 +287,12 @@ export function initializeI18n(
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
   let userLocale = DEFAULT_LOCALE;
-  // TODO: update types and remove any
-  if (
-    !((experience as any)?.experience_config?.auto_detect_language === false)
-  ) {
+  if (experience.experience_config?.auto_detect_language === false) {
+    debugLog(
+      options?.debug,
+      "Auto-detection of Fides i18n user locale disabled!"
+    );
+  } else {
     userLocale = detectUserLocale(navigator, options);
     debugLog(options?.debug, `Detected Fides i18n user locale = ${userLocale}`);
   }
