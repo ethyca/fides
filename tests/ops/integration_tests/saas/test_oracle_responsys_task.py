@@ -4,8 +4,7 @@ from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
-#@pytest.mark.skip("Enterprise account only")
-@pytest.mark.integration_saas
+@pytest.mark.skip("Enterprise account only")
 class TestOracleResponsysConnector:
     def test_connection(self, oracle_responsys_runner: ConnectorRunner):
         oracle_responsys_runner.test_connection()
