@@ -160,7 +160,7 @@ export const experienceIsValid = (
     !(
       expConfig.component === ComponentType.MODAL ||
       expConfig.component === ComponentType.BANNER_AND_MODAL ||
-      expConfig.component !== ComponentType.TCF_OVERLAY
+      expConfig.component === ComponentType.TCF_OVERLAY
     )
   ) {
     debugLog(
