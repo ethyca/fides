@@ -16,9 +16,16 @@ import {
 } from "~/features/common/form/inputs";
 import WarningModal from "~/features/common/modals/WarningModal";
 import { BackButtonNonLink } from "~/features/common/nav/v2/BackButton";
-import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
+import {
+  getTranslationFormFields,
+  TranslationWithLanguageName,
+} from "~/features/privacy-experience/form/helpers";
 import { PrivacyExperienceConfigColumnLayout } from "~/features/privacy-experience/PrivacyExperienceForm";
-import { ExperienceConfigCreate, ExperienceTranslation } from "~/types/api";
+import {
+  ComponentType,
+  ExperienceConfigCreate,
+  ExperienceTranslation,
+} from "~/types/api";
 
 const PrivacyExperienceTranslationForm = ({
   translation,
@@ -35,6 +42,8 @@ const PrivacyExperienceTranslationForm = ({
     const { name, ...rest } = translation;
     return rest as ExperienceTranslation;
   }, [translation]);
+
+  const formConfig = getTranslationFormFields(values.component);
 
   const translationIndex = values.translations!.findIndex(
     (t) => t.language === translation.language
@@ -175,6 +184,24 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
+      {values.component === ComponentType.BANNER_AND_MODAL ? (
+        <>
+          <CustomTextInput
+            name={`translations.${translationIndex}.banner_title`}
+            id={`translations.${translationIndex}.banner_title`}
+            label="Banner title (optional)"
+            tooltip="A separate title for the banner (defaults to main title)"
+            variant="stacked"
+          />
+          <CustomTextArea
+            name={`translations.${translationIndex}.banner_description`}
+            id={`translations.${translationIndex}.banner_description`}
+            label="Banner description (optional)"
+            tooltip="A separate description for the banner (defaults to main description)"
+            variant="stacked"
+          />
+        </>
+      ) : null}
       <CustomTextInput
         name={`translations.${translationIndex}.accept_button_label`}
         id={`translations.${translationIndex}.accept_button_label`}
@@ -189,36 +216,47 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
-      <CustomTextInput
-        name={`translations.${translationIndex}.privacy_preferences_link_label`}
-        id={`translations.${translationIndex}.privacy_preferences_link_label`}
-        label={`"Manage privacy preferences" button label`}
-        variant="stacked"
-      />
-      <CustomTextInput
-        name={`translations.${translationIndex}.save_button_label`}
-        id={`translations.${translationIndex}.save_button_label`}
-        label={`"Save" button label`}
-        variant="stacked"
-      />
-      <CustomTextInput
-        name={`translations.${translationIndex}.acknowledge_button_label`}
-        id={`translations.${translationIndex}.acknowledge_button_label`}
-        label={`"Acknowledge" button label`}
-        variant="stacked"
-      />
-      <CustomTextInput
-        name={`translations.${translationIndex}.privacy_policy_link_label`}
-        id={`translations.${translationIndex}.privacy_policy_link_label`}
-        label="Privacy policy link label"
-        variant="stacked"
-      />
-      <CustomTextInput
-        name={`translations.${translationIndex}.privacy_policy_url`}
-        id={`translations.${translationIndex}.privacy_policy_url`}
-        label="Privacy policy link URL"
-        variant="stacked"
-      />
+      {formConfig.privacy_policy_link_label?.included ? (
+        <CustomTextInput
+          name={`translations.${translationIndex}.privacy_preferences_link_label`}
+          id={`translations.${translationIndex}.privacy_preferences_link_label`}
+          label={`"Manage privacy preferences" button label`}
+          variant="stacked"
+        />
+      ) : null}
+      {formConfig.save_button_label?.included ? (
+        <CustomTextInput
+          name={`translations.${translationIndex}.save_button_label`}
+          id={`translations.${translationIndex}.save_button_label`}
+          label={`"Save" button label`}
+          isRequired={formConfig.save_button_label.required}
+          variant="stacked"
+        />
+      ) : null}
+      {formConfig.acknowledge_button_label?.included ? (
+        <CustomTextInput
+          name={`translations.${translationIndex}.acknowledge_button_label`}
+          id={`translations.${translationIndex}.acknowledge_button_label`}
+          label={`"Acknowledge" button label`}
+          variant="stacked"
+        />
+      ) : null}
+      {formConfig.privacy_policy_link_label?.included ? (
+        <CustomTextInput
+          name={`translations.${translationIndex}.privacy_policy_link_label`}
+          id={`translations.${translationIndex}.privacy_policy_link_label`}
+          label="Privacy policy link label"
+          variant="stacked"
+        />
+      ) : null}
+      {formConfig.privacy_policy_url?.included ? (
+        <CustomTextInput
+          name={`translations.${translationIndex}.privacy_policy_url`}
+          id={`translations.${translationIndex}.privacy_policy_url`}
+          label="Privacy policy link URL"
+          variant="stacked"
+        />
+      ) : null}
     </PrivacyExperienceConfigColumnLayout>
   );
 };

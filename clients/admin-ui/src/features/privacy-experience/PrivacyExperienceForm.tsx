@@ -80,7 +80,6 @@ export const PrivacyExperienceForm = ({
   const [editingStyle, setEditingStyle] = useState<boolean>(false);
   const { values, setFieldValue, dirty, isValid, isSubmitting } =
     useFormikContext<ExperienceConfigCreate>();
-
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
@@ -152,6 +151,7 @@ export const PrivacyExperienceForm = ({
         options={componentTypeOptions}
         label="Experience Type"
         variant="stacked"
+        isDisabled={!!values.component}
         isRequired
       />
       <Collapse
@@ -211,10 +211,13 @@ export const PrivacyExperienceForm = ({
         setValues={(newValues) => setFieldValue("translations", newValues)}
         idField="language"
         canDeleteItem={(item) => !item.is_default}
-        allItems={allLanguages.map((lang) => ({
-          language: lang.id as SupportedLanguage,
-          is_default: false,
-        }))}
+        allItems={allLanguages
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((lang) => ({
+            language: lang.id as SupportedLanguage,
+            is_default: false,
+          }))}
         getItemLabel={getTranslationDisplayName}
         createNewValue={(opt) => ({
           language: opt.value as SupportedLanguage,

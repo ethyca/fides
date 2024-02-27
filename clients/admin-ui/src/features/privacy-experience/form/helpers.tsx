@@ -1,5 +1,5 @@
 import {
-  // ComponentType,
+  ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
@@ -68,5 +68,68 @@ export const transformConfigResponseToCreate = (
     translations: config.translations
       ? config.translations.map((t) => transformTranslationResponseToCreate(t))
       : [],
+  };
+};
+
+type TranslationFieldConfig = {
+  included: boolean;
+  required?: boolean;
+};
+
+type TranslationFormConfig = {
+  [Property in keyof ExperienceTranslationCreate]?: TranslationFieldConfig;
+};
+
+export const getTranslationFormFields = (
+  component: ComponentType
+): TranslationFormConfig => {
+  if (component === ComponentType.PRIVACY_CENTER) {
+    return {
+      title: { included: true, required: true },
+      description: { included: true, required: true },
+      save_button_label: { included: true, required: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+    };
+  }
+  if (component === ComponentType.MODAL) {
+    return {
+      title: { included: true, required: true },
+      description: { included: true, required: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      acknowledge_button_label: { included: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+      privacy_preferences_link_label: { included: true },
+    };
+  }
+
+  if (component === ComponentType.BANNER_AND_MODAL) {
+    return {
+      title: { included: true, required: true },
+      banner_title: { included: true },
+      description: { included: true, required: true },
+      banner_description: { included: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      acknowledge_button_label: { included: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+      privacy_preferences_link_label: { included: true },
+    };
+  }
+  return {
+    title: { included: true, required: true },
+    description: { included: true, required: true },
+    accept_button_label: { included: true, required: true },
+    reject_button_label: { included: true, required: true },
+    save_button_label: { included: true },
+    acknowledge_button_label: { included: true },
+    privacy_policy_link_label: { included: true },
+    privacy_policy_url: { included: true },
+    privacy_preferences_link_label: { included: true },
   };
 };

@@ -50,6 +50,7 @@ const validationSchema = Yup.object().shape({
       description: Yup.string().required().label("Description"),
       accept_button_label: Yup.string().required().label("Accept button label"),
       reject_button_label: Yup.string().required().label("Reject button label"),
+      privacy_policy_url: Yup.string().url().nullable(),
       is_default: Yup.boolean(),
     })
   ),
