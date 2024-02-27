@@ -48,7 +48,7 @@ describe("Privacy notice driven consent", () => {
 
     // Experience intercept
     cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
-      fixture: "consent/experience.json",
+      fixture: "consent/experience_privacy_center.json",
     }).as("getExperience");
 
     // Patch privacy preference intercept
@@ -200,7 +200,7 @@ describe("Privacy notice driven consent", () => {
     describe("cookie enforcement", () => {
       beforeEach(() => {
         // First seed the browser with the cookies that are listed in the notices
-        cy.fixture("consent/experience.json").then((data) => {
+        cy.fixture("consent/experience_privacy_center.json").then((data) => {
           const notices: PrivacyNoticeResponseWithUserPreferences[] =
             data.items[0].privacy_notices;
 
