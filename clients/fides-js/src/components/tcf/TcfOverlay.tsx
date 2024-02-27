@@ -199,9 +199,10 @@ const updateCookie = async (
 };
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
-  fidesRegionString,
-  experience,
   options,
+  experience,
+  i18n,
+  fidesRegionString,
   cookie,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
@@ -291,6 +292,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     <Overlay
       options={options}
       experience={experience}
+      i18n={i18n}
       cookie={cookie}
       onVendorPageClick={() => {
         setActiveTabIndex(2);

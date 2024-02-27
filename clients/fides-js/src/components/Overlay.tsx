@@ -6,22 +6,23 @@ import {
   useMemo,
   useRef,
 } from "preact/hooks";
+
+import { defaultShowModal } from "../fides";
+import { useA11yDialog } from "../lib/a11y-dialog";
 import {
   ComponentType,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
-
 import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
-
-import "./fides.css";
-import { useA11yDialog } from "../lib/a11y-dialog";
-import ConsentModal from "./ConsentModal";
-import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
+import { useHasMounted } from "../lib/hooks";
+import type { I18n } from "../lib/i18n";
+
+import ConsentModal from "./ConsentModal";
 import ConsentContent from "./ConsentContent";
-import { defaultShowModal } from "../fides";
+import "./fides.css";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -37,6 +38,7 @@ interface RenderModalFooter {
 interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
+  i18n: I18n;
   cookie: FidesCookie;
   onOpen: () => void;
   onDismiss: () => void;
@@ -47,8 +49,9 @@ interface Props {
 }
 
 const Overlay: FunctionComponent<Props> = ({
-  experience,
   options,
+  experience,
+  i18n,
   cookie,
   onOpen,
   onDismiss,
@@ -188,6 +191,7 @@ const Overlay: FunctionComponent<Props> = ({
           title={attributes.title}
           className="fides-embed"
           experience={experience.experience_config}
+          i18n={i18n}
           renderModalFooter={() =>
             renderModalFooter({
               onClose: handleCloseModalAfterSave,
@@ -201,6 +205,7 @@ const Overlay: FunctionComponent<Props> = ({
         <ConsentModal
           attributes={attributes}
           experience={experience.experience_config}
+          i18n={i18n}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>
             renderModalFooter({

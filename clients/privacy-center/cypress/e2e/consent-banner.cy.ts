@@ -1437,16 +1437,10 @@ describe("Consent overlay", () => {
     describe("when both banner is shown and modal link element exists", () => {
       beforeEach(() => {
         cy.fixture("consent/test_banner_options.json").then((config) => {
-          stubConfig({
-            experience: {
-              experience_config: {
-                ...config.experience.experience_config,
-                ...{ component: ComponentType.BANNER_AND_MODAL },
-              },
-            },
-          });
+          stubConfig({ experience: config.experience });
         });
       });
+
       it("closes banner and opens modal when modal link is clicked", () => {
         cy.get("div#fides-banner").should("be.visible");
         cy.get("div#fides-banner").within(() => {
@@ -1459,8 +1453,6 @@ describe("Consent overlay", () => {
       });
 
       it("opens modal even after modal has been previously opened and closed", () => {
-        cy.reload();
-
         cy.contains("button", "Manage preferences").click();
 
         // Save new preferences
