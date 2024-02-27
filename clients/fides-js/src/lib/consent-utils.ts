@@ -148,12 +148,20 @@ export const experienceIsValid = (
     );
     return false;
   }
+  const expConfig = effectiveExperience.experience_config;
+  if (!expConfig) {
+    debugLog(
+      options.debug,
+      "No experience config found for experience. Skipping overlay initialization."
+    );
+    return false;
+  }
   if (
-    effectiveExperience.experience_config?.component !== ComponentType.MODAL &&
-    effectiveExperience.experience_config?.component !==
-      ComponentType.BANNER_AND_MODAL &&
-    effectiveExperience.experience_config?.component !==
-      ComponentType.TCF_OVERLAY
+    !(
+      expConfig.component === ComponentType.MODAL ||
+      expConfig.component === ComponentType.BANNER_AND_MODAL ||
+      expConfig.component !== ComponentType.TCF_OVERLAY
+    )
   ) {
     debugLog(
       options.debug,
@@ -162,8 +170,7 @@ export const experienceIsValid = (
     return false;
   }
   if (
-    effectiveExperience.experience_config?.component ===
-      ComponentType.BANNER_AND_MODAL &&
+    expConfig.component === ComponentType.BANNER_AND_MODAL &&
     !(
       effectiveExperience.privacy_notices &&
       effectiveExperience.privacy_notices.length > 0
@@ -175,14 +182,8 @@ export const experienceIsValid = (
     );
     return false;
   }
-  // TODO: add condition for not rendering TCF
-  if (!effectiveExperience.experience_config) {
-    debugLog(
-      options.debug,
-      "No experience config found with for experience. Skipping overlay initialization."
-    );
-    return false;
-  }
+
+  // TODO (PROD-1597): add condition for not rendering TCF
 
   return true;
 };
