@@ -43,7 +43,7 @@ export const transformTranslationResponseToCreate = (
   response: ExperienceTranslationResponse
 ): ExperienceTranslationCreate => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { experience_config_history_id, ...rest } = response;
+  const { privacy_experience_config_history_id, ...rest } = response;
   return {
     ...rest,
     description: response.description ?? "",
