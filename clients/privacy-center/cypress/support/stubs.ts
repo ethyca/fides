@@ -100,7 +100,7 @@ export const stubConfig = (
     ) {
       // this mocks the client-side experience fetch
       const experienceMock = mockExperienceApiResp || {
-        fixture: "consent/experience_overlay.json",
+        fixture: "consent/experience_banner_modal.json",
       };
       const experienceResp =
         mockExperienceApiResp === OVERRIDE.UNDEFINED
