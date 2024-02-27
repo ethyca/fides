@@ -153,7 +153,11 @@ class TestSaasConnector:
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_input_values(
-        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+        self,
+        mock_send: Mock,
+        db: Session,
+        saas_example_config,
+        saas_example_connection_config,
     ):
         """
         Verifies that a row is returned if the request is provided
@@ -180,7 +184,7 @@ class TestSaasConnector:
 
         # this request requires the email identity in the filter postprocessor so we include it here
         privacy_request = PrivacyRequest(id="123")
-        privacy_request.persist_identity(db, identity(email="test@example.com"))
+        privacy_request.persist_identity(db, Identity(email="test@example.com"))
 
         assert connector.retrieve_data(
             traversal_node,

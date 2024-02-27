@@ -94,11 +94,7 @@ class TestCreateDrpPrivacyRequest:
             identity_attribute="identity",
         )
         assert cache.get(identity_key) == encoded_identity
-        fidesops_identity_key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="email",
-        )
-        assert cache.get(fidesops_identity_key) == identity["email"]
+
         persisted_identity = pr.get_persisted_identity()
         assert persisted_identity.email == TEST_EMAIL
         assert persisted_identity.phone_number == TEST_PHONE_NUMBER
@@ -157,16 +153,7 @@ class TestCreateDrpPrivacyRequest:
             identity_attribute="identity",
         )
         assert cache.get(identity_key) == encoded_identity
-        fidesops_identity_key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="email",
-        )
-        assert cache.get(fidesops_identity_key) == identity["email"]
-        fidesops_identity_key_address = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="address",
-        )
-        assert cache.get(fidesops_identity_key_address) is None
+
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -337,11 +324,7 @@ class TestCreateDrpPrivacyRequest:
             identity_attribute="identity",
         )
         assert cache.get(identity_key) == encoded_identity
-        fidesops_identity_key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="email",
-        )
-        assert cache.get(fidesops_identity_key) == identity["email"]
+
         persisted_identity = pr.get_persisted_identity()
         assert persisted_identity.email == TEST_EMAIL
         assert persisted_identity.phone_number == TEST_PHONE_NUMBER

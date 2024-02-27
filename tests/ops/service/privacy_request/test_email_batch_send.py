@@ -158,9 +158,9 @@ class TestConsentEmailBatchSend:
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_send_consent_email_no_consent_or_privacy_preferences_saved(
         self,
-        db,
         requeue_privacy_requests,
         send_single_consent_email,
+        db,
         privacy_request_awaiting_consent_email_send,
     ) -> None:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
