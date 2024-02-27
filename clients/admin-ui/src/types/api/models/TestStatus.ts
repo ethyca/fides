@@ -6,7 +6,7 @@
  * An enumeration.
  */
 export enum TestStatus {
-  PASSED = 'passed',
-  FAILED = 'failed',
-  UNTESTED = 'untested',
+  PASSED = "passed",
+  FAILED = "failed",
+  UNTESTED = "untested",
 }

@@ -8,4 +8,3 @@
 export type MessagingServiceDetailsMailchimpTransactional = {
   email_from: string;
 };
-

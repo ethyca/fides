@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClassificationStatus } from './ClassificationStatus';
-import type { ClassifyCollection } from './ClassifyCollection';
+import type { ClassificationStatus } from "./ClassificationStatus";
+import type { ClassifyCollection } from "./ClassifyCollection";
 
 export type ClassifyDataset = {
   fides_key: string;
@@ -11,4 +11,3 @@ export type ClassifyDataset = {
   status: ClassificationStatus;
   collections: Array<ClassifyCollection>;
 };
-

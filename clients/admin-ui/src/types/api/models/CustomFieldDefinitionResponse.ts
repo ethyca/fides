@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AllowedTypes } from './AllowedTypes';
-import type { ResourceTypes } from './ResourceTypes';
+import type { AllowedTypes } from "./AllowedTypes";
+import type { ResourceTypes } from "./ResourceTypes";
 
 export type CustomFieldDefinitionResponse = {
   name: string;
@@ -16,4 +16,3 @@ export type CustomFieldDefinitionResponse = {
   id: string;
   created_at: string;
 };
-

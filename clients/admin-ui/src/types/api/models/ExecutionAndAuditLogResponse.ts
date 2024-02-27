@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from './ActionType';
-import type { AuditLogAction } from './AuditLogAction';
-import type { ExecutionLogStatus } from './ExecutionLogStatus';
-import type { FieldsAffectedResponse } from './FieldsAffectedResponse';
+import type { ActionType } from "./ActionType";
+import type { AuditLogAction } from "./AuditLogAction";
+import type { ExecutionLogStatus } from "./ExecutionLogStatus";
+import type { FieldsAffectedResponse } from "./FieldsAffectedResponse";
 
 /**
  * Schema for the combined ExecutionLogs and Audit Logs
@@ -17,8 +17,7 @@ export type ExecutionAndAuditLogResponse = {
   fields_affected?: Array<FieldsAffectedResponse>;
   message?: string;
   action_type?: ActionType;
-  status?: (ExecutionLogStatus | AuditLogAction);
+  status?: ExecutionLogStatus | AuditLogAction;
   updated_at?: string;
   user_id?: string;
 };
-

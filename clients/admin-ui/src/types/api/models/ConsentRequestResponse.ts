@@ -8,4 +8,3 @@
 export type ConsentRequestResponse = {
   consent_request_id: string;
 };
-

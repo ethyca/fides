@@ -5,4 +5,3 @@
 export type VendorIds = {
   vendor_ids: Array<string>;
 };
-

@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from './ComponentType';
-import type { ExperienceMeta } from './ExperienceMeta';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ComponentType } from "./ComponentType";
+import type { ExperienceMeta } from "./ExperienceMeta";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * Privacy Experience Response only containing region, component, id, and meta information
@@ -15,4 +15,3 @@ export type PrivacyExperienceMetaResponse = {
   component?: ComponentType;
   meta?: ExperienceMeta;
 };
-

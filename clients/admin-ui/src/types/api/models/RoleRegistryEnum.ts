@@ -12,9 +12,9 @@
  * Contributor - Can't configure storage and messaging
  */
 export enum RoleRegistryEnum {
-  OWNER = 'owner',
-  VIEWER_AND_APPROVER = 'viewer_and_approver',
-  VIEWER = 'viewer',
-  APPROVER = 'approver',
-  CONTRIBUTOR = 'contributor',
+  OWNER = "owner",
+  VIEWER_AND_APPROVER = "viewer_and_approver",
+  VIEWER = "viewer",
+  APPROVER = "approver",
+  CONTRIBUTOR = "contributor",
 }

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SupportedLanguage } from './SupportedLanguage';
+import type { SupportedLanguage } from "./SupportedLanguage";
 
 /**
  * Adds the historical id to the translation for the response
@@ -62,4 +62,3 @@ export type ExperienceTranslationResponse = {
    */
   privacy_experience_config_history_id: string;
 };
-

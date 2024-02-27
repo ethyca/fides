@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SupportedLanguage } from './SupportedLanguage';
+import type { SupportedLanguage } from "./SupportedLanguage";
 
 /**
  * Experience Translation Schema
@@ -58,4 +58,3 @@ export type ExperienceTranslation = {
    */
   description?: string;
 };
-

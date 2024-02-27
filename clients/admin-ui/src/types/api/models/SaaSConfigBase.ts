@@ -10,4 +10,3 @@ export type SaaSConfigBase = {
   name: string;
   type: string;
 };
-

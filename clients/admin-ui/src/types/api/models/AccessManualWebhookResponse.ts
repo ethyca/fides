@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionConfigurationResponse } from './ConnectionConfigurationResponse';
-import type { ManualWebhookField } from './ManualWebhookField';
+import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
+import type { ManualWebhookField } from "./ManualWebhookField";
 
 /**
  * Expected response for accessing Access Manual Webhooks
@@ -13,4 +13,3 @@ export type AccessManualWebhookResponse = {
   connection_config: ConnectionConfigurationResponse;
   id: string;
 };
-

@@ -14,4 +14,3 @@ export type ManualAction = {
   get?: Array<string>;
   update?: any;
 };
-

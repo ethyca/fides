@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { FidesMeta } from './FidesMeta';
+import type { FidesMeta } from "./FidesMeta";
 
 /**
  * The DatasetField resource model.
@@ -28,4 +28,3 @@ export type DatasetField = {
    */
   fields?: Array<DatasetField>;
 };
-

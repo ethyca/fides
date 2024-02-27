@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DrpAction } from './DrpAction';
+import type { DrpAction } from "./DrpAction";
 
 /**
  * Drp data rights response
@@ -13,4 +13,3 @@ export type DrpDataRightsResponse = {
   actions: Array<DrpAction>;
   user_relationships?: Array<string>;
 };
-

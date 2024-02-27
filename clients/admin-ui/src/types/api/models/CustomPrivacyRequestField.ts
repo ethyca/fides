@@ -9,4 +9,3 @@ export type CustomPrivacyRequestField = {
   label: string;
   value?: any;
 };
-

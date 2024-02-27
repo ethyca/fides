@@ -6,8 +6,8 @@
  * An enumeration.
  */
 export enum SystemType {
-  SAAS = 'saas',
-  DATABASE = 'database',
-  MANUAL = 'manual',
-  EMAIL = 'email',
+  SAAS = "saas",
+  DATABASE = "database",
+  MANUAL = "manual",
+  EMAIL = "email",
 }

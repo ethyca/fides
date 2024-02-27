@@ -8,4 +8,3 @@
 export type DataUpload = {
   location: string;
 };
-

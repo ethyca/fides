@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { TCMobileData } from './TCMobileData';
+import type { TCMobileData } from "./TCMobileData";
 
 /**
  * Decode response schema for returning TC Mobile Data
@@ -10,4 +10,3 @@ import type { TCMobileData } from './TCMobileData';
 export type TCDecode = {
   fides_mobile_data?: TCMobileData;
 };
-

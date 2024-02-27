@@ -10,10 +10,10 @@
  * Only add here, do not remove
  */
 export enum ServingComponent {
-  OVERLAY = 'overlay',
-  BANNER = 'banner',
-  MODAL = 'modal',
-  PRIVACY_CENTER = 'privacy_center',
-  TCF_OVERLAY = 'tcf_overlay',
-  TCF_BANNER = 'tcf_banner',
+  OVERLAY = "overlay",
+  BANNER = "banner",
+  MODAL = "modal",
+  PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
+  TCF_BANNER = "tcf_banner",
 }

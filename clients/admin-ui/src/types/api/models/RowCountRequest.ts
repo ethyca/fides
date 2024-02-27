@@ -8,4 +8,3 @@
 export type RowCountRequest = {
   row_count: number;
 };
-

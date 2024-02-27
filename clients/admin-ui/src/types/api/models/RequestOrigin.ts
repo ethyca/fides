@@ -11,10 +11,10 @@
  * Only add here, do not remove
  */
 export enum RequestOrigin {
-  PRIVACY_CENTER = 'privacy_center',
-  OVERLAY = 'overlay',
-  MODAL = 'modal',
-  BANNER_AND_MODAL = 'banner_and_modal',
-  API = 'api',
-  TCF_OVERLAY = 'tcf_overlay',
+  PRIVACY_CENTER = "privacy_center",
+  OVERLAY = "overlay",
+  MODAL = "modal",
+  BANNER_AND_MODAL = "banner_and_modal",
+  API = "api",
+  TCF_OVERLAY = "tcf_overlay",
 }

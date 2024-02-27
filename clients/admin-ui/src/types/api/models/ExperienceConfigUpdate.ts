@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceTranslation } from './ExperienceTranslation';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ExperienceTranslation } from "./ExperienceTranslation";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * The schema to update an ExperienceConfig via the API.
@@ -24,4 +24,3 @@ export type ExperienceConfigUpdate = {
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;
 };
-

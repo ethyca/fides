@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionConfigurationResponse } from './ConnectionConfigurationResponse';
-import type { Cookies } from './Cookies';
-import type { DataFlow } from './DataFlow';
-import type { DataResponsibilityTitle } from './DataResponsibilityTitle';
-import type { LegalBasisForProfilingEnum } from './LegalBasisForProfilingEnum';
-import type { PrivacyDeclarationResponse } from './PrivacyDeclarationResponse';
-import type { SystemMetadata } from './SystemMetadata';
-import type { UserResponse } from './UserResponse';
+import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
+import type { Cookies } from "./Cookies";
+import type { DataFlow } from "./DataFlow";
+import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
+import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
+import type { PrivacyDeclarationResponse } from "./PrivacyDeclarationResponse";
+import type { SystemMetadata } from "./SystemMetadata";
+import type { UserResponse } from "./UserResponse";
 
 /**
  * Extension of base pydantic response model to include additional relationship fields that
@@ -190,4 +190,3 @@ export type SystemResponse = {
    */
   data_stewards?: Array<UserResponse>;
 };
-
