@@ -1342,6 +1342,9 @@ dataset:
       data_categories: [ system.operations ]
     - name: custom_privacy_request_fields_approved_by
       data_categories: [ system.operations ]
+    - name: encryption_key
+      data_categories: [ system.operations ]
+    
   - name: privacyrequesterror
     data_categories: []
     fields:
