@@ -16,14 +16,14 @@ import type { UserConsentPreference } from './UserConsentPreference';
  * are using the Notice
  */
 export type PrivacyNoticeResponseWithRegions = {
-  name?: string;
-  notice_key?: string;
+  name: string;
+  notice_key: string;
   internal_description?: string;
-  consent_mechanism?: ConsentMechanism;
-  data_uses?: Array<string>;
-  enforcement_level?: EnforcementLevel;
-  disabled?: boolean;
-  has_gpc_flag?: boolean;
+  consent_mechanism: ConsentMechanism;
+  data_uses: Array<string>;
+  enforcement_level: EnforcementLevel;
+  disabled: boolean;
+  has_gpc_flag: boolean;
   framework?: PrivacyNoticeFramework;
   default_preference?: UserConsentPreference;
   id: string;

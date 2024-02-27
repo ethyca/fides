@@ -60,6 +60,6 @@ export type ExperienceTranslationResponse = {
   /**
    * The versioned artifact of the translation and its Experience Config. Should be supplied when saving privacy preferences for additional context.
    */
-  experience_config_history_id: string;
+  privacy_experience_config_history_id: string;
 };
 

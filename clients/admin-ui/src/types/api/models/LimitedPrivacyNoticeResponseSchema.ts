@@ -13,15 +13,15 @@ import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
 export type LimitedPrivacyNoticeResponseSchema = {
   id: string;
   name: string;
-  notice_key?: string;
-  data_uses?: Array<string>;
-  consent_mechanism?: ConsentMechanism;
+  notice_key: string;
+  data_uses: Array<string>;
+  consent_mechanism: ConsentMechanism;
   /**
    * A property calculated by observing which Experiences have linked this Notice
    */
   configured_regions?: Array<PrivacyNoticeRegion>;
   systems_applicable?: boolean;
-  disabled?: boolean;
+  disabled: boolean;
   framework?: PrivacyNoticeFramework;
 };
 

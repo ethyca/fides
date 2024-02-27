@@ -21,7 +21,10 @@ import {
   selectPageSize,
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
+import {
+  ExperienceConfigListViewResponse,
+  ScopeRegistryEnum,
+} from "~/types/api";
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
 import JavaScriptTag from "./JavaScriptTag";
@@ -41,13 +44,13 @@ const PrivacyExperiencesTable = () => {
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
 
-  const handleRowClick = ({ id }: ExperienceConfigResponse) => {
+  const handleRowClick = ({ id }: ExperienceConfigListViewResponse) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
     }
   };
 
-  const columns: Column<ExperienceConfigResponse>[] = useMemo(
+  const columns: Column<ExperienceConfigListViewResponse>[] = useMemo(
     () => [
       { Header: "Location", accessor: "regions", Cell: LocationCell },
       {
@@ -115,7 +118,7 @@ const PrivacyExperiencesTable = () => {
           />
         </Restrict>
       </Flex>
-      <FidesTable<ExperienceConfigResponse>
+      <FidesTable<ExperienceConfigListViewResponse>
         columns={columns}
         data={privacyExperiences}
         onRowClick={userCanUpdate ? handleRowClick : undefined}

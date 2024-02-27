@@ -9,7 +9,8 @@ import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
  * The schema to update an ExperienceConfig via the API.
  *
  * Note that component cannot be updated once its created.
- * Translations, regions, and privacy_notice_ids must be supplied or they will be removed.
+ * Translations, regions, and privacy_notice_ids must be supplied or they will be removed.  They are
+ * required in the request to hopefully make their removal intentional.
  *
  * Experience Config Updates are also re-validated with the ExperienceConfigCreate
  * schema after patch dry updates are applied.
