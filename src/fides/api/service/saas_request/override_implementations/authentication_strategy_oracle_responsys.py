@@ -1,5 +1,4 @@
 from typing import Dict, Optional, cast
-from loguru import logger
 
 from requests import PreparedRequest, post
 
