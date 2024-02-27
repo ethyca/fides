@@ -180,6 +180,22 @@ class TestPrivacyNoticeModel:
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
 
+        orig_count = db.query(PrivacyNotice).count()
+        original_translations_count = db.query(NoticeTranslation).count()
+
+        dry_update_data = {
+            "name": "updated name",
+            "translations": [
+                {
+                    "language": SupportedLanguage.english,
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        }
+
+        privacy_notice.dry_update(data=dry_update_data)
+
         updated_privacy_notice = privacy_notice.update(
             db,
             data={
@@ -193,6 +209,10 @@ class TestPrivacyNoticeModel:
                 ],
             },
         )
+
+        assert db.query(PrivacyNotice).count() == orig_count
+        assert db.query(NoticeTranslation).count() == original_translations_count
+
         # assert our returned object is updated as we expect
         assert updated_privacy_notice.name == "updated name" != old_name
         assert updated_privacy_notice.data_uses == old_data_uses
@@ -291,21 +311,27 @@ class TestPrivacyNoticeModel:
         assert len(PrivacyNoticeHistory.all(db)) == 1
         privacy_notice_updated_at = privacy_notice.updated_at
 
+        orig_count = db.query(PrivacyNotice).count()
+        original_translations_count = db.query(NoticeTranslation).count()
+
+        dry_update_data = {
+            "translations": [
+                {
+                    "language": SupportedLanguage.english,
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                },
+                {
+                    "language": SupportedLanguage.spanish,
+                    "title": "¡Ejemplo de aviso de privacidad!",
+                },
+            ]
+        }
+        privacy_notice.dry_update(data=dry_update_data)
+
         privacy_notice.update(
             db,
-            data={
-                "translations": [
-                    {
-                        "language": SupportedLanguage.english,
-                        "title": "Example privacy notice",
-                        "description": "user&#x27;s description &lt;script /&gt;",
-                    },
-                    {
-                        "language": SupportedLanguage.spanish,
-                        "title": "¡Ejemplo de aviso de privacidad!",
-                    },
-                ],
-            },
+            data=dry_update_data,
         )
 
         # assert we have expected db records

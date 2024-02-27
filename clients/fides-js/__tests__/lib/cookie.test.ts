@@ -265,6 +265,7 @@ describe("saveFidesCookie", () => {
   );
 
   // DEFER: known issue https://github.com/ethyca/fides/issues/2072
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip.each([
     {
       url: "https://privacy.subdomain.example.co.uk",

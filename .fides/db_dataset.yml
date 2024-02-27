@@ -1091,12 +1091,12 @@ dataset:
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
-    - name: custom_asset_id
-      data_categories: [system.operations]
     - name: disabled
       data_categories: [ system.operations ]
     - name: dismissable
       data_categories: [system.operations]
+    - name: auto_detect_language
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: name
@@ -1122,14 +1122,14 @@ dataset:
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
-    - name: custom_asset_id
-      data_categories: [system.operations]
     - name: description
       data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: auto_detect_language
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: is_default
@@ -1994,6 +1994,8 @@ dataset:
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: auto_detect_language
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: name

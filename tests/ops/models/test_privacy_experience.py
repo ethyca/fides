@@ -4,6 +4,7 @@ import pytest
 
 from fides.api.models.privacy_experience import (
     ComponentType,
+    ExperienceTranslation,
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
@@ -91,7 +92,7 @@ class TestExperienceConfig:
 
         # Historical record versions translation and notice combined
         history = translation.histories[0]
-        assert translation.experience_config_history_id == history.id
+        assert translation.privacy_experience_config_history_id == history.id
 
         assert history.accept_button_label == "Accept all"
         assert history.acknowledge_button_label == "OK"
@@ -155,6 +156,38 @@ class TestExperienceConfig:
         config_created_at = config.created_at
         config_updated_at = config.updated_at
 
+        orig_count = db.query(PrivacyExperienceConfig).count()
+        orig_translation_count = db.query(ExperienceTranslation).count()
+
+        update_data = {
+            "component": "banner_and_modal",
+            "name": "Updated Privacy Experience Config",
+            "allow_language_selection": True,
+            "translations": [  # Contrived, only supplying one translation when allow language selection is True
+                {
+                    "language": SupportedLanguage.english,
+                    "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
+                    "privacy_preferences_link_label": "Manage preferences",
+                    "privacy_policy_link_label": "View our privacy policy",
+                    "privacy_policy_url": "http://example.com/privacy",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Control your privacy",
+                    "accept_button_label": "Accept all",
+                    "acknowledge_button_label": "OK",
+                    "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
+                    "banner_title": "Control Your Privacy",
+                }
+            ],
+        }
+        config.dry_update(data=update_data)
+        config.dry_update_translations(
+            [translation for translation in update_data["translations"]]
+        )
+
+        assert orig_count == db.query(PrivacyExperienceConfig).count()
+        assert orig_translation_count == db.query(ExperienceTranslation).count()
+
         config.update(
             db=db,
             data={
@@ -181,6 +214,10 @@ class TestExperienceConfig:
         )
         db.refresh(config)
 
+        # Asserting dry update did not get added to the db
+        assert db.query(PrivacyExperienceConfig).count() == orig_count
+        assert db.query(ExperienceTranslation).count() == orig_translation_count
+
         assert config.name == "Updated Privacy Experience Config"
         assert config.allow_language_selection is True
         assert config.created_at == config_created_at
@@ -195,7 +232,7 @@ class TestExperienceConfig:
         )[1]
         assert history.name == "Updated Privacy Experience Config"
         assert history.allow_language_selection is True
-        assert translation.experience_config_history_id == history.id
+        assert translation.privacy_experience_config_history_id == history.id
 
         old_history = translation.histories.order_by(
             PrivacyExperienceConfigHistory.created_at

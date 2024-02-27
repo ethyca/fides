@@ -199,9 +199,10 @@ const updateCookie = async (
 };
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
-  fidesRegionString,
-  experience,
   options,
+  experience,
+  i18n,
+  fidesRegionString,
   cookie,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
@@ -291,6 +292,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     <Overlay
       options={options}
       experience={experience}
+      i18n={i18n}
       cookie={cookie}
       onVendorPageClick={() => {
         setActiveTabIndex(2);
@@ -361,7 +363,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               firstButton={
                 <Button
                   buttonType={ButtonType.SECONDARY}
-                  label={experience.experience_config?.save_button_label}
+                  label={
+                    experience.experience_config?.translations[0]
+                      .save_button_label
+                  }
                   onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                   className="fides-save-button"
                 />

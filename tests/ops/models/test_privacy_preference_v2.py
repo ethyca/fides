@@ -23,7 +23,7 @@ class TestPrivacyPreference:
                 "method": "button",
                 "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                     0
-                ].experience_config_history_id,
+                ].privacy_experience_config_history_id,
                 "privacy_experience_id": privacy_experience_privacy_center.id,
                 "preference": "opt_in",
                 "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
