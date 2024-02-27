@@ -19,12 +19,14 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import _ from "lodash";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetPropertiesQuery } from "~/features/properties/property.slice";
 import { Page_Property_, Property } from "~/types/api";
 
+import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
 import AddPropertyButton from "./AddPropertyButton";
 import PropertyActions from "./PropertyActions";
 
@@ -78,7 +80,7 @@ export const PropertiesTable = () => {
     setTotalPages,
     resetPageIndexToDefault,
   } = useServerSidePagination();
-
+  const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState<string>();
 
   const updateGlobalFilter = (searchTerm: string) => {
@@ -154,7 +156,9 @@ export const PropertiesTable = () => {
     },
   });
 
-  const onRowClick = () => {};
+  const onRowClick = (property: Property) => {
+    router.push(`${PROPERTIES_ROUTE}/${property.key}`);
+  };
 
   if (isLoading || isLoadingHealthCheck) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;

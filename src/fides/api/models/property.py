@@ -12,6 +12,10 @@ CONFIG = get_config()
 
 
 class Property(Base):
+    """
+    This class serves as a model for digital properties, such as websites or other online platforms.
+    """
+
     @declared_attr
     def __tablename__(self) -> str:
         return "plus_property"

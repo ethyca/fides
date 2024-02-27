@@ -21,6 +21,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.ORGANIZATION_UPDATE,
   ScopeRegistryEnum.PRIVACY_NOTICE_READ,
   ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
+  ScopeRegistryEnum.PROPERTY_READ,
   ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
   ScopeRegistryEnum.CONFIG_READ,
   ScopeRegistryEnum.CONFIG_UPDATE,

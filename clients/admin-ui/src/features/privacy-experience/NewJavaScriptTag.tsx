@@ -62,7 +62,10 @@ const NewJavaScriptTag = ({ property }: Props) => {
         size="xs"
         marginRight="10px"
         icon={<GearLightIcon />}
-        onClick={modal.onOpen}
+        onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+          e.stopPropagation();
+          modal.onOpen();
+        }}
       />
       <Modal
         isOpen={modal.isOpen}

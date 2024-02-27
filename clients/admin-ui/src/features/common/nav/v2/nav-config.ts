@@ -98,7 +98,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Properties",
         path: routes.PROPERTIES_ROUTE,
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
         requiresFlag: "properties",
       },
       {
@@ -108,13 +108,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
       {
-        title: "Privacy notices",
+        title: "Notices",
         path: routes.PRIVACY_NOTICES_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
       {
-        title: "Privacy experience",
+        title: "Experiences",
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
