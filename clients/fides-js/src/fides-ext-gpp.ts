@@ -28,7 +28,11 @@ import {
 } from "./lib/consent-utils";
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import type { Fides } from "./lib/initialize";
-import type { OverrideOptions } from "./lib/consent-types";
+import type {
+  CookieKeyConsent,
+  OverrideOptions,
+  PrivacyNoticeWithPreference,
+} from "./lib/consent-types";
 import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
 import { FidesEvent } from "./fides";
 import {
@@ -49,6 +53,34 @@ declare global {
     __gppLocator?: Window;
   }
 }
+
+/**
+ * Special GPP util method to determine if user has existing prefs, including those on the cookie or fides string.
+ * Specifically, this method does not consider legacy consent has an existing pref, since they aren't relevant for GPP.
+ * @param consent: CookieKeyConsent | undefined
+ * @param fides_string: string | undefined
+ * @param notices: Array<PrivacyNoticeWithPreference> | undefined
+ * @return boolean
+ */
+const userHasExistingPrefs = (
+  consent: CookieKeyConsent | undefined,
+  fides_string: string | undefined,
+  notices: Array<PrivacyNoticeWithPreference> | undefined
+): boolean => {
+  if (!consent) {
+    return false;
+  }
+  if (fides_string) {
+    return true;
+  }
+  return Boolean(
+    notices &&
+      Object.entries(consent).some(
+        ([key, val]) =>
+          key in notices.map((i) => i.notice_key) && val !== undefined
+      )
+  );
+};
 
 /**
  * Wrapper around setting a TC string on the CMP API object.
@@ -127,14 +159,24 @@ export const initializeGppCmpApi = () => {
     }
   });
 
-  window.addEventListener("FidesUIShown", () => {
+  window.addEventListener("FidesUIShown", (event) => {
     // Set US GPP notice fields
     const { experience } = window.Fides;
     if (isPrivacyExperience(experience)) {
-      if (allNoticesAreDefaultOptIn(experience.privacy_notices)) {
+      // set signal status to ready only for users with no existing prefs and if notices are all opt-in by default
+      if (
+        allNoticesAreDefaultOptIn(experience.privacy_notices) &&
+        !userHasExistingPrefs(
+          event.detail.consent,
+          event.detail.fides_string,
+          experience.privacy_notices
+        )
+      ) {
+        cmpApi.setSignalStatus(SignalStatus.READY);
+      } else {
         cmpApi.setSignalStatus(SignalStatus.NOT_READY);
-        cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
       }
+      cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
       const sectionsChanged = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
