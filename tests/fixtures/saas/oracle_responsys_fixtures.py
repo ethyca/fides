@@ -8,6 +8,7 @@ import pytest
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
+    generate_random_phone_number,
 )
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -35,9 +36,22 @@ def oracle_responsys_identity_email(saas_config) -> str:
     )
 
 
+@pytest.fixture(scope="session")
+def oracle_responsys_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "oracle_responsys.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
+
+
 @pytest.fixture
 def oracle_responsys_erasure_identity_email() -> str:
     return generate_random_email()
+
+
+@pytest.fixture
+def oracle_responsys_erasure_identity_phone_number() -> str:
+    return generate_random_phone_number()
 
 
 @pytest.fixture(scope="function")
@@ -53,6 +67,7 @@ def oracle_responsys_token(oracle_responsys_secrets) -> Generator:
 @pytest.fixture
 def oracle_responsys_erasure_data(
     oracle_responsys_erasure_identity_email: str,
+    oracle_responsys_erasure_identity_phone_number: str,
     oracle_responsys_token: str,
     oracle_responsys_secrets
 ) -> Generator:
@@ -66,9 +81,9 @@ def oracle_responsys_erasure_data(
     }
     member_body = {
         "recordData": {
-            "fieldNames": ["email_address_"],
+            "fieldNames": ["email_address_","mobile_number_"],
             "records": [
-                [oracle_responsys_erasure_identity_email]
+                [oracle_responsys_erasure_identity_email, oracle_responsys_erasure_identity_phone_number]
             ],
             "mapTemplateName": None
         },
@@ -78,7 +93,7 @@ def oracle_responsys_erasure_data(
             "textValue": "T",
             "insertOnNoMatch": True,
             "matchColumnName1": "email_address_",
-            "updateOnMatch": "NO_UPDATE",
+            "updateOnMatch": "UPDATE",
             "defaultPermissionStatus": "OPTIN"
         }
     }
