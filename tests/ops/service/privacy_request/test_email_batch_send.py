@@ -26,6 +26,7 @@ from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cac
 from fides.config import get_config
 from tests.fixtures.application_fixtures import (
     _create_privacy_request_for_policy,
+    _create_privacy_request_for_policy_no_identities,
     privacy_preference_history_us_ca_provide,
 )
 
@@ -84,7 +85,7 @@ def third_privacy_request_awaiting_erasure_email_send(
     db: Session, erasure_policy: Policy
 ) -> PrivacyRequest:
     """Add a third erasure privacy request w/ no identity in this state for these tests"""
-    privacy_request = _create_privacy_request_for_policy(
+    privacy_request = _create_privacy_request_for_policy_no_identities(
         db,
         erasure_policy,
     )
@@ -994,12 +995,6 @@ class TestErasureEmailBatchSend:
         queued for a consent email doesn't trigger an erasure email.
         """
         # third_privacy_request_awaiting_erasure_email_send has no identities
-        cache = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=third_privacy_request_awaiting_erasure_email_send.id
-        )
-        for key in all_keys:
-            cache.delete(key)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
@@ -1085,12 +1080,6 @@ class TestErasureEmailBatchSend:
         queued for a consent email doesn't trigger an erasure email.
         """
         # third_privacy_request_awaiting_erasure_email_send has no identities
-        cache = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=third_privacy_request_awaiting_erasure_email_send.id
-        )
-        for key in all_keys:
-            cache.delete(key)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete

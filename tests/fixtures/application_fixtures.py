@@ -1272,6 +1272,46 @@ def _create_privacy_request_for_policy(
     )
     return pr
 
+def _create_privacy_request_for_policy_no_identities(
+    db: Session,
+    policy: Policy,
+    status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
+    email_identity: Optional[str] = "test@example.com",
+) -> PrivacyRequest:
+    data = {
+        "external_id": f"ext-{str(uuid4())}",
+        "requested_at": datetime(
+            2018,
+            12,
+            31,
+            hour=2,
+            minute=30,
+            second=23,
+            microsecond=916482,
+            tzinfo=timezone.utc,
+        ),
+        "status": status,
+        "origin": f"https://example.com/",
+        "policy_id": policy.id,
+        "client_id": policy.client_id,
+    }
+    if status != PrivacyRequestStatus.pending:
+        data["started_processing_at"] = datetime(
+            2019,
+            1,
+            1,
+            hour=1,
+            minute=45,
+            second=55,
+            microsecond=393185,
+            tzinfo=timezone.utc,
+        )
+    pr = PrivacyRequest.create(
+        db=db,
+        data=data,
+    )
+    return pr
+
 
 @pytest.fixture(scope="function")
 def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
