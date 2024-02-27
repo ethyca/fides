@@ -22,6 +22,7 @@ import {
 import { makeStub } from "./lib/gpp/stub";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
 import {
+  allNoticesAreDefaultOptIn,
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
@@ -127,13 +128,13 @@ export const initializeGppCmpApi = () => {
   });
 
   window.addEventListener("FidesUIShown", () => {
-    // fixme- update this to "ready" if no existing preferences and notices are all opt-out (all are default opted in)
-    cmpApi.setSignalStatus(SignalStatus.NOT_READY);
-    cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
-
     // Set US GPP notice fields
     const { experience } = window.Fides;
     if (isPrivacyExperience(experience)) {
+      if (allNoticesAreDefaultOptIn(experience.privacy_notices)) {
+        cmpApi.setSignalStatus(SignalStatus.NOT_READY);
+        cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
+      }
       const sectionsChanged = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,

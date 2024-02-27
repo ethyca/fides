@@ -98,7 +98,7 @@ describe("Fides-js GPP extension", () => {
             expect(data.eventName).to.eql("listenerRegistered");
             const { cmpDisplayStatus, signalStatus, gppString } = data.pingData;
             expect(cmpDisplayStatus).to.eql("visible");
-            expect(signalStatus).to.eql("not ready");
+            expect(signalStatus).to.eql("ready");
             expect(gppString).to.eql("DBAA"); // empty string, header only
           });
 
@@ -355,7 +355,7 @@ describe("Fides-js GPP extension", () => {
           .its("lastCall.args")
           .then(([data, success]) => {
             expect(success).to.eql(true);
-            expect(data.signalStatus).to.eql("not ready");
+            expect(data.signalStatus).to.eql("ready");
           });
       });
     });
