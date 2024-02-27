@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
+- Access and Erasure support for Oracle Responsys [#4618](https://github.com/ethyca/fides/pull/4628)
 
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
 
