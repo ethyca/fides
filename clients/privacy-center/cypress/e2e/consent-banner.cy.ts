@@ -1166,7 +1166,7 @@ describe("Consent overlay", () => {
 
         describe("when custom experience fn is provided in Fides.init()", () => {
           it("should skip calling Fides API cor experience and instead call the custom fn", () => {
-            cy.fixture("consent/experience.json").then((privacyExperience) => {
+            cy.fixture("consent/experience_privacy_center.json").then((privacyExperience) => {
               const apiOptions = {
                 /* eslint-disable @typescript-eslint/no-unused-vars */
                 getPrivacyExperienceFn: async (
