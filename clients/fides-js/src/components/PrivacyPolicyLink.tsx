@@ -1,15 +1,19 @@
 import { h } from "preact";
 import { ExperienceConfig } from "../lib/consent-types";
+import type { I18n } from "../lib/i18n";
 
 const PrivacyPolicyLink = ({
   experience,
+  i18n
 }: {
   experience?: ExperienceConfig;
+  i18n: I18n;
 }) => {
-  if (
-    !experience?.privacy_policy_link_label ||
-    !experience?.privacy_policy_url
-  ) {
+
+  // TODO: support checking if label doesn't exist
+  const label = i18n.t("exp.privacy_policy_link_label");
+  const url = i18n.t("exp.privacy_policy_url");
+  if ( !label || !url ) {
     return null;
   }
 
@@ -23,12 +27,12 @@ const PrivacyPolicyLink = ({
       }}
     >
       <a
-        href={experience.privacy_policy_url}
+        href={url}
         rel="noopener noreferrer"
         target="_blank"
         className="fides-privacy-policy"
       >
-        {experience.privacy_policy_link_label}
+        {label}
       </a>
     </div>
   );

@@ -79,7 +79,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: experience?.experience_config?.translations[0].title || "", // fixme- use internationalization lib
+    title: i18n.t("exp.title") || "",
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },

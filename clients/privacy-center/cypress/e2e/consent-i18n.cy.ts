@@ -78,9 +78,9 @@ describe("Consent i18n", () => {
     title: "Administrar sus preferencias de consentimiento",
     description: "Usamos cookies y métodos similares",
     save_button_label: "Guardar",
-    reject_button_label: "Opt out of all",
-    accept_button_label: "Opt in to all",
-    privacy_policy_link_label: "Privacy Policy",
+    reject_button_label: "No participar en ninguna",
+    accept_button_label: "Participar en todas",
+    privacy_policy_link_label: "Política de privacidad",
     privacy_policy_url: "https://privacy.example.com/",
   };
 
@@ -130,9 +130,8 @@ describe("Consent i18n", () => {
       );
       cy.get("#fides-button-group").contains(expected.reject_button_label);
       cy.get("#fides-button-group").contains(expected.accept_button_label);
-      // TODO (PROD-1597): troubleshoot bug with privacy policy link
-      // cy.get("#fides-privacy-policy-link").contains(translation.privacy_policy_link_label);
-      // cy.get("#fides-privacy-policy-link").should("have.attr", "href", translation.privacy_policy_url);
+      cy.get("#fides-privacy-policy-link").contains(expected.privacy_policy_link_label);
+      cy.get("#fides-privacy-policy-link a").should("have.attr", "href", expected.privacy_policy_url);
 
       // untested
       // "acknowledge_button_label": "OK",
@@ -156,9 +155,8 @@ describe("Consent i18n", () => {
       cy.get(".fides-modal-button-group").contains(
         expected.accept_button_label
       );
-      // TODO (PROD-1597): troubleshoot bug with privacy policy link
-      // cy.get("#fides-privacy-policy-link").contains(translation.privacy_policy_link_label);
-      // cy.get("#fides-privacy-policy-link").should("have.attr", "href", translation.privacy_policy_url);
+      cy.get("#fides-privacy-policy-link").contains(expected.privacy_policy_link_label);
+      cy.get("#fides-privacy-policy-link a").should("have.attr", "href", expected.privacy_policy_url);
     });
   };
 
@@ -192,13 +190,12 @@ describe("Consent i18n", () => {
       it.skip("localizes privacy_center components in the correct locale", () => {});
     });
 
-    // TODO (PROD-1597): localize fides-js components
     describe(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json");
         testBannerLocalization(SPANISH_BANNER);
-        // openAndTestModalLocalization(SPANISH_MODAL);
-        // testModalNoticesLocalization(SPANISH_NOTICES);
+        openAndTestModalLocalization(SPANISH_MODAL);
+        testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {

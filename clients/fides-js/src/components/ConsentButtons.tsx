@@ -44,7 +44,7 @@ export const ConsentButtons = ({
       </div>
     ) : null}
     {includePrivacyPolicy ? (
-      <PrivacyPolicyLink experience={experienceConfig} />
+      <PrivacyPolicyLink experience={experienceConfig} i18n={i18n} />
     ) : null}
     <div
       className={

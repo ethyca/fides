@@ -9,7 +9,7 @@ import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
 
 export interface ConsentContentProps {
-  title: HTMLAttributes<HTMLHeadingElement>;
+  heading: HTMLAttributes<HTMLHeadingElement>;
   experience: ExperienceConfig;
   i18n: I18n;
   children: ComponentChildren;
@@ -19,7 +19,7 @@ export interface ConsentContentProps {
 }
 
 const ConsentModal = ({
-  title,
+  heading,
   className,
   experience,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO (PROD-1597): disabled while integrating with API
@@ -29,6 +29,8 @@ const ConsentModal = ({
   onVendorPageClick,
 }: ConsentContentProps) => {
   const showGpcBadge = getConsentContext().globalPrivacyControl;
+  const title = i18n.t("exp.title");
+  const description = i18n.t("exp.description");
 
   return (
     <Fragment>
@@ -40,10 +42,10 @@ const ConsentModal = ({
         <div className="fides-modal-body">
           <div
             data-testid="fides-modal-title"
-            {...title}
+            {...heading}
             className="fides-modal-title"
           >
-            {experience.translations[0].title}
+            {title}
           </div>
           <p
             data-testid="fides-modal-description"
@@ -51,7 +53,7 @@ const ConsentModal = ({
           >
             <ExperienceDescription
               onVendorPageClick={onVendorPageClick}
-              description={experience.translations[0].description}
+              description={description}
               allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>
