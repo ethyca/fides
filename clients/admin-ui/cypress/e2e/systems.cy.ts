@@ -32,7 +32,7 @@ describe("System management page", () => {
 
   it("Can navigate to the system management page", () => {
     cy.visit("/");
-    cy.getByTestId("View systems-nav-link").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.wait("@getSystems");
     cy.getByTestId("system-management");
   });
