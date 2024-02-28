@@ -53,7 +53,7 @@
             {
               "language": "en",
               "description": "Provide opt-out consent for the use of data in ways that may be considered “data sales” under US state privacy regulations.",
-              "privacy_notice_history_id": "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e"
+              "privacy_notice_history_id": "pri_notice-history-analytics-en-000"
             }
           ]
         },
@@ -79,7 +79,7 @@
             {
               "language": "en",
               "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
-              "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707"
+              "privacy_notice_history_id": "pri_notice-history-advertising-en-000"
             }
           ]
         },
@@ -102,7 +102,7 @@
             {
               "language": "en",
               "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
-              "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e"
+              "privacy_notice_history_id": "pri_notice-history-essential-en-000"
             }
           ]
         }

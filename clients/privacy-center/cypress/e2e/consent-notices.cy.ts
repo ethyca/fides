@@ -9,9 +9,9 @@ const VERIFICATION_CODE = "112358";
 const PRIVACY_NOTICE_ID_1 = "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061";
 const PRIVACY_NOTICE_ID_2 = "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821";
 const PRIVACY_NOTICE_ID_3 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
-const PRIVACY_NOTICE_HISTORY_ID_1 = "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e";
-const PRIVACY_NOTICE_HISTORY_ID_2 = "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707";
-const PRIVACY_NOTICE_HISTORY_ID_3 = "pri_b09058a7-9f54-4360-8da5-4521e8975d4e";
+const PRIVACY_NOTICE_HISTORY_ID_1 = "pri_notice-history-analytics-en-000";
+const PRIVACY_NOTICE_HISTORY_ID_2 = "pri_notice-history-advertising-en-000";
+const PRIVACY_NOTICE_HISTORY_ID_3 = "pri_notice-history-essential-en-000";
 const PRIVACY_CONFIG_HISTORY_ID = "pri_28b66138-e92e-43b7-b2aa-8507cf5fb900";
 const GEOLOCATION_API_URL = "https://www.example.com/location";
 const SETTINGS = {
@@ -131,7 +131,7 @@ describe("Privacy notice driven consent", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
-        const { preferences, code, method, privacy_experience_id: id } = body;
+        const { preferences, code, method, privacy_experience_config_history_id: id } = body;
         expect(method).to.eql("save");
         expect(code).to.eql(VERIFICATION_CODE);
         expect(id).to.eql(PRIVACY_CONFIG_HISTORY_ID);
