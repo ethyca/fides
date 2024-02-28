@@ -14,103 +14,142 @@
     ]
   },
   "experience": {
-    "id": "132345243",
-    "created_at": "2023-04-24T21:29:08.870351+00:00",
-    "updated_at": "2023-04-24T21:29:08.870351+00:00",
     "region": "us_ca",
     "experience_config": {
       "translations": [
         {
           "language": "en",
-          "accept_button_label": "Accept Test",
+          "accept_button_label": "Opt in to all",
           "acknowledge_button_label": "OK",
-          "banner_title": "Manage your consent",
-          "description": "This test website is overriding the banner description label.",
+          "banner_description": "[banner] We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+          "banner_title": "[banner] Manage your consent preferences",
+          "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
           "is_default": true,
-          "privacy_policy_link_label": "Privacy policy",
-          "privacy_policy_url": "https://privacy.ethyca.com/",
+          "privacy_policy_link_label": "Privacy Policy",
+          "privacy_policy_url": "https://privacy.example.com/",
           "privacy_preferences_link_label": "Manage preferences",
-          "reject_button_label": "Reject Test",
-          "save_button_label": "Save test",
-          "title": "Manage your consent",
-          "privacy_experience_config_history_id": "2345324"
-        }
+          "reject_button_label": "Opt out of all",
+          "save_button_label": "Save",
+          "title": "Manage your consent preferences",
+          "privacy_experience_config_history_id": "pri_exp-history-banner-modal-en-000"
+        },
+        {
+          "language": "es-MX",
+          "accept_button_label": "Participar en todas",
+          "acknowledge_button_label": "Aceptar",
+          "banner_description": "[banner] Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+          "banner_title": "[banner] Administrar sus preferencias de consentimiento",
+          "description": "Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+          "is_default": true,
+          "privacy_policy_link_label": "Política de privacidad",
+          "privacy_policy_url": "https://privacy.example.com/",
+          "privacy_preferences_link_label": "Administrar preferencias",
+          "reject_button_label": "No participar en ninguna",
+          "save_button_label": "Guardar",
+          "title": "Administrar sus preferencias de consentimiento",
+          "privacy_experience_config_history_id": "pri_exp-history-banner-modal-es-mx-000"}
       ],
+      "language": "en",
       "dismissable": true,
-      "allow_language_selection": false,
+      "allow_language_selection": true,
+      "auto_detect_language": true,
       "disabled": false,
-      "id": "2348571y34",
+      "id": "pri_exp-banner-modal-000",
       "component": "banner_and_modal",
-      "created_at": "2023-04-24T21:29:08.870351+00:00",
-      "updated_at": "2023-04-24T21:29:08.870351+00:00"
+      "created_at": "2024-01-01T12:00:00.000000+00:00",
+      "updated_at": "2024-01-01T12:00:00.000000+00:00"
     },
+    "id": "pri_exp-000",
+    "created_at": "2024-01-01T12:00:00.000000+00:00",
+    "updated_at": "2024-01-01T12:00:00.000000+00:00",
     "privacy_notices": [
       {
-        "name": "Test privacy notice",
-        "internal_description": "a test sample privacy notice configuration for internal use",
-        "consent_mechanism": "opt_in",
-        "default_preference": "opt_out",
-        "has_gpc_flag": false,
-        "disabled": false,
-        "origin": "12435134",
-        "data_uses": ["advertising", "third_party_sharing"],
-        "enforcement_level": "system_wide",
-        "id": "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-        "created_at": "2023-04-24T21:29:08.870351+00:00",
-        "updated_at": "2023-04-24T21:29:08.870351+00:00",
+        "name": "Advertising",
         "notice_key": "advertising",
+        "internal_description": null,
+        "origin": null,
+        "consent_mechanism": "opt_in",
+        "data_uses": ["advertising.first_party.contextual"],
+        "enforcement_level": "system_wide",
+        "disabled": false,
+        "has_gpc_flag": false,
+        "id": "pri_notice-advertising-000",
+        "created_at": "2024-01-01T12:00:00.000000+00:00",
+        "updated_at": "2024-01-01T12:00:00.000000+00:00",
+        "default_preference": "opt_out",
         "cookies": [],
         "translations": [
           {
             "language": "en",
-            "title": "Test privacy notice",
-            "description": "a test sample privacy notice configuration",
-            "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4f"
+            "title": "Advertising",
+            "description": "This website uses marketing cookies and services to deliver personalized advertisements, promotions, and offers that are relevant to you. They help optimize ad delivery, measure campaign effectiveness, and enable advertisers to reach specific target audiences.",
+            "privacy_notice_history_id": "pri_notice-history-advertising-en-000"
+          },
+          {
+            "language": "es-MX",
+            "title": "Mercadotecnia",
+            "description": "Este sitio web usa cookies y servicios de mercadotecnia para entregar anuncios, promociones y ofertas personalizadas que son relevantes para usted. Estos datos ayudan a optimizar la entrega de anuncios, medir la eficacia de las campañas y permitir a los anunciantes llegar a audiencias objetivo específicas.",
+            "privacy_notice_history_id": "pri_notice-history-advertising-en-000"
           }
         ]
       },
       {
-        "name": "Test privacy notice opt out",
-        "internal_description": "a test sample privacy notice configuration for internal use",
-        "consent_mechanism": "opt_out",
-        "default_preference": "opt_in",
-        "has_gpc_flag": false,
-        "disabled": false,
-        "origin": "12435134",
-        "data_uses": ["analytics", "third_party_sharing"],
-        "enforcement_level": "system_wide",
-        "id": "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-        "created_at": "2023-04-24T21:29:08.870351+00:00",
-        "updated_at": "2023-04-24T21:29:08.870351+00:00",
+        "name": "Analytics",
         "notice_key": "analytics_opt_out",
-        "cookies": [],
+        "internal_description": null,
+        "origin": null,
+        "consent_mechanism": "opt_out",
+        "data_uses": ["analytics.reporting.ad_performance"],
+        "enforcement_level": "system_wide",
+        "disabled": false,
+        "has_gpc_flag": false,
+        "id": "pri_notice-analytics-000",
+        "created_at": "2024-01-01T12:00:00.000000+00:00",
+        "updated_at": "2024-01-01T12:00:00.000000+00:00",
+        "default_preference": "opt_in",
+        "cookies": [{ "name": "_ga", "path": null, "domain": null }],
         "translations": [
           {
             "language": "en",
-            "title": "Test privacy notice opt out",
-            "description": "a test sample privacy notice configuration",
-            "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e89123fd"
+            "title": "Analytics",
+            "description": "This website uses analytics cookies and services for collecting aggregated data and statistical information. This data helps us analyze and optimize site performance, identify popular content, detect navigation issues, and make informed decisions to enhance the user experience.",
+            "privacy_notice_history_id": "pri_notice-history-analytics-en-000"
+          },
+          {
+            "language": "es-MX",
+            "title": "De análisis",
+            "description": "Este sitio web usa cookies y servicios analíticos para recopilar datos agregados e información estadística. Estos datos nos ayudan a analizar y optimizar el rendimiento del sitio, identificar contenido popular, detectar problemas de navegación y tomar decisiones informadas para mejorar la experiencia del usuario.",
+            "privacy_notice_history_id": "pri_notice-history-analytics-es-mx-000"
           }
         ]
       },
       {
         "name": "Essential",
+        "notice_key": "essential",
+        "internal_description": null,
+        "origin": null,
         "consent_mechanism": "notice_only",
-        "default_preference": "opt_in",
-        "has_gpc_flag": false,
         "data_uses": ["provide.service"],
         "enforcement_level": "system_wide",
-        "id": "pri_4bed96d0-b9e3-4596-a807-26b783836375",
-        "created_at": "2023-04-24T21:29:08.870351+00:00",
-        "updated_at": "2023-04-24T21:29:08.870351+00:00",
-        "notice_key": "essential",
+        "disabled": false,
+        "has_gpc_flag": false,
+        "id": "pri_notice-essential-000",
+        "created_at": "2024-01-01T12:00:00.000000+00:00",
+        "updated_at": "2024-01-01T12:00:00.000000+00:00",
+        "default_preference": "opt_in",
         "cookies": [],
         "translations": [
           {
             "language": "en",
             "title": "Essential",
-            "description": "Notify the user about data processing activities that are essential to your services functionality. Typically consent is not required for this.",
-            "privacy_notice_history_id": "pri_b09058a7-9f54-4360-8da5-4521e8975d4e"
+            "description": "This website uses essential cookies and services to enable core website features and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website.",
+            "privacy_notice_history_id": "pri_notice-history-essential-en-000"
+          },
+          {
+            "language": "es-MX",
+            "title": "Esenciales",
+            "description": "Este sitio web utiliza cookies y servicios esenciales para habilitar las funciones principales del sitio web y brindar una experiencia de usuario perfecta. Estas cookies y servicios se usan para facilitar características como navegación, recordar referencias del usuario y garantizar la seguridad del sitio web.",
+            "privacy_notice_history_id": "pri_notice-history-essential-en-000"
           }
         ]
       }
