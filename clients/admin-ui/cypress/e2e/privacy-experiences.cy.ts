@@ -132,7 +132,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(DISABLED_EXPERIENCE_ID);
-          expect(body).to.eql({ disabled: false });
+          expect(body).to.eql({ regions: ["us_ca"], disabled: false });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -151,7 +151,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(EXPERIENCE_ID);
-          expect(body).to.eql({ disabled: true });
+          expect(body).to.eql({ regions: [], disabled: true });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -170,17 +170,6 @@ describe("Privacy experiences", () => {
      * @example stubExperience({component: "overlay"})
      */
     const stubExperience = () => {
-      // cy.fixture("privacy-experiences/experienceConfig.json").then(
-      //   (experience) => {
-      //     const updatedExperience = {
-      //       ...experience,
-      //       ...overrides,
-      //     };
-      //     cy.intercept("GET", "/api/v1/experience-config/pri*", {
-      //       body: updatedExperience,
-      //     });
-      //   }
-      // );
       cy.intercept("GET", "/api/v1/experience-config/pri*", {
         fixture: "privacy-experiences/experienceConfig.json",
       });

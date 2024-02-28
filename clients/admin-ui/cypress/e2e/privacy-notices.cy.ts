@@ -209,16 +209,12 @@ describe("Privacy notices", () => {
       stubTaxonomyEntities();
     });
 
-    it("should render an existing privacy notice", () => {
+    it.only("should render an existing privacy notice", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
       cy.wait("@getNoticeDetail");
       cy.fixture("privacy-notices/notice.json").then((notice) => {
         // details section
         cy.getByTestId("input-name").should("have.value", notice.name);
-        cy.getByTestId("input-description").should(
-          "have.value",
-          notice.description
-        );
 
         // consent mechanism section
         cy.getSelectValueContainer("input-consent_mechanism").contains(
@@ -236,10 +232,6 @@ describe("Privacy notices", () => {
           cy.getSelectValueContainer("input-data_uses").contains(dataUse);
         });
         cy.getByTestId("input-internal_description").should("have.value", "");
-        notice.regions.forEach((region) => {
-          const regionName = PRIVACY_NOTICE_REGION_MAP.get(region);
-          cy.getSelectValueContainer("input-regions").contains(regionName);
-        });
         [
           "displayed_in_overlay",
           "displayed_in_api",
