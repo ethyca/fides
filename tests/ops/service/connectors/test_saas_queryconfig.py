@@ -206,9 +206,9 @@ class TestSaaSQueryConfig:
         combined_traversal,
         saas_example_connection_config,
     ):
-        saas_config: Optional[SaaSConfig] = (
-            saas_example_connection_config.get_saas_config()
-        )
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
         saas_config.endpoints[2].requests.update.method = HTTPMethod.POST
         endpoints = saas_config.top_level_endpoint_dict
 
@@ -244,10 +244,12 @@ class TestSaaSQueryConfig:
         combined_traversal,
         saas_example_connection_config,
     ):
-        saas_config: Optional[SaaSConfig] = (
-            saas_example_connection_config.get_saas_config()
-        )
-        saas_config.endpoints[2].requests.update.body = (
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
+        saas_config.endpoints[
+            2
+        ].requests.update.body = (
             '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
         )
         body_param_value = ParamValue(
@@ -319,9 +321,9 @@ class TestSaaSQueryConfig:
         saas_example_connection_config,
         saas_example_secrets,
     ):
-        saas_config: Optional[SaaSConfig] = (
-            saas_example_connection_config.get_saas_config()
-        )
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
         customer = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "customer")
@@ -360,9 +362,9 @@ class TestSaaSQueryConfig:
     ):
         mock_identity_data.return_value = {"email": "test@example.com"}
 
-        saas_config: Optional[SaaSConfig] = (
-            saas_example_connection_config.get_saas_config()
-        )
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -397,9 +399,9 @@ class TestSaaSQueryConfig:
     def test_get_masking_request(
         self, combined_traversal, saas_example_connection_config
     ):
-        saas_config: Optional[SaaSConfig] = (
-            saas_example_connection_config.get_saas_config()
-        )
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -466,9 +468,9 @@ class TestSaaSQueryConfig:
     def test_list_param_values(
         self, combined_traversal, saas_example_connection_config, policy
     ):
-        saas_config: Optional[SaaSConfig] = (
-            saas_example_connection_config.get_saas_config()
-        )
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         accounts = combined_traversal.traversal_node_dict[
@@ -528,9 +530,9 @@ class TestSaaSQueryConfig:
         more prepared_requests if they are not used by the request
         """
 
-        saas_config: Optional[SaaSConfig] = (
-            saas_example_connection_config.get_saas_config()
-        )
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         mailing_lists = combined_traversal.traversal_node_dict[

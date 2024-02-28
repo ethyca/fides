@@ -297,9 +297,9 @@ def privacy_request_csv_download(
 
     f.seek(0)
     response = StreamingResponse(f, media_type="text/csv")
-    response.headers["Content-Disposition"] = (
-        f"attachment; filename=privacy_requests_download_{datetime.today().strftime('%Y-%m-%d')}.csv"
-    )
+    response.headers[
+        "Content-Disposition"
+    ] = f"attachment; filename=privacy_requests_download_{datetime.today().strftime('%Y-%m-%d')}.csv"
     return response
 
 
@@ -900,9 +900,9 @@ def resume_privacy_request_with_manual_input(
             f"status = {privacy_request.status.value}. Privacy request is not paused.",
         )
 
-    paused_details: Optional[CheckpointActionRequired] = (
-        privacy_request.get_paused_collection_details()
-    )
+    paused_details: Optional[
+        CheckpointActionRequired
+    ] = privacy_request.get_paused_collection_details()
     if not paused_details:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -1061,9 +1061,9 @@ def bulk_restart_privacy_request_from_failure(
             )
             continue
 
-        failed_details: Optional[CheckpointActionRequired] = (
-            privacy_request.get_failed_checkpoint_details()
-        )
+        failed_details: Optional[
+            CheckpointActionRequired
+        ] = privacy_request.get_failed_checkpoint_details()
 
         succeeded.append(
             _process_privacy_request_restart(
@@ -1101,9 +1101,9 @@ def restart_privacy_request_from_failure(
             detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
-    failed_details: Optional[CheckpointActionRequired] = (
-        privacy_request.get_failed_checkpoint_details()
-    )
+    failed_details: Optional[
+        CheckpointActionRequired
+    ] = privacy_request.get_failed_checkpoint_details()
 
     return _process_privacy_request_restart(
         privacy_request,

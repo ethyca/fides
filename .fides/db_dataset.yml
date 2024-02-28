@@ -1344,7 +1344,6 @@ dataset:
       data_categories: [ system.operations ]
     - name: encryption_key
       data_categories: [ system.operations ]
-    
   - name: privacyrequesterror
     data_categories: []
     fields:
