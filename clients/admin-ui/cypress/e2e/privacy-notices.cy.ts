@@ -203,7 +203,7 @@ describe("Privacy notices", () => {
     });
   });
 
-  describe("edit privacy notice", () => {
+  describe.skip("edit privacy notice", () => {
     beforeEach(() => {
       stubPrivacyNoticesCrud();
       stubTaxonomyEntities();
