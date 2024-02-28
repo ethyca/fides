@@ -2,6 +2,9 @@ import { FidesOptions } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
 describe("Consent i18n", () => {
+  /**
+   * Define (lots of) reusable test data for all the specs below!
+   */
   const ENGLISH_LOCALE = "en-US";
   const SPANISH_LOCALE = "es-ES";
   const JAPANESE_LOCALE = "ja-JP";
@@ -9,6 +12,83 @@ describe("Consent i18n", () => {
     | "experience_banner_modal.json"
     | "experience_tcf.json"
     | "experience_privacy_center.json";
+
+  type TestBannerTranslations = {
+    banner_title: string;
+    banner_description: string;
+    privacy_preferences_link_label: string;
+    reject_button_label: string;
+    accept_button_label: string;
+    privacy_policy_link_label: string;
+    privacy_policy_url: string;
+  };
+
+  type TestModalTranslations = {
+    title: string;
+    description: string;
+    save_button_label: string;
+    reject_button_label: string;
+    accept_button_label: string;
+    privacy_policy_link_label: string;
+    privacy_policy_url: string;
+  };
+
+  type TestNoticeTranslations = {
+    title: string;
+    description: string;
+  };
+
+  const ENGLISH_BANNER: TestBannerTranslations = {
+    banner_title: "[banner] Manage your consent preferences",
+    banner_description: "[banner] We use cookies and similar",
+    privacy_preferences_link_label: "Manage preferences",
+    reject_button_label: "Opt out of all",
+    accept_button_label: "Opt in to all",
+    privacy_policy_link_label: "Privacy Policy",
+    privacy_policy_url: "https://privacy.example.com/",
+  };
+
+  const ENGLISH_MODAL: TestModalTranslations = {
+    title: "Manage your consent preferences",
+    description: "We use cookies and similar",
+    save_button_label: "Save",
+    reject_button_label: "Opt out of all",
+    accept_button_label: "Opt in to all",
+    privacy_policy_link_label: "Privacy Policy",
+    privacy_policy_url: "https://privacy.example.com/",
+  };
+
+  const ENGLISH_NOTICES: TestNoticeTranslations[] = [
+    { title: "Advertising", description: "This website uses marketing" },
+    { title: "Analytics", description: "This website uses analytics" },
+    { title: "Essential", description: "This website uses essential" },
+  ];
+
+  const SPANISH_BANNER: TestBannerTranslations = {
+    banner_title: "[banner] Administrar sus preferencias de consentimiento",
+    banner_description: "[banner] Usamos cookies y métodos similares",
+    privacy_preferences_link_label: "Administrar preferencias",
+    reject_button_label: "No participar en ninguna",
+    accept_button_label: "Participar en todas",
+    privacy_policy_link_label: "Política de privacidad",
+    privacy_policy_url: "https://privacy.example.com/",
+  };
+
+  const SPANISH_MODAL: TestModalTranslations = {
+    title: "Administrar sus preferencias de consentimiento",
+    description: "Usamos cookies y métodos similares",
+    save_button_label: "Guardar",
+    reject_button_label: "Opt out of all",
+    accept_button_label: "Opt in to all",
+    privacy_policy_link_label: "Privacy Policy",
+    privacy_policy_url: "https://privacy.example.com/",
+  };
+
+  const SPANISH_NOTICES: TestNoticeTranslations[] = [
+    { title: "Mercadotecnia", description: "Este sitio web usa cookies y servicios de mercadotecnia" },
+    { title: "Analytics", description: "Este sitio web usa cookies y servicios analíticos" },
+    { title: "Essential", description: "Este sitio web utiliza cookies y servicios esenciales" },
+  ];
 
   // Setup a test case with the given params
   const visitDemoWithI18n = (
@@ -31,15 +111,7 @@ describe("Consent i18n", () => {
   };
 
   // Reusable assertions to test that the banner component localizes correctly
-  const testBannerLocalization = (expected: {
-    banner_title: string;
-    banner_description: string;
-    privacy_preferences_link_label: string;
-    reject_button_label: string;
-    accept_button_label: string;
-    privacy_policy_link_label: string;
-    privacy_policy_url: string;
-  }) => {
+  const testBannerLocalization = (expected: TestBannerTranslations) => {
     // Check banner localization
     cy.get("#fides-banner").within(() => {
       cy.get(".fides-banner-title").contains(expected.banner_title);
@@ -59,15 +131,10 @@ describe("Consent i18n", () => {
   };
 
   // Reusable assertions to test that the modal component localizes correctly
-  const testModalLocalization = (expected: {
-    title: string;
-    description: string;
-    save_button_label: string;
-    reject_button_label: string;
-    accept_button_label: string;
-    privacy_policy_link_label: string;
-    privacy_policy_url: string;
-  }) => {
+  const openAndTestModalLocalization = (expected: TestModalTranslations) => {
+    // Start by opening the modal
+    cy.window().then((win) => win.Fides.showModal());
+
     // Check modal localization
     cy.get("#fides-modal").within(() => {
       cy.get(".fides-modal-title").contains(expected.title);
@@ -86,12 +153,7 @@ describe("Consent i18n", () => {
   };
 
   // Reusable assertions to test that the modal notices component localizes correctly
-  const testModalNoticesLocalization = (
-    expected: {
-      title: string;
-      description: string;
-    }[]
-  ) => {
+  const testModalNoticesLocalization = (expected: TestNoticeTranslations[]) => {
     // Check modal notices localization
     cy.get("#fides-modal .fides-modal-notices").within(() => {
       expected.forEach((notice) => {
@@ -106,36 +168,9 @@ describe("Consent i18n", () => {
     describe(`when browser language matches default locale (${ENGLISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n(ENGLISH_LOCALE, "experience_banner_modal.json");
-
-        testBannerLocalization({
-          banner_title: "[banner] Manage your consent preferences",
-          banner_description: "[banner] We use cookies and similar",
-          privacy_preferences_link_label: "Manage preferences",
-          reject_button_label: "Opt out of all",
-          accept_button_label: "Opt in to all",
-          privacy_policy_link_label: "Privacy Policy",
-          privacy_policy_url: "https://privacy.example.com/",
-        });
-
-        cy.get("#fides-banner #fides-button-group")
-          .contains("Manage preferences")
-          .click();
-        testModalLocalization({
-          title: "Manage your consent preferences",
-          description: "We use cookies and similar",
-          save_button_label: "Save",
-          reject_button_label: "Opt out of all",
-          accept_button_label: "Opt in to all",
-          privacy_policy_link_label: "Privacy Policy",
-          privacy_policy_url: "https://privacy.example.com/",
-        });
-
-        // Check modal notices localization
-        testModalNoticesLocalization([
-          { title: "Advertising", description: "This website uses marketing" },
-          { title: "Analytics", description: "This website uses analytics" },
-          { title: "Essential", description: "This website uses essential" },
-        ]);
+        testBannerLocalization(ENGLISH_BANNER);
+        openAndTestModalLocalization(ENGLISH_MODAL);
+        testModalNoticesLocalization(ENGLISH_NOTICES);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {
@@ -149,7 +184,9 @@ describe("Consent i18n", () => {
     describe(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json");
-        cy.window().its("navigator.language").should("eq", SPANISH_LOCALE);
+        testBannerLocalization(SPANISH_BANNER);
+        openAndTestModalLocalization(SPANISH_MODAL);
+        testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {
@@ -175,16 +212,25 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe.skip("when auto_detect_language is false", () => {
+  describe("when auto_detect_language is false", () => {
     it(`always localizes in the default locale (${ENGLISH_LOCALE})`, () => {
-      // visit in spanish, expect english
+      // Visit the demo site in Spanish, but expect English translations when auto-detection is disabled
+      visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json", { });
+      testBannerLocalization(SPANISH_BANNER);
+      openAndTestModalLocalization(SPANISH_MODAL);
+      testModalNoticesLocalization(SPANISH_NOTICES);
     });
   });
 
-  describe.skip("when user selects their own language", () => {
-    it("renders...", () => {});
-    it("does not allow renders...", () => {});
+  // TODO (PROD-1598): enable this test and add other cases as needed!
+  describe.skip("when user selects their own locale", () => {
+    it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
+      // Visit the demo site in English, but expect Spanish translations when the user selects
+      visitDemoWithI18n(ENGLISH_LOCALE, "experience_banner_modal.json");
+      // TODO (PROD-1598): select Spanish from banner
+      testBannerLocalization(SPANISH_BANNER);
+      openAndTestModalLocalization(SPANISH_MODAL);
+      testModalNoticesLocalization(SPANISH_NOTICES);
+    });
   });
-
-  it("should render the banner", () => {});
 });
