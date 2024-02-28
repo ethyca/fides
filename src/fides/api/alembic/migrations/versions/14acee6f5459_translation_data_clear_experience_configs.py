@@ -212,8 +212,8 @@ def migrate_experiences(bind):
 
         create_experience_config_query = text(
             """
-            INSERT INTO privacyexperienceconfig (id, origin, version, component, :name, disabled, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-            VALUES (:id, :origin, :version, :component, :name, :disabled, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+            INSERT INTO privacyexperienceconfig (id, version, component, :name, disabled, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+            VALUES (:id,  :version, :component, :name, :disabled, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
@@ -228,8 +228,8 @@ def migrate_experiences(bind):
 
         create_experience_config_history = text(
             """
-             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, :origin, :name, disabled, version, component, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, :name, disabled, version, component, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+             VALUES (:history_id, :id, :name, :disabled, :version, :component, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
