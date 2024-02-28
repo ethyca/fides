@@ -9,10 +9,8 @@ Create Date: 2024-01-09 21:17:13.115020
 import uuid
 from enum import Enum
 
-import pandas as pd
 import yaml
 from alembic import op
-from pandas import DataFrame
 from sqlalchemy import text
 from sqlalchemy.engine import ResultProxy
 
@@ -229,10 +227,8 @@ def migrate_experiences(bind):
                     "component": experience_config["component"],
                     "name": experience_config["name"],
                     "disabled": experience_config["disabled"],
-                    "privacy_notice_keys": tuple(
-                        experience_config["privacy_notice_keys"]
-                    ),
-                    "regions": tuple(experience_config["regions"]),
+                    "privacy_notice_keys": experience_config["privacy_notice_keys"],
+                    "regions": experience_config["regions"],
                 },
             )
 
@@ -279,14 +275,15 @@ def migrate_experiences(bind):
             """
         )
         for region in experience_config["regions"]:
-            bind.execute(
-                new_experience,
-                {
-                    "experience_id": generate_record_id("pri"),
-                    "experience_config_id": experience_config["id"],
-                    "region": region,
-                },
-            )
+            if region is not None:
+                bind.execute(
+                    new_experience,
+                    {
+                        "experience_id": generate_record_id("pri"),
+                        "experience_config_id": experience_config["id"],
+                        "region": region,
+                    },
+                )
 
     def link_notices_to_experiences(experience_config):
         link_notice_query = text(
@@ -350,7 +347,7 @@ def migrate_experiences(bind):
     remove_existing_experience_data(bind)
 
     if experience_configs:
-        create_new_experience_config_templates(raw_experience_config_map)
+        create_new_experience_config_templates(raw_experience_config_map.values())
 
     # create new experience + experience configs based on old experience config data
     # this has been reconciled with the new OOB experience config records
