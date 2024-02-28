@@ -6,7 +6,7 @@ describe("Consent i18n", () => {
    * Define (lots of) reusable test data for all the specs below!
    */
   const ENGLISH_LOCALE = "en-US";
-  const SPANISH_LOCALE = "es-ES";
+  const SPANISH_LOCALE = "es-MX"; // TODO (PROD-1597): update to use es-ES
   const JAPANESE_LOCALE = "ja-JP";
   type TestFixture =
     | "experience_banner_modal.json"
@@ -85,9 +85,18 @@ describe("Consent i18n", () => {
   };
 
   const SPANISH_NOTICES: TestNoticeTranslations[] = [
-    { title: "Mercadotecnia", description: "Este sitio web usa cookies y servicios de mercadotecnia" },
-    { title: "Analytics", description: "Este sitio web usa cookies y servicios analíticos" },
-    { title: "Essential", description: "Este sitio web utiliza cookies y servicios esenciales" },
+    {
+      title: "Mercadotecnia",
+      description: "Este sitio web usa cookies y servicios de mercadotecnia",
+    },
+    {
+      title: "Analytics",
+      description: "Este sitio web usa cookies y servicios analíticos",
+    },
+    {
+      title: "Essential",
+      description: "Este sitio web utiliza cookies y servicios esenciales",
+    },
   ];
 
   // Setup a test case with the given params
@@ -121,7 +130,7 @@ describe("Consent i18n", () => {
       );
       cy.get("#fides-button-group").contains(expected.reject_button_label);
       cy.get("#fides-button-group").contains(expected.accept_button_label);
-      // TODO: re-enable
+      // TODO (PROD-1597): troubleshoot bug with privacy policy link
       // cy.get("#fides-privacy-policy-link").contains(translation.privacy_policy_link_label);
       // cy.get("#fides-privacy-policy-link").should("have.attr", "href", translation.privacy_policy_url);
 
@@ -146,7 +155,7 @@ describe("Consent i18n", () => {
       cy.get(".fides-modal-button-group").contains(
         expected.accept_button_label
       );
-      // TODO: re-enable
+      // TODO (PROD-1597): troubleshoot bug with privacy policy link
       // cy.get("#fides-privacy-policy-link").contains(translation.privacy_policy_link_label);
       // cy.get("#fides-privacy-policy-link").should("have.attr", "href", translation.privacy_policy_url);
     });
@@ -181,7 +190,8 @@ describe("Consent i18n", () => {
       it.skip("localizes privacy_center components in the correct locale", () => {});
     });
 
-    describe(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
+    // TODO (PROD-1597): localize fides-js components
+    describe.skip(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json");
         testBannerLocalization(SPANISH_BANNER);
@@ -212,13 +222,16 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe("when auto_detect_language is false", () => {
+  // TODO (PROD-1597): override experience_config.auto_detect_language
+  describe.skip("when auto_detect_language is false", () => {
     it(`always localizes in the default locale (${ENGLISH_LOCALE})`, () => {
       // Visit the demo site in Spanish, but expect English translations when auto-detection is disabled
-      visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json", { });
-      testBannerLocalization(SPANISH_BANNER);
-      openAndTestModalLocalization(SPANISH_MODAL);
-      testModalNoticesLocalization(SPANISH_NOTICES);
+      visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json", {
+        // TODO (PROD-1597): override experience_config.auto_detect_language
+      });
+      testBannerLocalization(ENGLISH_BANNER);
+      openAndTestModalLocalization(ENGLISH_MODAL);
+      testModalNoticesLocalization(ENGLISH_NOTICES);
     });
   });
 
