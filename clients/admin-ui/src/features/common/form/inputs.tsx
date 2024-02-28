@@ -5,6 +5,7 @@
 import {
   Box,
   Checkbox,
+  Code,
   EyeIcon,
   Flex,
   FormControl,
@@ -55,6 +56,7 @@ import React, {
   useState,
 } from "react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 type Variant = "inline" | "stacked" | "block";
@@ -1191,6 +1193,68 @@ export const CustomCheckbox = ({
 
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Flex>
+    </FormControl>
+  );
+};
+
+interface CustomClipboardCopyProps {
+  label?: string;
+  tooltip?: string;
+  variant?: Variant;
+}
+
+export const CustomClipboardCopy = ({
+  label,
+  tooltip,
+  variant = "inline",
+  ...props
+}: CustomClipboardCopyProps & StringField) => {
+  const [initialField] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
+
+  const innerInput = (
+    <Code
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+      p={0}
+      width="100%"
+    >
+      <Text px={4}>{field.value}</Text>
+      <ClipboardButton copyText={field.value} />
+    </Code>
+  );
+
+  if (variant === "inline") {
+    return (
+      <FormControl>
+        <Grid templateColumns="1fr 3fr">
+          {label ? (
+            <Label htmlFor={props.id || props.name}>{label}</Label>
+          ) : null}
+          <Flex alignItems="center">
+            <Flex flexDir="column" flexGrow={1} mr="2">
+              {innerInput}
+            </Flex>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
+        </Grid>
+      </FormControl>
+    );
+  }
+  return (
+    <FormControl>
+      <VStack alignItems="start">
+        {label ? (
+          <Flex alignItems="center">
+            <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
+              {label}
+            </Label>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
+        ) : null}
+        {innerInput}
+      </VStack>
     </FormControl>
   );
 };
