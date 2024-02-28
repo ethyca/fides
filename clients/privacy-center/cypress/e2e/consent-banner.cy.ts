@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars -- TODO (PROD-1597): re-enable after fixing preference save bug */
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
@@ -101,9 +102,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains(
-            "[banner] We use cookies and similar methods"
-          );
+          ).contains("[banner] We use cookies and similar methods");
           cy.get("div#fides-button-group").within(() => {
             cy.get(
               "button#fides-banner-button-tertiary.fides-banner-button.fides-banner-button-tertiary"
@@ -230,11 +229,11 @@ describe("Consent overlay", () => {
                   preference: "acknowledge",
                 },
               ],
-              privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
+              privacy_experience_config_history_id:
+                "pri_exp-history-banner-modal-en-000",
               user_geography: "us_ca",
               method: ConsentMethod.SAVE,
-              served_notice_history_id:
-                "ser_notice-history-000",
+              served_notice_history_id: "ser_notice-history-000",
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -303,30 +302,33 @@ describe("Consent overlay", () => {
               the likelihood of XSS attacks.
             </p>
             `;
-            cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
-              const newExperienceTranslationsConfig = [
-                overrideTranslation(
-                  config.experience.experience_config.translations[0],
-                  { banner_description: HTMLDescription }
-                ),
-              ];
-              stubConfig({
-                experience: {
-                  experience_config: {
-                    ...config.experience.experience_config,
-                    ...{ translations: newExperienceTranslationsConfig },
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+              (config) => {
+                const newExperienceTranslationsConfig = [
+                  overrideTranslation(
+                    config.experience.experience_config.translations[0],
+                    { banner_description: HTMLDescription }
+                  ),
+                ];
+                stubConfig({
+                  experience: {
+                    experience_config: {
+                      ...config.experience.experience_config,
+                      ...{ translations: newExperienceTranslationsConfig },
+                    },
                   },
-                },
-                options,
-              });
-            });
+                  options,
+                });
+              }
+            );
           };
 
           it("does not render HTML by default", () => {
             setupHTMLDescriptionTest({ allowHTMLDescription: false });
             cy.get("div#fides-banner").within(() => {
-              cy.get("div#fides-banner-description.fides-banner-description")
-                .contains("This test is overriding");
+              cy.get(
+                "div#fides-banner-description.fides-banner-description"
+              ).contains("This test is overriding");
               cy.get("div#fides-banner-description.fides-banner-description")
                 .contains("a", "clickable links")
                 .should("not.exist");
@@ -336,8 +338,9 @@ describe("Consent overlay", () => {
           it("renders HTML when options.allowHTMLDescription = true", () => {
             setupHTMLDescriptionTest({ allowHTMLDescription: true });
             cy.get("div#fides-banner").within(() => {
-              cy.get("div#fides-banner-description.fides-banner-description")
-                .contains("This test is overriding");
+              cy.get(
+                "div#fides-banner-description.fides-banner-description"
+              ).contains("This test is overriding");
               cy.get("div#fides-banner-description.fides-banner-description")
                 .contains("a", "clickable links")
                 .should("exist");
@@ -351,25 +354,27 @@ describe("Consent overlay", () => {
               "This test is overriding the banner description separately from modal!";
             const modalDescription =
               "This test is overriding the modal description separately from banner!";
-            cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
-              const newExperienceTranslationsConfig = [
-                overrideTranslation(
-                  config.experience.experience_config.translations[0],
-                  {
-                    description: modalDescription,
-                    banner_description: bannerDescription,
-                  }
-                ),
-              ];
-              stubConfig({
-                experience: {
-                  experience_config: {
-                    ...config.experience.experience_config,
-                    ...{ translations: newExperienceTranslationsConfig },
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+              (config) => {
+                const newExperienceTranslationsConfig = [
+                  overrideTranslation(
+                    config.experience.experience_config.translations[0],
+                    {
+                      description: modalDescription,
+                      banner_description: bannerDescription,
+                    }
+                  ),
+                ];
+                stubConfig({
+                  experience: {
+                    experience_config: {
+                      ...config.experience.experience_config,
+                      ...{ translations: newExperienceTranslationsConfig },
+                    },
                   },
-                },
-              });
-            });
+                });
+              }
+            );
           });
 
           it("renders the expected modal & banner descriptions", () => {
@@ -400,22 +405,24 @@ describe("Consent overlay", () => {
               "This test is overriding the banner title separately from modal!";
             const modalTitle =
               "This test is overriding the modal title separately from banner!";
-            cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
-              const newExperienceTranslationsConfig = [
-                overrideTranslation(
-                  config.experience.experience_config.translations[0],
-                  { title: modalTitle, banner_title: bannerTitle }
-                ),
-              ];
-              stubConfig({
-                experience: {
-                  experience_config: {
-                    ...config.experience.experience_config,
-                    ...{ translations: newExperienceTranslationsConfig },
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+              (config) => {
+                const newExperienceTranslationsConfig = [
+                  overrideTranslation(
+                    config.experience.experience_config.translations[0],
+                    { title: modalTitle, banner_title: bannerTitle }
+                  ),
+                ];
+                stubConfig({
+                  experience: {
+                    experience_config: {
+                      ...config.experience.experience_config,
+                      ...{ translations: newExperienceTranslationsConfig },
+                    },
                   },
-                },
-              });
-            });
+                });
+              }
+            );
           });
 
           it("renders the expected modal & banner title", () => {
@@ -539,12 +546,12 @@ describe("Consent overlay", () => {
                 preference: "acknowledge",
               },
             ],
-            privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
+            privacy_experience_config_history_id:
+              "pri_exp-history-banner-modal-en-000",
             user_geography: "us_ca",
 
             method: ConsentMethod.SAVE,
-            served_notice_history_id:
-              "ser_notice-history-000",
+            served_notice_history_id: "ser_notice-history-000",
           };
           // TODO (PROD-1597): re-enable after fixing preference save bug
           // expect(body).to.eql(expected);
@@ -633,11 +640,11 @@ describe("Consent overlay", () => {
                 preference: "opt_in",
               },
             ],
-            privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
+            privacy_experience_config_history_id:
+              "pri_exp-history-banner-modal-en-000",
             user_geography: "us_ca",
             method: ConsentMethod.SAVE,
-            served_notice_history_id:
-              "ser_notice-history-000",
+            served_notice_history_id: "ser_notice-history-000",
           };
           // TODO (PROD-1597): re-enable after fixing preference save bug
           // expect(body).to.eql(expected);
@@ -851,7 +858,8 @@ describe("Consent overlay", () => {
                 preference: "opt_out",
               },
             ],
-            privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
+            privacy_experience_config_history_id:
+              "pri_exp-history-banner-modal-en-000",
             user_geography: "us_ca",
 
             method: ConsentMethod.GPC,
@@ -1011,16 +1019,18 @@ describe("Consent overlay", () => {
 
     describe("when experience component is not an overlay", () => {
       beforeEach(() => {
-        cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
-          stubConfig({
-            experience: {
-              experience_config: {
-                ...config.experience.experience_config,
-                ...{ component: ComponentType.PRIVACY_CENTER },
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+          (config) => {
+            stubConfig({
+              experience: {
+                experience_config: {
+                  ...config.experience.experience_config,
+                  ...{ component: ComponentType.PRIVACY_CENTER },
+                },
               },
-            },
-          });
-        });
+            });
+          }
+        );
       });
 
       it("does not render banner", () => {
@@ -1054,9 +1064,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains(
-            "[banner-api] We use cookies and similar methods"
-          );
+          ).contains("[banner-api] We use cookies and similar methods");
         });
       });
 
@@ -1084,9 +1092,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains(
-            "[banner] We use cookies and similar methods"
-          );
+          ).contains("[banner] We use cookies and similar methods");
         });
       });
 
@@ -1166,57 +1172,57 @@ describe("Consent overlay", () => {
           cy.get("div#fides-banner").within(() => {
             cy.get(
               "div#fides-banner-description.fides-banner-description"
-            ).contains(
-              "[banner-api] We use cookies and similar methods"
-            );
+            ).contains("[banner-api] We use cookies and similar methods");
           });
           cy.get("#fides-modal-link").should("be.visible");
         });
 
         describe("when custom experience fn is provided in Fides.init()", () => {
           it("should skip calling Fides API cor experience and instead call the custom fn", () => {
-            cy.fixture("consent/experience_privacy_center.json").then((privacyExperience) => {
-              const apiOptions = {
-                /* eslint-disable @typescript-eslint/no-unused-vars */
-                getPrivacyExperienceFn: async (
-                  userLocationString: string,
-                  fidesUserDeviceId?: string | null
-                ) => privacyExperience.items[0],
-                /* eslint-enable @typescript-eslint/no-unused-vars */
-              };
-              const spyObject = cy.spy(apiOptions, "getPrivacyExperienceFn");
-              stubConfig({
-                options: {
-                  isOverlayEnabled: true,
-                  apiOptions,
-                },
-                geolocation: {
-                  country: "US",
-                  location: "US-CA",
-                  region: "CA",
-                },
-                experience: OVERRIDE.UNDEFINED,
-              });
-              cy.waitUntilFidesInitialized().then(() => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                expect(spyObject).to.be.called;
-                const spy = spyObject.getCalls();
-                const { args } = spy[0];
-                expect(args[0]).to.equal("us_ca");
-                // timeout means Fides API call not made, which is expected
-                cy.on("fail", (error) => {
-                  if (error.message.indexOf("Timed out retrying") !== 0) {
-                    throw error;
-                  }
+            cy.fixture("consent/experience_privacy_center.json").then(
+              (privacyExperience) => {
+                const apiOptions = {
+                  /* eslint-disable @typescript-eslint/no-unused-vars */
+                  getPrivacyExperienceFn: async (
+                    userLocationString: string,
+                    fidesUserDeviceId?: string | null
+                  ) => privacyExperience.items[0],
+                  /* eslint-enable @typescript-eslint/no-unused-vars */
+                };
+                const spyObject = cy.spy(apiOptions, "getPrivacyExperienceFn");
+                stubConfig({
+                  options: {
+                    isOverlayEnabled: true,
+                    apiOptions,
+                  },
+                  geolocation: {
+                    country: "US",
+                    location: "US-CA",
+                    region: "CA",
+                  },
+                  experience: OVERRIDE.UNDEFINED,
                 });
-                // check that  Fides experience API is not called
-                cy.wait("@getPrivacyExperience", {
-                  requestTimeout: 100,
-                }).then((xhr) => {
-                  assert.isNull(xhr?.response?.body);
+                cy.waitUntilFidesInitialized().then(() => {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                  expect(spyObject).to.be.called;
+                  const spy = spyObject.getCalls();
+                  const { args } = spy[0];
+                  expect(args[0]).to.equal("us_ca");
+                  // timeout means Fides API call not made, which is expected
+                  cy.on("fail", (error) => {
+                    if (error.message.indexOf("Timed out retrying") !== 0) {
+                      throw error;
+                    }
+                  });
+                  // check that  Fides experience API is not called
+                  cy.wait("@getPrivacyExperience", {
+                    requestTimeout: 100,
+                  }).then((xhr) => {
+                    assert.isNull(xhr?.response?.body);
+                  });
                 });
-              });
-            });
+              }
+            );
           });
         });
       });
@@ -1278,9 +1284,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains(
-            "[banner-api] We use cookies and similar methods"
-          );
+          ).contains("[banner-api] We use cookies and similar methods");
         });
       });
 
@@ -1413,16 +1417,18 @@ describe("Consent overlay", () => {
 
     describe("when banner should not be shown but modal link element exists", () => {
       beforeEach(() => {
-        cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
-          stubConfig({
-            experience: {
-              experience_config: {
-                ...config.experience.experience_config,
-                ...{ component: ComponentType.MODAL },
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+          (config) => {
+            stubConfig({
+              experience: {
+                experience_config: {
+                  ...config.experience.experience_config,
+                  ...{ component: ComponentType.MODAL },
+                },
               },
-            },
-          });
-        });
+            });
+          }
+        );
       });
 
       it("does not render banner", () => {
@@ -1445,9 +1451,11 @@ describe("Consent overlay", () => {
 
     describe("when both banner is shown and modal link element exists", () => {
       beforeEach(() => {
-        cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
-          stubConfig({ experience: config.experience });
-        });
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+          (config) => {
+            stubConfig({ experience: config.experience });
+          }
+        );
       });
 
       it("closes banner and opens modal when modal link is clicked", () => {

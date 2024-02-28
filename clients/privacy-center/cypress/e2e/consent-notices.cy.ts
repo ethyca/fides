@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars -- TODO (PROD-1597): re-enable after fixing preference save bug */
 import {
   ConsentOptionCreate,
   PrivacyNoticeResponseWithUserPreferences,
@@ -80,8 +81,12 @@ describe("Privacy notice driven consent", () => {
 
     it("populates its header from the experience config", () => {
       cy.wait("@getExperience");
-      cy.getByTestId("consent-heading").contains("Manage your consent preferences");
-      cy.getByTestId("consent-description").contains("We use cookies and similar methods");
+      cy.getByTestId("consent-heading").contains(
+        "Manage your consent preferences"
+      );
+      cy.getByTestId("consent-description").contains(
+        "We use cookies and similar methods"
+      );
     });
 
     it("renders from privacy notices when there is no initial data", () => {
@@ -129,7 +134,12 @@ describe("Privacy notice driven consent", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
-        const { preferences, code, method, privacy_experience_config_history_id: id } = body;
+        const {
+          preferences,
+          code,
+          method,
+          privacy_experience_config_history_id: id,
+        } = body;
         expect(method).to.eql("save");
         expect(code).to.eql(VERIFICATION_CODE);
         // TODO (PROD-1597): re-enable after fixing preference save bug
@@ -307,7 +317,11 @@ describe("Privacy notice driven consent", () => {
       const cookie = {
         identity: { fides_user_device_id: uuid },
         fides_meta: { version: "0.9.0", createdAt, updatedAt },
-        consent: { advertising: true, analytics_opt_out: false, essential: true },
+        consent: {
+          advertising: true,
+          analytics_opt_out: false,
+          essential: true,
+        },
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       // Visit the consent page with notices enabled

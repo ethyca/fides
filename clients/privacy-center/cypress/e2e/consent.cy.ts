@@ -283,7 +283,7 @@ describe("Consent settings", () => {
       });
     });
 
-  // TODO (PROD-1597): re-enable this test; it's failing because overlay is not disabled!
+    // TODO (PROD-1597): re-enable this test; it's failing because overlay is not disabled!
     it.skip("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.getByTestId(`consent-item-advertising`).within(() => {
