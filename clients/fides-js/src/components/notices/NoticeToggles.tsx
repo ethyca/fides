@@ -1,6 +1,7 @@
 import { h } from "preact";
 
 import { ConsentMechanism, PrivacyNotice } from "../../lib/consent-types";
+import type { I18n } from "../../lib/i18n";
 
 import Divider from "../Divider";
 
@@ -9,10 +10,12 @@ import DataUseToggle from "../DataUseToggle";
 
 const NoticeToggles = ({
   notices,
+  i18n,
   enabledNoticeKeys,
   onChange,
 }: {
   notices: PrivacyNotice[];
+  i18n: I18n;
   enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>;
   onChange: (keys: Array<PrivacyNotice["notice_key"]>) => void;
 }) => {
@@ -30,8 +33,12 @@ const NoticeToggles = ({
   return (
     <div>
       {notices.map((notice, idx) => {
+        const i18nKey = `exp.notices.${notice.id}`;
+        const title = i18n.t(`${i18nKey}.title`);
+        const description = i18n.t(`${i18nKey}.description`);
         const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
+        // TODO: check
         const dataUse = { key: notice.notice_key, name: notice.name };
         return (
           <div>
@@ -44,7 +51,7 @@ const NoticeToggles = ({
                 notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
               }
             >
-              {notice.translations[0].description}
+              {description}
             </DataUseToggle>
             {!isLast ? <Divider /> : null}
           </div>
