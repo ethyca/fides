@@ -34,7 +34,8 @@
             "reject_button_label": "No participar en ninguna",
             "save_button_label": "Guardar",
             "title": "Administrar sus preferencias de consentimiento",
-            "privacy_experience_config_history_id": "pri_exp-history-privacy-center-es-mx-000"}
+            "privacy_experience_config_history_id": "pri_exp-history-privacy-center-es-mx-000"
+          }
         ],
         "language": "en",
         "dismissable": true,
@@ -140,7 +141,6 @@
             }
           ]
         }
-
       ]
     }
   ],
