@@ -63,7 +63,7 @@ export const stubConfig = (
   demoPageQueryParams?: any,
   demoPageWindowParams?: any
 ) => {
-  cy.fixture("consent/test_banner_options.json").then((config) => {
+  cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
     const updatedConfig = {
       consent: setNewConfig(config.consent, consent),
       // this mocks the pre-fetched experience
