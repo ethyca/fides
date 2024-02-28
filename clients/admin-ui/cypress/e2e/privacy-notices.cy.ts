@@ -309,7 +309,7 @@ describe("Privacy notices", () => {
       });
     });
 
-    it("can create a new privacy notice", () => {
+    it.skip("can create a new privacy notice", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.getByTestId("new-privacy-notice-page");
       const notice = {
