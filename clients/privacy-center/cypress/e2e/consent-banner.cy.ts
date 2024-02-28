@@ -102,7 +102,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains("[banner] We use cookies and similar methods");
+          ).contains("[banner-opts] We use cookies and similar methods");
           cy.get("div#fides-button-group").within(() => {
             cy.get(
               "button#fides-banner-button-tertiary.fides-banner-button.fides-banner-button-tertiary"
@@ -1064,7 +1064,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains("[banner-api] We use cookies and similar methods");
+          ).contains("[banner] We use cookies and similar methods");
         });
       });
 
@@ -1092,7 +1092,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains("[banner] We use cookies and similar methods");
+          ).contains("[banner-opts] We use cookies and similar methods");
         });
       });
 
@@ -1172,7 +1172,7 @@ describe("Consent overlay", () => {
           cy.get("div#fides-banner").within(() => {
             cy.get(
               "div#fides-banner-description.fides-banner-description"
-            ).contains("[banner-api] We use cookies and similar methods");
+            ).contains("[banner] We use cookies and similar methods");
           });
           cy.get("#fides-modal-link").should("be.visible");
         });
@@ -1284,7 +1284,7 @@ describe("Consent overlay", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
             "div#fides-banner-description.fides-banner-description"
-          ).contains("[banner-api] We use cookies and similar methods");
+          ).contains("[banner] We use cookies and similar methods");
         });
       });
 

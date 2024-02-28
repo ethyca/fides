@@ -7,7 +7,7 @@ describe("Consent i18n", () => {
 
   it("should render the banner", () => {
     cy.get("div#fides-banner-description.fides-banner-description").contains(
-      "[banner] We use cookies and similar methods"
+      "[banner-opts] We use cookies and similar methods"
     );
   });
 });
