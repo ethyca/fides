@@ -9,7 +9,7 @@ import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
 
 export interface ConsentContentProps {
-  heading: HTMLAttributes<HTMLHeadingElement>;
+  titleProps: HTMLAttributes<HTMLHeadingElement>;
   experience: ExperienceConfig;
   i18n: I18n;
   children: ComponentChildren;
@@ -19,7 +19,7 @@ export interface ConsentContentProps {
 }
 
 const ConsentModal = ({
-  heading,
+  titleProps,
   className,
   experience,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO (PROD-1597): disabled while integrating with API
@@ -42,7 +42,7 @@ const ConsentModal = ({
         <div className="fides-modal-body">
           <div
             data-testid="fides-modal-title"
-            {...heading}
+            {...titleProps}
             className="fides-modal-title"
           >
             {title}
