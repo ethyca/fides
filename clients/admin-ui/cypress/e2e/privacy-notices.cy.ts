@@ -209,7 +209,7 @@ describe("Privacy notices", () => {
       stubTaxonomyEntities();
     });
 
-    it.only("should render an existing privacy notice", () => {
+    it("should render an existing privacy notice", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
       cy.wait("@getNoticeDetail");
       cy.fixture("privacy-notices/notice.json").then((notice) => {
