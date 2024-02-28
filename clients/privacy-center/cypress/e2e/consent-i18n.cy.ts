@@ -142,7 +142,8 @@ describe("Consent i18n", () => {
   // Reusable assertions to test that the modal component localizes correctly
   const openAndTestModalLocalization = (expected: TestModalTranslations) => {
     // Start by opening the modal
-    cy.window().then((win) => win.Fides.showModal());
+    cy.get("#fides-banner .fides-manage-preferences-button").click();
+    cy.get("#fides-modal").should("be.visible");
 
     // Check modal localization
     cy.get("#fides-modal").within(() => {
