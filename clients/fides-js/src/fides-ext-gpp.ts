@@ -138,9 +138,18 @@ export const initializeGppCmpApi = () => {
   window.addEventListener("FidesInitialized", (event) => {
     const { experience } = window.Fides;
     cmpApi.setSupportedAPIs(getSupportedApis());
+    // Set status to ready immediately upon initialization, if either:
+    // A. Consent should not be resurfaced
+    // B. User has no prefs and has all opt-in notices
     if (
       isPrivacyExperience(experience) &&
-      !shouldResurfaceConsent(experience, event.detail)
+      (!shouldResurfaceConsent(experience, event.detail) ||
+        (allNoticesAreDefaultOptIn(experience.privacy_notices) &&
+          !userHasExistingPrefs(
+            event.detail.consent,
+            event.detail.fides_string,
+            experience.privacy_notices
+          )))
     ) {
       const tcSet = setTcString(event, cmpApi);
       if (tcSet) {
