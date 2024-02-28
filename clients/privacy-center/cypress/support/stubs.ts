@@ -60,7 +60,7 @@ export const stubConfig = (
   { consent, experience, geolocation, options }: Partial<FidesConfigTesting>,
   mockGeolocationApiResp?: any,
   mockExperienceApiResp?: any,
-  demoPageQueryParams?: any,
+  demoPageQueryParams?: Cypress.VisitOptions["qs"],
   demoPageWindowParams?: any
 ) => {
   cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {

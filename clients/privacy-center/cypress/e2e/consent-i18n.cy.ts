@@ -1,5 +1,6 @@
 import { FidesOptions } from "fides-js";
 import { stubConfig } from "../support/stubs";
+import { PrivacyExperience } from "fides-js/src/lib/consent-types";
 
 describe("Consent i18n", () => {
   /**
@@ -100,23 +101,34 @@ describe("Consent i18n", () => {
   ];
 
   // Setup a test case with the given params
-  const visitDemoWithI18n = (
-    navigatorLanguage: string,
-    fixture: TestFixture,
-    options?: Partial<FidesOptions>
-  ) => {
+  const visitDemoWithI18n = (props: {
+    navigatorLanguage: string;
+    fixture: TestFixture;
+    options?: Partial<FidesOptions>;
+    queryParams?: Cypress.VisitOptions["qs"];
+    overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
+  }) => {
     cy.on("window:before:load", (win) => {
       // eslint-disable-next-line no-param-reassign
       Object.defineProperty(win.navigator, "language", {
-        value: navigatorLanguage,
+        value: props.navigatorLanguage,
       });
     });
-    cy.fixture(`consent/${fixture}`).then((data) => {
-      const experience = data.items[0];
-      cy.log(`Using PrivacyExperience data from ${fixture}`, experience);
-      stubConfig({ experience, options });
+    cy.fixture(`consent/${props.fixture}`).then((data) => {
+      let experience = data.items[0];
+      cy.log(`Using PrivacyExperience data from ${props.fixture}`, experience);
+      if (props.overrideExperience) {
+        experience = props.overrideExperience(experience);
+        cy.log("Using overridden PrivacyExperience data from overrideExperience()", experience);
+      }
+      stubConfig(
+        { experience, options: props.options },
+        null,
+        null,
+        props.queryParams
+      );
     });
-    cy.window().its("navigator.language").should("eq", navigatorLanguage);
+    cy.window().its("navigator.language").should("eq", props.navigatorLanguage);
   };
 
   // Reusable assertions to test that the banner component localizes correctly
@@ -130,8 +142,14 @@ describe("Consent i18n", () => {
       );
       cy.get("#fides-button-group").contains(expected.reject_button_label);
       cy.get("#fides-button-group").contains(expected.accept_button_label);
-      cy.get("#fides-privacy-policy-link").contains(expected.privacy_policy_link_label);
-      cy.get("#fides-privacy-policy-link a").should("have.attr", "href", expected.privacy_policy_url);
+      cy.get("#fides-privacy-policy-link").contains(
+        expected.privacy_policy_link_label
+      );
+      cy.get("#fides-privacy-policy-link a").should(
+        "have.attr",
+        "href",
+        expected.privacy_policy_url
+      );
 
       // untested
       // "acknowledge_button_label": "OK",
@@ -155,8 +173,14 @@ describe("Consent i18n", () => {
       cy.get(".fides-modal-button-group").contains(
         expected.accept_button_label
       );
-      cy.get("#fides-privacy-policy-link").contains(expected.privacy_policy_link_label);
-      cy.get("#fides-privacy-policy-link a").should("have.attr", "href", expected.privacy_policy_url);
+      cy.get("#fides-privacy-policy-link").contains(
+        expected.privacy_policy_link_label
+      );
+      cy.get("#fides-privacy-policy-link a").should(
+        "have.attr",
+        "href",
+        expected.privacy_policy_url
+      );
     });
   };
 
@@ -175,14 +199,20 @@ describe("Consent i18n", () => {
   describe("when auto_detect_language is true", () => {
     describe(`when browser language matches default locale (${ENGLISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
-        visitDemoWithI18n(ENGLISH_LOCALE, "experience_banner_modal.json");
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_banner_modal.json",
+        });
         testBannerLocalization(ENGLISH_BANNER);
         openAndTestModalLocalization(ENGLISH_MODAL);
         testModalNoticesLocalization(ENGLISH_NOTICES);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {
-        visitDemoWithI18n(ENGLISH_LOCALE, "experience_tcf.json");
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_tcf.json",
+        });
         cy.window().its("navigator.language").should("eq", ENGLISH_LOCALE);
       });
 
@@ -192,14 +222,20 @@ describe("Consent i18n", () => {
 
     describe(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
-        visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json");
+        visitDemoWithI18n({
+          navigatorLanguage: SPANISH_LOCALE,
+          fixture: "experience_banner_modal.json",
+        });
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {
-        visitDemoWithI18n(SPANISH_LOCALE, "experience_tcf.json");
+        visitDemoWithI18n({
+          navigatorLanguage: SPANISH_LOCALE,
+          fixture: "experience_tcf.json",
+        });
         cy.window().its("navigator.language").should("eq", SPANISH_LOCALE);
       });
 
@@ -209,12 +245,18 @@ describe("Consent i18n", () => {
 
     describe(`when browser language does not match any available locale (${JAPANESE_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
-        visitDemoWithI18n(JAPANESE_LOCALE, "experience_banner_modal.json");
+        visitDemoWithI18n({
+          navigatorLanguage: JAPANESE_LOCALE,
+          fixture: "experience_banner_modal.json",
+        });
         cy.window().its("navigator.language").should("eq", JAPANESE_LOCALE);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {
-        visitDemoWithI18n(JAPANESE_LOCALE, "experience_tcf.json");
+        visitDemoWithI18n({
+          navigatorLanguage: JAPANESE_LOCALE,
+          fixture: "experience_tcf.json",
+        });
         cy.window().its("navigator.language").should("eq", JAPANESE_LOCALE);
       });
 
@@ -223,12 +265,16 @@ describe("Consent i18n", () => {
     });
   });
 
-  // TODO (PROD-1597): override experience_config.auto_detect_language
-  describe.skip("when auto_detect_language is false", () => {
-    it(`always localizes in the default locale (${ENGLISH_LOCALE})`, () => {
+  describe("when auto_detect_language is false", () => {
+    it(`ignores browser locale and localizes in the default locale (${ENGLISH_LOCALE})`, () => {
       // Visit the demo site in Spanish, but expect English translations when auto-detection is disabled
-      visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json", {
-        // TODO (PROD-1597): override experience_config.auto_detect_language
+      visitDemoWithI18n({
+        navigatorLanguage: SPANISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+        overrideExperience: (experience) => {
+          experience.experience_config!.auto_detect_language = false;
+          return experience;
+        },
       });
       testBannerLocalization(ENGLISH_BANNER);
       openAndTestModalLocalization(ENGLISH_MODAL);
@@ -236,11 +282,28 @@ describe("Consent i18n", () => {
     });
   });
 
+  describe(`when ?fides_locale override param is set to an available locale (${SPANISH_LOCALE})`, () => {
+    it(`ignores browser locale and localizes in the override locale (${SPANISH_LOCALE})`, () => {
+      // Visit the demo site in English, but expect Spanish translations when fides_locale override is set
+      visitDemoWithI18n({
+        navigatorLanguage: ENGLISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+        queryParams: { fides_locale: SPANISH_LOCALE },
+      });
+      testBannerLocalization(SPANISH_BANNER);
+      openAndTestModalLocalization(SPANISH_MODAL);
+      testModalNoticesLocalization(SPANISH_NOTICES);
+    });
+  });
+
   // TODO (PROD-1598): enable this test and add other cases as needed!
   describe.skip("when user selects their own locale", () => {
     it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
       // Visit the demo site in English, but expect Spanish translations when the user selects
-      visitDemoWithI18n(ENGLISH_LOCALE, "experience_banner_modal.json");
+      visitDemoWithI18n({
+        navigatorLanguage: ENGLISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+      });
       // TODO (PROD-1598): select Spanish from banner
       testBannerLocalization(SPANISH_BANNER);
       openAndTestModalLocalization(SPANISH_MODAL);
