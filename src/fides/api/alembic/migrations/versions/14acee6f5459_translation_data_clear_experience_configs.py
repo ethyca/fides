@@ -59,29 +59,59 @@ NOTICES_TO_EXPERIENCE_CONFIG = {
 }
 
 
+def load_experience_config_from_files(file_paths):
+    """
+    Attempts loading the experience config from a set of given file paths until it finds a valid yaml
+    """
+    for path in file_paths:
+        try:
+            with open(path, "r") as f:
+                return yaml.safe_load(f).get("privacy_experience_configs")
+        except FileNotFoundError:
+            # If the file is not found in the current path, try the next one
+            continue
+
+    return None
+
+
 def load_default_experience_configs():
     """
     Loads default experience config definitions from yml file.
 
     Maps the experience config definitions keyed by the ID enum.
     """
-    raw_experience_config_map = {}
-    experience_config_map = {}
-    with open("privacy_experience_config_defaults.yml", "r") as f:
-        experience_configs = yaml.safe_load(f).get("privacy_experience_configs")
-        for experience_config in experience_configs:
-            raw_experience_config_map[
-                ExperienceConfigIds(experience_config["id"]).name
-            ] = experience_config.copy()
-            # TODO: fix this, we shouldn't null these out automatically, only if they will be populated by migration ...
-            experience_config["regions"] = (
-                set()
-            )  # remove the configs regions, since we will populate based on existing notices
-            experience_config["privacy_notices"] = set()  # initialize the notices field
-            experience_config_map[ExperienceConfigIds(experience_config["id"]).name] = (
-                experience_config
-            )
-    return experience_config_map, raw_experience_config_map
+    experience_config_template_map = (
+        {}
+    )  # this will just hold config templates exactly as they are in the 'oob' file
+    experience_config_map = (
+        {}
+    )  # will hold experience configs 'reconciled' between existing data and 'oob' template data
+
+    # this is a bit of a hack! but the path to the file depends on whether we're executing the migration
+    # as part of app startup or as part of a 'manual' migration attempt
+    experience_configs = load_experience_config_from_files(
+        [
+            "privacy_experience_config_defaults.yml",
+            "src/fides/api/alembic/privacy_experience_config_defaults.yml",
+        ]
+    )
+
+    for experience_config in experience_configs:
+        experience_config_template_map[
+            ExperienceConfigIds(experience_config["id"]).name
+        ] = experience_config.copy()
+        # TODO: fix this, we shouldn't null these out automatically, only if they will be populated by migration ...
+        experience_config["regions"] = (
+            set()
+        )  # remove the configs regions, since we will populate based on existing notices
+        experience_config["privacy_notices"] = set()  # initialize the notices field
+        experience_config["needs_migration"] = (
+            False  # indicator whether the record requires migration, or we can default to the template values
+        )
+        experience_config_map[ExperienceConfigIds(experience_config["id"]).name] = (
+            experience_config
+        )
+    return experience_config_map, experience_config_template_map
 
 
 experience_config_map, raw_experience_config_map = load_default_experience_configs()
@@ -167,7 +197,9 @@ def determine_needed_experience_configs(bind):
     existing_experience_configs: ResultProxy = bind.execute(
         text(experience_config_query)
     )
+    has_existing_experience_configs = False
     for eec in existing_experience_configs:
+        has_existing_experience_configs = True
         component = ComponentType(eec["component"])
         configs = []
         if eea_config_id := EEA_MAPPING.get(component):
@@ -191,7 +223,7 @@ def determine_needed_experience_configs(bind):
                 config["save_button_label"] = eec["save_button_label"]
                 config["title"] = eec["title"]
 
-    if existing_experience_configs:
+    if has_existing_experience_configs:
         return experience_config_map
     else:
         # if no existing experience configs, don't return the map, because no experience config migration is needed.
