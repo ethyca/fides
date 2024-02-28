@@ -188,16 +188,17 @@ describe("Consent i18n", () => {
         cy.window().its("navigator.language").should("eq", ENGLISH_LOCALE);
       });
 
+      it.skip("localizes banner_and_modal notice-only components in the correct locale", () => {});
       it.skip("localizes privacy_center components in the correct locale", () => {});
     });
 
     // TODO (PROD-1597): localize fides-js components
-    describe.skip(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
+    describe(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n(SPANISH_LOCALE, "experience_banner_modal.json");
         testBannerLocalization(SPANISH_BANNER);
-        openAndTestModalLocalization(SPANISH_MODAL);
-        testModalNoticesLocalization(SPANISH_NOTICES);
+        // openAndTestModalLocalization(SPANISH_MODAL);
+        // testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {
@@ -205,6 +206,7 @@ describe("Consent i18n", () => {
         cy.window().its("navigator.language").should("eq", SPANISH_LOCALE);
       });
 
+      it.skip("localizes banner_and_modal notice-only components in the correct locale", () => {});
       it.skip("localizes privacy_center components in the correct locale", () => {});
     });
 
@@ -219,6 +221,7 @@ describe("Consent i18n", () => {
         cy.window().its("navigator.language").should("eq", JAPANESE_LOCALE);
       });
 
+      it.skip("localizes banner_and_modal notice-only components in the correct locale", () => {});
       it.skip("localizes privacy_center components in the correct locale", () => {});
     });
   });
