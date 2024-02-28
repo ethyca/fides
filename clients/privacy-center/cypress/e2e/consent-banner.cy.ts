@@ -303,7 +303,7 @@ describe("Consent overlay", () => {
               the likelihood of XSS attacks.
             </p>
             `;
-            cy.fixture("consent/test_banner_options.json").then((config) => {
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
               const newExperienceTranslationsConfig = [
                 overrideTranslation(
                   config.experience.experience_config.translations[0],
@@ -351,7 +351,7 @@ describe("Consent overlay", () => {
               "This test is overriding the banner description separately from modal!";
             const modalDescription =
               "This test is overriding the modal description separately from banner!";
-            cy.fixture("consent/test_banner_options.json").then((config) => {
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
               const newExperienceTranslationsConfig = [
                 overrideTranslation(
                   config.experience.experience_config.translations[0],
@@ -400,7 +400,7 @@ describe("Consent overlay", () => {
               "This test is overriding the banner title separately from modal!";
             const modalTitle =
               "This test is overriding the modal title separately from banner!";
-            cy.fixture("consent/test_banner_options.json").then((config) => {
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
               const newExperienceTranslationsConfig = [
                 overrideTranslation(
                   config.experience.experience_config.translations[0],
@@ -494,7 +494,7 @@ describe("Consent overlay", () => {
 
         cy.contains("button", "Manage preferences").click();
 
-        // UI should reflect client-side fetched experience (test_banner_options.json)
+        // UI should reflect client-side fetched experience (fidesjs_options_banner_modal.json)
         cy.getByTestId("toggle-Essential").within(() => {
           cy.get("input").should("be.disabled");
           cy.get("input").should("be.checked");
@@ -1011,7 +1011,7 @@ describe("Consent overlay", () => {
 
     describe("when experience component is not an overlay", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
           stubConfig({
             experience: {
               experience_config: {
@@ -1413,7 +1413,7 @@ describe("Consent overlay", () => {
 
     describe("when banner should not be shown but modal link element exists", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
           stubConfig({
             experience: {
               experience_config: {
@@ -1445,7 +1445,7 @@ describe("Consent overlay", () => {
 
     describe("when both banner is shown and modal link element exists", () => {
       beforeEach(() => {
-        cy.fixture("consent/test_banner_options.json").then((config) => {
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
           stubConfig({ experience: config.experience });
         });
       });
