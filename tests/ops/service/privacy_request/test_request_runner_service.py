@@ -303,22 +303,7 @@ def get_privacy_request_results(
     if "encryption_key" in privacy_request_data:
         privacy_request.encryption_key = privacy_request_data["encryption_key"]
 
-    erasure_rules: List[Rule] = policy.get_rules_for_action(
-        action_type=ActionType.erasure
-    )
-    unique_masking_strategies_by_name: Set[str] = set()
-    for rule in erasure_rules:
-        strategy_name: str = rule.masking_strategy["strategy"]
-        configuration: MaskingConfiguration = rule.masking_strategy["configuration"]
-        if strategy_name in unique_masking_strategies_by_name:
-            continue
-        unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
-        if masking_strategy.secrets_required():
-            masking_secrets: List[
-                MaskingSecretCache
-            ] = masking_strategy.generate_secrets_for_cache()
-            privacy_request.cache_masking_secrets(masking_secrets)
+    privacy_request.cache_masking_secrets(policy.generate_masking_secrets())
 
     run_privacy_request_task.delay(privacy_request.id).get(
         timeout=task_timeout,

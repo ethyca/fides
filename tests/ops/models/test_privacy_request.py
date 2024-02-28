@@ -229,14 +229,6 @@ def test_delete_privacy_request(db: Session, policy: Policy) -> None:
     assert from_db is None
 
 
-def test_delete_privacy_request_removes_cached_data(
-    cache: FidesopsRedis,
-    db: Session,
-    policy: Policy,
-) -> None:
-    pass
-
-
 class TestPrivacyRequestTriggerWebhooks:
     def test_trigger_one_way_policy_webhook(
         self,

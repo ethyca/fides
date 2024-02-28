@@ -392,40 +392,6 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         assert run_access_request_mock.called
 
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_does_not_cache_masking_secrets(
-        self,
-        run_erasure_request_mock,
-        url,
-        db,
-        api_client: TestClient,
-        erasure_policy_aes,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy_aes.key,
-                "identity": identity,
-            }
-        ]
-        resp = api_client.post(url, json=data)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
-        )
-        assert cache.get_encoded_by_key(secret_key) is None
-        pr.delete(db=db)
-        assert run_erasure_request_mock.called
-
     def test_create_privacy_request_invalid_encryption_values(
         self, url, db, api_client: TestClient, policy, cache
     ):
@@ -4735,41 +4701,6 @@ class TestCreatePrivacyRequestAuthenticated:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         assert pr.external_id == external_id
         assert run_access_request_mock.called
-
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_does_not_cache_masking_secrets(
-        self,
-        run_erasure_request_mock,
-        url,
-        db,
-        generate_auth_header,
-        api_client: TestClient,
-        erasure_policy_aes,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy_aes.key,
-                "identity": identity,
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
-        )
-        assert cache.get_encoded_by_key(secret_key) is None
-        assert run_erasure_request_mock.called
 
     def test_create_privacy_request_invalid_encryption_values(
         self, url, generate_auth_header, api_client: TestClient, policy  # , cache
