@@ -164,7 +164,6 @@ export type { GPPApplicationConfigResponse } from "./models/GPPApplicationConfig
 export type { GPPFieldMapping } from "./models/GPPFieldMapping";
 export type { GPPFieldMappingCreate } from "./models/GPPFieldMappingCreate";
 export type { GPPMechanismMapping } from "./models/GPPMechanismMapping";
-export type { GPPSettings } from "./models/GPPSettings";
 export { GPPUSApproach } from "./models/GPPUSApproach";
 export type { Header } from "./models/Header";
 export type { HealthCheck } from "./models/HealthCheck";

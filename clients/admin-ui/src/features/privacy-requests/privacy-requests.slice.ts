@@ -3,7 +3,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPostPrivacyRequests,
-  GPPSettings,
+  GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
   PrivacyRequestNotificationInfo,
   SecurityApplicationConfig,
@@ -560,29 +560,30 @@ export const selectApplicationConfig = () =>
     (_, { data }) => data as ApplicationConfig
   );
 
-const defaultGppSettings: GPPSettings = {
+const defaultGppSettings: GPPApplicationConfigResponse = {
   enabled: false,
 };
-export const selectGppSettings: (state: RootState) => GPPSettings =
-  createSelector(
-    [
-      (state) => state,
-      privacyRequestApi.endpoints.getConfigurationSettings.select({
-        api_set: true,
-      }),
-      privacyRequestApi.endpoints.getConfigurationSettings.select({
-        api_set: false,
-      }),
-    ],
-    (state, { data: apiSetConfig }, { data: config }) => {
-      const hasApi = apiSetConfig && apiSetConfig.gpp;
-      const hasDefault = config && config.gpp;
-      if (hasApi && hasDefault) {
-        return { ...config.gpp, ...apiSetConfig.gpp };
-      }
-      if (hasDefault) {
-        return config.gpp;
-      }
-      return defaultGppSettings;
+export const selectGppSettings: (
+  state: RootState
+) => GPPApplicationConfigResponse = createSelector(
+  [
+    (state) => state,
+    privacyRequestApi.endpoints.getConfigurationSettings.select({
+      api_set: true,
+    }),
+    privacyRequestApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+  ],
+  (state, { data: apiSetConfig }, { data: config }) => {
+    const hasApi = apiSetConfig && apiSetConfig.gpp;
+    const hasDefault = config && config.gpp;
+    if (hasApi && hasDefault) {
+      return { ...config.gpp, ...apiSetConfig.gpp };
     }
-  );
+    if (hasDefault) {
+      return config.gpp;
+    }
+    return defaultGppSettings;
+  }
+);
