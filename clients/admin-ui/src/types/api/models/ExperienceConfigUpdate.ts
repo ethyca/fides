@@ -2,71 +2,25 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { BannerEnabled } from "./BannerEnabled";
+import type { ExperienceTranslation } from "./ExperienceTranslation";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
- * Updating ExperienceConfig. Note that component cannot be updated once its created
+ * The schema to update an ExperienceConfig via the API.
+ *
+ * Note that component cannot be updated once its created.
+ * Translations, regions, and privacy_notice_ids must be supplied or they will be removed.  They are
+ * required in the request to hopefully make their removal intentional.
+ *
+ * Experience Config Updates are also re-validated with the ExperienceConfigCreate
+ * schema after patch dry updates are applied.
  */
 export type ExperienceConfigUpdate = {
-  /**
-   * Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'
-   */
-  accept_button_label?: string;
-  /**
-   * Overlay 'Acknowledge button label for notice only banner'
-   */
-  acknowledge_button_label?: string;
-  /**
-   * Overlay 'Banner Description'
-   */
-  banner_description?: string;
-  /**
-   * Overlay 'Banner'
-   */
-  banner_enabled?: BannerEnabled;
-  /**
-   * Overlay 'Banner title'
-   */
-  banner_title?: string;
-  /**
-   * Overlay 'Description' or Privacy Center 'Description'
-   */
-  description?: string;
-  /**
-   * Whether the given ExperienceConfig is disabled
-   */
+  name?: string;
   disabled?: boolean;
-  /**
-   * Whether the given ExperienceConfig is a global default
-   */
-  is_default?: boolean;
-  /**
-   * Overlay and Privacy Center 'Privacy policy link label'
-   */
-  privacy_policy_link_label?: string;
-  /**
-   * Overlay and Privacy Center 'Privacy policy URL
-   */
-  privacy_policy_url?: string;
-  /**
-   * Overlay 'Privacy preferences link label'
-   */
-  privacy_preferences_link_label?: string;
-  /**
-   * Regions using this ExperienceConfig
-   */
-  regions?: Array<PrivacyNoticeRegion>;
-  /**
-   * Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'
-   */
-  reject_button_label?: string;
-  /**
-   * Overlay 'Privacy preferences 'Save' button label
-   */
-  save_button_label?: string;
-  /**
-   * Overlay 'title' or Privacy Center 'title'
-   */
-  title?: string;
+  dismissable?: boolean;
+  allow_language_selection?: boolean;
+  regions: Array<PrivacyNoticeRegion>;
+  translations: Array<ExperienceTranslation>;
+  privacy_notice_ids: Array<string>;
 };

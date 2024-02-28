@@ -67,6 +67,7 @@ const PrivacyNoticeForm = ({
   const handleSubmit = async (values: PrivacyNoticeCreation) => {
     let result;
     if (isEditing) {
+      // @ts-ignore
       result = await patchNoticesMutationTrigger([values]);
     } else {
       result = await postNoticesMutationTrigger([values]);

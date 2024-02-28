@@ -1,12 +1,7 @@
 import { Button, Flex, Spinner } from "@fidesui/react";
 import { PRIVACY_NOTICES_ROUTE } from "common/nav/v2/routes";
 import Restrict, { useHasPermission } from "common/Restrict";
-import {
-  DateCell,
-  FidesTable,
-  FidesTableFooter,
-  TitleCell,
-} from "common/table";
+import { FidesTable, FidesTableFooter, TitleCell } from "common/table";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
@@ -16,7 +11,6 @@ import { useAppSelector } from "~/app/hooks";
 import {
   EnablePrivacyNoticeCell,
   FrameworkCell,
-  LocationCell,
   MechanismCell,
   PrivacyNoticeStatusCell,
 } from "~/features/privacy-notices/cells";
@@ -26,7 +20,10 @@ import {
   selectPageSize,
   useGetAllPrivacyNoticesQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
+import {
+  LimitedPrivacyNoticeResponseSchema,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 export const PrivacyNoticesTable = () => {
   const router = useRouter();
@@ -40,14 +37,14 @@ export const PrivacyNoticesTable = () => {
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_NOTICE_UPDATE,
   ]);
-  const handleRowClick = ({ id }: PrivacyNoticeResponse) => {
+  const handleRowClick = ({ id }: LimitedPrivacyNoticeResponseSchema) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_NOTICES_ROUTE}/${id}`);
     }
   };
 
-  const columns: Column<PrivacyNoticeResponse>[] = useMemo(() => {
-    const noticeColumns: Column<PrivacyNoticeResponse>[] = [
+  const columns: Column<LimitedPrivacyNoticeResponseSchema>[] = useMemo(() => {
+    const noticeColumns: Column<LimitedPrivacyNoticeResponseSchema>[] = [
       {
         Header: "Title",
         accessor: "name",
@@ -58,8 +55,6 @@ export const PrivacyNoticesTable = () => {
         accessor: "consent_mechanism",
         Cell: MechanismCell,
       },
-      { Header: "Locations", accessor: "regions", Cell: LocationCell },
-      { Header: "Last update", accessor: "updated_at", Cell: DateCell },
       {
         Header: "Status",
         Cell: PrivacyNoticeStatusCell,
@@ -91,7 +86,7 @@ export const PrivacyNoticesTable = () => {
   }
 
   return (
-    <FidesTable<PrivacyNoticeResponse>
+    <FidesTable<LimitedPrivacyNoticeResponseSchema>
       columns={columns}
       data={privacyNotices}
       onRowClick={userCanUpdate ? handleRowClick : undefined}

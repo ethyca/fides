@@ -79,6 +79,7 @@ export enum ScopeRegistryEnum {
   FIDES_TAXONOMY_UPDATE = "fides_taxonomy:update",
   GENERATE_EXEC = "generate:exec",
   GVL_UPDATE = "gvl:update",
+  LANGUAGE_READ = "language:read",
   LOCATION_READ = "location:read",
   LOCATION_UPDATE = "location:update",
   MASKING_EXEC = "masking:exec",

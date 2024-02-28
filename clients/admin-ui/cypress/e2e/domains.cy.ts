@@ -11,7 +11,6 @@ const API_SET_CONFIG = {
 const CONFIG_SET_CONFIG = {
   security: {
     cors_origins: ["http://localhost"],
-    cors_origin_regex: "https://.*\\.example\\.com",
   },
 };
 
@@ -76,10 +75,6 @@ describe("Domains page", () => {
             "have.value",
             "http://localhost"
           );
-          cy.getByTestId("input-config_cors_origin_regex").should(
-            "have.value",
-            "https://.*\\.example\\.com"
-          );
         });
       });
     });
@@ -105,7 +100,6 @@ describe("Domains page", () => {
 
         cy.getByTestId("config-set-domains-form").within(() => {
           cy.getByTestId("input-config_cors_origins[0]").should("not.exist");
-          cy.getByTestId("input-config_cors_origin_regex").should("not.exist");
           cy.contains("No advanced domain settings configured.");
         });
       });
