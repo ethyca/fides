@@ -87,11 +87,11 @@ const EmptyTableNotice = () => (
     mt={6}
     p={10}
     spacing={4}
-    boxShadow="md"
     borderRadius="base"
     maxW="70%"
     data-testid="no-results-notice"
     alignSelf="center"
+    margin="auto"
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
@@ -416,6 +416,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           }
           return undefined;
         }}
+        emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}
@@ -428,7 +429,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         startRange={startRange}
         endRange={endRange}
       />
-      {totalRows === 0 ? <EmptyTableNotice /> : null}
     </Flex>
   );
 };
