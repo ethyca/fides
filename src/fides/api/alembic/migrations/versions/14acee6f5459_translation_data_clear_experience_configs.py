@@ -80,12 +80,8 @@ def load_default_experience_configs():
 
     Maps the experience config definitions keyed by the ID enum.
     """
-    experience_config_template_map = (
-        {}
-    )  # this will just hold config templates exactly as they are in the 'oob' file
-    experience_config_map = (
-        {}
-    )  # will hold experience configs 'reconciled' between existing data and 'oob' template data
+    experience_config_template_map = {} # this will just hold config templates exactly as they are in the 'oob' file
+    experience_config_map = {} # will hold experience configs 'reconciled' between existing data and 'oob' template data
 
     # this is a bit of a hack! but the path to the file depends on whether we're executing the migration
     # as part of app startup or as part of a 'manual' migration attempt
@@ -97,17 +93,15 @@ def load_default_experience_configs():
     )
 
     for experience_config in experience_configs:
-        experience_config_template_map[
-            ExperienceConfigIds(experience_config["id"]).name
-        ] = experience_config.copy()
+        experience_config_template_map[ExperienceConfigIds(experience_config["id"]).name] = (
+            experience_config.copy()
+        )
         # TODO: fix this, we shouldn't null these out automatically, only if they will be populated by migration ...
         experience_config["regions"] = (
             set()
         )  # remove the configs regions, since we will populate based on existing notices
         experience_config["privacy_notices"] = set()  # initialize the notices field
-        experience_config["needs_migration"] = (
-            False  # indicator whether the record requires migration, or we can default to the template values
-        )
+        experience_config["needs_migration"] = False # indicator whether the record requires migration, or we can default to the template values
         experience_config_map[ExperienceConfigIds(experience_config["id"]).name] = (
             experience_config
         )
@@ -255,7 +249,7 @@ def migrate_experiences(bind):
             bind.execute(
                 create_experience_config_query,
                 {
-                    "id": experience_config["id"],
+                    "id": experience_config["origin"], # origin of the config record is the template ID
                     "component": experience_config["component"],
                     "name": experience_config["name"],
                     "disabled": experience_config["disabled"],
@@ -268,8 +262,8 @@ def migrate_experiences(bind):
 
         create_experience_config_query = text(
             """
-            INSERT INTO privacyexperienceconfig (id, version, component, name, disabled, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-            VALUES (:id,  :version, :component, :name, :disabled, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+            INSERT INTO privacyexperienceconfig (id, version, origin, component, name, disabled, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+            VALUES (:id,  :version, :origin,  :component, :name, :disabled, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
@@ -284,8 +278,8 @@ def migrate_experiences(bind):
 
         create_experience_config_history = text(
             """
-             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, name, disabled, version, component, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-             VALUES (:history_id, :id, :name, :disabled, :version, :component, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, origin, name, disabled, version, component, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
