@@ -1,14 +1,17 @@
 import { ComponentChildren, VNode, h, Fragment } from "preact";
 import type { HTMLAttributes } from "react";
+
+import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
+import type { I18n } from "../lib/i18n";
 
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
-import { getConsentContext } from "../lib/consent-context";
 
 export interface ConsentContentProps {
   title: HTMLAttributes<HTMLHeadingElement>;
   experience: ExperienceConfig;
+  i18n: I18n;
   children: ComponentChildren;
   className?: string;
   onVendorPageClick?: () => void;
@@ -19,6 +22,8 @@ const ConsentModal = ({
   title,
   className,
   experience,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO (PROD-1597): disabled while integrating with API
+  i18n,
   renderModalFooter,
   children,
   onVendorPageClick,
@@ -38,7 +43,7 @@ const ConsentModal = ({
             {...title}
             className="fides-modal-title"
           >
-            {experience.title}
+            {experience.translations[0].title}
           </div>
           <p
             data-testid="fides-modal-description"
@@ -46,7 +51,7 @@ const ConsentModal = ({
           >
             <ExperienceDescription
               onVendorPageClick={onVendorPageClick}
-              description={experience.description}
+              description={experience.translations[0].description}
               allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>

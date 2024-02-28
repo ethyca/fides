@@ -18,8 +18,7 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.custom_asset import CustomAsset
-from fides.api.models.privacy_notice import PrivacyNotice
+from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.schemas.language import SupportedLanguage
 from fides.api.schemas.locations import PrivacyNoticeRegion, filter_regions_by_location
 
@@ -107,6 +106,9 @@ class PrivacyExperienceConfigBase:
 
     disabled = Column(Boolean, nullable=False, default=True)
     dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
+    auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )
     name = Column(String)
 
 
@@ -205,7 +207,6 @@ class PrivacyExperienceConfig(
     - Translations, Notices, and Regions (via Privacy Experiences) are linked to this resource.
     """
 
-    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     experiences: RelationshipProperty[AppenderQuery] = relationship(
@@ -458,7 +459,7 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         return self.histories[-1] if self.histories.count() else None
 
     @property
-    def experience_config_history_id(self) -> Optional[str]:
+    def privacy_experience_config_history_id(self) -> Optional[str]:
         """Convenience property that returns the experience config history id for the latest version.
 
         Note that there are possibly many historical records for the given experience config translation, this just returns the current
@@ -481,7 +482,6 @@ class PrivacyExperienceConfigHistory(
     an id to this resource which preserves the details of the Experience viewed by the end user.
     """
 
-    custom_asset_id = Column(String, ForeignKey(CustomAsset.id_field_path))
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     translation_id = Column(

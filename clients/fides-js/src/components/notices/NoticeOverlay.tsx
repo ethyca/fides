@@ -1,5 +1,5 @@
-import { h, FunctionComponent, Fragment } from "preact";
-import { useState, useCallback, useMemo } from "preact/hooks";
+import { h, Fragment, FunctionComponent } from "preact";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -26,8 +26,9 @@ import { getConsentContext } from "../../lib/consent-context";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
-  experience,
   options,
+  experience,
+  i18n,
   fidesRegionString,
   cookie,
 }) => {
@@ -119,7 +120,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const dispatchOpenOverlayEvent = useCallback(() => {
     dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.OVERLAY,
+      servingComponent: ServingComponent.MODAL,
     });
   }, [cookie, options.debug]);
 
@@ -137,6 +138,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     <Overlay
       options={options}
       experience={experience}
+      i18n={i18n}
       cookie={cookie}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
