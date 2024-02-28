@@ -122,76 +122,6 @@ class TestExperienceConfig:
         translation.delete(db)
         config.delete(db=db)
 
-    def test_privacy_experience_config_regions_property(
-        self, db, experience_config_modal
-    ):
-        # .all_regions shows every region physically linked
-        assert experience_config_modal.all_regions == [PrivacyNoticeRegion.it]
-        # .regions further filters on configured locations where applicable.  There are no configured
-        # locations so they return the same thing
-        assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
-
-        # Let's save CA as a selected location
-        LocationRegulationSelections.set_selected_locations(db, ["us_ca"])
-
-        # Setting a location doesn't affect which regions are linked
-        assert experience_config_modal.all_regions == [PrivacyNoticeRegion.it]
-        # "it" region is suppressed from the regions property because there are locations configured and
-        # "it" is not one of them
-        assert experience_config_modal.regions == []
-
-        # Let's set CA and Italy as the selected locations
-        LocationRegulationSelections.set_selected_locations(db, ["us_ca", "it"])
-
-        assert experience_config_modal.all_regions == [PrivacyNoticeRegion.it]
-        # Now Italy is surfaced again because it is a configured location
-        assert experience_config_modal.regions == [PrivacyNoticeRegion.it]
-
-        # Setting all individual
-        # mexico_central_america_regions. Backend detects that these are all the
-        # countries in the "mexico_central_america" group and saves the location group as well
-        LocationRegulationSelections.set_selected_locations(
-            db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
-        )
-        # Privacy Notice Regions can be saved at the Location or Location Group level. Let's
-        # save a Location Group here.
-        experience_config_modal.update(
-            db, data={"regions": [PrivacyNoticeRegion.mexico_central_america]}
-        )
-        db.refresh(experience_config_modal)
-
-        # .regions match the configured location group
-        assert experience_config_modal.all_regions == [
-            PrivacyNoticeRegion.mexico_central_america
-        ]
-        assert experience_config_modal.regions == [
-            PrivacyNoticeRegion.mexico_central_america
-        ]
-
-        # Regions can technically overlap
-        experience_config_modal.update(
-            db,
-            data={
-                "regions": [
-                    PrivacyNoticeRegion.mexico_central_america,
-                    PrivacyNoticeRegion.gt,
-                ]
-            },
-        )
-
-        # Locations must match the full subset - so mexico_central_america is not a region
-        LocationRegulationSelections.set_selected_locations(
-            db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr"]
-        )
-
-        assert experience_config_modal.all_regions == [
-            PrivacyNoticeRegion.gt,
-            PrivacyNoticeRegion.mexico_central_america,
-        ]
-        assert experience_config_modal.regions == [PrivacyNoticeRegion.gt]
-
-        LocationRegulationSelections.set_selected_locations(db, [])
-
     def test_update_privacy_experience_config_level(self, db, privacy_notice):
         config = PrivacyExperienceConfig.create(
             db=db,
@@ -249,9 +179,8 @@ class TestExperienceConfig:
 
         dry_update = config.dry_update(data=update_data)
         # These dry updates aren't bound to a Session, but we want to assert that
-        # accessing these properties doesn't fail
+        # accessing regions doesn't fail
         assert dry_update.regions == []
-        assert dry_update.all_regions == []
         config.dry_update_translations(
             [translation for translation in update_data["translations"]]
         )

@@ -18,9 +18,9 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
+from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.locations import PrivacyNoticeRegion, filter_regions_by_location
+from fides.api.schemas.locations import PrivacyNoticeRegion
 
 
 class ExperienceNotices(Base):
@@ -209,7 +209,7 @@ class PrivacyExperienceConfig(
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
-    experiences: RelationshipProperty[AppenderQuery] = relationship(
+    experiences = relationship(
         "PrivacyExperience",
         back_populates="experience_config",
         lazy="dynamic",
@@ -230,27 +230,9 @@ class PrivacyExperienceConfig(
     )
 
     @property
-    def all_regions(self) -> List[PrivacyNoticeRegion]:
-        """All regions physically linked to the PrivacyExperienceConfig regardless of which locations
-        have been configured"""
-        db = Session.object_session(self)
-        if not db:
-            # For dry update scenarios, where PrivacyExperienceConfig is not bound to a session
-            return []
-
-        return [
-            exp.region for exp in self.experiences.order_by(PrivacyExperience.region)
-        ]
-
-    @property
     def regions(self) -> List[PrivacyNoticeRegion]:
-        """Filters regions attached to this Experience Config on configured location if applicable"""
-        db = Session.object_session(self)
-        if not db:
-            # For dry update scenarios, where PrivacyExperienceConfig is not bound to a session
-            return []
-
-        return filter_regions_by_location(db, self.all_regions)  # type: ignore[attr-defined]
+        """Return the regions using this experience config"""
+        return [exp.region for exp in self.experiences]  # type: ignore[attr-defined]
 
     def get_translation_by_language(
         self, db: Session, language: Optional[SupportedLanguage]
@@ -591,20 +573,21 @@ def upsert_privacy_experiences_after_config_update(
     regions: List[PrivacyNoticeRegion],
 ) -> List[PrivacyNoticeRegion]:
     """
-    Physically links regions to a PrivacyExperienceConfig by adding or removing PrivacyExperience records.
+    Links regions to a PrivacyExperienceConfig by adding or removing PrivacyExperience records.
     """
-    regions_to_remove: List[
+    current_regions: List[PrivacyNoticeRegion] = experience_config.regions
+    removed_regions: List[
         PrivacyNoticeRegion
-    ] = [  # Regions that were not in the request, but currently attached to the Config.  Important to use "all_regions" here because we don't want the list suppressed by locations.
+    ] = [  # Regions that were not in the request, but currently attached to the Config
         PrivacyNoticeRegion(reg)
-        for reg in {reg.value for reg in experience_config.all_regions}.difference(
+        for reg in {reg.value for reg in current_regions}.difference(
             {reg.value for reg in regions}
         )
     ]
 
     # Delete any PrivacyExperiences whose regions are not in the request
     experience_config.experiences.filter(  # type: ignore[call-arg]
-        PrivacyExperience.region.in_(regions_to_remove)
+        PrivacyExperience.region.in_(removed_regions)
     ).delete()
 
     for region in regions:
@@ -627,9 +610,7 @@ def upsert_privacy_experiences_after_config_update(
                 },
             )
 
-    # ".all_regions" and ".regions" should match here, but returning ".all_regions" to reflect that "locations"
-    # aren't really the focus of this method.
-    return experience_config.all_regions
+    return experience_config.regions
 
 
 def region_country(region: str) -> str:

@@ -26,7 +26,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     System,
 )
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.locations import PrivacyNoticeRegion, filter_regions_by_location
+from fides.api.schemas.locations import PrivacyNoticeRegion
 
 
 class PrivacyNoticeFramework(Enum):
@@ -228,17 +228,13 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     @property
     def configured_regions(self) -> List[PrivacyNoticeRegion]:
-        """Convenience property to look up which regions are using these Notices.
-
-        If using "locations", filters the regions to be a subset of locations.
-        """
+        """Convenience property to look up which regions are using these Notices."""
         from fides.api.models.privacy_experience import (
             ExperienceNotices,
             PrivacyExperience,
         )
 
         db = Session.object_session(self)
-
         configured_regions = (
             db.query(PrivacyExperience.region)
             .join(
@@ -250,10 +246,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             .group_by(PrivacyExperience.region)
             .order_by(PrivacyExperience.region.asc())
         )
-
-        return filter_regions_by_location(
-            db, [region[0] for region in configured_regions]
-        )
+        return [region[0] for region in configured_regions]
 
     @classmethod
     def create(
