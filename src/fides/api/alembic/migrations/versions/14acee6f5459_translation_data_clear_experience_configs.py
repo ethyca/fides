@@ -67,10 +67,14 @@ def load_default_experience_configs():
 
     Maps the experience config definitions keyed by the ID enum.
     """
+    raw_experience_config_map = {}
     experience_config_map = {}
     with open("privacy_experience_config_defaults.yml", "r") as f:
         experience_configs = yaml.safe_load(f).get("privacy_experience_configs")
         for experience_config in experience_configs:
+            raw_experience_config_map[
+                ExperienceConfigIds(experience_config["id"]).name
+            ] = experience_config.copy()
             # TODO: fix this, we shouldn't null these out automatically, only if they will be populated by migration ...
             experience_config["regions"] = (
                 set()
@@ -79,10 +83,10 @@ def load_default_experience_configs():
             experience_config_map[ExperienceConfigIds(experience_config["id"]).name] = (
                 experience_config
             )
-    return experience_config_map
+    return experience_config_map, raw_experience_config_map
 
 
-experience_config_map = load_default_experience_configs()
+experience_config_map, raw_experience_config_map = load_default_experience_configs()
 
 
 def remove_existing_experience_data(bind):
@@ -208,6 +212,30 @@ def migrate_experiences(bind):
     - Then, based on the reconciled existing ExperienceConfig data, we create new ExperienceConfig and Experience records
     """
 
+    def create_new_experience_config_templates(experience_configs):
+
+        for experience_config in experience_configs:
+            create_experience_config_query = text(
+                """
+                INSERT INTO experienceconfigtemplate (id, component, name, disabled, privacy_notice_keys, regions)
+                VALUES (:id, :component, :name, :disabled, :privacy_notice_keys, :regions)
+                """
+            )
+
+            bind.execute(
+                create_experience_config_query,
+                {
+                    "id": experience_config["id"],
+                    "component": experience_config["component"],
+                    "name": experience_config["name"],
+                    "disabled": experience_config["disabled"],
+                    "privacy_notice_keys": tuple(
+                        experience_config["privacy_notice_keys"]
+                    ),
+                    "regions": tuple(experience_config["regions"]),
+                },
+            )
+
     def create_new_experience_config(experience_config):
 
         create_experience_config_query = text(
@@ -320,6 +348,9 @@ def migrate_experiences(bind):
 
     # wipe the existing experience + experience config data to start from a blank slate
     remove_existing_experience_data(bind)
+
+    if experience_configs:
+        create_new_experience_config_templates(raw_experience_config_map)
 
     # create new experience + experience configs based on old experience config data
     # this has been reconciled with the new OOB experience config records
