@@ -2,13 +2,9 @@ import { ComponentChildren, VNode, h } from "preact";
 import { useDisclosure } from "../lib/hooks";
 import Toggle from "./Toggle";
 
-interface DataUse {
-  key: string;
-  name?: string;
-}
-
 const DataUseToggle = ({
-  dataUse,
+  noticeKey,
+  title,
   checked,
   onToggle,
   children,
@@ -18,7 +14,8 @@ const DataUseToggle = ({
   isHeader,
   includeToggle = true,
 }: {
-  dataUse: DataUse;
+  noticeKey: string;
+  title?: string;
   checked: boolean;
   onToggle: (noticeKey: DataUse["key"]) => void;
   children?: ComponentChildren;
@@ -33,9 +30,7 @@ const DataUseToggle = ({
     getButtonProps,
     getDisclosureProps,
     onToggle: toggleDescription,
-  } = useDisclosure({
-    id: dataUse.key,
-  });
+  } = useDisclosure({ id: noticeKey });
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.code === "Space" || event.code === "Enter") {
@@ -54,7 +49,7 @@ const DataUseToggle = ({
           : "fides-notice-toggle"
       }
     >
-      <div key={dataUse.key} className="fides-notice-toggle-title">
+      <div key={noticeKey} className="fides-notice-toggle-title">
         <span
           role="button"
           tabIndex={0}
@@ -67,15 +62,15 @@ const DataUseToggle = ({
           }
         >
           <span className="fides-flex-center fides-justify-space-between">
-            {dataUse.name}
+            {title}
             {badge ? <span className="fides-notice-badge">{badge}</span> : null}
           </span>
           {gpcBadge}
         </span>
         {includeToggle ? (
           <Toggle
-            name={dataUse.name || ""}
-            id={dataUse.key}
+            name={title || ""}
+            id={noticeKey}
             checked={checked}
             onChange={onToggle}
             disabled={disabled}

@@ -90,11 +90,11 @@ describe("Consent i18n", () => {
       description: "Este sitio web usa cookies y servicios de mercadotecnia",
     },
     {
-      title: "Analytics",
+      title: "De análisis",
       description: "Este sitio web usa cookies y servicios analíticos",
     },
     {
-      title: "Essential",
+      title: "Esenciales",
       description: "Este sitio web utiliza cookies y servicios esenciales",
     },
   ];

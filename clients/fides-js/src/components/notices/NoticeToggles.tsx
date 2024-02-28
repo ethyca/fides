@@ -39,11 +39,12 @@ const NoticeToggles = ({
         const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
         // TODO: check
-        const dataUse = { key: notice.notice_key, name: notice.name };
+        const noticeKey = notice.notice_key
         return (
           <div>
             <DataUseToggle
-              dataUse={dataUse}
+              noticeKey={noticeKey}
+              title={title}
               checked={checked}
               onToggle={handleToggle}
               gpcBadge={<GpcBadgeForNotice notice={notice} value={checked} />}
