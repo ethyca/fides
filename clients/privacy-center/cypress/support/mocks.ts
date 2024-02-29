@@ -16,12 +16,11 @@ import {
 export const mockPrivacyNoticeTranslation = (
   params?: Partial<PrivacyNoticeTranslation>
 ) => {
-  const translation = {
-    id: "pri_sdafsf",
+  const translation: PrivacyNoticeTranslation = {
     language: "en",
-    title: "Test privacy notice",
-    description: "a test sample privacy notice configuration",
-    privacy_notice_history_id: "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
+    title: "Mock Advertising",
+    description: "A mock sample privacy notice configuration",
+    privacy_notice_history_id: "pri_notice-history-mock-advertising-en-000",
   };
   return { ...translation, ...params };
 };
@@ -35,19 +34,19 @@ export const mockPrivacyNotice = (
 ) => {
   const defaultTranslations = [mockPrivacyNoticeTranslation()];
   const notice = {
-    name: "Test privacy notice with GPC enabled",
+    name: "Advertising with GPC enabled",
     internal_description:
       "a test sample privacy notice configuration for internal use",
     consent_mechanism: ConsentMechanism.OPT_OUT,
     default_preference: UserConsentPreference.OPT_IN,
     has_gpc_flag: true,
     disabled: false,
-    origin: "12435134",
+    origin: null,
     data_uses: ["advertising", "third_party_sharing"],
     enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-    id: "pri_4bed96d0-b9e3-4596-a807-26b783836374",
-    created_at: "2023-04-24T21:29:08.870351+00:00",
-    updated_at: "2023-04-24T21:29:08.870351+00:00",
+    id: "pri_notice-mock-advertising-000",
+    created_at: "2024-01-01T12:00:00.000000+00:00",
+    updated_at: "2024-01-01T12:00:00.000000+00:00",
     notice_key: "advertising",
     cookies: [],
     translations: translations || defaultTranslations,
@@ -57,8 +56,8 @@ export const mockPrivacyNotice = (
 
 export const mockCookie = (params: Partial<FidesCookie>) => {
   const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-  const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-  const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+  const CREATED_DATE = "2024-01-01T12:00:00.000Z";
+  const UPDATED_DATE = "2024-01-01T12:00:00.000Z";
   const cookie: FidesCookie = {
     identity: { fides_user_device_id: uuid },
     fides_meta: {
