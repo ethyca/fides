@@ -66,7 +66,8 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   // "title" values that are shared with the modal component
   // TODO (PROD-1597): ensure that null banner_title / banner_description is handled...
   const bannerTitle = i18n.t("exp.banner_title") || i18n.t("exp.title");
-  const bannerDescription = i18n.t("exp.banner_description") || i18n.t("exp.description");
+  const bannerDescription =
+    i18n.t("exp.banner_description") || i18n.t("exp.description");
 
   return (
     <div

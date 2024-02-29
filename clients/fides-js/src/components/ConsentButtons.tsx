@@ -37,7 +37,7 @@ export const ConsentButtons = ({
       <div style={{ display: "flex" }}>
         <Button
           buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
-          label={ i18n.t("exp.privacy_preferences_link_label") }
+          label={i18n.t("exp.privacy_preferences_link_label")}
           onClick={onManagePreferencesClick}
           className="fides-manage-preferences-button"
         />
@@ -56,13 +56,13 @@ export const ConsentButtons = ({
         <Fragment>
           <Button
             buttonType={ButtonType.PRIMARY}
-            label={ i18n.t("exp.reject_button_label") }
+            label={i18n.t("exp.reject_button_label")}
             onClick={onRejectAll}
             className="fides-reject-all-button"
           />
           <Button
             buttonType={ButtonType.PRIMARY}
-            label={ i18n.t("exp.accept_button_label") }
+            label={i18n.t("exp.accept_button_label")}
             onClick={onAcceptAll}
             className="fides-accept-all-button"
           />
@@ -150,7 +150,7 @@ export const NoticeConsentButtons = ({
         isInModal ? (
           <Button
             buttonType={saveOnly ? ButtonType.PRIMARY : ButtonType.SECONDARY}
-            label={ i18n.t("exp.save_button_label") }
+            label={i18n.t("exp.save_button_label")}
             onClick={handleSave}
             className="fides-save-button"
           />

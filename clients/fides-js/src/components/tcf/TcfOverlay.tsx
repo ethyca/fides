@@ -373,7 +373,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               }
               isMobile={isMobile}
             />
-            <PrivacyPolicyLink experience={experience.experience_config} i18n={i18n} />
+            <PrivacyPolicyLink
+              experience={experience.experience_config}
+              i18n={i18n}
+            />
           </Fragment>
         );
       }}

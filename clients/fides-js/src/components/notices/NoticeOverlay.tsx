@@ -204,7 +204,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isMobile={isMobile}
             saveOnly={privacyNotices.length === 1}
           />
-          <PrivacyPolicyLink experience={experience.experience_config} i18n={i18n} />
+          <PrivacyPolicyLink
+            experience={experience.experience_config}
+            i18n={i18n}
+          />
         </Fragment>
       )}
     />

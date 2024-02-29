@@ -1,6 +1,5 @@
-import { FidesOptions } from "fides-js";
+import { FidesOptions, PrivacyExperience } from "fides-js";
 import { stubConfig } from "../support/stubs";
-import { PrivacyExperience } from "fides-js/src/lib/consent-types";
 
 describe("Consent i18n", () => {
   /**
@@ -109,7 +108,6 @@ describe("Consent i18n", () => {
     overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
   }) => {
     cy.on("window:before:load", (win) => {
-      // eslint-disable-next-line no-param-reassign
       Object.defineProperty(win.navigator, "language", {
         value: props.navigatorLanguage,
       });
@@ -119,7 +117,10 @@ describe("Consent i18n", () => {
       cy.log(`Using PrivacyExperience data from ${props.fixture}`, experience);
       if (props.overrideExperience) {
         experience = props.overrideExperience(experience);
-        cy.log("Using overridden PrivacyExperience data from overrideExperience()", experience);
+        cy.log(
+          "Using overridden PrivacyExperience data from overrideExperience()",
+          experience
+        );
       }
       stubConfig(
         { experience, options: props.options },
@@ -276,6 +277,7 @@ describe("Consent i18n", () => {
         navigatorLanguage: SPANISH_LOCALE,
         fixture: "experience_banner_modal.json",
         overrideExperience: (experience) => {
+          /* eslint-disable-next-line no-param-reassign */
           experience.experience_config!.auto_detect_language = false;
           return experience;
         },

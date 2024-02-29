@@ -39,7 +39,7 @@ const NoticeToggles = ({
         const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
         // TODO: check
-        const noticeKey = notice.notice_key
+        const noticeKey = notice.notice_key;
         return (
           <div>
             <DataUseToggle

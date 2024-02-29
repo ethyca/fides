@@ -29,7 +29,7 @@ export const mockPrivacyNoticeTranslation = (
  * Mocks the privacy notice, optionally pass in custom translations that override the default translation
  */
 export const mockPrivacyNotice = (
-  params: Partial<PrivacyNotice> & { title: string, id: string },
+  params: Partial<PrivacyNotice> & { title: string; id: string },
   translations?: PrivacyNoticeTranslation[]
 ): PrivacyNotice => {
   const { title, id } = params;
@@ -42,7 +42,7 @@ export const mockPrivacyNotice = (
     disabled: false,
     data_uses: ["advertising", "third_party_sharing"],
     enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-    id: id,
+    id,
     created_at: "2024-01-01T12:00:00.000000+00:00",
     updated_at: "2024-01-01T12:00:00.000000+00:00",
     notice_key: "advertising",

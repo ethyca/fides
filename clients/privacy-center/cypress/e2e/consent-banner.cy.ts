@@ -685,24 +685,20 @@ describe("Consent overlay", () => {
         stubConfig({
           experience: {
             privacy_notices: [
-              mockPrivacyNotice(
-                {
-                  title: "one",
-                  notice_key: "one",
-                  id: "pri_notice-one",
-                  consent_mechanism: ConsentMechanism.OPT_OUT,
-                  cookies: [cookies[0]],
-                },
-              ),
-              mockPrivacyNotice(
-                {
-                  title: "two",
-                  notice_key: "two",
-                  id: "pri_notice-two",
-                  consent_mechanism: ConsentMechanism.OPT_OUT,
-                  cookies: [cookies[1]],
-                },
-              ),
+              mockPrivacyNotice({
+                title: "one",
+                notice_key: "one",
+                id: "pri_notice-one",
+                consent_mechanism: ConsentMechanism.OPT_OUT,
+                cookies: [cookies[0]],
+              }),
+              mockPrivacyNotice({
+                title: "two",
+                notice_key: "two",
+                id: "pri_notice-two",
+                consent_mechanism: ConsentMechanism.OPT_OUT,
+                cookies: [cookies[1]],
+              }),
             ],
           },
           options: {
@@ -985,8 +981,8 @@ describe("Consent overlay", () => {
               mockPrivacyNotice({
                 title: "Advertising with gpc enabled",
                 id: "pri_notice-advertising",
-                has_gpc_flag: true
-              })
+                has_gpc_flag: true,
+              }),
             ],
           },
         });

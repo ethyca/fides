@@ -4,16 +4,15 @@ import type { I18n } from "../lib/i18n";
 
 const PrivacyPolicyLink = ({
   experience,
-  i18n
+  i18n,
 }: {
   experience?: ExperienceConfig;
   i18n: I18n;
 }) => {
-
   // TODO: support checking if label doesn't exist
   const label = i18n.t("exp.privacy_policy_link_label");
   const url = i18n.t("exp.privacy_policy_url");
-  if ( !label || !url ) {
+  if (!label || !url) {
     return null;
   }
 
