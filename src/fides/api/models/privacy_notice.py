@@ -20,13 +20,13 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
     System,
 )
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.locations import PrivacyNoticeRegion
 
 
 class PrivacyNoticeFramework(Enum):

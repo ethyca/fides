@@ -18,9 +18,9 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.locations import PrivacyNoticeRegion
 
 
 class ExperienceNotices(Base):

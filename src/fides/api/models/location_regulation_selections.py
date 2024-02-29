@@ -1,7 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Set
+from collections import defaultdict
+from enum import Enum
+from functools import lru_cache
+from os.path import dirname, join
+from typing import Any, Dict, Iterable, List, Set, Union
 
+import yaml
+from pydantic import BaseModel
 from sqlalchemy import (
     ARRAY,
     Boolean,
@@ -18,6 +24,14 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import Base, FidesBase
+from fides.config.helpers import load_file
+
+LOCATIONS_YAML_FILE_PATH = join(
+    dirname(__file__),
+    "../../data",
+    "location",
+    "locations.yml",
+)
 
 
 class LocationRegulationSelections(Base):
@@ -263,8 +277,6 @@ def group_locations_into_location_groups(saved_locations: Iterable[str]) -> Set[
     """Combines saved Locations into Location groups if applicable
     All Locations must be present for a Location Group to be valid.
     """
-    from fides.api.schemas.locations import location_group_to_location
-
     saved_location_groups: List[str] = []
 
     for location_group, mapped_locations in location_group_to_location.items():
@@ -272,3 +284,152 @@ def group_locations_into_location_groups(saved_locations: Iterable[str]) -> Set[
             saved_location_groups.append(location_group)
 
     return set(saved_location_groups)
+
+
+class Continent(Enum):
+    """Enum of supported continents"""
+
+    north_america = "North America"
+    south_america = "South America"
+    asia = "Asia"
+    africa = "Africa"
+    oceania = "Oceania"
+    europe = "Europe"
+
+
+class Selection(BaseModel):
+    """Selection schema"""
+
+    id: str
+    selected: bool = False
+
+
+class LocationRegulationBase(Selection):
+    """Base Location Regulation Schema"""
+
+    name: str
+    continent: Continent
+
+
+class Location(LocationRegulationBase):
+    """Location schema"""
+
+    belongs_to: List[str] = []
+    regulation: List[str] = []
+
+
+class LocationGroup(Location):
+    """
+    Location Group schema, currently the same as a location
+    """
+
+
+@lru_cache(maxsize=1)
+def load_locations() -> Dict[str, Location]:
+    """Loads location dict based on yml file on disk"""
+    with open(load_file([LOCATIONS_YAML_FILE_PATH]), "r", encoding="utf-8") as file:
+        _locations = yaml.safe_load(file).get("locations", [])
+        location_dict = {}
+        for location in _locations:
+            location_dict[location["id"]] = Location.parse_obj(location)
+        return location_dict
+
+
+@lru_cache(maxsize=1)
+def load_location_groups() -> Dict[str, LocationGroup]:
+    """Loads location_groups dict based on yml file on disk"""
+    with open(load_file([LOCATIONS_YAML_FILE_PATH]), "r", encoding="utf-8") as file:
+        _location_groups = yaml.safe_load(file).get("location_groups", [])
+        location_group_dict = {}
+        for location_group in _location_groups:
+            location_group_dict[location_group["id"]] = LocationGroup.parse_obj(
+                location_group
+            )
+        return location_group_dict
+
+
+@lru_cache(maxsize=1)
+def load_location_group_to_location() -> Dict[str, Set[str]]:
+    """Returns a mapping of locations to location groups
+
+    This is helpful when locations are saved, for use in mapping those locations to location groups.
+    Our current API only supports locations being saved directly.
+    """
+    location_ids_mapped_to_location: Dict[str, Location] = load_locations()
+
+    location_groups_to_location_set: Dict[str, Set[str]] = defaultdict(set)
+
+    for location in location_ids_mapped_to_location.values():
+        if not location.belongs_to:
+            continue
+
+        for belongs_to in location.belongs_to:
+            location_groups_to_location_set[belongs_to].add(location.id)
+
+    return location_groups_to_location_set
+
+
+@lru_cache(maxsize=1)
+def load_regulations() -> Dict[str, LocationRegulationBase]:
+    """Loads regulations dict based on yml file on disk"""
+    with open(load_file([LOCATIONS_YAML_FILE_PATH]), "r", encoding="utf-8") as file:
+        _regulations = yaml.safe_load(file).get("regulations", [])
+        regulation_dict = {}
+        for regulation in _regulations:
+            regulation_dict[regulation["id"]] = LocationRegulationBase.parse_obj(
+                regulation
+            )
+        return regulation_dict
+
+
+locations_by_id: Dict[
+    str, Location
+] = load_locations()  # should only be accessed for read-only access
+location_groups: Dict[
+    str, LocationGroup
+] = load_location_groups()  # should only be accessed for read-only access
+location_group_to_location: Dict[
+    str, Set[str]
+] = load_location_group_to_location()  # should only be accessed for read-only access
+
+
+def _load_privacy_notice_regions() -> Dict[str, Union[Location, LocationGroup]]:
+    """Merge Location dictionary with LocationGroup Dictionary"""
+    return {**locations_by_id, **location_groups}
+
+
+privacy_notice_regions_by_id: Dict[
+    str, Union[Location, LocationGroup]
+] = _load_privacy_notice_regions()  # should only be accessed for read-only access
+
+
+# dynamically create an enum based on definitions loaded from YAML
+# This is a combination of "locations" and "location groups" for use on Privacy Experiences
+PrivacyNoticeRegion: Enum = Enum(  # type: ignore[misc]
+    "PrivacyNoticeRegion",
+    {location.id: location.id for location in privacy_notice_regions_by_id.values()},
+)
+
+
+def filter_regions_by_location(
+    db: Session,
+    regions: List[PrivacyNoticeRegion],
+) -> List[PrivacyNoticeRegion]:
+    """Filter a list of PrivacyNoticeRegions to only ones that match at the configured Location or
+    LocationGroup level.
+
+    Only Experiences with these regions will be shown to the end-user!
+    """
+
+    saved_locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
+    saved_location_groups: Set[
+        str
+    ] = LocationRegulationSelections.get_selected_location_groups(db)
+    multilevel_locations: Set[str] = saved_locations.union(saved_location_groups)
+
+    # For backwards-compatibility, if no system-wide locations or location groups are set,
+    # all PrivacyNoticeRegions are available for use on Experiences
+    if not multilevel_locations:
+        return regions  # type: ignore[attr-defined]
+
+    return [region for region in regions if region.value in multilevel_locations]

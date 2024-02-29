@@ -2,7 +2,10 @@ from copy import copy
 
 import pytest
 
-from fides.api.models.location_regulation_selections import LocationRegulationSelections
+from fides.api.models.location_regulation_selections import (
+    LocationRegulationSelections,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.privacy_experience import (
     ComponentType,
     ExperienceTranslation,
@@ -12,7 +15,6 @@ from fides.api.models.privacy_experience import (
     upsert_privacy_experiences_after_config_update,
 )
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.locations import PrivacyNoticeRegion
 
 
 class TestExperienceConfig:

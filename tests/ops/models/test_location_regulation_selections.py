@@ -5,11 +5,9 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.location_regulation_selections import (
     LocationRegulationSelections,
-    group_locations_into_location_groups,
-)
-from fides.api.schemas.locations import (
     PrivacyNoticeRegion,
     filter_regions_by_location,
+    group_locations_into_location_groups,
     location_group_to_location,
 )
 

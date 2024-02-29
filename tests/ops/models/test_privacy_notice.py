@@ -3,14 +3,16 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.models.location_regulation_selections import LocationRegulationSelections
+from fides.api.models.location_regulation_selections import (
+    LocationRegulationSelections,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
     PrivacyNoticeHistory,
-    PrivacyNoticeRegion,
     UserConsentPreference,
 )
 from fides.api.models.sql_models import Cookies
