@@ -79,7 +79,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: i18n.t("exp.title") || "",
+    title: i18n.t("exp.title"),
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },
@@ -188,7 +188,7 @@ const Overlay: FunctionComponent<Props> = ({
         : null}
       {options.fidesEmbed ? (
         <ConsentContent
-          title={attributes.title}
+          titleProps={attributes.title}
           className="fides-embed"
           experience={experience.experience_config}
           i18n={i18n}

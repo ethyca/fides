@@ -19,8 +19,8 @@ describe("Consent i18n", () => {
     privacy_preferences_link_label: string;
     reject_button_label: string;
     accept_button_label: string;
-    privacy_policy_link_label: string;
-    privacy_policy_url: string;
+    privacy_policy_link_label: string | null;
+    privacy_policy_url: string | null;
   };
 
   type TestModalTranslations = {
@@ -29,8 +29,8 @@ describe("Consent i18n", () => {
     save_button_label: string;
     reject_button_label: string;
     accept_button_label: string;
-    privacy_policy_link_label: string;
-    privacy_policy_url: string;
+    privacy_policy_link_label: string | null;
+    privacy_policy_url: string | null;
   };
 
   type TestNoticeTranslations = {
@@ -143,14 +143,18 @@ describe("Consent i18n", () => {
       );
       cy.get("#fides-button-group").contains(expected.reject_button_label);
       cy.get("#fides-button-group").contains(expected.accept_button_label);
-      cy.get("#fides-privacy-policy-link").contains(
-        expected.privacy_policy_link_label
-      );
-      cy.get("#fides-privacy-policy-link a").should(
-        "have.attr",
-        "href",
-        expected.privacy_policy_url
-      );
+
+      // Privacy policy link is optional; if provided, check that it is localized
+      if (expected.privacy_policy_link_label) {
+        cy.get("#fides-privacy-policy-link").contains(
+          expected.privacy_policy_link_label
+        );
+        cy.get("#fides-privacy-policy-link a").should(
+          "have.attr",
+          "href",
+          expected.privacy_policy_url
+        );
+      }
 
       // TODO (PROD-1597): test notice-only banner
       // "acknowledge_button_label": "OK",
@@ -176,6 +180,9 @@ describe("Consent i18n", () => {
       cy.get(".fides-modal-button-group").contains(
         expected.accept_button_label
       );
+
+      // Privacy policy link is optional; if provided, check that it is localized
+      if (expected.privacy_policy_link_label) {
       cy.get("#fides-privacy-policy-link").contains(
         expected.privacy_policy_link_label
       );
@@ -184,6 +191,7 @@ describe("Consent i18n", () => {
         "href",
         expected.privacy_policy_url
       );
+      }
     });
 
     // TODO (PROD-1597): test GPC labels
@@ -213,6 +221,43 @@ describe("Consent i18n", () => {
         testModalNoticesLocalization(ENGLISH_NOTICES);
       });
 
+      it("handles optional translations for banner_and_modal components in the correct locale", () => {
+        // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_banner_modal.json",
+          overrideExperience: (experience: any) => {
+            /* eslint-disable-next-line no-param-reassign */
+            experience.experience_config!.translations[0].banner_description = null;
+            experience.experience_config!.translations[0].banner_title = "";
+            experience.experience_config!.translations[0].privacy_policy_link_label = null;
+            experience.experience_config!.translations[0].privacy_policy_url = null;
+            return experience;
+          },
+        });
+
+        testBannerLocalization({
+          ...ENGLISH_BANNER,
+          ...{
+            // Expect banner to fallback to modal translations
+            banner_title: ENGLISH_MODAL.title,
+            banner_description: ENGLISH_MODAL.description,
+            // Expect privacy policy link to not exist
+            privacy_policy_link_label: null,
+            privacy_policy_link_url: null,
+          }
+        });
+        openAndTestModalLocalization({
+          ...ENGLISH_MODAL,
+          ...{
+            // Expect privacy policy link to not exist
+            privacy_policy_link_label: null,
+            privacy_policy_link_url: null,
+          }
+        });
+        testModalNoticesLocalization(ENGLISH_NOTICES);
+      });
+
       it.skip("localizes tcf_overlay components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
@@ -236,6 +281,43 @@ describe("Consent i18n", () => {
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
+      it("handles optional translations for banner_and_modal components in the correct locale", () => {
+        // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
+        visitDemoWithI18n({
+          navigatorLanguage: SPANISH_LOCALE,
+          fixture: "experience_banner_modal.json",
+          overrideExperience: (experience: any) => {
+            /* eslint-disable-next-line no-param-reassign */
+            experience.experience_config!.translations[0].banner_description = null;
+            experience.experience_config!.translations[0].banner_title = "";
+            experience.experience_config!.translations[0].privacy_policy_link_label = null;
+            experience.experience_config!.translations[0].privacy_policy_url = null;
+            return experience;
+          },
+        });
+
+        testBannerLocalization({
+          ...SPANISH_BANNER,
+          ...{
+            // Expect banner to fallback to modal translations
+            banner_title: SPANISH_MODAL.title,
+            banner_description: SPANISH_MODAL.description,
+            // Expect privacy policy link to not exist
+            privacy_policy_link_label: null,
+            privacy_policy_link_url: null,
+          }
+        });
+        openAndTestModalLocalization({
+          ...SPANISH_MODAL,
+          ...{
+            // Expect privacy policy link to not exist
+            privacy_policy_link_label: null,
+            privacy_policy_link_url: null,
+          }
+        });
+        testModalNoticesLocalization(SPANISH_NOTICES);
+      });
+
       it.skip("localizes tcf_overlay components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
@@ -254,7 +336,9 @@ describe("Consent i18n", () => {
           navigatorLanguage: JAPANESE_LOCALE,
           fixture: "experience_banner_modal.json",
         });
-        cy.window().its("navigator.language").should("eq", JAPANESE_LOCALE);
+        testBannerLocalization(ENGLISH_BANNER);
+        openAndTestModalLocalization(ENGLISH_MODAL);
+        testModalNoticesLocalization(ENGLISH_NOTICES);
       });
 
       it.skip("localizes tcf_overlay components in the correct locale", () => {

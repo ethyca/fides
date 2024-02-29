@@ -5,7 +5,7 @@ import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
 import ExperienceDescription from "./ExperienceDescription";
-import type { I18n } from "../lib/i18n";
+import { I18n, messageExists } from "../lib/i18n";
 
 interface ButtonGroupProps {
   isMobile: boolean;
@@ -64,10 +64,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   // If explicit "banner_description" or "banner_title" values are set, use
   // those to populate the banner. Otherwise, use the generic "description" and
   // "title" values that are shared with the modal component
-  // TODO (PROD-1597): ensure that null banner_title / banner_description is handled...
-  const bannerTitle = i18n.t("exp.banner_title") || i18n.t("exp.title");
-  const bannerDescription =
-    i18n.t("exp.banner_description") || i18n.t("exp.description");
+  const bannerTitle = messageExists(i18n, "exp.banner_title")
+    ? i18n.t("exp.banner_title")
+    : i18n.t("exp.title");
+  const bannerDescription = messageExists(i18n, "exp.banner_description")
+    ? i18n.t("exp.banner_description")
+    : i18n.t("exp.description");
 
   return (
     <div
