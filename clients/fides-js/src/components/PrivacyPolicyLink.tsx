@@ -1,20 +1,21 @@
 import { h } from "preact";
-import { ExperienceConfig } from "../lib/consent-types";
-import type { I18n } from "../lib/i18n";
+import { I18n, messageExists } from "../lib/i18n";
 
 const PrivacyPolicyLink = ({
-  experience,
   i18n,
 }: {
-  experience?: ExperienceConfig;
   i18n: I18n;
 }) => {
-  // TODO: support checking if label doesn't exist
-  const label = i18n.t("exp.privacy_policy_link_label");
-  const url = i18n.t("exp.privacy_policy_url");
-  if (!label || !url) {
+  // Privacy policy link is optional, so check if localized messages exist for
+  // both the label & URL before attempting to render
+  if (
+    !messageExists(i18n, "exp.privacy_policy_link_label") ||
+    !messageExists(i18n, "exp.privacy_policy_link_label")
+  ) {
     return null;
   }
+  const label = i18n.t("exp.privacy_policy_link_label");
+  const url = i18n.t("exp.privacy_policy_url");
 
   return (
     <div

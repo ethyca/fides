@@ -154,6 +154,8 @@ describe("Consent i18n", () => {
           "href",
           expected.privacy_policy_url
         );
+      } else {
+        cy.get("#fides-privacy-policy-link").should("not.exist");
       }
 
       // TODO (PROD-1597): test notice-only banner
@@ -191,6 +193,8 @@ describe("Consent i18n", () => {
           "href",
           expected.privacy_policy_url
         );
+      } else {
+        cy.get("#fides-privacy-policy-link").should("not.exist");
       }
     });
 
@@ -283,14 +287,14 @@ describe("Consent i18n", () => {
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
-      it.only("handles optional translations for banner_and_modal components in the correct locale", () => {
+      it("handles optional translations for banner_and_modal components in the correct locale", () => {
         // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
           fixture: "experience_banner_modal.json",
           overrideExperience: (experience: any) => {
             /* eslint-disable no-param-reassign */
-            const translations = experience.experience_config.translations[0];
+            const translations = experience.experience_config.translations[1];
             translations.banner_description = null;
             translations.banner_title = "";
             translations.privacy_policy_link_label = null;
