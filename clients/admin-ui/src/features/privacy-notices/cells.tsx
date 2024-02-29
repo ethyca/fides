@@ -2,7 +2,6 @@ import { Badge, TagProps, Tooltip } from "@fidesui/react";
 import React from "react";
 import { CellProps } from "react-table";
 
-import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { EnableCell, MapCell } from "~/features/common/table/";
 import {
   FRAMEWORK_MAP,
@@ -41,32 +40,6 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
         "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
     },
   };
-
-export const LocationCell = (
-  cellProps: CellProps<PrivacyNoticeResponse, string>
-) => {
-  const { row } = cellProps;
-  const region = row.original.regions ? row.original.regions : ["No locations"];
-  let tagValue;
-  if (region.length > 1) {
-    tagValue = `${region.length} locations`;
-  } else {
-    tagValue = PRIVACY_NOTICE_REGION_MAP.get(region[0]);
-  }
-  return (
-    <Badge
-      size="sm"
-      width="fit-content"
-      data-testid="status-badge"
-      textTransform="uppercase"
-      fontWeight="400"
-      color="gray.600"
-      px={2}
-    >
-      {tagValue}
-    </Badge>
-  );
-};
 
 export const EnablePrivacyNoticeCell = (
   cellProps: CellProps<PrivacyNoticeResponse, boolean>

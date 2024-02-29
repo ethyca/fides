@@ -4,10 +4,10 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   ExperienceConfigCreate,
-  ExperienceConfigCreateOrUpdateResponse,
+  ExperienceConfigListViewResponse,
   ExperienceConfigResponse,
   ExperienceConfigUpdate,
-  Page_ExperienceConfigResponse_,
+  Page_ExperienceConfigListViewResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
 
@@ -59,7 +59,7 @@ export type ExperienceConfigCreateParams = Omit<
 const privacyExperienceConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllExperienceConfigs: build.query<
-      Page_ExperienceConfigResponse_,
+      Page_ExperienceConfigListViewResponse_,
       ExperienceConfigParams
     >({
       query: (params) => ({
@@ -69,7 +69,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       providesTags: () => ["Privacy Experience Configs"],
     }),
     patchExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
+      ExperienceConfigResponse,
       ExperienceConfigUpdateParams
     >({
       query: (payload) => {
@@ -91,8 +91,8 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       ],
     }),
     postExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
-      ExperienceConfigCreateParams
+      ExperienceConfigResponse,
+      ExperienceConfigCreate
     >({
       query: (payload) => ({
         method: "POST",
@@ -131,7 +131,7 @@ export const selectPageSize = createSelector(
   (state) => state.pageSize
 );
 
-const emptyExperienceConfigs: ExperienceConfigResponse[] = [];
+const emptyExperienceConfigs: ExperienceConfigListViewResponse[] = [];
 export const selectAllExperienceConfigs = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {

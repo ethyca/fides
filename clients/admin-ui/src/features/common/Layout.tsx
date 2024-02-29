@@ -14,10 +14,12 @@ import ConfigurationNotificationBanner from "../privacy-requests/configuration/C
 const Layout = ({
   children,
   title,
+  padded = true,
   mainProps,
 }: {
   children: React.ReactNode;
   title: string;
+  padded?: boolean;
   /**
    * Layouts are generally standardized, so make sure you actually want to use this!
    * Currently only used on the home page and datamap pages
@@ -49,7 +51,11 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <Flex data-testid={title} direction="column" height="100vh">
+    <Flex
+      data-testid={title}
+      direction="column"
+      height={padded ? "calc(100vh - 48px" : "100vh"}
+    >
       <Head>
         <title>Fides Admin UI - {title}</title>
         <meta name="description" content="Privacy Engineering Platform" />
@@ -58,8 +64,8 @@ const Layout = ({
       <Flex
         as="main"
         direction="column"
-        py={6}
-        px={10}
+        py={padded ? 6 : 0}
+        px={padded ? 10 : 0}
         flex={1}
         minWidth={0}
         overflow="auto"

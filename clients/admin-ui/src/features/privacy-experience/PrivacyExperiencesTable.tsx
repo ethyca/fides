@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
+import { Button, Flex, Spacer, Spinner, Stack } from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
 import Restrict, { useHasPermission } from "common/Restrict";
 import { DateCell, FidesTable } from "common/table";
@@ -21,7 +21,10 @@ import {
   selectPageSize,
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
+import {
+  ExperienceConfigListViewResponse,
+  ScopeRegistryEnum,
+} from "~/types/api";
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
 import JavaScriptTag from "./JavaScriptTag";
@@ -40,13 +43,14 @@ const PrivacyExperiencesTable = () => {
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
-  const handleRowClick = ({ id }: ExperienceConfigResponse) => {
+
+  const handleRowClick = ({ id }: ExperienceConfigListViewResponse) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
     }
   };
 
-  const columns: Column<ExperienceConfigResponse>[] = useMemo(
+  const columns: Column<ExperienceConfigListViewResponse>[] = useMemo(
     () => [
       { Header: "Location", accessor: "regions", Cell: LocationCell },
       {
@@ -97,15 +101,24 @@ const PrivacyExperiencesTable = () => {
   }
   return (
     <Stack spacing={3} width="70%">
-      <Box alignSelf="end">
+      <Flex direction="row">
+        <Button
+          size="sm"
+          colorScheme="primary"
+          alignSelf="start"
+          onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
+        >
+          Create new experience
+        </Button>
+        <Spacer />
         <JavaScriptTag />
         <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
           <CustomAssetUploadButton
             assetType={CustomAssetType.CUSTOM_FIDES_CSS}
           />
         </Restrict>
-      </Box>
-      <FidesTable<ExperienceConfigResponse>
+      </Flex>
+      <FidesTable<ExperienceConfigListViewResponse>
         columns={columns}
         data={privacyExperiences}
         onRowClick={userCanUpdate ? handleRowClick : undefined}
