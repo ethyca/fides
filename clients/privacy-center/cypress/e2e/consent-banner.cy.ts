@@ -687,29 +687,21 @@ describe("Consent overlay", () => {
             privacy_notices: [
               mockPrivacyNotice(
                 {
-                  name: "one",
+                  title: "one",
                   notice_key: "one",
+                  id: "pri_notice-one",
                   consent_mechanism: ConsentMechanism.OPT_OUT,
                   cookies: [cookies[0]],
                 },
-                [
-                  mockPrivacyNoticeTranslation({
-                    privacy_notice_history_id: "one",
-                  }),
-                ]
               ),
               mockPrivacyNotice(
                 {
-                  name: "two",
-                  notice_key: "second",
+                  title: "two",
+                  notice_key: "two",
+                  id: "pri_notice-two",
                   consent_mechanism: ConsentMechanism.OPT_OUT,
                   cookies: [cookies[1]],
                 },
-                [
-                  mockPrivacyNoticeTranslation({
-                    privacy_notice_history_id: "two",
-                  }),
-                ]
               ),
             ],
           },
@@ -755,11 +747,11 @@ describe("Consent overlay", () => {
     describe("when there are only notice-only notices", () => {
       const expected = [
         {
-          privacy_notice_history_id: "one",
+          privacy_notice_history_id: "pri_notice-history-one",
           preference: "acknowledge",
         },
         {
-          privacy_notice_history_id: "two",
+          privacy_notice_history_id: "pri_notice-history-two",
           preference: "acknowledge",
         },
       ];
@@ -771,23 +763,29 @@ describe("Consent overlay", () => {
             privacy_notices: [
               mockPrivacyNotice(
                 {
+                  title: "one",
+                  id: "pri_notice-one",
                   notice_key: "one",
                   consent_mechanism: ConsentMechanism.NOTICE_ONLY,
                 },
                 [
                   mockPrivacyNoticeTranslation({
-                    privacy_notice_history_id: "one",
+                    title: "one",
+                    privacy_notice_history_id: "pri_notice-history-one",
                   }),
                 ]
               ),
               mockPrivacyNotice(
                 {
-                  notice_key: "second",
+                  title: "two",
+                  id: "pri_notice-two",
+                  notice_key: "two",
                   consent_mechanism: ConsentMechanism.NOTICE_ONLY,
                 },
                 [
                   mockPrivacyNoticeTranslation({
-                    privacy_notice_history_id: "two",
+                    title: "two",
+                    privacy_notice_history_id: "pri_notice-history-two",
                   }),
                 ]
               ),
@@ -835,7 +833,8 @@ describe("Consent overlay", () => {
           experience: {
             privacy_notices: [
               mockPrivacyNotice({
-                name: "Advertising with gpc enabled",
+                title: "Advertising with gpc enabled",
+                id: "pri_notice-advertising",
                 has_gpc_flag: true,
               }),
             ],
@@ -933,7 +932,8 @@ describe("Consent overlay", () => {
           experience: {
             privacy_notices: [
               mockPrivacyNotice({
-                name: "Advertising with GPC disabled",
+                title: "Advertising with GPC disabled",
+                id: "pri_notice-advertising",
                 has_gpc_flag: false,
               }),
             ],
@@ -981,7 +981,13 @@ describe("Consent overlay", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
           experience: {
-            privacy_notices: [mockPrivacyNotice({ has_gpc_flag: true })],
+            privacy_notices: [
+              mockPrivacyNotice({
+                title: "Advertising with gpc enabled",
+                id: "pri_notice-advertising",
+                has_gpc_flag: true
+              })
+            ],
           },
         });
       });
@@ -1362,7 +1368,8 @@ describe("Consent overlay", () => {
           experience: {
             privacy_notices: [
               mockPrivacyNotice({
-                name: "Advertising",
+                title: "Advertising",
+                id: "pri_notice-advertising",
                 has_gpc_flag: true,
                 consent_mechanism: ConsentMechanism.OPT_IN,
                 default_preference: UserConsentPreference.OPT_IN,
@@ -1918,15 +1925,17 @@ describe("Consent overlay", () => {
         experience: {
           privacy_notices: [
             mockPrivacyNotice({
-              name: "Applied",
+              title: "Applied",
+              id: "pri_notice-applied",
               notice_key: "applied",
               has_gpc_flag: true,
               consent_mechanism: ConsentMechanism.OPT_OUT,
               default_preference: UserConsentPreference.OPT_IN,
             }),
             mockPrivacyNotice({
-              name: "Notice only",
+              title: "Notice only",
               notice_key: "notice_only",
+              id: "pri_notice-only",
               // notice-only should never have has_gpc_flag true, but just in case,
               // make sure the expected behavior still holds if it is somehow true
               has_gpc_flag: true,
@@ -1934,8 +1943,9 @@ describe("Consent overlay", () => {
               default_preference: UserConsentPreference.ACKNOWLEDGE,
             }),
             mockPrivacyNotice({
-              name: "Overridden",
+              title: "Overridden",
               notice_key: "overridden",
+              id: "pri_notice-overridden",
               has_gpc_flag: true,
               consent_mechanism: ConsentMechanism.OPT_OUT,
               default_preference: UserConsentPreference.OPT_IN,
@@ -1974,22 +1984,26 @@ describe("Consent overlay", () => {
           privacy_notices: [
             mockPrivacyNotice(
               {
-                name: "Data Sales and Sharing",
+                title: "Data Sales and Sharing",
+                id: "pri_notice-mock-1",
                 notice_key: "data_sales_and_sharing",
               },
               [
                 mockPrivacyNoticeTranslation({
+                  title: "Data Sales and Sharing",
                   privacy_notice_history_id: historyId1,
                 }),
               ]
             ),
             mockPrivacyNotice(
               {
-                name: "Essential",
+                title: "Essential",
+                id: "pri_notice-mock-2",
                 notice_key: "essential",
               },
               [
                 mockPrivacyNoticeTranslation({
+                  title: "Essential",
                   privacy_notice_history_id: historyId2,
                 }),
               ]
@@ -2047,24 +2061,28 @@ describe("Consent overlay", () => {
           privacy_notices: [
             mockPrivacyNotice(
               {
-                name: "Data Sales and Sharing",
+                title: "Data Sales and Sharing",
+                id: "pri_notice-data-sales",
                 notice_key: "data_sales_and_sharing",
                 consent_mechanism: ConsentMechanism.NOTICE_ONLY,
               },
               [
                 mockPrivacyNoticeTranslation({
+                  title: "Data Sales and Sharing",
                   privacy_notice_history_id: historyId1,
                 }),
               ]
             ),
             mockPrivacyNotice(
               {
-                name: "Essential",
+                title: "Essential",
                 notice_key: "essential",
+                id: "pri_notice-essential",
                 consent_mechanism: ConsentMechanism.NOTICE_ONLY,
               },
               [
                 mockPrivacyNoticeTranslation({
+                  title: "Essential",
                   privacy_notice_history_id: historyId2,
                 }),
               ]
@@ -2091,22 +2109,26 @@ describe("Consent overlay", () => {
           privacy_notices: [
             mockPrivacyNotice(
               {
-                name: "Data Sales and Sharing",
+                title: "Data Sales and Sharing",
+                id: "pri_notice-data-sales",
                 notice_key: "data_sales_and_sharing",
               },
               [
                 mockPrivacyNoticeTranslation({
+                  title: "Data Sales and Sharing",
                   privacy_notice_history_id: historyId1,
                 }),
               ]
             ),
             mockPrivacyNotice(
               {
-                name: "Essential",
+                title: "Essential",
+                id: "pri_notice-essential",
                 notice_key: "essential",
               },
               [
                 mockPrivacyNoticeTranslation({
+                  title: "Essential",
                   privacy_notice_history_id: historyId2,
                 }),
               ]
@@ -2151,7 +2173,8 @@ describe("Consent overlay", () => {
         experience: {
           privacy_notices: [
             mockPrivacyNotice({
-              name: "Marketing",
+              title: "Marketing",
+              id: "pri_notice-marketing",
               has_gpc_flag: true,
             }),
           ],
@@ -2167,11 +2190,13 @@ describe("Consent overlay", () => {
         experience: {
           privacy_notices: [
             mockPrivacyNotice({
-              name: "Marketing",
+              title: "Marketing",
+              id: "pri_notice-marketing",
               has_gpc_flag: true,
             }),
             mockPrivacyNotice({
-              name: "Functional",
+              title: "Functional",
+              id: "pri_notice-functional",
               has_gpc_flag: true,
             }),
           ],

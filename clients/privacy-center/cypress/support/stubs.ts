@@ -124,6 +124,7 @@ export const stubConfig = (
       `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
       { fixture: "consent/notices_served.json" }
     ).as("patchNoticesServed");
+    cy.log("Visiting consent demo with config", updatedConfig);
     cy.visitConsentDemo(
       updatedConfig,
       demoPageQueryParams,

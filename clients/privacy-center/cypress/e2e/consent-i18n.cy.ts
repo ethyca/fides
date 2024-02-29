@@ -151,8 +151,10 @@ describe("Consent i18n", () => {
         expected.privacy_policy_url
       );
 
-      // untested
+      // TODO (PROD-1597): test notice-only banner
       // "acknowledge_button_label": "OK",
+
+      // TODO (PROD-1597): test GPC labels
     });
   };
 
@@ -182,6 +184,8 @@ describe("Consent i18n", () => {
         expected.privacy_policy_url
       );
     });
+
+    // TODO (PROD-1597): test GPC labels
   };
 
   // Reusable assertions to test that the modal notices component localizes correctly
