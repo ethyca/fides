@@ -6,12 +6,13 @@ import {
 } from "~/fides";
 import {
   LOCALE_REGEX,
-  setupI18n,
-  initializeI18n,
-  loadMessagesFromFiles,
-  loadMessagesFromExperience,
   detectUserLocale,
+  initializeI18n,
+  loadMessagesFromExperience,
+  loadMessagesFromFiles,
   matchAvailableLocales,
+  messageExists,
+  setupI18n,
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
@@ -325,6 +326,21 @@ describe("i18n-utils", () => {
     });
   });
 
+  describe("messageExists", () => {
+    it("returns false for empty, null, or invalid messages in the current locale", () => {
+      // NOTE: use a "real" i18n instance here to test the library itself
+      const testI18n: I18n = setupI18n();
+      testI18n.load("es", { "test.greeting": "Hola", "test.empty": "", "test.null": null } as any);
+      testI18n.activate("es");
+      expect(messageExists(testI18n, "test.greeting")).toBeTruthy();
+      expect(messageExists(testI18n, "test.empty")).toBeFalsy();
+      expect(messageExists(testI18n, "test.null")).toBeFalsy();
+      expect(messageExists(testI18n, "test.missing")).toBeFalsy();
+      expect(messageExists(testI18n, { invalid: 1 } as any)).toBeFalsy();
+      expect(messageExists(testI18n, "")).toBeFalsy();
+    });
+  });
+
   describe("__fixtures__ mock data", () => {
     /**
      * Utility type to enforce some type-safety on our mock API fixtures.
@@ -385,7 +401,7 @@ describe("i18n-utils", () => {
 });
 
 // Additional tests for the i18n module itself, to guarantee how we expect it to behave
-describe("i18n module", () => {
+describe.only("i18n module", () => {
   describe("module exports", () => {
     it("exports a valid i18n object", () => {
       // NOTE: using require() here to avoid importing i18n and accidentally using it!
@@ -408,11 +424,13 @@ describe("i18n module", () => {
     const testMessagesEn: Messages = {
       "test.greeting": "Hello, Jest!",
       "test.phrase": "Move purposefully and fix things",
+      "test.empty": "",
     };
 
     const testMessagesFr: Messages = {
       "test.greeting": "Bonjour, Jest!",
       "test.phrase": "Déplacez-vous délibérément et réparez les choses",
+      "test.empty": "",
     };
 
     let testI18n: I18n;
@@ -427,6 +445,10 @@ describe("i18n module", () => {
     describe("t", () => {
       it("looks up localized strings by id", () => {
         expect(testI18n.t({ id: "test.greeting" })).toEqual("Hello, Jest!");
+      });
+
+      it("handles empty strings by returning the key", () => {
+        expect(testI18n.t({ id: "test.empty" })).toEqual("test.empty");
       });
 
       it("handles invalid keys by returning the key", () => {
@@ -467,6 +489,14 @@ describe("i18n module", () => {
         expect(testI18n.t({ id: "test.greeting" })).toEqual("Zalloz, Jest!");
         expect(testI18n.t({ id: "test.another" })).toEqual("Zam!");
       });
+    });
+
+    it("treats null/empty strings as missing keys", () => {
+      testI18n.load("zz", { "test.empty": "", "test.null": null } as any);
+      testI18n.activate("zz");
+      expect(testI18n.t({ id: "test.empty" })).toEqual("test.empty");
+      expect(testI18n.t({ id: "test.null" })).toEqual("test.null");
+      expect(testI18n.t({ id: "test.missing" })).toEqual("test.missing");
     });
   });
 });

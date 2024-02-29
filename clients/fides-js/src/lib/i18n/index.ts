@@ -79,9 +79,16 @@ interface I18n {
  * Initialize a global i18n singleton for use in the application.
  *
  * DEFER: Swap this implementation for LinguiJS when ready by:
- * 1) import { i18n } from "@lingui/core"
- * 2) Delete the call to setupI18n()
- * 3) Delete our setupI18n.ts file entirely!
+ * 1) Install dependencies: npm install --save @lingui/core && npm install --save-dev @rollup/plugin-replace
+ * 2) Configure @rollup/plugin-replace in rollup.config.mjs with:
+ *    replace({
+ *      "process.env.NODE_ENV": JSON.stringify("production"),
+ *      preventAssignment: true,
+ *    }),
+ * 3) In i8n/index.ts, add: import { i18n, setupi18n } from "@lingui/core"
+ * 4) Delete our implementation of "setupi18n" in i18n-utils.ts
+ * 
+ * See draft PR for reference: https://github.com/ethyca/fides/pull/4599
  */
 
 const i18n: I18n = setupI18n();
