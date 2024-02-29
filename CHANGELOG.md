@@ -21,6 +21,10 @@ The types of changes are:
 - Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
 - Navbar update and new properties page [#4633](https://github.com/ethyca/fides/pull/4633)
 
+### Changed
+- Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
+
+
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
 
 ### Fixed

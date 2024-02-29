@@ -9,6 +9,7 @@ import {
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
+  PrivacyNoticeWithPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
@@ -57,6 +58,16 @@ export const isPrivacyExperience = (
   }
   return false;
 };
+
+export const allNoticesAreDefaultOptIn = (
+  notices: Array<PrivacyNoticeWithPreference> | undefined
+): boolean =>
+  Boolean(
+    notices &&
+      notices.every(
+        (notice) => notice.default_preference === UserConsentPreference.OPT_IN
+      )
+  );
 
 /**
  * Construct user location str to be ingested by Fides API
