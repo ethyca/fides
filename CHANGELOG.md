@@ -38,6 +38,11 @@ The types of changes are:
 - Structured logging for SaaS connector requests [#4594](https://github.com/ethyca/fides/pull/4594)
 - Added Fides.showModal() to fides.js to allow programmatic opening of consent modals [#4617](https://github.com/ethyca/fides/pull/4617)
 
+### Changed 
+
+- Build PrivacyNoticeRegion from locations and location groups [#4620](https://github.com/ethyca/fides/pull/4620)
+- When saving locations, calculate and save location groups [#4620](https://github.com/ethyca/fides/pull/4620)
+
 ### Fixed
 
 - Fixing issue when modifying Policies, Rules, or RuleTargets as a root user [#4582](https://github.com/ethyca/fides/pull/4582)
