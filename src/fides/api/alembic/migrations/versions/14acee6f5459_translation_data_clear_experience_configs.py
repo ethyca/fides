@@ -27,7 +27,7 @@ def generate_record_id(prefix):
     return prefix + "_" + str(uuid.uuid4())
 
 
-class ExperienceConfigIds(Enum):
+class DefaultExperienceConfigTypes(Enum):
     EEA_PRIVACY_CENTER = 1
     EEA_MODAL_AND_BANNER = "pri-c8ff-78d6-4a02-850f-2c09dda-over-config"
     EEA_TCF_OVERLAY = "d7c3ce0a-a3b3-43ff-bf6f-3d8-tcf-over-config"
@@ -42,13 +42,13 @@ class ComponentType(Enum):
 
 
 EEA_MAPPING = {
-    ComponentType.PrivacyCenter: ExperienceConfigIds.EEA_PRIVACY_CENTER,
-    ComponentType.Overlay: ExperienceConfigIds.EEA_MODAL_AND_BANNER,
-    ComponentType.TCFOverlay: ExperienceConfigIds.EEA_TCF_OVERLAY,
+    ComponentType.PrivacyCenter: DefaultExperienceConfigTypes.EEA_PRIVACY_CENTER,
+    ComponentType.Overlay: DefaultExperienceConfigTypes.EEA_MODAL_AND_BANNER,
+    ComponentType.TCFOverlay: DefaultExperienceConfigTypes.EEA_TCF_OVERLAY,
 }
 US_MAPPING = {
-    ComponentType.PrivacyCenter: ExperienceConfigIds.US_PRIVACY_CENTER,
-    ComponentType.Overlay: ExperienceConfigIds.US_MODAL,
+    ComponentType.PrivacyCenter: DefaultExperienceConfigTypes.US_PRIVACY_CENTER,
+    ComponentType.Overlay: DefaultExperienceConfigTypes.US_MODAL,
 }
 
 NOTICES_TO_EXPERIENCE_CONFIG = {
@@ -79,12 +79,14 @@ def load_default_experience_configs():
     """
     Loads default experience config definitions from yml file.
 
-    Maps the experience config definitions keyed by the ID enum.
+    Returns two dicts in a tuple:
+        - first dict holds "new" experience config records that will be used to reconcile existing data
+        - second dict holds the "raw" experience config records based on the definitions on disk. these will be used as a reference for e.g. template creation.
     """
-    experience_config_template_map = (
+    _raw_experience_config_map = (
         {}
     )  # this will just hold config templates exactly as they are in the 'oob' file
-    experience_config_map = (
+    _reconciled_experience_config_map = (
         {}
     )  # will hold experience configs 'reconciled' between existing data and 'oob' template data
 
@@ -98,8 +100,8 @@ def load_default_experience_configs():
     )
 
     for experience_config in experience_configs:
-        experience_config_template_map[
-            ExperienceConfigIds(experience_config["id"]).name
+        _raw_experience_config_map[
+            DefaultExperienceConfigTypes(experience_config["id"])
         ] = experience_config.copy()
         experience_config["regions"] = (
             set()
@@ -108,14 +110,16 @@ def load_default_experience_configs():
         experience_config["needs_migration"] = (
             False  # indicator whether the record requires migration, or we can default to the template values
         )
-        experience_config_map[ExperienceConfigIds(experience_config["id"]).name] = (
-            experience_config
-        )
+        _reconciled_experience_config_map[
+            DefaultExperienceConfigTypes(experience_config["id"])
+        ] = experience_config
         experience_config["needs_migration"] = False
-    return experience_config_map, experience_config_template_map
+    return _reconciled_experience_config_map, _raw_experience_config_map
 
 
-experience_config_map, raw_experience_config_map = load_default_experience_configs()
+reconciled_experience_config_map, raw_experience_config_map = (
+    load_default_experience_configs()
+)
 
 
 def remove_existing_experience_data(bind):
@@ -179,23 +183,27 @@ def determine_needed_experience_configs(bind):
         if component_mapping:
             if existing_notice["displayed_in_overlay"]:
                 experience_config = component_mapping.get(ComponentType.Overlay)
-                experience_config_map[experience_config.name]["regions"].update(
-                    existing_notice["regions"]
-                )
-                experience_config_map[experience_config.name]["privacy_notices"].add(
-                    existing_notice["id"]
-                )
-                experience_config_map[experience_config.name]["needs_migration"] = True
+                reconciled_experience_config_map[experience_config.name][
+                    "regions"
+                ].update(existing_notice["regions"])
+                reconciled_experience_config_map[experience_config.name][
+                    "privacy_notices"
+                ].add(existing_notice["id"])
+                reconciled_experience_config_map[experience_config.name][
+                    "needs_migration"
+                ] = True
 
             if existing_notice["displayed_in_privacy_center"]:
                 experience_config = component_mapping.get(ComponentType.PrivacyCenter)
-                experience_config_map[experience_config.name]["regions"].update(
-                    existing_notice["regions"]
-                )
-                experience_config_map[experience_config.name]["privacy_notices"].add(
-                    existing_notice["id"]
-                )
-                experience_config_map[experience_config.name]["needs_migration"] = True
+                reconciled_experience_config_map[experience_config.name][
+                    "regions"
+                ].update(existing_notice["regions"])
+                reconciled_experience_config_map[experience_config.name][
+                    "privacy_notices"
+                ].add(existing_notice["id"])
+                reconciled_experience_config_map[experience_config.name][
+                    "needs_migration"
+                ] = True
 
     existing_experience_configs: ResultProxy = bind.execute(
         text(experience_config_query)
@@ -206,9 +214,9 @@ def determine_needed_experience_configs(bind):
         component = ComponentType(eec["component"])
         configs = []
         if eea_config_id := EEA_MAPPING.get(component):
-            configs.append(experience_config_map.get(eea_config_id.name))
+            configs.append(reconciled_experience_config_map.get(eea_config_id.name))
         if us_config_id := US_MAPPING.get(component):
-            configs.append(experience_config_map.get(us_config_id.name))
+            configs.append(reconciled_experience_config_map.get(us_config_id.name))
         for config in configs:
             if config:
                 config["accept_button_label"] = eec["accept_button_label"]
@@ -228,11 +236,12 @@ def determine_needed_experience_configs(bind):
                 config["needs_migration"] = True
 
     if has_existing_experience_configs:
-        return experience_config_map
-    else:
-        # if no existing experience configs, don't return the map, because no experience config migration is needed.
-        # instead, we'll rely on the OOB loading of experience configs on server startup.
-        return {}
+        return reconciled_experience_config_map
+
+    # if no existing experience configs are found, don't return the map, because no experience config migration is needed.
+    # instead, we'll rely on the OOB loading of experience configs on server startup.
+    # basically, this is allows us to bypass the data migration if we're not actually migrating a db that's been in use!
+    return {}
 
 
 def migrate_experiences(bind):
@@ -271,6 +280,9 @@ def migrate_experiences(bind):
             )
 
     def create_new_experience_config(experience_config):
+        """
+        Creates a new experience config based on the provided definition. Also creates corresponding history record.
+        """
 
         create_experience_config_query = text(
             """
@@ -306,6 +318,12 @@ def migrate_experiences(bind):
         )
 
     def create_applicable_experiences(experience_config):
+        """
+        Creates all the applicable experience records based on the provided experience config definition.
+
+        i.e., looks at all regions on the provided experience config definition, and creates a corresponding
+        experience record for each region.
+        """
         new_experience = text(
             """
             INSERT INTO privacyexperience (id, experience_config_id, region)
@@ -324,6 +342,12 @@ def migrate_experiences(bind):
                 )
 
     def link_notices_to_experiences(experience_config):
+        """
+        Creates experience notice records based on the provided experience config definition.
+
+        i.e., looks at all `privacy_notices` linked to the experience config, and creates a corresponding
+        experience notice record for each linked notice.
+        """
         link_notice_query = text(
             """
                 INSERT INTO experiencenotices (id, notice_id, experience_config_id)
@@ -341,6 +365,14 @@ def migrate_experiences(bind):
             )
 
     def create_experience_translations(bind):
+        """
+        Creates new experience translation records for each privacy experience config record in the db.
+
+        We simply take the text that's been temporarily saved on the config record directly and move it
+        over to the translation record. The translation is assumed to be english.
+
+        This requires the privacy experience config records to have been created before this is invoked!
+        """
         get_experience_config_ids = text(
             """SELECT id FROM privacyexperienceconfig;
          """
@@ -384,40 +416,49 @@ def migrate_experiences(bind):
     # wipe the existing experience + experience config data to start from a blank slate
     remove_existing_experience_data(bind)
 
+    # if we don't have experience configs, we can bypass all experience config data migration
     if experience_configs:
+
+        # first create experience config templates based on raw experience config definitions
         create_new_experience_config_templates(raw_experience_config_map.values())
 
-    # create new experience + experience configs based on old experience config data
-    # this has been reconciled with the new OOB experience config records
-    for config_id in ExperienceConfigIds:
-        logger.info(f"Migrating experience config {config_id.name}")
-        reconciled_experience_config = experience_configs.get(config_id.name, {})
-        raw_experience_config = raw_experience_config_map.get(config_id.name, {})
-
-        if not reconciled_experience_config and not raw_experience_config:
-            logger.info(
-                f"No reconciled or raw experience config found for {config_id.name}"
+        # create new experience + experience configs based on old experience config data
+        # these have been reconciled with the new OOB experience config records
+        for experience_config_type in DefaultExperienceConfigTypes:
+            logger.info(f"Migrating experience config {experience_config_type.name}")
+            reconciled_experience_config = experience_configs.get(
+                experience_config_type, {}
             )
-            continue
-
-        # revert to the "raw" config if we haven't flagged a config as needing migration
-        # in practice, i think we will always have a reconciled record here that's flagged
-        # for migration, but covers our bases in case anyone has e.g. deleted a previous OOB notice.
-        if reconciled_experience_config.get("needs_migration", False):
-            logger.info(
-                f"Migrating reconciled experience config {reconciled_experience_config['id']}"
+            raw_experience_config = raw_experience_config_map.get(
+                experience_config_type, {}
             )
-            experience_config = reconciled_experience_config
-        else:
-            logger.info(f"Creating raw experience config {raw_experience_config['id']}")
-            experience_config = raw_experience_config
 
-        create_new_experience_config(experience_config)
-        create_applicable_experiences(experience_config)
-        link_notices_to_experiences(experience_config)
+            if not reconciled_experience_config and not raw_experience_config:
+                logger.info(
+                    f"No reconciled or raw experience config found for {experience_config_type.name}"
+                )
+                continue
 
-    # experience translations are then created based on the new experience config records
-    create_experience_translations(bind)
+            # revert to the "raw" config if we haven't flagged a config as needing migration
+            # in practice, we should always have a reconciled record here that's flagged for migration,
+            # but this covers our bases in case anyone has e.g. deleted a previous OOB notice.
+            if reconciled_experience_config.get("needs_migration", False):
+                logger.info(
+                    f"Migrating reconciled experience config {reconciled_experience_config['id']}"
+                )
+                experience_config_type = reconciled_experience_config
+            else:
+                logger.info(
+                    f"Creating raw experience config {raw_experience_config['id']}"
+                )
+                experience_config_type = raw_experience_config
+
+            create_new_experience_config(experience_config_type)
+            create_applicable_experiences(experience_config_type)
+            link_notices_to_experiences(experience_config_type)
+
+        # experience translations are then created based on the new experience config records
+        create_experience_translations(bind)
 
 
 def migrate_notices(bind):
@@ -519,4 +560,6 @@ def downgrade():
     bind = op.get_bind()
 
     downward_migrate_notices(bind)
-    remove_existing_experience_data(bind)
+    remove_existing_experience_data(
+        bind
+    )  # remove existing experience data to ensure it won't prevent startup on downgraded versions!
