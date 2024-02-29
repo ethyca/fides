@@ -5,6 +5,7 @@ Revises: 39397820a0d5
 Create Date: 2023-08-04 14:14:32.421414
 
 """
+
 import json
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -349,7 +350,6 @@ def privacy_declaration_additive_migration(bind: Connection):
 
 def upgrade():
     bind: Connection = op.get_bind()
-    bind.execute(text("DROP AGGREGATE IF EXISTS array_accum(anyarray);"))
 
     result = bind.execute("SHOW server_version;")  # 12.16 (Debian 12.16-1.pgdg120+1)
     version = result.fetchone()[0]
@@ -358,6 +358,7 @@ def upgrade():
     # Add a new function to be able to combine potentially multiple arrays of different sizes alongside null values
     # into a single array
     if major_version >= 14:
+        bind.execute(text("DROP AGGREGATE IF EXISTS array_accum(anycompatiblearray);"))
         bind.execute(
             text(
                 """
@@ -371,6 +372,7 @@ def upgrade():
             )
         )
     else:
+        bind.execute(text("DROP AGGREGATE IF EXISTS array_accum(anyarray);"))
         bind.execute(
             text(
                 """
