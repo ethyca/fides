@@ -17,6 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.31.1...main)
 
+### Changed 
+
+- Data model changes to support Notice and Experience-level translations [#4576](https://github.com/ethyca/fides/pull/4576)
+- Data model changes to support Consent setup being Experience instead of Notice-driven [#4576](https://github.com/ethyca/fides/pull/4576)
+- Build PrivacyNoticeRegion from locations and location groups [#4620](https://github.com/ethyca/fides/pull/4620)
+- When saving locations, calculate and save location groups [#4620](https://github.com/ethyca/fides/pull/4620)
+
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
 
 ### Added
@@ -43,11 +50,6 @@ The types of changes are:
 - Add ability to store and read Fides cookie in Base64 format [#4556](https://github.com/ethyca/fides/pull/4556)
 - Structured logging for SaaS connector requests [#4594](https://github.com/ethyca/fides/pull/4594)
 - Added Fides.showModal() to fides.js to allow programmatic opening of consent modals [#4617](https://github.com/ethyca/fides/pull/4617)
-
-### Changed 
-
-- Build PrivacyNoticeRegion from locations and location groups [#4620](https://github.com/ethyca/fides/pull/4620)
-- When saving locations, calculate and save location groups [#4620](https://github.com/ethyca/fides/pull/4620)
 
 ### Fixed
 
