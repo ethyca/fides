@@ -150,7 +150,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             onClose();
             handleDismiss();
           }}
-          experience={experienceConfig}
           i18n={i18n}
           renderButtonGroup={({ isMobile }) => (
             <NoticeConsentButtons
@@ -204,10 +203,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isMobile={isMobile}
             saveOnly={privacyNotices.length === 1}
           />
-          <PrivacyPolicyLink
-            experience={experience.experience_config}
-            i18n={i18n}
-          />
+          <PrivacyPolicyLink i18n={i18n} />
         </Fragment>
       )}
     />

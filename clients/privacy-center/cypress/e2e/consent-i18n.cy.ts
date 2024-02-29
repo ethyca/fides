@@ -19,6 +19,8 @@ describe("Consent i18n", () => {
     privacy_preferences_link_label: string;
     reject_button_label: string;
     accept_button_label: string;
+    gpc_label: string;
+    gpc_status_label: string;
     privacy_policy_link_label: string | null;
     privacy_policy_url: string | null;
   };
@@ -29,6 +31,8 @@ describe("Consent i18n", () => {
     save_button_label: string;
     reject_button_label: string;
     accept_button_label: string;
+    gpc_title: string;
+    gpc_description: string;
     privacy_policy_link_label: string | null;
     privacy_policy_url: string | null;
   };
@@ -44,6 +48,8 @@ describe("Consent i18n", () => {
     privacy_preferences_link_label: "Manage preferences",
     reject_button_label: "Opt out of all",
     accept_button_label: "Opt in to all",
+    gpc_label: "Global Privacy Control",
+    gpc_status_label: "Applied",
     privacy_policy_link_label: "Privacy Policy",
     privacy_policy_url: "https://privacy.example.com/",
   };
@@ -54,6 +60,8 @@ describe("Consent i18n", () => {
     save_button_label: "Save",
     reject_button_label: "Opt out of all",
     accept_button_label: "Opt in to all",
+    gpc_title: "Global Privacy Control detected",
+    gpc_description: "Your global privacy control preference has been honored.",
     privacy_policy_link_label: "Privacy Policy",
     privacy_policy_url: "https://privacy.example.com/",
   };
@@ -70,6 +78,8 @@ describe("Consent i18n", () => {
     privacy_preferences_link_label: "Administrar preferencias",
     reject_button_label: "No participar en ninguna",
     accept_button_label: "Participar en todas",
+    gpc_label: "Control de privacidad global",
+    gpc_status_label: "Aplicado",
     privacy_policy_link_label: "Política de privacidad",
     privacy_policy_url: "https://privacy.example.com/",
   };
@@ -80,6 +90,8 @@ describe("Consent i18n", () => {
     save_button_label: "Guardar",
     reject_button_label: "No participar en ninguna",
     accept_button_label: "Participar en todas",
+    gpc_title: "Control de privacidad global detectado",
+    gpc_description: "Su preferencia de control de privacidad global se ha respetado.",
     privacy_policy_link_label: "Política de privacidad",
     privacy_policy_url: "https://privacy.example.com/",
   };
@@ -103,6 +115,7 @@ describe("Consent i18n", () => {
   const visitDemoWithI18n = (props: {
     navigatorLanguage: string;
     fixture: TestFixture;
+    globalPrivacyControl?: boolean;
     options?: Partial<FidesOptions>;
     queryParams?: Cypress.VisitOptions["qs"];
     overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
@@ -111,6 +124,11 @@ describe("Consent i18n", () => {
       Object.defineProperty(win.navigator, "language", {
         value: props.navigatorLanguage,
       });
+      if (typeof(props.globalPrivacyControl) !== "undefined") {
+        Object.defineProperty(win.navigator, "globalPrivacyControl", {
+          value: props.globalPrivacyControl,
+        });
+      }
     });
     cy.fixture(`consent/${props.fixture}`).then((data) => {
       let experience = data.items[0];
@@ -143,6 +161,8 @@ describe("Consent i18n", () => {
       );
       cy.get("#fides-button-group").contains(expected.reject_button_label);
       cy.get("#fides-button-group").contains(expected.accept_button_label);
+      cy.get(".fides-gpc-label").contains(expected.gpc_label);
+      cy.get(".fides-gpc-label .fides-gpc-badge").contains(expected.gpc_status_label);
 
       // Privacy policy link is optional; if provided, check that it is localized
       if (expected.privacy_policy_link_label) {
@@ -160,8 +180,6 @@ describe("Consent i18n", () => {
 
       // TODO (PROD-1597): test notice-only banner
       // "acknowledge_button_label": "OK",
-
-      // TODO (PROD-1597): test GPC labels
     });
   };
 
@@ -182,6 +200,8 @@ describe("Consent i18n", () => {
       cy.get(".fides-modal-button-group").contains(
         expected.accept_button_label
       );
+      cy.get(".fides-gpc-banner .fides-gpc-header").contains(expected.gpc_title);
+      cy.get(".fides-gpc-banner").contains(expected.gpc_title);
 
       // Privacy policy link is optional; if provided, check that it is localized
       if (expected.privacy_policy_link_label) {
@@ -197,8 +217,6 @@ describe("Consent i18n", () => {
         cy.get("#fides-privacy-policy-link").should("not.exist");
       }
     });
-
-    // TODO (PROD-1597): test GPC labels
   };
 
   // Reusable assertions to test that the modal notices component localizes correctly
@@ -218,6 +236,7 @@ describe("Consent i18n", () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
         });
         testBannerLocalization(ENGLISH_BANNER);
@@ -229,6 +248,7 @@ describe("Consent i18n", () => {
         // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
           overrideExperience: (experience: any) => {
             /* eslint-disable no-param-reassign */
@@ -267,6 +287,7 @@ describe("Consent i18n", () => {
       it.skip("localizes tcf_overlay components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_tcf.json",
         });
         cy.window().its("navigator.language").should("eq", ENGLISH_LOCALE);
@@ -280,6 +301,7 @@ describe("Consent i18n", () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
         });
         testBannerLocalization(SPANISH_BANNER);
@@ -291,6 +313,7 @@ describe("Consent i18n", () => {
         // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
           overrideExperience: (experience: any) => {
             /* eslint-disable no-param-reassign */
@@ -329,6 +352,7 @@ describe("Consent i18n", () => {
       it.skip("localizes tcf_overlay components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_tcf.json",
         });
         cy.window().its("navigator.language").should("eq", SPANISH_LOCALE);
@@ -342,6 +366,7 @@ describe("Consent i18n", () => {
       it("localizes banner_and_modal components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: JAPANESE_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
         });
         testBannerLocalization(ENGLISH_BANNER);
@@ -352,6 +377,7 @@ describe("Consent i18n", () => {
       it.skip("localizes tcf_overlay components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: JAPANESE_LOCALE,
+          globalPrivacyControl: true,
           fixture: "experience_tcf.json",
         });
         cy.window().its("navigator.language").should("eq", JAPANESE_LOCALE);
@@ -367,6 +393,7 @@ describe("Consent i18n", () => {
       // Visit the demo site in Spanish, but expect English translations when auto-detection is disabled
       visitDemoWithI18n({
         navigatorLanguage: SPANISH_LOCALE,
+        globalPrivacyControl: true,
         fixture: "experience_banner_modal.json",
         overrideExperience: (experience) => {
           /* eslint-disable-next-line no-param-reassign */
@@ -385,6 +412,7 @@ describe("Consent i18n", () => {
       // Visit the demo site in English, but expect Spanish translations when fides_locale override is set
       visitDemoWithI18n({
         navigatorLanguage: ENGLISH_LOCALE,
+        globalPrivacyControl: true,
         fixture: "experience_banner_modal.json",
         queryParams: { fides_locale: SPANISH_LOCALE },
       });
@@ -400,6 +428,7 @@ describe("Consent i18n", () => {
       // Visit the demo site in English, but expect Spanish translations when the user selects
       visitDemoWithI18n({
         navigatorLanguage: ENGLISH_LOCALE,
+        globalPrivacyControl: true,
         fixture: "experience_banner_modal.json",
       });
       // TODO (PROD-1598): select Spanish from banner

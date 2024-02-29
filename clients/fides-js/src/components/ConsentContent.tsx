@@ -2,7 +2,6 @@ import { ComponentChildren, VNode, h, Fragment } from "preact";
 import type { HTMLAttributes } from "react";
 
 import { getConsentContext } from "../lib/consent-context";
-import { ExperienceConfig } from "../lib/consent-types";
 import type { I18n } from "../lib/i18n";
 
 import GpcInfo from "./GpcInfo";
@@ -10,7 +9,6 @@ import ExperienceDescription from "./ExperienceDescription";
 
 export interface ConsentContentProps {
   titleProps: HTMLAttributes<HTMLHeadingElement>;
-  experience: ExperienceConfig;
   i18n: I18n;
   children: ComponentChildren;
   className?: string;
@@ -21,16 +19,16 @@ export interface ConsentContentProps {
 const ConsentModal = ({
   titleProps,
   className,
-  experience,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO (PROD-1597): disabled while integrating with API
   i18n,
   renderModalFooter,
   children,
   onVendorPageClick,
 }: ConsentContentProps) => {
-  const showGpcBadge = getConsentContext().globalPrivacyControl;
   const title = i18n.t("exp.title");
   const description = i18n.t("exp.description");
+  const showGpcInfo = getConsentContext().globalPrivacyControl;
+  const gpcTitle = i18n.t("static.gpc.title");
+  const gpcDescription = i18n.t("static.gpc.description");
 
   return (
     <Fragment>
@@ -57,7 +55,9 @@ const ConsentModal = ({
               allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>
-          {showGpcBadge && <GpcInfo />}
+          {showGpcInfo && (
+            <GpcInfo title={gpcTitle} description={gpcDescription} />
+          )}
           {children}
         </div>
       </div>

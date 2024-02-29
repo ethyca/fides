@@ -46,7 +46,6 @@ const ConsentModal = ({
         </div>
         <ConsentContent
           titleProps={title}
-          experience={experience}
           i18n={i18n}
           renderModalFooter={renderModalFooter}
         >

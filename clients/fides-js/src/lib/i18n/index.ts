@@ -95,6 +95,6 @@ const i18n: I18n = setupI18n();
 
 export { type Locale, type Messages, type MessageDescriptor, type I18n };
 
-export { i18n, setupI18n };
+export { i18n };
 export * from "./i18n-utils";
 export * from "./i18n-constants";

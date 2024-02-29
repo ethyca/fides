@@ -1,7 +1,7 @@
 import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { getConsentContext } from "../lib/consent-context";
-import { ExperienceConfig } from "../lib/consent-types";
+import { GpcStatus } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
 import ExperienceDescription from "./ExperienceDescription";
@@ -12,7 +12,6 @@ interface ButtonGroupProps {
 }
 
 interface BannerProps {
-  experience: ExperienceConfig;
   i18n: I18n;
   onOpen: () => void;
   onClose: () => void;
@@ -28,7 +27,6 @@ interface BannerProps {
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
-  experience,
   i18n,
   onOpen,
   onClose,
@@ -97,10 +95,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                   {bannerTitle}
                 </div>
                 {showGpcBadge && (
-                  <GpcBadge
-                    label="Global Privacy Control Signal"
-                    status="detected"
-                  />
+                  <GpcBadge i18n={i18n} status={GpcStatus.APPLIED} />
                 )}
               </div>
               <div

@@ -282,11 +282,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     handleUpdateAllPreferences(ConsentMethod.DISMISS, initialEnabledIds);
   }, [handleUpdateAllPreferences, initialEnabledIds]);
 
-  if (!experience.experience_config) {
+  const experienceConfig = experience.experience_config;
+  if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
-  const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
@@ -306,13 +306,13 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         };
         return (
           <ConsentBanner
+            i18n={i18n}
             bannerIsOpen={isOpen}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
               onClose();
               handleDismiss();
             }}
-            experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={({ isMobile }) => (
               <TcfConsentButtons
@@ -373,10 +373,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               }
               isMobile={isMobile}
             />
-            <PrivacyPolicyLink
-              experience={experience.experience_config}
-              i18n={i18n}
-            />
+            <PrivacyPolicyLink i18n={i18n} />
           </Fragment>
         );
       }}
