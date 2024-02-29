@@ -5,11 +5,27 @@ import {
   EnforcementLevel,
   PrivacyNoticeCreation,
   PrivacyNoticeResponse,
+  SupportedLanguage,
 } from "~/types/api";
 
 interface PrivacyNoticeUpdateOrCreate extends PrivacyNoticeCreation {
   id?: string;
 }
+
+export const CONSENT_MECHANISM_OPTIONS = [
+  {
+    label: "Opt in",
+    value: ConsentMechanism.OPT_IN,
+  },
+  {
+    label: "Opt out",
+    value: ConsentMechanism.OPT_OUT,
+  },
+  {
+    label: "Notice only",
+    value: ConsentMechanism.NOTICE_ONLY,
+  },
+];
 
 export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   name: "",
@@ -18,6 +34,12 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   enforcement_level: EnforcementLevel.SYSTEM_WIDE,
   // When creating, set to disabled to start
   disabled: true,
+  translations: [
+    {
+      language: SupportedLanguage.EN,
+      title: "",
+    },
+  ],
 };
 
 export const transformPrivacyNoticeResponseToCreation = (
@@ -34,6 +56,9 @@ export const transformPrivacyNoticeResponseToCreation = (
   has_gpc_flag: notice.has_gpc_flag,
   id: notice.id,
   internal_description: notice.internal_description,
+  translations: notice.translations ? notice.translations.map((t) => ({
+    
+  }))
 });
 
 export const ValidationSchema = Yup.object().shape({
