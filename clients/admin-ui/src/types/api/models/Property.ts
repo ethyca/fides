@@ -5,7 +5,7 @@
 import { PropertyType } from "./PropertyType";
 
 export type Property = {
-  key: string;
+  id: string;
   name: string;
   type: string;
   experiences?: Array<string>;

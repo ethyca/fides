@@ -157,7 +157,7 @@ export const PropertiesTable = () => {
   });
 
   const onRowClick = (property: Property) => {
-    router.push(`${PROPERTIES_ROUTE}/${property.key}`);
+    router.push(`${PROPERTIES_ROUTE}/${property.id}`);
   };
 
   if (isLoading || isLoadingHealthCheck) {

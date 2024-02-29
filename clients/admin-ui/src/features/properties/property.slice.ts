@@ -18,9 +18,9 @@ export const propertiesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Property"],
     }),
-    getPropertyByKey: builder.query<Property, string>({
-      query: (key) => ({
-        url: `plus/property/${key}`,
+    getPropertyById: builder.query<Property, string>({
+      query: (id) => ({
+        url: `plus/property/${id}`,
       }),
       providesTags: ["Property"],
     }),
@@ -32,12 +32,23 @@ export const propertiesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Property"],
     }),
+    updateProperty: builder.mutation<
+      Property,
+      { key: string; property: Partial<Property> }
+    >({
+      query: ({ id, property }) => ({
+        url: `plus/property/${id}`,
+        method: "PUT",
+        body: property,
+      }),
+      invalidatesTags: ["Property"],
+    }),
   }),
 });
 
-// Export hooks for using the endpoints
 export const {
   useGetPropertiesQuery,
-  useGetPropertyByKeyQuery,
+  useGetPropertyByIdQuery,
   useCreatePropertyMutation,
+  useUpdatePropertyMutation,
 } = propertiesApi;

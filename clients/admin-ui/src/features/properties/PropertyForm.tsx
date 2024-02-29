@@ -1,4 +1,4 @@
-import { Box, Button, Flex, useToast } from "@fidesui/react";
+import { Box, Button, Flex } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -11,17 +11,12 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import {
-  enumToOptions,
-  getErrorMessage,
-  isErrorResult,
-} from "../common/helpers";
+import { enumToOptions } from "../common/helpers";
 import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
-import { errorToastParams, successToastParams } from "../common/toast";
-import { useCreatePropertyMutation } from "./property.slice";
 
 interface Props {
   property?: Property;
+  handleSubmit: (values: FormValues) => Promise<void>;
 }
 
 export interface FormValues {
@@ -29,28 +24,17 @@ export interface FormValues {
   type: string;
 }
 
-const PropertyForm = ({ property }: Props) => {
-  const toast = useToast();
+const PropertyForm = ({ property, handleSubmit }: Props) => {
   const router = useRouter();
-  const [createProperty] = useCreatePropertyMutation();
+
+  const handleCancel = () => {
+    router.push(PROPERTIES_ROUTE);
+  };
 
   const initialValues = useMemo(
     () => property || { name: "", type: "" },
     [property]
   );
-
-  const handleSubmit = async (values: FormValues) => {
-    const result = await createProperty(values);
-
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
-    }
-
-    const prop = result.data;
-    toast(successToastParams(`Property ${values.name} created successfully`));
-    router.push(`${PROPERTIES_ROUTE}/${prop.key}`);
-  };
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -83,8 +67,9 @@ const PropertyForm = ({ property }: Props) => {
             <Box py={3}>
               <FormSection title="Advanced settings">
                 <CustomClipboardCopy
-                  label="Property key"
-                  name="key"
+                  label="Property ID"
+                  name="id"
+                  tooltip="Automatically generated unique ID for this property, used for developer configurations"
                   variant="stacked"
                   readOnly
                 />
@@ -92,16 +77,24 @@ const PropertyForm = ({ property }: Props) => {
             </Box>
           )}
           <Flex justifyContent="right" width="100%" paddingTop={2}>
-            {!property && (
-              <Button
-                size="sm"
-                type="submit"
-                colorScheme="primary"
-                isLoading={false}
-              >
-                Save
-              </Button>
-            )}
+            <Button
+              size="sm"
+              type="submit"
+              variant="outline"
+              isLoading={false}
+              mr={3}
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              type="submit"
+              colorScheme="primary"
+              isLoading={false}
+            >
+              Save
+            </Button>
           </Flex>
         </Form>
       )}
