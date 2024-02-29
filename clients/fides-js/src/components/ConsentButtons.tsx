@@ -9,7 +9,7 @@ import {
   PrivacyNotice,
 } from "../lib/consent-types";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import { i18n, type I18n } from "../lib/i18n";
+import type { I18n } from "../lib/i18n";
 
 export const ConsentButtons = ({
   experienceConfig,

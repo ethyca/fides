@@ -183,14 +183,14 @@ describe("Consent i18n", () => {
 
       // Privacy policy link is optional; if provided, check that it is localized
       if (expected.privacy_policy_link_label) {
-      cy.get("#fides-privacy-policy-link").contains(
-        expected.privacy_policy_link_label
-      );
-      cy.get("#fides-privacy-policy-link a").should(
-        "have.attr",
-        "href",
-        expected.privacy_policy_url
-      );
+        cy.get("#fides-privacy-policy-link").contains(
+          expected.privacy_policy_link_label
+        );
+        cy.get("#fides-privacy-policy-link a").should(
+          "have.attr",
+          "href",
+          expected.privacy_policy_url
+        );
       }
     });
 
@@ -227,12 +227,14 @@ describe("Consent i18n", () => {
           navigatorLanguage: ENGLISH_LOCALE,
           fixture: "experience_banner_modal.json",
           overrideExperience: (experience: any) => {
-            /* eslint-disable-next-line no-param-reassign */
-            experience.experience_config!.translations[0].banner_description = null;
-            experience.experience_config!.translations[0].banner_title = "";
-            experience.experience_config!.translations[0].privacy_policy_link_label = null;
-            experience.experience_config!.translations[0].privacy_policy_url = null;
+            /* eslint-disable no-param-reassign */
+            const translations = experience.experience_config.translations[0];
+            translations.banner_description = null;
+            translations.banner_title = "";
+            translations.privacy_policy_link_label = null;
+            translations.privacy_policy_url = null;
             return experience;
+            /* eslint-enable no-param-reassign */
           },
         });
 
@@ -245,7 +247,7 @@ describe("Consent i18n", () => {
             // Expect privacy policy link to not exist
             privacy_policy_link_label: null,
             privacy_policy_link_url: null,
-          }
+          },
         });
         openAndTestModalLocalization({
           ...ENGLISH_MODAL,
@@ -253,7 +255,7 @@ describe("Consent i18n", () => {
             // Expect privacy policy link to not exist
             privacy_policy_link_label: null,
             privacy_policy_link_url: null,
-          }
+          },
         });
         testModalNoticesLocalization(ENGLISH_NOTICES);
       });
@@ -281,18 +283,20 @@ describe("Consent i18n", () => {
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
-      it("handles optional translations for banner_and_modal components in the correct locale", () => {
+      it.only("handles optional translations for banner_and_modal components in the correct locale", () => {
         // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
           fixture: "experience_banner_modal.json",
           overrideExperience: (experience: any) => {
-            /* eslint-disable-next-line no-param-reassign */
-            experience.experience_config!.translations[0].banner_description = null;
-            experience.experience_config!.translations[0].banner_title = "";
-            experience.experience_config!.translations[0].privacy_policy_link_label = null;
-            experience.experience_config!.translations[0].privacy_policy_url = null;
+            /* eslint-disable no-param-reassign */
+            const translations = experience.experience_config.translations[0];
+            translations.banner_description = null;
+            translations.banner_title = "";
+            translations.privacy_policy_link_label = null;
+            translations.privacy_policy_url = null;
             return experience;
+            /* eslint-enable no-param-reassign */
           },
         });
 
@@ -305,7 +309,7 @@ describe("Consent i18n", () => {
             // Expect privacy policy link to not exist
             privacy_policy_link_label: null,
             privacy_policy_link_url: null,
-          }
+          },
         });
         openAndTestModalLocalization({
           ...SPANISH_MODAL,
@@ -313,7 +317,7 @@ describe("Consent i18n", () => {
             // Expect privacy policy link to not exist
             privacy_policy_link_label: null,
             privacy_policy_link_url: null,
-          }
+          },
         });
         testModalNoticesLocalization(SPANISH_NOTICES);
       });

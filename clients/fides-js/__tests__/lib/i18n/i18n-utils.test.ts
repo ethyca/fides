@@ -220,9 +220,6 @@ describe("i18n-utils", () => {
         "exp.notices.pri_888.description": "Analytics Description Test",
       });
     });
-
-    // TODO (PROD-1597): this logic needs to be in the presentation layer and affect reporting
-    it.skip("handles mismatched notice translations by falling back to default language", () => {});
   });
 
   describe("detectUserLocale", () => {
@@ -330,7 +327,11 @@ describe("i18n-utils", () => {
     it("returns false for empty, null, or invalid messages in the current locale", () => {
       // NOTE: use a "real" i18n instance here to test the library itself
       const testI18n: I18n = setupI18n();
-      testI18n.load("es", { "test.greeting": "Hola", "test.empty": "", "test.null": null } as any);
+      testI18n.load("es", {
+        "test.greeting": "Hola",
+        "test.empty": "",
+        "test.null": null,
+      } as any);
       testI18n.activate("es");
       expect(messageExists(testI18n, "test.greeting")).toBeTruthy();
       expect(messageExists(testI18n, "test.empty")).toBeFalsy();
@@ -401,7 +402,7 @@ describe("i18n-utils", () => {
 });
 
 // Additional tests for the i18n module itself, to guarantee how we expect it to behave
-describe.only("i18n module", () => {
+describe("i18n module", () => {
   describe("module exports", () => {
     it("exports a valid i18n object", () => {
       // NOTE: using require() here to avoid importing i18n and accidentally using it!

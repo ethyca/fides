@@ -87,7 +87,7 @@ interface I18n {
  *    }),
  * 3) In i8n/index.ts, add: import { i18n, setupi18n } from "@lingui/core"
  * 4) Delete our implementation of "setupi18n" in i18n-utils.ts
- * 
+ *
  * See draft PR for reference: https://github.com/ethyca/fides/pull/4599
  */
 
@@ -95,6 +95,6 @@ const i18n: I18n = setupI18n();
 
 export { type Locale, type Messages, type MessageDescriptor, type I18n };
 
-export { i18n };
+export { i18n, setupI18n };
 export * from "./i18n-utils";
 export * from "./i18n-constants";
