@@ -36,7 +36,11 @@ The types of changes are:
 - Add ability to store and read Fides cookie in Base64 format [#4556](https://github.com/ethyca/fides/pull/4556)
 - Structured logging for SaaS connector requests [#4594](https://github.com/ethyca/fides/pull/4594)
 - Added Fides.showModal() to fides.js to allow programmatic opening of consent modals [#4617](https://github.com/ethyca/fides/pull/4617)
-- Added support for location filtering of Privacy Experiences [#4620](https://github.com/ethyca/fides/pull/4620)
+
+### Changed 
+
+- Build PrivacyNoticeRegion from locations and location groups [#4620](https://github.com/ethyca/fides/pull/4620)
+- When saving locations, calculate and save location groups [#4620](https://github.com/ethyca/fides/pull/4620)
 
 ### Fixed
 
