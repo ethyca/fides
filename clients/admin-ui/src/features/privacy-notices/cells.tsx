@@ -1,14 +1,16 @@
 import { Badge, TagProps, Tooltip } from "@fidesui/react";
+import { CellContext } from "@tanstack/react-table";
 import React from "react";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { EnableCell, MapCell } from "~/features/common/table/";
+import { MapCell } from "~/features/common/table/";
 import {
   FRAMEWORK_MAP,
   MECHANISM_MAP,
 } from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { ConsentMechanism, PrivacyNoticeRegion, PrivacyNoticeResponse } from "~/types/api";
+import { EnableCell } from "../common/table/v2/cells";
 
 export const MechanismCell = (
   value: ConsentMechanism | undefined
@@ -27,9 +29,6 @@ export const MechanismCell = (
       {innerText}
     </Badge>)
 };
-export const FrameworkCell = (
-  cellProps: any
-) => <MapCell map={FRAMEWORK_MAP} {...cellProps} />;
 
 export const getRegions = (regions: PrivacyNoticeRegion[] | undefined): string[] => {
   if (!regions) {
@@ -44,6 +43,12 @@ export const getRegions = (regions: PrivacyNoticeRegion[] | undefined): string[]
   });
   return values;
 }
+
+export const FrameworkCell = (
+  cellProps: any
+) => <MapCell map={FRAMEWORK_MAP} {...cellProps} />;
+
+
 
 type TagNames = "available" | "enabled" | "inactive";
 
@@ -67,67 +72,6 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
       "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
   },
 };
-
-export const LocationCell = (
-  cellProps: any
-) => {
-  const { row } = cellProps;
-  const region = row.original.regions ? row.original.regions : ["No locations"];
-  let tagValue;
-  if (region.length > 1) {
-    tagValue = `${region.length} locations`;
-  } else {
-    tagValue = PRIVACY_NOTICE_REGION_MAP.get(region[0]);
-  }
-  return (
-    <Badge
-      size="sm"
-      width="fit-content"
-      data-testid="status-badge"
-      textTransform="uppercase"
-      fontWeight="400"
-      color="gray.600"
-      px={2}
-    >
-      {tagValue}
-    </Badge>
-  );
-};
-
-export const EnablePrivacyNoticeCell = (cellProps: any) => {
-  const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
-
-  const { row } = cellProps;
-  const onToggle = async (toggle: boolean) =>
-    patchNoticeMutationTrigger([
-      {
-        id: row.original.id,
-        disabled: !toggle,
-      },
-    ]);
-
-  const {
-    systems_applicable: systemsApplicable,
-    disabled: noticeIsDisabled,
-    data_uses: dataUses,
-  } = row.original;
-  const hasDataUses = !!dataUses;
-  const toggleIsDisabled =
-    (noticeIsDisabled && !systemsApplicable) || !hasDataUses;
-
-  return (
-    <EnableCell<PrivacyNoticeResponse>
-      {...cellProps}
-      isDisabled={toggleIsDisabled}
-      onToggle={onToggle}
-      title="Disable privacy notice"
-      message="Are you sure you want to disable this privacy notice? Disabling this
-            notice means your users will no longer see this explanation about
-            your data uses which is necessary to ensure compliance."
-    />
-  );
-};
-
 export const PrivacyNoticeStatusCell = (
   cellProps: any
 ) => {
@@ -167,3 +111,39 @@ export const PrivacyNoticeStatusCell = (
     </Tooltip>
   );
 };
+
+export const EnablePrivacyNoticeCell = (cellProps: CellContext<PrivacyNoticeResponse, boolean | undefined>) => {
+  const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
+  const value = cellProps.getValue();
+  const { row } = cellProps;
+  const onToggle = async (toggle: boolean) =>
+    patchNoticeMutationTrigger([
+      {
+        id: row.original.id,
+        disabled: !toggle,
+      },
+    ]);
+
+  const {
+    systems_applicable: systemsApplicable,
+    disabled: noticeIsDisabled,
+    data_uses: dataUses,
+  } = row.original;
+  const hasDataUses = !!dataUses;
+  const toggleIsDisabled =
+    (noticeIsDisabled && !systemsApplicable) || !hasDataUses;
+  return (
+    <EnableCell<PrivacyNoticeResponse>
+      value={cellProps.getValue()}
+      {...cellProps}
+      isDisabled={toggleIsDisabled}
+      onToggle={onToggle}
+      title="Disable privacy notice"
+      message="Are you sure you want to disable this privacy notice? Disabling this
+            notice means your users will no longer see this explanation about
+            your data uses which is necessary to ensure compliance."
+    />
+  );
+};
+
+
