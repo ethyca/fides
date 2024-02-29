@@ -272,7 +272,6 @@ export function messageExists(i18n: I18n, id: string): boolean {
   // NOTE: Our i18n library mirrors LinguiJS's implementation, which doesn't
   // expose a way to check for missing messages directly. However, it will
   // always return the "id" if no matching message exists, so we rely on that!
-  // TODO (PROD-1597): use Lingui's missing message option
   return (i18n.t(id) !== "" && i18n.t(id) !== id);
 }
 

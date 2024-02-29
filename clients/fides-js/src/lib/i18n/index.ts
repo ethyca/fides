@@ -85,8 +85,8 @@ interface I18n {
  *      "process.env.NODE_ENV": JSON.stringify("production"),
  *      preventAssignment: true,
  *    }),
- * 3) In i8n/index.ts, add: import { i18n, setupi18n } from "@lingui/core"
- * 4) Delete our implementation of "setupi18n" in i18n-utils.ts
+ * 3) In i8n/index.ts, replace the setupI18n import with: import { setupI18n } from "@lingui/core"
+ * 4) Delete our implementation of "setupI18n" in i18n-utils.ts
  *
  * See draft PR for reference: https://github.com/ethyca/fides/pull/4599
  */
