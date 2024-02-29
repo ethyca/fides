@@ -58,6 +58,7 @@ const useConsentRequestForm = ({
   const customPrivacyRequestFields =
     config.consent?.button.custom_privacy_request_fields ?? {};
   const settings = useSettings();
+  const { BASE_64_COOKIE } = settings;
   const toast = useToast();
   const cookie = useMemo(() => getOrMakeFidesCookie(), []);
   const formik = useFormik<FormValues>({
@@ -139,7 +140,7 @@ const useConsentRequestForm = ({
         // After successfully initializing a consent request, save the current
         // cookie with our unique fides_user_device_id, etc.
         try {
-          saveFidesCookie(cookie);
+          saveFidesCookie(cookie, BASE_64_COOKIE);
         } catch (error) {
           handleError({ title: "Could not save consent cookie" });
           return;

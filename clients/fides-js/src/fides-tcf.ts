@@ -69,7 +69,7 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import { debugLog, FidesCookie } from "./fides";
+import { debugLog, FidesCookie, defaultShowModal } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import type { GppFunction } from "./lib/gpp/types";
 import { makeStub } from "./lib/tcf/stub";
@@ -233,6 +233,7 @@ _Fides = {
     customOptionsPath: null,
     preventDismissal: false,
     allowHTMLDescription: null,
+    base64Cookie: false,
   },
   fides_meta: {},
   identity: {},
@@ -242,6 +243,7 @@ _Fides = {
   initialized: false,
   meta,
   shopify,
+  showModal: defaultShowModal,
 };
 
 if (typeof window !== "undefined") {
