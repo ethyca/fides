@@ -53,7 +53,7 @@ def oracle_responsys_profile_list_recipients_read(
         query_ids = input_data.get("phone_number", [])
         # Oracle Responsys doesn't support the initial + in phone numbers
         for idx, query_id in enumerate(query_ids):
-            query_ids[idx] = query_id[1:] if query_id[0] == "+" else query_id
+            query_ids[idx] = query_id[1:] if query_id.startswith('+') else query_id
         query_attribute = "m"
     else:
         raise FidesopsException(
