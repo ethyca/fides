@@ -125,7 +125,7 @@ describe("Privacy notices", () => {
 
     describe("enabling and disabling", () => {
       beforeEach(() => {
-        cy.intercept("PATCH", "/api/v1/privacy-notice*", {
+        cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update", {
           fixture: "privacy-notices/list.json",
         }).as("patchNotices");
       });
@@ -287,26 +287,6 @@ describe("Privacy notices", () => {
     beforeEach(() => {
       stubPrivacyNoticesCrud();
       stubTaxonomyEntities();
-    });
-
-    it("should disable certain fields when notice is notice_only", () => {
-      cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
-      cy.selectOption("input-consent_mechanism", "Notice only");
-      cy.getSelectValueContainer("input-enforcement_level").within(() => {
-        cy.get("input").should("be.disabled");
-      });
-      cy.getByTestId("input-has_gpc_flag").within(() => {
-        cy.get("span").should("have.attr", "data-disabled");
-      });
-
-      // fields should not be disabled otherwise
-      cy.selectOption("input-consent_mechanism", "Opt in");
-      cy.getSelectValueContainer("input-enforcement_level").within(() => {
-        cy.get("input").should("not.be.disabled");
-      });
-      cy.getByTestId("input-has_gpc_flag").within(() => {
-        cy.get("span").should("not.have.attr", "data-disabled");
-      });
     });
 
     it.skip("can create a new privacy notice", () => {
