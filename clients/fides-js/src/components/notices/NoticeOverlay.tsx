@@ -128,11 +128,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys);
   }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
 
-  if (!experience.experience_config) {
+  const experienceConfig = experience.experience_config;
+  if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
-  const experienceConfig = experience.experience_config;
 
   return (
     <Overlay

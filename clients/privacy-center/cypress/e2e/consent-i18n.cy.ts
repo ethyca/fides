@@ -91,7 +91,8 @@ describe("Consent i18n", () => {
     reject_button_label: "No participar en nada",
     accept_button_label: "Participar en todo",
     gpc_title: "Control de privacidad global detectado",
-    gpc_description: "Su preferencia de control de privacidad global se ha respetado.",
+    gpc_description:
+      "Su preferencia de control de privacidad global se ha respetado.",
     privacy_policy_link_label: "Política de privacidad",
     privacy_policy_url: "https://privacy.example.com/",
   };
@@ -124,7 +125,7 @@ describe("Consent i18n", () => {
       Object.defineProperty(win.navigator, "language", {
         value: props.navigatorLanguage,
       });
-      if (typeof(props.globalPrivacyControl) !== "undefined") {
+      if (typeof props.globalPrivacyControl !== "undefined") {
         Object.defineProperty(win.navigator, "globalPrivacyControl", {
           value: props.globalPrivacyControl,
         });
@@ -162,7 +163,9 @@ describe("Consent i18n", () => {
       cy.get("#fides-button-group").contains(expected.reject_button_label);
       cy.get("#fides-button-group").contains(expected.accept_button_label);
       cy.get(".fides-gpc-label").contains(expected.gpc_label);
-      cy.get(".fides-gpc-label .fides-gpc-badge").contains(expected.gpc_status_label);
+      cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+        expected.gpc_status_label
+      );
 
       // Privacy policy link is optional; if provided, check that it is localized
       if (expected.privacy_policy_link_label) {
@@ -200,7 +203,9 @@ describe("Consent i18n", () => {
       cy.get(".fides-modal-button-group").contains(
         expected.accept_button_label
       );
-      cy.get(".fides-gpc-banner .fides-gpc-header").contains(expected.gpc_title);
+      cy.get(".fides-gpc-banner .fides-gpc-header").contains(
+        expected.gpc_title
+      );
       cy.get(".fides-gpc-banner").contains(expected.gpc_title);
 
       // Privacy policy link is optional; if provided, check that it is localized
