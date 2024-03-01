@@ -5,11 +5,11 @@ import {
   PrivacyExperience,
   UserGeolocation,
 } from "fides-js/src/lib/consent-types";
-import {useFormikContext} from "formik";
+import { useFormikContext } from "formik";
 import Script from "next/script";
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 
-import {TranslationWithLanguageName} from "~/features/privacy-experience/form/helpers";
+import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   ComponentType,
   ExperienceConfigCreate,
@@ -23,6 +23,7 @@ export type Fides = {
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
   options: FidesOptions;
+  init: (config: any) => {};
 };
 
 declare global {
@@ -33,18 +34,18 @@ declare global {
 
 enum FidesPreviewComponent {
   BANNER = "banner",
-  MODAL = "modal"
+  MODAL = "modal",
 }
 
 const Preview = ({
-    allPrivacyNotices,
+  allPrivacyNotices,
   initialValues,
   translation,
-    isMobilePreview
+  isMobilePreview,
 }: {
   allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
-  translation: TranslationWithLanguageName;
+  translation: TranslationWithLanguageName | undefined;
   isMobilePreview: boolean;
 }) => {
   const { values } = useFormikContext<ExperienceConfigCreate>();
@@ -88,10 +89,6 @@ const Preview = ({
       : "Save",
     title: config.translations ? config.translations[0].title : "",
   });
-
-  const buildNotices = (config: Partial<ExperienceConfigCreate>) => {
-    // how to get notices?
-  };
 
   // Create the base FidesConfig JSON that will be used to initialize fides.js
   const baseConfig = {
@@ -147,7 +144,6 @@ const Preview = ({
           has_gpc_flag: true,
           framework: null,
           default_preference: "opt_out",
-          cookies: [],
           systems_applicable: false,
           translations: [
             {
@@ -171,7 +167,6 @@ const Preview = ({
           has_gpc_flag: false,
           framework: null,
           default_preference: "opt_in",
-          cookies: [{ name: "_ga", path: null, domain: null }],
           systems_applicable: true,
           translations: [
             {
@@ -198,22 +193,18 @@ const Preview = ({
   };
 
   useEffect(() => {
-    // const element = document.getElementById("preview-container");
-    // if (element) {
-    //   element.removeChild(element.firstChild);
-    //   console.log("removed child");
-    // }
-    // if component is API or privacy center don't show preview
-    // todo- handle privacy notice ids
-    // if we're editing a translation, we want to preview it, otherwise show first translation if exists, else keep default
+    // if current component is a modal, we want to force fides.js to show a modal, not a banner component
     if (values.component === ComponentType.MODAL) {
-      baseConfig.options.fidesPreviewComponent = FidesPreviewComponent.MODAL
+      baseConfig.options.fidesPreviewComponent = FidesPreviewComponent.MODAL;
     }
-    if (translation) {
-      const currentTranslation: ExperienceTranslation =
-        values.translations?.filter(
+    // if we're editing a translation, we want to preview the banner/modal with that language,
+    // otherwise we show first translation if exists, else keep default
+    const currentTranslation: ExperienceTranslation | undefined = translation
+      ? values.translations?.filter(
           (i) => i.language === translation.language
-        )[0];
+        )[0]
+      : undefined;
+    if (currentTranslation) {
       baseConfig.experience.experience_config.translations[0] =
         currentTranslation;
     } else if (values.translations) {
@@ -221,18 +212,17 @@ const Preview = ({
       baseConfig.experience.experience_config.translations[0] =
         values.translations[0];
     }
-    console.log(allPrivacyNotices);
-    console.log(values);
-    console.log(translation);
-    // fixme- add privacy notices
+    // TODO - get notice translation info from the BE!
+    // const noticesFromPrivacyExperienceConfigDetail = undefined;
     // if (values.privacy_notice_ids && values.privacy_notice_ids.length >= 1) {
-    //   // @ts-ignore
-    //   const noticesOnExperience = allPrivacyNotices.filter((n) => n.id in values.privacy_notice_ids);
+    //   // noticesOnExperience represents the notices that are attached to the experience config, and are the ones we should show
+    //   // in preview mode
+    //   const noticesOnExperience = noticesFromPrivacyExperienceConfigDetail.filter((n) => n.id in values.privacy_notice_ids);
     //   if (noticesOnExperience) {
+    //     // the below needs some refinement, so that we appropriately map the correct vals from the BE to what fides.js expects
     //     baseConfig.experience.privacy_notices = noticesOnExperience
     //   }
     // }
-    // todo - this should remove "x" on banner / modal
     baseConfig.options.preventDismissal = !values.dismissable;
     if (window.Fides) {
       window.Fides.init(baseConfig);
@@ -242,8 +232,7 @@ const Preview = ({
   return (
     <>
       {/* style overrides for preview model */}
-      <style jsx global>{
-        `
+      <style jsx global>{`
         div#fides-overlay {
           z-index: 5000 !important;
         }
@@ -271,27 +260,22 @@ const Preview = ({
         }
       `}</style>
       {isMobilePreview ? (
-          <style>{
-            `
+        <style>{`
             div#preview-container {
               width: 70% !important;
             }
-            `
-          }</style>
+            `}</style>
       ) : (
-          <style>{
-            `
+        <style>{`
             div#fides-banner {
               width: 90% !important;
             }
-            `
-          }</style>
+            `}</style>
       )}
       <Script
         id="fides-js-base"
         src={fidesJsScript}
         onReady={() => {
-          // Enable the GTM integration, if GTM is configured
           window.Fides?.init(baseConfig);
         }}
       />

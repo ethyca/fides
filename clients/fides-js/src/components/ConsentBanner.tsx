@@ -23,7 +23,6 @@ interface BannerProps {
   onVendorPageClick?: () => void;
   renderButtonGroup: (props: ButtonGroupProps) => VNode;
   className?: string;
-  fidesPreviewMode?: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -35,7 +34,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onVendorPageClick,
   renderButtonGroup,
   className,
-  fidesPreviewMode,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 

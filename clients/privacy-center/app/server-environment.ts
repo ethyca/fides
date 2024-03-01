@@ -58,7 +58,7 @@ export interface PrivacyCenterSettings {
   ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PREVIEW_MODE: boolean | false; // (optional) sets fides to preview mode, save prefs to cookie, disabling buttons, etc
-  FIDES_PREVIEW_COMPONENT: string | null // (optional) allows fides preview mode to specify a component to open (e.g. modal vs banner)
+  FIDES_PREVIEW_COMPONENT: string | null; // (optional) allows fides preview mode to specify a component to open (e.g. modal vs banner)
 }
 
 /**
@@ -367,7 +367,8 @@ export const loadPrivacyCenterEnvironment =
       FIDES_PREVIEW_MODE: process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE === "true"
         : false,
-      FIDES_PREVIEW_COMPONENT: process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_COMPONENT
+      FIDES_PREVIEW_COMPONENT: process.env
+        .FIDES_PRIVACY_CENTER__FIDES_PREVIEW_COMPONENT
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_COMPONENT
         : null,
     };

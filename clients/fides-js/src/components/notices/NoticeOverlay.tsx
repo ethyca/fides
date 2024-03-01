@@ -145,7 +145,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}
-          fidesPreviewMode={options.fidesPreviewMode}
           onOpen={dispatchOpenBannerEvent}
           onClose={() => {
             onClose();

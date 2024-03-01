@@ -1,4 +1,11 @@
-import {ButtonGroup, Flex, IconButton, Spacer, Text, useToast} from "@fidesui/react";
+import {
+  ButtonGroup,
+  Flex,
+  IconButton,
+  Spacer,
+  Text,
+  useToast,
+} from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -34,7 +41,6 @@ import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
-  SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -173,10 +179,10 @@ const ConfigurePrivacyExperience = ({
               </ButtonGroup>
             </Flex>
             <Preview
-                allPrivacyNotices={allPrivacyNotices}
+              allPrivacyNotices={allPrivacyNotices}
               initialValues={initialValues}
               translation={translationToEdit}
-                isMobilePreview={isMobilePreview}
+              isMobilePreview={isMobilePreview}
             />
           </Flex>
         </Flex>
