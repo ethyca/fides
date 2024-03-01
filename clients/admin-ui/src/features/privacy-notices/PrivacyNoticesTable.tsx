@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { Button, Flex, HStack, Text, VStack } from "@fidesui/react";
 import {
+  ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
@@ -119,7 +120,7 @@ export const PrivacyNoticesTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const inventoryColumns = useMemo(
+  const inventoryColumns: ColumnDef<PrivacyNoticeResponse, any>[] = useMemo(
     () =>
       [
         columnHelper.accessor((row) => row.name, {
@@ -175,7 +176,7 @@ export const PrivacyNoticesTable = () => {
             cell: (props) => EnablePrivacyNoticeCell(props),
             header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
           }),
-      ].filter(Boolean),
+      ].filter(Boolean) as ColumnDef<PrivacyNoticeResponse, any>[],
     [userCanUpdate]
   );
 
