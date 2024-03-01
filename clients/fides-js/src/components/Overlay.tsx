@@ -145,7 +145,7 @@ const Overlay: FunctionComponent<Props> = ({
 
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [showBanner, setBannerIsOpen, options.fidesPreviewMode, options.fidesPreviewComponent, options.debug, handleOpenModal]);
+  }, [showBanner, setBannerIsOpen, options.fidesPreviewMode, options.fidesPreviewComponent, options.debug, handleOpenModal, handleCloseModal]);
 
   useEffect(() => {
     window.Fides.showModal = handleOpenModal;

@@ -1,4 +1,4 @@
-import { Flex, Spacer, Text, useToast } from "@fidesui/react";
+import {ButtonGroup, Flex, IconButton, Spacer, Text, useToast} from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -6,6 +6,8 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
+import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
+import { MobileIcon } from "~/features/common/Icon/MobileIcon";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -59,6 +61,8 @@ const ConfigurePrivacyExperience = ({
   const [patchExperienceConfigMutation] = usePatchExperienceConfigMutation();
 
   const toast = useToast();
+
+  const [isMobilePreview, setIsMobilePreview] = useState(false);
 
   const router = useRouter();
 
@@ -155,35 +159,24 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              {/* fixme- pass in component */}
-              {/* <div> */}
-              {/*  <Button */}
-              {/*      colorScheme="primary" */}
-              {/*      size="sm" */}
-              {/*      onClick={() => { */}
-              {/*        console.log( */}
-              {/*            "removing fides overlay and regenerating it with new config" */}
-              {/*        ); */}
-              {/*        reloadPreviewMode(fidesConfig) */}
-              {/*      }} */}
-              {/*  > */}
-              {/*    Reload Preview */}
-              {/*  </Button> */}
-              {/* </div> */}
-              {/* <ButtonGroup size="sm" variant="outline" isAttached> */}
-              {/*  <IconButton */}
-              {/*    icon={<MobileIcon />} */}
-              {/*    aria-label="View mobile preview" */}
-              {/*  /> */}
-              {/*  <IconButton */}
-              {/*    icon={<DesktopIcon />} */}
-              {/*    aria-label="View desktop preview" */}
-              {/*  /> */}
-              {/* </ButtonGroup> */}
+              <ButtonGroup size="sm" variant="outline" isAttached>
+                <IconButton
+                  icon={<MobileIcon />}
+                  aria-label="View mobile preview"
+                  onClick={() => setIsMobilePreview(true)}
+                />
+                <IconButton
+                  icon={<DesktopIcon />}
+                  aria-label="View desktop preview"
+                  onClick={() => setIsMobilePreview(false)}
+                />
+              </ButtonGroup>
             </Flex>
             <Preview
+                allPrivacyNotices={allPrivacyNotices}
               initialValues={initialValues}
               translation={translationToEdit}
+                isMobilePreview={isMobilePreview}
             />
           </Flex>
         </Flex>

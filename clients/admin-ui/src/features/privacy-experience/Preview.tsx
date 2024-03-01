@@ -5,16 +5,18 @@ import {
   PrivacyExperience,
   UserGeolocation,
 } from "fides-js/src/lib/consent-types";
-import { useFormikContext } from "formik";
+import {useFormikContext} from "formik";
 import Script from "next/script";
-import React, { useEffect } from "react";
+import React, {useEffect} from "react";
 
+import {TranslationWithLanguageName} from "~/features/privacy-experience/form/helpers";
 import {
+  ComponentType,
   ExperienceConfigCreate,
   ExperienceTranslation,
+  LimitedPrivacyNoticeResponseSchema,
   SupportedLanguage,
 } from "~/types/api";
-import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -29,12 +31,21 @@ declare global {
   }
 }
 
+enum FidesPreviewComponent {
+  BANNER = "banner",
+  MODAL = "modal"
+}
+
 const Preview = ({
+    allPrivacyNotices,
   initialValues,
   translation,
+    isMobilePreview
 }: {
+  allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
   translation: TranslationWithLanguageName;
+  isMobilePreview: boolean;
 }) => {
   const { values } = useFormikContext<ExperienceConfigCreate>();
 
@@ -71,10 +82,10 @@ const Preview = ({
       : "",
     reject_button_label: config.translations
       ? config.translations[0].reject_button_label
-      : "",
+      : "Reject All",
     save_button_label: config.translations
       ? config.translations[0].save_button_label
-      : "",
+      : "Save",
     title: config.translations ? config.translations[0].title : "",
   });
 
@@ -97,7 +108,7 @@ const Preview = ({
       // todo- get this from config
       preventDismissal: false,
       fidesPreviewMode: true,
-      fidesPreviewComponent: "banner",
+      fidesPreviewComponent: FidesPreviewComponent.BANNER,
       allowHTMLDescription: true,
       serverSideFidesApiUrl: "",
       fidesString: null,
@@ -110,8 +121,6 @@ const Preview = ({
       component: "banner_and_modal",
       experience_config: {
         id: "pri_222",
-        created_at: "2024-01-01T12:00:00.000000+00:00",
-        updated_at: "2024-01-01T12:00:00.000000+00:00",
         regions: ["us_ca"],
         component: "banner_and_modal",
         disabled: false,
@@ -127,8 +136,6 @@ const Preview = ({
         {
           id: "pri_555",
           origin: "pri_xxx",
-          created_at: "2024-01-01T12:00:00.000000+00:00",
-          updated_at: "2024-01-01T12:00:00.000000+00:00",
           name: "Advertising Test",
           notice_key: "advertising",
           description: "Advertising Description Test",
@@ -154,8 +161,6 @@ const Preview = ({
         {
           id: "pri_888",
           origin: "pri_xxx",
-          created_at: "2024-01-01T12:00:00.000000+00:00",
-          updated_at: "2024-01-01T12:00:00.000000+00:00",
           name: "Analytics Test",
           notice_key: "analytics",
           internal_description: "Analytics Internal Description",
@@ -185,7 +190,6 @@ const Preview = ({
         },
       ],
     },
-    // TODO- write mapper to coerce GET privacy experience config details body to GET privacy experience body
     geolocation: {
       country: "US",
       location: "US-CA",
@@ -194,16 +198,17 @@ const Preview = ({
   };
 
   useEffect(() => {
-    // todo- when editing another language, replace the experience.translations with the current in the preview
-    const element = document.getElementById("preview-container");
-    if (element) {
-      element.removeChild(element.firstChild);
-      console.log("removed child");
-    }
-    // todo- pass in preview component modal if component is modal only
+    // const element = document.getElementById("preview-container");
+    // if (element) {
+    //   element.removeChild(element.firstChild);
+    //   console.log("removed child");
+    // }
     // if component is API or privacy center don't show preview
     // todo- handle privacy notice ids
     // if we're editing a translation, we want to preview it, otherwise show first translation if exists, else keep default
+    if (values.component === ComponentType.MODAL) {
+      baseConfig.options.fidesPreviewComponent = FidesPreviewComponent.MODAL
+    }
     if (translation) {
       const currentTranslation: ExperienceTranslation =
         values.translations?.filter(
@@ -216,18 +221,29 @@ const Preview = ({
       baseConfig.experience.experience_config.translations[0] =
         values.translations[0];
     }
+    console.log(allPrivacyNotices);
     console.log(values);
     console.log(translation);
+    // fixme- add privacy notices
+    // if (values.privacy_notice_ids && values.privacy_notice_ids.length >= 1) {
+    //   // @ts-ignore
+    //   const noticesOnExperience = allPrivacyNotices.filter((n) => n.id in values.privacy_notice_ids);
+    //   if (noticesOnExperience) {
+    //     baseConfig.experience.privacy_notices = noticesOnExperience
+    //   }
+    // }
+    // todo - this should remove "x" on banner / modal
     baseConfig.experience.experience_config.dismissable = values.dismissable;
     if (window.Fides) {
       window.Fides.init(baseConfig);
     }
-  }, [values, translation, baseConfig]);
+  }, [values, translation, baseConfig, allPrivacyNotices]);
 
   return (
     <>
       {/* style overrides for preview model */}
-      <style jsx global>{`
+      <style jsx global>{
+        `
         div#fides-overlay {
           z-index: 5000 !important;
         }
@@ -253,10 +269,24 @@ const Preview = ({
           left: initial !important;
           top: initial !important;
         }
-        div#fides-banner {
-          width: 90% !important;
-        }
       `}</style>
+      {isMobilePreview ? (
+          <style>{
+            `
+            div#preview-container {
+              width: 70% !important;
+            }
+            `
+          }</style>
+      ) : (
+          <style>{
+            `
+            div#fides-banner {
+              width: 90% !important;
+            }
+            `
+          }</style>
+      )}
       <Script
         id="fides-js-base"
         src={fidesJsScript}
