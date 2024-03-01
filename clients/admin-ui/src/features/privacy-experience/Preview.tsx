@@ -136,9 +136,9 @@ const Preview = ({
         {
           id: "pri_555",
           origin: "pri_xxx",
-          name: "Advertising Test",
+          name: "Example Privacy Notice 1",
           notice_key: "advertising",
-          description: "Advertising Description Test",
+          description: "Your Privacy Notice Description",
           internal_description: "Advertising Internal Description Test",
           consent_mechanism: "opt_in",
           data_uses: ["marketing.advertising.first_party.targeted"],
@@ -161,9 +161,9 @@ const Preview = ({
         {
           id: "pri_888",
           origin: "pri_xxx",
-          name: "Analytics Test",
+          name: "Example Privacy Notice 2",
           notice_key: "analytics",
-          internal_description: "Analytics Internal Description",
+          internal_description: "Your Privacy Notice Description",
           consent_mechanism: "opt_out",
           data_uses: ["analytics.reporting.ad_performance"],
           enforcement_level: "frontend",
@@ -233,7 +233,7 @@ const Preview = ({
     //   }
     // }
     // todo - this should remove "x" on banner / modal
-    baseConfig.experience.experience_config.dismissable = values.dismissable;
+    baseConfig.options.preventDismissal = !values.dismissable;
     if (window.Fides) {
       window.Fides.init(baseConfig);
     }
