@@ -1,10 +1,9 @@
-import { Box, Heading, Text,useToast } from "@fidesui/react";
+import { Box, Heading, Text, useToast } from "@fidesui/react";
 import type { NextPage } from "next";
-import router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useCreatePropertyMutation } from "~/features/properties/property.slice";

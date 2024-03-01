@@ -54,7 +54,7 @@ const Layout = ({
     <Flex
       data-testid={title}
       direction="column"
-      height={padded ? "calc(100vh - 48px" : "100vh"}
+      height={padded ? "calc(100vh - 48px)" : "100vh"}
     >
       <Head>
         <title>Fides Admin UI - {title}</title>
