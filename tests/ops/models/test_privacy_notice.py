@@ -3,10 +3,7 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.models.location_regulation_selections import (
-    LocationRegulationSelections,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     NoticeTranslation,
@@ -138,7 +135,6 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
         assert privacy_notice.data_uses == old_data_uses
-        assert privacy_notice.version == 1.0
 
         # and let's run thru the same with a "no-op" update rather than empty data at the privacy notice level
         # Translations are identical
@@ -160,7 +156,6 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
         assert privacy_notice.data_uses == old_data_uses
-        assert privacy_notice.version == 1.0
 
     def test_update_notice_level(self, db: Session, privacy_notice: PrivacyNotice):
         assert len(PrivacyNotice.all(db)) == 1

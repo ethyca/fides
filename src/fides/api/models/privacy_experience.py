@@ -620,9 +620,13 @@ def create_historical_record_for_config_and_translation(
     history_data: dict = create_historical_data_from_record(privacy_experience_config)
     history_data.pop("privacy_notices", None)
     history_data.pop("translations", None)
+
     updated_translation_data: dict = create_historical_data_from_record(
         experience_translation
     )
+    # Translations have FK's back to experience config but the historical data does not
+    updated_translation_data.pop("experience_config_id", None)
+
     # Create a historical record for reporting purposes, which versions
     # elements from both the PrivacyExperienceConfig and ExperienceTranslation
     PrivacyExperienceConfigHistory.create(

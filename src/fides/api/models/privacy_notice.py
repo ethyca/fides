@@ -431,9 +431,13 @@ def create_historical_record_for_notice_and_translation(
     existing_version: float = notice_translation.version or 0.0
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
+
     updated_translation_data: dict = create_historical_data_from_record(
         notice_translation
     )
+    # Translations have a FK back to privacy_notice_id, but this historical records do not
+    updated_translation_data.pop("privacy_notice_id")
+
     # Creates a historical record of the Notice and the translation combined. Preferences are saved
     # against this resource.
     PrivacyNoticeHistory.create(
