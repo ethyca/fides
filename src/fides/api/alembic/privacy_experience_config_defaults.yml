@@ -65,10 +65,7 @@ privacy_experience_configs:
     - sk
     - fi
     - se
-    - gb_eng
-    - gb_sct
-    - gb_wls
-    - gb_nir
+    - gb
     - is
     - "no"
     - li
@@ -118,10 +115,7 @@ privacy_experience_configs:
     - sk
     - fi
     - se
-    - gb_eng
-    - gb_sct
-    - gb_wls
-    - gb_nir
+    - gb
     - is
     - "no"
     - li
