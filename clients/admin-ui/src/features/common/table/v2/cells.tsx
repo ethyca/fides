@@ -14,11 +14,12 @@ import {
 } from "@fidesui/react";
 import { CellContext, HeaderContext } from "@tanstack/react-table";
 import { ChangeEvent, FC, ReactNode } from "react";
-import { CellProps } from "react-table";
+
+import { RTKResult } from "~/types/errors";
+
 import { getErrorMessage, isErrorResult } from "../../helpers";
 import ConfirmationModal from "../../modals/ConfirmationModal";
 import { errorToastParams } from "../../toast";
-import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
   value,

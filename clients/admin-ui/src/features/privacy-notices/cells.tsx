@@ -14,6 +14,7 @@ import {
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
 } from "~/types/api";
+
 import { EnableCell } from "../common/table/v2/cells";
 
 export const MechanismCell = (value: ConsentMechanism | undefined) => {
@@ -56,25 +57,25 @@ export const FrameworkCell = (cellProps: any) => (
 type TagNames = "available" | "enabled" | "inactive";
 
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
-  {
-    available: {
-      backgroundColor: "orange.100",
-      color: "orange.800",
-      tooltip:
-        "This notice is associated with a system + data use and can be enabled",
-    },
-    enabled: {
-      backgroundColor: "green.100",
-      color: "green.800",
-      tooltip: "This notice is active and available for consumers",
-    },
-    inactive: {
-      backgroundColor: "gray.100",
-      color: "gray.800",
-      tooltip:
-        "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
-    },
-  };
+{
+  available: {
+    backgroundColor: "orange.100",
+    color: "orange.800",
+    tooltip:
+      "This notice is associated with a system + data use and can be enabled",
+  },
+  enabled: {
+    backgroundColor: "green.100",
+    color: "green.800",
+    tooltip: "This notice is active and available for consumers",
+  },
+  inactive: {
+    backgroundColor: "gray.100",
+    color: "gray.800",
+    tooltip:
+      "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
+  },
+};
 export const PrivacyNoticeStatusCell = (cellProps: any) => {
   const { row } = cellProps;
 
@@ -113,16 +114,17 @@ export const PrivacyNoticeStatusCell = (cellProps: any) => {
   );
 };
 
-export const EnablePrivacyNoticeCell = (
-  cellProps: CellContext<PrivacyNoticeResponse, boolean | undefined>
-) => {
+export const EnablePrivacyNoticeCell = ({
+  getValue,
+  row,
+  ...cellProps
+}: CellContext<PrivacyNoticeResponse, boolean | undefined>) => {
   const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
-  const value = cellProps.getValue();
-  const { row } = cellProps;
+  const { original } = row;
   const onToggle = async (toggle: boolean) =>
     patchNoticeMutationTrigger([
       {
-        id: row.original.id,
+        id: original.id,
         disabled: !toggle,
       },
     ]);
@@ -137,7 +139,7 @@ export const EnablePrivacyNoticeCell = (
     (noticeIsDisabled && !systemsApplicable) || !hasDataUses;
   return (
     <EnableCell<PrivacyNoticeResponse>
-      value={cellProps.getValue()}
+      value={getValue()!}
       {...cellProps}
       isDisabled={toggleIsDisabled}
       onToggle={onToggle}
