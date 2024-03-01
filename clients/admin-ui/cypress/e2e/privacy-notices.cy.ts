@@ -285,7 +285,7 @@ describe("Privacy notices", () => {
       stubLanguages();
     });
 
-    it.only("can create a new privacy notice", () => {
+    it("can create a new privacy notice", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.getByTestId("new-privacy-notice-page");
       const notice = {
