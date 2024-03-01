@@ -40,11 +40,6 @@ def upgrade():
         "ix_privacyexperienceconfighistory_banner_enabled",
         table_name="privacyexperienceconfighistory",
     )
-    op.drop_constraint(
-        "privacyexperienceconfighistory_experience_config_id_fkey",
-        "privacyexperienceconfighistory",
-        type_="foreignkey",
-    )
     op.drop_column("privacyexperienceconfighistory", "banner_enabled")
     op.drop_column("privacyexperienceconfighistory", "experience_config_id")
     op.drop_index("ix_privacynotice_regions", table_name="privacynotice")
@@ -73,6 +68,30 @@ def upgrade():
     op.drop_column("privacynoticetemplate", "regions")
     op.drop_column("privacynoticetemplate", "displayed_in_overlay")
     op.drop_column("privacynoticetemplate", "displayed_in_api")
+
+    # Resetting PrivacyExperienceConfigHistory language back to non-nullable after data migration
+    op.alter_column(
+        "privacyexperienceconfighistory",
+        "language",
+        existing_type=sa.VARCHAR(),
+        nullable=False,
+    )
+
+    # Resetting PrivacyNoticeHistory language back to non-nullable after data migration
+    op.alter_column(
+        "privacynoticehistory",
+        "title",
+        existing_type=sa.VARCHAR(),
+        nullable=False,
+    )
+
+    # Resetting PrivacyNoticeHistory title back to non-nullable after data migration
+    op.alter_column(
+        "privacynoticehistory",
+        "title",
+        existing_type=sa.VARCHAR(),
+        nullable=False,
+    )
 
 
 def downgrade():
@@ -221,13 +240,6 @@ def downgrade():
     op.add_column(
         "privacyexperienceconfighistory",
         sa.Column("banner_enabled", sa.VARCHAR(), autoincrement=False, nullable=True),
-    )
-    op.create_foreign_key(
-        "privacyexperienceconfighistory_experience_config_id_fkey",
-        "privacyexperienceconfighistory",
-        "privacyexperienceconfig",
-        ["experience_config_id"],
-        ["id"],
     )
     op.create_index(
         "ix_privacyexperienceconfighistory_banner_enabled",
