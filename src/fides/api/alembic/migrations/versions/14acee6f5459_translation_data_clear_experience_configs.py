@@ -212,25 +212,25 @@ def determine_needed_experience_configs(bind):
             )
             if existing_notice["displayed_in_overlay"]:
                 experience_config = component_mapping.get(ComponentType.Overlay)
-                reconciled_experience_config_map[experience_config.name][
-                    "regions"
-                ].update(regions_to_add)
-                reconciled_experience_config_map[experience_config.name][
+                reconciled_experience_config_map[experience_config]["regions"].update(
+                    regions_to_add
+                )
+                reconciled_experience_config_map[experience_config][
                     "privacy_notices"
                 ].add(existing_notice["id"])
-                reconciled_experience_config_map[experience_config.name][
+                reconciled_experience_config_map[experience_config][
                     "needs_migration"
                 ] = True
 
             if existing_notice["displayed_in_privacy_center"]:
                 experience_config = component_mapping.get(ComponentType.PrivacyCenter)
-                reconciled_experience_config_map[experience_config.name][
-                    "regions"
-                ].update(regions_to_add)
-                reconciled_experience_config_map[experience_config.name][
+                reconciled_experience_config_map[experience_config]["regions"].update(
+                    regions_to_add
+                )
+                reconciled_experience_config_map[experience_config][
                     "privacy_notices"
                 ].add(existing_notice["id"])
-                reconciled_experience_config_map[experience_config.name][
+                reconciled_experience_config_map[experience_config][
                     "needs_migration"
                 ] = True
 
@@ -250,9 +250,9 @@ def determine_needed_experience_configs(bind):
         # because of this, we'll copy over existing experience text/attributes to _both_
         # of these corresponding new experience configs.
         if eea_config_id := EEA_MAPPING.get(component):
-            configs.append(reconciled_experience_config_map.get(eea_config_id.name))
+            configs.append(reconciled_experience_config_map.get(eea_config_id))
         if us_config_id := US_MAPPING.get(component):
-            configs.append(reconciled_experience_config_map.get(us_config_id.name))
+            configs.append(reconciled_experience_config_map.get(us_config_id))
         for config in configs:
             if config:
                 config["accept_button_label"] = eec["accept_button_label"]
@@ -353,6 +353,7 @@ def migrate_experiences(bind):
                 **experience_config,
                 "history_id": generate_record_id("pri"),
                 "version": 1,
+                "is_default": True,
             },
         )
 
@@ -437,6 +438,7 @@ def migrate_experiences(bind):
                     "record_id": generate_record_id("exp"),
                     "language": "en",
                     "experience_config_id": res["id"],
+                    "is_default": True,
                 },
             )
 
@@ -444,7 +446,7 @@ def migrate_experiences(bind):
         link_config_to_translation_id = text(
             """
             UPDATE privacyexperienceconfighistory
-            SET translation_id = experiencetranslation.id, allow_language = allow_language, 
+            SET translation_id = experiencetranslation.id
             FROM experiencetranslation
             WHERE experiencetranslation.experience_config_id = privacyexperienceconfighistory.experience_config_id;
         """
