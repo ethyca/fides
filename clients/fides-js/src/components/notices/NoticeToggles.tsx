@@ -38,7 +38,6 @@ const NoticeToggles = ({
         const description = i18n.t(`${i18nKey}.description`);
         const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
-        // TODO: check
         const noticeKey = notice.notice_key;
         return (
           <div>
@@ -47,7 +46,7 @@ const NoticeToggles = ({
               title={title}
               checked={checked}
               onToggle={handleToggle}
-              gpcBadge={<GpcBadgeForNotice notice={notice} value={checked} />}
+              gpcBadge={<GpcBadgeForNotice i18n={i18n} notice={notice} value={checked} />}
               disabled={
                 notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
               }
