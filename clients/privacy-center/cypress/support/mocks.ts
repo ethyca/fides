@@ -15,7 +15,7 @@ import {
 
 export const mockPrivacyNoticeTranslation = (
   params?: Partial<PrivacyNoticeTranslation>
-) => {
+): PrivacyNoticeTranslation => {
   const translation: PrivacyNoticeTranslation = {
     language: "en",
     title: "Mock Advertising",
@@ -29,22 +29,20 @@ export const mockPrivacyNoticeTranslation = (
  * Mocks the privacy notice, optionally pass in custom translations that override the default translation
  */
 export const mockPrivacyNotice = (
-  params: Partial<PrivacyNotice>,
+  params: Partial<PrivacyNotice> & { title: string; id: string },
   translations?: PrivacyNoticeTranslation[]
-) => {
-  const defaultTranslations = [mockPrivacyNoticeTranslation()];
+): PrivacyNotice => {
+  const { title, id } = params;
+  const defaultTranslations = [mockPrivacyNoticeTranslation({ title })];
   const notice = {
-    name: "Advertising with GPC enabled",
-    internal_description:
-      "a test sample privacy notice configuration for internal use",
+    name: title,
     consent_mechanism: ConsentMechanism.OPT_OUT,
     default_preference: UserConsentPreference.OPT_IN,
     has_gpc_flag: true,
     disabled: false,
-    origin: null,
     data_uses: ["advertising", "third_party_sharing"],
     enforcement_level: EnforcementLevel.SYSTEM_WIDE,
-    id: "pri_notice-mock-advertising-000",
+    id,
     created_at: "2024-01-01T12:00:00.000000+00:00",
     updated_at: "2024-01-01T12:00:00.000000+00:00",
     notice_key: "advertising",

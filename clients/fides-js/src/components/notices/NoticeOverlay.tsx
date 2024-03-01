@@ -128,11 +128,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys);
   }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
 
-  if (!experience.experience_config) {
+  const experienceConfig = experience.experience_config;
+  if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
-  const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
@@ -150,10 +150,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             onClose();
             handleDismiss();
           }}
-          experience={experienceConfig}
+          i18n={i18n}
           renderButtonGroup={({ isMobile }) => (
             <NoticeConsentButtons
               experience={experience}
+              i18n={i18n}
               onManagePreferencesClick={onManagePreferencesClick}
               enabledKeys={draftEnabledNoticeKeys}
               onSave={(
@@ -174,6 +175,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           <div className="fides-modal-notices">
             <NoticeToggles
               notices={privacyNotices}
+              i18n={i18n}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
@@ -187,6 +189,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         <Fragment>
           <NoticeConsentButtons
             experience={experience}
+            i18n={i18n}
             enabledKeys={draftEnabledNoticeKeys}
             onSave={(
               consentMethod: ConsentMethod,
@@ -200,7 +203,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isMobile={isMobile}
             saveOnly={privacyNotices.length === 1}
           />
-          <PrivacyPolicyLink experience={experience.experience_config} />
+          <PrivacyPolicyLink i18n={i18n} />
         </Fragment>
       )}
     />

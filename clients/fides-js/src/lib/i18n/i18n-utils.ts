@@ -266,6 +266,16 @@ export function matchAvailableLocales(
 }
 
 /**
+ * Check if the given message exists in the current locale's catalog.
+ */
+export function messageExists(i18n: I18n, id: string): boolean {
+  // NOTE: Our i18n library mirrors LinguiJS's implementation, which doesn't
+  // expose a way to check for missing messages directly. However, it will
+  // always return the "id" if no matching message exists, so we rely on that!
+  return i18n.t(id) !== "" && i18n.t(id) !== id;
+}
+
+/**
  * Initialize the given i18n singleton by:
  * 1) Loading all static messages from locale files
  * 2) Detecting the user's locale
@@ -345,6 +355,7 @@ export function setupI18n(): I18n {
       } else if (typeof descriptorOrId === "object" && descriptorOrId.id) {
         id = descriptorOrId.id;
       } else {
+        // id is invalid; return an empty string
         return "";
       }
 
@@ -353,7 +364,8 @@ export function setupI18n(): I18n {
         currentLocale &&
         currentLocale in allMessages &&
         id &&
-        id in allMessages[currentLocale]
+        id in allMessages[currentLocale] &&
+        allMessages[currentLocale][id]
       ) {
         return allMessages[currentLocale][id];
       }
