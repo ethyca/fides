@@ -1,7 +1,7 @@
-"""translation data
+"""migrate translation data - notices and experiences
 
 Revision ID: 14acee6f5459
-Revises: a1e23b70f2b2
+Revises: 0c65325843bd
 Create Date: 2024-01-09 21:17:13.115020
 
 """
@@ -20,7 +20,7 @@ from sqlalchemy.engine import ResultProxy
 # revision identifiers, used by Alembic.
 
 revision = "14acee6f5459"
-down_revision = "a1e23b70f2b2"
+down_revision = "0c65325843bd"
 branch_labels = None
 depends_on = None
 
