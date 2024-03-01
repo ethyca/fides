@@ -46,7 +46,7 @@ describe("Privacy notices", () => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_NOTICES_ROUTE);
           cy.wait("@getNotices");
-          cy.get('table').contains('tr', "Essential").click();          
+          cy.get("table").contains("tr", "Essential").click();
           cy.getByTestId("privacy-notice-detail-page").should("not.exist");
           cy.getByTestId("privacy-notices-page");
         }
@@ -59,7 +59,7 @@ describe("Privacy notices", () => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_NOTICES_ROUTE);
           cy.wait("@getNotices");
-          cy.get('.toggle').should("not.exist");
+          cy.get(".toggle").should("not.exist");
         }
       );
     });
@@ -92,7 +92,7 @@ describe("Privacy notices", () => {
         "Advertising",
         "Data Sales",
       ].forEach((name) => {
-        cy.get('table').contains('tr', name);
+        cy.get("table").contains("tr", name);
       });
     });
 
@@ -111,7 +111,7 @@ describe("Privacy notices", () => {
       cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
         fixture: "privacy-notices/notice.json",
       }).as("getNoticeDetail");
-      cy.get('table').contains('tr', "Essential").click();          
+      cy.get("table").contains("tr", "Essential").click();
       cy.wait("@getNoticeDetail");
       cy.getByTestId("privacy-notice-detail-page");
       cy.url().should("contain", ESSENTIAL_NOTICE_ID);
@@ -130,12 +130,14 @@ describe("Privacy notices", () => {
       });
 
       it("can enable a notice", () => {
-        cy.get('table').contains('tr', "Data Sales").within(() => {
-          cy.get('[data-testid="toggle-switch"]').within(() => {
-            cy.get("span").should("not.have.attr", "data-checked");
+        cy.get("table")
+          .contains("tr", "Data Sales")
+          .within(() => {
+            cy.get('[data-testid="toggle-switch"]').within(() => {
+              cy.get("span").should("not.have.attr", "data-checked");
+            });
+            cy.get('[data-testid="toggle-switch"]').click();
           });
-          cy.get('[data-testid="toggle-switch"]').click();
-        });
 
         cy.wait("@patchNotices").then((interception) => {
           const { body } = interception.request;
@@ -146,12 +148,14 @@ describe("Privacy notices", () => {
       });
 
       it("can disable a notice with a warning", () => {
-        cy.get('table').contains('tr', "Essential").within(() => {
-          cy.get('[data-testid="toggle-switch"]').within(() => {
-            cy.get("span").should("have.attr", "data-checked");
+        cy.get("table")
+          .contains("tr", "Essential")
+          .within(() => {
+            cy.get('[data-testid="toggle-switch"]').within(() => {
+              cy.get("span").should("have.attr", "data-checked");
+            });
+            cy.get('[data-testid="toggle-switch"]').click();
           });
-          cy.get('[data-testid="toggle-switch"]').click();
-        });
 
         cy.getByTestId("confirmation-modal");
         cy.getByTestId("continue-btn").click();
@@ -165,23 +169,31 @@ describe("Privacy notices", () => {
 
       it("can render a tag based on systems_applicable", () => {
         // Enabled and has applicable systems
-        cy.get('table').contains('tr', "Essential").within(() => {
-          cy.getByTestId("status-badge").contains("enabled");
-        });
+        cy.get("table")
+          .contains("tr", "Essential")
+          .within(() => {
+            cy.getByTestId("status-badge").contains("enabled");
+          });
         // Disabled but has applicable systems
-        cy.get('table').contains('tr', "Data Sales").within(() => {
-          cy.getByTestId("status-badge").contains("available");
-        });
+        cy.get("table")
+          .contains("tr", "Data Sales")
+          .within(() => {
+            cy.getByTestId("status-badge").contains("available");
+          });
         // Disabled and has no applicable systems
-        cy.get('table').contains('tr', "Advertising").within(() => {
-          cy.getByTestId("status-badge").contains("inactive");
-        });
+        cy.get("table")
+          .contains("tr", "Advertising")
+          .within(() => {
+            cy.getByTestId("status-badge").contains("inactive");
+          });
         // Enabled but has no applicable systems.
         // Note: this state should not be possible via only the frontend,
         // but could happen if directly hitting the API
-        cy.get('table').contains('tr', "Analytics").within(() => {
-          cy.getByTestId("status-badge").contains("inactive");
-        });
+        cy.get("table")
+          .contains("tr", "Analytics")
+          .within(() => {
+            cy.getByTestId("status-badge").contains("inactive");
+          });
       });
 
       it("can show an error if disable toggle fails", () => {
@@ -192,9 +204,11 @@ describe("Privacy notices", () => {
               "Privacy Notice 'Analytics test' has already assigned notice key 'analytics' to region 'PrivacyNoticeRegion.ie'",
           },
         }).as("patchNoticesError");
-        cy.get('table').contains('tr', "Data Sales").within(() => {
-          cy.get('[data-testid="toggle-switch"]').click();
-        });
+        cy.get("table")
+          .contains("tr", "Data Sales")
+          .within(() => {
+            cy.get('[data-testid="toggle-switch"]').click();
+          });
         cy.wait("@patchNoticesError").then(() => {
           cy.getByTestId("toast-error-msg");
         });
