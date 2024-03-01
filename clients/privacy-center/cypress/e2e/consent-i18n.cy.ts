@@ -6,7 +6,7 @@ describe("Consent i18n", () => {
    * Define (lots of) reusable test data for all the specs below!
    */
   const ENGLISH_LOCALE = "en-US";
-  const SPANISH_LOCALE = "es-MX"; // TODO (PROD-1597): update to use es-ES
+  const SPANISH_LOCALE = "es";
   const JAPANESE_LOCALE = "ja-JP";
   type TestFixture =
     | "experience_banner_modal.json"
@@ -76,8 +76,8 @@ describe("Consent i18n", () => {
     banner_title: "[banner] Administrar sus preferencias de consentimiento",
     banner_description: "[banner] Usamos cookies y métodos similares",
     privacy_preferences_link_label: "Administrar preferencias",
-    reject_button_label: "No participar en ninguna",
-    accept_button_label: "Participar en todas",
+    reject_button_label: "No participar en nada",
+    accept_button_label: "Participar en todo",
     gpc_label: "Control de privacidad global",
     gpc_status_label: "Aplicado",
     privacy_policy_link_label: "Política de privacidad",
@@ -88,8 +88,8 @@ describe("Consent i18n", () => {
     title: "Administrar sus preferencias de consentimiento",
     description: "Usamos cookies y métodos similares",
     save_button_label: "Guardar",
-    reject_button_label: "No participar en ninguna",
-    accept_button_label: "Participar en todas",
+    reject_button_label: "No participar en nada",
+    accept_button_label: "Participar en todo",
     gpc_title: "Control de privacidad global detectado",
     gpc_description: "Su preferencia de control de privacidad global se ha respetado.",
     privacy_policy_link_label: "Política de privacidad",
@@ -102,12 +102,12 @@ describe("Consent i18n", () => {
       description: "Este sitio web usa cookies y servicios de mercadotecnia",
     },
     {
-      title: "De análisis",
-      description: "Este sitio web usa cookies y servicios analíticos",
+      title: "Análisis",
+      description: "Este sitio web usa cookies analíticas y servicios",
     },
     {
       title: "Esenciales",
-      description: "Este sitio web utiliza cookies y servicios esenciales",
+      description: "Este sitio web utiliza cookies esenciales y servicios",
     },
   ];
 

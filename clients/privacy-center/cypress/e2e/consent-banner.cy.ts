@@ -636,7 +636,7 @@ describe("Consent overlay", () => {
               },
               {
                 privacy_notice_history_id:
-                  "pri_notice-history-analytics-es-mx-000",
+                  "pri_notice-history-analytics-es-000",
                 preference: "opt_in",
               },
             ],
