@@ -2,7 +2,8 @@ import { h, FunctionComponent, Fragment } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
-  ConsentMethod, FidesCookie,
+  ConsentMethod,
+  FidesCookie,
   PrivacyNotice,
   SaveConsentPreference,
   ServingComponent,
@@ -18,7 +19,10 @@ import { NoticeConsentButtons } from "../ConsentButtons";
 import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
 import { useConsentServed } from "../../lib/hooks";
-import {getFidesConsentCookie, updateCookieFromNoticePreferences} from "../../lib/cookie";
+import {
+  getFidesConsentCookie,
+  updateCookieFromNoticePreferences,
+} from "../../lib/cookie";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { dispatchFidesEvent } from "../../lib/events";
 import { resolveConsentValue } from "../../lib/consent-value";
@@ -36,12 +40,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       // ensure we have most up-to-date cookie vals
       const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
       return experience.privacy_notices.map((notice) => {
-        const val = resolveConsentValue(notice, getConsentContext(), parsedCookie?.consent);
+        const val = resolveConsentValue(
+          notice,
+          getConsentContext(),
+          parsedCookie?.consent
+        );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
     }
     return [];
-  }
+  };
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>

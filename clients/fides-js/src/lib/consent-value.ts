@@ -1,8 +1,8 @@
 import { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
-  ConsentValue, CookieKeyConsent,
-  FidesCookie,
+  ConsentValue,
+  CookieKeyConsent,
   PrivacyNoticeWithPreference,
 } from "./consent-types";
 import {

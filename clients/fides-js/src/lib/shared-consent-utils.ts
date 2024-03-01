@@ -1,5 +1,6 @@
 import {
-  ConsentMechanism, CookieKeyConsent,
+  ConsentMechanism,
+  CookieKeyConsent,
   PrivacyNoticeWithPreference,
   UserConsentPreference,
 } from "./consent-types";
