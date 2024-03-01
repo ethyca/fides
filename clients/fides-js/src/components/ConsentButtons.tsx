@@ -4,7 +4,6 @@ import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
-  ExperienceConfig,
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
@@ -12,7 +11,6 @@ import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import type { I18n } from "../lib/i18n";
 
 export const ConsentButtons = ({
-  experienceConfig,
   i18n,
   onManagePreferencesClick,
   firstButton,
@@ -22,7 +20,6 @@ export const ConsentButtons = ({
   includePrivacyPolicy,
   saveOnly = false,
 }: {
-  experienceConfig: ExperienceConfig;
   i18n: I18n;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
@@ -43,9 +40,7 @@ export const ConsentButtons = ({
         />
       </div>
     ) : null}
-    {includePrivacyPolicy ? (
-      <PrivacyPolicyLink experience={experienceConfig} i18n={i18n} />
-    ) : null}
+    {includePrivacyPolicy ? <PrivacyPolicyLink i18n={i18n} /> : null}
     <div
       className={
         firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
@@ -141,7 +136,6 @@ export const NoticeConsentButtons = ({
 
   return (
     <ConsentButtons
-      experienceConfig={config}
       i18n={i18n}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}

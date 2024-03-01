@@ -33,6 +33,8 @@ const NoticeToggles = ({
   return (
     <div>
       {notices.map((notice, idx) => {
+        // TODO (PROD-1597): Add fallback behaviour here to display default
+        // translation if there's a locale mismatch
         const i18nKey = `exp.notices.${notice.id}`;
         const title = i18n.t(`${i18nKey}.title`);
         const description = i18n.t(`${i18nKey}.description`);

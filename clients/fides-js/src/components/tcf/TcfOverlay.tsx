@@ -317,6 +317,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             renderButtonGroup={({ isMobile }) => (
               <TcfConsentButtons
                 experience={experience}
+                i18n={i18n}
                 onManagePreferencesClick={onManagePreferencesClick}
                 onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
                   handleUpdateAllPreferences(consentMethod, keys);
@@ -359,6 +360,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           <Fragment>
             <TcfConsentButtons
               experience={experience}
+              i18n={i18n}
               onSave={onSave}
               firstButton={
                 <Button
