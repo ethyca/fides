@@ -6,7 +6,9 @@ Create Date: 2024-01-09 21:17:13.115020
 
 """
 
+import csv
 import uuid
+from datetime import datetime
 from enum import Enum
 
 import yaml
@@ -80,6 +82,26 @@ REGIONS_TO_REMOVE = {
 }
 
 
+def dump_table_to_csv(bind, table_name):
+    csv_file_path = f'./multilang_migration_backup_{table_name}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+    query = text(f"SELECT * FROM {table_name}")
+    result = bind.execute(query)
+
+    # Get column names from the result set
+    column_names = result.keys()
+
+    # Write results to CSV
+    with open(csv_file_path, "w") as csv_file:
+        csv_writer = csv.writer(csv_file)
+
+        # Write header row
+        csv_writer.writerow(column_names)
+
+        # Write data rows
+        for row in result:
+            csv_writer.writerow(row)
+
+
 def load_experience_config_from_files(file_paths):
     """
     Attempts loading the experience config from a set of given file paths until it finds a valid yaml
@@ -146,6 +168,23 @@ def load_default_experience_configs():
 reconciled_experience_config_map, raw_experience_config_map = (
     load_default_experience_configs()
 )
+
+
+def backup_existing_data_csv(bind):
+    """
+    Perform a backup (dump to csv) of the data in our tables that will be impacted by migration.
+
+    Because this data migration is risky, it is recommended to perform a comprehensive DB backup/snapshot beforehand!
+    The "automated" dump to CSV here is an additional safety measure.
+    """
+    for table_name in [
+        "privacyexperience",
+        "privacyexperienceconfig",
+        "privacyexperienceconfighistory",
+        "privacynotice",
+        "privacynoticehistory",
+    ]:
+        dump_table_to_csv(bind, table_name)
 
 
 def remove_existing_experience_data(bind):
@@ -456,6 +495,9 @@ def migrate_experiences(bind):
 
     # first extract existing experience (config) data needed for migration
     experience_configs = determine_needed_experience_configs(bind)
+
+    # before wiping data, let's perform a csv backup to disk just to be extra safe
+    backup_existing_data_csv(bind)
 
     # wipe the existing experience + experience config data to start from a blank slate
     remove_existing_experience_data(bind)
