@@ -20,6 +20,7 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
@@ -38,115 +39,6 @@ class UserConsentPreference(Enum):
     opt_out = "opt_out"  # The user wants to opt out of the notice
     acknowledge = "acknowledge"  # The user has acknowledged this notice
     tcf = "tcf"  # Overall preference set for TCF where there are numerous preferences under the single notice
-
-
-# Enum defined using functional API so we can use regions like "is"
-PrivacyNoticeRegion = Enum(
-    "PrivacyNoticeRegion",
-    [
-        ("us", "us"),  # united states
-        ("us_al", "us_al"),  # alabama
-        ("us_ak", "us_ak"),  # alaska
-        ("us_az", "us_az"),  # arizona
-        ("us_ar", "us_ar"),  # arkansas
-        ("us_ca", "us_ca"),  # california
-        ("us_co", "us_co"),  # colorado
-        ("us_ct", "us_ct"),  # connecticut
-        ("us_de", "us_de"),  # delaware
-        ("us_fl", "us_fl"),  # florida
-        ("us_ga", "us_ga"),  # georgia
-        ("us_hi", "us_hi"),  # hawaii
-        ("us_id", "us_id"),  # idaho
-        ("us_il", "us_il"),  # illinois
-        ("us_in", "us_in"),  # indiana
-        ("us_ia", "us_ia"),  # iowa
-        ("us_ks", "us_ks"),  # kansas
-        ("us_ky", "us_ky"),  # kentucky
-        ("us_la", "us_la"),  # louisiana
-        ("us_me", "us_me"),  # maine
-        ("us_md", "us_md"),  # maryland
-        ("us_ma", "us_ma"),  # massachusetts
-        ("us_mi", "us_mi"),  # michigan
-        ("us_mn", "us_mn"),  # minnesota
-        ("us_ms", "us_ms"),  # mississippi
-        ("us_mo", "us_mo"),  # missouri
-        ("us_mt", "us_mt"),  # montana
-        ("us_ne", "us_ne"),  # nebraska
-        ("us_nv", "us_nv"),  # nevada
-        ("us_nh", "us_nh"),  # new hampshire
-        ("us_nj", "us_nj"),  # new jersey
-        ("us_nm", "us_nm"),  # new mexico
-        ("us_ny", "us_ny"),  # new york
-        ("us_nc", "us_nc"),  # north carolina
-        ("us_nd", "us_nd"),  # north dakota
-        ("us_oh", "us_oh"),  # ohio
-        ("us_ok", "us_ok"),  # oklahoma
-        ("us_or", "us_or"),  # oregon
-        ("us_pa", "us_pa"),  # pennsylvania
-        ("us_ri", "us_ri"),  # rhode island
-        ("us_sc", "us_sc"),  # south carolina
-        ("us_sd", "us_sd"),  # south dakota
-        ("us_tn", "us_tn"),  # tennessee
-        ("us_tx", "us_tx"),  # texas
-        ("us_ut", "us_ut"),  # utah
-        ("us_vt", "us_vt"),  # vermont
-        ("us_va", "us_va"),  # virginia
-        ("us_wa", "us_wa"),  # washington
-        ("us_wv", "us_wv"),  # west virginia
-        ("us_wi", "us_wi"),  # wisconsin
-        ("us_wy", "us_wy"),  # wyoming
-        ("eea", "eea"),  # european economic area
-        ("be", "be"),  # belgium
-        ("bg", "bg"),  # bulgaria
-        ("cz", "cz"),  # czechia
-        ("dk", "dk"),  # denmark
-        ("de", "de"),  # germany
-        ("ee", "ee"),  # estonia
-        ("ie", "ie"),  # ireland
-        ("gr", "gr"),  # greece
-        ("es", "es"),  # spain
-        ("fr", "fr"),  # france
-        ("hr", "hr"),  # croatia
-        ("it", "it"),  # italy
-        ("cy", "cy"),  # cyprus
-        ("lv", "lv"),  # latvia
-        ("lt", "lt"),  # lithuania
-        ("lu", "lu"),  # luxembourg
-        ("hu", "hu"),  # hungary
-        ("mt", "mt"),  # malta
-        ("nl", "nl"),  # netherlands
-        ("at", "at"),  # austria
-        ("pl", "pl"),  # poland
-        ("pt", "pt"),  # portugal
-        ("ro", "ro"),  # romania
-        ("si", "si"),  # slovenia
-        ("sk", "sk"),  # slovakia
-        ("fi", "fi"),  # finland
-        ("se", "se"),  # sweden
-        ("gb", "gb"),  # great britain
-        ("gb_eng", "gb_eng"),  # england
-        ("gb_sct", "gb_sct"),  # scotland
-        ("gb_wls", "gb_wls"),  # wales
-        ("gb_nir", "gb_nir"),  # northern ireland
-        ("is", "is"),  # iceland
-        ("no", "no"),  # norway
-        ("li", "li"),  # liechtenstein
-        ("ca", "ca"),  # canada
-        ("ca_ab", "ca_ab"),  # alberta
-        ("ca_bc", "ca_bc"),  # british columbia
-        ("ca_mb", "ca_mb"),  # manitoba
-        ("ca_nb", "ca_nb"),  # new brunswick
-        ("ca_nl", "ca_nl"),  # newfoundland and labrador
-        ("ca_ns", "ca_ns"),  # nova scotia
-        ("ca_on", "ca_on"),  # ontario
-        ("ca_pe", "ca_pe"),  # prince edward island
-        ("ca_qc", "ca_qc"),  # quebec
-        ("ca_sk", "ca_sk"),  # saskatchewan
-        ("ca_nt", "ca_nt"),  # northwest territories
-        ("ca_nu", "ca_nu"),  # nunavut
-        ("ca_yt", "ca_yt"),  # yukon
-    ],
-)
 
 
 class ConsentMechanism(Enum):

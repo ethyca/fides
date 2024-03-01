@@ -3,13 +3,16 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
+from fides.api.models.location_regulation_selections import (
+    LocationRegulationSelections,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
     PrivacyNoticeHistory,
-    PrivacyNoticeRegion,
     UserConsentPreference,
 )
 from fides.api.models.sql_models import Cookies
@@ -25,17 +28,6 @@ class TestPrivacyNoticeModel:
         privacy_experience_privacy_center_france,
         privacy_experience_france_tcf_overlay,
     ):
-        def reset_notices():
-            privacy_experience_overlay.experience_config.privacy_notices = []
-            privacy_experience_overlay.experience_config.save(db)
-            privacy_experience_privacy_center_france.experience_config.privacy_notices = (
-                []
-            )
-            privacy_experience_privacy_center_france.experience_config.save(db)
-            privacy_experience_france_tcf_overlay.experience_config.privacy_notices = []
-            privacy_experience_france_tcf_overlay.experience_config.save(db)
-
-        reset_notices()
         assert privacy_notice.configured_regions == []
 
         privacy_experience_overlay.experience_config.privacy_notices.append(
@@ -65,8 +57,6 @@ class TestPrivacyNoticeModel:
             PrivacyNoticeRegion.fr,
             PrivacyNoticeRegion.us_ca,
         ]
-
-        reset_notices()
 
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """
