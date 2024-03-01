@@ -114,7 +114,7 @@ def load_experience_config_from_files(file_paths):
             # If the file is not found in the current path, try the next one
             continue
 
-    return None
+    raise Exception("No privacy experience config file was found for migration!")
 
 
 def load_default_experience_configs():
