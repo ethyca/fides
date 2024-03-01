@@ -153,7 +153,7 @@ export const generateFidesString = async ({
  * the CMP API accordingly.
  */
 export const initializeTcfCmpApi = () => {
-  const isServiceSpecific = true; // TODO: determine this from the backend?
+  const isServiceSpecific = true;
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION, isServiceSpecific, {
     // Add custom command to support adding `addtlConsent` per AC spec
     getTCData: (next, tcData: TCData, status) => {

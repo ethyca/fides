@@ -194,8 +194,6 @@ export const experienceIsValid = (
     return false;
   }
 
-  // TODO (PROD-1597): add condition for not rendering TCF
-
   return true;
 };
 
