@@ -177,7 +177,8 @@ type EnableCellProps<T extends object> = {
 
 export const EnableCell = <T extends object>({
   value,
-  column, // Include column property
+  row, // eslint-disable-line @typescript-eslint/no-unused-vars
+  column,
   onToggle,
   title,
   message,
