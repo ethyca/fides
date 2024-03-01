@@ -155,52 +155,7 @@ class ExperienceTranslationBase:
     title = Column(String)
 
 
-class DeprecatedConfigFields:
-    """Experience Config fields that are pending removal
-
-    # TODO remove all fields from PrivacyExperienceConfig model.
-    # Some are moving to ExperienceTranslation, others are being removed entirely.
-    """
-
-    accept_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    acknowledge_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    banner_description = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    banner_enabled = Column(String(), index=True)  # TODO pending removal
-    banner_title = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    description = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    is_default = Column(Boolean, nullable=False, default=False)  # TODO will be removed
-    privacy_policy_link_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    privacy_policy_url = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    privacy_preferences_link_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    reject_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    save_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    title = Column(String)  # TODO pending removal in favor of ExperienceTranslation
-    version = Column(Float, nullable=False, default=1.0)  # TODO pending removal
-
-
-class PrivacyExperienceConfig(
-    DeprecatedConfigFields, PrivacyExperienceConfigBase, Base
-):
+class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     """
     The Privacy Experience Configuration model that stores shared configuration for Privacy Experiences.
 
@@ -208,7 +163,9 @@ class PrivacyExperienceConfig(
     """
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
-    disabled = Column(Boolean, nullable=False, default=True, index=True)  # Overridding PrivacyExperienceConfigBase to index
+    disabled = Column(
+        Boolean, nullable=False, default=True, index=True
+    )  # Overridding PrivacyExperienceConfigBase to index
 
     experiences = relationship(
         "PrivacyExperience",
@@ -406,7 +363,10 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
     """Stores all the translations for a given Experience Config"""
 
     experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False, index=True
+        String,
+        ForeignKey(PrivacyExperienceConfig.id_field_path),
+        nullable=False,
+        index=True,
     )
 
     __table_args__ = (
@@ -468,16 +428,12 @@ class PrivacyExperienceConfigHistory(
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     translation_id = Column(
-        String, ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL"), index=True
+        String,
+        ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL"),
+        index=True,
     )
 
     version = Column(Float, nullable=False, default=1.0)
-
-    banner_enabled = Column(String(), index=True)  # TODO pending removal
-
-    experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
-    )  # TODO slated for removal after data migration
 
 
 class PrivacyExperience(Base):
