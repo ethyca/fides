@@ -66,9 +66,9 @@ const PrivacyNoticeForm = ({
       };
       result = await patchNoticesMutationTrigger(valuesToSubmit);
     } else {
-      // eslint-disable-next-line
-      const { notice_key, ...valuesToSubmit } = values;
-      result = await postNoticesMutationTrigger(valuesToSubmit);
+      // // eslint-disable-next-line
+      // const { notice_key, ...valuesToSubmit } = values;
+      result = await postNoticesMutationTrigger(values);
     }
 
     if (isErrorResult(result)) {
