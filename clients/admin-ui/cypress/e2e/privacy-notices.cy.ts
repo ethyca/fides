@@ -285,7 +285,7 @@ describe("Privacy notices", () => {
       stubLanguages();
     });
 
-    it("can create a new privacy notice", () => {
+    it.only("can create a new privacy notice", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.getByTestId("new-privacy-notice-page");
       const notice = {
@@ -328,12 +328,8 @@ describe("Privacy notices", () => {
 
       // add a new translation
       cy.getByTestId("add-language-btn").click();
-      // this select doesn't use the normal "custom select" component so the
-      // class name is different and we have to do this by hand
       cy.getByTestId("select-language").click();
-      cy.get("#react-select-3-listbox")
-        .find("#react-select-3-option-0")
-        .click();
+      cy.get(".select-language__menu").find(".select-language__option").click();
       cy.getByTestId("input-translations.1.title").type("Le titre");
       cy.getByTestId("input-translations.1.description").type(
         "Un description français"

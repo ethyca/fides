@@ -185,6 +185,7 @@ const PrivacyNoticeTranslationForm = () => {
                 options={languageOptions}
                 onChange={(e: any) => handleLanguageSelected(e.value)}
                 autoFocus
+                classNamePrefix="select-language"
                 menuPlacement="auto"
               />
             </Box>
