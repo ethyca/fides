@@ -438,7 +438,7 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     )  # pointer back to the PrivacyNoticeTemplate
 
     translation_id = Column(
-        String, ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL")
+        String, ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL"), index=True
     )  # pointer back to the NoticeTranslation
 
     version = Column(Float, nullable=False, default=1.0)

@@ -95,6 +95,9 @@ class PrivacyExperienceConfigBase:
     allow_language_selection = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )
+    auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )
 
     @declared_attr
     def component(cls) -> Column:
@@ -106,9 +109,6 @@ class PrivacyExperienceConfigBase:
 
     disabled = Column(Boolean, nullable=False, default=True)
     dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
-    auto_detect_language = Column(
-        Boolean, nullable=False, default=True, server_default="t"
-    )
     name = Column(String)
 
 
@@ -208,6 +208,7 @@ class PrivacyExperienceConfig(
     """
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
+    disabled = Column(Boolean, nullable=False, default=True, index=True)  # Overridding PrivacyExperienceConfigBase to index
 
     experiences = relationship(
         "PrivacyExperience",
@@ -405,7 +406,7 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
     """Stores all the translations for a given Experience Config"""
 
     experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
+        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False, index=True
     )
 
     __table_args__ = (
@@ -467,7 +468,7 @@ class PrivacyExperienceConfigHistory(
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     translation_id = Column(
-        String, ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL")
+        String, ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL"), index=True
     )
 
     version = Column(Float, nullable=False, default=1.0)
