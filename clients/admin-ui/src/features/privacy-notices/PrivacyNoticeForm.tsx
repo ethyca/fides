@@ -62,6 +62,7 @@ const PrivacyNoticeForm = ({
       const valuesToSubmit = {
         ...values,
         id: passedInPrivacyNotice!.id,
+        enforcement_level: passedInPrivacyNotice!.enforcement_level,
         translations: values.translations ?? [],
       };
       result = await patchNoticesMutationTrigger(valuesToSubmit);

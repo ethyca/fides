@@ -178,7 +178,7 @@ const PrivacyNoticeTranslationForm = () => {
             </VStack>
           </TabList>
           {isSelectingLanguage ? (
-            <Box w="full">
+            <Box w="full" data-testid="select-language">
               <Select
                 chakraStyles={SELECT_STYLES}
                 size="sm"
@@ -196,6 +196,7 @@ const PrivacyNoticeTranslationForm = () => {
               variant="outline"
               size="sm"
               onClick={() => setIsSelectingLanguage(true)}
+              data-testid="add-language-btn"
             >
               Add a language
             </Button>
