@@ -163,7 +163,7 @@ export const DefaultHeaderCell = <T,>({
   );
 };
 
-type EnableCellProps<T extends object> = CellContext<T, boolean> & {
+type EnableCellProps<T extends object> = {
   value: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
@@ -173,11 +173,11 @@ type EnableCellProps<T extends object> = CellContext<T, boolean> & {
    * If either are true, then the toggle is disabled.
    */
   isDisabled?: boolean;
-};
+} & CellContext<T, boolean>; // Adjust the type to include CellContext
 
 export const EnableCell = <T extends object>({
   value,
-  column,
+  column, // Include column property
   onToggle,
   title,
   message,
