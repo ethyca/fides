@@ -2,6 +2,10 @@ from copy import copy
 
 import pytest
 
+from fides.api.models.location_regulation_selections import (
+    LocationRegulationSelections,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.privacy_experience import (
     ComponentType,
     ExperienceTranslation,
@@ -9,12 +13,6 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
     upsert_privacy_experiences_after_config_update,
-)
-from fides.api.models.privacy_notice import (
-    ConsentMechanism,
-    EnforcementLevel,
-    PrivacyNotice,
-    PrivacyNoticeRegion,
 )
 from fides.api.schemas.language import SupportedLanguage
 
@@ -180,11 +178,14 @@ class TestExperienceConfig:
                 }
             ],
         }
-        config.dry_update(data=update_data)
+
+        dry_update = config.dry_update(data=update_data)
+        # These dry updates aren't bound to a Session, but we want to assert that
+        # accessing regions doesn't fail
+        assert dry_update.regions == []
         config.dry_update_translations(
             [translation for translation in update_data["translations"]]
         )
-
         assert orig_count == db.query(PrivacyExperienceConfig).count()
         assert orig_translation_count == db.query(ExperienceTranslation).count()
 

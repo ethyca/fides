@@ -63,7 +63,7 @@ export const stubConfig = (
   demoPageQueryParams?: any,
   demoPageWindowParams?: any
 ) => {
-  cy.fixture("consent/test_banner_options.json").then((config) => {
+  cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
     const updatedConfig = {
       consent: setNewConfig(config.consent, consent),
       // this mocks the pre-fetched experience
@@ -100,7 +100,7 @@ export const stubConfig = (
     ) {
       // this mocks the client-side experience fetch
       const experienceMock = mockExperienceApiResp || {
-        fixture: "consent/overlay_experience.json",
+        fixture: "consent/experience_banner_modal.json",
       };
       const experienceResp =
         mockExperienceApiResp === OVERRIDE.UNDEFINED
