@@ -225,7 +225,7 @@ export const shouldResurfaceConsent = (
   // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
     !experience.privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, cookie)
+      noticeHasConsentInCookie(notice, cookie.consent)
     )
   );
 };

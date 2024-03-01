@@ -27,6 +27,9 @@ The types of changes are:
 ### Changed
 - Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
 
+### Fixed
+- Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
+
 
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
 
