@@ -27,6 +27,8 @@ def generate_record_id(prefix):
     return prefix + "_" + str(uuid.uuid4())
 
 
+# this ties a DB record ID to our logical identifier of the type of OOB experience.
+# the DB record ID is based on what we've defined in the associated config yml.
 class DefaultExperienceConfigTypes(Enum):
     EEA_PRIVACY_CENTER = 1
     EEA_MODAL_AND_BANNER = "pri-c8ff-78d6-4a02-850f-2c09dda-over-config"
@@ -41,22 +43,40 @@ class ComponentType(Enum):
     TCFOverlay = "tcf_overlay"
 
 
+# our new OOB EEA (EU) experience configs, keyed by their component type
 EEA_MAPPING = {
     ComponentType.PrivacyCenter: DefaultExperienceConfigTypes.EEA_PRIVACY_CENTER,
     ComponentType.Overlay: DefaultExperienceConfigTypes.EEA_MODAL_AND_BANNER,
     ComponentType.TCFOverlay: DefaultExperienceConfigTypes.EEA_TCF_OVERLAY,
 }
+
+# our new OOB US experience configs, keyed by their component type
 US_MAPPING = {
     ComponentType.PrivacyCenter: DefaultExperienceConfigTypes.US_PRIVACY_CENTER,
     ComponentType.Overlay: DefaultExperienceConfigTypes.US_MODAL,
 }
 
+# this map contains the biggest _assumption_ about the migration -
+# these are the notices that will be associated with our new OOB experience configs.
+# any existing notices besides these will remain "orphaned" post-migration.
+# additionally, the regions that (pre-migration) are associated with these notices
+# will be used to infer the regions associated with the post-migration experience
+# configs to which they map.
 NOTICES_TO_EXPERIENCE_CONFIG = {
     "marketing": EEA_MAPPING,
     "functional": EEA_MAPPING,
     "essential": EEA_MAPPING,
     "analytics": EEA_MAPPING,
     "data_sales_and_sharing": US_MAPPING,
+}
+
+
+# as part of this upgrade, we're removing the following as region options across the app
+REGIONS_TO_REMOVE = {
+    "gb_eng",
+    "gb_sct",
+    "gb_wls",
+    "gb_nir",
 }
 
 
@@ -91,7 +111,8 @@ def load_default_experience_configs():
     )  # will hold experience configs 'reconciled' between existing data and 'oob' template data
 
     # this is a bit of a hack! but the path to the file depends on whether we're executing the migration
-    # as part of app startup or as part of a 'manual' migration attempt
+    # as part of app startup or as part of a 'manual' migration attempt, e.g. `alembic upgrade head` from
+    # the src/fides/api/alembic/ dir. so we try both options here, to cover our bases.
     experience_configs = load_experience_config_from_files(
         [
             "privacy_experience_config_defaults.yml",
@@ -100,19 +121,24 @@ def load_default_experience_configs():
     )
 
     for experience_config in experience_configs:
-        _raw_experience_config_map[
-            DefaultExperienceConfigTypes(experience_config["id"])
-        ] = experience_config.copy()
-        experience_config["regions"] = (
-            set()
-        )  # remove the configs regions, since we will populate based on existing notices
+        experience_config_type = DefaultExperienceConfigTypes(experience_config["id"])
+        _raw_experience_config_map[experience_config_type] = experience_config.copy()
+
+        # the reconciled experience config will have its regions populated by existing notices that are
+        # associated with this experience config. so in most cases, we start "fresh" with an empty set.
+        # the TCF experience is an exception - it is not linked to any notices, and therefore its
+        # regions are not derived from notices, so we hardcode its regions to the config default.
+        reconciled_regions = (
+            experience_config["regions"]
+            if experience_config_type == DefaultExperienceConfigTypes.EEA_TCF_OVERLAY
+            else set()  # if not TCF experience, clear the config's regions, since we will populate based on existing notices
+        )
+        experience_config["regions"] = reconciled_regions
         experience_config["privacy_notices"] = set()  # initialize the notices field
         experience_config["needs_migration"] = (
             False  # indicator whether the record requires migration, or we can default to the template values
         )
-        _reconciled_experience_config_map[
-            DefaultExperienceConfigTypes(experience_config["id"])
-        ] = experience_config
+        _reconciled_experience_config_map[experience_config_type] = experience_config
         experience_config["needs_migration"] = False
     return _reconciled_experience_config_map, _raw_experience_config_map
 
@@ -181,11 +207,14 @@ def determine_needed_experience_configs(bind):
         notice_key = existing_notice["notice_key"]
         component_mapping = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key)
         if component_mapping:
+            regions_to_add = set(existing_notice["regions"]).difference(
+                REGIONS_TO_REMOVE
+            )
             if existing_notice["displayed_in_overlay"]:
                 experience_config = component_mapping.get(ComponentType.Overlay)
                 reconciled_experience_config_map[experience_config.name][
                     "regions"
-                ].update(existing_notice["regions"])
+                ].update(regions_to_add)
                 reconciled_experience_config_map[experience_config.name][
                     "privacy_notices"
                 ].add(existing_notice["id"])
@@ -197,7 +226,7 @@ def determine_needed_experience_configs(bind):
                 experience_config = component_mapping.get(ComponentType.PrivacyCenter)
                 reconciled_experience_config_map[experience_config.name][
                     "regions"
-                ].update(existing_notice["regions"])
+                ].update(regions_to_add)
                 reconciled_experience_config_map[experience_config.name][
                     "privacy_notices"
                 ].add(existing_notice["id"])
@@ -213,6 +242,13 @@ def determine_needed_experience_configs(bind):
         has_existing_experience_configs = True
         component = ComponentType(eec["component"])
         configs = []
+
+        # because we've given experiences a location dimension in this migration,
+        # an existing experience effectively maps to two "new" default experiences -
+        # one that is surfaced in the US (and is associated with "US" notices), and
+        # one that is surfaced in the EU (and is associated with the "EU" notices).
+        # because of this, we'll copy over existing experience text/attributes to _both_
+        # of these corresponding new experience configs.
         if eea_config_id := EEA_MAPPING.get(component):
             configs.append(reconciled_experience_config_map.get(eea_config_id.name))
         if us_config_id := US_MAPPING.get(component):
@@ -258,24 +294,22 @@ def migrate_experiences(bind):
     def create_new_experience_config_templates(experience_configs):
 
         for experience_config in experience_configs:
-            create_experience_config_query = text(
+            # for config template record:
+            # - `id` is the `origin` field from the config template record loaded from disk
+            create_experience_config_template_query = text(
                 """
-                INSERT INTO experienceconfigtemplate (id, component, name, disabled, privacy_notice_keys, regions)
-                VALUES (:id, :component, :name, :disabled, :privacy_notice_keys, :regions)
+                INSERT INTO experienceconfigtemplate (id, component, name, disabled, allow_language_selection, dismissable, privacy_notice_keys, regions)
+                VALUES (:id, :component, :name, :disabled, :allow_language_selection, :dismissable, :privacy_notice_keys, :regions)
                 """
             )
 
             bind.execute(
-                create_experience_config_query,
+                create_experience_config_template_query,
                 {
+                    **experience_config,
                     "id": experience_config[
                         "origin"
                     ],  # origin of the config record is the template ID
-                    "component": experience_config["component"],
-                    "name": experience_config["name"],
-                    "disabled": experience_config["disabled"],
-                    "privacy_notice_keys": experience_config["privacy_notice_keys"],
-                    "regions": experience_config["regions"],
                 },
             )
 
@@ -283,11 +317,13 @@ def migrate_experiences(bind):
         """
         Creates a new experience config based on the provided definition. Also creates corresponding history record.
         """
-
+        # for config record:
+        # - `id` is the `id` grabbed from our config template record
+        # - `origin` is the `origin` grabbed from the config template
         create_experience_config_query = text(
             """
-            INSERT INTO privacyexperienceconfig (id, version, origin, component, name, disabled, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-            VALUES (:id,  :version, :origin,  :component, :name, :disabled, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+            INSERT INTO privacyexperienceconfig (id, version, origin, component, name, disabled, is_default, allow_language_selection, dismissable, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+            VALUES (:id,  :version, :origin, :component, :name, :disabled, :is_default, :allow_language_selection, :dismissable, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
@@ -300,20 +336,23 @@ def migrate_experiences(bind):
             },
         )
 
+        # for history record:
+        # - `id` is a generated UUID
+        # - `experience_config_id` is the `id` grabbed from our config template record on disk
+        # - `origin` is the `origin` grabbed from the config template record on disk
         create_experience_config_history = text(
             """
-             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, origin, name, disabled, version, component, is_default, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, origin, name, disabled, version, component, is_default, allow_language_selection, dismissable, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :allow_language_selection, :dismissable, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
         bind.execute(
             create_experience_config_history,
             {
+                **experience_config,
                 "history_id": generate_record_id("pri"),
                 "version": 1,
-                **experience_config,
-                "is_default": True,
             },
         )
 
@@ -378,6 +417,10 @@ def migrate_experiences(bind):
          """
         )
 
+        # for translation record:
+        # - `id` is a generated UUID
+        # - `experience_config_id` is the `id` column grabbed from the experience config query result
+        # - language is assumed to be english!
         create_translation_query = text(
             """
             INSERT INTO experiencetranslation (id, experience_config_id, created_at, updated_at, language, is_default, accept_button_label, reject_button_label, acknowledge_button_label, banner_description, banner_title, description, title,  privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label)
@@ -392,8 +435,7 @@ def migrate_experiences(bind):
                 create_translation_query,
                 {
                     "record_id": generate_record_id("exp"),
-                    "language": "en_us",
-                    "is_default": True,
+                    "language": "en",
                     "experience_config_id": res["id"],
                 },
             )
@@ -402,7 +444,7 @@ def migrate_experiences(bind):
         link_config_to_translation_id = text(
             """
             UPDATE privacyexperienceconfighistory
-            SET translation_id = experiencetranslation.id, dismissable = dismissable
+            SET translation_id = experiencetranslation.id, allow_language = allow_language, 
             FROM experiencetranslation
             WHERE experiencetranslation.experience_config_id = privacyexperienceconfighistory.experience_config_id;
         """
