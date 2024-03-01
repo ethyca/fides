@@ -3,6 +3,7 @@ import {
   Button,
   DeleteIcon,
   Flex,
+  Heading,
   HStack,
   IconButton,
   SmallAddIcon,
@@ -11,18 +12,18 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
-  Text,
   VStack,
 } from "@fidesui/react";
+import { Select } from "chakra-react-select";
 import { FieldArray, useFormikContext } from "formik";
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
 import {
-  CustomSelect,
   CustomTextArea,
   CustomTextInput,
+  SELECT_STYLES,
 } from "~/features/common/form/inputs";
 import {
   selectAllLanguages,
@@ -36,12 +37,15 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
-const TranslationFormBlock = ({ index }: { index: number }) => (
-  <VStack width="100%" spacing={6}>
-    <Text fontSize="sm">
-      Configure your privacy notice, including consent mechanism, associated
-      data uses, and the locations in which this should be displayed to users.
-    </Text>
+const TranslationFormBlock = ({
+  index,
+  name,
+}: {
+  index: number;
+  name: string;
+}) => (
+  <Flex direction="column" gap={6}>
+    <Heading size="sm">Edit {name} translation</Heading>
     <CustomTextInput
       autoFocus={index !== 0}
       name={`translations.${index}.title`}
@@ -53,14 +57,16 @@ const TranslationFormBlock = ({ index }: { index: number }) => (
       label="Privacy notice displayed to the user"
       variant="stacked"
     />
-  </VStack>
+  </Flex>
 );
 
 const TranslationTabButton = ({
   translation,
+  name,
   onLanguageDeleted,
 }: {
   translation: NoticeTranslationCreate;
+  name: string;
   onLanguageDeleted?: (language: string) => void;
 }) => (
   <Flex gap={2} direction="row" w="100%">
@@ -73,7 +79,7 @@ const TranslationTabButton = ({
       key={translation.language}
       _selected={{ color: "white", bg: "gray.500" }}
     >
-      {translation.language}
+      {name}
     </Tab>
     {onLanguageDeleted ? (
       <IconButton
@@ -98,7 +104,9 @@ const PrivacyNoticeTranslationForm = () => {
   const languagePage = useAppSelector(selectPage);
   const languagePageSize = useAppSelector(selectPageSize);
   useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
-  const allLanguages = useAppSelector(selectAllLanguages);
+  const allLanguages = useAppSelector(selectAllLanguages)
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const languageOptions = allLanguages
     .filter((lang) =>
@@ -131,6 +139,9 @@ const PrivacyNoticeTranslationForm = () => {
     setTabIndex(newTabIndex);
   };
 
+  const getLanguageDisplayName = (lang: SupportedLanguage) =>
+    allLanguages.find((language) => language.id === lang)?.name ?? lang;
+
   return (
     <FormSection title="Localizations">
       <Tabs
@@ -146,44 +157,43 @@ const PrivacyNoticeTranslationForm = () => {
       >
         <VStack
           spacing={4}
+          minW="30%"
+          maxH={64}
+          overflow="scroll"
+          p={4}
           outline="1px solid"
           outlineColor="gray.200"
-          p={4}
           borderRadius="md"
-          minW="30%"
         >
           <TabList w="100%">
             <VStack spacing={2} w="100%">
-              {values.translations?.length ? (
-                values.translations.map((translation) => (
-                  <TranslationTabButton
-                    translation={translation}
-                    key={translation.language}
-                    onLanguageDeleted={handleLanguageDeleted}
-                  />
-                ))
-              ) : (
-                <Tab as={Button}>English</Tab>
-              )}
+              {values.translations!.map((translation) => (
+                <TranslationTabButton
+                  translation={translation}
+                  key={translation.language}
+                  name={getLanguageDisplayName(translation.language)}
+                  onLanguageDeleted={handleLanguageDeleted}
+                />
+              ))}
             </VStack>
           </TabList>
           {isSelectingLanguage ? (
-            <CustomSelect
-              // TODO: using the CustomSelect here causes it to set the "newLanguage" field on the Formik form values, which we don't want
-              name="newLanguage"
-              options={languageOptions}
-              placeholder="Select a language..."
-              isSearchable
-              autoFocus
-              onChange={(e: ChangeEvent) => {
-                // @ts-ignore
-                handleLanguageSelected(e.value);
-              }}
-            />
+            <Box w="full">
+              <Select
+                chakraStyles={SELECT_STYLES}
+                size="sm"
+                options={languageOptions}
+                onChange={(e: any) => handleLanguageSelected(e.value)}
+                autoFocus
+                menuPlacement="auto"
+              />
+            </Box>
           ) : null}
           {!isSelectingLanguage && languageOptions.length ? (
             <Button
               leftIcon={<SmallAddIcon boxSize={6} />}
+              w="full"
+              variant="outline"
               size="sm"
               onClick={() => setIsSelectingLanguage(true)}
             >
@@ -195,7 +205,16 @@ const PrivacyNoticeTranslationForm = () => {
           <FieldArray
             name="translations"
             render={() => (
-              <TabPanels w="100%">{values.translations[0].language}</TabPanels>
+              <TabPanels w="100%">
+                {values.translations!.map((translation, idx) => (
+                  <TabPanel key={translation.language}>
+                    <TranslationFormBlock
+                      index={idx}
+                      name={getLanguageDisplayName(translation.language)}
+                    />
+                  </TabPanel>
+                ))}
+              </TabPanels>
             )}
           />
         </Box>

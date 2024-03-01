@@ -8,6 +8,7 @@ import {
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
+  PrivacyNoticeUpdate,
 } from "~/types/api";
 
 export interface State {
@@ -30,6 +31,8 @@ interface PrivacyNoticesParams {
   size?: number;
 }
 
+type PrivacyNoticeUpdateParams = PrivacyNoticeUpdate & { id: string };
+
 const privacyNoticesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllPrivacyNotices: build.query<
@@ -44,13 +47,17 @@ const privacyNoticesApi = baseApi.injectEndpoints({
     }),
     patchPrivacyNotices: build.mutation<
       PrivacyNoticeResponse[],
-      Partial<PrivacyNoticeResponse>[]
+      PrivacyNoticeUpdateParams
     >({
-      query: (payload) => ({
-        method: "PATCH",
-        url: `privacy-notice/`,
-        body: payload,
-      }),
+      query: (payload) => {
+        const { id, ...body } = payload;
+        return {
+          method: "PATCH",
+          url: `privacy-notice/${id}`,
+          params: { id },
+          body,
+        };
+      },
       invalidatesTags: () => ["Privacy Notices"],
     }),
     getPrivacyNoticeById: build.query<PrivacyNoticeResponse, string>({
@@ -63,7 +70,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
     }),
     postPrivacyNotice: build.mutation<
       PrivacyNoticeResponse[],
-      PrivacyNoticeCreation[]
+      PrivacyNoticeCreation
     >({
       query: (payload) => ({
         method: "POST",

@@ -10,11 +10,7 @@ import {
   CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import {
-  enumToOptions,
-  getErrorMessage,
-  isErrorResult,
-} from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { PRIVACY_NOTICE_REGION_OPTIONS } from "~/features/common/privacy-notice-regions";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -23,11 +19,7 @@ import {
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
-import {
-  ConsentMechanism,
-  PrivacyNoticeCreation,
-  PrivacyNoticeResponse,
-} from "~/types/api";
+import { PrivacyNoticeCreation, PrivacyNoticeResponse } from "~/types/api";
 
 import {
   CONSENT_MECHANISM_OPTIONS,
@@ -67,9 +59,16 @@ const PrivacyNoticeForm = ({
   const handleSubmit = async (values: PrivacyNoticeCreation) => {
     let result;
     if (isEditing) {
-      result = await patchNoticesMutationTrigger([values]);
+      const valuesToSubmit = {
+        ...values,
+        id: passedInPrivacyNotice!.id,
+        translations: values.translations ?? [],
+      };
+      result = await patchNoticesMutationTrigger(valuesToSubmit);
     } else {
-      result = await postNoticesMutationTrigger([values]);
+      // eslint-disable-next-line
+      const { notice_key, ...valuesToSubmit } = values;
+      result = await postNoticesMutationTrigger(valuesToSubmit);
     }
 
     if (isErrorResult(result)) {
@@ -91,78 +90,77 @@ const PrivacyNoticeForm = ({
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
-      // validationSchema={ValidationSchema}
+      validationSchema={ValidationSchema}
     >
-      {({ values, dirty, isValid, isSubmitting }) => {
-        console.log(values);
-        return (
-          <Form>
-            <Stack spacing={10}>
-              <Stack spacing={6}>
-                <FormSection title="Privacy notice details">
-                  <CustomTextInput
-                    label="Notice title"
-                    name="name"
-                    variant="stacked"
-                  />
+      {({ dirty, isValid, isSubmitting }) => (
+        <Form>
+          <Stack spacing={10}>
+            <Stack spacing={6}>
+              <FormSection title="Privacy notice details">
+                <CustomTextInput
+                  label="Notice title"
+                  name="name"
+                  isRequired
+                  variant="stacked"
+                />
+                <CustomSelect
+                  name="consent_mechanism"
+                  label="Consent mechanism"
+                  options={CONSENT_MECHANISM_OPTIONS}
+                  isRequired
+                  variant="stacked"
+                />
+                <NoticeKeyField isEditing={isEditing} />
+                {passedInPrivacyNotice ? (
                   <CustomSelect
-                    name="consent_mechanism"
-                    label="Consent mechanism"
-                    options={CONSENT_MECHANISM_OPTIONS}
+                    name="regions"
+                    label="Locations where consent notice is shown to visitors"
+                    tooltip="Add locations to this privacy notice by configuring the corresponding privacy experience"
+                    options={PRIVACY_NOTICE_REGION_OPTIONS}
                     variant="stacked"
-                  />
-                  <NoticeKeyField isEditing={isEditing} />
-                  {passedInPrivacyNotice ? (
-                    <CustomSelect
-                      name="regions"
-                      label="Locations where consent notice is shown to visitors"
-                      tooltip="Add locations to this privacy notice by configuring the corresponding privacy experience"
-                      options={PRIVACY_NOTICE_REGION_OPTIONS}
-                      variant="stacked"
-                      placeholder="No locations assigned"
-                      isDisabled
-                      isMulti
-                    />
-                  ) : null}
-                  <CustomSwitch
-                    name="has_gpc_flag"
-                    label="Configure whether this notice conforms to the Global Privacy Control"
-                    variant="stacked"
-                  />
-                  <CustomSelect
-                    name="data_uses"
-                    label="Data use"
-                    options={dataUseOptions}
+                    placeholder="No locations assigned"
+                    isDisabled
                     isMulti
-                    variant="stacked"
                   />
-                </FormSection>
-                {/* <PrivacyNoticeTranslationForm /> */}
-              </Stack>
-              <ButtonGroup size="sm" spacing={2}>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    router.back();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  isDisabled={isSubmitting || !dirty || !isValid}
-                  isLoading={isSubmitting}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </ButtonGroup>
+                ) : null}
+                <CustomSwitch
+                  name="has_gpc_flag"
+                  label="Configure whether this notice conforms to the Global Privacy Control"
+                  variant="stacked"
+                />
+                <CustomSelect
+                  name="data_uses"
+                  label="Data use"
+                  options={dataUseOptions}
+                  isMulti
+                  variant="stacked"
+                />
+              </FormSection>
+              <PrivacyNoticeTranslationForm />
             </Stack>
-          </Form>
-        );
-      }}
+            <ButtonGroup size="sm" spacing={2}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  router.back();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                isDisabled={isSubmitting || !dirty || !isValid}
+                isLoading={isSubmitting}
+                data-testid="save-btn"
+              >
+                Save
+              </Button>
+            </ButtonGroup>
+          </Stack>
+        </Form>
+      )}
     </Formik>
   );
 };

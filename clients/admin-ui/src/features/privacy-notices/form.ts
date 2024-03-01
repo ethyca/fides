@@ -3,6 +3,7 @@ import * as Yup from "yup";
 import {
   ConsentMechanism,
   EnforcementLevel,
+  NoticeTranslationCreate,
   PrivacyNoticeCreation,
   PrivacyNoticeResponse,
   SupportedLanguage,
@@ -27,6 +28,14 @@ export const CONSENT_MECHANISM_OPTIONS = [
   },
 ];
 
+export const defaultInitialTranslations: NoticeTranslationCreate[] = [
+  {
+    language: SupportedLanguage.EN,
+    title: "",
+    description: "",
+  },
+];
+
 export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   name: "",
   consent_mechanism: ConsentMechanism.OPT_IN,
@@ -34,12 +43,7 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   enforcement_level: EnforcementLevel.SYSTEM_WIDE,
   // When creating, set to disabled to start
   disabled: true,
-  translations: [
-    {
-      language: SupportedLanguage.EN,
-      title: "",
-    },
-  ],
+  translations: defaultInitialTranslations,
 };
 
 export const transformPrivacyNoticeResponseToCreation = (
@@ -56,11 +60,19 @@ export const transformPrivacyNoticeResponseToCreation = (
   has_gpc_flag: notice.has_gpc_flag,
   id: notice.id,
   internal_description: notice.internal_description,
-  translations: notice.translations ? notice.translations.map((t) => ({
-    
-  }))
+  translations: notice.translations
+    ? notice.translations.map((t) => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { privacy_notice_history_id, ...rest } = t;
+        return {
+          ...rest,
+          title: t.title ?? "",
+        };
+      })
+    : defaultInitialTranslations,
 });
 
 export const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Title"),
+  consent_mechanism: Yup.string().required().label("Consent mechanism"),
 });
