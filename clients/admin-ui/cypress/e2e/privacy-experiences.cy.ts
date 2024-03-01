@@ -116,7 +116,7 @@ describe("Privacy experiences", () => {
 
     describe("enabling and disabling", () => {
       beforeEach(() => {
-        cy.intercept("PATCH", "/api/v1/experience-config/*", {
+        cy.intercept("PATCH", "/api/v1/experience-config/*/limited_update", {
           fixture: "privacy-experiences/experienceConfig.json",
         }).as("patchExperience");
       });
@@ -132,7 +132,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(DISABLED_EXPERIENCE_ID);
-          expect(body).to.eql({ regions: ["us_ca"], disabled: false });
+          expect(body).to.eql({ disabled: false });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -151,7 +151,7 @@ describe("Privacy experiences", () => {
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(EXPERIENCE_ID);
-          expect(body).to.eql({ regions: [], disabled: true });
+          expect(body).to.eql({ disabled: true });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");

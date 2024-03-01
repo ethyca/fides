@@ -7,7 +7,7 @@ import { EnableCell, MultiTagCell } from "~/features/common/table/";
 import { ExperienceConfigResponse } from "~/types/api";
 
 import { COMPONENT_MAP } from "./constants";
-import { usePatchExperienceConfigMutation } from "./privacy-experience.slice";
+import { useLimitedPatchExperienceConfigMutation } from "./privacy-experience.slice";
 
 export const ComponentCell = ({
   value,
@@ -25,17 +25,13 @@ export const LocationCell = ({
 export const EnablePrivacyExperienceCell = (
   cellProps: CellProps<ExperienceConfigResponse, boolean>
 ) => {
-  const [patchExperienceMutationTrigger] = usePatchExperienceConfigMutation();
+  const [limitedPatchExperienceMutationTrigger] =
+    useLimitedPatchExperienceConfigMutation();
 
   const { row } = cellProps;
   const onToggle = async (toggle: boolean) =>
-    patchExperienceMutationTrigger({
+    limitedPatchExperienceMutationTrigger({
       id: row.original.id,
-      regions: row.original.regions,
-      translations: row.original.translations,
-      privacy_notice_ids: row.original.privacy_notices?.map(
-        (notice) => notice.id
-      ),
       disabled: !toggle,
     });
 
