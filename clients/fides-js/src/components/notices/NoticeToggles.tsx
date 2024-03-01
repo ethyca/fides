@@ -46,7 +46,13 @@ const NoticeToggles = ({
               title={title}
               checked={checked}
               onToggle={handleToggle}
-              gpcBadge={<GpcBadgeForNotice i18n={i18n} notice={notice} value={checked} />}
+              gpcBadge={
+                <GpcBadgeForNotice
+                  i18n={i18n}
+                  notice={notice}
+                  value={checked}
+                />
+              }
               disabled={
                 notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
               }

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- TODO (PROD-1597): re-enable after fixing preference save bug */
+/* eslint-disable @typescript-eslint/no-unused-vars -- TODO (PROD-1744): re-enable after fixing preference save bug */
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
@@ -239,7 +239,7 @@ describe("Consent overlay", () => {
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
             expect(generatedUserDeviceId).to.be.a("string");
             expect(body.preferences).to.eql(expected.preferences);
-            // TODO (PROD-1597): re-enable after fixing preference save bug
+            // TODO (PROD-1744): re-enable after fixing preference save bug
             // expect(body.privacy_experience_config_history_id).to.eql(
             //   expected.privacy_experience_config_history_id
             // );
@@ -553,7 +553,7 @@ describe("Consent overlay", () => {
             method: ConsentMethod.SAVE,
             served_notice_history_id: "ser_notice-history-000",
           };
-          // TODO (PROD-1597): re-enable after fixing preference save bug
+          // TODO (PROD-1744): re-enable after fixing preference save bug
           // expect(body).to.eql(expected);
         });
 
@@ -646,7 +646,7 @@ describe("Consent overlay", () => {
             method: ConsentMethod.SAVE,
             served_notice_history_id: "ser_notice-history-000",
           };
-          // TODO (PROD-1597): re-enable after fixing preference save bug
+          // TODO (PROD-1744): re-enable after fixing preference save bug
           // expect(body).to.eql(expected);
         });
 
@@ -864,7 +864,7 @@ describe("Consent overlay", () => {
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
           expect(generatedUserDeviceId).to.be.a("string");
           expect(body.preferences).to.eql(expected.preferences);
-          // TODO (PROD-1597): re-enable after fixing preference save bug
+          // TODO (PROD-1744): re-enable after fixing preference save bug
           // expect(body.privacy_experience_config_history_id).to.eql(
           //   expected.privacy_experience_config_history_id
           // );
@@ -895,25 +895,6 @@ describe("Consent overlay", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: false,
-          });
-      });
-
-      // fixme- defer depending on product decision. Currently banner does not show
-      it.skip("shows indicators that GPC has been applied", () => {
-        // In the banner
-        cy.get("div#fides-banner").within(() => {
-          cy.get("span").contains("Global Privacy Control Signal detected");
-        });
-        // And in the modal
-        cy.get("button").contains("Manage preferences").click();
-        cy.get("div.fides-gpc-banner").contains(
-          "Global Privacy Control detected"
-        );
-        cy.get("span")
-          .contains("Advertising with gpc enabled")
-          .parent()
-          .within(() => {
-            cy.get("span").contains("Global Privacy Control applied");
           });
       });
     });
@@ -1413,7 +1394,7 @@ describe("Consent overlay", () => {
           .contains("Advertising")
           .parent()
           .within(() => {
-            cy.get("span").contains("Global Privacy Control overridden");
+            cy.get("span").contains("Global Privacy Control Overridden");
           });
       });
     });
@@ -1954,7 +1935,7 @@ describe("Consent overlay", () => {
         .contains("Applied")
         .parent()
         .within(() => {
-          cy.get(".fides-gpc-label").contains("applied");
+          cy.get(".fides-gpc-label").contains("Applied");
         });
       cy.get(".fides-notice-toggle")
         .contains("Notice only")
@@ -1966,7 +1947,7 @@ describe("Consent overlay", () => {
         .contains("Overridden")
         .parent()
         .within(() => {
-          cy.get(".fides-gpc-label").contains("overridden");
+          cy.get(".fides-gpc-label").contains("Overridden");
         });
     });
   });
@@ -2015,7 +1996,7 @@ describe("Consent overlay", () => {
         expect(identity.fides_user_device_id).to.be.a("string");
         expect(body).to.eql({
           // This is the privacy_experience_config_history_id of the associated translation
-          // TODO (PROD-1597): re-enable after fixing notice served save bug; this *must* use the history id
+          // TODO (PROD-1744): re-enable after fixing notice served save bug; this *must* use the history id
           // privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
           privacy_experience_id: "pri_exp-history-banner-modal-en-000",
           user_geography: "us_ca",

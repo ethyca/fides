@@ -234,6 +234,8 @@ describe("Consent i18n", () => {
         cy.get(".fides-notice-toggle-title").contains(notice.title).click();
       });
     });
+
+    // TODO (PROD-1597): test GPC labels on notices
   };
 
   describe("when auto_detect_language is true", () => {
