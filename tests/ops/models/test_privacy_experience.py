@@ -516,58 +516,31 @@ class TestExperienceConfig:
 
 
 class TestPrivacyExperience:
-    def test_create_privacy_experience(self, db):
+    def test_create_privacy_experience(self, db, experience_config_banner_and_modal):
         """Assert PrivacyExperience is created as expected"""
         exp = PrivacyExperience.create(
             db=db,
             data={
                 "region": "us_tx",
+                "experience_config_id": experience_config_banner_and_modal.id,
             },
         )
 
         assert exp.region == PrivacyNoticeRegion.us_tx
-        assert exp.experience_config_id is None
-        assert exp.component is None
-        assert exp.show_banner is False
-
-        exp.delete(db=db)
-
-    def test_update_privacy_experience(self, db, experience_config_banner_and_modal):
-        """Assert PrivacyExperience is updated as expected"""
-        exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "region": "us_ca",
-            },
-        )
-        exp_created_at = exp.created_at
-        exp_updated_at = exp.updated_at
-        assert exp.experience_config is None
-
-        exp.update(
-            db=db,
-            data={
-                "experience_config_id": experience_config_banner_and_modal.id,
-            },
-        )
-        db.refresh(exp)
-
+        assert exp.experience_config_id == experience_config_banner_and_modal.id
         assert exp.component == ComponentType.banner_and_modal  # Convenience property
-        assert exp.region == PrivacyNoticeRegion.us_ca
         assert exp.experience_config == experience_config_banner_and_modal
         assert exp.show_banner is True  # Convenience property
         assert exp.id is not None
-        assert exp.created_at == exp_created_at
-        assert exp.updated_at > exp_updated_at
 
         assert (
             PrivacyExperience.get_experiences_by_region_and_component(
-                db, PrivacyNoticeRegion.us_ca, ComponentType.banner_and_modal
+                db, PrivacyNoticeRegion.us_tx, ComponentType.banner_and_modal
             ).first()
             == exp
         )
 
-        exp.delete(db)
+        exp.delete(db=db)
 
     @pytest.mark.parametrize(
         "region,country",
@@ -580,11 +553,14 @@ class TestPrivacyExperience:
             ("fr", "fr"),
         ],
     )
-    def test_region_country_property(self, db, region, country):
+    def test_region_country_property(
+        self, db, region, country, experience_config_banner_and_modal
+    ):
         exp: PrivacyExperience = PrivacyExperience.create(
             db=db,
             data={
                 "region": region,
+                "experience_config_id": experience_config_banner_and_modal.id,
             },
         )
 
@@ -629,49 +605,6 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
         assert privacy_center_experience.component == ComponentType.privacy_center
         assert privacy_center_experience.experience_config_id == config.id
-
-        privacy_center_experience.delete(db)
-        for translation in config.translations:
-            translation.histories[0].delete(db)
-            translation.delete(db)
-        config.delete(db)
-
-    def test_experience_config_created_matching_unlinked_experience_exists(self, db):
-        """Test ExperienceConfig created with an Experience of something else in the db has no
-        effect on that existing experience
-        """
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "privacy_center",
-                "translations": [{"language": "en", "title": "Control your privacy"}],
-            },
-        )
-
-        pc_exp = PrivacyExperience.create(
-            db=db,
-            data={
-                "region": "us_ak",
-            },
-        )
-        assert pc_exp.experience_config_id is None
-
-        linked = upsert_privacy_experiences_after_config_update(
-            db, config, regions=[PrivacyNoticeRegion.us_ak]
-        )
-
-        assert config.experiences.count() == 1
-
-        privacy_center_experience = config.experiences.first()
-        assert linked == [PrivacyNoticeRegion.us_ak]
-
-        assert privacy_center_experience.region == PrivacyNoticeRegion.us_ak
-        assert privacy_center_experience.component == ComponentType.privacy_center
-        assert privacy_center_experience.experience_config_id == config.id
-
-        # Previously we only had one experience per region of any given type but that
-        # constraint has been relaxed
-        assert privacy_center_experience.id != pc_exp.id
 
         privacy_center_experience.delete(db)
         for translation in config.translations:

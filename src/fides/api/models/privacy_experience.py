@@ -171,6 +171,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         "PrivacyExperience",
         back_populates="experience_config",
         lazy="dynamic",
+        cascade="all,delete",
     )
 
     privacy_notices: RelationshipProperty[List[PrivacyNotice]] = relationship(
@@ -448,7 +449,7 @@ class PrivacyExperience(Base):
     experience_config_id = Column(
         String,
         ForeignKey(PrivacyExperienceConfig.id_field_path),
-        nullable=True,  # Privacy Experiences should always have ExperienceConfigs linked, but for historical reasons, it is possible to not have an ExperienceConfig
+        nullable=False,
         index=True,
     )
 
