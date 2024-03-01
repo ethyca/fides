@@ -7,7 +7,7 @@ import {
   FRAMEWORK_MAP,
   MECHANISM_MAP,
 } from "~/features/privacy-notices/constants";
-import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
+import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse } from "~/types/api";
 
 export const MechanismCell = (
@@ -44,16 +44,14 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
 export const EnablePrivacyNoticeCell = (
   cellProps: CellProps<PrivacyNoticeResponse, boolean>
 ) => {
-  const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
+  const [patchNoticeMutationTrigger] = useLimitedPatchPrivacyNoticesMutation();
 
   const { row } = cellProps;
   const onToggle = async (toggle: boolean) =>
-    patchNoticeMutationTrigger([
-      {
-        id: row.original.id,
-        disabled: !toggle,
-      },
-    ]);
+    patchNoticeMutationTrigger({
+      id: row.original.id,
+      disabled: !toggle,
+    });
 
   const {
     systems_applicable: systemsApplicable,

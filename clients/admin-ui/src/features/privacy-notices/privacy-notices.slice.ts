@@ -32,6 +32,10 @@ interface PrivacyNoticesParams {
 }
 
 type PrivacyNoticeUpdateParams = PrivacyNoticeUpdate & { id: string };
+type PrivacyNoticeEnableDisableParams = Pick<
+  PrivacyNoticeUpdate,
+  "disabled"
+> & { id: string };
 
 const privacyNoticesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -60,6 +64,18 @@ const privacyNoticesApi = baseApi.injectEndpoints({
       },
       invalidatesTags: () => ["Privacy Notices"],
     }),
+    limitedPatchPrivacyNotices: build.mutation<
+      PrivacyNoticeResponse[],
+      PrivacyNoticeEnableDisableParams
+    >({
+      query: ({ id, disabled }) => ({
+        method: "PATCH",
+        url: `privacy-notice/${id}/limited_update`,
+        params: { id },
+        body: { disabled },
+      }),
+      invalidatesTags: () => ["Privacy Notices"],
+    }),
     getPrivacyNoticeById: build.query<PrivacyNoticeResponse, string>({
       query: (id) => ({
         url: `privacy-notice/${id}`,
@@ -85,6 +101,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
 export const {
   useGetAllPrivacyNoticesQuery,
   usePatchPrivacyNoticesMutation,
+  useLimitedPatchPrivacyNoticesMutation,
   useGetPrivacyNoticeByIdQuery,
   usePostPrivacyNoticeMutation,
 } = privacyNoticesApi;
