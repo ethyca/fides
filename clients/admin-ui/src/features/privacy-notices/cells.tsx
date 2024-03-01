@@ -9,12 +9,14 @@ import {
   MECHANISM_MAP,
 } from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
-import { ConsentMechanism, PrivacyNoticeRegion, PrivacyNoticeResponse } from "~/types/api";
+import {
+  ConsentMechanism,
+  PrivacyNoticeRegion,
+  PrivacyNoticeResponse,
+} from "~/types/api";
 import { EnableCell } from "../common/table/v2/cells";
 
-export const MechanismCell = (
-  value: ConsentMechanism | undefined
-) => {
+export const MechanismCell = (value: ConsentMechanism | undefined) => {
   const innerText = MECHANISM_MAP.get(value!) ?? value;
   return (
     <Badge
@@ -27,54 +29,53 @@ export const MechanismCell = (
       px={2}
     >
       {innerText}
-    </Badge>)
+    </Badge>
+  );
 };
 
-export const getRegions = (regions: PrivacyNoticeRegion[] | undefined): string[] => {
+export const getRegions = (
+  regions: PrivacyNoticeRegion[] | undefined
+): string[] => {
   if (!regions) {
     return [];
   }
   const values: string[] = [];
-  regions.forEach(region => {
+  regions.forEach((region) => {
     const value = PRIVACY_NOTICE_REGION_MAP.get(region);
     if (value !== undefined) {
       values.push(value);
     }
   });
   return values;
-}
+};
 
-export const FrameworkCell = (
-  cellProps: any
-) => <MapCell map={FRAMEWORK_MAP} {...cellProps} />;
-
-
+export const FrameworkCell = (cellProps: any) => (
+  <MapCell map={FRAMEWORK_MAP} {...cellProps} />
+);
 
 type TagNames = "available" | "enabled" | "inactive";
 
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
-{
-  available: {
-    backgroundColor: "orange.100",
-    color: "orange.800",
-    tooltip:
-      "This notice is associated with a system + data use and can be enabled",
-  },
-  enabled: {
-    backgroundColor: "green.100",
-    color: "green.800",
-    tooltip: "This notice is active and available for consumers",
-  },
-  inactive: {
-    backgroundColor: "gray.100",
-    color: "gray.800",
-    tooltip:
-      "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
-  },
-};
-export const PrivacyNoticeStatusCell = (
-  cellProps: any
-) => {
+  {
+    available: {
+      backgroundColor: "orange.100",
+      color: "orange.800",
+      tooltip:
+        "This notice is associated with a system + data use and can be enabled",
+    },
+    enabled: {
+      backgroundColor: "green.100",
+      color: "green.800",
+      tooltip: "This notice is active and available for consumers",
+    },
+    inactive: {
+      backgroundColor: "gray.100",
+      color: "gray.800",
+      tooltip:
+        "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
+    },
+  };
+export const PrivacyNoticeStatusCell = (cellProps: any) => {
   const { row } = cellProps;
 
   let tagValue: TagNames | undefined;
@@ -112,7 +113,9 @@ export const PrivacyNoticeStatusCell = (
   );
 };
 
-export const EnablePrivacyNoticeCell = (cellProps: CellContext<PrivacyNoticeResponse, boolean | undefined>) => {
+export const EnablePrivacyNoticeCell = (
+  cellProps: CellContext<PrivacyNoticeResponse, boolean | undefined>
+) => {
   const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
   const value = cellProps.getValue();
   const { row } = cellProps;
@@ -145,5 +148,3 @@ export const EnablePrivacyNoticeCell = (cellProps: CellContext<PrivacyNoticeResp
     />
   );
 };
-
-
