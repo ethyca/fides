@@ -104,13 +104,6 @@ export const PrivacyNoticesTable = () => {
         resetPageIndexToDefault,
     } = useServerSidePagination();
 
-    const [globalFilter, setGlobalFilter] = useState<string>();
-
-    const updateGlobalFilter = (searchTerm: string) => {
-        resetPageIndexToDefault();
-        setGlobalFilter(searchTerm);
-    };
-
     const {
         isFetching,
         isLoading,
@@ -118,7 +111,6 @@ export const PrivacyNoticesTable = () => {
     } = useGetAllPrivacyNoticesQuery({
         page: pageIndex,
         size: pageSize,
-        // search: globalFilter,
     });
 
     const {
@@ -212,13 +204,8 @@ export const PrivacyNoticesTable = () => {
         <div>
             <Flex flex={1} direction="column" overflow="auto">
                 <TableActionBar>
-                    <GlobalFilterV2
-                        globalFilter={globalFilter}
-                        setGlobalFilter={updateGlobalFilter}
-                        placeholder="Search property"
-                    />
-                    <HStack alignItems="center" spacing={4}>
-                        <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
+                    <HStack alignItems="center" spacing={4} marginLeft={"auto"}>
+                        <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`} >
                             <Button
                                 size="xs"
                                 colorScheme="primary"
