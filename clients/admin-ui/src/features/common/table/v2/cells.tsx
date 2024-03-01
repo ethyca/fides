@@ -207,7 +207,7 @@ export const EnableCell = <T extends object>({
       <Switch
         colorScheme="complimentary"
         isChecked={!value}
-        data-testid={`toggle-${column.Header}`}
+        data-testid="toggle-switch"
         /**
          * It's difficult to use a custom column in react-table 7 since we'd have to modify
          * the declaration file. However, that modifies the type globally, so our datamap table

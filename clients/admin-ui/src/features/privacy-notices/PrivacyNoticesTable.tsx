@@ -12,7 +12,6 @@ import {
     DefaultCell,
     DefaultHeaderCell,
     FidesTableV2,
-    GlobalFilterV2,
     GroupCountBadgeCell,
     PaginationBar,
     TableActionBar,
@@ -101,7 +100,6 @@ export const PrivacyNoticesTable = () => {
         endRange,
         pageIndex,
         setTotalPages,
-        resetPageIndexToDefault,
     } = useServerSidePagination();
 
     const {
@@ -170,13 +168,13 @@ export const PrivacyNoticesTable = () => {
                     ) : null,
                 header: (props) => <DefaultHeaderCell value="Farmework" {...props} />,
             }),
-            columnHelper.accessor((row) => row.disabled, {
+            userCanUpdate && columnHelper.accessor((row) => row.disabled, {
                 id: "enable",
                 cell: (props) => EnablePrivacyNoticeCell(props),
                 header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
             }),
-        ],
-        []
+        ].filter(Boolean),
+        [userCanUpdate]
     );
 
     const tableInstance = useReactTable<PrivacyNoticeResponse>({
@@ -203,19 +201,20 @@ export const PrivacyNoticesTable = () => {
     return (
         <div>
             <Flex flex={1} direction="column" overflow="auto">
-                <TableActionBar>
-                    <HStack alignItems="center" spacing={4} marginLeft={"auto"}>
-                        <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`} >
-                            <Button
-                                size="xs"
-                                colorScheme="primary"
-                                data-testid="add-privacy-notice-btn"
-                            >
-                                Add a privacy notice +
-                            </Button>
-                        </NextLink>
-                    </HStack>
-                </TableActionBar>
+                {userCanUpdate && (
+                    <TableActionBar>
+                        <HStack alignItems="center" spacing={4} marginLeft={"auto"}>
+                            <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`} >
+                                <Button
+                                    size="xs"
+                                    colorScheme="primary"
+                                    data-testid="add-privacy-notice-btn"
+                                >
+                                    Add a privacy notice +
+                                </Button>
+                            </NextLink>
+                        </HStack>
+                    </TableActionBar>)}
                 <FidesTableV2
                     tableInstance={tableInstance}
                     onRowClick={userCanUpdate ? onRowClick : undefined}
