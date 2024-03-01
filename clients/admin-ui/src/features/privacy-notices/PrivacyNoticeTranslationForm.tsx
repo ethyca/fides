@@ -155,18 +155,18 @@ const PrivacyNoticeTranslationForm = () => {
         orientation="vertical"
         variant="unstyled"
       >
-        <VStack
-          spacing={4}
-          minW="30%"
-          maxH={64}
-          overflow="scroll"
-          p={4}
-          outline="1px solid"
-          outlineColor="gray.200"
-          borderRadius="md"
-        >
+        <VStack spacing={4} minW="30%" p={2}>
           <TabList w="100%">
-            <VStack spacing={2} w="100%">
+            <VStack
+              spacing={2}
+              w="100%"
+              p={4}
+              maxH={60}
+              overflow="scroll"
+              outline="1px solid"
+              outlineColor="gray.200"
+              borderRadius="md"
+            >
               {values.translations!.map((translation) => (
                 <TranslationTabButton
                   translation={translation}
