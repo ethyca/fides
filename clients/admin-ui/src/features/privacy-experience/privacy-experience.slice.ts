@@ -4,6 +4,7 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   ExperienceConfigCreate,
+  ExperienceConfigDisabledUpdate,
   ExperienceConfigListViewResponse,
   ExperienceConfigResponse,
   ExperienceConfigUpdate,
@@ -46,6 +47,9 @@ export type ExperienceConfigUpdateParams = Omit<
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
 };
+type ExperienceConfigEnableDisableParams = ExperienceConfigDisabledUpdate & {
+  id: string;
+};
 export type ExperienceConfigCreateParams = Omit<
   Partial<ExperienceConfigCreate>,
   ExperienceConfigOptionalFields
@@ -82,6 +86,17 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       },
       invalidatesTags: () => ["Privacy Experience Configs"],
     }),
+    limitedPatchExperienceConfig: build.mutation<
+      ExperienceConfigResponse,
+      ExperienceConfigEnableDisableParams
+    >({
+      query: ({ id, disabled }) => ({
+        method: "PATCH",
+        url: `experience-config/${id}/limited_update`,
+        body: { disabled },
+      }),
+      invalidatesTags: () => ["Privacy Experience Configs"],
+    }),
     getExperienceConfigById: build.query<ExperienceConfigResponse, string>({
       query: (id) => ({
         url: `experience-config/${id}`,
@@ -107,6 +122,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
 export const {
   useGetAllExperienceConfigsQuery,
   usePatchExperienceConfigMutation,
+  useLimitedPatchExperienceConfigMutation,
   useGetExperienceConfigByIdQuery,
   usePostExperienceConfigMutation,
 } = privacyExperienceConfigApi;
