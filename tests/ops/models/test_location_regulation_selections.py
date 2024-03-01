@@ -1,10 +1,15 @@
-from json import dumps
 from typing import Any, Dict
 
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.location_regulation_selections import LocationRegulationSelections
+from fides.api.models.location_regulation_selections import (
+    LocationRegulationSelections,
+    PrivacyNoticeRegion,
+    filter_regions_by_location,
+    group_locations_into_location_groups,
+    location_group_to_location,
+)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -51,6 +56,7 @@ class TestLocationRegulationSelections:
         assert len(db.query(LocationRegulationSelections).all()) == 1
         config_record_db = db.query(LocationRegulationSelections).first()
         assert config_record_db.selected_locations == ["us_ca", "fr"]
+        assert config_record_db.selected_location_groups == []
         assert config_record_db.selected_regulations == ["ccpa", "gdpr"]
         assert config_record_db.id == config_record.id
 
@@ -63,6 +69,7 @@ class TestLocationRegulationSelections:
             LocationRegulationSelections.create_or_update(db, data=data_dict)
         )
         assert new_config_record.selected_locations == ["us_co"]
+        assert config_record_db.selected_location_groups == []
         assert new_config_record.selected_regulations == [
             "ccpa",
             "gdpr",
@@ -117,10 +124,137 @@ class TestLocationRegulationSelections:
         }
 
         # ensure that values are deduplicated as expected
-        LocationRegulationSelections.set_selected_locations(
+        LocationRegulationSelections.set_selected_regulations(
             db, ["ccpa", "gdpr", "ccpa"]
         )
         assert LocationRegulationSelections.get_selected_regulations(db) == {
             "ccpa",
             "gdpr",
         }
+        assert LocationRegulationSelections.get_selected_location_groups(db) == set()
+
+        # set locations that make up an entire location group
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "mx", "sv", "hn", "cr", "us_ca"]
+        )
+
+        assert LocationRegulationSelections.get_selected_location_groups(db) == {
+            "mexico_central_america",
+        }
+        assert LocationRegulationSelections.get_selected_locations(db) == {
+            "gt",
+            "pa",
+            "ni",
+            "bz",
+            "mx",
+            "sv",
+            "hn",
+            "cr",
+            "us_ca",
+        }
+
+        # Set locations where we are shy of building a full location group
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "mx", "sv"]
+        )
+        assert LocationRegulationSelections.get_selected_location_groups(db) == set()
+
+
+class TestFilterRegionsByLocation:
+    base_regions = [
+        PrivacyNoticeRegion.us_ca,
+        PrivacyNoticeRegion.eea,
+        PrivacyNoticeRegion.gb,
+        PrivacyNoticeRegion.mexico_central_america,
+    ]
+
+    def test_no_locations_or_location_groups_set(self, db):
+        """For backwards compatibility if no locations are set, all PrivacyNoticeRegions are available"""
+        assert filter_regions_by_location(db, self.base_regions) == self.base_regions
+
+    def test_locations_set(self, db):
+        LocationRegulationSelections.set_selected_locations(db, ["us_ca"])
+
+        assert filter_regions_by_location(db, self.base_regions) == [
+            PrivacyNoticeRegion.us_ca
+        ]
+
+    def test_location_groups_set(self, db):
+        # Setting all "mexico_central_america" locations also saves the "mexico_central_america" group
+        LocationRegulationSelections.set_selected_locations(
+            db, ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
+        )
+
+        assert filter_regions_by_location(db, self.base_regions) == [
+            PrivacyNoticeRegion.mexico_central_america
+        ]
+
+
+class TestGroupLocationsIntoLocationGroups:
+    def test_no_locations(self):
+        assert group_locations_into_location_groups([]) == set()
+
+    def test_locations_do_not_comprise_full_group(self):
+        assert group_locations_into_location_groups(["us_ca"]) == set()
+
+    def test_all_locations_from_a_group_supplied(self):
+        assert group_locations_into_location_groups(
+            ["gt", "pa", "ni", "bz", "sv", "hn", "cr", "mx"]
+        ) == {"mexico_central_america"}
+
+
+class TestLocationGroupToLocation:
+    def test_expected_keys(self):
+        """Testing mapping built on startup from location groups to a set of the contained locations from the locations.yml file"""
+        assert set(location_group_to_location.keys()) == {
+            "eea",
+            "mexico_central_america",
+            "caribbean",
+            "ca",
+            "us",
+            "non_eea",
+        }
+
+    def test_assert_selected_value(self):
+        assert location_group_to_location["ca"] == {
+            "ca_nb",
+            "ca_ab",
+            "ca_nt",
+            "ca_nu",
+            "ca_on",
+            "ca_yt",
+            "ca_ns",
+            "ca_sk",
+            "ca_bc",
+            "ca_mb",
+            "ca_nl",
+            "ca_pe",
+            "ca_qc",
+        }
+
+
+class TestPrivacyNoticeRegion:
+    def test_privacy_notice_region_enum(self):
+        with pytest.raises(AttributeError):
+            # Regulations not added to enum
+            PrivacyNoticeRegion.gdpr
+
+        # Location Groups added
+        assert PrivacyNoticeRegion.eea
+        assert PrivacyNoticeRegion.mexico_central_america
+        assert PrivacyNoticeRegion.caribbean
+        assert PrivacyNoticeRegion.us
+        assert PrivacyNoticeRegion.ca
+        assert PrivacyNoticeRegion.non_eea
+
+        # Locations added - just asserting selected locations
+        assert PrivacyNoticeRegion.us_ca
+        assert PrivacyNoticeRegion.ca_nl
+        assert PrivacyNoticeRegion.fr
+        assert PrivacyNoticeRegion.gb
+        assert PrivacyNoticeRegion.mx
+
+        # Continents not added
+        with pytest.raises(AttributeError):
+            # Regulations not added to enum
+            PrivacyNoticeRegion.Asia
