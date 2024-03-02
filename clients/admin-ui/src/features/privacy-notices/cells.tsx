@@ -115,16 +115,16 @@ export const PrivacyNoticeStatusCell = (cellProps: any) => {
 };
 
 export const EnablePrivacyNoticeCell = ({
-  getValue,
   row,
-  ...cellProps
+  getValue,
 }: CellContext<PrivacyNoticeResponse, boolean | undefined>) => {
   const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
-  const { original } = row;
+
+  const value = getValue()!;
   const onToggle = async (toggle: boolean) =>
     patchNoticeMutationTrigger([
       {
-        id: original.id,
+        id: row.original.id,
         disabled: !toggle,
       },
     ]);
@@ -137,10 +137,10 @@ export const EnablePrivacyNoticeCell = ({
   const hasDataUses = !!dataUses;
   const toggleIsDisabled =
     (noticeIsDisabled && !systemsApplicable) || !hasDataUses;
+
   return (
-    <EnableCell<PrivacyNoticeResponse>
-      value={getValue()!}
-      {...cellProps}
+    <EnableCell
+      value={value}
       isDisabled={toggleIsDisabled}
       onToggle={onToggle}
       title="Disable privacy notice"

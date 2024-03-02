@@ -12,7 +12,7 @@ import {
   useToast,
   WarningIcon,
 } from "@fidesui/react";
-import { CellContext, HeaderContext } from "@tanstack/react-table";
+import { HeaderContext } from "@tanstack/react-table";
 import { ChangeEvent, FC, ReactNode } from "react";
 
 import { RTKResult } from "~/types/errors";
@@ -163,27 +163,21 @@ export const DefaultHeaderCell = <T,>({
   );
 };
 
-type EnableCellProps<T extends object> = {
+type EnableCellProps = {
   value: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
   message: string;
-  /**
-   * Disables the toggle. Can also pass a prop on `column`.
-   * If either are true, then the toggle is disabled.
-   */
   isDisabled?: boolean;
-} & CellContext<T, boolean>; // Adjust the type to include CellContext
+};
 
-export const EnableCell = <T extends object>({
+export const EnableCell = ({
   value,
-  row, // eslint-disable-line @typescript-eslint/no-unused-vars
-  column,
   onToggle,
   title,
   message,
   isDisabled,
-}: EnableCellProps<T>) => {
+}: EnableCellProps) => {
   const modal = useDisclosure();
   const toast = useToast();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
@@ -194,7 +188,6 @@ export const EnableCell = <T extends object>({
   };
 
   const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
-    event.stopPropagation();
     const { checked } = event.target;
     if (checked) {
       await handlePatch({ enable: true });
@@ -209,15 +202,7 @@ export const EnableCell = <T extends object>({
         colorScheme="complimentary"
         isChecked={!value}
         data-testid="toggle-switch"
-        /**
-         * It's difficult to use a custom column in react-table 7 since we'd have to modify
-         * the declaration file. However, that modifies the type globally, so our datamap table
-         * would also have issues. Ignoring the type for now, but should potentially revisit
-         * if we update to react-table 8
-         * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/59837
-         */
-        // @ts-ignore
-        disabled={isDisabled || column.disabled}
+        disabled={isDisabled}
         onChange={handleToggle}
       />
       <ConfirmationModal
