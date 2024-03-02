@@ -107,11 +107,14 @@ export const useConsentServed = ({
       }
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_id: privacyExperience.id,
+        privacy_experience_id:
+          privacyExperience.experience_config?.translations[0]
+            .privacy_experience_config_history_id,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
+        // TODO (PROD-1744): pass in specific language shown in UI
         privacy_notice_history_ids: notices.map(
-          (n) => n.privacy_notice_history_id
+          (n: PrivacyNotice) => n.translations[0].privacy_notice_history_id
         ),
         tcf_purpose_consents: extractIds(
           privacyExperience?.tcf_purpose_consents

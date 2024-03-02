@@ -1,5 +1,5 @@
-import { h, FunctionComponent, Fragment } from "preact";
-import { useState, useCallback, useMemo } from "preact/hooks";
+import { h, Fragment, FunctionComponent } from "preact";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -26,8 +26,9 @@ import { getConsentContext } from "../../lib/consent-context";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
-  experience,
   options,
+  experience,
+  i18n,
   fidesRegionString,
   cookie,
 }) => {
@@ -119,7 +120,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const dispatchOpenOverlayEvent = useCallback(() => {
     dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.OVERLAY,
+      servingComponent: ServingComponent.MODAL,
     });
   }, [cookie, options.debug]);
 
@@ -127,16 +128,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys);
   }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
 
-  if (!experience.experience_config) {
+  const experienceConfig = experience.experience_config;
+  if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
-  const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
       options={options}
       experience={experience}
+      i18n={i18n}
       cookie={cookie}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
@@ -148,10 +150,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             onClose();
             handleDismiss();
           }}
-          experience={experienceConfig}
+          i18n={i18n}
           renderButtonGroup={({ isMobile }) => (
             <NoticeConsentButtons
               experience={experience}
+              i18n={i18n}
               onManagePreferencesClick={onManagePreferencesClick}
               enabledKeys={draftEnabledNoticeKeys}
               onSave={(
@@ -172,6 +175,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           <div className="fides-modal-notices">
             <NoticeToggles
               notices={privacyNotices}
+              i18n={i18n}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
@@ -185,6 +189,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         <Fragment>
           <NoticeConsentButtons
             experience={experience}
+            i18n={i18n}
             enabledKeys={draftEnabledNoticeKeys}
             onSave={(
               consentMethod: ConsentMethod,
@@ -198,7 +203,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isMobile={isMobile}
             saveOnly={privacyNotices.length === 1}
           />
-          <PrivacyPolicyLink experience={experience.experience_config} />
+          <PrivacyPolicyLink i18n={i18n} />
         </Fragment>
       )}
     />

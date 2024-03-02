@@ -199,9 +199,10 @@ const updateCookie = async (
 };
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
-  fidesRegionString,
-  experience,
   options,
+  experience,
+  i18n,
+  fidesRegionString,
   cookie,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
@@ -281,16 +282,17 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     handleUpdateAllPreferences(ConsentMethod.DISMISS, initialEnabledIds);
   }, [handleUpdateAllPreferences, initialEnabledIds]);
 
-  if (!experience.experience_config) {
+  const experienceConfig = experience.experience_config;
+  if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
-  const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
       options={options}
       experience={experience}
+      i18n={i18n}
       cookie={cookie}
       onVendorPageClick={() => {
         setActiveTabIndex(2);
@@ -304,17 +306,18 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         };
         return (
           <ConsentBanner
+            i18n={i18n}
             bannerIsOpen={isOpen}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
               onClose();
               handleDismiss();
             }}
-            experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={({ isMobile }) => (
               <TcfConsentButtons
                 experience={experience}
+                i18n={i18n}
                 onManagePreferencesClick={onManagePreferencesClick}
                 onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
                   handleUpdateAllPreferences(consentMethod, keys);
@@ -357,18 +360,22 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           <Fragment>
             <TcfConsentButtons
               experience={experience}
+              i18n={i18n}
               onSave={onSave}
               firstButton={
                 <Button
                   buttonType={ButtonType.SECONDARY}
-                  label={experience.experience_config?.save_button_label}
+                  label={
+                    experience.experience_config?.translations[0]
+                      .save_button_label
+                  }
                   onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                   className="fides-save-button"
                 />
               }
               isMobile={isMobile}
             />
-            <PrivacyPolicyLink experience={experience.experience_config} />
+            <PrivacyPolicyLink i18n={i18n} />
           </Fragment>
         );
       }}

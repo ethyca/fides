@@ -3,7 +3,8 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
-  Page_PrivacyNoticeResponse_,
+  LimitedPrivacyNoticeResponseSchema,
+  Page_LimitedPrivacyNoticeResponseSchema_,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
@@ -24,6 +25,7 @@ interface PrivacyNoticesParams {
   show_disabled?: boolean;
   region?: PrivacyNoticeRegion;
   systems_applicable?: boolean;
+  filter_by_framework?: boolean;
   page?: number;
   size?: number;
 }
@@ -31,7 +33,7 @@ interface PrivacyNoticesParams {
 const privacyNoticesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllPrivacyNotices: build.query<
-      Page_PrivacyNoticeResponse_,
+      Page_LimitedPrivacyNoticeResponseSchema_,
       PrivacyNoticesParams
     >({
       query: (params) => ({
@@ -108,7 +110,7 @@ export const selectPageSize = createSelector(
   (state) => state.pageSize
 );
 
-const emptyPrivacyNotices: PrivacyNoticeResponse[] = [];
+const emptyPrivacyNotices: LimitedPrivacyNoticeResponseSchema[] = [];
 export const selectAllPrivacyNotices = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {

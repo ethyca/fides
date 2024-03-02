@@ -11,63 +11,63 @@
         "reject_all_fides_mobile_data": null
       },
       "experience_config": {
+        "translations": [
+          {
+            "language": "en",
+            "accept_button_label": "Opt in to all",
+            "acknowledge_button_label": "OK",
+            "banner_description": "[banner] We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",
+            "banner_title": "[banner] Manage your consent preferences",
+            "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",
+            "is_default": true,
+            "privacy_policy_link_label": "Privacy Policy",
+            "privacy_policy_url": "http://privacy.example.com",
+            "privacy_preferences_link_label": "Manage preferences",
+            "reject_button_label": "Opt out of all",
+            "save_button_label": "Save",
+            "title": "Manage your consent preferences",
+            "privacy_experience_config_history_id": "pri_exp-history-tcf-overlay-en-00"
+          },
+          {
+            "language": "es",
+            "accept_button_label": "Participar en todo",
+            "acknowledge_button_label": "Aceptar",
+            "banner_description": "[banner] Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+            "banner_title": "[banner] Administrar sus preferencias de consentimiento",
+            "description": "Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+            "is_default": true,
+            "privacy_policy_link_label": "Política de privacidad",
+            "privacy_policy_url": "https://privacy.example.com/",
+            "privacy_preferences_link_label": "Administrar preferencias",
+            "reject_button_label": "No participar en nada",
+            "save_button_label": "Guardar",
+            "title": "Administrar sus preferencias de consentimiento",
+            "privacy_experience_config_history_id": "pri_exp-history-tcf-overlay-es-00"
+          }
+        ],
+        "language": "en",
+        "dismissable": true,
+        "allow_language_selection": true,
+        "auto_detect_language": true,
+        "disabled": false,
+        "id": "pri_exp-tcf-overlay-000",
+        "component": "tcf_overlay",
+        "created_at": "2024-01-01T12:00:00.000000+00:00",
+        "updated_at": "2024-01-01T12:00:00.000000+00:00",
         "accept_button_label": "Opt in to all",
         "acknowledge_button_label": "OK",
-        "banner_enabled": "enabled_where_required",
+        "banner_description": "[banner] We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",
+        "banner_title": "[banner] Manage your consent preferences",
         "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",
-        "disabled": false,
         "is_default": true,
         "privacy_policy_link_label": "Privacy Policy",
         "privacy_policy_url": null,
         "privacy_preferences_link_label": "Manage preferences",
-        "regions": [
-          "be",
-          "bg",
-          "cz",
-          "dk",
-          "de",
-          "ee",
-          "ie",
-          "gr",
-          "es",
-          "fr",
-          "hr",
-          "it",
-          "cy",
-          "lv",
-          "lt",
-          "lu",
-          "hu",
-          "mt",
-          "nl",
-          "at",
-          "pl",
-          "pt",
-          "ro",
-          "si",
-          "sk",
-          "fi",
-          "se",
-          "gb_eng",
-          "gb_sct",
-          "gb_wls",
-          "gb_nir",
-          "no",
-          "is",
-          "li",
-          "eea"
-        ],
         "reject_button_label": "Opt out of all",
         "save_button_label": "Save",
-        "title": "Manage your consent preferences",
-        "id": "a4974670-abad-471f-9084-2cb-tcf-over",
-        "component": "tcf_overlay",
-        "experience_config_history_id": "pri_2dc8a774-6f58-435a-99dd-49a85f36a8e7",
-        "version": 2,
-        "created_at": "2023-09-26T18:59:40.114515+00:00",
-        "updated_at": "2023-09-29T15:16:59.437776+00:00"
+        "title": "Manage your consent preferences"
       },
-      "id": "pri_da3252e2-b604-49fd-b493-70a9960dce66",
+      "id": "pri_exp-000",
       "tcf_purpose_consents": [
         {
           "id": 4,
@@ -338,9 +338,8 @@
           "uses_non_cookie_access": false
         }
       ],
-      "created_at": "2023-09-26T18:59:40.416181+00:00",
-      "updated_at": "2023-09-26T18:59:40.416181+00:00",
-      "show_banner": true,
+      "created_at": "2024-01-01T12:00:00.000000+00:00",
+      "updated_at": "2024-01-01T12:00:00.000000+00:00",
       "privacy_notices": [],
       "gvl": {
         "gvlSpecificationVersion": "3",
@@ -434,7 +433,8 @@
             "description": "Advertising can be personalised based on your profile. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
           }
         }
-      }
+      },
+      "gvl_translations": null
     }
   ]
 }

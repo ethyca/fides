@@ -14,6 +14,11 @@ const Toggle = ({
   disabled?: boolean;
 }) => {
   const labelId = `toggle-${id}`;
+  /* TODO (PROD-1754)
+  if (getCurrentLocale(i18n) == DEFAULT_LOCALE) {
+    const label = checked ? "On" : "Off";
+  }
+  */
   return (
     <label
       className="fides-toggle"

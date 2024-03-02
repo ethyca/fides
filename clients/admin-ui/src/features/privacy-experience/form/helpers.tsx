@@ -1,146 +1,135 @@
-import { useMemo } from "react";
-import * as Yup from "yup";
-
-import {
-  ExperienceConfigCreateParams,
-  ExperienceConfigUpdateParams,
-} from "~/features/privacy-experience/privacy-experience.slice";
 import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigResponse,
-  PrivacyNoticeResponse,
+  ExperienceTranslation,
+  ExperienceTranslationCreate,
+  ExperienceTranslationResponse,
+  Language,
+  SupportedLanguage,
 } from "~/types/api";
 
-export const defaultInitialValues: ExperienceConfigCreate = {
-  title: "",
-  description: "",
-  accept_button_label: "",
-  reject_button_label: "",
-  save_button_label: "",
+export const defaultTranslations: ExperienceTranslationCreate[] = [
+  {
+    language: SupportedLanguage.EN,
+    is_default: true,
+    title: "Title",
+    description: "Description",
+    accept_button_label: "Accept",
+    reject_button_label: "Reject",
+    privacy_preferences_link_label: "Privacy Preferences",
+  },
+];
+
+export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
+  disabled: false,
+  allow_language_selection: false,
   regions: [],
-  component: ComponentType.OVERLAY,
+  translations: defaultTranslations,
+};
+// utility type to pass as a prop to the translation form
+export type TranslationWithLanguageName = ExperienceTranslation &
+  Pick<Language, "name">;
+
+export const findLanguageDisplayName = (
+  translation: ExperienceTranslation,
+  langs: Language[]
+) => {
+  const language = langs.find((lang) => lang.id === translation.language);
+  return language ? language.name : translation.language;
 };
 
-export const transformExperienceConfigResponseToCreation = (
-  experienceConfig: ExperienceConfigResponse
-): ExperienceConfigCreate => {
-  // Remove the fields not needed for editing/creation
-  const {
-    created_at: createdAt,
-    updated_at: updatedAt,
-    version,
-    experience_config_history_id: experienceConfigHistoryId,
-    ...rest
-  } = experienceConfig;
+export const transformTranslationResponseToCreate = (
+  response: ExperienceTranslationResponse
+): ExperienceTranslationCreate => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { privacy_experience_config_history_id, ...rest } = response;
   return {
     ...rest,
-    title: experienceConfig.title ?? "",
-    description: experienceConfig.description ?? "",
-    accept_button_label: experienceConfig.accept_button_label ?? "",
-    reject_button_label: experienceConfig.reject_button_label ?? "",
-    save_button_label: experienceConfig.save_button_label ?? "",
-    regions: experienceConfig.regions ?? defaultInitialValues.regions,
-    component: experienceConfig.component ?? defaultInitialValues.component,
+    description: response.description ?? "",
+    title: response.title ?? "",
   };
 };
 
-const buttonGroupValidationSchema = Yup.object().shape({
-  accept_button_label: Yup.string().label("Accept button label").required(),
-  reject_button_label: Yup.string().required().label("Reject button label"),
-  save_button_label: Yup.string().required().label("Save button label"),
-});
-
-const privacyCenterValidationSchema = Yup.object()
-  .shape({
-    title: Yup.string().required().label("Title"),
-    description: Yup.string().required().label("Description"),
-    privacy_policy_link_label: Yup.string()
-      .nullable()
-      .label("Privacy policy link label"),
-    privacy_policy_url: Yup.string()
-      .nullable()
-      .trim()
-      .url()
-      .label("Privacy policy URL"),
-  })
-  .concat(buttonGroupValidationSchema);
-
-const bannerValidationSchema = Yup.object()
-  .shape({
-    title: Yup.string().required().label("Overlay title"),
-    description: Yup.string().required().label("Overlay description"),
-    acknowledge_button_label: Yup.string()
-      .required()
-      .label("Acknowledge button label"),
-    privacy_preferences_link_label: Yup.string()
-      .required()
-      .label("Privacy preferences link label"),
-    banner_title: Yup.string().nullable().label("Banner title"),
-    banner_description: Yup.string().nullable().label("Banner description"),
-    privacy_policy_link_label: Yup.string()
-      .nullable()
-      .label("Privacy policy link label"),
-    privacy_policy_url: Yup.string()
-      .nullable()
-      .trim()
-      .url()
-      .label("Privacy policy URL"),
-  })
-  .concat(buttonGroupValidationSchema);
-
-// Coerce empty strings to "null" values for the update API
-// NOTE: this is identical to the transform for the create API below, but copied
-// into a separate function for Typescript type-safety
-export const transformFormValuesToExperienceConfigUpdate = (
-  values: ExperienceConfigUpdateParams
-): ExperienceConfigUpdateParams => ({
-  ...values,
-  banner_title: values.banner_title || null,
-  banner_description: values.banner_description || null,
-  privacy_policy_link_label: values.privacy_policy_link_label || null,
-  privacy_policy_url: values.privacy_policy_url || null,
-});
-
-// Coerce empty strings to "null" values for the create API
-// NOTE: this is identical to the transform for the update API above, but copied
-// into a separate function for Typescript type-safety
-export const transformFormValuesToExperienceConfigCreate = (
-  values: ExperienceConfigCreate
-): ExperienceConfigCreateParams => ({
-  ...values,
-  banner_title: values.banner_title || null,
-  banner_description: values.banner_description || null,
-  privacy_policy_link_label: values.privacy_policy_link_label || null,
-  privacy_policy_url: values.privacy_policy_url || null,
-});
-
-/**
- * Use the various rules/conditions of a privacy experience form
- */
-export const useExperienceForm = ({
-  privacyExperience,
-}: {
-  privacyExperience: ExperienceConfigCreate;
-  privacyNotices?: PrivacyNoticeResponse[];
-}) => {
-  const isOverlay = useMemo(
-    () =>
-      privacyExperience.component === ComponentType.OVERLAY ||
-      privacyExperience.component === ComponentType.TCF_OVERLAY,
-    [privacyExperience.component]
-  );
-
-  // Build the validation schema based on the rules
-  const validationSchema = useMemo(() => {
-    if (!isOverlay) {
-      return privacyCenterValidationSchema;
-    }
-    return bannerValidationSchema;
-  }, [isOverlay]);
-
+export const transformConfigResponseToCreate = (
+  config: ExperienceConfigResponse
+): ExperienceConfigCreate => {
+  const {
+    created_at: createdAt,
+    updated_at: updatedAt,
+    privacy_notices: notices,
+    origin,
+    id,
+    ...rest
+  } = config;
   return {
-    isOverlay,
-    validationSchema,
+    ...rest,
+    privacy_notice_ids: notices ? notices.map((notice) => notice.id) : [],
+    translations: config.translations
+      ? config.translations.map((t) => transformTranslationResponseToCreate(t))
+      : [],
+  };
+};
+
+type TranslationFieldConfig = {
+  included: boolean;
+  required?: boolean;
+};
+
+type TranslationFormConfig = {
+  [Property in keyof ExperienceTranslationCreate]?: TranslationFieldConfig;
+};
+
+export const getTranslationFormFields = (
+  component: ComponentType
+): TranslationFormConfig => {
+  if (component === ComponentType.PRIVACY_CENTER) {
+    return {
+      title: { included: true, required: true },
+      description: { included: true, required: true },
+      save_button_label: { included: true, required: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+    };
+  }
+  if (component === ComponentType.MODAL) {
+    return {
+      title: { included: true, required: true },
+      description: { included: true, required: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      acknowledge_button_label: { included: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+      privacy_preferences_link_label: { included: true },
+    };
+  }
+
+  if (component === ComponentType.BANNER_AND_MODAL) {
+    return {
+      title: { included: true, required: true },
+      banner_title: { included: true },
+      description: { included: true, required: true },
+      banner_description: { included: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      acknowledge_button_label: { included: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+      privacy_preferences_link_label: { included: true },
+    };
+  }
+  return {
+    title: { included: true, required: true },
+    description: { included: true, required: true },
+    accept_button_label: { included: true, required: true },
+    reject_button_label: { included: true, required: true },
+    save_button_label: { included: true },
+    acknowledge_button_label: { included: true },
+    privacy_policy_link_label: { included: true },
+    privacy_policy_url: { included: true },
+    privacy_preferences_link_label: { included: true },
   };
 };

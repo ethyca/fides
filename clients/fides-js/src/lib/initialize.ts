@@ -1,7 +1,9 @@
 import { ContainerNode } from "preact";
+
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
+import { i18n, initializeI18n } from "./i18n";
 import { getConsentContext } from "./consent-context";
 import {
   getCookieByName,
@@ -102,7 +104,12 @@ const automaticallyApplyGPCPreferences = ({
   effectiveExperience?: PrivacyExperience;
   fidesOptions: FidesOptions;
 }): boolean => {
-  if (!effectiveExperience || !effectiveExperience.privacy_notices) {
+  // Early-exit if there is no experience or notices, since we've nothing to do
+  if (
+    !effectiveExperience ||
+    !effectiveExperience.privacy_notices ||
+    effectiveExperience.privacy_notices.length === 0
+  ) {
     return false;
   }
 
@@ -359,12 +366,18 @@ export const initialize = async ({
       });
       debugLog(options.debug, "Updated experience", updatedExperience);
       Object.assign(effectiveExperience, updatedExperience);
+
       if (shouldInitOverlay) {
+        // Initialize the i18n singleton before we render the overlay
+        initializeI18n(i18n, window?.navigator, effectiveExperience, options);
+
+        // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({
+          options,
           experience: effectiveExperience,
+          i18n,
           fidesRegionString: fidesRegionString as string,
           cookie,
-          options,
           renderOverlay,
         }).catch(() => {});
       }

@@ -9,6 +9,7 @@ import {
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
+  PrivacyNoticeWithPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
@@ -22,7 +23,7 @@ import { noticeHasConsentInCookie } from "./shared-consent-utils";
  */
 type ConsoleLogParameters = Parameters<typeof console.log>;
 export const debugLog = (
-  enabled: boolean,
+  enabled: boolean = false,
   ...args: ConsoleLogParameters
 ): void => {
   if (enabled) {
@@ -57,6 +58,16 @@ export const isPrivacyExperience = (
   }
   return false;
 };
+
+export const allNoticesAreDefaultOptIn = (
+  notices: Array<PrivacyNoticeWithPreference> | undefined
+): boolean =>
+  Boolean(
+    notices &&
+      notices.every(
+        (notice) => notice.default_preference === UserConsentPreference.OPT_IN
+      )
+  );
 
 /**
  * Construct user location str to be ingested by Fides API
@@ -148,18 +159,29 @@ export const experienceIsValid = (
     );
     return false;
   }
-  if (
-    effectiveExperience.component !== ComponentType.OVERLAY &&
-    effectiveExperience.component !== ComponentType.TCF_OVERLAY
-  ) {
+  const expConfig = effectiveExperience.experience_config;
+  if (!expConfig) {
     debugLog(
       options.debug,
-      "No experience found with overlay component. Skipping overlay initialization."
+      "No experience config found for experience. Skipping overlay initialization."
     );
     return false;
   }
   if (
-    effectiveExperience.component === ComponentType.OVERLAY &&
+    !(
+      expConfig.component === ComponentType.MODAL ||
+      expConfig.component === ComponentType.BANNER_AND_MODAL ||
+      expConfig.component === ComponentType.TCF_OVERLAY
+    )
+  ) {
+    debugLog(
+      options.debug,
+      "No experience found with modal, banner_and_modal, or tcf_overlay component. Skipping overlay initialization."
+    );
+    return false;
+  }
+  if (
+    expConfig.component === ComponentType.BANNER_AND_MODAL &&
     !(
       effectiveExperience.privacy_notices &&
       effectiveExperience.privacy_notices.length > 0
@@ -168,14 +190,6 @@ export const experienceIsValid = (
     debugLog(
       options.debug,
       `Privacy experience has no notices. Skipping overlay initialization.`
-    );
-    return false;
-  }
-  // TODO: add condition for not rendering TCF
-  if (!effectiveExperience.experience_config) {
-    debugLog(
-      options.debug,
-      "No experience config found with for experience. Skipping overlay initialization."
     );
     return false;
   }
@@ -197,7 +211,7 @@ export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie
 ): boolean => {
-  if (experience.component === ComponentType.TCF_OVERLAY) {
+  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }

@@ -1,27 +1,32 @@
 from __future__ import annotations
 
 import re
-from collections import defaultdict
 from enum import Enum
-from html import unescape
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type
 
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, or_
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.util import hybridproperty
 
-from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.models import (
+    create_historical_data_from_record,
+    dry_update_data,
+    update_if_modified,
+)
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
     System,
 )
+from fides.api.schemas.language import SupportedLanguage
 
 
 class PrivacyNoticeFramework(Enum):
@@ -36,116 +41,11 @@ class UserConsentPreference(Enum):
     tcf = "tcf"  # Overall preference set for TCF where there are numerous preferences under the single notice
 
 
-# Enum defined using functional API so we can use regions like "is"
-PrivacyNoticeRegion = Enum(
-    "PrivacyNoticeRegion",
-    [
-        ("us", "us"),  # united states
-        ("us_al", "us_al"),  # alabama
-        ("us_ak", "us_ak"),  # alaska
-        ("us_az", "us_az"),  # arizona
-        ("us_ar", "us_ar"),  # arkansas
-        ("us_ca", "us_ca"),  # california
-        ("us_co", "us_co"),  # colorado
-        ("us_ct", "us_ct"),  # connecticut
-        ("us_de", "us_de"),  # delaware
-        ("us_fl", "us_fl"),  # florida
-        ("us_ga", "us_ga"),  # georgia
-        ("us_hi", "us_hi"),  # hawaii
-        ("us_id", "us_id"),  # idaho
-        ("us_il", "us_il"),  # illinois
-        ("us_in", "us_in"),  # indiana
-        ("us_ia", "us_ia"),  # iowa
-        ("us_ks", "us_ks"),  # kansas
-        ("us_ky", "us_ky"),  # kentucky
-        ("us_la", "us_la"),  # louisiana
-        ("us_me", "us_me"),  # maine
-        ("us_md", "us_md"),  # maryland
-        ("us_ma", "us_ma"),  # massachusetts
-        ("us_mi", "us_mi"),  # michigan
-        ("us_mn", "us_mn"),  # minnesota
-        ("us_ms", "us_ms"),  # mississippi
-        ("us_mo", "us_mo"),  # missouri
-        ("us_mt", "us_mt"),  # montana
-        ("us_ne", "us_ne"),  # nebraska
-        ("us_nv", "us_nv"),  # nevada
-        ("us_nh", "us_nh"),  # new hampshire
-        ("us_nj", "us_nj"),  # new jersey
-        ("us_nm", "us_nm"),  # new mexico
-        ("us_ny", "us_ny"),  # new york
-        ("us_nc", "us_nc"),  # north carolina
-        ("us_nd", "us_nd"),  # north dakota
-        ("us_oh", "us_oh"),  # ohio
-        ("us_ok", "us_ok"),  # oklahoma
-        ("us_or", "us_or"),  # oregon
-        ("us_pa", "us_pa"),  # pennsylvania
-        ("us_ri", "us_ri"),  # rhode island
-        ("us_sc", "us_sc"),  # south carolina
-        ("us_sd", "us_sd"),  # south dakota
-        ("us_tn", "us_tn"),  # tennessee
-        ("us_tx", "us_tx"),  # texas
-        ("us_ut", "us_ut"),  # utah
-        ("us_vt", "us_vt"),  # vermont
-        ("us_va", "us_va"),  # virginia
-        ("us_wa", "us_wa"),  # washington
-        ("us_wv", "us_wv"),  # west virginia
-        ("us_wi", "us_wi"),  # wisconsin
-        ("us_wy", "us_wy"),  # wyoming
-        ("eea", "eea"),  # european economic area
-        ("be", "be"),  # belgium
-        ("bg", "bg"),  # bulgaria
-        ("cz", "cz"),  # czechia
-        ("dk", "dk"),  # denmark
-        ("de", "de"),  # germany
-        ("ee", "ee"),  # estonia
-        ("ie", "ie"),  # ireland
-        ("gr", "gr"),  # greece
-        ("es", "es"),  # spain
-        ("fr", "fr"),  # france
-        ("hr", "hr"),  # croatia
-        ("it", "it"),  # italy
-        ("cy", "cy"),  # cyprus
-        ("lv", "lv"),  # latvia
-        ("lt", "lt"),  # lithuania
-        ("lu", "lu"),  # luxembourg
-        ("hu", "hu"),  # hungary
-        ("mt", "mt"),  # malta
-        ("nl", "nl"),  # netherlands
-        ("at", "at"),  # austria
-        ("pl", "pl"),  # poland
-        ("pt", "pt"),  # portugal
-        ("ro", "ro"),  # romania
-        ("si", "si"),  # slovenia
-        ("sk", "sk"),  # slovakia
-        ("fi", "fi"),  # finland
-        ("se", "se"),  # sweden
-        ("gb", "gb"),  # great britain
-        ("gb_eng", "gb_eng"),  # england
-        ("gb_sct", "gb_sct"),  # scotland
-        ("gb_wls", "gb_wls"),  # wales
-        ("gb_nir", "gb_nir"),  # northern ireland
-        ("is", "is"),  # iceland
-        ("no", "no"),  # norway
-        ("li", "li"),  # liechtenstein
-        ("ca", "ca"),  # canada
-        ("ca_ab", "ca_ab"),  # alberta
-        ("ca_bc", "ca_bc"),  # british columbia
-        ("ca_mb", "ca_mb"),  # manitoba
-        ("ca_nb", "ca_nb"),  # new brunswick
-        ("ca_nl", "ca_nl"),  # newfoundland and labrador
-        ("ca_ns", "ca_ns"),  # nova scotia
-        ("ca_on", "ca_on"),  # ontario
-        ("ca_pe", "ca_pe"),  # prince edward island
-        ("ca_qc", "ca_qc"),  # quebec
-        ("ca_sk", "ca_sk"),  # saskatchewan
-        ("ca_nt", "ca_nt"),  # northwest territories
-        ("ca_nu", "ca_nu"),  # nunavut
-        ("ca_yt", "ca_yt"),  # yukon
-    ],
-)
-
-
 class ConsentMechanism(Enum):
+    """
+    Enum is not formalized in the DB because it may be subject to frequent change
+    """
+
     opt_in = "opt_in"
     opt_out = "opt_out"
     notice_only = "notice_only"
@@ -163,17 +63,10 @@ class EnforcementLevel(Enum):
 
 class PrivacyNoticeBase:
     """
-    This class contains the common fields between PrivacyNoticeTemplate, PrivacyNotice, and PrivacyNoticeHistory
+    This class contains the common fields between PrivacyNoticeTemplate, PrivacyNotice, and PrivacyNoticeHistory.
+    These fields are not translated.
     """
 
-    name = Column(String, nullable=False)
-    description = Column(String)  # User-facing description
-    internal_description = Column(String)  # Visible to internal users only
-    regions = Column(
-        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
-        index=True,
-        nullable=False,
-    )
     consent_mechanism = Column(EnumColumn(ConsentMechanism), nullable=False)
     data_uses = Column(
         ARRAY(String),
@@ -181,16 +74,32 @@ class PrivacyNoticeBase:
         server_default="{}",
         default=dict,
     )  # a list of `fides_key`s of `DataUse` records
-    enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
+
     disabled = Column(Boolean, nullable=False, default=False)
+    enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
+    framework = Column(String)
+    gpp_field_mapping = Column(MutableList.as_mutable(JSONB), index=False, unique=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
-    displayed_in_privacy_center = Column(Boolean, nullable=False, default=False)
-    displayed_in_overlay = Column(Boolean, nullable=False, default=False)
-    displayed_in_api = Column(Boolean, nullable=False, default=False)
+    internal_description = Column(String)  # Visible to internal users only
+    name = Column(String, nullable=False)
     notice_key = Column(String, nullable=False)
-    framework = Column(String, nullable=True)
-    gpp_field_mapping = Column(
-        MutableList.as_mutable(JSONB), index=False, unique=False, nullable=True
+
+    description = Column(
+        String
+    )  # TODO will be removed from PrivacyNoticeTemplate and PrivacyNotice in favor of NoticeTranslation.
+    displayed_in_privacy_center = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed in favor of configuring this Experience-side
+    displayed_in_overlay = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed in favor of configuring this Experience-side
+    displayed_in_api = Column(
+        Boolean, nullable=False, default=False
+    )  # TODO will be removed in favor of configuring this Experience-side
+    regions = Column(  # TODO will be removed in favor of configuring this on the Experience-side
+        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
+        index=True,
+        nullable=True,
     )
 
     @property
@@ -218,37 +127,27 @@ class PrivacyNoticeBase:
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
         return FidesKey(FidesKey.validate(notice_key))
 
+
+class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
+    """
+    This table contains the out-of-the-box Privacy Notice Templates that are shipped with Fides
+    """
+
+    # All out-of-the-box Notice Translations, stored as a list of JSON
+    translations = Column(ARRAY(JSONB))
+
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """
-        A utility method to get an updated object without saving it to the db.
+        A utility method to dry update the PrivacyNoticeTemplate
 
         This is used to see what an object update would look like, in memory,
         without actually persisting the update to the db
         """
-        # Update our attributes with values in data
-        cloned_attributes = self.__dict__.copy()
-        for key, val in data.items():
-            cloned_attributes[key] = val
-
-        # remove protected fields from the cloned dict
-        cloned_attributes.pop("_sa_instance_state")
+        updated_attributes: Dict = dry_update_data(resource=self, data_updates=data)
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
-        return PrivacyNotice(**cloned_attributes)
-
-    def validate_enabled_has_data_uses(self) -> None:
-        """Validated that enabled privacy notices have data uses"""
-        if not self.disabled and not self.data_uses:
-            raise ValidationError(
-                "A privacy notice must have at least one data use assigned in order to be enabled."
-            )
-
-
-class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
-    """
-    This table contains the out-of-the-box Privacy Notices that are shipped with Fides
-    """
+        return PrivacyNoticeTemplate(**updated_attributes)
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
@@ -260,23 +159,25 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     origin = Column(
         String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
     )  # pointer back to the PrivacyNoticeTemplate
-    version = Column(Float, nullable=False, default=1.0)
+    version = Column(
+        Float, nullable=False, default=1.0
+    )  # TODO Pending Removal.  This is now only on PrivacyNoticeHistory.
 
-    histories = relationship(
-        "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
+    translations: RelationshipProperty[List[NoticeTranslation]] = relationship(
+        "NoticeTranslation",
+        backref="privacy_notice",
+        lazy="selectin",
+        order_by="NoticeTranslation.created_at",
     )
 
-    @hybridproperty
-    def privacy_notice_history_id(self) -> Optional[str]:
-        """Convenience property that returns the historical privacy notice history id for the current version.
+    # Forward declaration to avoid circular import errors
+    PrivacyExperienceConfig = "PrivacyExperienceConfig"
 
-        Note that there are possibly many historical records for the given notice, this just returns the current
-        corresponding historical record.
-        """
-        history: PrivacyNoticeHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
-            version=self.version
-        ).first()
-        return history.id if history else None
+    experience_configs = relationship(
+        PrivacyExperienceConfig,
+        secondary="experiencenotices",
+        back_populates="privacy_notices",
+    )
 
     @hybridproperty
     def default_preference(self) -> UserConsentPreference:
@@ -325,6 +226,28 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 return True
         return False
 
+    @property
+    def configured_regions(self) -> List[PrivacyNoticeRegion]:
+        """Convenience property to look up which regions are using these Notices."""
+        from fides.api.models.privacy_experience import (
+            ExperienceNotices,
+            PrivacyExperience,
+        )
+
+        db = Session.object_session(self)
+        configured_regions = (
+            db.query(PrivacyExperience.region)
+            .join(
+                ExperienceNotices,
+                PrivacyExperience.experience_config_id
+                == ExperienceNotices.experience_config_id,
+            )
+            .filter(ExperienceNotices.notice_id == self.id)
+            .group_by(PrivacyExperience.region)
+            .order_by(PrivacyExperience.region.asc())
+        )
+        return [region[0] for region in configured_regions]
+
     @classmethod
     def create(
         cls: Type[PrivacyNotice],
@@ -333,123 +256,236 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         data: dict[str, Any],
         check_name: bool = False,
     ) -> PrivacyNotice:
-        created = super().create(db=db, data=data, check_name=check_name)
+        """
+        Creates a Privacy Notice and then a NoticeTranslation record for each supplied Translation.
 
-        # create the history after the initial object creation succeeds, to avoid
-        # writing history if the creation fails and so that we can get the generated ID
-        data.pop("id", None)
-        history_data = {**data, "privacy_notice_id": created.id}
-        PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
+        - For each Notice translation, we also create a PrivacyNoticeHistory record which versions details
+        from both the Notice and the Translation itself for auditing purposes.
+        - Privacy preferences are saved against the PrivacyNoticeHistory record which contains all the info
+        about the notice and the translation to which the user supplied a consent preference.
+        """
+        translations = data.pop("translations", []) or []
+        created = super().create(db=db, data=data, check_name=check_name)
+        data.pop(
+            "id", None
+        )  # Default Notices have id specified but we don't want to use the same id for the historical record
+
+        for translation_data in translations:
+            # Create the Notice Translation
+            translation = NoticeTranslation.create(
+                db, data={**translation_data, "privacy_notice_id": created.id}
+            )
+            # Take a snapshot of the Privacy Notice and the Notice Translation combined. Privacy preferences
+            # are saved against this record.
+            PrivacyNoticeHistory.create(
+                db,
+                data={**data, **translation_data, "translation_id": translation.id},
+                check_name=False,
+            )
+
         return created
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyNotice:
         """
-        Overrides the base update method to automatically bump the version of the
-        PrivacyNotice record and also create a new PrivacyNoticeHistory entry
+        Updates the Privacy Notice and its translations.
+
+        - Upserts or deletes supplied translations to match translations in the request
+        - For each remaining translation, create a historical record if the base notice
+        or translation changed.
         """
-        resource, updated = update_if_modified(self, db=db, data=data)
+        request_translations = data.pop("translations", [])
 
-        if updated:
-            history_data = create_historical_data_from_record(resource)
-            history_data["privacy_notice_id"] = resource.id
-            PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
+        # Performs a patch update of the base privacy notice
+        base_notice_updated: bool = update_if_modified(self, db=db, data=data)
 
-        return resource  # type: ignore[return-value]
+        for translation_data in request_translations:
+            existing_translation: Optional[
+                NoticeTranslation
+            ] = self.get_translation_by_language(db, translation_data.get("language"))
 
+            if existing_translation:
+                translation: NoticeTranslation = existing_translation
+                # Performs a patch update of the existing translation
+                translation_updated: bool = update_if_modified(  # type: ignore[attr-defined]
+                    existing_translation,
+                    db=db,
+                    data={**translation_data, "privacy_notice_id": self.id},
+                )
+            else:
+                translation_updated = True
+                # Creates a new translation
+                translation = NoticeTranslation.create(
+                    db,
+                    data={**translation_data, "privacy_notice_id": self.id},
+                )
 
-PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
+            if base_notice_updated or translation_updated:
+                create_historical_record_for_notice_and_translation(
+                    db=db, privacy_notice=self, notice_translation=translation
+                )
 
+        # Removes any translations not supplied in the request from the Notice
+        delete_notice_translations(
+            db, privacy_notice=self, request_translations=request_translations
+        )
 
-def check_conflicting_notice_keys(
-    new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
-    existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
-    ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
-) -> None:
-    """
-    Checks to see if new notice keys will conflict with any existing notice keys for a specific region
-    """
-    # Map regions to existing notice key, notice name
-    notice_keys_by_region: Dict[
-        PrivacyNoticeRegion, List[Tuple[str, str]]
-    ] = defaultdict(list)
-    for privacy_notice in existing_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
-            continue
-        for region in privacy_notice.regions:
-            notice_keys_by_region[PrivacyNoticeRegion(region)].append(
-                (privacy_notice.notice_key, privacy_notice.name)
+        return self  # type: ignore[return-value]
+
+    def dry_update(self, *, data: dict[str, Any]) -> PrivacyNotice:
+        """
+        A utility method to get an updated object without saving it to the db.
+
+        This is used to see what an object update would look like, in memory,
+        without actually persisting the update to the db
+        """
+        updated_attributes: Dict = dry_update_data(resource=self, data_updates=data)
+
+        # This relationship needs to be removed before the dry_update
+        # to prevent the dry update from being added to Session.new
+        updated_attributes.pop("translations", [])
+
+        # create a new object with the updated attribute data to keep this
+        # ORM object (i.e., `self`) pristine
+        return PrivacyNotice(**updated_attributes)
+
+    def get_translation_by_language(
+        self, db: Session, language: Optional[SupportedLanguage]
+    ) -> Optional[NoticeTranslation]:
+        """Lookup a translation on a Privacy Notice by language if it exists"""
+        if not language:
+            # Shouldn't be possible, but just in case
+            return None
+        return (
+            db.query(NoticeTranslation)
+            .filter(
+                NoticeTranslation.language == language,
+                NoticeTranslation.privacy_notice_id == self.id,
             )
-
-    for privacy_notice in new_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
-            # Skip validation if the notice is disabled
-            continue
-        # check each of the incoming notice's regions
-        for region in privacy_notice.regions:
-            region_notice_keys = notice_keys_by_region[PrivacyNoticeRegion(region)]
-            # check the incoming notice keys
-            for notice_key, notice_name in region_notice_keys:
-                if notice_key == privacy_notice.notice_key:
-                    raise ValidationError(
-                        message=f"Privacy Notice '{unescape(notice_name)}' has already assigned notice key '{notice_key}' to region '{region}'"
-                    )
-            # add the new notice key to our map
-            region_notice_keys.append((privacy_notice.notice_key, privacy_notice.name))
+            .first()
+        )
 
 
-def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) -> bool:
-    """Data use check that prevents grandparent/parent/child, but allows siblings, aunt/child, etc.
-    Check needs to happen in both directions.
-    This assumes the supplied uses are on notices in the same region.
-    """
-    return existing_use.startswith(new_use) or new_use.startswith(existing_use)
+class NoticeTranslationBase:
+    """Base fields for Notice Translations"""
+
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [i.value for i in x],
+        ),
+        nullable=False,
+    )
+    title = Column(String, nullable=False)
+    description = Column(String)
 
 
-class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
-    """
-    An "audit table" tracking outdated versions of `PrivacyNotice` records whose
-    "current" versions are stored in the `PrivacyNotice` table/model
-    """
-
-    origin = Column(
-        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
-    )  # pointer back to the PrivacyNoticeTemplate
-    version = Column(Float, nullable=False, default=1.0)
+class NoticeTranslation(NoticeTranslationBase, Base):
+    """Available translations saved for a given Privacy Notice"""
 
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
 
+    histories: RelationshipProperty[AppenderQuery] = relationship(
+        "PrivacyNoticeHistory",
+        backref="notice_translation",
+        lazy="dynamic",
+        order_by="PrivacyNoticeHistory.created_at",
+    )
 
-def update_if_modified(
-    resource: Base, db: Session, *, data: dict[str, Any]
-) -> Tuple[Base, bool]:
-    """Update the resource and increment its version if applicable.
+    __table_args__ = (
+        UniqueConstraint("language", "privacy_notice_id", name="notice_translation"),
+    )
 
-    Return the updated resource and whether it was modified (which determines if we should create
-    a corresponding historical record).
+    @property
+    def version(self) -> Optional[float]:
+        """Convenience property that returns the latest translation version number for this notice"""
+        return (
+            self.privacy_notice_history.version if self.privacy_notice_history else None  # type: ignore[return-value]
+        )
 
-    Currently used for PrivacyNotice, PrivacyExperience, and PrivacyExperienceConfig models.
+    @property
+    def privacy_notice_history(self) -> Optional[PrivacyNoticeHistory]:
+        """Convenience property that returns the privacy notice history for the latest version.
+
+        Note that there are possibly many historical records for the notice translation, this just returns the current
+        corresponding historical record.
+        """
+        # Histories are sorted at the relationship level
+        return self.histories[-1] if self.histories.count() else None
+
+    @property
+    def privacy_notice_history_id(self) -> Optional[str]:
+        """Convenience property that returns the privacy notice history id for the current version.
+
+        Note that there are possibly many historical records for the given notice translation, this just returns the current
+        corresponding historical record.
+        """
+        return self.privacy_notice_history.id if self.privacy_notice_history else None
+
+
+class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     """
-    # run through potential updates now
-    for key, value in data.items():
-        setattr(resource, key, value)
+    An "audit table" stores all versions of `PrivacyNotice` + `NoticeTranslations`.
 
-    if db.is_modified(resource):
-        # on any update to a privacy experience record, its version must be incremented
-        # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
-        resource.version = float(resource.version) + 1.0  # type: ignore
-        resource.save(db)
-        return resource, True
+    - When a Privacy Notice and/or its translations are updated, each translation has a PrivacyNoticeHistory record created.
+    Privacy preferences are saved against this notice history.
+    """
 
-    return resource, False
+    origin = Column(
+        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+    )  # pointer back to the PrivacyNoticeTemplate
+
+    translation_id = Column(
+        String, ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL")
+    )  # pointer back to the NoticeTranslation
+
+    version = Column(Float, nullable=False, default=1.0)
+
+    privacy_notice_id = Column(
+        String, ForeignKey(PrivacyNotice.id_field_path), nullable=True
+    )  # TODO Will be removed.  This now points to just the translation.
 
 
-def create_historical_data_from_record(resource: Base) -> Dict:
-    """Prep data to be saved in a historical table for record keeping"""
-    history_data = resource.__dict__.copy()
-    history_data.pop("_sa_instance_state")
-    history_data.pop("id")
-    history_data.pop("created_at")
-    history_data.pop("updated_at")
-    return history_data
+def create_historical_record_for_notice_and_translation(
+    db: Session, privacy_notice: PrivacyNotice, notice_translation: NoticeTranslation
+) -> None:
+    existing_version: float = notice_translation.version or 0.0
+    history_data: dict = create_historical_data_from_record(privacy_notice)
+    history_data.pop("translations", None)
+    updated_translation_data: dict = create_historical_data_from_record(
+        notice_translation
+    )
+    # Creates a historical record of the Notice and the translation combined. Preferences are saved
+    # against this resource.
+    PrivacyNoticeHistory.create(
+        db,
+        data={
+            **history_data,
+            **updated_translation_data,
+            "translation_id": notice_translation.id,
+            "version": existing_version + 1.0,
+        },
+        check_name=False,
+    )
+
+
+def delete_notice_translations(
+    db: Session,
+    privacy_notice: PrivacyNotice,
+    request_translations: Dict,
+) -> None:
+    """Removes any translations that are currently stored on the PrivacyNotice but not in the update request"""
+    notice_translations: List[NoticeTranslation] = privacy_notice.translations
+    translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
+        translation.language for translation in notice_translations
+    ).difference(
+        set(translation.get("language") for translation in request_translations)
+    )
+
+    db.query(NoticeTranslation).filter(
+        NoticeTranslation.language.in_(translations_to_remove),
+        NoticeTranslation.privacy_notice_id == privacy_notice.id,
+    ).delete()
+    db.commit()

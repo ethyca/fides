@@ -1,14 +1,13 @@
-import { Flex, Text } from "@fidesui/react";
+import { Text } from "@fidesui/react";
 import React from "react";
 import { CellProps } from "react-table";
 
-import { GlobeIcon } from "~/features/common/Icon";
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { EnableCell, MultiTagCell } from "~/features/common/table/";
 import { ExperienceConfigResponse } from "~/types/api";
 
 import { COMPONENT_MAP } from "./constants";
-import { usePatchExperienceConfigMutation } from "./privacy-experience.slice";
+import { useLimitedPatchExperienceConfigMutation } from "./privacy-experience.slice";
 
 export const ComponentCell = ({
   value,
@@ -19,26 +18,19 @@ export const ComponentCell = ({
 export const LocationCell = ({
   row,
   ...rest
-}: CellProps<ExperienceConfigResponse, string[]>) => {
-  if (row.original.is_default) {
-    return (
-      <Flex alignItems="center">
-        <GlobeIcon mr="2" />
-        <Text>Global</Text>
-      </Flex>
-    );
-  }
-  return <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} row={row} {...rest} />;
-};
+}: CellProps<ExperienceConfigResponse, string[]>) => (
+  <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} row={row} {...rest} />
+);
 
 export const EnablePrivacyExperienceCell = (
   cellProps: CellProps<ExperienceConfigResponse, boolean>
 ) => {
-  const [patchExperienceMutationTrigger] = usePatchExperienceConfigMutation();
+  const [limitedPatchExperienceMutationTrigger] =
+    useLimitedPatchExperienceConfigMutation();
 
   const { row } = cellProps;
   const onToggle = async (toggle: boolean) =>
-    patchExperienceMutationTrigger({
+    limitedPatchExperienceMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
     });
@@ -50,7 +42,7 @@ export const EnablePrivacyExperienceCell = (
     ? "Disabling multiple states"
     : "Disabling experience";
   const message = multipleRegions
-    ? "Warning, you are about to disable this privacy experience for multiple states. If you continue, your privacy notices will not be accessible to users in these locations."
+    ? "Warning, you are about to disable this privacy experience for multiple locations. If you continue, your privacy notices will not be accessible to users in these locations."
     : "Warning, you are about to disable this privacy experience. If you continue, your privacy notices will not be accessible to users in this location.";
 
   return (

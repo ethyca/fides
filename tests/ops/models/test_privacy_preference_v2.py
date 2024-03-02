@@ -21,12 +21,14 @@ class TestPrivacyPreference:
                 "anonymized_ip_address": "92.158.1.0",
                 "email": "test@email.com",
                 "method": "button",
-                "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
+                "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
+                    0
+                ].privacy_experience_config_history_id,
                 "privacy_experience_id": privacy_experience_privacy_center.id,
                 "preference": "opt_in",
-                "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
                     0
-                ].id,
+                ].privacy_notice_history_id,
                 "request_origin": "privacy_center",
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
@@ -39,11 +41,11 @@ class TestPrivacyPreference:
         assert preference_history_record.preference == UserConsentPreference.opt_in
         assert (
             preference_history_record.privacy_notice_history_id
-            == privacy_notice_us_ca_provide.histories[0].id
+            == privacy_notice_us_ca_provide.translations[0].histories[0].id
         )
         assert (
             preference_history_record.privacy_notice_history
-            == privacy_notice_us_ca_provide.histories[0]
+            == privacy_notice_us_ca_provide.translations[0].histories[0]
         )
 
         preference_history_record.delete(db)

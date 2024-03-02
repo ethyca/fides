@@ -2,7 +2,6 @@
   "items": [
     {
       "region": "us_ca",
-      "component": "overlay",
       "gpp_settings": {
         "enabled": true,
         "us_approach": "state",
@@ -12,66 +11,49 @@
         "enable_tcfeu_string": true
       },
       "experience_config": {
-        "accept_button_label": "Opt in to all",
-        "acknowledge_button_label": "OK",
-        "banner_enabled": "always_enabled",
-        "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
-        "disabled": false,
-        "is_default": true,
-        "privacy_policy_link_label": "Privacy Policy",
-        "privacy_policy_url": null,
-        "privacy_preferences_link_label": "Manage preferences",
-        "regions": [
-          "us_co",
-          "se",
-          "ee",
-          "pl",
-          "no",
-          "fi",
-          "lv",
-          "fr",
-          "be",
-          "bg",
-          "ro",
-          "mt",
-          "hr",
-          "us_ct",
-          "is",
-          "dk",
-          "pt",
-          "es",
-          "li",
-          "gb_eng",
-          "us_ia",
-          "at",
-          "us_ca",
-          "de",
-          "gb_sct",
-          "cy",
-          "lt",
-          "us_va",
-          "gb_wls",
-          "lu",
-          "si",
-          "ie",
-          "nl",
-          "sk",
-          "cz",
-          "it",
-          "hu",
-          "gr",
-          "gb_nir",
-          "us_ut"
+        "translations": [
+          {
+            "language": "en",
+            "accept_button_label": "Opt in to all",
+            "acknowledge_button_label": "OK",
+            "banner_description": "[banner] We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+            "banner_title": "[banner] Manage your consent preferences",
+            "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+            "is_default": true,
+            "privacy_policy_link_label": "Privacy Policy",
+            "privacy_policy_url": "https://privacy.example.com/",
+            "privacy_preferences_link_label": "Manage preferences",
+            "reject_button_label": "Opt out of all",
+            "save_button_label": "Save",
+            "title": "Manage your consent preferences",
+            "privacy_experience_config_history_id": "pri_exp-history-gpp-banner-modal-en-000"
+          },
+          {
+            "language": "es",
+            "accept_button_label": "Participar en todo",
+            "acknowledge_button_label": "Aceptar",
+            "banner_description": "[banner] Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+            "banner_title": "[banner] Administrar sus preferencias de consentimiento",
+            "description": "Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+            "is_default": true,
+            "privacy_policy_link_label": "Política de privacidad",
+            "privacy_policy_url": "https://privacy.example.com/",
+            "privacy_preferences_link_label": "Administrar preferencias",
+            "reject_button_label": "No participar en nada",
+            "save_button_label": "Guardar",
+            "title": "Administrar sus preferencias de consentimiento",
+            "privacy_experience_config_history_id": "pri_exp-history-gpp-banner-modal-es-000"
+          }
         ],
-        "reject_button_label": "Opt out of all",
-        "save_button_label": "Save",
-        "title": "Manage your consent preferences",
-        "id": "pri-7ae3-f06b-4096-970f-0bbbdef-over",
-        "component": "overlay",
-        "experience_config_history_id": "pri_a49a8154-ce8f-4ba7-a32f-668fb7b400c1",
-        "version": 1,
-        "created_at": "2023-12-06T20:45:50.357132+00:00",
-        "updated_at": "2023-12-06T20:45:50.357132+00:00"
+        "language": "en",
+        "dismissable": true,
+        "allow_language_selection": true,
+        "auto_detect_language": true,
+        "disabled": false,
+        "id": "pri_exp-gpp-banner-modal-000",
+        "component": "banner_and_modal",
+        "created_at": "2024-01-01T12:00:00.000000+00:00",
+        "updated_at": "2024-01-01T12:00:00.000000+00:00"
       },
       "tcf_purpose_consents": [],
       "tcf_purpose_legitimate_interests": [],
@@ -84,18 +66,15 @@
       "tcf_system_consents": [],
       "tcf_system_legitimate_interests": [],
       "tcf_system_relationships": [],
-      "id": "pri_3a693a0a-95cc-431e-a10b-e20086095f12",
-      "created_at": "2023-12-06T22:03:25.950052+00:00",
-      "updated_at": "2023-12-06T22:03:25.950052+00:00",
-      "show_banner": true,
+      "id": "pri_exp-gpp-000",
+      "created_at": "2024-01-01T12:00:00.000000+00:00",
+      "updated_at": "2024-01-01T12:00:00.000000+00:00",
       "privacy_notices": [
         {
           "name": "Data sales and sharing",
           "notice_key": "data_sales_sharing_gpp_us_state",
-          "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of [cross-context behavioral targeted advertising]. You can learn more about what information is used for this purpose in our privacy notice.",
           "internal_description": "Data sales and sharing (GPP, California)",
-          "origin": "pri_gpp_1",
-          "regions": ["us_ca"],
+          "origin": null,
           "consent_mechanism": "opt_out",
           "data_uses": [
             "marketing.advertising.first_party.targeted",
@@ -104,9 +83,6 @@
           "enforcement_level": "not_applicable",
           "disabled": false,
           "has_gpc_flag": false,
-          "displayed_in_privacy_center": true,
-          "displayed_in_overlay": true,
-          "displayed_in_api": false,
           "framework": "gpp_us_state",
           "gpp_field_mapping": [
             {
@@ -128,14 +104,26 @@
               ]
             }
           ],
-          "id": "pri_f4d44cff-4f92-4912-ba18-f15570bfbc28",
+          "id": "pri_notice-gpp-data-sales-000",
           "default_preference": "opt_in",
-          "created_at": "2024-01-16T20:39:01.906126+00:00",
-          "updated_at": "2024-01-16T20:41:30.396281+00:00",
-          "version": 2,
-          "privacy_notice_history_id": "pri_18d9f174-f842-4e05-9cbf-09fd9eb33e33",
+          "created_at": "2024-01-01T12:00:00.000000+00:00",
+          "updated_at": "2024-01-01T12:00:00.000000+00:00",
           "cookies": [],
-          "systems_applicable": true
+          "systems_applicable": true,
+          "translations": [
+            {
+              "language": "en",
+              "title": "Data sales and sharing",
+              "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of [cross-context behavioral targeted advertising]. You can learn more about what information is used for this purpose in our privacy notice.",
+              "privacy_notice_history_id": "pri_notice-history-gpp-data-sales-en-000"
+            },
+            {
+              "language": "es",
+              "title": "Venta e intercambio de datos",
+              "description": "Podemos transferir o compartir su información personal con terceros a cambio de una contraprestación monetaria u otro tipo de valor o con fines de publicidad dirigida en contextos cruzados. Puede ver más detalles sobre qué tipo de información se usa para este fin en nuestra política de privacidad.",
+              "privacy_notice_history_id": "pri_notice-history-gpp-data-sales-es-000"
+            }
+          ]
         }
       ],
       "gvl": {},

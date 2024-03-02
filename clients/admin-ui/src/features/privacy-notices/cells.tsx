@@ -11,8 +11,8 @@ import {
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ConsentMechanism,
+  LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeRegion,
-  PrivacyNoticeResponse,
 } from "~/types/api";
 
 import { EnableCell } from "../common/table/v2/cells";
@@ -117,7 +117,7 @@ export const PrivacyNoticeStatusCell = (cellProps: any) => {
 export const EnablePrivacyNoticeCell = ({
   row,
   getValue,
-}: CellContext<PrivacyNoticeResponse, boolean | undefined>) => {
+}: CellContext<LimitedPrivacyNoticeResponseSchema, boolean | undefined>) => {
   const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
 
   const value = getValue()!;
