@@ -1537,7 +1537,7 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_ca provide",
             "notice_key": "example_privacy_notice_us_ca_provide",
-            # no description or origin on this privacy notice to help
+            # no origin on this privacy notice to help
             # cover edge cases due to column nullability
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential"],
