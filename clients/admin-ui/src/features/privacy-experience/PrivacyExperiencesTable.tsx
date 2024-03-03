@@ -24,14 +24,17 @@ import { useEffect, useMemo } from "react";
 
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
+  CustomAssetType,
   ExperienceConfigListViewResponse,
   ScopeRegistryEnum,
 } from "~/types/api";
 
 import { PRIVACY_EXPERIENCE_ROUTE } from "../common/nav/v2/routes";
-import { useHasPermission } from "../common/Restrict";
+import Restrict, { useHasPermission } from "../common/Restrict";
+import CustomAssetUploadButton from "../custom-assets/CustomAssetUploadButton";
 import { getRegions } from "../privacy-notices/cells";
-import { EnablePrivacyExperienceCell } from "./cells";
+import { ComponentCell, EnablePrivacyExperienceCell } from "./cells";
+import JavaScriptTag from "./JavaScriptTag";
 import { useGetAllExperienceConfigsQuery } from "./privacy-experience.slice";
 
 const emptyExperienceResponse = {
@@ -49,7 +52,7 @@ const EmptyTableExperience = () => (
     spacing={4}
     borderRadius="base"
     maxW="70%"
-    data-testid="no-results-experience"
+    data-testid="empty-state"
     alignSelf="center"
     margin="auto"
   >
@@ -127,10 +130,10 @@ export const PrivacyExperiencesTable = () => {
             header: (props) => <DefaultHeaderCell value="Title" {...props} />,
           }),
           columnHelper.accessor((row) => row.component, {
-            id: "consent_mechanism",
-            cell: (props) => <DefaultCell value={props.getValue()} />,
+            id: "component",
+            cell: (props) => ComponentCell(props.getValue()),
             header: (props) => (
-              <DefaultHeaderCell value="Mechanism" {...props} />
+              <DefaultHeaderCell value="Component" {...props} />
             ),
           }),
           columnHelper.accessor((row) => row.regions, {
@@ -160,13 +163,13 @@ export const PrivacyExperiencesTable = () => {
             ),
           }),
           userCanUpdate &&
-            columnHelper.accessor((row) => row.disabled, {
-              id: "enable",
-              cell: (props) => EnablePrivacyExperienceCell(props),
-              header: (props) => (
-                <DefaultHeaderCell value="Enable" {...props} />
-              ),
-            }),
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: (props) => EnablePrivacyExperienceCell(props),
+            header: (props) => (
+              <DefaultHeaderCell value="Enable" {...props} />
+            ),
+          }),
         ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
       [userCanUpdate]
     );
@@ -197,17 +200,23 @@ export const PrivacyExperiencesTable = () => {
       <Flex flex={1} direction="column" overflow="auto">
         {userCanUpdate && (
           <TableActionBar>
-            <HStack alignItems="center" spacing={4} marginLeft="auto">
-              <NextLink href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}>
-                <Button
-                  size="xs"
-                  colorScheme="primary"
-                  data-testid="add-privacy-ecperience-btn"
-                >
-                  Create new experience
-                </Button>
-              </NextLink>
+            <HStack alignItems="center" spacing={4}>
+              <JavaScriptTag />
+              <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
+                <CustomAssetUploadButton
+                  assetType={CustomAssetType.CUSTOM_FIDES_CSS}
+                />
+              </Restrict>
             </HStack>
+            <NextLink href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}>
+              <Button
+                size="xs"
+                colorScheme="primary"
+                data-testid="add-privacy-ecperience-btn"
+              >
+                Create new experience
+              </Button>
+            </NextLink>
           </TableActionBar>
         )}
         <FidesTableV2

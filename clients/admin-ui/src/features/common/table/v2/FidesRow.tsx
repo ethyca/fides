@@ -28,7 +28,7 @@ export const FidesRow = <T,>({
           : undefined
       }
       key={row.id}
-      data-testid={`row-${row.id}`}
+      data-testid={`row-${row.original.id}`}
       backgroundColor={row.getCanSelect() ? undefined : "gray.50"}
     >
       {row.getVisibleCells().map((cell) => (

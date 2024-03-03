@@ -49,17 +49,13 @@ describe("Privacy experiences", () => {
       );
     });
 
-    it("viewers and approvers cannot toggle the enable toggle", () => {
+    it("viewers and approvers cannot see toggle the enable toggle", () => {
       [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
         (role) => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_EXPERIENCE_ROUTE);
           cy.wait("@getExperiences");
-          cy.getByTestId("toggle-Enable")
-            .first()
-            .within(() => {
-              cy.get("span").should("have.attr", "data-disabled");
-            });
+          cy.get(".toggle").should("not.exist");
         }
       );
     });
@@ -123,10 +119,10 @@ describe("Privacy experiences", () => {
 
       it("can enable an experience", () => {
         cy.getByTestId(`row-${DISABLED_EXPERIENCE_ID}`).within(() => {
-          cy.getByTestId("toggle-Enable").within(() => {
+          cy.getByTestId("toggle-switch").within(() => {
             cy.get("span").should("not.have.attr", "data-checked");
           });
-          cy.getByTestId("toggle-Enable").click();
+          cy.getByTestId("toggle-switch").click();
         });
 
         cy.wait("@patchExperience").then((interception) => {
@@ -140,10 +136,10 @@ describe("Privacy experiences", () => {
 
       it("can disable an experience with a warning", () => {
         cy.getByTestId(`row-${EXPERIENCE_ID}`).within(() => {
-          cy.getByTestId("toggle-Enable").within(() => {
+          cy.getByTestId("toggle-switch").within(() => {
             cy.get("span").should("have.attr", "data-checked");
           });
-          cy.getByTestId("toggle-Enable").click();
+          cy.getByTestId("toggle-switch").click();
         });
 
         cy.getByTestId("confirmation-modal");
