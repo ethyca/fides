@@ -79,6 +79,9 @@ export const NavSideBarLink = ({
             color: "white",
             backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
           }}
+          _focus={{
+            outline: "none"
+          }}
           data-testid={`${title}-nav-link`}
         >
           {title}
