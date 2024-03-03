@@ -1,10 +1,11 @@
 import { Text } from "@fidesui/react";
+import { CellContext } from "@tanstack/react-table";
 import React from "react";
 import { CellProps } from "react-table";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { EnableCell, MultiTagCell } from "~/features/common/table/";
-import { ExperienceConfigResponse } from "~/types/api";
+import { ExperienceConfigListViewResponse, ExperienceConfigResponse } from "~/types/api";
+import { EnableCell } from "../common/table/v2/cells";
 
 import { COMPONENT_MAP } from "./constants";
 import { useLimitedPatchExperienceConfigMutation } from "./privacy-experience.slice";
@@ -22,19 +23,20 @@ export const LocationCell = ({
   <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} row={row} {...rest} />
 );
 
-export const EnablePrivacyExperienceCell = (
-  cellProps: CellProps<ExperienceConfigResponse, boolean>
-) => {
+export const EnablePrivacyExperienceCell = ({
+  row,
+  getValue,
+}: CellContext<ExperienceConfigListViewResponse, boolean | undefined>) => {
   const [limitedPatchExperienceMutationTrigger] =
     useLimitedPatchExperienceConfigMutation();
 
-  const { row } = cellProps;
   const onToggle = async (toggle: boolean) =>
     limitedPatchExperienceMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
     });
 
+  const value = getValue()!;
   const { regions } = row.original;
   const multipleRegions = regions ? regions.length > 1 : false;
 
@@ -46,8 +48,8 @@ export const EnablePrivacyExperienceCell = (
     : "Warning, you are about to disable this privacy experience. If you continue, your privacy notices will not be accessible to users in this location.";
 
   return (
-    <EnableCell<ExperienceConfigResponse>
-      {...cellProps}
+    <EnableCell
+      value={value}
       onToggle={onToggle}
       title={title}
       message={message}
