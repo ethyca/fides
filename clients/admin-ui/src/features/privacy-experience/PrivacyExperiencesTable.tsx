@@ -9,7 +9,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  BadgeCell,
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
@@ -24,9 +23,12 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
-import { ExperienceConfigListViewResponse, ScopeRegistryEnum } from "~/types/api";
-import { PRIVACY_EXPERIENCE_ROUTE } from "../common/nav/v2/routes";
+import {
+  ExperienceConfigListViewResponse,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
+import { PRIVACY_EXPERIENCE_ROUTE } from "../common/nav/v2/routes";
 import { useHasPermission } from "../common/Restrict";
 import { getRegions } from "../privacy-notices/cells";
 import { EnablePrivacyExperienceCell } from "./cells";
@@ -56,8 +58,8 @@ const EmptyTableExperience = () => (
         No privacy experiences found.
       </Text>
       <Text fontSize="sm">
-        Click &quot;Create new experience&quot; to add your first privacy experience
-        to Fides.
+        Click &quot;Create new experience&quot; to add your first privacy
+        experience to Fides.
       </Text>
     </VStack>
     <NextLink href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}>
@@ -158,17 +160,14 @@ export const PrivacyExperiencesTable = () => {
             ),
           }),
           userCanUpdate &&
-          columnHelper.accessor((row) => row.disabled, {
-            id: "enable",
-            cell: (props) => EnablePrivacyExperienceCell(props),
-            header: (props) => (
-              <DefaultHeaderCell value="Enable" {...props} />
-            ),
-          }),
-        ].filter(Boolean) as ColumnDef<
-          ExperienceConfigListViewResponse,
-          any
-        >[],
+            columnHelper.accessor((row) => row.disabled, {
+              id: "enable",
+              cell: (props) => EnablePrivacyExperienceCell(props),
+              header: (props) => (
+                <DefaultHeaderCell value="Enable" {...props} />
+              ),
+            }),
+        ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
       [userCanUpdate]
     );
 

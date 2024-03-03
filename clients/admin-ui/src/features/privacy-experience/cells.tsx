@@ -1,27 +1,10 @@
-import { Text } from "@fidesui/react";
 import { CellContext } from "@tanstack/react-table";
 import React from "react";
-import { CellProps } from "react-table";
 
-import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { ExperienceConfigListViewResponse, ExperienceConfigResponse } from "~/types/api";
+import { ExperienceConfigListViewResponse } from "~/types/api";
+
 import { EnableCell } from "../common/table/v2/cells";
-
-import { COMPONENT_MAP } from "./constants";
 import { useLimitedPatchExperienceConfigMutation } from "./privacy-experience.slice";
-
-export const ComponentCell = ({
-  value,
-}: CellProps<ExperienceConfigResponse, string>) => (
-  <Text>{COMPONENT_MAP.get(value) ?? value}</Text>
-);
-
-export const LocationCell = ({
-  row,
-  ...rest
-}: CellProps<ExperienceConfigResponse, string[]>) => (
-  <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} row={row} {...rest} />
-);
 
 export const EnablePrivacyExperienceCell = ({
   row,
