@@ -82,7 +82,7 @@ def upgrade():
     # Resetting PrivacyNoticeHistory language back to non-nullable after data migration
     op.alter_column(
         "privacynoticehistory",
-        "title",
+        "language",
         existing_type=sa.VARCHAR(),
         nullable=False,
     )
