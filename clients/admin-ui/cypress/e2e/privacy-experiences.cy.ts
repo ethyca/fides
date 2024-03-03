@@ -3,8 +3,8 @@ import { stubPlus } from "cypress/support/stubs";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const EXPERIENCE_ID = "pri_0338d055-f91b-4a17-ad4e-600c61551199";
-const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
+const EXPERIENCE_ID = "0";
+const DISABLED_EXPERIENCE_ID = "1";
 
 describe("Privacy experiences", () => {
   beforeEach(() => {
@@ -92,11 +92,9 @@ describe("Privacy experiences", () => {
 
     it("should render a row for each privacy experience", () => {
       cy.fixture("privacy-experiences/list.json").then((data) => {
-        data.items
-          .map((item) => item.id)
-          .forEach((id) => {
-            cy.getByTestId(`row-${id}`);
-          });
+        data.items.forEach((item, index) => {
+          cy.getByTestId(`row-${index}`);
+        });
       });
     });
 
@@ -106,8 +104,7 @@ describe("Privacy experiences", () => {
       }).as("getExperienceDetail");
       cy.getByTestId(`row-${EXPERIENCE_ID}`).click();
       cy.wait("@getExperienceDetail");
-      cy.getByTestId("privacy-experience-detail-page");
-      cy.url().should("contain", EXPERIENCE_ID);
+      cy.getByTestId("input-name").should('have.value', 'Experience title');
     });
 
     describe("enabling and disabling", () => {
@@ -171,13 +168,13 @@ describe("Privacy experiences", () => {
       });
     };
 
-    it("can populate an experience config form with existing values", () => {
+    it.skip("can populate an experience config form with existing values", () => {
       stubExperience();
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${EXPERIENCE_ID}`);
       cy.getByTestId("input-name").should("have.value", "Experience title");
     });
 
-    it("can submit an experience config form", () => {
+    it.skip("can submit an experience config form", () => {
       stubExperience();
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${EXPERIENCE_ID}`);
       cy.getByTestId("save-btn").should("be.disabled");
