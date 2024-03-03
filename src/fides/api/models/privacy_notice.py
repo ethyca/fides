@@ -139,7 +139,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     """
 
     origin = Column(
-        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+        String,
+        ForeignKey(PrivacyNoticeTemplate.id_field_path),
     )  # pointer back to the PrivacyNoticeTemplate
 
     translations: RelationshipProperty[List[NoticeTranslation]] = relationship(
@@ -413,14 +414,16 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     """
 
     origin = Column(
-        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+        String,
+        ForeignKey(PrivacyNoticeTemplate.id_field_path),
     )  # pointer back to the PrivacyNoticeTemplate
 
     translation_id = Column(
         String,
         ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL"),
         index=True,
-    )  # pointer back to the NoticeTranslation
+    )  # pointer back to the NoticeTranslation.  Set to null if the translation is deleted, but
+    # we retain this record for consent reporting
 
     version = Column(Float, nullable=False, default=1.0)
 

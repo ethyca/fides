@@ -124,6 +124,9 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     translations = Column(
         ARRAY(JSONB)
     )  # A list of all available out of the box translations
+    name = Column(
+        String, nullable=False
+    )  # Overriding PrivacyExperienceConfigBase to make non-nullable
 
 
 class ExperienceTranslationBase:
@@ -162,6 +165,9 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     - Translations, Notices, and Regions (via Privacy Experiences) are linked to this resource.
     """
 
+    name = Column(
+        String, nullable=False
+    )  # Overriding PrivacyExperienceConfigBase to make non-nullable
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
     disabled = Column(
         Boolean, nullable=False, default=True, index=True
@@ -432,7 +438,7 @@ class PrivacyExperienceConfigHistory(
         String,
         ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL"),
         index=True,
-    )
+    )  # If a translation is deleted, this is set to null, but the overall record remains in the database for reporting purposes
 
     version = Column(Float, nullable=False, default=1.0)
 

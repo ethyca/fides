@@ -296,9 +296,6 @@ class TestPrivacyNoticeModel:
         assert len(PrivacyNoticeHistory.all(db)) == 1
         privacy_notice_updated_at = privacy_notice.updated_at
 
-        orig_count = db.query(PrivacyNotice).count()
-        original_translations_count = db.query(NoticeTranslation).count()
-
         dry_update_data = {
             "translations": [
                 {

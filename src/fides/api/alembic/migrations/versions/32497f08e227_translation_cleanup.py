@@ -1,4 +1,4 @@
-"""translation_cleanup
+"""translation_cleanup Cleans up deprecated tables and fields after multitranslation migration
 
 Revision ID: 32497f08e227
 Revises: 0c65325843bd
@@ -17,6 +17,9 @@ depends_on = None
 
 
 def upgrade():
+    op.drop_column("privacypreferencehistory", "privacy_experience_id")
+    op.drop_column("servednoticehistory", "privacy_experience_id")
+
     op.drop_index(
         "ix_privacyexperienceconfig_banner_enabled",
         table_name="privacyexperienceconfig",
@@ -100,8 +103,22 @@ def upgrade():
         nullable=False,
     )
 
+    op.alter_column(
+        "experienceconfigtemplate", "name", existing_type=sa.VARCHAR(), nullable=False
+    )
+    op.alter_column(
+        "privacyexperienceconfig", "name", existing_type=sa.VARCHAR(), nullable=False
+    )
+
 
 def downgrade():
+    op.alter_column(
+        "privacyexperienceconfig", "name", existing_type=sa.VARCHAR(), nullable=True
+    )
+    op.alter_column(
+        "experienceconfigtemplate", "name", existing_type=sa.VARCHAR(), nullable=True
+    )
+
     op.alter_column(
         "privacyexperience",
         "experience_config_id",
@@ -349,4 +366,15 @@ def downgrade():
         ["banner_enabled"],
         unique=False,
     )
-    # ### end Alembic commands ###
+    op.add_column(
+        "servednoticehistory",
+        sa.Column(
+            "privacy_experience_id", sa.VARCHAR(), autoincrement=False, nullable=True
+        ),
+    )
+    op.add_column(
+        "privacypreferencehistory",
+        sa.Column(
+            "privacy_experience_id", sa.VARCHAR(), autoincrement=False, nullable=True
+        ),
+    )

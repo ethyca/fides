@@ -2,10 +2,7 @@ from copy import copy
 
 import pytest
 
-from fides.api.models.location_regulation_selections import (
-    LocationRegulationSelections,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_experience import (
     ComponentType,
     ExperienceTranslation,
@@ -577,6 +574,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
+                "name": "My PC Config",
                 "component": "privacy_center",
                 "translations": [{"language": "en", "title": "Control your privacy"}],
             },
@@ -619,6 +617,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
+                "name": "My other PC Config",
                 "component": "privacy_center",
                 "translations": [{"language": "en", "title": "Control your privacy"}],
             },
@@ -665,6 +664,7 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
+                "name": "My other PC config",
                 "component": "privacy_center",
                 "translations": [{"language": "en", "title": "Control your privacy"}],
             },
