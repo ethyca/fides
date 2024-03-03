@@ -104,7 +104,7 @@ describe("Privacy experiences", () => {
       }).as("getExperienceDetail");
       cy.getByTestId(`row-${EXPERIENCE_ID}`).click();
       cy.wait("@getExperienceDetail");
-      cy.getByTestId("input-name").should('have.value', 'Experience title');
+      cy.getByTestId("input-name").should("have.value", "Experience title");
     });
 
     describe("enabling and disabling", () => {
