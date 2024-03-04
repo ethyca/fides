@@ -152,7 +152,7 @@ export const UnconnectedMainSideNav = ({
     maxWidth={NAV_WIDTH}
     backgroundColor={NAV_BACKGROUND_COLOR}
     height="100%"
-    overflow="scroll"
+    overflow="auto"
   >
     <VStack
       as="nav"
