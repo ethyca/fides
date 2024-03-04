@@ -1,4 +1,4 @@
-import { FidesOptions, PrivacyExperience } from "fides-js";
+import { FidesOptions, PrivacyExperience, PrivacyNotice } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
 describe("Consent i18n", () => {
@@ -411,6 +411,69 @@ describe("Consent i18n", () => {
       testBannerLocalization(ENGLISH_BANNER);
       openAndTestModalLocalization(ENGLISH_MODAL);
       testModalNoticesLocalization(ENGLISH_NOTICES);
+    });
+  });
+
+  describe.only(`when notices are missing translations that are available in the experience for the correct language (${SPANISH_LOCALE})`, () => {
+    beforeEach(() => {
+      // Visit the demo in Spanish, but remove all non-English translations from the Advertising notice
+      visitDemoWithI18n({
+        navigatorLanguage: SPANISH_LOCALE,
+        globalPrivacyControl: true,
+        fixture: "experience_banner_modal.json",
+        overrideExperience: (experience: any) => {
+          /* eslint-disable no-param-reassign */
+          // Modify the first notice (Advertising) and delete all non-English translations
+          const notices: PrivacyNotice[] = experience.privacy_notices;
+          const adsNotice = notices[0];
+          cy.wrap(adsNotice).should("have.property", "id", "pri_notice-advertising-000");
+          adsNotice.translations = adsNotice.translations.filter(e => e.language === "en");
+          return experience;
+          /* eslint-enable no-param-reassign */
+        },
+      });
+    });
+
+    it(`falls back to showing notices in the default locale (${ENGLISH_LOCALE}) and the experience in the correct locale (${SPANISH_LOCALE})`, () => {
+      testBannerLocalization(SPANISH_BANNER);
+      openAndTestModalLocalization(SPANISH_MODAL);
+      testModalNoticesLocalization([
+        ENGLISH_NOTICES[0], // fallback to English translation for first (Advertising) notice
+        SPANISH_NOTICES[1],
+        SPANISH_NOTICES[2],
+      ]);
+    });
+
+    it(`reports notices served and preferences saved using the correct privacy_notice_history_id for the default locale (${ENGLISH_LOCALE})`, () => {
+      /**
+       * Expect the notice history IDs used should be a mixture of English and Spanish notices:
+       * 1) English advertising notice (fallback for missing Spanish translation)
+       * 2) Spanish analytics notice (correct Spanish translation)
+       * 3) Spanish essential notice (correct Spanish translation)
+       */
+      const EXPECTED_NOTICE_HISTORY_IDS = [
+        "pri_notice-history-advertising-en-000", // English (en)
+        "pri_notice-history-analytics-es-000", // Spanish (es)
+        "pri_notice-history-essential-es-000", // Spanish (es)
+      ];
+
+      // Open the modal and test the "notices served" API
+      openAndTestModalLocalization(SPANISH_MODAL);
+      cy.wait("@patchNoticesServed").then((interception) => {
+        const { privacy_notice_history_ids } = interception.request.body;
+        expect(privacy_notice_history_ids).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+      });
+
+      // Accept all notices and test the "privacy preferences" API
+      cy.get("#fides-modal .fides-accept-all-button").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { preferences, privacy_experience_id } = interception.request.body;
+        // TODO (PROD-1744): update test after fixing preference save bug
+        // expect(privacy_experience_config_history_id).to.eq("pri_exp-history-banner-modal-en-000");
+        expect(privacy_experience_id).to.eq("pri_exp-history-banner-modal-en-000");
+        const noticeHistoryIDs = preferences.map((e: any) => e.privacy_notice_history_id);
+        expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+      });
     });
   });
 
