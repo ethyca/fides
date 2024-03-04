@@ -93,7 +93,7 @@ class PrivacyExperienceConfigBase:
     """
 
     allow_language_selection = Column(
-        Boolean, nullable=False, default=True, server_default="t"
+        Boolean, nullable=False, default=False, server_default="f"
     )
     auto_detect_language = Column(
         Boolean, nullable=False, default=True, server_default="t"

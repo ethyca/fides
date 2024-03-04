@@ -48,7 +48,7 @@ def upgrade():
             "auto_detect_language", sa.Boolean(), server_default="t", nullable=False
         ),
         sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
+            "allow_language_selection", sa.Boolean(), server_default="f", nullable=False
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -193,7 +193,7 @@ def upgrade():
     op.add_column(
         "privacyexperienceconfig",
         sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
+            "allow_language_selection", sa.Boolean(), server_default="f", nullable=False
         ),
     )
     op.add_column(
@@ -242,7 +242,7 @@ def upgrade():
     op.add_column(
         "privacyexperienceconfighistory",
         sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
+            "allow_language_selection", sa.Boolean(), server_default="f", nullable=False
         ),
     )
     op.add_column(
