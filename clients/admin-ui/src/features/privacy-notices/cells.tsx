@@ -8,11 +8,12 @@ import {
   FRAMEWORK_MAP,
   MECHANISM_MAP,
 } from "~/features/privacy-notices/constants";
-import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
+import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ConsentMechanism,
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeRegion,
+  PrivacyNoticeResponse,
 } from "~/types/api";
 
 import { EnableCell } from "../common/table/v2/cells";
@@ -76,7 +77,10 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
         "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
     },
   };
-export const PrivacyNoticeStatusCell = (cellProps: any) => {
+
+export const PrivacyNoticeStatusCell = (
+  cellProps: CellContext<PrivacyNoticeResponse, boolean>
+) => {
   const { row } = cellProps;
 
   let tagValue: TagNames | undefined;
@@ -118,16 +122,14 @@ export const EnablePrivacyNoticeCell = ({
   row,
   getValue,
 }: CellContext<LimitedPrivacyNoticeResponseSchema, boolean | undefined>) => {
-  const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
+  const [patchNoticeMutationTrigger] = useLimitedPatchPrivacyNoticesMutation();
 
   const value = getValue()!;
   const onToggle = async (toggle: boolean) =>
-    patchNoticeMutationTrigger([
-      {
-        id: row.original.id,
-        disabled: !toggle,
-      },
-    ]);
+    patchNoticeMutationTrigger({
+      id: row.original.id,
+      disabled: !toggle,
+    });
 
   const {
     systems_applicable: systemsApplicable,
