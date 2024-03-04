@@ -36,9 +36,9 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-import { PRIVACY_NOTICES_ROUTE } from "../common/nav/v2/routes";
-import { useHasPermission } from "../common/Restrict";
-import { FRAMEWORK_MAP } from "./constants";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { useHasPermission } from "~/features/common/Restrict";
+import { FRAMEWORK_MAP } from "~/features/privacy-notices/constants";
 
 const emptyNoticeResponse = {
   items: [],
@@ -123,7 +123,7 @@ export const PrivacyNoticesTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const inventoryColumns: ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[] =
+  const privacyNoticeColumns: ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[] =
     useMemo(
       () =>
         [
@@ -172,13 +172,13 @@ export const PrivacyNoticesTable = () => {
             ),
           }),
           userCanUpdate &&
-            columnHelper.accessor((row) => row.disabled, {
-              id: "enable",
-              cell: (props) => EnablePrivacyNoticeCell(props),
-              header: (props) => (
-                <DefaultHeaderCell value="Enable" {...props} />
-              ),
-            }),
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: (props) => EnablePrivacyNoticeCell(props),
+            header: (props) => (
+              <DefaultHeaderCell value="Enable" {...props} />
+            ),
+          }),
         ].filter(Boolean) as ColumnDef<
           LimitedPrivacyNoticeResponseSchema,
           any
@@ -190,7 +190,7 @@ export const PrivacyNoticesTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    columns: inventoryColumns,
+    columns: privacyNoticeColumns,
     manualPagination: true,
     data,
     state: {

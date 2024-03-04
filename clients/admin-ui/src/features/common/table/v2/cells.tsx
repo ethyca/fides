@@ -17,9 +17,9 @@ import { ChangeEvent, FC, ReactNode } from "react";
 
 import { RTKResult } from "~/types/errors";
 
-import { getErrorMessage, isErrorResult } from "../../helpers";
-import ConfirmationModal from "../../modals/ConfirmationModal";
-import { errorToastParams } from "../../toast";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { errorToastParams } from "~/features/common/toast";
 
 export const DefaultCell = ({
   value,
