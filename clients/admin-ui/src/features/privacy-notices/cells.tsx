@@ -11,8 +11,8 @@ import {
 import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ConsentMechanism,
+  LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeRegion,
-  PrivacyNoticeResponse,
 } from "~/types/api";
 
 import { EnableCell } from "../common/table/v2/cells";
@@ -57,28 +57,28 @@ export const FrameworkCell = (cellProps: any) => (
 type TagNames = "available" | "enabled" | "inactive";
 
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
-{
-  available: {
-    backgroundColor: "orange.100",
-    color: "orange.800",
-    tooltip:
-      "This notice is associated with a system + data use and can be enabled",
-  },
-  enabled: {
-    backgroundColor: "green.100",
-    color: "green.800",
-    tooltip: "This notice is active and available for consumers",
-  },
-  inactive: {
-    backgroundColor: "gray.100",
-    color: "gray.800",
-    tooltip:
-      "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
-  },
-};
+  {
+    available: {
+      backgroundColor: "orange.100",
+      color: "orange.800",
+      tooltip:
+        "This notice is associated with a system + data use and can be enabled",
+    },
+    enabled: {
+      backgroundColor: "green.100",
+      color: "green.800",
+      tooltip: "This notice is active and available for consumers",
+    },
+    inactive: {
+      backgroundColor: "gray.100",
+      color: "gray.800",
+      tooltip:
+        "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
+    },
+  };
 
 export const PrivacyNoticeStatusCell = (
-  cellProps: CellContext<PrivacyNoticeResponse, boolean>
+  cellProps: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>
 ) => {
   const { row } = cellProps;
 
@@ -120,10 +120,10 @@ export const PrivacyNoticeStatusCell = (
 export const EnablePrivacyNoticeCell = ({
   row,
   getValue,
-}: CellContext<PrivacyNoticeResponse, boolean | undefined>) => {
+}: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>) => {
   const [patchNoticeMutationTrigger] = useLimitedPatchPrivacyNoticesMutation();
 
-  const value = getValue()!;
+  const value = getValue();
   const onToggle = async (toggle: boolean) =>
     patchNoticeMutationTrigger({
       id: row.original.id,
