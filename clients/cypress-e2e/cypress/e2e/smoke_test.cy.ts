@@ -99,13 +99,13 @@ describe("Smoke test", () => {
     cy.login();
 
     // Postgres
-    cy.getByTestId("View systems-nav-link").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_postgresql_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
 
     // Mongo
-    cy.getByTestId("View systems-nav-link").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_customer_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();

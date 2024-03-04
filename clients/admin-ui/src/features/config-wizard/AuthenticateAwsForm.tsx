@@ -33,6 +33,7 @@ import ScannerLoading from "./ScannerLoading";
 const initialValues = {
   aws_access_key_id: "",
   aws_secret_access_key: "",
+  aws_session_token: "",
   region_name: "",
 };
 
@@ -49,6 +50,11 @@ const ValidationSchema = Yup.object().shape({
     .trim()
     .matches(/^[^\s]+$/, "Cannot contain spaces")
     .label("Secret"),
+  aws_session_token: Yup.string()
+    .optional()
+    .trim()
+    .matches(/^[^\s]+$/, "Cannot contain spaces")
+    .label("Session Token (for temporary credentials)"),
   region_name: Yup.string().required().label("Default Region"),
 });
 
@@ -136,6 +142,7 @@ const AuthenticateAwsForm = () => {
                     // content instead of just a string label. The message would be:
                     // "You can find more information about creating access keys and secrets on AWS docs here."
                     tooltip="The Access Key ID created by the cloud hosting provider."
+                    isRequired
                   />
                   <CustomTextInput
                     type="password"
@@ -143,6 +150,14 @@ const AuthenticateAwsForm = () => {
                     label="Secret"
                     // "You can find more about creating access keys and secrets on AWS docs here."
                     tooltip="The secret associated with the Access Key ID used for authentication."
+                    isRequired
+                  />
+                  <CustomTextInput
+                    type="password"
+                    name="aws_session_token"
+                    label="Session Token"
+                    // "You can find more about creating access keys and secrets on AWS docs here."
+                    tooltip="The session token when using temporary credentials."
                   />
                   <CustomSelect
                     name="region_name"
@@ -150,6 +165,7 @@ const AuthenticateAwsForm = () => {
                     // "You can learn more about regions in AWS docs here."
                     tooltip="The geographic region of the cloud hosting provider you would like to scan."
                     options={AWS_REGION_OPTIONS}
+                    isRequired
                   />
                 </Stack>
               </>

@@ -74,6 +74,7 @@ import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
+import { debugLog } from "./lib/consent-utils";
 
 declare global {
   interface Window {
@@ -161,6 +162,13 @@ const init = async (config: FidesConfig) => {
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 
+export const defaultShowModal = () => {
+  debugLog(
+    window.Fides.options.debug,
+    "The current experience does not support displaying a modal."
+  );
+};
+
 // The global Fides object; this is bound to window.Fides if available
 _Fides = {
   consent: {},
@@ -188,6 +196,7 @@ _Fides = {
     customOptionsPath: null,
     preventDismissal: false,
     allowHTMLDescription: null,
+    base64Cookie: false,
   },
   fides_meta: {},
   identity: {},
@@ -197,6 +206,7 @@ _Fides = {
   initialized: false,
   meta,
   shopify,
+  showModal: defaultShowModal,
 };
 
 if (typeof window !== "undefined") {

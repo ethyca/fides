@@ -9,6 +9,7 @@ import {
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
+  PrivacyNoticeWithPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
@@ -57,6 +58,16 @@ export const isPrivacyExperience = (
   }
   return false;
 };
+
+export const allNoticesAreDefaultOptIn = (
+  notices: Array<PrivacyNoticeWithPreference> | undefined
+): boolean =>
+  Boolean(
+    notices &&
+      notices.every(
+        (notice) => notice.default_preference === UserConsentPreference.OPT_IN
+      )
+  );
 
 /**
  * Construct user location str to be ingested by Fides API
@@ -214,7 +225,7 @@ export const shouldResurfaceConsent = (
   // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
     !experience.privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, cookie)
+      noticeHasConsentInCookie(notice, cookie.consent)
     )
   );
 };
