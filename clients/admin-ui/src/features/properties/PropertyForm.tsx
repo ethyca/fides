@@ -3,8 +3,8 @@ import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
-import { Property, PropertyType } from "~/types/api";
 import {
   CustomClipboardCopy,
   CustomSelect,
@@ -14,12 +14,12 @@ import { enumToOptions } from "~/features/common/helpers";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
-  useGetAllExperienceConfigsQuery,
   selectAllExperienceConfigs,
   selectPage,
   selectPageSize,
+  useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { useAppSelector } from "~/app/hooks";
+import { MinimalPrivacyExperience, Property, PropertyType } from "~/types/api";
 
 interface Props {
   property?: Property;
@@ -27,9 +27,10 @@ interface Props {
 }
 
 export interface FormValues {
+  id: string;
   name: string;
   type: string;
-  experiences: Array<string>;
+  experiences: Array<MinimalPrivacyExperience>;
 }
 
 const ExperiencesFormSection = () => {
@@ -45,12 +46,15 @@ const ExperiencesFormSection = () => {
   return (
     <FormSection title="Experiences">
       <ScrollableList
-        label="Experiences"
         addButtonLabel="Add experience"
-        allItems={experienceConfigs.map((exp) => exp.name)}
+        idField="id"
+        nameField="name"
+        allItems={experienceConfigs.map((exp) => ({
+          id: exp.id,
+          name: exp.name,
+        }))}
         values={values.experiences ?? []}
         setValues={(newValues) => setFieldValue("experiences", newValues)}
-        getItemLabel={(item) => item}
         draggable
       />
     </FormSection>

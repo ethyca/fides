@@ -16,8 +16,8 @@ import { isErrorResult } from "~/types/errors";
 const EditPropertyPage: NextPage = () => {
   const toast = useToast();
   const router = useRouter();
-  const { id } = router.query;
-  const { data } = useGetPropertyByIdQuery(id as string);
+  const { id: propertyId } = router.query;
+  const { data } = useGetPropertyByIdQuery(propertyId as string);
   const [updateProperty] = useUpdatePropertyMutation();
 
   const handleSubmit = async (values: FormValues) => {

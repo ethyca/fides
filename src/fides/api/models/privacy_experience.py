@@ -20,6 +20,7 @@ from fides.api.models import (
 )
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import PrivacyNotice
+from fides.api.models.property import Property
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -227,6 +228,13 @@ class PrivacyExperienceConfig(
         backref="privacy_experience_config",
         lazy="selectin",
         order_by="ExperienceTranslation.created_at",
+    )
+
+    properties: RelationshipProperty[List[Property]] = relationship(
+        "Property",
+        secondary="plus_privacy_experience_config_property",
+        back_populates="experiences",
+        lazy="selectin",
     )
 
     @property

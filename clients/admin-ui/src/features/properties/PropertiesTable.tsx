@@ -125,7 +125,7 @@ export const PropertiesTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="experiences"
-            value={props.getValue()}
+            value={props.getValue().map((exp) => exp.name)}
             {...props}
           />
         ),
