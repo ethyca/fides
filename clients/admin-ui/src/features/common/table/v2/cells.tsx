@@ -15,11 +15,10 @@ import {
 import { HeaderContext } from "@tanstack/react-table";
 import { ChangeEvent, FC, ReactNode } from "react";
 
-import { RTKResult } from "~/types/errors";
-
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
+import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
   value,
