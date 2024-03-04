@@ -156,15 +156,6 @@ export const PrivacyNoticesTable = () => {
               showHeaderMenu: true,
             },
           }),
-          // columnHelper.accessor((row) => row.updated_at, {
-          //   id: "updated_at",
-          //   cell: (props) => (
-          //     <DefaultCell value={new Date(props.getValue()).toDateString()} />
-          //   ),
-          //   header: (props) => (
-          //     <DefaultHeaderCell value="Last update" {...props} />
-          //   ),
-          // }),
           columnHelper.accessor((row) => row.disabled, {
             id: "status",
             cell: (props) => PrivacyNoticeStatusCell(props),
@@ -177,17 +168,17 @@ export const PrivacyNoticesTable = () => {
                 <BadgeCell value={FRAMEWORK_MAP.get(props.getValue()!)!} />
               ) : null,
             header: (props) => (
-              <DefaultHeaderCell value="Farmework" {...props} />
+              <DefaultHeaderCell value="Framework" {...props} />
             ),
           }),
           userCanUpdate &&
-            columnHelper.accessor((row) => row.disabled, {
-              id: "enable",
-              cell: (props) => EnablePrivacyNoticeCell(props),
-              header: (props) => (
-                <DefaultHeaderCell value="Enable" {...props} />
-              ),
-            }),
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: (props) => EnablePrivacyNoticeCell(props),
+            header: (props) => (
+              <DefaultHeaderCell value="Enable" {...props} />
+            ),
+          }),
         ].filter(Boolean) as ColumnDef<
           LimitedPrivacyNoticeResponseSchema,
           any
