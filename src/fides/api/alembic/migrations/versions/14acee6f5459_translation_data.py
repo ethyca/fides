@@ -27,15 +27,16 @@ depends_on = None
 
 EXPERIENCE_CONFIG_DEFAULTS = [
     {
-        "id": "pri-76b8-cc52-11ee-9eaa-8ef97a0-over-config",
+        "id": "pri-76b8-cc52-11ee-9eaa-8ef97a-modal-config",
         "name": "US Modal",
         "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
         "component": "modal",
         "allow_language_selection": False,
+        "auto_detect_language": True,
         "dismissable": True,
         "disabled": True,
         "privacy_notice_keys": ["data_sales_and_sharing"],
-        "origin": "pri-76b8-cc52-11ee-9eaa-8ef97a0-over",
+        "origin": "pri-76b8-cc52-11ee-9eaa-8ef97a-modal",
     },
     {
         "id": "pri-27d4-cc53-11ee-9eaa-8ef97a04-pri-config",
@@ -43,13 +44,14 @@ EXPERIENCE_CONFIG_DEFAULTS = [
         "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
         "component": "privacy_center",
         "allow_language_selection": False,
+        "auto_detect_language": True,
         "dismissable": True,
         "disabled": True,
         "privacy_notice_keys": ["data_sales_and_sharing"],
         "origin": "pri-27d4-cc53-11ee-9eaa-8ef97a04-pri",
     },
     {
-        "id": "pri-c8ff-78d6-4a02-850f-2c09dda-over-config",
+        "id": "pri-c8ff-78d6-4a02-850f-2c0ban-modal-config",
         "name": "EEA Banner + Modal",
         "regions": [
             "be",
@@ -86,15 +88,43 @@ EXPERIENCE_CONFIG_DEFAULTS = [
         ],
         "component": "banner_and_modal",
         "allow_language_selection": False,
+        "auto_detect_language": True,
         "dismissable": True,
         "disabled": True,
         "privacy_notice_keys": ["essential", "functional", "analytics", "marketing"],
-        "origin": "pri-c8ff-78d6-4a02-850f-2c09dda-over",
+        "origin": "pri-c8ff-78d6-4a02-850f-2c0ban-modal",
+    },
+    {
+        "id": "pri-694e-02bd-4afe-81b3-2a2ban-modal-config",
+        "name": "Canada Banner + Modal",
+        "regions": [
+            "ca_ab",
+            "ca_bc",
+            "ca_mb",
+            "ca_nb",
+            "ca_nl",
+            "ca_ns",
+            "ca_nt",
+            "ca_nu",
+            "ca_on",
+            "ca_pe",
+            "ca_qc",
+            "ca_sk",
+            "ca_yt",
+        ],
+        "component": "banner_and_modal",
+        "allow_language_selection": False,
+        "auto_detect_language": True,
+        "dismissable": True,
+        "disabled": True,
+        "privacy_notice_keys": ["essential", "functional", "analytics", "marketing"],
+        "origin": "pri-694e-02bd-4afe-81b3-2a2ban-modal",
     },
     {
         "id": "d7c3ce0a-a3b3-43ff-bf6f-3d8-tcf-over-config",
         "name": "TCF",
         "allow_language_selection": False,
+        "auto_detect_language": True,
         "dismissable": True,
         "disabled": True,
         "notices": [],
@@ -138,6 +168,14 @@ EXPERIENCE_CONFIG_DEFAULTS = [
     },
 ]
 
+# the known existing (legacy) experience config IDs.
+# we will only attempt to migrate config data from these experience configs
+KNOWN_EXISTING_EXPERIENCE_CONFIGS = {
+    "pri-7ae3-f06b-4096-970f-0bbbdef-over",
+    "pri-097a-d00d-40b6-a08f-f8e50def-pri",
+    "a4974670-abad-471f-9084-2cb-tcf-over",
+}
+
 
 def generate_record_id(prefix):
     return prefix + "_" + str(uuid.uuid4())
@@ -146,11 +184,11 @@ def generate_record_id(prefix):
 # this ties a DB record ID to our logical identifier of the type of OOB experience.
 # the DB record ID is based on what we've defined in the associated config yml.
 class DefaultExperienceConfigTypes(Enum):
-    EEA_PRIVACY_CENTER = 1
-    EEA_MODAL_AND_BANNER = "pri-c8ff-78d6-4a02-850f-2c09dda-over-config"
+    EEA_BANNER_AND_MODAL = "pri-c8ff-78d6-4a02-850f-2c0ban-modal-config"
     EEA_TCF_OVERLAY = "d7c3ce0a-a3b3-43ff-bf6f-3d8-tcf-over-config"
-    US_MODAL = "pri-76b8-cc52-11ee-9eaa-8ef97a0-over-config"
+    US_MODAL = "pri-76b8-cc52-11ee-9eaa-8ef97a-modal-config"
     US_PRIVACY_CENTER = "pri-27d4-cc53-11ee-9eaa-8ef97a04-pri-config"
+    CANADA_BANNER_MODAL = "pri-694e-02bd-4afe-81b3-2a2ban-modal-config"
 
 
 class ComponentType(Enum):
@@ -161,8 +199,7 @@ class ComponentType(Enum):
 
 # our new OOB EEA (EU) experience configs, keyed by their component type
 EEA_MAPPING = {
-    ComponentType.PrivacyCenter: DefaultExperienceConfigTypes.EEA_PRIVACY_CENTER,
-    ComponentType.Overlay: DefaultExperienceConfigTypes.EEA_MODAL_AND_BANNER,
+    ComponentType.Overlay: DefaultExperienceConfigTypes.EEA_BANNER_AND_MODAL,
     ComponentType.TCFOverlay: DefaultExperienceConfigTypes.EEA_TCF_OVERLAY,
 }
 
@@ -170,6 +207,11 @@ EEA_MAPPING = {
 US_MAPPING = {
     ComponentType.PrivacyCenter: DefaultExperienceConfigTypes.US_PRIVACY_CENTER,
     ComponentType.Overlay: DefaultExperienceConfigTypes.US_MODAL,
+}
+
+# our new OOB Canada experience configs, keyed by their component type
+CANADA_MAPPING = {
+    ComponentType.Overlay: DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
 }
 
 # this map contains the biggest _assumption_ about the migration -
@@ -188,11 +230,14 @@ NOTICES_TO_EXPERIENCE_CONFIG = {
 
 
 # as part of this upgrade, we're removing the following as region options across the app
-REGIONS_TO_REMOVE = {
+GB_REGIONS_TO_REMOVE = {
     "gb_eng",
     "gb_sct",
     "gb_wls",
     "gb_nir",
+}
+GB_REGIONS_TO_ADD = {
+    "gb",
 }
 
 
@@ -252,11 +297,14 @@ def load_default_experience_configs():
 
         # the reconciled experience config will have its regions populated by existing notices that are
         # associated with this experience config. so in most cases, we start "fresh" with an empty set.
-        # the TCF experience is an exception - it is not linked to any notices, and therefore its
-        # regions are not derived from notices, so we hardcode its regions to the config default.
+        # the TCF experience and Canada banner modal experience are exceptions:
+        # their regions are not derived from notices (TCF is not linked to notices; Canada experience config is net-new),
+        # so we hardcode their regions to the config defaults.
         reconciled_regions = (
             experience_config["regions"]
             if experience_config_type == DefaultExperienceConfigTypes.EEA_TCF_OVERLAY
+            or experience_config_type
+            == DefaultExperienceConfigTypes.CANADA_BANNER_MODAL
             else set()  # if not TCF experience, clear the config's regions, since we will populate based on existing notices
         )
         experience_config["regions"] = reconciled_regions
@@ -350,9 +398,14 @@ def determine_needed_experience_configs(bind):
         notice_key = existing_notice["notice_key"]
         component_mapping = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key)
         if component_mapping:
-            regions_to_add = set(existing_notice["regions"]).difference(
-                REGIONS_TO_REMOVE
-            )
+            regions_to_add = set(existing_notice["regions"]).copy()
+            if not GB_REGIONS_TO_REMOVE.isdisjoint(
+                regions_to_add
+            ):  # if we have GB regions to remove
+                regions_to_add.difference_update(
+                    GB_REGIONS_TO_REMOVE
+                )  # remove the GB regions
+                regions_to_add.update(GB_REGIONS_TO_ADD)  # add the GB region
             if existing_notice["displayed_in_overlay"]:
                 experience_config = component_mapping.get(ComponentType.Overlay)
                 reconciled_experience_config_map[experience_config]["regions"].update(
@@ -382,37 +435,43 @@ def determine_needed_experience_configs(bind):
     )
     has_existing_experience_configs = False
     for eec in existing_experience_configs:
-        has_existing_experience_configs = True
-        component = ComponentType(eec["component"])
-        configs = []
+        # only migrate experience config data if its a known config
+        if eec["id"] in KNOWN_EXISTING_EXPERIENCE_CONFIGS:
+            has_existing_experience_configs = True
+            component = ComponentType(eec["component"])
+            configs = []
 
-        # because we've given experiences a location dimension in this migration,
-        # an existing experience effectively maps to two "new" default experiences -
-        # one that is surfaced in the US (and is associated with "US" notices), and
-        # one that is surfaced in the EU (and is associated with the "EU" notices).
-        # because of this, we'll copy over existing experience text/attributes to _both_
-        # of these corresponding new experience configs.
-        if eea_config_id := EEA_MAPPING.get(component):
-            configs.append(reconciled_experience_config_map.get(eea_config_id))
-        if us_config_id := US_MAPPING.get(component):
-            configs.append(reconciled_experience_config_map.get(us_config_id))
-        for config in configs:
-            if config:
-                config["accept_button_label"] = eec["accept_button_label"]
-                config["acknowledge_button_label"] = eec["acknowledge_button_label"]
-                config["banner_description"] = eec["banner_description"]
-                config["banner_enabled"] = eec["banner_enabled"]
-                config["banner_title"] = eec["banner_title"]
-                config["description"] = eec["description"]
-                config["privacy_policy_link_label"] = eec["privacy_policy_link_label"]
-                config["privacy_policy_url"] = eec["privacy_policy_url"]
-                config["privacy_preferences_link_label"] = eec[
-                    "privacy_preferences_link_label"
-                ]
-                config["reject_button_label"] = eec["reject_button_label"]
-                config["save_button_label"] = eec["save_button_label"]
-                config["title"] = eec["title"]
-                config["needs_migration"] = True
+            # because we've given experiences a location dimension in this migration,
+            # an existing experience effectively maps to two "new" default experiences -
+            # one that is surfaced in the US (and is associated with "US" notices), and
+            # one that is surfaced in the EU (and is associated with the "EU" notices).
+            # because of this, we'll copy over existing experience text/attributes to _both_
+            # of these corresponding new experience configs.
+            if eea_config_id := EEA_MAPPING.get(component):
+                configs.append(reconciled_experience_config_map.get(eea_config_id))
+            if us_config_id := US_MAPPING.get(component):
+                configs.append(reconciled_experience_config_map.get(us_config_id))
+            if canada_config_id := CANADA_MAPPING.get(component):
+                configs.append(reconciled_experience_config_map.get(canada_config_id))
+            for config in configs:
+                if config:
+                    config["accept_button_label"] = eec["accept_button_label"]
+                    config["acknowledge_button_label"] = eec["acknowledge_button_label"]
+                    config["banner_description"] = eec["banner_description"]
+                    config["banner_enabled"] = eec["banner_enabled"]
+                    config["banner_title"] = eec["banner_title"]
+                    config["description"] = eec["description"]
+                    config["privacy_policy_link_label"] = eec[
+                        "privacy_policy_link_label"
+                    ]
+                    config["privacy_policy_url"] = eec["privacy_policy_url"]
+                    config["privacy_preferences_link_label"] = eec[
+                        "privacy_preferences_link_label"
+                    ]
+                    config["reject_button_label"] = eec["reject_button_label"]
+                    config["save_button_label"] = eec["save_button_label"]
+                    config["title"] = eec["title"]
+                    config["needs_migration"] = True
 
     if has_existing_experience_configs:
         return reconciled_experience_config_map
@@ -441,8 +500,8 @@ def migrate_experiences(bind):
             # - `id` is the `origin` field from the config template record loaded from disk
             create_experience_config_template_query = text(
                 """
-                INSERT INTO experienceconfigtemplate (id, component, name, disabled, allow_language_selection, dismissable, privacy_notice_keys, regions)
-                VALUES (:id, :component, :name, :disabled, :allow_language_selection, :dismissable, :privacy_notice_keys, :regions)
+                INSERT INTO experienceconfigtemplate (id, component, name, disabled, allow_language_selection, dismissable, privacy_notice_keys, regions, auto_detect_language)
+                VALUES (:id, :component, :name, :disabled, :allow_language_selection, :dismissable, :privacy_notice_keys, :regions, :auto_detect_language)
                 """
             )
 
@@ -459,6 +518,9 @@ def migrate_experiences(bind):
     def create_new_experience_config(experience_config):
         """
         Creates a new experience config based on the provided definition. Also creates corresponding history record.
+
+        Also backfills _all_ privacy experience config history records to have a language of 'en',
+        as that column is non-nullable.
         """
         # for config record:
         # - `id` is the `id` grabbed from our config template record
@@ -499,6 +561,16 @@ def migrate_experiences(bind):
                 "is_default": True,
             },
         )
+
+        # backfill language column in all experience config history records
+        update_experience_config_history_language = text(
+            """
+            UPDATE privacyexperienceconfighistory
+            SET language = 'en'
+        """
+        )
+
+        bind.execute(update_experience_config_history_language)
 
     def create_applicable_experiences(experience_config):
         """
@@ -555,6 +627,7 @@ def migrate_experiences(bind):
         over to the translation record. The translation is assumed to be english.
 
         This requires the privacy experience config records to have been created before this is invoked!
+
         """
         get_experience_config_ids = text(
             """SELECT id FROM privacyexperienceconfig;
@@ -585,7 +658,7 @@ def migrate_experiences(bind):
                 },
             )
 
-        # Repoint the Experience Config History to the Experience Translation, and set dismissable while we're here.
+        # Repoint the Experience Config History to the Experience Translation
         link_config_to_translation_id = text(
             """
             UPDATE privacyexperienceconfighistory
