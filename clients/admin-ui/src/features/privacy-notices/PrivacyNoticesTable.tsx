@@ -32,7 +32,7 @@ import {
 } from "~/features/privacy-notices/cells";
 import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy-notices.slice";
 import {
-  LimitedPrivacyNoticeResponseSchema,
+  PrivacyNoticeResponse,
   ScopeRegistryEnum,
 } from "~/types/api";
 
@@ -79,7 +79,7 @@ const EmptyTableNotice = () => (
     </NextLink>
   </VStack>
 );
-const columnHelper = createColumnHelper<LimitedPrivacyNoticeResponseSchema>();
+const columnHelper = createColumnHelper<PrivacyNoticeResponse>();
 
 export const PrivacyNoticesTable = () => {
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
@@ -123,7 +123,7 @@ export const PrivacyNoticesTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const inventoryColumns: ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[] =
+  const inventoryColumns: ColumnDef<PrivacyNoticeResponse, any>[] =
     useMemo(
       () =>
         [
@@ -172,21 +172,21 @@ export const PrivacyNoticesTable = () => {
             ),
           }),
           userCanUpdate &&
-            columnHelper.accessor((row) => row.disabled, {
-              id: "enable",
-              cell: (props) => EnablePrivacyNoticeCell(props),
-              header: (props) => (
-                <DefaultHeaderCell value="Enable" {...props} />
-              ),
-            }),
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: (props) => EnablePrivacyNoticeCell(props),
+            header: (props) => (
+              <DefaultHeaderCell value="Enable" {...props} />
+            ),
+          }),
         ].filter(Boolean) as ColumnDef<
-          LimitedPrivacyNoticeResponseSchema,
+          PrivacyNoticeResponse,
           any
         >[],
       [userCanUpdate]
     );
 
-  const tableInstance = useReactTable<LimitedPrivacyNoticeResponseSchema>({
+  const tableInstance = useReactTable<PrivacyNoticeResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -198,7 +198,7 @@ export const PrivacyNoticesTable = () => {
     },
   });
 
-  const onRowClick = ({ id }: LimitedPrivacyNoticeResponseSchema) => {
+  const onRowClick = ({ id }: PrivacyNoticeResponse) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_NOTICES_ROUTE}/${id}`);
     }
