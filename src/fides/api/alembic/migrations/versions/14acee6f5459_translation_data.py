@@ -25,6 +25,120 @@ branch_labels = None
 depends_on = None
 
 
+EXPERIENCE_CONFIG_DEFAULTS = [
+    {
+        "id": "pri-76b8-cc52-11ee-9eaa-8ef97a0-over-config",
+        "name": "US Modal",
+        "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
+        "component": "modal",
+        "allow_language_selection": False,
+        "dismissable": True,
+        "disabled": True,
+        "privacy_notice_keys": ["data_sales_and_sharing"],
+        "origin": "pri-76b8-cc52-11ee-9eaa-8ef97a0-over",
+    },
+    {
+        "id": "pri-27d4-cc53-11ee-9eaa-8ef97a04-pri-config",
+        "name": "US Privacy Center",
+        "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
+        "component": "privacy_center",
+        "allow_language_selection": False,
+        "dismissable": True,
+        "disabled": True,
+        "privacy_notice_keys": ["data_sales_and_sharing"],
+        "origin": "pri-27d4-cc53-11ee-9eaa-8ef97a04-pri",
+    },
+    {
+        "id": "pri-c8ff-78d6-4a02-850f-2c09dda-over-config",
+        "name": "EEA Banner + Modal",
+        "regions": [
+            "be",
+            "bg",
+            "cz",
+            "dk",
+            "de",
+            "ee",
+            "ie",
+            "gr",
+            "es",
+            "fr",
+            "hr",
+            "it",
+            "cy",
+            "lv",
+            "lt",
+            "lu",
+            "hu",
+            "mt",
+            "nl",
+            "at",
+            "pl",
+            "pt",
+            "ro",
+            "si",
+            "sk",
+            "fi",
+            "se",
+            "gb",
+            "is",
+            "no",
+            "li",
+        ],
+        "component": "banner_and_modal",
+        "allow_language_selection": False,
+        "dismissable": True,
+        "disabled": True,
+        "privacy_notice_keys": ["essential", "functional", "analytics", "marketing"],
+        "origin": "pri-c8ff-78d6-4a02-850f-2c09dda-over",
+    },
+    {
+        "id": "d7c3ce0a-a3b3-43ff-bf6f-3d8-tcf-over-config",
+        "name": "TCF",
+        "allow_language_selection": False,
+        "dismissable": True,
+        "disabled": True,
+        "notices": [],
+        "regions": [
+            "be",
+            "bg",
+            "cz",
+            "dk",
+            "de",
+            "ee",
+            "ie",
+            "gr",
+            "es",
+            "fr",
+            "hr",
+            "it",
+            "cy",
+            "lv",
+            "lt",
+            "lu",
+            "hu",
+            "mt",
+            "nl",
+            "at",
+            "pl",
+            "pt",
+            "ro",
+            "si",
+            "sk",
+            "fi",
+            "se",
+            "gb",
+            "is",
+            "no",
+            "li",
+            "eea",
+        ],
+        "component": "tcf_overlay",
+        "privacy_notice_keys": [],
+        "origin": "d7c3ce0a-a3b3-43ff-bf6f-3d8-tcf-over",
+    },
+]
+
+
 def generate_record_id(prefix):
     return prefix + "_" + str(uuid.uuid4())
 
@@ -132,17 +246,7 @@ def load_default_experience_configs():
         {}
     )  # will hold experience configs 'reconciled' between existing data and 'oob' template data
 
-    # this is a bit of a hack! but the path to the file depends on whether we're executing the migration
-    # as part of app startup or as part of a 'manual' migration attempt, e.g. `alembic upgrade head` from
-    # the src/fides/api/alembic/ dir. so we try both options here, to cover our bases.
-    experience_configs = load_experience_config_from_files(
-        [
-            "privacy_experience_config_defaults.yml",
-            "src/fides/api/alembic/privacy_experience_config_defaults.yml",
-        ]
-    )
-
-    for experience_config in experience_configs:
+    for experience_config in EXPERIENCE_CONFIG_DEFAULTS:
         experience_config_type = DefaultExperienceConfigTypes(experience_config["id"])
         _raw_experience_config_map[experience_config_type] = experience_config.copy()
 
