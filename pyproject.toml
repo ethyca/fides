@@ -47,6 +47,7 @@ module = [
   "firebase_admin.*",
   "google.api_core.*",
   "nh3.*",
+  "joblib.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
