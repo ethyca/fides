@@ -31,7 +31,10 @@ import {
   PrivacyNoticeStatusCell,
 } from "~/features/privacy-notices/cells";
 import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy-notices.slice";
-import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
+import {
+  LimitedPrivacyNoticeResponseSchema,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 import { PRIVACY_NOTICES_ROUTE } from "../common/nav/v2/routes";
 import { useHasPermission } from "../common/Restrict";
@@ -76,7 +79,7 @@ const EmptyTableNotice = () => (
     </NextLink>
   </VStack>
 );
-const columnHelper = createColumnHelper<PrivacyNoticeResponse>();
+const columnHelper = createColumnHelper<LimitedPrivacyNoticeResponseSchema>();
 
 export const PrivacyNoticesTable = () => {
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
@@ -120,58 +123,70 @@ export const PrivacyNoticesTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const inventoryColumns: ColumnDef<PrivacyNoticeResponse, any>[] = useMemo(
-    () =>
-      [
-        columnHelper.accessor((row) => row.name, {
-          id: "name",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
-          header: (props) => <DefaultHeaderCell value="Title" {...props} />,
-        }),
-        columnHelper.accessor((row) => row.consent_mechanism, {
-          id: "consent_mechanism",
-          cell: (props) => MechanismCell(props.getValue()),
-          header: (props) => <DefaultHeaderCell value="Mechanism" {...props} />,
-        }),
-        columnHelper.accessor((row) => row.configured_regions, {
-          id: "regions",
-          cell: (props) => (
-            <GroupCountBadgeCell
-              suffix="Locations"
-              value={getRegions(props.getValue())}
-              {...props}
-            />
-          ),
-          header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
-          meta: {
-            displayText: "Locations",
-            showHeaderMenu: true,
-          },
-        }),
-        columnHelper.accessor((row) => row.disabled, {
-          id: "status",
-          cell: (props) => PrivacyNoticeStatusCell(props),
-          header: (props) => <DefaultHeaderCell value="Status" {...props} />,
-        }),
-        columnHelper.accessor((row) => row.framework, {
-          id: "framework",
-          cell: (props) =>
-            props.getValue() ? (
-              <BadgeCell value={FRAMEWORK_MAP.get(props.getValue()!)!} />
-            ) : null,
-          header: (props) => <DefaultHeaderCell value="Framework" {...props} />,
-        }),
-        userCanUpdate &&
-          columnHelper.accessor((row) => row.disabled, {
-            id: "enable",
-            cell: (props) => EnablePrivacyNoticeCell(props),
-            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+  const inventoryColumns: ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[] =
+    useMemo(
+      () =>
+        [
+          columnHelper.accessor((row) => row.name, {
+            id: "name",
+            cell: (props) => <DefaultCell value={props.getValue()} />,
+            header: (props) => <DefaultHeaderCell value="Title" {...props} />,
           }),
-      ].filter(Boolean) as ColumnDef<PrivacyNoticeResponse, any>[],
-    [userCanUpdate]
-  );
+          columnHelper.accessor((row) => row.consent_mechanism, {
+            id: "consent_mechanism",
+            cell: (props) => MechanismCell(props.getValue()),
+            header: (props) => (
+              <DefaultHeaderCell value="Mechanism" {...props} />
+            ),
+          }),
+          columnHelper.accessor((row) => row.configured_regions, {
+            id: "regions",
+            cell: (props) => (
+              <GroupCountBadgeCell
+                suffix="Locations"
+                value={getRegions(props.getValue())}
+                {...props}
+              />
+            ),
+            header: (props) => (
+              <DefaultHeaderCell value="Locations" {...props} />
+            ),
+            meta: {
+              displayText: "Locations",
+              showHeaderMenu: true,
+            },
+          }),
+          columnHelper.accessor((row) => row.disabled, {
+            id: "status",
+            cell: (props) => PrivacyNoticeStatusCell(props),
+            header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+          }),
+          columnHelper.accessor((row) => row.framework, {
+            id: "framework",
+            cell: (props) =>
+              props.getValue() ? (
+                <BadgeCell value={FRAMEWORK_MAP.get(props.getValue()!)!} />
+              ) : null,
+            header: (props) => (
+              <DefaultHeaderCell value="Framework" {...props} />
+            ),
+          }),
+          userCanUpdate &&
+            columnHelper.accessor((row) => row.disabled, {
+              id: "enable",
+              cell: (props) => EnablePrivacyNoticeCell(props),
+              header: (props) => (
+                <DefaultHeaderCell value="Enable" {...props} />
+              ),
+            }),
+        ].filter(Boolean) as ColumnDef<
+          LimitedPrivacyNoticeResponseSchema,
+          any
+        >[],
+      [userCanUpdate]
+    );
 
-  const tableInstance = useReactTable<PrivacyNoticeResponse>({
+  const tableInstance = useReactTable<LimitedPrivacyNoticeResponseSchema>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -183,7 +198,7 @@ export const PrivacyNoticesTable = () => {
     },
   });
 
-  const onRowClick = ({ id }: PrivacyNoticeResponse) => {
+  const onRowClick = ({ id }: LimitedPrivacyNoticeResponseSchema) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_NOTICES_ROUTE}/${id}`);
     }
