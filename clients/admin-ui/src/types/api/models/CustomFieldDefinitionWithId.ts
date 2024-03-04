@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AllowedTypes } from "./AllowedTypes";
-import type { ResourceTypes } from "./ResourceTypes";
+import type { AllowedTypes } from './AllowedTypes';
+import type { ResourceTypes } from './ResourceTypes';
 
 export type CustomFieldDefinitionWithId = {
   name: string;
@@ -15,3 +15,4 @@ export type CustomFieldDefinitionWithId = {
   active?: boolean;
   id?: string;
 };
+

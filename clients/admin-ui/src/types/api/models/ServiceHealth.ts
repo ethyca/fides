@@ -6,7 +6,7 @@
  * Service health options
  */
 export enum ServiceHealth {
-  HEALTHY = "healthy",
-  UNHEALTHY = "unhealthy",
-  UNREACHABLE = "unreachable",
+  HEALTHY = 'healthy',
+  UNHEALTHY = 'unhealthy',
+  UNREACHABLE = 'unreachable',
 }

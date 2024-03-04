@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PrivacyExperienceMetaResponse } from "./PrivacyExperienceMetaResponse";
+import type { PrivacyExperienceMetaResponse } from './PrivacyExperienceMetaResponse';
 
 export type Page_PrivacyExperienceMetaResponse_ = {
   items: Array<PrivacyExperienceMetaResponse>;
@@ -11,3 +11,4 @@ export type Page_PrivacyExperienceMetaResponse_ = {
   size: number;
   pages?: number;
 };
+

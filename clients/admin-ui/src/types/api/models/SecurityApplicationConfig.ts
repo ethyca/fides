@@ -11,3 +11,4 @@ export type SecurityApplicationConfig = {
    */
   cors_origins?: Array<string>;
 };
+

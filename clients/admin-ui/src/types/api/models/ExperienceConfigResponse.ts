@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from "./ComponentType";
-import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
+import type { ComponentType } from './ComponentType';
+import type { ExperienceTranslationResponse } from './ExperienceTranslationResponse';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { PrivacyNoticeResponse } from './PrivacyNoticeResponse';
 
 /**
  * An API representation of ExperienceConfig used for response payloads
@@ -24,3 +24,4 @@ export type ExperienceConfigResponse = {
   privacy_notices?: Array<PrivacyNoticeResponse>;
   translations?: Array<ExperienceTranslationResponse>;
 };
+

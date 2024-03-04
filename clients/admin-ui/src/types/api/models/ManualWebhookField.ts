@@ -10,3 +10,4 @@ export type ManualWebhookField = {
   dsr_package_label?: string;
   data_categories?: Array<string>;
 };
+

@@ -2,17 +2,17 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Continent } from "./Continent";
+import type { Continent } from './Continent';
 
 /**
- * Used to represent location groups in API responses.
- *
- * Only differs from a Location in that it has no `selected`
- * field.
+ * Location Group schema, currently the same as a location
  */
 export type LocationGroup = {
   id: string;
+  selected?: boolean;
   name: string;
   continent: Continent;
   belongs_to?: Array<string>;
+  regulation?: Array<string>;
 };
+

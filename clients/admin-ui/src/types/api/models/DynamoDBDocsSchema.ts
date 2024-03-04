@@ -19,3 +19,4 @@ export type DynamoDBDocsSchema = {
    */
   aws_secret_access_key: string;
 };
+

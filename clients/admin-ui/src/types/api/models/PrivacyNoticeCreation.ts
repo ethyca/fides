@@ -2,11 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from "./ConsentMechanism";
-import type { EnforcementLevel } from "./EnforcementLevel";
-import type { GPPFieldMappingCreate } from "./GPPFieldMappingCreate";
-import type { NoticeTranslationCreate } from "./NoticeTranslationCreate";
-import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
+import type { ConsentMechanism } from './ConsentMechanism';
+import type { EnforcementLevel } from './EnforcementLevel';
+import type { GPPFieldMappingCreate } from './GPPFieldMappingCreate';
+import type { NoticeTranslationCreate } from './NoticeTranslationCreate';
+import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
 
 /**
  * Establishes some fields required for creating and validation that can be performed up-front
@@ -24,3 +24,4 @@ export type PrivacyNoticeCreation = {
   gpp_field_mapping?: Array<GPPFieldMappingCreate>;
   translations?: Array<NoticeTranslationCreate>;
 };
+

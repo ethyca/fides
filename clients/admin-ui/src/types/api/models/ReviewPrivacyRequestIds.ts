@@ -8,3 +8,4 @@
 export type ReviewPrivacyRequestIds = {
   request_ids: Array<string>;
 };
+

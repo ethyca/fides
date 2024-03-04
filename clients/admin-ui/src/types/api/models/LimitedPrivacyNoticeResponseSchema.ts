@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from "./ConsentMechanism";
-import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { ConsentMechanism } from './ConsentMechanism';
+import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
 
 /**
  * Limited Privacy Notice Schema for List View in Admin UI
@@ -24,3 +24,4 @@ export type LimitedPrivacyNoticeResponseSchema = {
   disabled: boolean;
   framework?: PrivacyNoticeFramework;
 };
+

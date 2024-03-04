@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMethod } from "./ConsentMethod";
-import type { ConsentOptionCreate } from "./ConsentOptionCreate";
-import type { Identity } from "./Identity";
-import type { TCFFeatureSave } from "./TCFFeatureSave";
-import type { TCFPurposeSave } from "./TCFPurposeSave";
-import type { TCFSpecialFeatureSave } from "./TCFSpecialFeatureSave";
-import type { TCFSpecialPurposeSave } from "./TCFSpecialPurposeSave";
-import type { TCFVendorSave } from "./TCFVendorSave";
+import type { ConsentMethod } from './ConsentMethod';
+import type { ConsentOptionCreate } from './ConsentOptionCreate';
+import type { Identity } from './Identity';
+import type { TCFFeatureSave } from './TCFFeatureSave';
+import type { TCFPurposeSave } from './TCFPurposeSave';
+import type { TCFSpecialFeatureSave } from './TCFSpecialFeatureSave';
+import type { TCFSpecialPurposeSave } from './TCFSpecialPurposeSave';
+import type { TCFVendorSave } from './TCFVendorSave';
 
 /**
  * Request body for saving PrivacyPreferences.
@@ -42,3 +42,4 @@ export type PrivacyPreferencesRequest = {
   method?: ConsentMethod;
   served_notice_history_id?: string;
 };
+

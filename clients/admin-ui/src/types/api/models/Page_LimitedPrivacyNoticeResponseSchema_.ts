@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { LimitedPrivacyNoticeResponseSchema } from "./LimitedPrivacyNoticeResponseSchema";
+import type { LimitedPrivacyNoticeResponseSchema } from './LimitedPrivacyNoticeResponseSchema';
 
 export type Page_LimitedPrivacyNoticeResponseSchema_ = {
   items: Array<LimitedPrivacyNoticeResponseSchema>;
@@ -11,3 +11,4 @@ export type Page_LimitedPrivacyNoticeResponseSchema_ = {
   size: number;
   pages?: number;
 };
+

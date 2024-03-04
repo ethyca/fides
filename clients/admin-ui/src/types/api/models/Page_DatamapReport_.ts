@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DatamapReport } from "./DatamapReport";
+import type { DatamapReport } from './DatamapReport';
 
 export type Page_DatamapReport_ = {
   items: Array<DatamapReport>;
@@ -11,3 +11,4 @@ export type Page_DatamapReport_ = {
   size: number;
   pages?: number;
 };
+

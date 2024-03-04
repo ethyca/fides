@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentConfig } from "./ConsentConfig";
-import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
-import type { GPPApplicationConfig } from "./GPPApplicationConfig";
-import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
-import type { SecurityApplicationConfig } from "./SecurityApplicationConfig";
-import type { StorageApplicationConfig } from "./StorageApplicationConfig";
+import type { ConsentConfig } from './ConsentConfig';
+import type { ExecutionApplicationConfig } from './ExecutionApplicationConfig';
+import type { GPPApplicationConfig } from './GPPApplicationConfig';
+import type { NotificationApplicationConfig } from './NotificationApplicationConfig';
+import type { SecurityApplicationConfig } from './SecurityApplicationConfig';
+import type { StorageApplicationConfig } from './StorageApplicationConfig';
 
 /**
  * Application config settings update body is an arbitrary dict (JSON object)
@@ -24,3 +24,4 @@ export type PlusApplicationConfig = {
   consent?: ConsentConfig;
   gpp?: GPPApplicationConfig;
 };
+

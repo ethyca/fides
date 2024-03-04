@@ -7,8 +7,8 @@
  * being included or excluded.
  */
 export enum IncludeExcludeEnum {
-  ALL = "ALL",
-  EXCLUDE = "EXCLUDE",
-  INCLUDE = "INCLUDE",
-  NONE = "NONE",
+  ALL = 'ALL',
+  EXCLUDE = 'EXCLUDE',
+  INCLUDE = 'INCLUDE',
+  NONE = 'NONE',
 }

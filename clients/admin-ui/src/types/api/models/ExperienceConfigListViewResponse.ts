@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from "./ComponentType";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { ComponentType } from './ComponentType';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
 
 /**
  * Limited schema that supplies the minimum details for the Experience Config list view
@@ -16,3 +16,4 @@ export type ExperienceConfigListViewResponse = {
   updated_at: string;
   disabled: boolean;
 };
+

@@ -7,3 +7,4 @@ export type MessagingTemplateResponse = {
   content: any;
   label: string;
 };
+

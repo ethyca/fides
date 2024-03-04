@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Identity } from "./Identity";
-import type { ServingComponent } from "./ServingComponent";
+import type { Identity } from './Identity';
+import type { ServingComponent } from './ServingComponent';
 
 /**
  * Request body to use when saving that consent was served
@@ -27,3 +27,4 @@ export type RecordConsentServedRequest = {
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
 };
+

@@ -10,3 +10,4 @@ export type ExecutionApplicationConfig = {
   disable_consent_identity_verification?: boolean;
   require_manual_request_approval?: boolean;
 };
+

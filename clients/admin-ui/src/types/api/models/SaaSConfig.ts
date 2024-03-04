@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClientConfig } from "./ClientConfig";
-import type { ConnectorParam } from "./ConnectorParam";
-import type { ConsentRequestMap } from "./ConsentRequestMap";
-import type { Endpoint } from "./Endpoint";
-import type { ExternalDatasetReference } from "./ExternalDatasetReference";
-import type { RateLimitConfig } from "./RateLimitConfig";
-import type { SaaSRequest } from "./SaaSRequest";
+import type { ClientConfig } from './ClientConfig';
+import type { ConnectorParam } from './ConnectorParam';
+import type { ConsentRequestMap } from './ConsentRequestMap';
+import type { Endpoint } from './Endpoint';
+import type { ExternalDatasetReference } from './ExternalDatasetReference';
+import type { RateLimitConfig } from './RateLimitConfig';
+import type { SaaSRequest } from './SaaSRequest';
 
 /**
  * Used to store endpoint and param configurations for a SaaS connector.
@@ -36,3 +36,4 @@ export type SaaSConfig = {
   consent_requests?: ConsentRequestMap;
   user_guide?: string;
 };
+

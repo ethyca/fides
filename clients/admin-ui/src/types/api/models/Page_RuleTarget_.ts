@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { RuleTarget } from "./RuleTarget";
+import type { RuleTarget } from './RuleTarget';
 
 export type Page_RuleTarget_ = {
   items: Array<RuleTarget>;
@@ -11,3 +11,4 @@ export type Page_RuleTarget_ = {
   size: number;
   pages?: number;
 };
+

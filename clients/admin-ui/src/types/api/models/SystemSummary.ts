@@ -16,3 +16,4 @@ export type SystemSummary = {
   legal_bases: number;
   consent_categories: number;
 };
+

@@ -9,3 +9,4 @@ export type MaskingAPIResponse = {
   plain: Array<string>;
   masked_values: Array<any>;
 };
+

@@ -8,3 +8,4 @@
 export type ExperienceConfigDisabledUpdate = {
   disabled: boolean;
 };
+

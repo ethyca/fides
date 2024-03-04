@@ -6,3 +6,4 @@ export type MessagingTemplateRequest = {
   key: string;
   content: any;
 };
+

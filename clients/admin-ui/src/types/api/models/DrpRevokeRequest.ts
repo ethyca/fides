@@ -9,3 +9,4 @@ export type DrpRevokeRequest = {
   request_id: string;
   reason?: string;
 };
+

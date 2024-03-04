@@ -27,3 +27,4 @@ export type MariaDBDocsSchema = {
    */
   dbname: string;
 };
+

@@ -6,8 +6,21 @@ import {
   ExperienceTranslationCreate,
   ExperienceTranslationResponse,
   Language,
+  PrivacyNoticeRegion,
   SupportedLanguage,
 } from "~/types/api";
+
+interface LocationOrLocationGroup {
+  selected?: boolean;
+  id: string;
+}
+
+export const getSelectedLocations = (
+  allLocations?: LocationOrLocationGroup[]
+) =>
+  allLocations
+    ?.filter((loc) => loc.selected)
+    .map((loc) => loc.id as PrivacyNoticeRegion) ?? [];
 
 export const defaultTranslations: ExperienceTranslationCreate[] = [
   {

@@ -13,9 +13,9 @@
  * along with the generated dataset, passed from UI
  */
 export enum ClassificationStatus {
-  CREATED = "Created",
-  PROCESSING = "Processing",
-  COMPLETE = "Complete",
-  FAILED = "Failed",
-  REVIEWED = "Reviewed",
+  CREATED = 'Created',
+  PROCESSING = 'Processing',
+  COMPLETE = 'Complete',
+  FAILED = 'Failed',
+  REVIEWED = 'Reviewed',
 }

@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EmbeddedPurpose } from "./EmbeddedPurpose";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { EmbeddedPurpose } from './EmbeddedPurpose';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * Schema for a TCF Vendor with Consent legal basis
@@ -16,3 +16,4 @@ export type TCFVendorConsentRecord = {
   default_preference?: UserConsentPreference;
   purpose_consents?: Array<EmbeddedPurpose>;
 };
+

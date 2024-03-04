@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ResponseFormat } from "./ResponseFormat";
-import type { StorageType } from "./StorageType";
+import type { ResponseFormat } from './ResponseFormat';
+import type { StorageType } from './StorageType';
 
 /**
  * Storage Destination Response Schema
@@ -16,3 +16,4 @@ export type StorageDestinationResponse = {
   format: ResponseFormat;
   is_default?: boolean;
 };
+
