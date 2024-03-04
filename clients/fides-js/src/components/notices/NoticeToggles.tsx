@@ -1,7 +1,7 @@
 import { h } from "preact";
 
 import { ConsentMechanism, PrivacyNotice } from "../../lib/consent-types";
-import type { I18n } from "../../lib/i18n";
+import { DEFAULT_LOCALE, I18n, messageExists } from "../../lib/i18n";
 
 import Divider from "../Divider";
 
@@ -30,14 +30,34 @@ const NoticeToggles = ({
     }
   };
 
+
+  /**
+   * TODO: function docs
+   */
+  const extractTranslations = (notice: PrivacyNotice): { title?: string, description?: string } => {
+    const titleMessageId = `exp.notices.${notice.id}.title`;
+    const descriptionMessageId = `exp.notices.${notice.id}.description`;
+    if (messageExists(i18n, titleMessageId) && messageExists(i18n, descriptionMessageId)) {
+      const title = i18n.t(titleMessageId);
+      const description = i18n.t(descriptionMessageId);
+      return { title, description };
+    } else {
+      // Prefer the default ("en") translation, otherwise fallback to the first translation found
+      const fallbackTranslation = notice.translations.find(e => e.language === "en") || notice.translations[0];
+      if (fallbackTranslation) {
+        // TODO: update preferences reporting...
+        const title = fallbackTranslation.title;
+        const description = fallbackTranslation.description;
+        return { title, description };
+      }
+    }
+    return { title: undefined, description: undefined }
+  };
+
   return (
     <div>
       {notices.map((notice, idx) => {
-        // TODO (PROD-1597): Add fallback behaviour here to display default
-        // translation if there's a locale mismatch
-        const i18nKey = `exp.notices.${notice.id}`;
-        const title = i18n.t(`${i18nKey}.title`);
-        const description = i18n.t(`${i18nKey}.description`);
+        const { title, description } = extractTranslations(notice);
         const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
         const isLast = idx === notices.length - 1;
         const noticeKey = notice.notice_key;
