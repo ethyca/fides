@@ -4,7 +4,7 @@ saas_config:
   type: delighted
   description: A sample schema representing the Delighted connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/delighted
-  version: 0.1.3
+  version: 0.1.4
 
   connector_params:
     - name: domain

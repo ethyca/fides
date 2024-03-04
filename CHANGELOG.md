@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.31.1...main)
 
+### Fixed
+
+- Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
+
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
 
 ### Added
@@ -51,7 +55,6 @@ The types of changes are:
 ### Fixed
 
 - Fixing issue when modifying Policies, Rules, or RuleTargets as a root user [#4582](https://github.com/ethyca/fides/pull/4582)
-- Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
 
 ## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
 
