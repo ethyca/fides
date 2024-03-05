@@ -6,8 +6,8 @@
  * Defines the periods supported by rate limit config
  */
 export enum RateLimitPeriod {
-  SECOND = 'second',
-  MINUTE = 'minute',
-  HOUR = 'hour',
-  DAY = 'day',
+  SECOND = "second",
+  MINUTE = "minute",
+  HOUR = "hour",
+  DAY = "day",
 }

@@ -8,4 +8,3 @@
 export type ConsentConfig = {
   override_vendor_purposes?: boolean;
 };
-

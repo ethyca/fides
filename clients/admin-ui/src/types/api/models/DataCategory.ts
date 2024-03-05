@@ -45,4 +45,3 @@ export type DataCategory = {
    */
   active?: boolean;
 };
-

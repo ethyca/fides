@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { S3AuthMethod } from './S3AuthMethod';
+import type { S3AuthMethod } from "./S3AuthMethod";
 
 /**
  * The details required to represent an AWS S3 storage bucket.
@@ -13,4 +13,3 @@ export type StorageDetailsS3 = {
   bucket: string;
   max_retries?: number;
 };
-

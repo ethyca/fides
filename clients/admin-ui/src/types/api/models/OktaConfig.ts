@@ -9,4 +9,3 @@ export type OktaConfig = {
   orgUrl: string;
   token: string;
 };
-

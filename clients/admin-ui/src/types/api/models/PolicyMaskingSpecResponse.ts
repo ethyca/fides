@@ -10,4 +10,3 @@
 export type PolicyMaskingSpecResponse = {
   strategy: string;
 };
-

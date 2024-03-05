@@ -6,6 +6,6 @@
  * An enumeration.
  */
 export enum S3AuthMethod {
-  AUTOMATIC = 'automatic',
-  SECRET_KEYS = 'secret_keys',
+  AUTOMATIC = "automatic",
+  SECRET_KEYS = "secret_keys",
 }

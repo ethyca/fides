@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionTestStatus } from './ConnectionTestStatus';
+import type { ConnectionTestStatus } from "./ConnectionTestStatus";
 
 /**
  * A schema for checking status.
@@ -12,4 +12,3 @@ export type TestStatusMessage = {
   test_status?: ConnectionTestStatus;
   failure_reason?: string;
 };
-

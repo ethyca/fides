@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from './ConsentMechanism';
-import type { Cookies } from './Cookies';
-import type { EnforcementLevel } from './EnforcementLevel';
-import type { GPPFieldMapping } from './GPPFieldMapping';
-import type { NoticeTranslationResponse } from './NoticeTranslationResponse';
-import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
-import type { UserConsentPreference } from './UserConsentPreference';
+import type { ConsentMechanism } from "./ConsentMechanism";
+import type { Cookies } from "./Cookies";
+import type { EnforcementLevel } from "./EnforcementLevel";
+import type { GPPFieldMapping } from "./GPPFieldMapping";
+import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
+import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
  * Detailed Privacy Notice Response that also calculates which regions
@@ -39,4 +39,3 @@ export type PrivacyNoticeResponseWithRegions = {
    */
   configured_regions?: Array<PrivacyNoticeRegion>;
 };
-

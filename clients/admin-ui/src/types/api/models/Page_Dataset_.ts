@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Dataset } from './Dataset';
+import type { Dataset } from "./Dataset";
 
 export type Page_Dataset_ = {
   items: Array<Dataset>;
@@ -11,4 +11,3 @@ export type Page_Dataset_ = {
   size: number;
   pages?: number;
 };
-

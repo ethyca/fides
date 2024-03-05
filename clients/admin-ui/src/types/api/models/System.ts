@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Cookies } from './Cookies';
-import type { DataFlow } from './DataFlow';
-import type { DataResponsibilityTitle } from './DataResponsibilityTitle';
-import type { LegalBasisForProfilingEnum } from './LegalBasisForProfilingEnum';
-import type { PrivacyDeclaration } from './PrivacyDeclaration';
-import type { SystemMetadata } from './SystemMetadata';
+import type { Cookies } from "./Cookies";
+import type { DataFlow } from "./DataFlow";
+import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
+import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
+import type { PrivacyDeclaration } from "./PrivacyDeclaration";
+import type { SystemMetadata } from "./SystemMetadata";
 
 /**
  * The System resource model.
@@ -180,4 +180,3 @@ export type System = {
    */
   cookies?: Array<Cookies>;
 };
-

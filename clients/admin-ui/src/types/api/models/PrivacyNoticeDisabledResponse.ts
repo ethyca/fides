@@ -9,4 +9,3 @@ export type PrivacyNoticeDisabledResponse = {
   disabled: boolean;
   id: string;
 };
-

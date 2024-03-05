@@ -10,4 +10,3 @@ export type MessagingServiceDetailsMailgun = {
   api_version?: string;
   domain: string;
 };
-

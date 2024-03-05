@@ -9,4 +9,3 @@ export type BulkUpdateFailed = {
   message: string;
   data: any;
 };
-

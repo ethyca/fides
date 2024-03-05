@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from './ComponentType';
-import type { ExperienceTranslationResponse } from './ExperienceTranslationResponse';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
-import type { SupportedLanguage } from './SupportedLanguage';
+import type { ComponentType } from "./ComponentType";
+import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { SupportedLanguage } from "./SupportedLanguage";
 
 /**
  * Schema for embedding an Experience Config in a Privacy Experience response.
@@ -75,4 +75,3 @@ export type ExperienceConfigResponseNoNotices = {
   component: ComponentType;
   translations?: Array<ExperienceTranslationResponse>;
 };
-

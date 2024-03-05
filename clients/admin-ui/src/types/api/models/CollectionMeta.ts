@@ -9,4 +9,3 @@ export type CollectionMeta = {
   after?: Array<string>;
   skip_processing?: boolean;
 };
-

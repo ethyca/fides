@@ -9,4 +9,3 @@ export type ExperienceConfigDisabledResponse = {
   disabled: boolean;
   id: string;
 };
-

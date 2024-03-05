@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Consent } from './Consent';
-import type { CustomPrivacyRequestField } from './CustomPrivacyRequestField';
-import type { Identity } from './Identity';
+import type { Consent } from "./Consent";
+import type { CustomPrivacyRequestField } from "./CustomPrivacyRequestField";
+import type { Identity } from "./Identity";
 
 /**
  * Data required to create a PrivacyRequest
@@ -21,4 +21,3 @@ export type PrivacyRequestCreate = {
   encryption_key?: string;
   consent_preferences?: Array<Consent>;
 };
-

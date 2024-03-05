@@ -9,4 +9,3 @@ export type Strategy = {
   strategy: string;
   configuration: any;
 };
-

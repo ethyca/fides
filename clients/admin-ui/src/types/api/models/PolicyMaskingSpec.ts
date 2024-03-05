@@ -9,4 +9,3 @@ export type PolicyMaskingSpec = {
   strategy: string;
   configuration: any;
 };
-

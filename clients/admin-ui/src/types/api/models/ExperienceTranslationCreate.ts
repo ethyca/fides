@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SupportedLanguage } from './SupportedLanguage';
+import type { SupportedLanguage } from "./SupportedLanguage";
 
 /**
  * Overrides ExperienceTranslation fields to make some fields required on create
@@ -52,4 +52,3 @@ export type ExperienceTranslationCreate = {
   banner_description?: string;
   description: string;
 };
-

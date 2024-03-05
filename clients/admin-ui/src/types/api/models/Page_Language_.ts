@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Language } from './Language';
+import type { Language } from "./Language";
 
 export type Page_Language_ = {
   items: Array<Language>;
@@ -11,4 +11,3 @@ export type Page_Language_ = {
   size: number;
   pages?: number;
 };
-

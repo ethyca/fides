@@ -27,4 +27,3 @@ export type MSSQLDocsSchema = {
    */
   dbname: string;
 };
-

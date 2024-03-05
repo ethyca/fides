@@ -8,4 +8,3 @@
 export type DatabaseHealthCheck = {
   database: string;
 };
-

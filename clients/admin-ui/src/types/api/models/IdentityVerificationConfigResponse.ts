@@ -10,4 +10,3 @@ export type IdentityVerificationConfigResponse = {
   disable_consent_identity_verification: boolean;
   valid_email_config_exists: boolean;
 };
-

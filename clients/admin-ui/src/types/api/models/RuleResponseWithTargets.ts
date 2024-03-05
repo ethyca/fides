@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from './ActionType';
-import type { PolicyMaskingSpecResponse } from './PolicyMaskingSpecResponse';
-import type { RuleTarget } from './RuleTarget';
-import type { StorageDestinationResponse } from './StorageDestinationResponse';
+import type { ActionType } from "./ActionType";
+import type { PolicyMaskingSpecResponse } from "./PolicyMaskingSpecResponse";
+import type { RuleTarget } from "./RuleTarget";
+import type { StorageDestinationResponse } from "./StorageDestinationResponse";
 
 /**
  * The schema to use when returning a Rule via the API and when including the Rule's targets
@@ -20,4 +20,3 @@ export type RuleResponseWithTargets = {
   storage_destination?: StorageDestinationResponse;
   masking_strategy?: PolicyMaskingSpecResponse;
 };
-
