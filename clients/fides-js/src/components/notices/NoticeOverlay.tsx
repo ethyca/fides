@@ -59,8 +59,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return [];
   }, [cookie, experience]);
 
-  // Determine which ExperienceConfig history ID should be used for the
-  // reporting APIs, based on the selected locale
+  /**
+   * Determine which ExperienceConfig translation is being used based on the
+   * current locale and memo-ize it's history ID to use for all API calls
+   */
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
@@ -72,7 +74,19 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return undefined;
   }, [experience, i18n]);
 
-  // TODO: comment
+  /**
+   * Collect the given PrivacyNotices into a list of "items" for rendering.
+   *
+   * Each "item" includes both:
+   * 1) notice: The PrivacyNotice itself with it's properties like keys,
+   *    preferences, etc.
+   * 2) bestTranslation: The "best" translation for the notice based on the
+   *    current locale
+   *
+   * We memoize these together to avoid repeatedly figuring out the "best"
+   * translation on every render, since it will only change if the overall
+   * locale changes!
+   */
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
     () =>
       (experience.privacy_notices || []).map((notice) => {
@@ -112,7 +126,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     };
   });
 
-  // TODO: comment
   const { servedNotice } = useConsentServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {

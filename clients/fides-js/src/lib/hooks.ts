@@ -78,19 +78,18 @@ const extractIds = <T extends { id: string | number }[]>(
 };
 
 export const useConsentServed = ({
+  options,
+  privacyExperience,
   privacyExperienceConfigHistoryId,
   privacyNoticeHistoryIds,
-  options,
   userGeography,
-  privacyExperience,
   acknowledgeMode,
 }: {
-  // TODO: don't allow history IDs to be optional, to force some type safety
+  options: FidesOptions;
+  privacyExperience: PrivacyExperience;
   privacyExperienceConfigHistoryId?: string;
   privacyNoticeHistoryIds?: string[];
-  options: FidesOptions;
   userGeography?: string;
-  privacyExperience: PrivacyExperience;
   acknowledgeMode?: boolean;
 }) => {
   const [servedNotice, setServedNotice] =
@@ -109,10 +108,11 @@ export const useConsentServed = ({
       }
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_config_history_id: privacyExperienceConfigHistoryId,
+        privacy_experience_config_history_id:
+          privacyExperienceConfigHistoryId || "",
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
-        privacy_notice_history_ids: privacyNoticeHistoryIds,
+        privacy_notice_history_ids: privacyNoticeHistoryIds || [],
         tcf_purpose_consents: extractIds(
           privacyExperience?.tcf_purpose_consents
         ),
@@ -134,7 +134,7 @@ export const useConsentServed = ({
         tcf_system_legitimate_interests: extractIds(
           privacyExperience?.tcf_system_legitimate_interests
         ),
-        serving_component: event.detail.extraDetails.servingComponent,
+        serving_component: String(event.detail.extraDetails.servingComponent),
       };
       const result = await patchNoticesServed({
         request,

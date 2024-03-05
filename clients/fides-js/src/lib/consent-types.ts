@@ -718,7 +718,7 @@ export type RecordConsentServedRequest = {
   privacy_experience_config_history_id?: string;
   user_geography?: string;
   acknowledge_mode?: boolean;
-  serving_component: ServingComponent;
+  serving_component: string; // NOTE: uses a generic string instead of an enum
 };
 
 /**
