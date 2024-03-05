@@ -15,7 +15,7 @@ const PropertyActions = ({ property }: Props) => {
   const router = useRouter();
 
   const handleEdit = () => {
-    router.push(`${PROPERTIES_ROUTE}/${property.key}`);
+    router.push(`${PROPERTIES_ROUTE}/${property.id}`);
   };
 
   return (
@@ -27,7 +27,10 @@ const PropertyActions = ({ property }: Props) => {
         size="xs"
         marginRight="10px"
         icon={<EditIcon />}
-        onClick={handleEdit}
+        onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+          e.stopPropagation();
+          handleEdit();
+        }}
       />
     </Box>
   );

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import random
 import string
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 from uuid import uuid4
 
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
@@ -51,6 +51,29 @@ class Property(Base):
         lazy="selectin",
     )
 
+    @classmethod
+    def create(
+        cls: Type[Property],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,
+    ) -> Property:
+        experiences = data.pop("experiences", [])
+        prop: Property = super().create(db=db, data=data, check_name=check_name)
+        link_experience_configs_to_property(
+            db, experience_configs=experiences, prop=prop
+        )
+        return prop
+
+    def update(self, db: Session, *, data: Dict[str, Any]) -> Property:
+        experiences = data.pop("experiences", [])
+        super().update(db=db, data=data)
+        link_experience_configs_to_property(
+            db, experience_configs=experiences, prop=self
+        )
+        return self
+
 
 class PrivacyExperienceConfigProperty(Base):
     @declared_attr
@@ -87,3 +110,33 @@ class PrivacyExperienceConfigProperty(Base):
         nullable=False,
         primary_key=True,
     )
+
+
+def link_experience_configs_to_property(
+    db: Session,
+    *,
+    experience_configs: Optional[List[Dict[str, Any]]] = None,
+    prop: Property,
+) -> List[PrivacyExperienceConfig]:
+    """
+    Link supplied experience configs to the property.
+    """
+    # delayed import to avoid circular declarations
+    from fides.api.models.privacy_experience import PrivacyExperienceConfig
+
+    if experience_configs is None:
+        return []
+
+    new_experience_configs = (
+        db.query(PrivacyExperienceConfig)
+        .filter(
+            PrivacyExperienceConfig.id.in_(
+                [experience_config["id"] for experience_config in experience_configs]
+            )
+        )
+        .all()
+    )
+
+    prop.experiences = new_experience_configs
+    prop.save(db)
+    return prop.experiences

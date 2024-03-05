@@ -27,9 +27,9 @@ interface Props {
 }
 
 export interface FormValues {
-  id: string;
+  id?: string;
   name: string;
-  type: string;
+  type: PropertyType;
   experiences: Array<MinimalPrivacyExperience>;
 }
 
@@ -69,7 +69,12 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
   };
 
   const initialValues = useMemo(
-    () => property || { name: "", type: "", experiences: [] },
+    () =>
+      property || {
+        name: "",
+        type: PropertyType.WEBSITE,
+        experiences: [],
+      },
     [property]
   );
 
@@ -79,67 +84,70 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
     >
-      <Form
-        style={{
-          paddingTop: "12px",
-          paddingBottom: "12px",
-        }}
-      >
-        <Box py={3}>
-          <FormSection title="Property details">
-            <CustomTextInput
-              isRequired
-              label="Property name"
-              name="name"
-              tooltip="Unique name to identify this property"
-              variant="stacked"
-            />
-            <CustomSelect
-              isRequired
-              label="Type"
-              name="type"
-              options={enumToOptions(PropertyType)}
-              variant="stacked"
-            />
-          </FormSection>
-        </Box>
-        <Box py={3}>
-          <ExperiencesFormSection />
-        </Box>
-        {property && (
+      {({ dirty, isValid, isSubmitting }) => (
+        <Form
+          style={{
+            paddingTop: "12px",
+            paddingBottom: "12px",
+          }}
+        >
           <Box py={3}>
-            <FormSection title="Advanced settings">
-              <CustomClipboardCopy
-                label="Property ID"
-                name="id"
-                tooltip="Automatically generated unique ID for this property, used for developer configurations"
+            <FormSection title="Property details">
+              <CustomTextInput
+                isRequired
+                label="Property name"
+                name="name"
+                tooltip="Unique name to identify this property"
                 variant="stacked"
-                readOnly
+              />
+              <CustomSelect
+                isRequired
+                label="Type"
+                name="type"
+                options={enumToOptions(PropertyType)}
+                variant="stacked"
               />
             </FormSection>
           </Box>
-        )}
-        <Flex justifyContent="right" width="100%" paddingTop={2}>
-          <Button
-            size="sm"
-            type="submit"
-            variant="outline"
-            isLoading={false}
-            mr={3}
-            onClick={handleCancel}
-          >
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            type="submit"
-            colorScheme="primary"
-            isLoading={false}
-          >
-            Save
-          </Button>
-        </Flex>
-      </Form>
+          <Box py={3}>
+            <ExperiencesFormSection />
+          </Box>
+          {property && (
+            <Box py={3}>
+              <FormSection title="Advanced settings">
+                <CustomClipboardCopy
+                  label="Property ID"
+                  name="id"
+                  tooltip="Automatically generated unique ID for this property, used for developer configurations"
+                  variant="stacked"
+                  readOnly
+                />
+              </FormSection>
+            </Box>
+          )}
+          <Flex justifyContent="right" width="100%" paddingTop={2}>
+            <Button
+              size="sm"
+              type="submit"
+              variant="outline"
+              isLoading={false}
+              mr={3}
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              type="submit"
+              colorScheme="primary"
+              isDisabled={isSubmitting || !dirty || !isValid}
+              isLoading={isSubmitting}
+            >
+              Save
+            </Button>
+          </Flex>
+        </Form>
+      )}
     </Formik>
   );
 };

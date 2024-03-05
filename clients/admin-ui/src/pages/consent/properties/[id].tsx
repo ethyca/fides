@@ -23,7 +23,7 @@ const EditPropertyPage: NextPage = () => {
   const handleSubmit = async (values: FormValues) => {
     const { id, ...updateValues } = values;
 
-    const result = await updateProperty({ id, property: updateValues });
+    const result = await updateProperty({ id: id!, property: updateValues });
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));

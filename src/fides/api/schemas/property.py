@@ -19,6 +19,11 @@ class PropertyType(Enum):
     other = "Other"
 
 
+class MinimalProperty(FidesSchema):
+    id: str
+    name: str
+
+
 class Property(FidesSchema):
     name: str
     type: PropertyType

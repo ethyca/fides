@@ -278,6 +278,7 @@ class PrivacyExperienceConfig(
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
         privacy_notice_ids = data.pop("privacy_notice_ids", [])
+        properties = data.pop("properties", [])
         data.pop(
             "id", None
         )  # Default templates may have ids but we don't want to use them here
@@ -305,6 +306,8 @@ class PrivacyExperienceConfig(
         link_notices_to_experience_config(
             db, notice_ids=privacy_notice_ids, experience_config=experience_config
         )
+        # Link Properties to this Privacy Experience config via the PrivacyExperienceConfigProperty table
+        link_properties_to_experience_config(db, properties, experience_config)
 
         return experience_config
 
@@ -323,6 +326,7 @@ class PrivacyExperienceConfig(
         request_translations = data.pop("translations", [])
         regions = data.pop("regions", [])
         privacy_notice_ids = data.pop("privacy_notice_ids", [])
+        properties = data.pop("properties", [])
 
         # Do a patch update of the existing privacy experience config if applicable
         config_updated = update_if_modified(self, db=db, data=data)
@@ -368,6 +372,8 @@ class PrivacyExperienceConfig(
         link_notices_to_experience_config(
             db, notice_ids=privacy_notice_ids, experience_config=self
         )
+        # Link Properties to this Privacy Experience config via the PrivacyExperienceConfigProperty table
+        link_properties_to_experience_config(db, properties, self)
 
         return self  # type: ignore[return-value]
 
@@ -387,6 +393,7 @@ class PrivacyExperienceConfig(
         # to prevent the ExperienceConfig "dry_update" from being added to Session.new
         # (which would cause another PrivacyExperienceConfig to be created!)
         updated_attributes.pop("privacy_notices", [])
+        updated_attributes.pop("properties", [])
 
         return PrivacyExperienceConfig(**updated_attributes)
 
@@ -654,6 +661,24 @@ def link_notices_to_experience_config(
 
     experience_config.save(db)
     return experience_config.privacy_notices
+
+
+def link_properties_to_experience_config(
+    db: Session,
+    properties: List[Dict[str, Any]],
+    experience_config: PrivacyExperienceConfig,
+) -> List[Property]:
+    """
+    Link supplied properties to ExperienceConfig and unlink any properties not supplied.
+    """
+    new_properties = (
+        db.query(Property)
+        .filter(Property.id.in_([prop["id"] for prop in properties]))
+        .all()
+    )
+    experience_config.properties = new_properties
+    experience_config.save(db)
+    return experience_config.properties
 
 
 def create_historical_record_for_config_and_translation(

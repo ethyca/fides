@@ -23,7 +23,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
-import { useGetPropertiesQuery } from "~/features/properties/property.slice";
+import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
 import { Page_Property_, Property } from "~/types/api";
 
 import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
@@ -92,9 +92,9 @@ export const PropertiesTable = () => {
     isFetching,
     isLoading,
     data: properties,
-  } = useGetPropertiesQuery({
-    pageIndex,
-    pageSize,
+  } = useGetAllPropertiesQuery({
+    page: pageIndex,
+    size: pageSize,
     search: globalFilter,
   });
 
@@ -120,12 +120,12 @@ export const PropertiesTable = () => {
         cell: (props) => <DefaultCell value={_.capitalize(props.getValue())} />,
         header: (props) => <DefaultHeaderCell value="Type" {...props} />,
       }),
-      columnHelper.accessor((row) => row.experiences, {
+      columnHelper.accessor((row) => row.experiences.map((exp) => exp.name), {
         id: "experiences",
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="experiences"
-            value={props.getValue().map((exp) => exp.name)}
+            value={props.getValue()}
             {...props}
           />
         ),
