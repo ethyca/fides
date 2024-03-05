@@ -221,11 +221,11 @@ CANADA_MAPPING = {
 # will be used to infer the regions associated with the post-migration experience
 # configs to which they map.
 NOTICES_TO_EXPERIENCE_CONFIG = {
-    "marketing": EEA_MAPPING,
-    "functional": EEA_MAPPING,
-    "essential": EEA_MAPPING,
-    "analytics": EEA_MAPPING,
-    "data_sales_and_sharing": US_MAPPING,
+    "marketing": [EEA_MAPPING, CANADA_MAPPING],
+    "functional": [EEA_MAPPING, CANADA_MAPPING],
+    "essential": [EEA_MAPPING, CANADA_MAPPING],
+    "analytics": [EEA_MAPPING, CANADA_MAPPING],
+    "data_sales_and_sharing": [US_MAPPING],
 }
 
 
@@ -314,18 +314,20 @@ def load_default_experience_configs():
         experience_config_type = DefaultExperienceConfigTypes(experience_config["id"])
         _raw_experience_config_map[experience_config_type] = experience_config.copy()
 
-        # the reconciled experience config will have its regions and notices populated by existing notices that are
-        # associated with this experience config. so in most cases, we start "fresh" with empty sets.
+        # the reconciled experience config will have its regions populated by existing notices that are
+        # associated with this experience config. so in most cases, we start "fresh" with an empty set.
         # the TCF experience and Canada banner modal experience are exceptions:
-        # their regions and notices are not derived from existing notices (TCF is not linked to notices; Canada experience config is net-new),
-        # so we hardcode their regions and notices to the config defaults.
+        # their regions are not derived from existing notices (TCF is not linked to notices; Canada experience config is net-new),
+        # so we hardcode their regions to the config defaults.
         if experience_config_type not in (
             DefaultExperienceConfigTypes.EEA_TCF_OVERLAY,
             DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
         ):
             experience_config["regions"] = set()
-            experience_config["privacy_notices"] = set()
+        else:
+            experience_config["regions"] = set(experience_config["regions"])
 
+        experience_config["privacy_notices"] = set()
         experience_config["needs_migration"] = (
             False  # indicator whether the record requires migration, or we can default to the template values
         )
@@ -414,46 +416,51 @@ def determine_needed_experience_configs(bind):
     existing_notices: ResultProxy = bind.execute(text(notice_query))
     for existing_notice in existing_notices:
         notice_key = existing_notice["notice_key"]
-        component_mapping = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key)
-        if component_mapping:
-            regions_to_add = set(existing_notice["regions"]).copy()
+        component_mappings = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key, [])
+        if component_mappings:
+            for component_mapping in component_mappings:
+                regions_to_add = set(existing_notice["regions"]).copy()
 
-            # remove GB subregions and replace with top-level `gb` region!
-            if not GB_REGIONS_TO_REMOVE.isdisjoint(
-                regions_to_add
-            ):  # if we have GB regions to remove
-                regions_to_add.difference_update(
-                    GB_REGIONS_TO_REMOVE
-                )  # remove the GB regions
-                regions_to_add.update(GB_REGIONS_TO_ADD)  # add the GB region
-
-            # ignore any canada regions in migration - they are not migrated,
-            # but instead handled by a net-new OOB experience
-            regions_to_add.difference_update(CA_REGIONS_TO_IGNORE)
-
-            if existing_notice["displayed_in_overlay"]:
-                experience_config = component_mapping.get(ComponentType.Overlay)
-                reconciled_experience_config_map[experience_config]["regions"].update(
+                # remove GB subregions and replace with top-level `gb` region!
+                if not GB_REGIONS_TO_REMOVE.isdisjoint(
                     regions_to_add
-                )
-                reconciled_experience_config_map[experience_config][
-                    "privacy_notices"
-                ].add(existing_notice["id"])
-                reconciled_experience_config_map[experience_config][
-                    "needs_migration"
-                ] = True
+                ):  # if we have GB regions to remove
+                    regions_to_add.difference_update(
+                        GB_REGIONS_TO_REMOVE
+                    )  # remove the GB regions
+                    regions_to_add.update(GB_REGIONS_TO_ADD)  # add the GB region
 
-            if existing_notice["displayed_in_privacy_center"]:
-                experience_config = component_mapping.get(ComponentType.PrivacyCenter)
-                reconciled_experience_config_map[experience_config]["regions"].update(
-                    regions_to_add
-                )
-                reconciled_experience_config_map[experience_config][
-                    "privacy_notices"
-                ].add(existing_notice["id"])
-                reconciled_experience_config_map[experience_config][
-                    "needs_migration"
-                ] = True
+                # ignore any canada regions in migration - they are not migrated,
+                # but instead handled by a net-new OOB experience
+                regions_to_add.difference_update(CA_REGIONS_TO_IGNORE)
+
+                if existing_notice["displayed_in_overlay"]:
+                    experience_config = component_mapping.get(ComponentType.Overlay)
+                    if experience_config:
+                        reconciled_experience_config_map[experience_config][
+                            "regions"
+                        ].update(regions_to_add)
+                        reconciled_experience_config_map[experience_config][
+                            "privacy_notices"
+                        ].add(existing_notice["id"])
+                        reconciled_experience_config_map[experience_config][
+                            "needs_migration"
+                        ] = True
+
+                if existing_notice["displayed_in_privacy_center"]:
+                    experience_config = component_mapping.get(
+                        ComponentType.PrivacyCenter
+                    )
+                    if experience_config:
+                        reconciled_experience_config_map[experience_config][
+                            "regions"
+                        ].update(regions_to_add)
+                        reconciled_experience_config_map[experience_config][
+                            "privacy_notices"
+                        ].add(existing_notice["id"])
+                        reconciled_experience_config_map[experience_config][
+                            "needs_migration"
+                        ] = True
 
     existing_experience_configs: ResultProxy = bind.execute(
         text(experience_config_query)
