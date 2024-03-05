@@ -41,7 +41,7 @@ const LocationPickerCard = ({
     );
   }
   const regulatedLocations = showRegulatedOnly
-    ? locationsForView.filter((l) => isRegulated(l, locations))
+    ? locationsForView.filter((l) => isRegulated(l))
     : locationsForView;
   const filteredLocations = search
     ? regulatedLocations.filter((l) => SEARCH_FILTER(l, search))
