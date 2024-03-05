@@ -1,5 +1,6 @@
 import {
   ConsentMethod,
+  ConsentOptionCreate,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -29,10 +30,13 @@ async function savePreferencesApi(
 ) {
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
-  const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
+  const fidesUserPreferences: ConsentOptionCreate[] = (
+    consentPreferencesToSave || []
+  ).map((preference) => ({
     preference: preference.consentPreference,
-    privacy_notice_history_id: preference.noticeHistoryId,
+    privacy_notice_history_id: preference.noticeHistoryId || "",
   }));
+
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     // TODO (PROD-1597): types
