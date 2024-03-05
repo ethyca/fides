@@ -30,6 +30,7 @@ The types of changes are:
 
 ### Changed
 - Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
+- Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
 
 ### Fixed
 - Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
