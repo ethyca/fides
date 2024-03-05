@@ -1990,7 +1990,8 @@ describe("Consent overlay", () => {
           noticesServedInterception.request.body;
         expect(identity.fides_user_device_id).to.be.a("string");
         expect(body).to.eql({
-          privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
+          privacy_experience_config_history_id:
+            "pri_exp-history-banner-modal-en-000",
           user_geography: "us_ca",
           acknowledge_mode: false,
           serving_component: "modal",
