@@ -1,4 +1,5 @@
 """Module for interaction with User endpoints/commands."""
+
 import json
 from typing import Dict, List, Tuple
 
@@ -156,7 +157,7 @@ def login_command(username: str, password: str, server_url: str) -> str:
     )
     echo_green(f"Logged in as user: {username}")
     credentials = Credentials(
-        username=username, password=password, user_id=user_id, access_token=access_token
+        username=username, user_id=user_id, access_token=access_token
     )
     credentials_path = get_credentials_path()
     write_credentials_file(credentials, credentials_path)
