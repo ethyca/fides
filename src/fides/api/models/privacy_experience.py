@@ -696,6 +696,7 @@ def create_historical_record_for_config_and_translation(
     history_data: dict = create_historical_data_from_record(privacy_experience_config)
     history_data.pop("privacy_notices", None)
     history_data.pop("translations", None)
+    history_data.pop("properties", None)
     updated_translation_data: dict = create_historical_data_from_record(
         experience_translation
     )
