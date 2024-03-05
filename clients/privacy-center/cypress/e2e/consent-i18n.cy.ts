@@ -234,8 +234,6 @@ describe("Consent i18n", () => {
         cy.get(".fides-notice-toggle-title").contains(notice.title).click();
       });
     });
-
-    // TODO (PROD-1597): test GPC labels on notices
   };
 
   describe("when auto_detect_language is true", () => {
@@ -414,7 +412,7 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe.only(`when notices are missing translations that are available in the experience for the correct language (${SPANISH_LOCALE})`, () => {
+  describe(`when notices are missing translations that are available in the experience for the correct language (${SPANISH_LOCALE})`, () => {
     beforeEach(() => {
       // Visit the demo in Spanish, but remove all non-English translations from the Advertising notice
       visitDemoWithI18n({
@@ -473,6 +471,44 @@ describe("Consent i18n", () => {
         expect(privacy_experience_id).to.eq("pri_exp-history-banner-modal-en-000");
         const noticeHistoryIDs = preferences.map((e: any) => e.privacy_notice_history_id);
         expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+      });
+    });
+  });
+
+  describe("when notices are enabled for GPC", () => {
+    it(`localizes GPC badges on notices in the correct locale (${SPANISH_LOCALE})`, () => {
+      // Visit the demo in Spanish and set GPC flag on the first notice
+      visitDemoWithI18n({
+        navigatorLanguage: SPANISH_LOCALE,
+        globalPrivacyControl: true,
+        fixture: "experience_banner_modal.json",
+        overrideExperience: (experience: any) => {
+          /* eslint-disable no-param-reassign */
+          // Modify the first notice (Advertising) to set the GPC flag
+          const notices: PrivacyNotice[] = experience.privacy_notices;
+          const adsNotice = notices[0];
+          cy.wrap(adsNotice).should("have.property", "id", "pri_notice-advertising-000");
+          adsNotice.has_gpc_flag = true;
+          return experience;
+          /* eslint-enable no-param-reassign */
+        },
+      });
+
+      // Open the modal and check the notices themselves are translated
+      // NOTE: Banner currently does not display when GPC notices exist (see PROD-????)
+      cy.get("#fides-modal-link").click();
+      testModalNoticesLocalization(SPANISH_NOTICES);
+
+      // Check the GPC badge labels on the first notice
+      const expectedGpcLabel = SPANISH_BANNER.gpc_label;
+      const expectedGpcStatusAppliedLabel = "Aplicado";
+      const expectedGpcStatusOverriddenLabel = "Anulado";
+      cy.get("#fides-modal .fides-modal-notices .fides-notice-toggle:first").within(() => {
+        cy.get(".fides-notice-toggle-title").contains(SPANISH_NOTICES[0].title);
+        cy.get(".fides-gpc-label").contains(expectedGpcLabel);
+        cy.get(".fides-gpc-label .fides-gpc-badge").contains(expectedGpcStatusAppliedLabel);
+        cy.get(".fides-toggle-input").click();
+        cy.get(".fides-gpc-label .fides-gpc-badge").contains(expectedGpcStatusOverriddenLabel);
       });
     });
   });

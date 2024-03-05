@@ -18,7 +18,11 @@ export const GpcBadge = ({
     statusLabel = i18n.t("static.gpc.status.applied");
   } else if (status === GpcStatus.OVERRIDDEN) {
     statusLabel = i18n.t("static.gpc.status.overridden");
+  } else if (status === GpcStatus.NONE) {
+    // TODO (PROD-1597): check to see if this is safe to add; previously we'd render the label but no status badge
+    return null;
   }
+
 
   return (
     <span className="fides-gpc-label">
@@ -30,6 +34,7 @@ export const GpcBadge = ({
   );
 };
 
+// TODO (PROD-1597): delete
 export const GpcBadgeForNotice = ({
   i18n,
   value,

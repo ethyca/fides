@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
+  GpcStatus,
   PrivacyNotice,
   SaveConsentPreference,
   ServingComponent,
@@ -15,7 +16,7 @@ import { debugLog } from "../../lib/consent-utils";
 import "../fides.css";
 import Overlay from "../Overlay";
 import { NoticeConsentButtons } from "../ConsentButtons";
-import NoticeToggles from "./NoticeToggles";
+import { NoticeToggles, NoticeToggleProps } from "./NoticeToggles";
 import { OverlayProps } from "../types";
 import { useConsentServed } from "../../lib/hooks";
 import { updateCookieFromNoticePreferences } from "../../lib/cookie";
@@ -54,6 +55,18 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const isAllNoticeOnly = privacyNotices.every(
     (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
   );
+
+  const noticeToggles: NoticeToggleProps[] = privacyNotices.map(notice => {
+    // TODO (PROD-1597): select appropriate translation based on locale
+    // TODO (PROD-1597): calculate GPC status for each notice
+    return {
+      noticeKey: notice.notice_key,
+      title: notice.translations[0].title,
+      description: notice.translations[0].description,
+      consentMechanism: notice.consent_mechanism,
+      gpcStatus: notice.has_gpc_flag ? GpcStatus.APPLIED : GpcStatus.NONE,
+    };
+  });
 
   const { servedNotice } = useConsentServed({
     notices: privacyNotices,
@@ -174,7 +187,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         <div>
           <div className="fides-modal-notices">
             <NoticeToggles
-              notices={privacyNotices}
+              noticeToggles={noticeToggles}
               i18n={i18n}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
