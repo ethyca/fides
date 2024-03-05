@@ -1,40 +1,30 @@
-import { Text } from "@fidesui/react";
+import { CellContext } from "@tanstack/react-table";
 import React from "react";
-import { CellProps } from "react-table";
 
-import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { EnableCell, MultiTagCell } from "~/features/common/table/";
-import { ExperienceConfigResponse } from "~/types/api";
+import { DefaultCell, EnableCell } from "~/features/common/table/v2/cells";
+import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
+import { useLimitedPatchExperienceConfigMutation } from "~/features/privacy-experience/privacy-experience.slice";
+import { ComponentType, ExperienceConfigListViewResponse } from "~/types/api";
 
-import { COMPONENT_MAP } from "./constants";
-import { useLimitedPatchExperienceConfigMutation } from "./privacy-experience.slice";
+export const ComponentCell = (value: ComponentType | undefined) => {
+  const innerText = COMPONENT_MAP.get(value!) ?? value;
+  return <DefaultCell value={innerText} />;
+};
 
-export const ComponentCell = ({
-  value,
-}: CellProps<ExperienceConfigResponse, string>) => (
-  <Text>{COMPONENT_MAP.get(value) ?? value}</Text>
-);
-
-export const LocationCell = ({
+export const EnablePrivacyExperienceCell = ({
   row,
-  ...rest
-}: CellProps<ExperienceConfigResponse, string[]>) => (
-  <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} row={row} {...rest} />
-);
-
-export const EnablePrivacyExperienceCell = (
-  cellProps: CellProps<ExperienceConfigResponse, boolean>
-) => {
+  getValue,
+}: CellContext<ExperienceConfigListViewResponse, boolean | undefined>) => {
   const [limitedPatchExperienceMutationTrigger] =
     useLimitedPatchExperienceConfigMutation();
 
-  const { row } = cellProps;
   const onToggle = async (toggle: boolean) =>
     limitedPatchExperienceMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
     });
 
+  const value = getValue()!;
   const { regions } = row.original;
   const multipleRegions = regions ? regions.length > 1 : false;
 
@@ -46,8 +36,8 @@ export const EnablePrivacyExperienceCell = (
     : "Warning, you are about to disable this privacy experience. If you continue, your privacy notices will not be accessible to users in this location.";
 
   return (
-    <EnableCell<ExperienceConfigResponse>
-      {...cellProps}
+    <EnableCell
+      value={value}
       onToggle={onToggle}
       title={title}
       message={message}
