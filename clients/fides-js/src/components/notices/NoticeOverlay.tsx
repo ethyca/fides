@@ -1,6 +1,9 @@
-import { h, Fragment, FunctionComponent } from "preact";
+import "../fides.css";
+
+import { Fragment, FunctionComponent, h } from "preact";
 import { useCallback, useMemo, useState } from "preact/hooks";
-// TODO (PROD-1597): sort out all these imports!
+
+import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -10,27 +13,23 @@ import {
   SaveConsentPreference,
   ServingComponent,
 } from "../../lib/consent-types";
-import ConsentBanner from "../ConsentBanner";
-
-import { updateConsentPreferences } from "../../lib/preferences";
 import { debugLog, getGpcStatusFromNotice } from "../../lib/consent-utils";
-
-import "../fides.css";
-import Overlay from "../Overlay";
-import { NoticeConsentButtons } from "../ConsentButtons";
-import { NoticeToggles, NoticeToggleProps } from "./NoticeToggles";
-import { OverlayProps } from "../types";
-import { useConsentServed } from "../../lib/hooks";
-import { updateCookieFromNoticePreferences } from "../../lib/cookie";
-import PrivacyPolicyLink from "../PrivacyPolicyLink";
-import { dispatchFidesEvent } from "../../lib/events";
 import { resolveConsentValue } from "../../lib/consent-value";
-import { getConsentContext } from "../../lib/consent-context";
-import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
+import { updateCookieFromNoticePreferences } from "../../lib/cookie";
+import { dispatchFidesEvent } from "../../lib/events";
+import { useConsentServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
+import { updateConsentPreferences } from "../../lib/preferences";
+import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
+import ConsentBanner from "../ConsentBanner";
+import { NoticeConsentButtons } from "../ConsentButtons";
+import Overlay from "../Overlay";
+import PrivacyPolicyLink from "../PrivacyPolicyLink";
+import { OverlayProps } from "../types";
+import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of
