@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.31.1...main)
 
+### Changed
+- Removed location and regulation beta flag [#4660](https://github.com/ethyca/fides/pull/4660)
+
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
 
 ### Added
