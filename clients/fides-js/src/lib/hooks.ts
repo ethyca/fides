@@ -109,8 +109,7 @@ export const useConsentServed = ({
       }
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        // TODO (PROD-1744): switch this over to setting history id on request
-        privacy_experience_id: privacyExperienceConfigHistoryId,
+        privacy_experience_config_history_id: privacyExperienceConfigHistoryId,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: privacyNoticeHistoryIds,

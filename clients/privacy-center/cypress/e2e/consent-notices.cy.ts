@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- TODO (PROD-1744): re-enable after fixing preference save bug */
 import {
   ConsentOptionCreate,
   PrivacyNoticeResponseWithUserPreferences,
@@ -142,8 +141,7 @@ describe("Privacy notice driven consent", () => {
         } = body;
         expect(method).to.eql("save");
         expect(code).to.eql(VERIFICATION_CODE);
-        // TODO (PROD-1744): re-enable after fixing preference save bug
-        // expect(id).to.eql(PRIVACY_CONFIG_HISTORY_ID);
+        expect(id).to.eql(PRIVACY_CONFIG_HISTORY_ID);
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- TODO (PROD-1744): re-enable after fixing preference save bug */
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
@@ -239,10 +238,9 @@ describe("Consent overlay", () => {
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
             expect(generatedUserDeviceId).to.be.a("string");
             expect(body.preferences).to.eql(expected.preferences);
-            // TODO (PROD-1744): re-enable after fixing preference save bug
-            // expect(body.privacy_experience_config_history_id).to.eql(
-            //   expected.privacy_experience_config_history_id
-            // );
+            expect(body.privacy_experience_config_history_id).to.eql(
+              expected.privacy_experience_config_history_id
+            );
             expect(body.user_geography).to.eql(expected.user_geography);
             expect(body.method).to.eql(expected.method);
           });
@@ -553,8 +551,7 @@ describe("Consent overlay", () => {
             method: ConsentMethod.SAVE,
             served_notice_history_id: "ser_notice-history-000",
           };
-          // TODO (PROD-1744): re-enable after fixing preference save bug
-          // expect(body).to.eql(expected);
+          expect(body).to.eql(expected);
         });
 
         // check that the cookie updated
@@ -646,8 +643,7 @@ describe("Consent overlay", () => {
             method: ConsentMethod.SAVE,
             served_notice_history_id: "ser_notice-history-000",
           };
-          // TODO (PROD-1744): re-enable after fixing preference save bug
-          // expect(body).to.eql(expected);
+          expect(body).to.eql(expected);
         });
 
         // check that the cookie updated
@@ -864,10 +860,9 @@ describe("Consent overlay", () => {
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
           expect(generatedUserDeviceId).to.be.a("string");
           expect(body.preferences).to.eql(expected.preferences);
-          // TODO (PROD-1744): re-enable after fixing preference save bug
-          // expect(body.privacy_experience_config_history_id).to.eql(
-          //   expected.privacy_experience_config_history_id
-          // );
+          expect(body.privacy_experience_config_history_id).to.eql(
+            expected.privacy_experience_config_history_id
+          );
           expect(body.user_geography).to.eql(expected.user_geography);
           expect(body.method).to.eql(expected.method);
         });
@@ -1995,10 +1990,7 @@ describe("Consent overlay", () => {
           noticesServedInterception.request.body;
         expect(identity.fides_user_device_id).to.be.a("string");
         expect(body).to.eql({
-          // This is the privacy_experience_config_history_id of the associated translation
-          // TODO (PROD-1744): re-enable after fixing notice served save bug; this *must* use the history id
-          // privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
-          privacy_experience_id: "pri_exp-history-banner-modal-en-000",
+          privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
           user_geography: "us_ca",
           acknowledge_mode: false,
           serving_component: "modal",

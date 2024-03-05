@@ -129,10 +129,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
-          privacy_experience_id:
+          // TODO (PROD-1748): pass in specific language shown in UI
+          privacy_experience_config_history_id:
             experience?.experience_config?.translations[0]
               .privacy_experience_config_history_id,
-          // TODO: pass in specific language shown in UI
+          // TODO (PROD-1748): pass in specific language shown in UI
           privacy_notice_history_ids: experience.privacy_notices.map(
             // @ts-ignore
             (p: PrivacyNotice) => p.translations[0].privacy_notice_history_id
@@ -200,7 +201,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
         const notice = notices.find(
-          // todo- pass in specific language shown
+          // TODO (PROD-1748): pass in specific language shown in UI
           (n) => n.translations[0].privacy_notice_history_id === historyKey
         );
         return { historyKey, preference, notice };
@@ -226,8 +227,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       browser_identity: browserIdentities,
       preferences,
       user_geography: region,
-      // todo- pass in specific language shown
-      privacy_experience_id:
+      // TODO (PROD-1748): pass in specific language shown in UI
+      privacy_experience_config_history_id:
         experience?.experience_config?.translations[0]
           .privacy_experience_config_history_id,
       method: ConsentMethod.SAVE,

@@ -35,9 +35,9 @@ async function savePreferencesApi(
   }));
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
+    // TODO (PROD-1597): types
     preferences: fidesUserPreferences,
-    // TODO (PROD-1744): use history ID on request
-    privacy_experience_id: privacyExperienceConfigHistoryId,
+    privacy_experience_config_history_id: privacyExperienceConfigHistoryId,
     user_geography: userLocationString,
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
