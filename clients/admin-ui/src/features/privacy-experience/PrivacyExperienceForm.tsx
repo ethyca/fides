@@ -27,7 +27,7 @@ import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
-import { getSelectedLocations } from "~/features/privacy-experience/form/helpers";
+import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
   selectAllPrivacyNotices,
@@ -98,8 +98,8 @@ export const PrivacyExperienceForm = ({
   const locationsRegulations = useAppSelector(selectLocationsRegulations);
 
   const allSelectedRegions = [
-    ...getSelectedLocations(locationsRegulations.locations),
-    ...getSelectedLocations(locationsRegulations.location_groups),
+    ...getSelectedRegionIds(locationsRegulations.locations),
+    ...getSelectedRegionIds(locationsRegulations.location_groups),
   ];
 
   const allLanguages = useAppSelector(selectAllLanguages);

@@ -15,7 +15,7 @@ interface LocationOrLocationGroup {
   id: string;
 }
 
-export const getSelectedLocations = (
+export const getSelectedRegionIds = (
   allLocations?: LocationOrLocationGroup[]
 ) =>
   allLocations
