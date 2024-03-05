@@ -7,6 +7,7 @@ import {
 import {
   LOCALE_REGEX,
   detectUserLocale,
+  getCurrentLocale,
   initializeI18n,
   loadMessagesFromExperience,
   loadMessagesFromFiles,
@@ -31,6 +32,7 @@ describe("i18n-utils", () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
     ),
+    get locale(): Locale { return "mock"; },
   };
 
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
@@ -342,6 +344,17 @@ describe("i18n-utils", () => {
     });
   });
 
+  describe("getCurrentLocale", () => {
+    it("returns the currently active locale", () => {
+      // NOTE: use a "real" i18n instance here to test the library itself
+      const testI18n: I18n = setupI18n();
+      testI18n.load("es", { "test.greeting": "Hola" });
+      expect(getCurrentLocale(testI18n)).toEqual("en");
+      testI18n.activate("es");
+      expect(getCurrentLocale(testI18n)).toEqual("es");
+    });
+  });
+
   describe("__fixtures__ mock data", () => {
     /**
      * Utility type to enforce some type-safety on our mock API fixtures.
@@ -490,14 +503,24 @@ describe("i18n module", () => {
         expect(testI18n.t({ id: "test.greeting" })).toEqual("Zalloz, Jest!");
         expect(testI18n.t({ id: "test.another" })).toEqual("Zam!");
       });
+
+      it("treats null/empty strings as missing keys", () => {
+        testI18n.load("zz", { "test.empty": "", "test.null": null } as any);
+        testI18n.activate("zz");
+        expect(testI18n.t({ id: "test.empty" })).toEqual("test.empty");
+        expect(testI18n.t({ id: "test.null" })).toEqual("test.null");
+        expect(testI18n.t({ id: "test.missing" })).toEqual("test.missing");
+      });
     });
 
-    it("treats null/empty strings as missing keys", () => {
-      testI18n.load("zz", { "test.empty": "", "test.null": null } as any);
-      testI18n.activate("zz");
-      expect(testI18n.t({ id: "test.empty" })).toEqual("test.empty");
-      expect(testI18n.t({ id: "test.null" })).toEqual("test.null");
-      expect(testI18n.t({ id: "test.missing" })).toEqual("test.missing");
+    describe("locale getter", () => {
+      it("returns the currently active locale", () => {
+        expect(testI18n.locale).toEqual("en");
+        testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
+        expect(testI18n.locale).toEqual("en");
+        testI18n.activate("zz");
+        expect(testI18n.locale).toEqual("zz");
+      });
     });
   });
 });

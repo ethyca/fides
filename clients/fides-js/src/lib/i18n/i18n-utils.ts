@@ -314,6 +314,13 @@ export function messageExists(i18n: I18n, id: string): boolean {
 }
 
 /**
+ * Get the currently active locale.
+ */
+export function getCurrentLocale(i18n: I18n): Locale {
+  return i18n.locale;
+}
+
+/**
  * Initialize the given i18n singleton by:
  * 1) Loading all static messages from locale files
  * 2) Detecting the user's locale
@@ -373,6 +380,10 @@ export function setupI18n(): I18n {
   return {
     activate: (locale: Locale): void => {
       currentLocale = locale;
+    },
+
+    get locale() {
+      return currentLocale;
     },
 
     load: (locale: Locale, messages: Messages): void => {
