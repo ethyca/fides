@@ -957,6 +957,7 @@ locations:
   name: District of Columbia (DC)
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_fl
   name: Florida
   belongs_to: [us]
@@ -1116,6 +1117,7 @@ locations:
   name: Puerto Rico
   belongs_to: [caribbean, us]
   continent: North America
+  default_selected: True
 - id: us_ri
   name: Rhode Island
   belongs_to: [us]
@@ -1159,8 +1161,9 @@ locations:
   name: United States Virgin Islands
   belongs_to: [caribbean, us]
   continent: North America
+  default_selected: True
 - id: us_vt
-  name: Vermon
+  name: Vermont
   belongs_to: [us]
   continent: North America
   default_selected: True
@@ -1212,6 +1215,7 @@ locations:
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_nl
   name: Newfoundland and Labrador
   belongs_to: [ca]
