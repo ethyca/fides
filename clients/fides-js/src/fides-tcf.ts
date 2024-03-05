@@ -100,7 +100,7 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateExperience = async ({
+const updateExperience = ({
   cookie,
   experience,
   debug = false,
@@ -110,7 +110,7 @@ const updateExperience = async ({
   experience: PrivacyExperience;
   debug?: boolean;
   isExperienceClientSideFetched: boolean;
-}): Promise<Partial<PrivacyExperience>> => {
+}): Partial<PrivacyExperience> => {
   if (!isExperienceClientSideFetched) {
     // If it's not client side fetched, we don't update anything since the cookie has already
     // been updated earlier.

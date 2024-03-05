@@ -222,6 +222,8 @@ export const shouldResurfaceConsent = (
   ) {
     return false;
   }
+  // TODO (PROD-1780): determine a way to check cookie vs. current state... but hardcode to true for testing
+  return true;
   // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
     !experience.privacy_notices?.every((notice) =>

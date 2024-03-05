@@ -8,6 +8,7 @@ import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
+  updateCookieFromExperience,
   updateCookieFromNoticePreferences,
 } from "./cookie";
 import {
@@ -298,7 +299,7 @@ export const initialize = async ({
     experience: PrivacyExperience;
     debug?: boolean;
     isExperienceClientSideFetched: boolean;
-  }) => Promise<Partial<PrivacyExperience>>;
+  }) => Partial<PrivacyExperience>;
 } & FidesConfig): Promise<Partial<Fides>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
@@ -342,16 +343,9 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      // apply GPC preferences
-      if (shouldInitOverlay && isPrivacyExperience(effectiveExperience)) {
-        automaticallyApplyGPCPreferences({
-          cookie,
-          fidesRegionString,
-          effectiveExperience,
-          fidesOptions: options,
-        });
-      }
-      const updatedExperience = await updateExperience({
+      // Now that we've determined the effective PrivacyExperience, update it
+      // with any client-side edits so that it's ready to use
+      const updatedExperience = updateExperience({
         cookie,
         experience: effectiveExperience,
         debug: options.debug,
@@ -359,6 +353,15 @@ export const initialize = async ({
       });
       debugLog(options.debug, "Updated experience", updatedExperience);
       Object.assign(effectiveExperience, updatedExperience);
+
+      // TODO (PROD-1780): update cookie
+      const updatedCookie = updateCookieFromExperience({
+        cookie,
+        experience: effectiveExperience,
+      });
+      debugLog(options.debug, "Updated cookie", updatedCookie);
+      Object.assign(cookie, updatedCookie);
+
       if (shouldInitOverlay) {
         await initOverlay({
           experience: effectiveExperience,
@@ -367,6 +370,14 @@ export const initialize = async ({
           options,
           renderOverlay,
         }).catch(() => {});
+
+        // Last step: apply GPC!
+        automaticallyApplyGPCPreferences({
+          cookie,
+          fidesRegionString,
+          effectiveExperience,
+          fidesOptions: options,
+        });
       }
     }
   }

@@ -149,6 +149,7 @@ const Overlay: FunctionComponent<Props> = ({
       !options.fidesEmbed,
     [cookie, experience, options]
   );
+  console.warn("renderOverlay showBanner = ", showBanner);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();

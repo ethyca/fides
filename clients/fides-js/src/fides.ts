@@ -87,12 +87,12 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateExperience = async (
+const updateExperience = (
   cookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
-): Promise<PrivacyExperience> => {
+): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent
