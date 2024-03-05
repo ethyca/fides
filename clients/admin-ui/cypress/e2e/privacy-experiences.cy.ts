@@ -41,7 +41,7 @@ describe("Privacy experiences", () => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_EXPERIENCE_ROUTE);
           cy.wait("@getExperiences");
-          cy.get("table").contains("tr", "Experience title").click();
+          cy.get("table").contains("tr", "notice enabled test").click();
           // we should still be on the same page
           cy.getByTestId("privacy-experience-detail-page").should("not.exist");
           cy.getByTestId("privacy-experience-page");
@@ -102,7 +102,7 @@ describe("Privacy experiences", () => {
       cy.intercept("GET", "/api/v1/experience-config/pri*", {
         fixture: "privacy-experiences/experienceConfig.json",
       }).as("getExperienceDetail");
-      cy.get("table").contains("tr", "Experience title").click();
+      cy.get("table").contains("tr", "notice enabled test").click();
       cy.wait("@getExperienceDetail");
       cy.getByTestId("input-name").should("have.value", "Experience title");
     });
@@ -114,9 +114,9 @@ describe("Privacy experiences", () => {
         }).as("patchExperience");
       });
 
-      it("can enable an experience", () => {
+      it.only("can enable an experience", () => {
         cy.get("table")
-          .contains("tr", "Experience title")
+          .contains("tr", "notice disabled test")
           .within(() => {
             cy.getByTestId("toggle-switch").within(() => {
               cy.get("span").should("not.have.attr", "data-checked");
@@ -135,7 +135,7 @@ describe("Privacy experiences", () => {
 
       it("can disable an experience with a warning", () => {
         cy.get("table")
-          .contains("tr", "Experience title")
+          .contains("tr", "notice enabled test")
           .within(() => {
             cy.getByTestId("toggle-switch").within(() => {
               cy.get("span").should("have.attr", "data-checked");
@@ -175,7 +175,7 @@ describe("Privacy experiences", () => {
     it.skip("can populate an experience config form with existing values", () => {
       stubExperience();
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${EXPERIENCE_ID}`);
-      cy.getByTestId("input-name").should("have.value", "Experience title");
+      cy.getByTestId("input-name").should("have.value", "notice enabled test");
     });
 
     it.skip("can submit an experience config form", () => {
