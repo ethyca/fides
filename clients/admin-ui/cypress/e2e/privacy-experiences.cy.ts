@@ -114,7 +114,7 @@ describe("Privacy experiences", () => {
         }).as("patchExperience");
       });
 
-      it.only("can enable an experience", () => {
+      it("can enable an experience", () => {
         cy.get("table")
           .contains("tr", "notice disabled test")
           .within(() => {

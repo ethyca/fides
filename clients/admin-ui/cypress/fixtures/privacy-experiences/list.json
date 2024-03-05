@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "name":"notice enabled test",
+      "name": "notice enabled test",
       "accept_button_label": "Accept all",
       "acknowledge_button_label": "Ok",
       "banner_enabled": "always_enabled",
@@ -23,7 +23,7 @@
       "regions": []
     },
     {
-      "name":"notice disabled test",
+      "name": "notice disabled test",
       "accept_button_label": "sounds good",
       "acknowledge_button_label": "ok",
       "banner_enabled": "always_disabled",
