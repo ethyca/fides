@@ -8,6 +8,7 @@ import {
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
+  PrivacyNoticeUpdate,
 } from "~/types/api";
 
 export interface State {
@@ -30,6 +31,12 @@ interface PrivacyNoticesParams {
   size?: number;
 }
 
+type PrivacyNoticeUpdateParams = PrivacyNoticeUpdate & { id: string };
+type PrivacyNoticeEnableDisableParams = Pick<
+  PrivacyNoticeUpdate,
+  "disabled"
+> & { id: string };
+
 const privacyNoticesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllPrivacyNotices: build.query<
@@ -44,12 +51,28 @@ const privacyNoticesApi = baseApi.injectEndpoints({
     }),
     patchPrivacyNotices: build.mutation<
       PrivacyNoticeResponse[],
-      Partial<PrivacyNoticeResponse>[]
+      PrivacyNoticeUpdateParams
     >({
-      query: (payload) => ({
+      query: (payload) => {
+        const { id, ...body } = payload;
+        return {
+          method: "PATCH",
+          url: `privacy-notice/${id}`,
+          params: { id },
+          body,
+        };
+      },
+      invalidatesTags: () => ["Privacy Notices"],
+    }),
+    limitedPatchPrivacyNotices: build.mutation<
+      PrivacyNoticeResponse[],
+      PrivacyNoticeEnableDisableParams
+    >({
+      query: ({ id, disabled }) => ({
         method: "PATCH",
-        url: `privacy-notice/`,
-        body: payload,
+        url: `privacy-notice/${id}/limited_update`,
+        params: { id },
+        body: { disabled },
       }),
       invalidatesTags: () => ["Privacy Notices"],
     }),
@@ -63,7 +86,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
     }),
     postPrivacyNotice: build.mutation<
       PrivacyNoticeResponse[],
-      PrivacyNoticeCreation[]
+      PrivacyNoticeCreation
     >({
       query: (payload) => ({
         method: "POST",
@@ -78,6 +101,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
 export const {
   useGetAllPrivacyNoticesQuery,
   usePatchPrivacyNoticesMutation,
+  useLimitedPatchPrivacyNoticesMutation,
   useGetPrivacyNoticeByIdQuery,
   usePostPrivacyNoticeMutation,
 } = privacyNoticesApi;

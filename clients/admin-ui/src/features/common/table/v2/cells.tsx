@@ -6,10 +6,19 @@ import {
   Checkbox,
   CheckboxProps,
   Flex,
+  Switch,
   Text,
+  useDisclosure,
+  useToast,
+  WarningIcon,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
-import { FC, ReactNode } from "react";
+import { ChangeEvent, FC, ReactNode } from "react";
+
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { errorToastParams } from "~/features/common/toast";
+import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
   value,
@@ -150,5 +159,64 @@ export const DefaultHeaderCell = <T,>({
       {value}
       {sortIcon}
     </Text>
+  );
+};
+
+type EnableCellProps = {
+  value: boolean;
+  onToggle: (data: boolean) => Promise<RTKResult>;
+  title: string;
+  message: string;
+  isDisabled?: boolean;
+};
+
+export const EnableCell = ({
+  value,
+  onToggle,
+  title,
+  message,
+  isDisabled,
+}: EnableCellProps) => {
+  const modal = useDisclosure();
+  const toast = useToast();
+  const handlePatch = async ({ enable }: { enable: boolean }) => {
+    const result = await onToggle(enable);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    }
+  };
+
+  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
+    const { checked } = event.target;
+    if (checked) {
+      await handlePatch({ enable: true });
+    } else {
+      modal.onOpen();
+    }
+  };
+
+  return (
+    <>
+      <Switch
+        colorScheme="complimentary"
+        isChecked={!value}
+        data-testid="toggle-switch"
+        disabled={isDisabled}
+        onChange={handleToggle}
+      />
+      <ConfirmationModal
+        isOpen={modal.isOpen}
+        onClose={modal.onClose}
+        onConfirm={() => {
+          handlePatch({ enable: false });
+          modal.onClose();
+        }}
+        title={title}
+        message={<Text color="gray.500">{message}</Text>}
+        continueButtonText="Confirm"
+        isCentered
+        icon={<WarningIcon color="orange.100" />}
+      />
+    </>
   );
 };
