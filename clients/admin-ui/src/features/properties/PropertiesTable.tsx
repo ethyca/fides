@@ -12,7 +12,6 @@ import {
   DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
-  GroupCountBadgeCell,
   PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
@@ -119,21 +118,6 @@ export const PropertiesTable = () => {
         id: "type",
         cell: (props) => <DefaultCell value={_.capitalize(props.getValue())} />,
         header: (props) => <DefaultHeaderCell value="Type" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.experiences, {
-        id: "experiences",
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="experiences"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => <DefaultHeaderCell value="Experience" {...props} />,
-        meta: {
-          displayText: "Experience",
-          showHeaderMenu: true,
-        },
       }),
       columnHelper.display({
         id: "actions",
