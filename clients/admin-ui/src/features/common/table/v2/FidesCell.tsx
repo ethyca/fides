@@ -74,7 +74,7 @@ export const FidesCell = <T,>({
         minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
       }}
       onClick={
-        cell.column.columnDef.header !== "Enable" && onRowClick
+        cell.column.columnDef.id !== "enable" && onRowClick
           ? () => {
               onRowClick(cell.row.original);
             }
