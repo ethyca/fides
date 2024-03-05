@@ -4,7 +4,6 @@ import {
   FidesOptions,
   PrivacyExperience,
   RecordConsentServedRequest,
-  PrivacyNotice,
   ServingComponent,
   RecordsServedResponse,
 } from "./consent-types";
@@ -79,13 +78,16 @@ const extractIds = <T extends { id: string | number }[]>(
 };
 
 export const useConsentServed = ({
-  notices,
+  privacyExperienceConfigHistoryId,
+  privacyNoticeHistoryIds,
   options,
   userGeography,
   privacyExperience,
   acknowledgeMode,
 }: {
-  notices: PrivacyNotice[];
+  // TODO: don't allow history IDs to be optional, to force some type safety
+  privacyExperienceConfigHistoryId?: string;
+  privacyNoticeHistoryIds?: string[];
   options: FidesOptions;
   userGeography?: string;
   privacyExperience: PrivacyExperience;
@@ -107,15 +109,11 @@ export const useConsentServed = ({
       }
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_id:
-          privacyExperience.experience_config?.translations[0]
-            .privacy_experience_config_history_id,
+        // TODO (PROD-1744): switch this over to setting history id on request
+        privacy_experience_id: privacyExperienceConfigHistoryId,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
-        // TODO (PROD-1744): pass in specific language shown in UI
-        privacy_notice_history_ids: notices.map(
-          (n: PrivacyNotice) => n.translations[0].privacy_notice_history_id
-        ),
+        privacy_notice_history_ids: privacyNoticeHistoryIds,
         tcf_purpose_consents: extractIds(
           privacyExperience?.tcf_purpose_consents
         ),
@@ -147,7 +145,14 @@ export const useConsentServed = ({
         setServedNotice(result);
       }
     },
-    [notices, options, acknowledgeMode, privacyExperience, userGeography]
+    [
+      privacyExperienceConfigHistoryId,
+      privacyNoticeHistoryIds,
+      options,
+      acknowledgeMode,
+      privacyExperience,
+      userGeography,
+    ]
   );
 
   useEffect(() => {

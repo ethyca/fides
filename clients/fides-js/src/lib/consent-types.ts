@@ -199,9 +199,16 @@ export class SaveConsentPreference {
 
   notice: PrivacyNotice;
 
-  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
+  noticeHistoryId?: string;
+
+  constructor(
+    notice: PrivacyNotice,
+    consentPreference: UserConsentPreference,
+    noticeHistoryId?: string
+  ) {
     this.notice = notice;
     this.consentPreference = consentPreference;
+    this.noticeHistoryId = noticeHistoryId;
   }
 }
 

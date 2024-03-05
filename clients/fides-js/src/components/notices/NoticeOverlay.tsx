@@ -5,6 +5,8 @@ import {
   ConsentMechanism,
   ConsentMethod,
   PrivacyNotice,
+  PrivacyNoticeTranslation,
+  PrivacyNoticeWithPreference,
   SaveConsentPreference,
   ServingComponent,
 } from "../../lib/consent-types";
@@ -27,6 +29,16 @@ import { getConsentContext } from "../../lib/consent-context";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 import { selectBestNoticeTranslation } from "../../lib/i18n";
 
+/**
+ * Define a special PrivacyNoticeItem, where we've narrowed the list of
+ * available translations to the singular "best" translation that should be
+ * displayed, and paired that with the source notice itself.
+ */
+type PrivacyNoticeItem = {
+  notice: PrivacyNoticeWithPreference;
+  bestTranslation: PrivacyNoticeTranslation | null;
+};
+
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
   experience,
@@ -48,39 +60,50 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     Array<PrivacyNotice["notice_key"]>
   >(initialEnabledNoticeKeys);
 
-  const privacyNotices = useMemo(
-    () => experience.privacy_notices ?? [],
-    [experience.privacy_notices]
+  // TODO: comment
+  const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
+    () =>
+      (experience.privacy_notices || []).map((notice) => {
+        const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+        return { notice, bestTranslation };
+      }),
+    [experience.privacy_notices, i18n]
   );
 
-  const isAllNoticeOnly = privacyNotices.every(
-    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+  const isAllNoticeOnly = privacyNoticeItems.every(
+    (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
   );
 
   // Calculate the "notice toggles" props for display based on the current state
-  const noticeToggles: NoticeToggleProps[] = privacyNotices.map((notice) => {
-    const translation = selectBestNoticeTranslation(i18n, notice);
-    const checked = draftEnabledNoticeKeys.indexOf(notice.notice_key) !== -1;
+  const noticeToggles: NoticeToggleProps[] = privacyNoticeItems.map((item) => {
+    const checked =
+      draftEnabledNoticeKeys.indexOf(item.notice.notice_key) !== -1;
     const consentContext = getConsentContext();
     const gpcStatus = getGpcStatusFromNotice({
       value: checked,
-      notice,
+      notice: item.notice,
       consentContext,
     });
 
     return {
-      noticeKey: notice.notice_key,
-      title: translation?.title,
-      description: translation?.description,
+      noticeKey: item.notice.notice_key,
+      title: item.bestTranslation?.title,
+      description: item.bestTranslation?.description,
       checked,
-      consentMechanism: notice.consent_mechanism,
-      disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      consentMechanism: item.notice.consent_mechanism,
+      disabled: item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
       gpcStatus,
     };
   });
 
+  // TODO: use translations correctly
   const { servedNotice } = useConsentServed({
-    notices: privacyNotices,
+    privacyExperienceConfigHistoryId:
+      experience.experience_config?.translations[0]
+        .privacy_experience_config_history_id,
+    privacyNoticeHistoryIds: privacyNoticeItems.map(
+      (e) => e.bestTranslation?.privacy_notice_history_id
+    ),
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
@@ -88,15 +111,20 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   });
 
   const createConsentPreferencesToSave = (
-    privacyNoticeList: PrivacyNotice[],
+    // TODO: remove use of the notices, only use translated toggle props
+    privacyNoticeList: PrivacyNoticeItem[],
     enabledPrivacyNoticeKeys: string[]
   ): SaveConsentPreference[] =>
-    privacyNoticeList.map((notice) => {
+    privacyNoticeList.map((item) => {
       const userPreference = transformConsentToFidesUserPreference(
-        enabledPrivacyNoticeKeys.includes(notice.notice_key),
-        notice.consent_mechanism
+        enabledPrivacyNoticeKeys.includes(item.notice.notice_key),
+        item.notice.consent_mechanism
       );
-      return new SaveConsentPreference(notice, userPreference);
+      return new SaveConsentPreference(
+        item.notice,
+        userPreference,
+        item.bestTranslation?.privacy_notice_history_id
+      );
     });
 
   const handleUpdatePreferences = useCallback(
@@ -105,7 +133,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
     ) => {
       const consentPreferencesToSave = createConsentPreferencesToSave(
-        privacyNotices,
+        privacyNoticeItems,
         enabledPrivacyNoticeKeys
       );
 
@@ -127,7 +155,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
     },
     [
-      privacyNotices,
+      privacyNoticeItems,
       cookie,
       fidesRegionString,
       experience,
@@ -225,7 +253,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isInModal
             isAcknowledge={isAllNoticeOnly}
             isMobile={isMobile}
-            saveOnly={privacyNotices.length === 1}
+            saveOnly={privacyNoticeItems.length === 1}
           />
           <PrivacyPolicyLink i18n={i18n} />
         </Fragment>

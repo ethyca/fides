@@ -123,6 +123,7 @@ const automaticallyApplyGPCPreferences = ({
     (notice) => {
       const hasPriorConsent = noticeHasConsentInCookie(notice, cookie);
       // only apply GPC for notices that do not have prior consent
+      // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
       if (
         notice.has_gpc_flag &&
         !hasPriorConsent &&
@@ -131,7 +132,11 @@ const automaticallyApplyGPCPreferences = ({
         gpcApplied = true;
         return new SaveConsentPreference(
           notice,
-          transformConsentToFidesUserPreference(false, notice.consent_mechanism)
+          transformConsentToFidesUserPreference(
+            false,
+            notice.consent_mechanism
+          ),
+          notice.translations[0].privacy_notice_history_id
         );
       }
       return new SaveConsentPreference(
@@ -139,7 +144,8 @@ const automaticallyApplyGPCPreferences = ({
         transformConsentToFidesUserPreference(
           resolveConsentValue(notice, context, cookie),
           notice.consent_mechanism
-        )
+        ),
+        notice.translations[0].privacy_notice_history_id
       );
     }
   );

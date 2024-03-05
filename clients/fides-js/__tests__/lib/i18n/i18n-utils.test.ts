@@ -293,7 +293,7 @@ describe("i18n-utils", () => {
       if (!mockExperience.privacy_notices) {
         throw new Error("Invalid mock experience test data!");
       }
-      [ mockNotice ] = mockExperience.privacy_notices;
+      [mockNotice] = mockExperience.privacy_notices;
     });
 
     it("selects an exact match for current locale if available", () => {
