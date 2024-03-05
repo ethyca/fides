@@ -21,6 +21,7 @@ async function savePreferencesApi(
   cookie: FidesCookie,
   experience: PrivacyExperience,
   consentMethod: ConsentMethod,
+  privacyExperienceConfigHistoryId?: string,
   consentPreferencesToSave?: Array<SaveConsentPreference>,
   tcf?: TcfSavePreferences,
   userLocationString?: string,
@@ -28,19 +29,15 @@ async function savePreferencesApi(
 ) {
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
-  // TODO (PROD-1744): pass in specific language shown in UI
   const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
-    privacy_notice_history_id:
-      preference.notice.translations[0].privacy_notice_history_id,
     preference: preference.consentPreference,
+    privacy_notice_history_id: preference.noticeHistoryId,
   }));
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
-    // TODO (PROD-1744): pass in specific language shown in UI
-    privacy_experience_id:
-      experience.experience_config?.translations[0]
-        .privacy_experience_config_history_id,
+    // TODO (PROD-1744): use history ID on request
+    privacy_experience_id: privacyExperienceConfigHistoryId,
     user_geography: userLocationString,
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
@@ -66,6 +63,7 @@ async function savePreferencesApi(
  */
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
+  privacyExperienceConfigHistoryId,
   experience,
   consentMethod,
   options,
@@ -76,6 +74,7 @@ export const updateConsentPreferences = async ({
   updateCookie,
 }: {
   consentPreferencesToSave?: Array<SaveConsentPreference>;
+  privacyExperienceConfigHistoryId?: string;
   experience: PrivacyExperience;
   consentMethod: ConsentMethod;
   options: FidesOptions;
@@ -108,6 +107,7 @@ export const updateConsentPreferences = async ({
         cookie,
         experience,
         consentMethod,
+        privacyExperienceConfigHistoryId,
         consentPreferencesToSave,
         tcf,
         userLocationString,

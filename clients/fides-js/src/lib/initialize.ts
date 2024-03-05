@@ -123,7 +123,6 @@ const automaticallyApplyGPCPreferences = ({
     (notice) => {
       const hasPriorConsent = noticeHasConsentInCookie(notice, cookie);
       // only apply GPC for notices that do not have prior consent
-      // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
       if (
         notice.has_gpc_flag &&
         !hasPriorConsent &&
@@ -136,6 +135,7 @@ const automaticallyApplyGPCPreferences = ({
             false,
             notice.consent_mechanism
           ),
+          // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
           notice.translations[0].privacy_notice_history_id
         );
       }
@@ -145,14 +145,20 @@ const automaticallyApplyGPCPreferences = ({
           resolveConsentValue(notice, context, cookie),
           notice.consent_mechanism
         ),
+        // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
         notice.translations[0].privacy_notice_history_id
       );
     }
   );
 
   if (gpcApplied) {
+    // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
+    const privacyExperienceConfigHistoryId =
+      effectiveExperience.experience_config?.translations[0]
+        .privacy_experience_config_history_id;
     updateConsentPreferences({
       consentPreferencesToSave,
+      privacyExperienceConfigHistoryId,
       experience: effectiveExperience,
       consentMethod: ConsentMethod.GPC,
       options: fidesOptions,

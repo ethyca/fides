@@ -232,8 +232,13 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
+  // TODO (PROD-1597): select the correct experience translation ID
+  const privacyExperienceConfigHistoryId =
+    experience.experience_config?.translations[0]
+      .privacy_experience_config_history_id;
   const { servedNotice } = useConsentServed({
-    notices: [],
+    privacyExperienceConfigHistoryId,
+    privacyNoticeHistoryIds: [],
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: false,
@@ -248,6 +253,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       updateConsentPreferences({
         consentPreferencesToSave: [],
+        privacyExperienceConfigHistoryId,
         experience,
         consentMethod,
         options,
@@ -261,7 +267,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       setDraftIds(enabledIds);
     },
-    [cookie, experience, fidesRegionString, options, servedNotice]
+    [
+      cookie,
+      experience,
+      fidesRegionString,
+      options,
+      privacyExperienceConfigHistoryId,
+      servedNotice,
+    ]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);

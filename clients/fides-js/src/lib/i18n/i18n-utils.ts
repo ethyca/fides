@@ -285,6 +285,47 @@ export function messageExists(i18n: I18n, id: string): boolean {
 }
 
 /**
+ * Helper function to select the "best" translation from the given
+ * ExperienceConfig, based on the current locale. This is used to ensure that
+ * our reporting APIs (notices served & save preferences) are given the right
+ * history IDs to use based on which locale is selected by the i18n module.
+ *
+ * NOTE: Unlike with notices, an "exact match" should occur 99% of the time,
+ * since our i18n module selects the current locale from this list of available
+ * translations! However, we do need to handle the edge case where our API might
+ * miss default English translations in the future...
+ */
+export function selectBestExperienceConfigTranslation(
+  i18n: I18n,
+  experience: ExperienceConfig
+): ExperienceConfigTranslation | null {
+  // Defensive checks
+  if (!experience || !experience.translations) {
+    return null;
+  }
+
+  // 1) Look for an exact match for the current locale
+  const currentLocale = getCurrentLocale(i18n);
+  const matchTranslation = experience.translations.find(
+    (e) => e.language === currentLocale
+  );
+  if (matchTranslation) {
+    return matchTranslation;
+  }
+
+  // 2) Fallback to default locale, if an exact match isn't found
+  const defaultTranslation = experience.translations.find(
+    (e) => e.language === DEFAULT_LOCALE
+  );
+  if (defaultTranslation) {
+    return defaultTranslation;
+  }
+
+  // 3) Fallback to first translation in the list, if the default locale isn't found
+  return experience.translations[0] || null;
+}
+
+/**
  * Helper function to select the "best" translation from a notice, based on the
  * current locale. Since we cannot guarantee that all notices will have
  * translations that match their parent experience, we can't safely just extract

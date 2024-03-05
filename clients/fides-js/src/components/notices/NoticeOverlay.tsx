@@ -27,7 +27,10 @@ import { dispatchFidesEvent } from "../../lib/events";
 import { resolveConsentValue } from "../../lib/consent-value";
 import { getConsentContext } from "../../lib/consent-context";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
-import { selectBestNoticeTranslation } from "../../lib/i18n";
+import {
+  selectBestExperienceConfigTranslation,
+  selectBestNoticeTranslation,
+} from "../../lib/i18n";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of
@@ -50,15 +53,25 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     if (experience.privacy_notices) {
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(notice, getConsentContext(), cookie);
-        return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
+        return val ? notice.notice_key : "";
       });
     }
     return [];
   }, [cookie, experience]);
 
-  const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
-    Array<PrivacyNotice["notice_key"]>
-  >(initialEnabledNoticeKeys);
+  // Determine which ExperienceConfig history ID should be used for the
+  // reporting APIs, based on the selected locale
+  // TODO (PROD-1597): can I guarantee this history ID...?
+  const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
+    if (experience.experience_config) {
+      const bestTranslation = selectBestExperienceConfigTranslation(
+        i18n,
+        experience.experience_config
+      );
+      return bestTranslation?.privacy_experience_config_history_id;
+    }
+    return undefined;
+  }, [experience, i18n]);
 
   // TODO: comment
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
@@ -69,6 +82,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       }),
     [experience.privacy_notices, i18n]
   );
+
+  const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
+    Array<string>
+  >(initialEnabledNoticeKeys);
 
   const isAllNoticeOnly = privacyNoticeItems.every(
     (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
@@ -96,14 +113,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     };
   });
 
-  // TODO: use translations correctly
+  // TODO: comment
   const { servedNotice } = useConsentServed({
-    privacyExperienceConfigHistoryId:
-      experience.experience_config?.translations[0]
-        .privacy_experience_config_history_id,
-    privacyNoticeHistoryIds: privacyNoticeItems.map(
-      (e) => e.bestTranslation?.privacy_notice_history_id
-    ),
+    privacyExperienceConfigHistoryId,
+    privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
+      const id = e.bestTranslation?.privacy_notice_history_id;
+      if (id) {
+        ids.push(id);
+      }
+      return ids;
+    }, [] as string[]),
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
@@ -111,7 +130,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   });
 
   const createConsentPreferencesToSave = (
-    // TODO: remove use of the notices, only use translated toggle props
     privacyNoticeList: PrivacyNoticeItem[],
     enabledPrivacyNoticeKeys: string[]
   ): SaveConsentPreference[] =>
@@ -139,6 +157,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
       updateConsentPreferences({
         consentPreferencesToSave,
+        privacyExperienceConfigHistoryId,
         experience,
         consentMethod,
         options,
@@ -155,11 +174,12 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
     },
     [
-      privacyNoticeItems,
       cookie,
       fidesRegionString,
       experience,
       options,
+      privacyExperienceConfigHistoryId,
+      privacyNoticeItems,
       servedNotice,
     ]
   );

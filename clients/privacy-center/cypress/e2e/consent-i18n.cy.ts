@@ -465,7 +465,10 @@ describe("Consent i18n", () => {
       // Open the modal and test the "notices served" API
       openAndTestModalLocalization(SPANISH_MODAL);
       cy.wait("@patchNoticesServed").then((interception) => {
-        const { privacy_notice_history_ids } = interception.request.body;
+        const { privacy_experience_id, privacy_notice_history_ids } = interception.request.body;
+        // TODO (PROD-1744): update test after fixing preference save bug
+        // expect(privacy_experience_config_history_id).to.eq("pri_exp-history-banner-modal-en-000");
+        expect(privacy_experience_id).to.eql("pri_exp-history-banner-modal-es-000");
         expect(privacy_notice_history_ids).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
       });
 
@@ -477,7 +480,7 @@ describe("Consent i18n", () => {
         // TODO (PROD-1744): update test after fixing preference save bug
         // expect(privacy_experience_config_history_id).to.eq("pri_exp-history-banner-modal-en-000");
         expect(privacy_experience_id).to.eq(
-          "pri_exp-history-banner-modal-en-000"
+          "pri_exp-history-banner-modal-es-000"
         );
         const noticeHistoryIDs = preferences.map(
           (e: any) => e.privacy_notice_history_id
