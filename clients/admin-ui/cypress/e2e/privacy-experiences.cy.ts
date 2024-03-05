@@ -3,8 +3,8 @@ import { stubPlus } from "cypress/support/stubs";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const EXPERIENCE_ID = "0";
-const DISABLED_EXPERIENCE_ID = "1";
+const EXPERIENCE_ID = "pri_0338d055-f91b-4a17-ad4e-600c61551199";
+const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
 
 describe("Privacy experiences", () => {
   beforeEach(() => {
@@ -41,7 +41,7 @@ describe("Privacy experiences", () => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_EXPERIENCE_ROUTE);
           cy.wait("@getExperiences");
-          cy.getByTestId(`row-${EXPERIENCE_ID}`).click();
+          cy.get("table").contains("tr", "Experience title").click();
           // we should still be on the same page
           cy.getByTestId("privacy-experience-detail-page").should("not.exist");
           cy.getByTestId("privacy-experience-page");
@@ -102,7 +102,7 @@ describe("Privacy experiences", () => {
       cy.intercept("GET", "/api/v1/experience-config/pri*", {
         fixture: "privacy-experiences/experienceConfig.json",
       }).as("getExperienceDetail");
-      cy.getByTestId(`row-${EXPERIENCE_ID}`).click();
+      cy.get("table").contains("tr", "Experience title").click();
       cy.wait("@getExperienceDetail");
       cy.getByTestId("input-name").should("have.value", "Experience title");
     });
@@ -115,12 +115,14 @@ describe("Privacy experiences", () => {
       });
 
       it("can enable an experience", () => {
-        cy.getByTestId(`row-${DISABLED_EXPERIENCE_ID}`).within(() => {
-          cy.getByTestId("toggle-switch").within(() => {
-            cy.get("span").should("not.have.attr", "data-checked");
+        cy.get("table")
+          .contains("tr", "Experience title")
+          .within(() => {
+            cy.getByTestId("toggle-switch").within(() => {
+              cy.get("span").should("not.have.attr", "data-checked");
+            });
+            cy.getByTestId("toggle-switch").click();
           });
-          cy.getByTestId("toggle-switch").click();
-        });
 
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
@@ -132,12 +134,14 @@ describe("Privacy experiences", () => {
       });
 
       it("can disable an experience with a warning", () => {
-        cy.getByTestId(`row-${EXPERIENCE_ID}`).within(() => {
-          cy.getByTestId("toggle-switch").within(() => {
-            cy.get("span").should("have.attr", "data-checked");
+        cy.get("table")
+          .contains("tr", "Experience title")
+          .within(() => {
+            cy.getByTestId("toggle-switch").within(() => {
+              cy.get("span").should("have.attr", "data-checked");
+            });
+            cy.getByTestId("toggle-switch").click();
           });
-          cy.getByTestId("toggle-switch").click();
-        });
 
         cy.getByTestId("confirmation-modal");
         cy.getByTestId("continue-btn").click();

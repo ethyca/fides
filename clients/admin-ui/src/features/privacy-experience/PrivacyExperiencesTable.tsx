@@ -22,20 +22,22 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import Restrict, { useHasPermission } from "~/features/common/Restrict";
+import CustomAssetUploadButton from "~/features/custom-assets/CustomAssetUploadButton";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
+import {
+  ComponentCell,
+  EnablePrivacyExperienceCell,
+} from "~/features/privacy-experience/cells";
+import JavaScriptTag from "~/features/privacy-experience/JavaScriptTag";
+import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
+import { getRegions } from "~/features/privacy-notices/cells";
 import {
   CustomAssetType,
   ExperienceConfigListViewResponse,
   ScopeRegistryEnum,
 } from "~/types/api";
-
-import { PRIVACY_EXPERIENCE_ROUTE } from "../common/nav/v2/routes";
-import Restrict, { useHasPermission } from "../common/Restrict";
-import CustomAssetUploadButton from "../custom-assets/CustomAssetUploadButton";
-import { getRegions } from "../privacy-notices/cells";
-import { ComponentCell, EnablePrivacyExperienceCell } from "./cells";
-import JavaScriptTag from "./JavaScriptTag";
-import { useGetAllExperienceConfigsQuery } from "./privacy-experience.slice";
 
 const emptyExperienceResponse = {
   items: [],
@@ -120,65 +122,61 @@ export const PrivacyExperiencesTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const inventoryColumns: ColumnDef<ExperienceConfigListViewResponse, any>[] =
-    useMemo(
-      () =>
-        [
-          columnHelper.accessor((row) => row.name, {
-            id: "name",
-            cell: (props) => <DefaultCell value={props.getValue()} />,
-            header: (props) => <DefaultHeaderCell value="Title" {...props} />,
+  const privacyExperienceColumns: ColumnDef<
+    ExperienceConfigListViewResponse,
+    any
+  >[] = useMemo(
+    () =>
+      [
+        columnHelper.accessor((row) => row.name, {
+          id: "name",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => <DefaultHeaderCell value="Title" {...props} />,
+        }),
+        columnHelper.accessor((row) => row.component, {
+          id: "component",
+          cell: (props) => ComponentCell(props.getValue()),
+          header: (props) => <DefaultHeaderCell value="Component" {...props} />,
+        }),
+        columnHelper.accessor((row) => row.regions, {
+          id: "regions",
+          cell: (props) => (
+            <GroupCountBadgeCell
+              suffix="Locations"
+              value={getRegions(props.getValue())}
+              {...props}
+            />
+          ),
+          header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
+          meta: {
+            displayText: "Locations",
+            showHeaderMenu: true,
+          },
+        }),
+        columnHelper.accessor((row) => row.updated_at, {
+          id: "updated_at",
+          cell: (props) => (
+            <DefaultCell value={new Date(props.getValue()).toDateString()} />
+          ),
+          header: (props) => (
+            <DefaultHeaderCell value="Last update" {...props} />
+          ),
+        }),
+        userCanUpdate &&
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: (props) => EnablePrivacyExperienceCell(props),
+            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
           }),
-          columnHelper.accessor((row) => row.component, {
-            id: "component",
-            cell: (props) => ComponentCell(props.getValue()),
-            header: (props) => (
-              <DefaultHeaderCell value="Component" {...props} />
-            ),
-          }),
-          columnHelper.accessor((row) => row.regions, {
-            id: "regions",
-            cell: (props) => (
-              <GroupCountBadgeCell
-                suffix="Locations"
-                value={getRegions(props.getValue())}
-                {...props}
-              />
-            ),
-            header: (props) => (
-              <DefaultHeaderCell value="Locations" {...props} />
-            ),
-            meta: {
-              displayText: "Locations",
-              showHeaderMenu: true,
-            },
-          }),
-          columnHelper.accessor((row) => row.updated_at, {
-            id: "updated_at",
-            cell: (props) => (
-              <DefaultCell value={new Date(props.getValue()).toDateString()} />
-            ),
-            header: (props) => (
-              <DefaultHeaderCell value="Last update" {...props} />
-            ),
-          }),
-          userCanUpdate &&
-            columnHelper.accessor((row) => row.disabled, {
-              id: "enable",
-              cell: (props) => EnablePrivacyExperienceCell(props),
-              header: (props) => (
-                <DefaultHeaderCell value="Enable" {...props} />
-              ),
-            }),
-        ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
-      [userCanUpdate]
-    );
+      ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
+    [userCanUpdate]
+  );
 
   const tableInstance = useReactTable<ExperienceConfigListViewResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    columns: inventoryColumns,
+    columns: privacyExperienceColumns,
     manualPagination: true,
     data,
     state: {

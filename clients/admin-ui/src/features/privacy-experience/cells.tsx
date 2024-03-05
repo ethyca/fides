@@ -1,28 +1,14 @@
-import { Badge } from "@fidesui/react";
 import { CellContext } from "@tanstack/react-table";
 import React from "react";
 
+import { DefaultCell, EnableCell } from "~/features/common/table/v2/cells";
+import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
+import { useLimitedPatchExperienceConfigMutation } from "~/features/privacy-experience/privacy-experience.slice";
 import { ComponentType, ExperienceConfigListViewResponse } from "~/types/api";
-
-import { EnableCell } from "../common/table/v2/cells";
-import { COMPONENT_MAP } from "./constants";
-import { useLimitedPatchExperienceConfigMutation } from "./privacy-experience.slice";
 
 export const ComponentCell = (value: ComponentType | undefined) => {
   const innerText = COMPONENT_MAP.get(value!) ?? value;
-  return (
-    <Badge
-      size="sm"
-      width="fit-content"
-      data-testid="status-badge"
-      textTransform="uppercase"
-      fontWeight="400"
-      color="gray.600"
-      px={2}
-    >
-      {innerText}
-    </Badge>
-  );
+  return <DefaultCell value={innerText} />;
 };
 
 export const EnablePrivacyExperienceCell = ({
