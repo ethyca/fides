@@ -19,10 +19,6 @@ const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
 const PRIVACY_NOTICE_KEY_3 = "analytics_opt_out";
 
-const PRIVACY_NOTICE_KEY_4 = "data_sales";
-const PRIVACY_NOTICE_KEY_5 = "tracking";
-const PRIVACY_NOTICE_KEY_6 = "analytics";
-
 describe("Consent overlay", () => {
   describe("when overlay is disabled", () => {
     describe("when both experience and legacy consent exist", () => {
@@ -848,8 +844,7 @@ describe("Consent overlay", () => {
           });
       });
 
-      // fixme- defer depending on product decision. Currently banner does not show
-      it.skip("shows indicators that GPC has been applied", () => {
+      it("shows indicators that GPC has been applied", () => {
         // In the banner
         cy.get("div#fides-banner").within(() => {
           cy.get("span").contains("Global Privacy Control Signal detected");
@@ -1279,7 +1274,7 @@ describe("Consent overlay", () => {
       });
     });
 
-    describe("when all notices have current user preference set and GPC flag exists", () => {
+    describe("when all notices have current user preferences set and GPC flag exists", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
           // eslint-disable-next-line no-param-reassign
@@ -1439,15 +1434,17 @@ describe("Consent overlay", () => {
         .its("Fides")
         .its("consent")
         .should("eql", {
-          [PRIVACY_NOTICE_KEY_4]: true,
-          [PRIVACY_NOTICE_KEY_5]: false,
+          [PRIVACY_NOTICE_KEY_1]: false,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
         });
       cy.get("@FidesInitialized")
         .should("have.been.calledOnce")
         .its("firstCall.args.0.detail.consent")
         .should("deep.equal", {
-          [PRIVACY_NOTICE_KEY_4]: true,
-          [PRIVACY_NOTICE_KEY_5]: false,
+          [PRIVACY_NOTICE_KEY_1]: false,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
         });
       cy.get("@FidesUpdated").should("not.have.been.called");
       cy.get("@FidesUIChanged").should("not.have.been.called");
@@ -1462,8 +1459,9 @@ describe("Consent overlay", () => {
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
-            [PRIVACY_NOTICE_KEY_4]: true,
-            [PRIVACY_NOTICE_KEY_5]: false,
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
         cy.get("@FidesUpdated")
           // Update event, when the user rejects all
@@ -1489,8 +1487,9 @@ describe("Consent overlay", () => {
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
-            [PRIVACY_NOTICE_KEY_4]: true,
-            [PRIVACY_NOTICE_KEY_5]: false,
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
         cy.get("@FidesUpdated")
           // Update event, when the user accepts all
@@ -1520,8 +1519,9 @@ describe("Consent overlay", () => {
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
-            [PRIVACY_NOTICE_KEY_4]: true,
-            [PRIVACY_NOTICE_KEY_5]: false,
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
 
         cy.get("@FidesUpdated")
@@ -1551,8 +1551,9 @@ describe("Consent overlay", () => {
           event: "FidesInitialized",
           Fides: {
             consent: {
-              [PRIVACY_NOTICE_KEY_4]: true,
-              [PRIVACY_NOTICE_KEY_5]: false,
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
+              [PRIVACY_NOTICE_KEY_3]: true,
             },
           },
         });
@@ -1618,7 +1619,7 @@ describe("Consent overlay", () => {
 
       // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
       // register listeners for these window events
-      it("first and second event reflects legacy consent from cookie", () => {
+      it("first event reflects legacy consent from cookie, second event reflects new experiences consent", () => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
         const CREATED_DATE = "2022-12-24T12:00:00.000Z";
         const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -1647,11 +1648,14 @@ describe("Consent overlay", () => {
         });
         // There is a brief period of time when Fides.consent is set to the legacy values, but this
         // test asserts the new values have been set
-        cy.window().its("Fides").its("consent").should("eql", {
-          data_sales: false,
-          tracking: false,
-          analytics: true,
-        });
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
         cy.get("@FidesInitialized")
           .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
@@ -1663,9 +1667,9 @@ describe("Consent overlay", () => {
         cy.get("@FidesInitialized")
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
       });
     });
@@ -1699,12 +1703,15 @@ describe("Consent overlay", () => {
         });
       });
 
-      it("first and second event reflects legacy cookie consent", () => {
-        cy.window().its("Fides").its("consent").should("eql", {
-          data_sales: false,
-          tracking: false,
-          analytics: true,
-        });
+      it("first event reflects legacy consent options, second event reflects new experiences consent", () => {
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
         cy.get("@FidesInitialized")
           .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
@@ -1716,9 +1723,9 @@ describe("Consent overlay", () => {
         cy.get("@FidesInitialized")
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
       });
     });
@@ -1755,21 +1762,18 @@ describe("Consent overlay", () => {
       // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
       // register listeners for these window events
       it("all events should reflect existing legacy cookie values", () => {
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_4]: false,
-            [PRIVACY_NOTICE_KEY_5]: false,
-            [PRIVACY_NOTICE_KEY_6]: true,
-          });
+        cy.window().its("Fides").its("consent").should("eql", {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        });
         cy.get("@FidesInitialized")
           .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
-            [PRIVACY_NOTICE_KEY_4]: false,
-            [PRIVACY_NOTICE_KEY_5]: false,
-            [PRIVACY_NOTICE_KEY_6]: true,
+            data_sales: false,
+            tracking: false,
+            analytics: true,
           });
       });
     });
@@ -1780,9 +1784,9 @@ describe("Consent overlay", () => {
         const CREATED_DATE = "2022-12-24T12:00:00.000Z";
         const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
         const legacyNotices = {
-          [PRIVACY_NOTICE_KEY_4]: false,
-          [PRIVACY_NOTICE_KEY_5]: false,
-          [PRIVACY_NOTICE_KEY_6]: true,
+          data_sales: false,
+          tracking: false,
+          analytics: true,
         };
         const originalCookie = {
           identity: { fides_user_device_id: uuid },
@@ -1805,21 +1809,18 @@ describe("Consent overlay", () => {
       // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
       // register listeners for these window events
       it("all events should reflect legacy consent from cookie", () => {
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_4]: false,
-            [PRIVACY_NOTICE_KEY_5]: false,
-            [PRIVACY_NOTICE_KEY_6]: true,
-          });
+        cy.window().its("Fides").its("consent").should("eql", {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        });
         cy.get("@FidesInitialized")
           .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
-            [PRIVACY_NOTICE_KEY_4]: false,
-            [PRIVACY_NOTICE_KEY_5]: false,
-            [PRIVACY_NOTICE_KEY_6]: true,
+            data_sales: false,
+            tracking: false,
+            analytics: true,
           });
       });
     });
@@ -1834,25 +1835,6 @@ describe("Consent overlay", () => {
     });
 
     it("renders the proper gpc indicator", () => {
-      // create cookie with matching notice keys
-      const uuid = "4fbb6edf-34f6-4717-a6f1-52o47rybwuafh5";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const notices = {
-        // we skip setting the "applied" notice key since we wish to replicate no user pref here
-        notice_only: true,
-        overridden: true, // this pref should override GPC setting
-      };
-      const originalCookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: notices,
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
       stubConfig({
         experience: {
           privacy_notices: [
