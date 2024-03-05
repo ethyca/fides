@@ -90,7 +90,7 @@ function extractMessagesFromExperienceConfig(
 
 /**
  * TODO: delete this
- * 
+ *
  * Helper function to extract all the translated messages from a PrivacyNotice
  * API response.  Returns an object that maps locales -> messages, using the
  * PrivacyNotice's id to prefix each message like "exp.notices.{id}.title"
@@ -208,6 +208,13 @@ export function loadMessagesFromExperience(
 }
 
 /**
+ * Get the currently active locale.
+ */
+export function getCurrentLocale(i18n: I18n): Locale {
+  return i18n.locale;
+}
+
+/**
  * Detect the user's preferred locale from the browser or any overrides.
  */
 export function detectUserLocale(
@@ -268,44 +275,6 @@ export function matchAvailableLocales(
 }
 
 /**
- * Helper function to select the "best" translation from a notice, based on the
- * current locale. Since we cannot guarantee that all notices will have
- * translations that match their parent experience, we can't safely just extract
- * all translations and use them.
- * 
- * TODO: write a better explanation for how this happens
- * 
- * Searches through the available translations and selects the best match in this order:
- * 1) Look for an exact match for current locale
- * 2) Fallback to default locale, if an exact match isn't found
- * 3) Fallback to first translation in the list, if the default locale isn't found
- */
-export function selectBestNoticeTranslation(
-  i18n: I18n,
-  notice: PrivacyNotice,
-): PrivacyNoticeTranslation | undefined {
-  // Defensive checks
-  if (!notice || !notice.translations) {
-    return;
-  }
-
-  // 1) Look for an exact match for the current locale
-  const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = notice.translations.find(e => e.language === currentLocale);
-  if (matchTranslation) {
-    return matchTranslation;
-  }
-
-  // 2) Fallback to default locale, if an exact match isn't found
-  const defaultTranslation = notice.translations.find(e => e.language === DEFAULT_LOCALE);
-  if (defaultTranslation) {
-    return defaultTranslation;
-  }
-
-  return notice.translations[0];
-}
-
-/**
  * Check if the given message exists in the current locale's catalog.
  */
 export function messageExists(i18n: I18n, id: string): boolean {
@@ -316,10 +285,46 @@ export function messageExists(i18n: I18n, id: string): boolean {
 }
 
 /**
- * Get the currently active locale.
+ * Helper function to select the "best" translation from a notice, based on the
+ * current locale. Since we cannot guarantee that all notices will have
+ * translations that match their parent experience, we can't safely just extract
+ * all translations and use them.
+ *
+ * TODO: write a better explanation for how this happens
+ *
+ * Searches through the available translations and selects the best match in this order:
+ * 1) Look for an exact match for current locale
+ * 2) Fallback to default locale, if an exact match isn't found
+ * 3) Fallback to first translation in the list, if the default locale isn't found
  */
-export function getCurrentLocale(i18n: I18n): Locale {
-  return i18n.locale;
+export function selectBestNoticeTranslation(
+  i18n: I18n,
+  notice: PrivacyNotice
+): PrivacyNoticeTranslation | null {
+  // Defensive checks
+  if (!notice || !notice.translations) {
+    return null;
+  }
+
+  // 1) Look for an exact match for the current locale
+  const currentLocale = getCurrentLocale(i18n);
+  const matchTranslation = notice.translations.find(
+    (e) => e.language === currentLocale
+  );
+  if (matchTranslation) {
+    return matchTranslation;
+  }
+
+  // 2) Fallback to default locale, if an exact match isn't found
+  const defaultTranslation = notice.translations.find(
+    (e) => e.language === DEFAULT_LOCALE
+  );
+  if (defaultTranslation) {
+    return defaultTranslation;
+  }
+
+  // 3) Fallback to first translation in the list, if the default locale isn't found
+  return notice.translations[0] || null;
 }
 
 /**

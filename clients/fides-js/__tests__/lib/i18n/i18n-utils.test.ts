@@ -27,14 +27,18 @@ describe("i18n-utils", () => {
   let mockCurrentLocale = "";
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    activate: jest.fn((locale: Locale): void => { mockCurrentLocale = locale; }),
+    activate: jest.fn((locale: Locale): void => {
+      mockCurrentLocale = locale;
+    }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
     t: jest.fn(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
     ),
-    get locale(): Locale { return mockCurrentLocale; },
+    get locale(): Locale {
+      return mockCurrentLocale;
+    },
   };
 
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
@@ -283,15 +287,13 @@ describe("i18n-utils", () => {
 
   describe("selectBestNoticeTranslation", () => {
     let mockNotice: PrivacyNoticeWithPreference;
-    
+
     beforeEach(() => {
       // Assert our test data is valid, so that Typescript is happy!
-      expect(mockExperience.privacy_notices).toHaveLength(2);
       if (!mockExperience.privacy_notices) {
         throw new Error("Invalid mock experience test data!");
       }
-      mockNotice = mockExperience.privacy_notices[0];
-      expect(mockNotice.translations.map(e => e.language)).toEqual(["en", "es"]);
+      [ mockNotice ] = mockExperience.privacy_notices;
     });
 
     it("selects an exact match for current locale if available", () => {
@@ -310,20 +312,35 @@ describe("i18n-utils", () => {
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
       mockCurrentLocale = "zh";
-      const mockNoticeNoEnglish: PrivacyNoticeWithPreference = JSON.parse(JSON.stringify(mockExperience));
+      const mockNoticeNoEnglish: PrivacyNoticeWithPreference = JSON.parse(
+        JSON.stringify(mockExperience)
+      );
       mockNoticeNoEnglish.translations = [mockNotice.translations[1]];
-      expect(mockNoticeNoEnglish.translations.map(e => e.language)).toEqual(["es"]);
-      const bestTranslation = selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish);
+      expect(mockNoticeNoEnglish.translations.map((e) => e.language)).toEqual([
+        "es",
+      ]);
+      const bestTranslation = selectBestNoticeTranslation(
+        mockI18n,
+        mockNoticeNoEnglish
+      );
       expect(bestTranslation).toBeDefined();
       expect(bestTranslation?.language).toEqual("es");
     });
 
-    it("returns undefined for invalid/missing translations", () => {
-      expect(selectBestNoticeTranslation(mockI18n, null as any)).toBeUndefined();
-      expect(selectBestNoticeTranslation(mockI18n, { translations: [] } as any)).toBeUndefined();
-      expect(selectBestNoticeTranslation(mockI18n, { translations: null } as any)).toBeUndefined();
-      expect(selectBestNoticeTranslation(mockI18n, { translations: undefined } as any)).toBeUndefined();
-    })
+    it("returns null for invalid/missing translations", () => {
+      expect(selectBestNoticeTranslation(mockI18n, null as any)).toBeNull();
+      expect(
+        selectBestNoticeTranslation(mockI18n, { translations: [] } as any)
+      ).toBeNull();
+      expect(
+        selectBestNoticeTranslation(mockI18n, { translations: null } as any)
+      ).toBeNull();
+      expect(
+        selectBestNoticeTranslation(mockI18n, {
+          translations: undefined,
+        } as any)
+      ).toBeNull();
+    });
   });
 
   describe("LOCALE_REGEX", () => {

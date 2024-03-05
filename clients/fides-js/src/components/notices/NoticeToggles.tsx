@@ -38,11 +38,12 @@ export const NoticeToggles = ({
       onChange(enabledNoticeKeys.filter((n) => n !== noticeKey));
     }
   };
- 
+
   return (
     <div>
       {noticeToggles.map((props, idx) => {
-        const { noticeKey, title, description, checked, disabled, gpcStatus } = props;
+        const { noticeKey, title, description, checked, disabled, gpcStatus } =
+          props;
         const isLast = idx === noticeToggles.length - 1;
         return (
           <div>
@@ -51,9 +52,7 @@ export const NoticeToggles = ({
               title={title}
               checked={checked}
               onToggle={handleToggle}
-              gpcBadge={
-                <GpcBadge i18n={i18n} status={gpcStatus} />
-              }
+              gpcBadge={<GpcBadge i18n={i18n} status={gpcStatus} />}
               disabled={disabled}
             >
               {description}

@@ -23,7 +23,6 @@ export const GpcBadge = ({
     return null;
   }
 
-
   return (
     <span className="fides-gpc-label">
       {gpcLabel}{" "}

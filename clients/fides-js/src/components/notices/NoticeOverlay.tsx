@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
-  GpcStatus,
   PrivacyNotice,
   SaveConsentPreference,
   ServingComponent,
@@ -58,12 +57,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
   );
 
-  const noticeToggles: NoticeToggleProps[] = privacyNotices.map(notice => {
-    // TODO (PROD-1597): select appropriate translation based on locale
+  // Calculate the "notice toggles" props for display based on the current state
+  const noticeToggles: NoticeToggleProps[] = privacyNotices.map((notice) => {
     const translation = selectBestNoticeTranslation(i18n, notice);
     const checked = draftEnabledNoticeKeys.indexOf(notice.notice_key) !== -1;
     const consentContext = getConsentContext();
-    const gpcStatus = getGpcStatusFromNotice({ value: checked, notice, consentContext });
+    const gpcStatus = getGpcStatusFromNotice({
+      value: checked,
+      notice,
+      consentContext,
+    });
 
     return {
       noticeKey: notice.notice_key,
@@ -71,7 +74,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       description: translation?.description,
       checked,
       consentMechanism: notice.consent_mechanism,
-      disabled: (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY),
+      disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
       gpcStatus,
     };
   });

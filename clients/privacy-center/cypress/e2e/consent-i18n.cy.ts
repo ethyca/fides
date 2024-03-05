@@ -424,8 +424,14 @@ describe("Consent i18n", () => {
           // Modify the first notice (Advertising) and delete all non-English translations
           const notices: PrivacyNotice[] = experience.privacy_notices;
           const adsNotice = notices[0];
-          cy.wrap(adsNotice).should("have.property", "id", "pri_notice-advertising-000");
-          adsNotice.translations = adsNotice.translations.filter(e => e.language === "en");
+          cy.wrap(adsNotice).should(
+            "have.property",
+            "id",
+            "pri_notice-advertising-000"
+          );
+          adsNotice.translations = adsNotice.translations.filter(
+            (e) => e.language === "en"
+          );
           return experience;
           /* eslint-enable no-param-reassign */
         },
@@ -442,6 +448,7 @@ describe("Consent i18n", () => {
       ]);
     });
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     it(`reports notices served and preferences saved using the correct privacy_notice_history_id for the default locale (${ENGLISH_LOCALE})`, () => {
       /**
        * Expect the notice history IDs used should be a mixture of English and Spanish notices:
@@ -465,14 +472,20 @@ describe("Consent i18n", () => {
       // Accept all notices and test the "privacy preferences" API
       cy.get("#fides-modal .fides-accept-all-button").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        const { preferences, privacy_experience_id } = interception.request.body;
+        const { preferences, privacy_experience_id } =
+          interception.request.body;
         // TODO (PROD-1744): update test after fixing preference save bug
         // expect(privacy_experience_config_history_id).to.eq("pri_exp-history-banner-modal-en-000");
-        expect(privacy_experience_id).to.eq("pri_exp-history-banner-modal-en-000");
-        const noticeHistoryIDs = preferences.map((e: any) => e.privacy_notice_history_id);
+        expect(privacy_experience_id).to.eq(
+          "pri_exp-history-banner-modal-en-000"
+        );
+        const noticeHistoryIDs = preferences.map(
+          (e: any) => e.privacy_notice_history_id
+        );
         expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
       });
     });
+    /* eslint-enable @typescript-eslint/naming-convention */
   });
 
   describe("when notices are enabled for GPC", () => {
@@ -487,7 +500,11 @@ describe("Consent i18n", () => {
           // Modify the first notice (Advertising) to set the GPC flag
           const notices: PrivacyNotice[] = experience.privacy_notices;
           const adsNotice = notices[0];
-          cy.wrap(adsNotice).should("have.property", "id", "pri_notice-advertising-000");
+          cy.wrap(adsNotice).should(
+            "have.property",
+            "id",
+            "pri_notice-advertising-000"
+          );
           adsNotice.has_gpc_flag = true;
           return experience;
           /* eslint-enable no-param-reassign */
@@ -503,14 +520,22 @@ describe("Consent i18n", () => {
       const expectedGpcLabel = SPANISH_BANNER.gpc_label;
       const expectedGpcStatusAppliedLabel = "Aplicado";
       const expectedGpcStatusOverriddenLabel = "Anulado";
-      cy.get("#fides-modal .fides-modal-notices .fides-notice-toggle:first").within(() => {
+      cy.get(
+        "#fides-modal .fides-modal-notices .fides-notice-toggle:first"
+      ).within(() => {
         cy.get(".fides-notice-toggle-title").contains(SPANISH_NOTICES[0].title);
         cy.get(".fides-gpc-label").contains(expectedGpcLabel);
-        cy.get(".fides-gpc-label .fides-gpc-badge").contains(expectedGpcStatusAppliedLabel);
+        cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+          expectedGpcStatusAppliedLabel
+        );
         cy.get(".fides-toggle-input").click();
-        cy.get(".fides-gpc-label .fides-gpc-badge").contains(expectedGpcStatusOverriddenLabel);
+        cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+          expectedGpcStatusOverriddenLabel
+        );
       });
-      cy.get("#fides-modal .fides-modal-notices .fides-notice-toggle:last").within(() => {
+      cy.get(
+        "#fides-modal .fides-modal-notices .fides-notice-toggle:last"
+      ).within(() => {
         cy.get(".fides-gpc-label").should("not.exist");
       });
     });
