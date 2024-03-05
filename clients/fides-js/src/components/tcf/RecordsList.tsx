@@ -43,10 +43,8 @@ const RecordsList = <T extends Item>({
       <div className="fides-record-header">{title}</div>
       {items.map((item) => (
         <DataUseToggle
-          dataUse={{
-            key: `${item.id}`,
-            name: item.name,
-          }}
+          title={item.name}
+          noticeKey={`${item.id}`}
           onToggle={() => {
             handleToggle(item);
           }}

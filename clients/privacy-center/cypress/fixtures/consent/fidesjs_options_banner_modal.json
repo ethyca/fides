@@ -34,20 +34,20 @@
           "privacy_experience_config_history_id": "pri_exp-history-banner-modal-en-000"
         },
         {
-          "language": "es-MX",
-          "accept_button_label": "Participar en todas",
+          "language": "es",
+          "accept_button_label": "Participar en todo",
           "acknowledge_button_label": "Aceptar",
-          "banner_description": "[banner-opts] Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
-          "banner_title": "[banner-opts] Administrar sus preferencias de consentimiento",
+          "banner_description": "[banner] Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+          "banner_title": "[banner] Administrar sus preferencias de consentimiento",
           "description": "Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
           "is_default": true,
           "privacy_policy_link_label": "Política de privacidad",
           "privacy_policy_url": "https://privacy.example.com/",
           "privacy_preferences_link_label": "Administrar preferencias",
-          "reject_button_label": "No participar en ninguna",
+          "reject_button_label": "No participar en nada",
           "save_button_label": "Guardar",
           "title": "Administrar sus preferencias de consentimiento",
-          "privacy_experience_config_history_id": "pri_exp-history-banner-modal-es-mx-000"
+          "privacy_experience_config_history_id": "pri_exp-history-banner-modal-es-000"
         }
       ],
       "language": "en",
@@ -87,10 +87,10 @@
             "privacy_notice_history_id": "pri_notice-history-advertising-en-000"
           },
           {
-            "language": "es-MX",
+            "language": "es",
             "title": "Mercadotecnia",
-            "description": "Este sitio web usa cookies y servicios de mercadotecnia para entregar anuncios, promociones y ofertas personalizadas que son relevantes para usted. Estos datos ayudan a optimizar la entrega de anuncios, medir la eficacia de las campañas y permitir a los anunciantes llegar a audiencias objetivo específicas.",
-            "privacy_notice_history_id": "pri_notice-history-advertising-en-000"
+            "description": "Este sitio web usa cookies y servicios de mercadotecnia para presentar anuncios, promociones y ofertas personalizadas relevantes para usted. Estos datos ayudan a optimizar los anuncios, medir la eficacia de las campañas y permitir a los anunciantes llegar a audiencias objetivo específicas.",
+            "privacy_notice_history_id": "pri_notice-history-advertising-es-000"
           }
         ]
       },
@@ -117,10 +117,10 @@
             "privacy_notice_history_id": "pri_notice-history-analytics-en-000"
           },
           {
-            "language": "es-MX",
-            "title": "De análisis",
-            "description": "Este sitio web usa cookies y servicios analíticos para recopilar datos agregados e información estadística. Estos datos nos ayudan a analizar y optimizar el rendimiento del sitio, identificar contenido popular, detectar problemas de navegación y tomar decisiones informadas para mejorar la experiencia del usuario.",
-            "privacy_notice_history_id": "pri_notice-history-analytics-es-mx-000"
+            "language": "es",
+            "title": "Análisis",
+            "description": "Este sitio web usa cookies analíticas y servicios para recopilar datos agregados e información estadística. Estos datos nos ayudan a analizar y optimizar el rendimiento del sitio, identificar contenido popular, detectar problemas de navegación y tomar decisiones informadas para mejorar la experiencia del usuario.",
+            "privacy_notice_history_id": "pri_notice-history-analytics-es-000"
           }
         ]
       },
@@ -147,10 +147,10 @@
             "privacy_notice_history_id": "pri_notice-history-essential-en-000"
           },
           {
-            "language": "es-MX",
+            "language": "es",
             "title": "Esenciales",
-            "description": "Este sitio web utiliza cookies y servicios esenciales para habilitar las funciones principales del sitio web y brindar una experiencia de usuario perfecta. Estas cookies y servicios se usan para facilitar características como navegación, recordar referencias del usuario y garantizar la seguridad del sitio web.",
-            "privacy_notice_history_id": "pri_notice-history-essential-en-000"
+            "description": "Este sitio web utiliza cookies esenciales y servicios para habilitar las funciones principales del sitio web y brindar una experiencia de usuario perfecta. Estas cookies y servicios se usan para facilitar características como la navegación, recordar referencias del usuario y garantizar la seguridad del sitio web.",
+            "privacy_notice_history_id": "pri_notice-history-essential-es-000"
           }
         ]
       }

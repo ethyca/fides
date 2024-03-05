@@ -51,11 +51,7 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <Flex
-      data-testid={title}
-      direction="column"
-      height={padded ? "calc(100vh - 48px)" : "100vh"}
-    >
+    <Flex data-testid={title} direction="column" h="100vh">
       <Head>
         <title>Fides Admin UI - {title}</title>
         <meta name="description" content="Privacy Engineering Platform" />
@@ -66,6 +62,7 @@ const Layout = ({
         direction="column"
         py={padded ? 6 : 0}
         px={padded ? 10 : 0}
+        h={padded ? "calc(100% - 48px)" : "full"}
         flex={1}
         minWidth={0}
         overflow="auto"

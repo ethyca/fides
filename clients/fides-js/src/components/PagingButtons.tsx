@@ -74,6 +74,8 @@ const NextIcon = () => (
   </svg>
 );
 
+// TODO (PROD-1683): Render a localized separator label (like "of") or
+// fallback to just "/" to be language-agnostic!
 const PagingButtons = <T,>({
   nextPage,
   previousPage,
