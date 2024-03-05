@@ -11,6 +11,7 @@ import {
   initializeI18n,
   loadMessagesFromExperience,
   loadMessagesFromFiles,
+  selectBestNoticeTranslation,
   matchAvailableLocales,
   messageExists,
   setupI18n,
@@ -23,16 +24,17 @@ import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
+  let mockCurrentLocale = "";
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    activate: jest.fn((locale: Locale): void => {}),
+    activate: jest.fn((locale: Locale): void => { mockCurrentLocale = locale; }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
     t: jest.fn(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
     ),
-    get locale(): Locale { return "mock"; },
+    get locale(): Locale { return mockCurrentLocale; },
   };
 
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
@@ -277,6 +279,51 @@ describe("i18n-utils", () => {
       expect(matchAvailableLocales("fr_CA", ["es", "fr_CA"])).toEqual("fr_CA");
       expect(matchAvailableLocales("fr_ca", ["es", "fr-CA"])).toEqual("fr-CA");
     });
+  });
+
+  describe("selectBestNoticeTranslation", () => {
+    let mockNotice: PrivacyNoticeWithPreference;
+    
+    beforeEach(() => {
+      // Assert our test data is valid, so that Typescript is happy!
+      expect(mockExperience.privacy_notices).toHaveLength(2);
+      if (!mockExperience.privacy_notices) {
+        throw new Error("Invalid mock experience test data!");
+      }
+      mockNotice = mockExperience.privacy_notices[0];
+      expect(mockNotice.translations.map(e => e.language)).toEqual(["en", "es"]);
+    });
+
+    it("selects an exact match for current locale if available", () => {
+      mockCurrentLocale = "es";
+      const bestTranslation = selectBestNoticeTranslation(mockI18n, mockNotice);
+      expect(bestTranslation).toBeDefined();
+      expect(bestTranslation?.language).toEqual("es");
+    });
+
+    it("falls back to the default locale if an exact match isn't available", () => {
+      mockCurrentLocale = "zh";
+      const bestTranslation = selectBestNoticeTranslation(mockI18n, mockNotice);
+      expect(bestTranslation).toBeDefined();
+      expect(bestTranslation?.language).toEqual("en");
+    });
+
+    it("falls back to the first locale if neither exact match nor default locale are available", () => {
+      mockCurrentLocale = "zh";
+      const mockNoticeNoEnglish: PrivacyNoticeWithPreference = JSON.parse(JSON.stringify(mockExperience));
+      mockNoticeNoEnglish.translations = [mockNotice.translations[1]];
+      expect(mockNoticeNoEnglish.translations.map(e => e.language)).toEqual(["es"]);
+      const bestTranslation = selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish);
+      expect(bestTranslation).toBeDefined();
+      expect(bestTranslation?.language).toEqual("es");
+    });
+
+    it("returns undefined for invalid/missing translations", () => {
+      expect(selectBestNoticeTranslation(mockI18n, null as any)).toBeUndefined();
+      expect(selectBestNoticeTranslation(mockI18n, { translations: [] } as any)).toBeUndefined();
+      expect(selectBestNoticeTranslation(mockI18n, { translations: null } as any)).toBeUndefined();
+      expect(selectBestNoticeTranslation(mockI18n, { translations: undefined } as any)).toBeUndefined();
+    })
   });
 
   describe("LOCALE_REGEX", () => {

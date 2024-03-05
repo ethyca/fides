@@ -148,42 +148,6 @@ function extractMessagesFromNotice(
 }
 
 /**
- * Helper function to select the "best" translation from a notice, based on the
- * current locale. Since we cannot guarantee that all notices will have
- * translations that match their parent experience, we can't safely just extract
- * all translations and use them.
- * 
- * TODO: write a better description
- * TODO: tests
- */
-export function selectBestNoticeTranslation(
-  i18n: I18n,
-  notice: PrivacyNotice,
-): PrivacyNoticeTranslation | undefined {
-  return notice.translations[0];
-
-  /*
-    const titleMessageId = `exp.notices.${notice.id}.title`;
-    const descriptionMessageId = `exp.notices.${notice.id}.description`;
-    if (messageExists(i18n, titleMessageId) && messageExists(i18n, descriptionMessageId)) {
-      const title = i18n.t(titleMessageId);
-      const description = i18n.t(descriptionMessageId);
-      return { title, description };
-    } else {
-      // Prefer the default ("en") translation, otherwise fallback to the first translation found
-      const fallbackTranslation = notice.translations.find(e => e.language === DEFAULT_LOCALE) || notice.translations[0];
-      if (fallbackTranslation) {
-        // TODO: update preferences reporting...
-        const title = fallbackTranslation.title;
-        const description = fallbackTranslation.description;
-        return { title, description };
-      }
-    }
-    return { title: undefined, description: undefined }
-  */
-}
-
-/**
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
@@ -301,6 +265,44 @@ export function matchAvailableLocales(
 
   // 4) Fallback to default locale
   return DEFAULT_LOCALE;
+}
+
+/**
+ * Helper function to select the "best" translation from a notice, based on the
+ * current locale. Since we cannot guarantee that all notices will have
+ * translations that match their parent experience, we can't safely just extract
+ * all translations and use them.
+ * 
+ * TODO: write a better explanation for how this happens
+ * 
+ * Searches through the available translations and selects the best match in this order:
+ * 1) Look for an exact match for current locale
+ * 2) Fallback to default locale, if an exact match isn't found
+ * 3) Fallback to first translation in the list, if the default locale isn't found
+ */
+export function selectBestNoticeTranslation(
+  i18n: I18n,
+  notice: PrivacyNotice,
+): PrivacyNoticeTranslation | undefined {
+  // Defensive checks
+  if (!notice || !notice.translations) {
+    return;
+  }
+
+  // 1) Look for an exact match for the current locale
+  const currentLocale = getCurrentLocale(i18n);
+  const matchTranslation = notice.translations.find(e => e.language === currentLocale);
+  if (matchTranslation) {
+    return matchTranslation;
+  }
+
+  // 2) Fallback to default locale, if an exact match isn't found
+  const defaultTranslation = notice.translations.find(e => e.language === DEFAULT_LOCALE);
+  if (defaultTranslation) {
+    return defaultTranslation;
+  }
+
+  return notice.translations[0];
 }
 
 /**
