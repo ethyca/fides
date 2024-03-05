@@ -1,7 +1,5 @@
 import { h } from "preact";
-import { GpcStatus, PrivacyNotice } from "../lib/consent-types";
-import { getConsentContext } from "../lib/consent-context";
-import { getGpcStatusFromNotice } from "../lib/consent-utils";
+import { GpcStatus } from "../lib/consent-types";
 import type { I18n } from "../lib/i18n";
 
 export const GpcBadge = ({
@@ -19,7 +17,6 @@ export const GpcBadge = ({
   } else if (status === GpcStatus.OVERRIDDEN) {
     statusLabel = i18n.t("static.gpc.status.overridden");
   } else if (status === GpcStatus.NONE) {
-    // TODO (PROD-1597): check to see if this is safe to add; previously we'd render the label but no status badge
     return null;
   }
 
@@ -31,24 +28,4 @@ export const GpcBadge = ({
       </span>
     </span>
   );
-};
-
-// TODO (PROD-1597): delete
-export const GpcBadgeForNotice = ({
-  i18n,
-  value,
-  notice,
-}: {
-  i18n: I18n;
-  value: boolean;
-  notice: PrivacyNotice;
-}) => {
-  const consentContext = getConsentContext();
-  const status = getGpcStatusFromNotice({ value, notice, consentContext });
-
-  if (status === GpcStatus.NONE) {
-    return null;
-  }
-
-  return <GpcBadge i18n={i18n} status={status} />;
 };
