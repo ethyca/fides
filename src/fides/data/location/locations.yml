@@ -359,16 +359,19 @@ locations:
   name: Ireland
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: dk
   name: Denmark
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: sk
   name: Slovakia
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: md
   name: Moldova
@@ -381,6 +384,7 @@ locations:
   name: Poland
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: ba
   name: Bosnia and Herzegovina
@@ -394,11 +398,13 @@ locations:
   name: Czechia
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: ee
   name: Estonia
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: xk
   name: Kosovo
@@ -417,31 +423,37 @@ locations:
   name: France
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: nl
   name: Netherlands
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: fi
   name: Finland
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: pt
   name: Portugal
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: de
   name: Germany
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: mt
   name: Malta
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: je
   name: Jersey
@@ -450,11 +462,13 @@ locations:
   name: Iceland
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: es
   name: Spain
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: gi
   name: Gibraltar
@@ -463,11 +477,13 @@ locations:
   name: Norway
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: cy
   name: Cyprus
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: rs
   name: Serbia
@@ -477,6 +493,7 @@ locations:
   name: Lithuania
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: mc
   name: Monaco
@@ -486,6 +503,7 @@ locations:
   name: Luxembourg
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: ua
   name: Ukraine
@@ -498,16 +516,19 @@ locations:
   name: Romania
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: be
   name: Belgium
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: se
   name: Sweden
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: me
   name: Montenegro
@@ -517,6 +538,7 @@ locations:
   name: Latvia
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: va
   name: Vatican City
@@ -526,6 +548,7 @@ locations:
   name: Austria
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: al
   name: Albania
@@ -535,16 +558,19 @@ locations:
   name: Liechtenstein
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: gr
   name: Greece
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: it
   name: Italy
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: ad
   name: Andorra
@@ -554,6 +580,7 @@ locations:
   name: United Kingdom
   belongs_to: [non_eea]
   regulation: [gdpr_uk]
+  default_selected: True
 - continent: Europe
   id: ru
   name: Russia
@@ -563,6 +590,7 @@ locations:
   name: Slovenia
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: by
   name: Belarus
@@ -577,16 +605,19 @@ locations:
   name: Hungary
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: bg
   name: Bulgaria
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 - continent: Europe
   id: hr
   name: Croatia
   belongs_to: [eea]
   regulation: [gdpr]
+  default_selected: True
 
   #####################
   ### North America ###
@@ -882,38 +913,46 @@ locations:
   name: Alabama
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ak
   name: Alaska
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_az
   name: Arizona
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ar
   name: Arkansas
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ca
   name: California
   belongs_to: [us]
   continent: North America
   regulation: [ccpa]
+  default_selected: True
 - id: us_co
   name: Colorado
   belongs_to: [us]
   continent: North America
   regulation: [cpa]
+  default_selected: True
 - id: us_ct
   name: Connecticut
   belongs_to: [us]
   continent: North America
   regulation: [ctdpa]
+  default_selected: True
 - id: us_de
   name: Delaware
   belongs_to: [us]
   continent: North America
   regulation: [dpdpa]
+  default_selected: True
 - id: us_dc
   name: District of Columbia (DC)
   belongs_to: [us]
@@ -923,126 +962,156 @@ locations:
   belongs_to: [us]
   continent: North America
   regulation: [fdbr]
+  default_selected: True
 - id: us_ga
   name: Georgia
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_hi
   name: Hawaii
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_id
   name: Idaho
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_il
   name: Illinois
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_in
   name: Indiana
   belongs_to: [us]
   continent: North America
   regulation: [indcpa]
+  default_selected: True
 - id: us_ia
   name: Iowa
   belongs_to: [us]
   continent: North America
   regulation: [icdpa]
+  default_selected: True
 - id: us_ks
   name: Kansas
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ky
   name: Kentucky
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_la
   name: Louisiana
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_me
   name: Maine
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_md
   name: Maryland
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ma
   name: Massachusetts
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_mi
   name: Michigan
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_mn
   name: Minnesota
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ms
   name: Mississippi
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_mo
   name: Missouri
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_mt
   name: Montana
   belongs_to: [us]
   continent: North America
   regulation: [mcdpa]
+  default_selected: True
 - id: us_ne
   name: Nebraska
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_nv
   name: Nevada
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_nh
   name: New Hampshire
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_nj
   name: New Jersey
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_nm
   name: New Mexico
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ny
   name: New York
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_nc
   name: North Carolina
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_nd
   name: North Dakota
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_oh
   name: Ohio
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_ok
   name: Oklahoma
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_or
   name: Oregon
   belongs_to: [us]
   continent: North America
   regulation: [ocpa]
+  default_selected: True
 - id: us_pa
   name: Pennsylvania
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_pr
   name: Puerto Rico
   belongs_to: [caribbean, us]
@@ -1051,34 +1120,41 @@ locations:
   name: Rhode Island
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_sc
   name: South Carolina
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_sd
-  name: San Diego
+  name: South Dakota
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_tn
   name: Tennessee
   belongs_to: [us]
   continent: North America
   regulation: [tipa]
+  default_selected: True
 - id: us_tx
   name: Texas
   belongs_to: [us]
   continent: North America
   regulation: [tdpsa]
+  default_selected: True
 - id: us_ut
   name: Utah
   belongs_to: [us]
   continent: North America
   regulation: [ucpa]
+  default_selected: True
 - id: us_va
   name: Virginia
   belongs_to: [us]
   continent: North America
   regulation: [vcdpa]
+  default_selected: True
 - id: us_vi
   name: United States Virgin Islands
   belongs_to: [caribbean, us]
@@ -1087,22 +1163,27 @@ locations:
   name: Vermon
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_wa
   name: Washington
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_wv
   name: West Virginia
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_wi
   name: Wisconsin
   belongs_to: [us]
   continent: North America
+  default_selected: True
 - id: us_wy
   name: Wyoming
   belongs_to: [us]
   continent: North America
+  default_selected: True
 
 
 ##########################
@@ -1113,16 +1194,19 @@ locations:
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_bc
   name: British Columbia
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_mb
   name: Manitoba
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_nb
   name: New Brunswick
   belongs_to: [ca]
@@ -1133,46 +1217,55 @@ locations:
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_ns
   name: Nova Scotia
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_on
   name: Ontario
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_pe
   name: Prince Edward Island
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_qc
   name: Quebec
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda, law_25_quebec]
+  default_selected: True
 - id: ca_sk
   name: Saskatchewan
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_nt
   name: Northwest Territories
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_nu
   name: Nunavut
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 - id: ca_yt
   name: Yukon
   belongs_to: [ca]
   continent: North America
   regulation: [pipeda]
+  default_selected: True
 
 
 

@@ -309,17 +309,18 @@ def load_default_experience_configs():
         )
         experience_config["regions"] = reconciled_regions
         experience_config["privacy_notices"] = set()  # initialize the notices field
-        experience_config["needs_migration"] = (
-            False  # indicator whether the record requires migration, or we can default to the template values
-        )
+        experience_config[
+            "needs_migration"
+        ] = False  # indicator whether the record requires migration, or we can default to the template values
         _reconciled_experience_config_map[experience_config_type] = experience_config
         experience_config["needs_migration"] = False
     return _reconciled_experience_config_map, _raw_experience_config_map
 
 
-reconciled_experience_config_map, raw_experience_config_map = (
-    load_default_experience_configs()
-)
+(
+    reconciled_experience_config_map,
+    raw_experience_config_map,
+) = load_default_experience_configs()
 
 
 def backup_existing_data_csv(bind):
@@ -494,7 +495,6 @@ def migrate_experiences(bind):
     """
 
     def create_new_experience_config_templates(experience_configs):
-
         for experience_config in experience_configs:
             # for config template record:
             # - `id` is the `origin` field from the config template record loaded from disk
@@ -681,7 +681,6 @@ def migrate_experiences(bind):
 
     # if we don't have experience configs, we can bypass all experience config data migration
     if experience_configs:
-
         # first create experience config templates based on raw experience config definitions
         create_new_experience_config_templates(raw_experience_config_map.values())
 

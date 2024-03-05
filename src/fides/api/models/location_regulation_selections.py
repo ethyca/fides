@@ -120,6 +120,29 @@ class LocationRegulationSelections(Base):
             return result.scalars().first()
 
     @classmethod
+    def set_locations_if_unset(
+        cls,
+        db: Session,
+        selected_locations: Iterable[str],
+    ) -> None:
+        """Utility method to set the selected locations if no location
+
+        Calculates "location groups" from locations and saves this too. Since an allowed region on a Privacy Experience
+        can be a location or a location group, precalculating location groups will make this a faster lookup.
+        """
+        selected_location_groups: Set[str] = group_locations_into_location_groups(
+            selected_locations
+        )
+
+        cls.create_or_update(
+            db,
+            data={
+                "selected_locations": set(selected_locations),
+                "selected_location_groups": selected_location_groups,
+            },
+        )
+
+    @classmethod
     def set_selected_locations(
         cls,
         db: Session,
@@ -309,6 +332,7 @@ class LocationRegulationBase(Selection):
 
     name: str
     continent: Continent
+    default_selected: bool = False
 
 
 class Location(LocationRegulationBase):
@@ -391,6 +415,9 @@ location_groups: Dict[
 location_group_to_location: Dict[
     str, Set[str]
 ] = load_location_group_to_location()  # should only be accessed for read-only access
+default_selected_locations: Set[str] = {
+    id for id, location in locations_by_id.items() if location.default_selected
+}
 
 
 def _load_privacy_notice_regions() -> Dict[str, Union[Location, LocationGroup]]:
