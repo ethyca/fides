@@ -550,16 +550,14 @@ def migrate_experiences(bind):
         """
         Creates a new experience config based on the provided definition. Also creates corresponding history record.
 
-        Also backfills _all_ privacy experience config history records to have a language of 'en',
-        as that column is non-nullable.
         """
         # for config record:
         # - `id` is the `id` grabbed from our config template record
         # - `origin` is the `origin` grabbed from the config template
         create_experience_config_query = text(
             """
-            INSERT INTO privacyexperienceconfig (id, version, origin, component, name, disabled, is_default, allow_language_selection, dismissable, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-            VALUES (:id,  :version, :origin, :component, :name, :disabled, :is_default, :allow_language_selection, :dismissable, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+            INSERT INTO privacyexperienceconfig (id, version, origin, component, name, disabled, is_default, allow_language_selection, dismissable, auto_detect_language, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+            VALUES (:id,  :version, :origin, :component, :name, :disabled, :is_default, :allow_language_selection, :dismissable, :auto_detect_language, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
@@ -578,8 +576,8 @@ def migrate_experiences(bind):
         # - `origin` is the `origin` grabbed from the config template record on disk
         create_experience_config_history = text(
             """
-             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, origin, name, disabled, version, component, is_default, allow_language_selection, dismissable, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :allow_language_selection, :dismissable, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, origin, name, disabled, version, component, is_default, allow_language_selection, auto_detect_language, dismissable, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :allow_language_selection, :auto_detect_language, :dismissable, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
@@ -593,15 +591,6 @@ def migrate_experiences(bind):
             },
         )
 
-        # backfill language column in all experience config history records
-        update_experience_config_history_language = text(
-            """
-            UPDATE privacyexperienceconfighistory
-            SET language = 'en'
-        """
-        )
-
-        bind.execute(update_experience_config_history_language)
 
     def create_applicable_experiences(experience_config):
         """
