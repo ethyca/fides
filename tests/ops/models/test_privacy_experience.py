@@ -709,19 +709,24 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
 
 
 class TestExperienceTranslation:
-
     def test_language_must_be_unique(self, db, experience_config_banner_and_modal):
-        et = ExperienceTranslation.create(db, data={
-            "language": SupportedLanguage.german,
-            "is_default": True,
-            "experience_config_id": experience_config_banner_and_modal.id
-        } )
-
-        with pytest.raises(IntegrityError):
-            ExperienceTranslation.create(db, data={
+        et = ExperienceTranslation.create(
+            db,
+            data={
                 "language": SupportedLanguage.german,
                 "is_default": True,
-                "experience_config_id": experience_config_banner_and_modal.id
-            })
+                "experience_config_id": experience_config_banner_and_modal.id,
+            },
+        )
+
+        with pytest.raises(IntegrityError):
+            ExperienceTranslation.create(
+                db,
+                data={
+                    "language": SupportedLanguage.german,
+                    "is_default": True,
+                    "experience_config_id": experience_config_banner_and_modal.id,
+                },
+            )
 
         et.delete(db)

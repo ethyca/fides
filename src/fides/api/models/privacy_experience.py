@@ -93,11 +93,12 @@ class PrivacyExperienceConfigBase:
     """
 
     allow_language_selection = Column(
-        Boolean, nullable=False, default=False, server_default="f"
+        Boolean,
     )
     auto_detect_language = Column(
-        Boolean, nullable=False, default=True, server_default="t"
+        Boolean,
     )
+    dismissable = Column(Boolean)
 
     @declared_attr
     def component(cls) -> Column:
@@ -108,12 +109,24 @@ class PrivacyExperienceConfigBase:
         )
 
     disabled = Column(Boolean, nullable=False, default=True)
-    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
     name = Column(String)
 
 
 class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     """Table for out-of-the-box Experience Configurations"""
+
+    allow_language_selection = Column(
+        Boolean, nullable=False, default=False, server_default="f"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    dismissable = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    name = Column(
+        String, nullable=False
+    )  # Overriding PrivacyExperienceConfigBase to make non-nullable
 
     privacy_notice_keys = Column(
         ARRAY(String)
@@ -124,9 +137,6 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     translations = Column(
         ARRAY(JSONB)
     )  # A list of all available out of the box translations
-    name = Column(
-        String, nullable=False
-    )  # Overriding PrivacyExperienceConfigBase to make non-nullable
 
 
 class ExperienceTranslationBase:
@@ -147,7 +157,6 @@ class ExperienceTranslationBase:
                 i.value for i in x
             ],  # allows enum _values_ to be stored rather than name
         ),
-        nullable=False,
     )
 
     privacy_policy_link_label = Column(String)
@@ -165,14 +174,24 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     - Translations, Notices, and Regions (via Privacy Experiences) are linked to this resource.
     """
 
+    allow_language_selection = Column(
+        Boolean, nullable=False, default=False, server_default="f"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    disabled = Column(
+        Boolean, nullable=False, default=True, index=True
+    )  # Overridding PrivacyExperienceConfigBase to index
+    dismissable = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     name = Column(
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
-    disabled = Column(
-        Boolean, nullable=False, default=True, index=True
-    )  # Overridding PrivacyExperienceConfigBase to index
 
+    # Relationships
     experiences = relationship(
         "PrivacyExperience",
         back_populates="experience_config",
@@ -376,6 +395,17 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         index=True,
     )
 
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # allows enum _values_ to be stored rather than name
+        ),
+        nullable=False,
+    )  # Overridding language on ExperienceTranslationBase to make this non-nullable
+
     __table_args__ = (
         UniqueConstraint(
             "language", "experience_config_id", name="experience_translation"
@@ -432,6 +462,10 @@ class PrivacyExperienceConfigHistory(
     an id to this resource which preserves the details of the Experience viewed by the end user.
     """
 
+    banner_enabled = Column(
+        String(), index=True
+    )  # Deprecated field, but left for auditing of early records
+
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     translation_id = Column(
@@ -441,32 +475,6 @@ class PrivacyExperienceConfigHistory(
     )  # If a translation is deleted, this is set to null, but the overall record remains in the database for reporting purposes
 
     version = Column(Float, nullable=False, default=1.0)
-
-    language = Column(
-        EnumColumn(
-            SupportedLanguage,
-            native_enum=False,
-            values_callable=lambda x: [
-                i.value for i in x
-            ],  # allows enum _values_ to be stored rather than name
-        ),
-        nullable=True,  # Overrides ExperienceTranslationBase to make this nullable for early records
-    )
-    allow_language_selection = Column(
-        Boolean,
-        nullable=True,  # Overrides PrivacyExperienceConfigBase to make this nullable for early records
-    )
-    auto_detect_language = Column(
-        Boolean,
-        nullable=True,  # Overrides PrivacyExperienceConfigBase to make this nullable for early records
-    )
-    dismissable = Column(
-        Boolean, nullable=True
-    )  # Overrides PrivacyExperienceConfigBase to make this nullable for early records
-
-    banner_enabled = Column(
-        String(), index=True
-    )  # Deprecated field, but left for auditing purposes
 
 
 class PrivacyExperience(Base):

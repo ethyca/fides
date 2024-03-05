@@ -702,7 +702,9 @@ class TestPrivacyNoticeModel:
             historic_privacy_notice.displayed_in_api is None
         )  # displayed_in fields are deprecated and not required
 
-    def test_duplicate_notice_translations_prevented(self, db,  privacy_notice, privacy_experience_overlay):
+    def test_duplicate_notice_translations_prevented(
+        self, db, privacy_notice, privacy_experience_overlay
+    ):
         config = privacy_experience_overlay.experience_config
         ExperienceNotices.create(
             db, data={"notice_id": privacy_notice.id, "experience_config_id": config.id}
@@ -710,21 +712,31 @@ class TestPrivacyNoticeModel:
 
         with pytest.raises(IntegrityError):
             ExperienceNotices.create(
-                db, data={"notice_id": privacy_notice.id, "experience_config_id": config.id}
+                db,
+                data={
+                    "notice_id": privacy_notice.id,
+                    "experience_config_id": config.id,
+                },
             )
 
     def test_language_must_be_unique(self, db, privacy_notice):
-        nt = NoticeTranslation.create(db, data={
-            "language": SupportedLanguage.german,
-            "title": "new",
-            "privacy_notice_id": privacy_notice.id
-        } )
-
-        with pytest.raises(IntegrityError):
-            nt = NoticeTranslation.create(db, data={
+        nt = NoticeTranslation.create(
+            db,
+            data={
                 "language": SupportedLanguage.german,
                 "title": "new",
-                "privacy_notice_id": privacy_notice.id
-            })
+                "privacy_notice_id": privacy_notice.id,
+            },
+        )
+
+        with pytest.raises(IntegrityError):
+            nt = NoticeTranslation.create(
+                db,
+                data={
+                    "language": SupportedLanguage.german,
+                    "title": "new",
+                    "privacy_notice_id": privacy_notice.id,
+                },
+            )
 
         nt.delete(db)
