@@ -510,6 +510,9 @@ describe("Consent i18n", () => {
         cy.get(".fides-toggle-input").click();
         cy.get(".fides-gpc-label .fides-gpc-badge").contains(expectedGpcStatusOverriddenLabel);
       });
+      cy.get("#fides-modal .fides-modal-notices .fides-notice-toggle:last").within(() => {
+        cy.get(".fides-gpc-label").should("not.exist");
+      });
     });
   });
 

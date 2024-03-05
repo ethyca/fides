@@ -1,5 +1,6 @@
 import { h, Fragment, FunctionComponent } from "preact";
 import { useCallback, useMemo, useState } from "preact/hooks";
+// TODO (PROD-1597): sort out all these imports!
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -11,7 +12,7 @@ import {
 import ConsentBanner from "../ConsentBanner";
 
 import { updateConsentPreferences } from "../../lib/preferences";
-import { debugLog } from "../../lib/consent-utils";
+import { debugLog, getGpcStatusFromNotice } from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
@@ -25,6 +26,7 @@ import { dispatchFidesEvent } from "../../lib/events";
 import { resolveConsentValue } from "../../lib/consent-value";
 import { getConsentContext } from "../../lib/consent-context";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
+import { selectBestNoticeTranslation } from "../../lib/i18n";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
@@ -58,13 +60,19 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const noticeToggles: NoticeToggleProps[] = privacyNotices.map(notice => {
     // TODO (PROD-1597): select appropriate translation based on locale
-    // TODO (PROD-1597): calculate GPC status for each notice
+    const translation = selectBestNoticeTranslation(i18n, notice);
+    const checked = draftEnabledNoticeKeys.indexOf(notice.notice_key) !== -1;
+    const consentContext = getConsentContext();
+    const gpcStatus = getGpcStatusFromNotice({ value: checked, notice, consentContext });
+
     return {
       noticeKey: notice.notice_key,
-      title: notice.translations[0].title,
-      description: notice.translations[0].description,
+      title: translation?.title,
+      description: translation?.description,
+      checked,
       consentMechanism: notice.consent_mechanism,
-      gpcStatus: notice.has_gpc_flag ? GpcStatus.APPLIED : GpcStatus.NONE,
+      disabled: (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY),
+      gpcStatus,
     };
   });
 

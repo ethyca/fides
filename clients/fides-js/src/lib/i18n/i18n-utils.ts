@@ -89,6 +89,8 @@ function extractMessagesFromExperienceConfig(
 }
 
 /**
+ * TODO: delete this
+ * 
  * Helper function to extract all the translated messages from a PrivacyNotice
  * API response.  Returns an object that maps locales -> messages, using the
  * PrivacyNotice's id to prefix each message like "exp.notices.{id}.title"
@@ -143,6 +145,42 @@ function extractMessagesFromNotice(
     extracted[locale] = { ...messages, ...extracted[locale] };
   }
   return extracted;
+}
+
+/**
+ * Helper function to select the "best" translation from a notice, based on the
+ * current locale. Since we cannot guarantee that all notices will have
+ * translations that match their parent experience, we can't safely just extract
+ * all translations and use them.
+ * 
+ * TODO: write a better description
+ * TODO: tests
+ */
+export function selectBestNoticeTranslation(
+  i18n: I18n,
+  notice: PrivacyNotice,
+): PrivacyNoticeTranslation | undefined {
+  return notice.translations[0];
+
+  /*
+    const titleMessageId = `exp.notices.${notice.id}.title`;
+    const descriptionMessageId = `exp.notices.${notice.id}.description`;
+    if (messageExists(i18n, titleMessageId) && messageExists(i18n, descriptionMessageId)) {
+      const title = i18n.t(titleMessageId);
+      const description = i18n.t(descriptionMessageId);
+      return { title, description };
+    } else {
+      // Prefer the default ("en") translation, otherwise fallback to the first translation found
+      const fallbackTranslation = notice.translations.find(e => e.language === DEFAULT_LOCALE) || notice.translations[0];
+      if (fallbackTranslation) {
+        // TODO: update preferences reporting...
+        const title = fallbackTranslation.title;
+        const description = fallbackTranslation.description;
+        return { title, description };
+      }
+    }
+    return { title: undefined, description: undefined }
+  */
 }
 
 /**

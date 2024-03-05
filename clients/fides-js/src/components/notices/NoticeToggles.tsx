@@ -1,6 +1,6 @@
 import { h } from "preact";
 
-import { ConsentMechanism, GpcStatus, PrivacyNotice } from "../../lib/consent-types";
+import { GpcStatus } from "../../lib/consent-types";
 import type { I18n } from "../../lib/i18n";
 
 import Divider from "../Divider";
@@ -10,9 +10,10 @@ import DataUseToggle from "../DataUseToggle";
 
 export interface NoticeToggleProps {
   noticeKey: string;
-  title: string;
-  description: string;
-  consentMechanism: ConsentMechanism;
+  title?: string;
+  description?: string;
+  checked: boolean;
+  disabled: boolean;
   gpcStatus: GpcStatus;
 }
 
@@ -24,10 +25,10 @@ export const NoticeToggles = ({
 }: {
   noticeToggles: NoticeToggleProps[];
   i18n: I18n;
-  enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>;
-  onChange: (keys: Array<PrivacyNotice["notice_key"]>) => void;
+  enabledNoticeKeys: Array<string>;
+  onChange: (keys: Array<string>) => void;
 }) => {
-  const handleToggle = (noticeKey: PrivacyNotice["notice_key"]) => {
+  const handleToggle = (noticeKey: string) => {
     // Add the notice to list of enabled notices
     if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
       onChange([...enabledNoticeKeys, noticeKey]);
@@ -37,37 +38,11 @@ export const NoticeToggles = ({
       onChange(enabledNoticeKeys.filter((n) => n !== noticeKey));
     }
   };
-
-  /**
-   * TODO (PROD-1597): function docs
-   */
-  /*
-  const extractTranslations = (notice: PrivacyNotice): { title?: string, description?: string } => {
-    const titleMessageId = `exp.notices.${notice.id}.title`;
-    const descriptionMessageId = `exp.notices.${notice.id}.description`;
-    if (messageExists(i18n, titleMessageId) && messageExists(i18n, descriptionMessageId)) {
-      const title = i18n.t(titleMessageId);
-      const description = i18n.t(descriptionMessageId);
-      return { title, description };
-    } else {
-      // Prefer the default ("en") translation, otherwise fallback to the first translation found
-      const fallbackTranslation = notice.translations.find(e => e.language === DEFAULT_LOCALE) || notice.translations[0];
-      if (fallbackTranslation) {
-        // TODO: update preferences reporting...
-        const title = fallbackTranslation.title;
-        const description = fallbackTranslation.description;
-        return { title, description };
-      }
-    }
-    return { title: undefined, description: undefined }
-  };
-  */
-
+ 
   return (
     <div>
       {noticeToggles.map((props, idx) => {
-        const { noticeKey, title, description, consentMechanism, gpcStatus } = props;
-        const checked = enabledNoticeKeys.indexOf(noticeKey) !== -1;
+        const { noticeKey, title, description, checked, disabled, gpcStatus } = props;
         const isLast = idx === noticeToggles.length - 1;
         return (
           <div>
@@ -79,9 +54,7 @@ export const NoticeToggles = ({
               gpcBadge={
                 <GpcBadge i18n={i18n} status={gpcStatus} />
               }
-              disabled={
-                consentMechanism === ConsentMechanism.NOTICE_ONLY
-              }
+              disabled={disabled}
             >
               {description}
             </DataUseToggle>
