@@ -229,15 +229,34 @@ NOTICES_TO_EXPERIENCE_CONFIG = {
 }
 
 
-# as part of this upgrade, we're removing the following as region options across the app
+# as part of this upgrade, we're removing the following GB sub-regions as region options across the app
 GB_REGIONS_TO_REMOVE = {
     "gb_eng",
     "gb_sct",
     "gb_wls",
     "gb_nir",
 }
+# the GB sub-regions are replaced by the `gb` region
 GB_REGIONS_TO_ADD = {
     "gb",
+}
+
+# Canadian regions are ignored in the migration of existing data, since we create a net-new OOB experience config for Canada
+CA_REGIONS_TO_IGNORE = {
+    "ca_qc",
+    "ca_nt",
+    "ca_nb",
+    "ca_nu",
+    "ca_bc",
+    "ca_mb",
+    "ca_ns",
+    "ca_pe",
+    "ca_sk",
+    "ca_yt",
+    "ca_on",
+    "ca_nl",
+    "ca_ab",
+    "ca",
 }
 
 
@@ -295,23 +314,21 @@ def load_default_experience_configs():
         experience_config_type = DefaultExperienceConfigTypes(experience_config["id"])
         _raw_experience_config_map[experience_config_type] = experience_config.copy()
 
-        # the reconciled experience config will have its regions populated by existing notices that are
-        # associated with this experience config. so in most cases, we start "fresh" with an empty set.
+        # the reconciled experience config will have its regions and notices populated by existing notices that are
+        # associated with this experience config. so in most cases, we start "fresh" with empty sets.
         # the TCF experience and Canada banner modal experience are exceptions:
-        # their regions are not derived from notices (TCF is not linked to notices; Canada experience config is net-new),
-        # so we hardcode their regions to the config defaults.
-        reconciled_regions = (
-            experience_config["regions"]
-            if experience_config_type == DefaultExperienceConfigTypes.EEA_TCF_OVERLAY
-            or experience_config_type
-            == DefaultExperienceConfigTypes.CANADA_BANNER_MODAL
-            else set()  # if not TCF experience, clear the config's regions, since we will populate based on existing notices
+        # their regions and notices are not derived from existing notices (TCF is not linked to notices; Canada experience config is net-new),
+        # so we hardcode their regions and notices to the config defaults.
+        if experience_config_type not in (
+            DefaultExperienceConfigTypes.EEA_TCF_OVERLAY,
+            DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
+        ):
+            experience_config["regions"] = set()
+            experience_config["privacy_notices"] = set()
+
+        experience_config["needs_migration"] = (
+            False  # indicator whether the record requires migration, or we can default to the template values
         )
-        experience_config["regions"] = reconciled_regions
-        experience_config["privacy_notices"] = set()  # initialize the notices field
-        experience_config[
-            "needs_migration"
-        ] = False  # indicator whether the record requires migration, or we can default to the template values
         _reconciled_experience_config_map[experience_config_type] = experience_config
         experience_config["needs_migration"] = False
     return _reconciled_experience_config_map, _raw_experience_config_map
@@ -400,6 +417,8 @@ def determine_needed_experience_configs(bind):
         component_mapping = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key)
         if component_mapping:
             regions_to_add = set(existing_notice["regions"]).copy()
+
+            # remove GB subregions and replace with top-level `gb` region!
             if not GB_REGIONS_TO_REMOVE.isdisjoint(
                 regions_to_add
             ):  # if we have GB regions to remove
@@ -407,6 +426,11 @@ def determine_needed_experience_configs(bind):
                     GB_REGIONS_TO_REMOVE
                 )  # remove the GB regions
                 regions_to_add.update(GB_REGIONS_TO_ADD)  # add the GB region
+
+            # ignore any canada regions in migration - they are not migrated,
+            # but instead handled by a net-new OOB experience
+            regions_to_add.difference_update(CA_REGIONS_TO_IGNORE)
+
             if existing_notice["displayed_in_overlay"]:
                 experience_config = component_mapping.get(ComponentType.Overlay)
                 reconciled_experience_config_map[experience_config]["regions"].update(
