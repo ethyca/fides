@@ -1,12 +1,14 @@
 import pytest
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.location_regulation_selections import (
     DeprecatedNoticeRegion,
     PrivacyNoticeRegion,
 )
+from fides.api.models.privacy_experience import ExperienceNotices
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -89,6 +91,12 @@ class TestPrivacyNoticeModel:
         assert history_object.version == 1.0
         assert history_object.translation_id == translation.id
         assert history_object.notice_key == privacy_notice.notice_key
+
+        translation.delete(db)
+        db.refresh(history_object)
+
+        # Deleting a translation just sets this FK to null, historical record is kept for auditing
+        assert history_object.translation_id is None
 
     def test_default_preference_property(self, privacy_notice):
         assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
@@ -693,3 +701,30 @@ class TestPrivacyNoticeModel:
         assert (
             historic_privacy_notice.displayed_in_api is None
         )  # displayed_in fields are deprecated and not required
+
+    def test_duplicate_notice_translations_prevented(self, db,  privacy_notice, privacy_experience_overlay):
+        config = privacy_experience_overlay.experience_config
+        ExperienceNotices.create(
+            db, data={"notice_id": privacy_notice.id, "experience_config_id": config.id}
+        )
+
+        with pytest.raises(IntegrityError):
+            ExperienceNotices.create(
+                db, data={"notice_id": privacy_notice.id, "experience_config_id": config.id}
+            )
+
+    def test_language_must_be_unique(self, db, privacy_notice):
+        nt = NoticeTranslation.create(db, data={
+            "language": SupportedLanguage.german,
+            "title": "new",
+            "privacy_notice_id": privacy_notice.id
+        } )
+
+        with pytest.raises(IntegrityError):
+            nt = NoticeTranslation.create(db, data={
+                "language": SupportedLanguage.german,
+                "title": "new",
+                "privacy_notice_id": privacy_notice.id
+            })
+
+        nt.delete(db)

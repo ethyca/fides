@@ -1,6 +1,7 @@
 from copy import copy
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_experience import (
@@ -117,8 +118,14 @@ class TestExperienceConfig:
         assert history.translation_id == translation.id
         assert history.version == 1.0
 
-        history.delete(db)
         translation.delete(db)
+        db.refresh(history)
+        # When a translation is deleted, we just cascade the translation_id to be none, and leave
+        # the historical record intact
+        assert history.translation_id is None
+
+        history.delete(db)
+
         config.delete(db=db)
 
     def test_update_privacy_experience_config_level(self, db, privacy_notice):
@@ -699,3 +706,22 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
             translation.histories[0].delete(db)
             translation.delete(db)
         config.delete(db)
+
+
+class TestExperienceTranslation:
+
+    def test_language_must_be_unique(self, db, experience_config_banner_and_modal):
+        et = ExperienceTranslation.create(db, data={
+            "language": SupportedLanguage.german,
+            "is_default": True,
+            "experience_config_id": experience_config_banner_and_modal.id
+        } )
+
+        with pytest.raises(IntegrityError):
+            ExperienceTranslation.create(db, data={
+                "language": SupportedLanguage.german,
+                "is_default": True,
+                "experience_config_id": experience_config_banner_and_modal.id
+            })
+
+        et.delete(db)
