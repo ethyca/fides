@@ -481,6 +481,8 @@ describe("Consent i18n", () => {
         );
         expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
       });
+
+      // TODO (PROD-1598): test that correct history ID used after user changes language
     });
     /* eslint-enable @typescript-eslint/naming-convention */
   });

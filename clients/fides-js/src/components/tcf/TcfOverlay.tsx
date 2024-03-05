@@ -42,6 +42,7 @@ import Button from "../Button";
 import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
+import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
@@ -232,10 +233,19 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
-  // TODO (PROD-1597): select the correct experience translation ID
-  const privacyExperienceConfigHistoryId =
-    experience.experience_config?.translations[0]
-      .privacy_experience_config_history_id;
+  // Determine which ExperienceConfig history ID should be used for the
+  // reporting APIs, based on the selected locale
+  const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
+    if (experience.experience_config) {
+      const bestTranslation = selectBestExperienceConfigTranslation(
+        i18n,
+        experience.experience_config
+      );
+      return bestTranslation?.privacy_experience_config_history_id;
+    }
+    return undefined;
+  }, [experience, i18n]);
+
   const { servedNotice } = useConsentServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: [],

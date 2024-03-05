@@ -61,7 +61,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   // Determine which ExperienceConfig history ID should be used for the
   // reporting APIs, based on the selected locale
-  // TODO (PROD-1597): can I guarantee this history ID...?
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
