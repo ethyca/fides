@@ -289,7 +289,10 @@ def upgrade():
         "privacynoticehistory", sa.Column("language", sa.String(), nullable=True)
     )
     op.add_column(
-        "privacynoticehistory", sa.Column("title", sa.String(), nullable=True)
+        "privacynoticehistory",
+        sa.Column(
+            "title", sa.String(), nullable=True
+        ),  # temporarily nullable for existing values
     )
     op.add_column(
         "privacynoticehistory", sa.Column("translation_id", sa.String(), nullable=True)

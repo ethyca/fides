@@ -5,8 +5,8 @@ Revises: 0c65325843bd
 Create Date: 2024-03-05 17:08:07.093568
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
@@ -23,8 +23,16 @@ def upgrade():
         existing_type=sa.VARCHAR(),
         nullable=False,
     )
+    # Resetting Experience Config name back to non-nullable after data migration
     op.alter_column(
         "privacyexperienceconfig", "name", existing_type=sa.VARCHAR(), nullable=False
+    )
+    # Resetting PrivacyNoticeHistory title back to non-nullable after data migration
+    op.alter_column(
+        "privacynoticehistory",
+        "title",
+        existing_type=sa.VARCHAR(),
+        nullable=False,
     )
     op.drop_index(
         "ix_privacyexperienceconfig_banner_enabled",

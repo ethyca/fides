@@ -410,6 +410,17 @@ PrivacyNoticeRegion: Enum = Enum(  # type: ignore[misc]
     {location.id: location.id for location in privacy_notice_regions_by_id.values()},
 )
 
+# Create a notice region enum that includes regions we no longer support but still preserve
+# on historical records for auditing purposes
+deprecated_gb_regions = ["gb_eng", "gb_sct", "gb_wls", "gb_nir"]
+current_regions = {
+    location.id: location.id for location in privacy_notice_regions_by_id.values()
+}
+current_regions.update({gb_region: gb_region for gb_region in deprecated_gb_regions})
+DeprecatedNoticeRegion: Enum = Enum(  # type: ignore[misc]
+    "DeprecatedNoticeRegion", current_regions
+)
+
 
 def filter_regions_by_location(
     db: Session,

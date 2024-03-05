@@ -20,7 +20,10 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
+from fides.api.models.location_regulation_selections import (
+    DeprecatedNoticeRegion,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
@@ -438,7 +441,8 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
 
     # Where a notice is displayed is now configured on the Experience side!
     displayed_in_privacy_center = Column(
-        Boolean, nullable=True,
+        Boolean,
+        nullable=True,
     )  # Deprecated field, but retained on early records for auditing purposes
     displayed_in_overlay = Column(
         Boolean, nullable=True
@@ -446,10 +450,12 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     displayed_in_api = Column(
         Boolean, nullable=True
     )  # Deprecated field, but retained on early records for auditing purposes
-    regions = Column(  # Deprecated field, but retained on early records for auditing purposes
-        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
-        index=True,
-        nullable=True,
+    regions = (
+        Column(  # Deprecated field, but retained on early records for auditing purposes
+            ARRAY(EnumColumn(DeprecatedNoticeRegion, native_enum=False)),
+            index=True,
+            nullable=True,
+        )
     )
 
 

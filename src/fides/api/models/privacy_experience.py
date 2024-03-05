@@ -453,14 +453,20 @@ class PrivacyExperienceConfigHistory(
         nullable=True,  # Overrides ExperienceTranslationBase to make this nullable for early records
     )
     allow_language_selection = Column(
-        Boolean, nullable=True   # Overrides PrivacyExperienceConfigBase to make this nullable for early records
+        Boolean,
+        nullable=True,  # Overrides PrivacyExperienceConfigBase to make this nullable for early records
     )
     auto_detect_language = Column(
-        Boolean, nullable=True   # Overrides PrivacyExperienceConfigBase to make this nullable for early records
+        Boolean,
+        nullable=True,  # Overrides PrivacyExperienceConfigBase to make this nullable for early records
     )
-    dismissable = Column(Boolean, nullable=True)   # Overrides PrivacyExperienceConfigBase to make this nullable for early records
+    dismissable = Column(
+        Boolean, nullable=True
+    )  # Overrides PrivacyExperienceConfigBase to make this nullable for early records
 
-    banner_enabled = Column(String(), index=True)  # Deprecated field, but left for auditing purposes
+    banner_enabled = Column(
+        String(), index=True
+    )  # Deprecated field, but left for auditing purposes
 
 
 class PrivacyExperience(Base):

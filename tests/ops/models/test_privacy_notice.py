@@ -3,9 +3,13 @@ from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
+from fides.api.models.location_regulation_selections import (
+    DeprecatedNoticeRegion,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
+    EnforcementLevel,
     NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
@@ -658,3 +662,34 @@ class TestPrivacyNoticeModel:
             ).is_gpp
             is False
         )
+
+    def test_deprecated_privacy_notice_region_fields(self, db):
+        historic_privacy_notice = PrivacyNoticeHistory.create(
+            db,
+            data={
+                "name": "Deprecated Notice History",
+                "description": "old_description",
+                "regions": ["gb_eng"],  # deprecated field with deprecated region
+                "displayed_in_overlay": True,  # deprecated field
+                "displayed_in_privacy_center": True,  # deprecated field
+                "displayed_in_api": None,  # deprecated field
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing"],
+                "version": 1.0,
+                "disabled": True,
+                "has_gpc_flag": False,
+                "enforcement_level": EnforcementLevel.system_wide,
+                "notice_key": "test_key",
+                "language": None,  # New field, not required for early records
+                "title": "Test title",
+                "translation_id": None,  # New concept, not required for early records
+            },
+        )
+
+        assert historic_privacy_notice.regions == [DeprecatedNoticeRegion.gb_eng]
+        assert not historic_privacy_notice.language
+        assert historic_privacy_notice.displayed_in_privacy_center
+        assert historic_privacy_notice.displayed_in_overlay
+        assert (
+            historic_privacy_notice.displayed_in_api is None
+        )  # displayed_in fields are deprecated and not required
