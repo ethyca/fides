@@ -442,6 +442,26 @@ class PrivacyExperienceConfigHistory(
 
     version = Column(Float, nullable=False, default=1.0)
 
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # allows enum _values_ to be stored rather than name
+        ),
+        nullable=True,  # Overrides ExperienceTranslationBase to make this nullable for early records
+    )
+    allow_language_selection = Column(
+        Boolean, nullable=True   # Overrides PrivacyExperienceConfigBase to make this nullable for early records
+    )
+    auto_detect_language = Column(
+        Boolean, nullable=True   # Overrides PrivacyExperienceConfigBase to make this nullable for early records
+    )
+    dismissable = Column(Boolean, nullable=True)   # Overrides PrivacyExperienceConfigBase to make this nullable for early records
+
+    banner_enabled = Column(String(), index=True)  # Deprecated field, but left for auditing purposes
+
 
 class PrivacyExperience(Base):
     """Privacy Experiences connect a region to a shared PrivacyExperienceConfig.

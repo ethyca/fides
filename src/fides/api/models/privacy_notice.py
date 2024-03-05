@@ -427,6 +427,31 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
 
     version = Column(Float, nullable=False, default=1.0)
 
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [i.value for i in x],
+        ),
+        nullable=True,
+    )  # Overrides NoticeTranslationBase to make this nullable for early records
+
+    # Where a notice is displayed is now configured on the Experience side!
+    displayed_in_privacy_center = Column(
+        Boolean, nullable=True,
+    )  # Deprecated field, but retained on early records for auditing purposes
+    displayed_in_overlay = Column(
+        Boolean, nullable=True
+    )  # Deprecated field, but retained on early records for auditing purposes
+    displayed_in_api = Column(
+        Boolean, nullable=True
+    )  # Deprecated field, but retained on early records for auditing purposes
+    regions = Column(  # Deprecated field, but retained on early records for auditing purposes
+        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
+        index=True,
+        nullable=True,
+    )
+
 
 def create_historical_record_for_notice_and_translation(
     db: Session, privacy_notice: PrivacyNotice, notice_translation: NoticeTranslation

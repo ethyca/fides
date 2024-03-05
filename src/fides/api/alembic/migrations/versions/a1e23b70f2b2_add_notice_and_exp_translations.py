@@ -34,7 +34,7 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("regions", postgresql.ARRAY(sa.String()), nullable=True),
-        sa.Column("name", sa.String(), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
         sa.Column("component", sa.String(), nullable=False),
         sa.Column("privacy_notice_keys", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column(
@@ -220,7 +220,7 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("language", sa.String(), nullable=False),
+        sa.Column("language", sa.String(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory", sa.Column("name", sa.String(), nullable=True)
@@ -231,19 +231,15 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("dismissable", sa.Boolean(), server_default="t", nullable=False),
+        sa.Column("dismissable", sa.Boolean(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column(
-            "auto_detect_language", sa.Boolean(), server_default="t", nullable=False
-        ),
+        sa.Column("auto_detect_language", sa.Boolean(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="f", nullable=False
-        ),
+        sa.Column("allow_language_selection", sa.Boolean(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
@@ -283,7 +279,7 @@ def upgrade():
         nullable=True,
     )
     op.add_column(
-        "privacynoticehistory", sa.Column("language", sa.String(), nullable=False)
+        "privacynoticehistory", sa.Column("language", sa.String(), nullable=True)
     )
     op.add_column(
         "privacynoticehistory", sa.Column("title", sa.String(), nullable=False)
@@ -295,6 +291,24 @@ def upgrade():
         "privacynoticehistory",
         "regions",
         existing_type=postgresql.ARRAY(sa.VARCHAR()),
+        nullable=True,
+    )
+    op.alter_column(
+        "privacynoticehistory",
+        "displayed_in_privacy_center",
+        existing_type=sa.BOOLEAN(),
+        nullable=True,
+    )
+    op.alter_column(
+        "privacynoticehistory",
+        "displayed_in_overlay",
+        existing_type=sa.BOOLEAN(),
+        nullable=True,
+    )
+    op.alter_column(
+        "privacynoticehistory",
+        "displayed_in_api",
+        existing_type=sa.BOOLEAN(),
         nullable=True,
     )
     op.alter_column(
@@ -442,9 +456,6 @@ def downgrade():
         "regions",
         existing_type=postgresql.ARRAY(sa.VARCHAR()),
         nullable=True,
-    )
-    op.drop_constraint(
-        "confighistory_asset", "privacyexperienceconfighistory", type_="foreignkey"
     )
     op.drop_constraint(
         "confighistory_translation_id",
