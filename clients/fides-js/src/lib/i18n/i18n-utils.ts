@@ -5,7 +5,6 @@ import {
   PrivacyExperience,
   PrivacyNotice,
   PrivacyNoticeTranslation,
-  PrivacyNoticeWithPreference,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
@@ -89,65 +88,6 @@ function extractMessagesFromExperienceConfig(
 }
 
 /**
- * TODO: delete this
- *
- * Helper function to extract all the translated messages from a PrivacyNotice
- * API response.  Returns an object that maps locales -> messages, using the
- * PrivacyNotice's id to prefix each message like "exp.notices.{id}.title"
- *
- * For example, returns a message catalog like:
- * {
- *   "en": {
- *     "exp.notices.pri_123.title": "Advertising",
- *     "exp.notices.pri_123.description": "We perform advertising based on...",
- *     ...
- *   },
- *   "es": {
- *     ...
- *   }
- * }
- */
-function extractMessagesFromNotice(
-  notice: PrivacyNotice
-): Record<Locale, Messages> {
-  const extracted: Record<Locale, Messages> = {};
-  const NOTICE_TRANSLATION_FIELDS = ["description", "title"] as const;
-  if (notice?.translations) {
-    notice.translations.forEach((translation: PrivacyNoticeTranslation) => {
-      // For each translation, extract each of the translated fields
-      const locale = translation.language;
-      const messages: Messages = {};
-      NOTICE_TRANSLATION_FIELDS.forEach((key) => {
-        const message = translation[key];
-        if (typeof message === "string") {
-          messages[`exp.notices.${notice.id}.${key}`] = message;
-        }
-      });
-
-      // Combine these extracted messages with all the other locales
-      extracted[locale] = { ...messages, ...extracted[locale] };
-    });
-  } else {
-    // For backwards-compatibility, when "translations" don't exist, look for
-    // the fields on the PrivacyNotice itself
-    const anyNotice = notice as any;
-    const locale = DEFAULT_LOCALE;
-    const messages: Messages = {};
-    if (typeof anyNotice.description === "string") {
-      messages[`exp.notices.${notice.id}.description`] = anyNotice.description;
-    }
-    // NOTE: for backwards-compatibility; we used to use "name" for the title :)
-    if (typeof anyNotice.name === "string") {
-      messages[`exp.notices.${notice.id}.title`] = anyNotice.name;
-    }
-
-    // Combine these extracted messages with all the other locales
-    extracted[locale] = { ...messages, ...extracted[locale] };
-  }
-  return extracted;
-}
-
-/**
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
@@ -162,6 +102,15 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
  * into the message catalog.
+ *
+ * NOTE: We don't extract any messages from the PrivacyNotices and their linked
+ * translations. This is because notices are dynamic and their list of available
+ * translations isn't guaranteed to match the overall experience config; since
+ * there's too much uncertainty there, it's best to handle selecting the "best"
+ * translation and displaying it within the UI components themselves.
+ *
+ * See `selectBestNoticeTranslation` below for how that selection is done based
+ * on the i18n locale.
  */
 export function loadMessagesFromExperience(
   i18n: I18n,
@@ -179,22 +128,6 @@ export function loadMessagesFromExperience(
         ...allMessages[locale],
       };
     });
-  }
-
-  // Extract messages from privacy_notices[].translations
-  if (experience?.privacy_notices) {
-    experience.privacy_notices.forEach(
-      (notice: PrivacyNoticeWithPreference) => {
-        const extracted: Record<Locale, Messages> =
-          extractMessagesFromNotice(notice);
-        Object.keys(extracted).forEach((locale) => {
-          allMessages[locale] = {
-            ...extracted[locale],
-            ...allMessages[locale],
-          };
-        });
-      }
-    );
   }
 
   // Load all the extracted messages into the i18n module

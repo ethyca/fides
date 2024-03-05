@@ -131,10 +131,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
-        "exp.notices.pri_555.title": "Advertising Test",
-        "exp.notices.pri_555.description": "Advertising Description Test",
-        "exp.notices.pri_888.title": "Analytics Test",
-        "exp.notices.pri_888.description": "Analytics Description Test",
       });
       const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
       expect(secondLocale).toEqual("es");
@@ -151,12 +147,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Rechazar Prueba",
         "exp.save_button_label": "Guardar Prueba",
         "exp.title": "Título de la Prueba",
-        "exp.notices.pri_555.title": "Prueba de Publicidad",
-        "exp.notices.pri_555.description":
-          "Descripción de la Publicidad de Prueba",
-        "exp.notices.pri_888.title": "Prueba de Analítica",
-        "exp.notices.pri_888.description":
-          "Descripción de la Analítica de Prueba",
       });
     });
 
@@ -167,11 +157,9 @@ describe("i18n-utils", () => {
 
       // Test that an empty string is treated as a valid message and is loaded
       mockExpEdited.experience_config.translations[0].save_button_label = "";
-      mockExpEdited.privacy_notices[0].translations[0].title = "";
 
       // Test that a null value is treated as an invalid message and is ignored
       mockExpEdited.experience_config.translations[0].banner_title = null;
-      mockExpEdited.privacy_notices[0].translations[0].description = null;
 
       // Load the "no translations" version of the experience and run tests
       loadMessagesFromExperience(mockI18n, mockExpEdited as any);
@@ -179,9 +167,7 @@ describe("i18n-utils", () => {
       expect(locale).toEqual("en");
       expect(messages).toHaveProperty(["exp.title"], "Title Test");
       expect(messages).toHaveProperty(["exp.save_button_label"], "");
-      expect(messages).toHaveProperty(["exp.notices.pri_555.title"], "");
       expect(messages).not.toHaveProperty(["exp.banner_title"]);
-      expect(messages).not.toHaveProperty(["exp.notices.pri_555.description"]);
     });
 
     it("handles missing experience/notice translations by falling back to legacy properties", () => {
@@ -190,14 +176,7 @@ describe("i18n-utils", () => {
       const mockExpNoTranslations = JSON.parse(JSON.stringify(mockExperience));
 
       // Edit the experience data to match the legacy format (w/o translations)
-      /* eslint-disable no-param-reassign */
       delete mockExpNoTranslations.experience_config.translations;
-      mockExpNoTranslations.privacy_notices.forEach((notice: any) => {
-        notice.name = notice.translations[0].title;
-        notice.description = notice.translations[0].description;
-        delete notice.translations;
-      });
-      /* eslint-enable no-param-reassign */
 
       // Load the "no translations" version of the experience and run tests
       const updatedLocales = loadMessagesFromExperience(
@@ -222,10 +201,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
-        "exp.notices.pri_555.title": "Advertising Test",
-        "exp.notices.pri_555.description": "Advertising Description Test",
-        "exp.notices.pri_888.title": "Analytics Test",
-        "exp.notices.pri_888.description": "Analytics Description Test",
       });
     });
   });
