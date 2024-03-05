@@ -15,6 +15,7 @@ import {
   matchAvailableLocales,
   messageExists,
   setupI18n,
+  selectBestExperienceConfigTranslation,
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
@@ -273,33 +274,32 @@ describe("i18n-utils", () => {
 
     it("selects an exact match for current locale if available", () => {
       mockCurrentLocale = "es";
-      const bestTranslation = selectBestNoticeTranslation(mockI18n, mockNotice);
-      expect(bestTranslation).toBeDefined();
-      expect(bestTranslation?.language).toEqual("es");
+      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
+        "language",
+        "es"
+      );
     });
 
     it("falls back to the default locale if an exact match isn't available", () => {
       mockCurrentLocale = "zh";
-      const bestTranslation = selectBestNoticeTranslation(mockI18n, mockNotice);
-      expect(bestTranslation).toBeDefined();
-      expect(bestTranslation?.language).toEqual("en");
+      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
+        "language",
+        "en"
+      );
     });
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
-      mockCurrentLocale = "zh";
       const mockNoticeNoEnglish: PrivacyNoticeWithPreference = JSON.parse(
-        JSON.stringify(mockExperience)
+        JSON.stringify(mockNotice)
       );
       mockNoticeNoEnglish.translations = [mockNotice.translations[1]];
       expect(mockNoticeNoEnglish.translations.map((e) => e.language)).toEqual([
         "es",
       ]);
-      const bestTranslation = selectBestNoticeTranslation(
-        mockI18n,
-        mockNoticeNoEnglish
-      );
-      expect(bestTranslation).toBeDefined();
-      expect(bestTranslation?.language).toEqual("es");
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish)
+      ).toHaveProperty("language", "es");
     });
 
     it("returns null for invalid/missing translations", () => {
@@ -312,6 +312,67 @@ describe("i18n-utils", () => {
       ).toBeNull();
       expect(
         selectBestNoticeTranslation(mockI18n, {
+          translations: undefined,
+        } as any)
+      ).toBeNull();
+    });
+  });
+
+  describe("selectBestExperienceConfigTranslation", () => {
+    let mockExperienceConfig: ExperienceConfig;
+
+    beforeEach(() => {
+      // Assert our test data is valid, so that Typescript is happy!
+      if (!mockExperience.experience_config) {
+        throw new Error("Invalid mock experience test data!");
+      }
+      mockExperienceConfig = mockExperience.experience_config;
+    });
+
+    it("selects an exact match for current locale if available", () => {
+      mockCurrentLocale = "es";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+      ).toHaveProperty("language", "es");
+    });
+
+    it("falls back to the default locale if an exact match isn't available", () => {
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+      ).toHaveProperty("language", "en");
+    });
+
+    it("falls back to the first locale if neither exact match nor default locale are available", () => {
+      const mockExpNoEnglish: ExperienceConfig = JSON.parse(
+        JSON.stringify(mockExperienceConfig)
+      );
+      mockExpNoEnglish.translations = [mockExpNoEnglish.translations[1]];
+      expect(mockExpNoEnglish.translations.map((e) => e.language)).toEqual([
+        "es",
+      ]);
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExpNoEnglish)
+      ).toHaveProperty("language", "es");
+    });
+
+    it("returns null for invalid/missing translations", () => {
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, null as any)
+      ).toBeNull();
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, {
+          translations: [],
+        } as any)
+      ).toBeNull();
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, {
+          translations: null,
+        } as any)
+      ).toBeNull();
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, {
           translations: undefined,
         } as any)
       ).toBeNull();

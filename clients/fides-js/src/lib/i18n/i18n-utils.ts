@@ -218,6 +218,54 @@ export function messageExists(i18n: I18n, id: string): boolean {
 }
 
 /**
+ * Helper function to select the "best" translation from a notice, based on the
+ * current locale. This searches through the available translations for the
+ * given notice and selects the best match in this order:
+ * 1) Look for an exact match for current locale
+ * 2) Fallback to default locale, if an exact match isn't found
+ * 3) Fallback to first translation in the list, if the default locale isn't found
+ *
+ * NOTE: We use this "best" translation instead of relying directly on
+ * the i18n module because we can't guarantee a notice will have a translation
+ * that matches the PrivacyExperience - it's completely possible to, for
+ * example, configure an experience with Spanish translations but forget to
+ * translate all the linked notices!
+ *
+ * Since we can't provide that guarantee, instead we rely on the UI components
+ * (e.g. NoticeOverlay) to pick the "best" translation to show for each notice
+ * and handle that state.
+ */
+export function selectBestNoticeTranslation(
+  i18n: I18n,
+  notice: PrivacyNotice
+): PrivacyNoticeTranslation | null {
+  // Defensive checks
+  if (!notice || !notice.translations) {
+    return null;
+  }
+
+  // 1) Look for an exact match for the current locale
+  const currentLocale = getCurrentLocale(i18n);
+  const matchTranslation = notice.translations.find(
+    (e) => e.language === currentLocale
+  );
+  if (matchTranslation) {
+    return matchTranslation;
+  }
+
+  // 2) Fallback to default locale, if an exact match isn't found
+  const defaultTranslation = notice.translations.find(
+    (e) => e.language === DEFAULT_LOCALE
+  );
+  if (defaultTranslation) {
+    return defaultTranslation;
+  }
+
+  // 3) Fallback to first translation in the list, if the default locale isn't found
+  return notice.translations[0] || null;
+}
+
+/**
  * Helper function to select the "best" translation from the given
  * ExperienceConfig, based on the current locale. This is used to ensure that
  * our reporting APIs (notices served & save preferences) are given the right
@@ -256,49 +304,6 @@ export function selectBestExperienceConfigTranslation(
 
   // 3) Fallback to first translation in the list, if the default locale isn't found
   return experience.translations[0] || null;
-}
-
-/**
- * Helper function to select the "best" translation from a notice, based on the
- * current locale. Since we cannot guarantee that all notices will have
- * translations that match their parent experience, we can't safely just extract
- * all translations and use them.
- *
- * TODO: write a better explanation for how this happens
- *
- * Searches through the available translations and selects the best match in this order:
- * 1) Look for an exact match for current locale
- * 2) Fallback to default locale, if an exact match isn't found
- * 3) Fallback to first translation in the list, if the default locale isn't found
- */
-export function selectBestNoticeTranslation(
-  i18n: I18n,
-  notice: PrivacyNotice
-): PrivacyNoticeTranslation | null {
-  // Defensive checks
-  if (!notice || !notice.translations) {
-    return null;
-  }
-
-  // 1) Look for an exact match for the current locale
-  const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = notice.translations.find(
-    (e) => e.language === currentLocale
-  );
-  if (matchTranslation) {
-    return matchTranslation;
-  }
-
-  // 2) Fallback to default locale, if an exact match isn't found
-  const defaultTranslation = notice.translations.find(
-    (e) => e.language === DEFAULT_LOCALE
-  );
-  if (defaultTranslation) {
-    return defaultTranslation;
-  }
-
-  // 3) Fallback to first translation in the list, if the default locale isn't found
-  return notice.translations[0] || null;
 }
 
 /**
