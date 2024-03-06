@@ -1196,6 +1196,10 @@ dataset:
       data_categories: [system.operations]
     - name: displayed_in_api
       data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: framework
+      data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
     - name: created_at
@@ -1235,6 +1239,10 @@ dataset:
       data_categories: [system.operations]
     - name: displayed_in_api
       data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: framework
+      data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
     - name: created_at
@@ -1273,6 +1281,10 @@ dataset:
     - name: displayed_in_overlay
       data_categories: [system.operations]
     - name: displayed_in_api
+      data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: framework
       data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
@@ -1709,6 +1721,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_request_id
       data_categories: [system.operations]
+    - name: consent_request_id
+      data_categories: [system.operations]
     - name: field_name
       data_categories: [system.operations]
     - name: field_label
@@ -2010,3 +2024,17 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: plus_property
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: type
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]  

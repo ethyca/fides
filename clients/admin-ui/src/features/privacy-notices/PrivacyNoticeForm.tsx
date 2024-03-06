@@ -117,7 +117,6 @@ const PrivacyNoticeForm = ({
                   options={dataUseOptions}
                   variant="stacked"
                   isMulti
-                  isRequired
                 />
                 <CustomTextArea
                   label="Description of the privacy notice (visible to internal users only)"

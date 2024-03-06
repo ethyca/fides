@@ -4,12 +4,14 @@ import {
   Box,
   Button,
   Flex,
+  HStack,
   Spinner,
   Tag,
   Text,
   Tooltip,
   useDisclosure,
   useToast,
+  VStack,
 } from "@fidesui/react";
 import {
   createColumnHelper,
@@ -47,6 +49,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
+import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,
   selectAllDictSystems,
@@ -69,7 +72,7 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
 };
 
 const ADDED_VENDOR_TOOLTIP_LABEL =
-  "This vendor has already beed added. You can view the properties of this vendor by going to View Systems.";
+  "This vendor has already been added. You can view the properties of this vendor by going to View Systems.";
 
 type MultipleSystemTable = DictSystems;
 
@@ -78,6 +81,30 @@ const columnHelper = createColumnHelper<MultipleSystemTable>();
 type Props = {
   redirectRoute: string;
 };
+
+const EmptyTableNotice = () => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    borderRadius="base"
+    maxW="70%"
+    data-testid="no-results-notice"
+    alignSelf="center"
+    margin="auto"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        No results found.
+      </Text>
+      <Text fontSize="sm">
+        {`Can't find the vendor you are looking for? Add custom systems or unlisted
+      vendors by selecting the "Add custom vendor" button below.`}
+      </Text>
+    </VStack>
+    <AddVendor buttonLabel="Add custom vendor" />
+  </VStack>
+);
 
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const systemText = "Vendor";
@@ -147,9 +174,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             onChange={row.getToggleSelectedHandler()}
           />
         ),
-        meta: {
-          width: "55px",
-        },
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -162,9 +186,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
         enableColumnFilter: isTcfEnabled,
         filterFn: "arrIncludesSome",
-        meta: {
-          width: "80px",
-        },
       }),
     ],
     [allRowsLinkedToSystem, systemText, isTcfEnabled]
@@ -191,7 +212,13 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       pagination: {
         pageSize: PAGE_SIZES[0],
       },
+      columnSizing: {
+        select: 0,
+        vendor_id: 0,
+      },
     },
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
   });
 
   useEffect(() => {
@@ -292,7 +319,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           .length as number)
       : 0;
   return (
-    <Flex flex={1} direction="column" overflow="auto">
+    <Flex
+      flex={1}
+      direction="column"
+      overflow="auto"
+      data-testid="add-multiple-systems-tbl"
+    >
       <ConfirmationModal
         isOpen={isOpen}
         isCentered
@@ -321,30 +353,32 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             />
           </Box>
           {totalSelectSystemsLength > 0 ? (
-            <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
-              {totalSelectSystemsLength.toLocaleString("en")} selected
-            </Text>
+            <>
+              <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
+                {totalSelectSystemsLength.toLocaleString("en")} selected
+              </Text>
+              <Tooltip
+                label={toolTipText}
+                shouldWrapChildren
+                placement="top"
+                isDisabled={isTooltipDisabled}
+              >
+                <Button
+                  onClick={onOpen}
+                  data-testid="add-multiple-systems-btn"
+                  size="xs"
+                  variant="outline"
+                  disabled={!anyNewSelectedRows}
+                  ml={4}
+                >
+                  Add
+                </Button>
+              </Tooltip>
+            </>
           ) : null}
-
-          <Tooltip
-            label={toolTipText}
-            shouldWrapChildren
-            placement="top"
-            isDisabled={isTooltipDisabled}
-          >
-            <Button
-              onClick={onOpen}
-              data-testid="add-multiple-systems-btn"
-              size="xs"
-              variant="outline"
-              disabled={!anyNewSelectedRows}
-              ml={4}
-            >
-              Add
-            </Button>
-          </Tooltip>
         </Flex>
-        <Flex alignItems="center">
+        <HStack spacing={4} alignItems="center">
+          <AddVendor buttonLabel="Add custom vendor" buttonVariant="outline" />
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
@@ -365,7 +399,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               </Button>
             </span>
           ) : null}
-        </Flex>
+        </HStack>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
         tableInstance={tableInstance}
@@ -382,6 +416,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           }
           return undefined;
         }}
+        emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}

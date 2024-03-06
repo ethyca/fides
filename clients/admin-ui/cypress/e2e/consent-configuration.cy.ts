@@ -1,11 +1,15 @@
 import {
   stubPlus,
   stubSystemCrud,
+  stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
 } from "cypress/support/stubs";
 
-import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ADD_MULTIPLE_VENDORS_ROUTE,
+  CONFIGURE_CONSENT_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Consent configuration", () => {
@@ -40,7 +44,7 @@ describe("Consent configuration", () => {
           cluster_error: null,
         },
         dictionary: {
-          enabled: false,
+          enabled: true,
           service_health: null,
           service_error: null,
         },
@@ -54,62 +58,8 @@ describe("Consent configuration", () => {
       cy.intercept("GET", "/api/v1/system", {
         body: [],
       }).as("getEmptySystems");
-      cy.visit(CONFIGURE_CONSENT_ROUTE);
-      cy.getByTestId("empty-state");
-      cy.get("body").click(0, 0);
-    });
-  });
-
-  describe("with existing systems", () => {
-    beforeEach(() => {
-      stubSystemCrud();
-      stubTaxonomyEntities();
-      stubPlus(
-        true,
-
-        {
-          core_fides_version: "1.9.6",
-          fidesplus_server: "healthy",
-          fidesplus_version: "1.9.6",
-          system_scanner: {
-            enabled: false,
-            cluster_health: null,
-            cluster_error: null,
-          },
-          dictionary: {
-            enabled: false,
-            service_health: null,
-            service_error: null,
-          },
-          tcf: {
-            enabled: false,
-          },
-          fides_cloud: {
-            enabled: false,
-          },
-        }
-      );
-      cy.intercept("GET", "/api/v1/system", {
-        fixture: "systems/systems.json",
-      }).as("getSystems");
-      cy.visit(CONFIGURE_CONSENT_ROUTE);
-    });
-
-    it("can render existing systems and cookies", () => {
-      // One row per system and one subrow per cookie
-      cy.getByTestId("grouped-row-demo_analytics_system");
-      cy.getByTestId("grouped-row-demo_marketing_system");
-      cy.getByTestId("grouped-row-fidesctl_system");
-
-      // One subrow per cookie. Should have corresponding data use
-      cy.getByTestId("subrow-cell_0_Cookie name").contains("N/A");
-      cy.getByTestId("subrow-cell_0_Data use").contains("N/A");
-      cy.getByTestId("subrow-cell_1_Cookie name").contains("_ga");
-      cy.getByTestId("subrow-cell_1_Data use").contains("Marketing");
-      cy.getByTestId("subrow-cell_2_Cookie name").contains("cookie");
-      cy.getByTestId("subrow-cell_2_Data use").contains("Improve Service");
-      cy.getByTestId("subrow-cell_3_Cookie name").contains("cookie2");
-      cy.getByTestId("subrow-cell_3_Data use").contains("Improve Service");
+      cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
+      cy.getByTestId("no-results-notice");
     });
   });
 
@@ -121,6 +71,10 @@ describe("Consent configuration", () => {
       cy.intercept("GET", "/api/v1/system", {
         fixture: "systems/systems.json",
       }).as("getSystems");
+      cy.intercept("GET", "/api/v1/purposes", {
+        purposes: ["test"],
+        special_purposes: ["test"],
+      }).as("getPurposes");
     });
 
     describe("without the dictionary", () => {
@@ -149,7 +103,7 @@ describe("Consent configuration", () => {
         cy.visit(CONFIGURE_CONSENT_ROUTE);
       });
 
-      it("can add a vendor without the dictionary", () => {
+      it("can add a vendor from the modal without the dictionary", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-name").type("test vendor");
         cy.selectOption(
@@ -278,10 +232,17 @@ describe("Consent configuration", () => {
             },
           }
         );
-        cy.visit(CONFIGURE_CONSENT_ROUTE);
+        stubSystemVendors();
       });
 
-      it("can fill in dictionary suggestions", () => {
+      it("redirects to 'add multiple vendors' page when 'Add vendors' is clicked", () => {
+        cy.visit(CONFIGURE_CONSENT_ROUTE);
+        cy.getByTestId("add-vendor-btn").click();
+        cy.url().should("include", "/consent/configure/add-vendors");
+      });
+
+      it("can add a vendor with dictionary suggestions from the modal", () => {
+        cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-name").type("Aniview LTD{enter}");
         cy.wait("@getDictionaryDeclarations");
@@ -730,6 +691,7 @@ describe("Consent configuration", () => {
       });
 
       it("can create a vendor that is not in the dictionary", () => {
+        cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-name").type("custom vendor{enter}");
         cy.selectOption(
@@ -761,104 +723,6 @@ describe("Consent configuration", () => {
             ],
           });
         });
-      });
-    });
-  });
-
-  describe("deleting a vendor", () => {
-    beforeEach(() => {
-      stubSystemCrud();
-      stubTaxonomyEntities();
-      stubVendorList();
-      cy.intercept("GET", "/api/v1/system", {
-        fixture: "systems/systems.json",
-      }).as("getSystems");
-      stubPlus(true, {
-        core_fides_version: "1.9.6",
-        fidesplus_server: "healthy",
-        fidesplus_version: "1.9.6",
-        system_scanner: {
-          enabled: false,
-          cluster_health: null,
-          cluster_error: null,
-        },
-        dictionary: {
-          enabled: false,
-          service_health: null,
-          service_error: null,
-        },
-        tcf: {
-          enabled: false,
-        },
-        fides_cloud: {
-          enabled: false,
-        },
-      });
-      cy.visit(CONFIGURE_CONSENT_ROUTE);
-    });
-
-    it("can delete a vendor", () => {
-      cy.getByTestId("configure-demo_analytics_system").click();
-      cy.getByTestId("delete-demo_analytics_system").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@deleteSystem").then((interception) => {
-        const { url } = interception.request;
-        expect(url).to.contain("demo_analytics_system");
-      });
-      cy.getByTestId("toast-success-msg");
-    });
-  });
-
-  describe("editing a vendor", () => {
-    beforeEach(() => {
-      stubSystemCrud();
-      stubTaxonomyEntities();
-      stubVendorList();
-      cy.intercept("GET", "/api/v1/system", {
-        fixture: "systems/systems.json",
-      }).as("getSystems");
-      stubPlus(true, {
-        core_fides_version: "1.9.6",
-        fidesplus_server: "healthy",
-        fidesplus_version: "1.9.6",
-        system_scanner: {
-          enabled: false,
-          cluster_health: null,
-          cluster_error: null,
-        },
-        dictionary: {
-          enabled: false,
-          service_health: null,
-          service_error: null,
-        },
-        tcf: {
-          enabled: false,
-        },
-        fides_cloud: {
-          enabled: false,
-        },
-      });
-      cy.visit(CONFIGURE_CONSENT_ROUTE);
-    });
-
-    it("can add cookies to a vendor", () => {
-      cy.getByTestId("configure-demo_marketing_system").click();
-      cy.getByTestId("edit-demo_marketing_system").click();
-      cy.getByTestId("input-privacy_declarations.0.cookieNames")
-        .find(".custom-creatable-select__input-container")
-        .type("test{enter}");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem").then((interception) => {
-        const { body } = interception.request;
-        expect(body.privacy_declarations[0].cookies).to.eql([
-          {
-            name: "_ga",
-          },
-          {
-            name: "test",
-            path: "/",
-          },
-        ]);
       });
     });
   });

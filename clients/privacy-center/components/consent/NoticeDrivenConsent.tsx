@@ -53,13 +53,16 @@ export const resolveConsentValue = (
   const gpcEnabled =
     !!notice.has_gpc_flag &&
     context.globalPrivacyControl === true &&
-    !noticeHasConsentInCookie(notice as PrivacyNoticeWithPreference, cookie);
+    !noticeHasConsentInCookie(
+      notice as PrivacyNoticeWithPreference,
+      cookie.consent
+    );
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
   const preferenceExistsInCookie = noticeHasConsentInCookie(
     notice as PrivacyNoticeWithPreference,
-    cookie
+    cookie.consent
   );
   if (preferenceExistsInCookie) {
     return transformConsentToFidesUserPreference(
@@ -72,7 +75,7 @@ export const resolveConsentValue = (
   return notice.default_preference;
 };
 
-const NoticeDrivenConsent = () => {
+const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const router = useRouter();
   const toast = useToast();
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -254,7 +257,7 @@ const NoticeDrivenConsent = () => {
     window.Fides.consent = consentCookieKey;
     const updatedCookie = { ...cookie, consent: consentCookieKey };
     updatedCookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
-    saveFidesCookie(updatedCookie);
+    saveFidesCookie(updatedCookie, base64Cookie);
     toast({
       title: "Your consent preferences have been saved",
       ...SuccessToastOptions,

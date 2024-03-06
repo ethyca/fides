@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "name": "Property A",
+      "type": "Website",
+      "key": "property_a"
+    },
+    {
+      "name": "Property B",
+      "type": "Other",
+      "key": "property_b"
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 50
+}

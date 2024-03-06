@@ -17,14 +17,20 @@ export type ExperienceConfigUpdate = {
    * Overlay 'Acknowledge button label for notice only banner'
    */
   acknowledge_button_label?: string;
+  /**
+   * Overlay 'Banner Description'
+   */
   banner_description?: string;
   /**
    * Overlay 'Banner'
    */
   banner_enabled?: BannerEnabled;
+  /**
+   * Overlay 'Banner title'
+   */
   banner_title?: string;
   /**
-   * Overlay 'Banner Description' or Privacy Center 'Description'
+   * Overlay 'Description' or Privacy Center 'Description'
    */
   description?: string;
   /**
@@ -60,7 +66,7 @@ export type ExperienceConfigUpdate = {
    */
   save_button_label?: string;
   /**
-   * Overlay 'Banner title' or Privacy Center 'title'
+   * Overlay 'title' or Privacy Center 'title'
    */
   title?: string;
 };

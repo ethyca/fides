@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
+import { decode as base64_decode, encode as base64_encode } from "base-64";
 
 import { ConsentContext } from "./consent-context";
 import { resolveLegacyConsentValue } from "./consent-value";
@@ -95,6 +96,29 @@ export const getCookieByName = (cookieName: string): string | undefined =>
   getCookie(cookieName, CODEC);
 
 /**
+ * Retrieve and decode fides consent cookie
+ */
+export const getFidesConsentCookie = (
+  debug: boolean = false
+): FidesCookie | undefined => {
+  const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
+  if (!cookieString) {
+    return undefined;
+  }
+  // For safety, always try JSON decoding, and if that fails use BASE64
+  try {
+    return JSON.parse(cookieString);
+  } catch {
+    try {
+      return JSON.parse(base64_decode(cookieString));
+    } catch (e) {
+      debugLog(debug, `Unable to read consent cookie`, e);
+      return undefined;
+    }
+  }
+};
+
+/**
  * Attempt to read, parse, and return the current Fides cookie from the browser.
  * If one doesn't exist, make a new default cookie (including generating a new
  * pseudonymous ID) and return the default values.
@@ -114,31 +138,26 @@ export const getOrMakeFidesCookie = (
   }
 
   // Check for an existing cookie for this device
-  const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
-  if (!cookieString) {
+  let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  if (!parsedCookie) {
     debugLog(
       debug,
       `No existing Fides consent cookie found, returning defaults.`,
-      cookieString
+      parsedCookie
     );
     return defaultCookie;
   }
 
   try {
-    // Parse the cookie and check its format; if it's structured like we
+    // Check format of parsed cookie; if it's structured like we
     // expect, cast it directly. Otherwise, assume it's a previous version of
     // the cookie, which was strictly the consent key/value preferences
-    let parsedCookie: FidesCookie;
-    const parsedJson = JSON.parse(cookieString);
-    if ("consent" in parsedJson && "fides_meta" in parsedJson) {
-      // Matches the expected format, so we can use it as-is
-      parsedCookie = parsedJson;
-    } else {
+    if (!("consent" in parsedCookie && "fides_meta" in parsedCookie)) {
       // Missing the expected format, so we parse it as strictly consent
       // preferences and "wrap" it with the default cookie style
       parsedCookie = {
         ...defaultCookie,
-        consent: parsedJson,
+        consent: parsedCookie,
       };
     }
 
@@ -158,7 +177,6 @@ export const getOrMakeFidesCookie = (
     );
     return parsedCookie;
   } catch (err) {
-    // eslint-disable-next-line no-console
     debugLog(debug, `Unable to read consent cookie: invalid JSON.`, err);
     return defaultCookie;
   }
@@ -177,7 +195,10 @@ export const getOrMakeFidesCookie = (
  *
  * (see https://github.com/ethyca/fides/issues/2072)
  */
-export const saveFidesCookie = (cookie: FidesCookie) => {
+export const saveFidesCookie = (
+  cookie: FidesCookie,
+  base64Cookie: boolean = false
+) => {
   if (typeof document === "undefined") {
     return;
   }
@@ -191,9 +212,14 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
   // Write the cookie to the root domain
   const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
 
+  let encodedCookie: string = JSON.stringify(cookie);
+  if (base64Cookie) {
+    encodedCookie = base64_encode(encodedCookie);
+  }
+
   setCookie(
     CONSENT_COOKIE_NAME,
-    JSON.stringify(cookie),
+    encodedCookie,
     {
       // An explicit path ensures this is always set to the entire domain.
       path: "/",
@@ -225,7 +251,7 @@ export const updateExperienceFromCookieConsentNotices = ({
   // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
     experience.privacy_notices?.map((notice) => {
-      const preference = Object.hasOwn(cookie.consent, notice.notice_key)
+      const preference = Object.keys(cookie.consent).includes(notice.notice_key)
         ? transformConsentToFidesUserPreference(
             Boolean(cookie.consent[notice.notice_key]),
             notice.consent_mechanism

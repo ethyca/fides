@@ -16,6 +16,7 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConsentRequestMap,
@@ -40,6 +41,11 @@ from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
     should_opt_in_to_service,
 )
+from fides.api.util.logger_context_utils import (
+    Contextualizable,
+    LoggerContextKeys,
+    log_context,
+)
 from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     assign_placeholders,
@@ -47,8 +53,18 @@ from fides.api.util.saas_util import (
 )
 
 
-class SaaSConnector(BaseConnector[AuthenticatedClient]):
+class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     """A connector type to integrate with third-party SaaS APIs"""
+
+    def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+        return {
+            LoggerContextKeys.system_key: (
+                self.configuration.system.fides_key
+                if self.configuration.system
+                else None
+            ),
+            LoggerContextKeys.connection_key: self.configuration.key,
+        }
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
@@ -123,6 +139,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.current_privacy_request = None
         self.current_saas_request = None
 
+    @log_context
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         test_request: SaaSRequest = self.saas_config.test_request
@@ -150,11 +167,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         client_config = self.get_client_config()
         rate_limit_config = self.get_rate_limit_config()
 
-        logger.info("Creating client to {}", uri)
+        logger.debug("Creating client to {}", uri)
         return AuthenticatedClient(
             uri, self.configuration, client_config, rate_limit_config
         )
 
+    @log_context(action_type=ActionType.access.value)
     def retrieve_data(
         self,
         node: TraversalNode,
@@ -370,6 +388,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         return rows
 
+    @log_context(action_type=ActionType.erasure.value)
     def mask_data(
         self,
         node: TraversalNode,
@@ -426,7 +445,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 )
             except ValueError as exc:
                 if masking_request.skip_missing_param_values:
-                    logger.info(
+                    logger.debug(
                         "Skipping optional masking request on node {}: {}",
                         node.address.value,
                         exc,
@@ -456,6 +475,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     related_identities[identity_type] = identity_value
         return related_identities
 
+    @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
         node: TraversalNode,

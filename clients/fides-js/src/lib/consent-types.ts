@@ -1,4 +1,4 @@
-import { GPPSettings } from "./gpp/types";
+import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
   TCFFeatureRecord,
@@ -97,6 +97,9 @@ export type FidesOptions = {
 
   // Allows providing rich HTML descriptions
   allowHTMLDescription: boolean | null;
+
+  // Encodes cookie as base64 on top of the default JSON string
+  base64Cookie: boolean;
 };
 
 /**
@@ -364,6 +367,11 @@ export type Cookies = {
   domain?: string;
 };
 
+export enum PrivacyNoticeFramework {
+  GPP_US_NATIONAL = "gpp_us_national",
+  GPP_US_STATE = "gpp_us_state",
+}
+
 export type PrivacyNotice = {
   name?: string;
   notice_key: string;
@@ -379,6 +387,8 @@ export type PrivacyNotice = {
   displayed_in_privacy_center?: boolean;
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
+  framework?: PrivacyNoticeFramework;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
   id: string;
   created_at: string;
   updated_at: string;

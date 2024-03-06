@@ -38,7 +38,7 @@ describe("Fides-js GPP extension", () => {
   });
 
   describe("with TCF and GPP enabled", () => {
-    const tcfGppSettings = { enabled: true, regions: ["tcfeuv2"] };
+    const tcfGppSettings = { enabled: true, enable_tcfeu_string: true };
     beforeEach(() => {
       cy.fixture("consent/experience_tcf.json").then((payload) => {
         const experience = payload.items[0];
@@ -63,7 +63,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
-              expect(data.signalStatus).to.eql("not ready");
+              expect(data.signalStatus).to.eql("ready");
             });
         });
       });
@@ -98,7 +98,7 @@ describe("Fides-js GPP extension", () => {
             expect(data.eventName).to.eql("listenerRegistered");
             const { cmpDisplayStatus, signalStatus, gppString } = data.pingData;
             expect(cmpDisplayStatus).to.eql("visible");
-            expect(signalStatus).to.eql("not ready");
+            expect(signalStatus).to.eql("ready");
             expect(gppString).to.eql("DBAA"); // empty string, header only
           });
 
@@ -240,13 +240,13 @@ describe("Fides-js GPP extension", () => {
      * Expected flow for a returning user who opens but then closes the modal without making a change:
      * 1. listenerRegistered
      * 2. User opens the modal
-     * 3. signalStatus = not ready
+     * 3. signalStatus = ready
      * 4. cmpDisplayStatus = visible
-     * 5. User closes the modal without saving anything
+     * 5. User closes the modal which automatically triggers preference save
      * 6. cmpDisplayStatus = hidden
-     * 7. signalStatus = ready
+     * 7. signalStatus = not ready
      */
-    it("can handle returning user closing the modal without a preference change", () => {
+    it("can handle returning user closing the modal", () => {
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
       });
@@ -265,11 +265,15 @@ describe("Fides-js GPP extension", () => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
         cy.get("#fides-modal-link").click();
+        cy.get(".fides-modal-content .fides-close-button").click();
         const expected = [
           { eventName: "listenerRegistered", data: true },
-          { eventName: "signalStatus", data: "not ready" },
+          { eventName: "signalStatus", data: "ready" },
           { eventName: "cmpDisplayStatus", data: "visible" },
           { eventName: "cmpDisplayStatus", data: "hidden" },
+          { eventName: "signalStatus", data: "ready" },
+          { eventName: "cmpDisplayStatus", data: "hidden" },
+          { eventName: "sectionChange", data: "tcfeuv2" },
           { eventName: "signalStatus", data: "ready" },
         ];
         cy.get("@gppListener")
@@ -285,6 +289,45 @@ describe("Fides-js GPP extension", () => {
               });
             }
           );
+      });
+    });
+
+    it("can handle TCF enabled globally but disabled in GPP", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: {
+            ...experience.items[0],
+            gpp_settings: { enabled: true, enable_tcfeu_string: false },
+          },
+        });
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.get("@gppListener")
+          .its("lastCall.args")
+          .then(([data, success]) => {
+            expect(success).to.eql(true);
+            expect(data.eventName).to.eql("cmpDisplayStatus");
+            expect(data.data).to.eql("visible");
+            const {
+              signalStatus,
+              gppString,
+              applicableSections,
+              supportedAPIs,
+            } = data.pingData;
+            expect(signalStatus).to.eql("ready");
+            expect(applicableSections).to.eql([]);
+            expect(supportedAPIs).to.eql([]);
+            expect(gppString).to.eql("DBAA");
+          });
       });
     });
   });
@@ -316,7 +359,7 @@ describe("Fides-js GPP extension", () => {
           .its("lastCall.args")
           .then(([data, success]) => {
             expect(success).to.eql(true);
-            expect(data.signalStatus).to.eql("not ready");
+            expect(data.signalStatus).to.eql("ready");
           });
       });
     });
@@ -329,32 +372,32 @@ describe("Fides-js GPP extension", () => {
             decodeURIComponent(cookie!.value)
           );
           const { consent } = fidesCookie;
-          expect(consent).to.eql({ data_sales_and_sharing: true });
+          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
         });
       });
 
       const expected = [
-        // First two gppStrings indicate the data_sales_and_sharing notice was served
+        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
-        // Second two gppStrings indicate the data_sales_and_sharing notice was served and opted into
+        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted into
         {
           eventName: "sectionChange",
           data: "uscav1",
-          gppString: "DBABBg~BWoAAAAA.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
         {
           eventName: "signalStatus",
           data: "ready",
-          gppString: "DBABBg~BWoAAAAA.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
       ];
       // Check the GPP events
@@ -380,7 +423,14 @@ describe("Fides-js GPP extension", () => {
         .then((args) => {
           const [data] = args;
           expect(data.pingData.applicableSections).to.eql([8]);
-          expect(data.pingData.supportedAPIs).to.eql(["8:usca"]);
+          // TODO: once locations and regulations are set, this value may change as it is currently hard coded
+          expect(data.pingData.supportedAPIs).to.eql([
+            "8:uscav1",
+            "10:uscov1",
+            "12:usctv1",
+            "11:usutv1",
+            "9:usvav1",
+          ]);
         });
     });
 
@@ -392,32 +442,32 @@ describe("Fides-js GPP extension", () => {
             decodeURIComponent(cookie!.value)
           );
           const { consent } = fidesCookie;
-          expect(consent).to.eql({ data_sales_and_sharing: false });
+          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: false });
         });
       });
 
       const expected = [
-        // First two gppStrings indicate the data_sales_and_sharing notice was served
+        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
-        // Second two gppStrings indicate the data_sales_and_sharing notice was served and opted out of
+        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out of
         {
           eventName: "sectionChange",
           data: "uscav1",
-          gppString: "DBABBg~BWUAAAAA.QA",
+          gppString: "DBABBg~BUUAAABY.QA",
         },
         {
           eventName: "signalStatus",
           data: "ready",
-          gppString: "DBABBg~BWUAAAAA.QA",
+          gppString: "DBABBg~BUUAAABY.QA",
         },
       ];
       // Check the GPP events
@@ -442,7 +492,7 @@ describe("Fides-js GPP extension", () => {
 
     it("can handle a returning user", () => {
       const cookie = mockCookie({
-        consent: { data_sales_and_sharing: true },
+        consent: { data_sales_sharing_gpp_us_state: true },
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_gpp.json").then((payload) => {
@@ -467,7 +517,7 @@ describe("Fides-js GPP extension", () => {
             expect(success).to.eql(true);
             // Opt in string
             expect(data.pingData.applicableSections).to.eql([8]);
-            expect(data.pingData.gppString).to.eql("DBABBg~BWoAAAAA.QA");
+            expect(data.pingData.gppString).to.eql("DBABBg~BUoAAABY.QA");
           });
       });
     });

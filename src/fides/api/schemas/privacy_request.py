@@ -82,6 +82,7 @@ class PrivacyRequestCreate(FidesSchema):
     finished_processing_at: Optional[datetime]
     requested_at: Optional[datetime]
     identity: Identity
+    consent_request_id: Optional[str] = None
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     policy_key: FidesKey
     encryption_key: Optional[str] = None
@@ -95,6 +96,13 @@ class PrivacyRequestCreate(FidesSchema):
         if value:
             verify_encryption_key(value.encode(CONFIG.security.encoding))
         return value
+
+
+class ConsentRequestCreate(FidesSchema):
+    """Data required to create a consent PrivacyRequest"""
+
+    identity: Identity
+    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
 
 
 class FieldsAffectedResponse(FidesSchema):
