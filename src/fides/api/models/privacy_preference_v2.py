@@ -215,12 +215,6 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
             index=True,
         )
 
-    # The specific experience under which the user was presented the relevant notice
-    # Minimal information stored here, mostly just region
-    privacy_experience_id = Column(
-        String
-    )  # TODO will be removed.  Preemptively removing the FK to Privacy Experience
-
     @declared_attr
     def privacy_notice_history_id(cls) -> Column:
         """

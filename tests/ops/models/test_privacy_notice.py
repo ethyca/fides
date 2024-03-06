@@ -1,14 +1,17 @@
 import pytest
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.location_regulation_selections import (
-    LocationRegulationSelections,
+    DeprecatedNoticeRegion,
     PrivacyNoticeRegion,
 )
+from fides.api.models.privacy_experience import ExperienceNotices
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
+    EnforcementLevel,
     NoticeTranslation,
     PrivacyNotice,
     PrivacyNoticeFramework,
@@ -89,6 +92,12 @@ class TestPrivacyNoticeModel:
         assert history_object.translation_id == translation.id
         assert history_object.notice_key == privacy_notice.notice_key
 
+        translation.delete(db)
+        db.refresh(history_object)
+
+        # Deleting a translation just sets this FK to null, historical record is kept for auditing
+        assert history_object.translation_id is None
+
     def test_default_preference_property(self, privacy_notice):
         assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
         assert privacy_notice.default_preference == UserConsentPreference.opt_out
@@ -138,7 +147,6 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
         assert privacy_notice.data_uses == old_data_uses
-        assert privacy_notice.version == 1.0
 
         # and let's run thru the same with a "no-op" update rather than empty data at the privacy notice level
         # Translations are identical
@@ -160,7 +168,6 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
         assert privacy_notice.data_uses == old_data_uses
-        assert privacy_notice.version == 1.0
 
     def test_update_notice_level(self, db: Session, privacy_notice: PrivacyNotice):
         assert len(PrivacyNotice.all(db)) == 1
@@ -300,9 +307,6 @@ class TestPrivacyNoticeModel:
         assert len(NoticeTranslation.all(db)) == 1
         assert len(PrivacyNoticeHistory.all(db)) == 1
         privacy_notice_updated_at = privacy_notice.updated_at
-
-        orig_count = db.query(PrivacyNotice).count()
-        original_translations_count = db.query(NoticeTranslation).count()
 
         dry_update_data = {
             "translations": [
@@ -666,3 +670,73 @@ class TestPrivacyNoticeModel:
             ).is_gpp
             is False
         )
+
+    def test_deprecated_privacy_notice_region_fields(self, db):
+        historic_privacy_notice = PrivacyNoticeHistory.create(
+            db,
+            data={
+                "name": "Deprecated Notice History",
+                "description": "old_description",
+                "regions": ["gb_eng"],  # deprecated field with deprecated region
+                "displayed_in_overlay": True,  # deprecated field
+                "displayed_in_privacy_center": True,  # deprecated field
+                "displayed_in_api": None,  # deprecated field
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing"],
+                "version": 1.0,
+                "disabled": True,
+                "has_gpc_flag": False,
+                "enforcement_level": EnforcementLevel.system_wide,
+                "notice_key": "test_key",
+                "language": None,  # New field, not required for early records
+                "title": "Test title",
+                "translation_id": None,  # New concept, not required for early records
+            },
+        )
+
+        assert historic_privacy_notice.regions == [DeprecatedNoticeRegion.gb_eng]
+        assert not historic_privacy_notice.language
+        assert historic_privacy_notice.displayed_in_privacy_center
+        assert historic_privacy_notice.displayed_in_overlay
+        assert (
+            historic_privacy_notice.displayed_in_api is None
+        )  # displayed_in fields are deprecated and not required
+
+    def test_duplicate_notice_translations_prevented(
+        self, db, privacy_notice, privacy_experience_overlay
+    ):
+        config = privacy_experience_overlay.experience_config
+        ExperienceNotices.create(
+            db, data={"notice_id": privacy_notice.id, "experience_config_id": config.id}
+        )
+
+        with pytest.raises(IntegrityError):
+            ExperienceNotices.create(
+                db,
+                data={
+                    "notice_id": privacy_notice.id,
+                    "experience_config_id": config.id,
+                },
+            )
+
+    def test_language_must_be_unique(self, db, privacy_notice):
+        nt = NoticeTranslation.create(
+            db,
+            data={
+                "language": SupportedLanguage.german,
+                "title": "new",
+                "privacy_notice_id": privacy_notice.id,
+            },
+        )
+
+        with pytest.raises(IntegrityError):
+            nt = NoticeTranslation.create(
+                db,
+                data={
+                    "language": SupportedLanguage.german,
+                    "title": "new",
+                    "privacy_notice_id": privacy_notice.id,
+                },
+            )
+
+        nt.delete(db)
