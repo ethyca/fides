@@ -32,6 +32,12 @@ const TcfTabs = ({
     [enabledIds, onChange]
   );
 
+  // static.tcf.purposes
+  // static.tcf.purposes_info
+  // static.tcf.features
+  // static.tcf.features_info
+  // static.tcf.vendors
+  // static.tcf.vendors_info
   const tcfTabs = [
     {
       name: "Purposes",

@@ -33,6 +33,9 @@ const VendorDetails = ({
 
   const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
+  // static.tcf.retention
+  // static.tcf.retention_period_days
+  // static.tcf.retention_period_na
   return (
     <table className="fides-vendor-details-table">
       <thead>
@@ -79,6 +82,8 @@ const PurposeVendorDetails = ({
     return null;
   }
 
+  // static.tcf.purposes
+  // static.tcf.special_purposes
   return (
     <Fragment>
       <VendorDetails label="Purposes" lineItems={purposes} />
@@ -102,6 +107,7 @@ const DataCategories = ({
     // @ts-ignore this type doesn't exist in v2.2 but does in v3
     gvlVendor.dataDeclaration;
 
+  // static.tcf.data_categories
   return (
     <table className="fides-vendor-details-table">
       <thead>
@@ -132,6 +138,10 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
     cookie_refresh: cookieRefresh,
   } = vendor;
   let disclosure = "";
+  // static.tcf.cookie_disclosure_intro
+  // static.tcf.cookie_disclosure_refresh
+  // static.tcf.cookie_disclosure_non_cookie
+  // static.tcf.non_cookie_disclosure
   if (usesCookies) {
     const days = cookieMaxAgeSeconds
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
@@ -172,6 +182,10 @@ const ToggleChild = ({
     experience.gvl?.dataCategories;
   const hasUrls =
     vendor.privacy_policy_url || vendor.legitimate_interest_disclosure_url;
+  // static.tcf.privacy_policy
+  // static.tcf.legint_disclosure
+  // static.tcf.features
+  // static.tcf.special_features
   return (
     <Fragment>
       <StorageDisclosure vendor={vendor} />
@@ -233,6 +247,8 @@ const PagedVendorData = ({
     [activeChunk]
   );
 
+  // static.tcf.iab_tcf_vendors
+  // static.tcf.other_vendors
   return (
     <Fragment>
       <RecordsList<VendorRecord>
