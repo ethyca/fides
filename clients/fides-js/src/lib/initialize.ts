@@ -55,8 +55,7 @@ export type Fides = {
   geolocation?: UserGeolocation;
   fides_string?: string | undefined;
   options: FidesOptions;
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent?: CookieKeyConsent;
+  savedConsent?: CookieKeyConsent;
   fides_meta: CookieMeta;
   tcf_consent: TcfCookieConsent;
   gtm: typeof gtm;
@@ -227,16 +226,14 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
  */
 export const getInitialFides = ({
   cookie,
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent,
+  savedConsent,
   experience,
   geolocation,
   options,
   updateExperienceFromCookieConsent,
 }: {
   cookie: FidesCookie;
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent: CookieKeyConsent;
+  savedConsent: CookieKeyConsent;
 } & FidesConfig & {
     updateExperienceFromCookieConsent: (props: {
       experience: PrivacyExperience;
@@ -266,8 +263,7 @@ export const getInitialFides = ({
     experience: updatedExperience,
     tcf_consent: cookie.tcf_consent,
     fides_string: cookie.fides_string,
-    /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-    rename_me_prior_consent,
+    savedConsent,
     geolocation,
     options,
     initialized: true,
@@ -285,8 +281,7 @@ export const getInitialFides = ({
  */
 export const initialize = async ({
   cookie,
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent,
+  savedConsent,
   options,
   experience,
   geolocation,
@@ -294,8 +289,7 @@ export const initialize = async ({
   updateExperience,
 }: {
   cookie: FidesCookie;
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent?: CookieKeyConsent;
+  savedConsent?: CookieKeyConsent;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
   /**
    * Once we for sure have a valid experience, this is another chance to update values
@@ -388,8 +382,7 @@ export const initialize = async ({
           experience: effectiveExperience,
           fidesRegionString: fidesRegionString as string,
           cookie,
-          /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-          rename_me_prior_consent,
+          savedConsent,
           options,
           renderOverlay,
         }).catch(() => {});

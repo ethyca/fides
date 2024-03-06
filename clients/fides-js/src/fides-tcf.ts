@@ -162,8 +162,7 @@ const init = async (config: FidesConfig) => {
     ...overrides.consentPrefsOverrides?.consent,
   };
   // TODO (PROD-1780): keep a copy of the prior consent from cookie before we start updating it anywhere
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  const rename_me_prior_consent: CookieKeyConsent = {
+  const savedConsent: CookieKeyConsent = {
     ...cookie.consent,
   };
   // Update the fidesString if we have an override and the TC portion is valid
@@ -190,7 +189,7 @@ const init = async (config: FidesConfig) => {
   const initialFides = getInitialFides({
     ...config,
     cookie,
-    rename_me_prior_consent,
+    savedConsent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
   });
   // Initialize the CMP API early so that listeners are established
@@ -203,8 +202,7 @@ const init = async (config: FidesConfig) => {
   const updatedFides = await initialize({
     ...config,
     cookie,
-    /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-    rename_me_prior_consent,
+    savedConsent,
     experience,
     renderOverlay,
     updateExperience,

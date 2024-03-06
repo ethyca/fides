@@ -208,8 +208,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie,
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent?: CookieKeyConsent
+  savedConsent?: CookieKeyConsent
 ): boolean => {
   if (experience.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
@@ -226,15 +225,14 @@ export const shouldResurfaceConsent = (
     return false;
   }
   // Always resurface if there is no prior consent
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  if (!rename_me_prior_consent) {
+  if (!savedConsent) {
     return true;
   }
   // Lastly, if we do have a prior consent state, resurface if we find *any*
   // notices that don't have prior consent in that state
   return Boolean(
     !experience.privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, rename_me_prior_consent)
+      noticeHasConsentInCookie(notice, savedConsent)
     )
   );
 };

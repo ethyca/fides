@@ -17,6 +17,5 @@ export interface OverlayProps {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent?: CookieKeyConsent;
+  savedConsent?: CookieKeyConsent;
 }

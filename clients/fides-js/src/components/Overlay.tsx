@@ -38,8 +38,7 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent?: CookieKeyConsent;
+  savedConsent?: CookieKeyConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
@@ -52,8 +51,7 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
-  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
-  rename_me_prior_consent,
+  savedConsent,
   onOpen,
   onDismiss,
   renderBanner,
@@ -150,7 +148,7 @@ const Overlay: FunctionComponent<Props> = ({
     () =>
       !options.fidesDisableBanner &&
       experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie, rename_me_prior_consent) &&
+      shouldResurfaceConsent(experience, cookie, savedConsent) &&
       !options.fidesEmbed,
     [cookie, experience, options]
   );
