@@ -8,7 +8,7 @@ Create Date: 2024-01-09 21:17:13.115020
 
 import csv
 import uuid
-from datetime import datetime
+import datetime
 from enum import Enum
 
 import yaml
@@ -261,7 +261,7 @@ CA_REGIONS_TO_IGNORE = {
 
 
 def dump_table_to_csv(bind, table_name):
-    csv_file_path = f'./multilang_migration_backup_{table_name}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+    csv_file_path = f'./multilang_migration_backup_{table_name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
     query = text(f"SELECT * FROM {table_name}")
     result = bind.execute(query)
 
@@ -713,7 +713,7 @@ def migrate_experiences(bind):
         # create new experience + experience configs based on old experience config data
         # these have been reconciled with the new OOB experience config records
         for experience_config_type in DefaultExperienceConfigTypes:
-            logger.info(f"Migrating experience config {experience_config_type.name}")
+            # logger.info(f"Migrating experience config {experience_config_type.name}")
             reconciled_experience_config = experience_configs.get(
                 experience_config_type, {}
             )
@@ -722,23 +722,23 @@ def migrate_experiences(bind):
             )
 
             if not reconciled_experience_config and not raw_experience_config:
-                logger.info(
-                    f"No reconciled or raw experience config found for {experience_config_type.name}"
-                )
+                # logger.info(
+                #     f"No reconciled or raw experience config found for {experience_config_type.name}"
+                # )
                 continue
 
             # revert to the "raw" config if we haven't flagged a config as needing migration
             # in practice, we should always have a reconciled record here that's flagged for migration,
             # but this covers our bases in case anyone has e.g. deleted a previous OOB notice.
             if reconciled_experience_config.get("needs_migration", False):
-                logger.info(
-                    f"Migrating reconciled experience config {reconciled_experience_config['id']}"
-                )
+                # logger.info(
+                #     f"Migrating reconciled experience config {reconciled_experience_config['id']}"
+                # )
                 experience_config_type = reconciled_experience_config
             else:
-                logger.info(
-                    f"Creating raw experience config {raw_experience_config['id']}"
-                )
+                # logger.info(
+                #     f"Creating raw experience config {raw_experience_config['id']}"
+                # )
                 experience_config_type = raw_experience_config
 
             create_new_experience_config(experience_config_type)
@@ -862,6 +862,8 @@ def downward_migrate_notices(bind):
 
 
 def upgrade():
+    logger.info(f"Starting Data Migration #2, {datetime.datetime.now()}")
+
     bind = op.get_bind()
 
     migrate_experiences(bind)

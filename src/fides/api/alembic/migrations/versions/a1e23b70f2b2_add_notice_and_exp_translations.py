@@ -5,11 +5,12 @@ Revises: 26d5976531d6
 Create Date: 2024-02-01 21:49:20.792733
 
 """
+import datetime
+from loguru import logger
 
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
-
 # revision identifiers, used by Alembic.
 revision = "a1e23b70f2b2"
 down_revision = "26d5976531d6"
@@ -18,6 +19,7 @@ depends_on = None
 
 
 def upgrade():
+    logger.info(f"Starting Schema Migration #1, {datetime.datetime.now()}")
     op.create_table(
         "experienceconfigtemplate",
         sa.Column("id", sa.String(length=255), nullable=False),

@@ -7,10 +7,12 @@ Revises: 14acee6f5459
 Create Date: 2024-03-05 17:08:07.093568
 
 """
+import datetime
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
-
+from loguru import logger
 # revision identifiers, used by Alembic.
 revision = "32497f08e227"
 down_revision = "14acee6f5459"
@@ -19,6 +21,7 @@ depends_on = None
 
 
 def upgrade():
+    logger.info(f"Starting Schema Migration #3, {datetime.datetime.now()}")
     # Privacy Experience > experience_config_id is guaranteed to exist after the data migration so we can make this non-nullable
     op.alter_column(
         "privacyexperience",
@@ -89,6 +92,8 @@ def upgrade():
     # Removing the reference from privacy preference history and served notice history to the experience
     op.drop_column("privacypreferencehistory", "privacy_experience_id")
     op.drop_column("servednoticehistory", "privacy_experience_id")
+
+    logger.info(f"Ending Translation Migration, {datetime.datetime.now()}")
 
 
 def downgrade():
