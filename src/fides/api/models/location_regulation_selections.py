@@ -309,6 +309,7 @@ class LocationRegulationBase(Selection):
 
     name: str
     continent: Continent
+    default_selected: bool = False
 
 
 class Location(LocationRegulationBase):
@@ -391,6 +392,9 @@ location_groups: Dict[
 location_group_to_location: Dict[
     str, Set[str]
 ] = load_location_group_to_location()  # should only be accessed for read-only access
+default_selected_locations: Set[str] = {
+    id for id, location in locations_by_id.items() if location.default_selected
+}
 
 
 def _load_privacy_notice_regions() -> Dict[str, Union[Location, LocationGroup]]:
@@ -408,6 +412,17 @@ privacy_notice_regions_by_id: Dict[
 PrivacyNoticeRegion: Enum = Enum(  # type: ignore[misc]
     "PrivacyNoticeRegion",
     {location.id: location.id for location in privacy_notice_regions_by_id.values()},
+)
+
+# Create a notice region enum that includes regions we no longer support but still preserve
+# on historical records for auditing purposes
+deprecated_gb_regions = ["gb_eng", "gb_sct", "gb_wls", "gb_nir"]
+current_regions = {
+    location.id: location.id for location in privacy_notice_regions_by_id.values()
+}
+current_regions.update({gb_region: gb_region for gb_region in deprecated_gb_regions})
+DeprecatedNoticeRegion: Enum = Enum(  # type: ignore[misc]
+    "DeprecatedNoticeRegion", current_regions
 )
 
 

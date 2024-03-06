@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.location_regulation_selections import (
     LocationRegulationSelections,
     PrivacyNoticeRegion,
+    default_selected_locations,
     filter_regions_by_location,
     group_locations_into_location_groups,
     location_group_to_location,
@@ -231,6 +232,38 @@ class TestLocationGroupToLocation:
             "ca_pe",
             "ca_qc",
         }
+
+
+class TestDefaultSelectedLocations:
+    def test_expected_values(self):
+        """Test that some of our expected values are default selected"""
+        assert isinstance(default_selected_locations, set)
+
+        # somewhat arbitrary set of values to check
+        expected_values = [
+            "us_ca",  # some US states
+            "us_ny",
+            "us_co",
+            "ca_ab",  # some canadian provinces
+            "ca_bc",
+            "fr",  # some EEA countries
+            "es",
+        ]
+        not_expected_values = [
+            "us",  # location groups should NOT be selected - they will be selected based on locations, automatically
+            "ca",
+            "eea",
+            "tr",  # non EEA countries in Europe should not be selected
+            "md"
+            "br",  # brazil should not be selected, yet (even though it has a regulation)
+            "nz",  # arbitrary other location, new zealand
+        ]
+
+        for expected_value in expected_values:
+            assert expected_value in default_selected_locations
+
+        for not_expected_value in not_expected_values:
+            assert not not_expected_value in default_selected_locations
 
 
 class TestPrivacyNoticeRegion:

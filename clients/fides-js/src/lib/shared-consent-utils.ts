@@ -1,6 +1,6 @@
 import {
   ConsentMechanism,
-  FidesCookie,
+  CookieKeyConsent,
   PrivacyNoticeWithPreference,
   UserConsentPreference,
 } from "./consent-types";
@@ -14,8 +14,8 @@ import {
  */
 export const noticeHasConsentInCookie = (
   notice: PrivacyNoticeWithPreference,
-  cookie: FidesCookie
-): boolean => Boolean(Object.keys(cookie.consent).includes(notice.notice_key));
+  consent: CookieKeyConsent
+): boolean => Boolean(Object.keys(consent).includes(notice.notice_key));
 /**
  * Convert a user consent preference into true/false
  */

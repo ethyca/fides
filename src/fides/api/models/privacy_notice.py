@@ -20,7 +20,10 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
+from fides.api.models.location_regulation_selections import (
+    DeprecatedNoticeRegion,
+    PrivacyNoticeRegion,
+)
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
@@ -84,24 +87,6 @@ class PrivacyNoticeBase:
     name = Column(String, nullable=False)
     notice_key = Column(String, nullable=False)
 
-    description = Column(
-        String
-    )  # TODO will be removed from PrivacyNoticeTemplate and PrivacyNotice in favor of NoticeTranslation.
-    displayed_in_privacy_center = Column(
-        Boolean, nullable=False, default=False
-    )  # TODO will be removed in favor of configuring this Experience-side
-    displayed_in_overlay = Column(
-        Boolean, nullable=False, default=False
-    )  # TODO will be removed in favor of configuring this Experience-side
-    displayed_in_api = Column(
-        Boolean, nullable=False, default=False
-    )  # TODO will be removed in favor of configuring this Experience-side
-    regions = Column(  # TODO will be removed in favor of configuring this on the Experience-side
-        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
-        index=True,
-        nullable=True,
-    )
-
     @property
     def is_gpp(self) -> bool:
         return self.framework in (
@@ -157,11 +142,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     """
 
     origin = Column(
-        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+        String,
+        ForeignKey(PrivacyNoticeTemplate.id_field_path),
     )  # pointer back to the PrivacyNoticeTemplate
-    version = Column(
-        Float, nullable=False, default=1.0
-    )  # TODO Pending Removal.  This is now only on PrivacyNoticeHistory.
 
     translations: RelationshipProperty[List[NoticeTranslation]] = relationship(
         "NoticeTranslation",
@@ -368,6 +351,20 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 class NoticeTranslationBase:
     """Base fields for Notice Translations"""
 
+    description = Column(String)
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [i.value for i in x],
+        ),
+    )
+    title = Column(String, nullable=False)
+
+
+class NoticeTranslation(NoticeTranslationBase, Base):
+    """Available translations saved for a given Privacy Notice"""
+
     language = Column(
         EnumColumn(
             SupportedLanguage,
@@ -375,13 +372,7 @@ class NoticeTranslationBase:
             values_callable=lambda x: [i.value for i in x],
         ),
         nullable=False,
-    )
-    title = Column(String, nullable=False)
-    description = Column(String)
-
-
-class NoticeTranslation(NoticeTranslationBase, Base):
-    """Available translations saved for a given Privacy Notice"""
+    )  # Overrides NoticeTranslationBase to make language non-nullable
 
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
@@ -425,7 +416,31 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         return self.privacy_notice_history.id if self.privacy_notice_history else None
 
 
-class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
+class DeprecatedPrivacyNoticeHistoryFields:
+    """
+    Fields we no longer save on the privacy notice, but are now configured on the Experience side.
+
+    However, these fields are retained for auditing purposes on early historical records.
+    """
+
+    displayed_in_privacy_center = Column(
+        Boolean,
+    )
+    displayed_in_overlay = Column(
+        Boolean,
+    )
+    displayed_in_api = Column(
+        Boolean,
+    )
+    regions = Column(
+        ARRAY(EnumColumn(DeprecatedNoticeRegion, native_enum=False)),
+        index=True,
+    )
+
+
+class PrivacyNoticeHistory(
+    NoticeTranslationBase, PrivacyNoticeBase, DeprecatedPrivacyNoticeHistoryFields, Base
+):
     """
     An "audit table" stores all versions of `PrivacyNotice` + `NoticeTranslations`.
 
@@ -434,18 +449,18 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     """
 
     origin = Column(
-        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+        String,
+        ForeignKey(PrivacyNoticeTemplate.id_field_path),
     )  # pointer back to the PrivacyNoticeTemplate
 
     translation_id = Column(
-        String, ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL")
-    )  # pointer back to the NoticeTranslation
+        String,
+        ForeignKey(NoticeTranslation.id_field_path, ondelete="SET NULL"),
+        index=True,
+    )  # pointer back to the NoticeTranslation.  Set to null if the translation is deleted, but
+    # we retain this record for consent reporting
 
     version = Column(Float, nullable=False, default=1.0)
-
-    privacy_notice_id = Column(
-        String, ForeignKey(PrivacyNotice.id_field_path), nullable=True
-    )  # TODO Will be removed.  This now points to just the translation.
 
 
 def create_historical_record_for_notice_and_translation(
@@ -454,9 +469,13 @@ def create_historical_record_for_notice_and_translation(
     existing_version: float = notice_translation.version or 0.0
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
+
     updated_translation_data: dict = create_historical_data_from_record(
         notice_translation
     )
+    # Translations have a FK back to privacy_notice_id, but this historical records do not
+    updated_translation_data.pop("privacy_notice_id")
+
     # Creates a historical record of the Notice and the translation combined. Preferences are saved
     # against this resource.
     PrivacyNoticeHistory.create(

@@ -7,6 +7,7 @@ import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
   ConsentMethod,
+  FidesCookie,
   PrivacyNotice,
   PrivacyNoticeTranslation,
   PrivacyNoticeWithPreference,
@@ -15,7 +16,7 @@ import {
 } from "../../lib/consent-types";
 import { debugLog, getGpcStatusFromNotice } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import { updateCookieFromNoticePreferences } from "../../lib/cookie";
+import { getFidesConsentCookie, updateCookieFromNoticePreferences } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useConsentServed } from "../../lib/hooks";
 import {
@@ -48,15 +49,23 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
 }) => {
-  const initialEnabledNoticeKeys = useMemo(() => {
+  // TODO (PROD-1597): restore useMemo here, but see #4649
+  const initialEnabledNoticeKeys = () => {
     if (experience.privacy_notices) {
+      // ensure we have most up-to-date cookie vals
+      // TODO (PROD-1597): merge in main and use savedConsent for this
+      const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
       return experience.privacy_notices.map((notice) => {
-        const val = resolveConsentValue(notice, getConsentContext(), cookie);
-        return val ? notice.notice_key : "";
+        const val = resolveConsentValue(
+          notice,
+          getConsentContext(),
+          parsedCookie?.consent
+        );
+        return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
     }
     return [];
-  }, [cookie, experience]);
+  };
 
   /**
    * Determine which ExperienceConfig translation is being used based on the
@@ -97,7 +106,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<string>
-  >(initialEnabledNoticeKeys);
+  >(initialEnabledNoticeKeys());
 
   const isAllNoticeOnly = privacyNoticeItems.every(
     (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
@@ -208,7 +217,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys);
+    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys());
   }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
 
   const experienceConfig = experience.experience_config;
