@@ -1,5 +1,11 @@
 # pylint: disable=R0401, C0302, W0143
+"""
+TODO SQLAlchemy models in this file DeprecatedCurrentPrivacyPreference and DeprecatedLastServedNotice
+need to be removed along with their corresponding tables in a cleanup migration.  Data has been migrated to tables
+in privacy_preference.py.
 
+Defined enums here should be moved to privacy_preference_v2.py.
+"""
 from __future__ import annotations
 
 from enum import Enum

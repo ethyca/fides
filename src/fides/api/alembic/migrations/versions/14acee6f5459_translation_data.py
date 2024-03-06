@@ -328,9 +328,9 @@ def load_default_experience_configs():
             experience_config["regions"] = set(experience_config["regions"])
 
         experience_config["privacy_notices"] = set()
-        experience_config["needs_migration"] = (
-            False  # indicator whether the record requires migration, or we can default to the template values
-        )
+        experience_config[
+            "needs_migration"
+        ] = False  # indicator whether the record requires migration, or we can default to the template values
         _reconciled_experience_config_map[experience_config_type] = experience_config
         experience_config["needs_migration"] = False
     return _reconciled_experience_config_map, _raw_experience_config_map
@@ -411,7 +411,7 @@ def determine_needed_experience_configs(bind):
     """
 
     notice_query = """select id, name, regions, displayed_in_overlay, displayed_in_privacy_center, notice_key from privacynotice;"""
-    experience_config_query = """SELECT id, component, disabled, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label from privacyexperienceconfig;"""
+    experience_config_query = """SELECT id, component, disabled, accept_button_label, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label from privacyexperienceconfig;"""
 
     existing_notices: ResultProxy = bind.execute(text(notice_query))
     for existing_notice in existing_notices:
@@ -419,20 +419,27 @@ def determine_needed_experience_configs(bind):
         component_mappings = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key, [])
         if component_mappings:
             for component_mapping in component_mappings:
-                regions_to_add = set(existing_notice["regions"]).copy()
+                if (
+                    component_mapping.get(ComponentType.Overlay)
+                    == DefaultExperienceConfigTypes.CANADA_BANNER_MODAL
+                ):
+                    # If this is a Canadian Banner and Modal, skip updating regions, and just use OOB
+                    regions_to_add = set()
+                else:
+                    regions_to_add = set(existing_notice["regions"]).copy()
 
-                # remove GB subregions and replace with top-level `gb` region!
-                if not GB_REGIONS_TO_REMOVE.isdisjoint(
-                    regions_to_add
-                ):  # if we have GB regions to remove
-                    regions_to_add.difference_update(
-                        GB_REGIONS_TO_REMOVE
-                    )  # remove the GB regions
-                    regions_to_add.update(GB_REGIONS_TO_ADD)  # add the GB region
+                    # remove GB subregions and replace with top-level `gb` region!
+                    if not GB_REGIONS_TO_REMOVE.isdisjoint(
+                        regions_to_add
+                    ):  # if we have GB regions to remove
+                        regions_to_add.difference_update(
+                            GB_REGIONS_TO_REMOVE
+                        )  # remove the GB regions
+                        regions_to_add.update(GB_REGIONS_TO_ADD)  # add the GB region
 
-                # ignore any canada regions in migration - they are not migrated,
-                # but instead handled by a net-new OOB experience
-                regions_to_add.difference_update(CA_REGIONS_TO_IGNORE)
+                    # ignore any canada regions in migration - they are not migrated,
+                    # but instead handled by a net-new OOB experience
+                    regions_to_add.difference_update(CA_REGIONS_TO_IGNORE)
 
                 if existing_notice["displayed_in_overlay"]:
                     experience_config = component_mapping.get(ComponentType.Overlay)
@@ -490,7 +497,6 @@ def determine_needed_experience_configs(bind):
                     config["accept_button_label"] = eec["accept_button_label"]
                     config["acknowledge_button_label"] = eec["acknowledge_button_label"]
                     config["banner_description"] = eec["banner_description"]
-                    config["banner_enabled"] = eec["banner_enabled"]
                     config["banner_title"] = eec["banner_title"]
                     config["description"] = eec["description"]
                     config["privacy_policy_link_label"] = eec[
@@ -550,16 +556,14 @@ def migrate_experiences(bind):
         """
         Creates a new experience config based on the provided definition. Also creates corresponding history record.
 
-        Also backfills _all_ privacy experience config history records to have a language of 'en',
-        as that column is non-nullable.
         """
         # for config record:
         # - `id` is the `id` grabbed from our config template record
         # - `origin` is the `origin` grabbed from the config template
         create_experience_config_query = text(
             """
-            INSERT INTO privacyexperienceconfig (id, version, origin, component, name, disabled, is_default, allow_language_selection, dismissable, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-            VALUES (:id,  :version, :origin, :component, :name, :disabled, :is_default, :allow_language_selection, :dismissable, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+            INSERT INTO privacyexperienceconfig (id, version, origin, component, name, disabled, is_default, allow_language_selection, dismissable, auto_detect_language, accept_button_label, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
+            VALUES (:id,  :version, :origin, :component, :name, :disabled, :is_default, :allow_language_selection, :dismissable, :auto_detect_language, :accept_button_label, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
             """
         )
 
@@ -578,8 +582,8 @@ def migrate_experiences(bind):
         # - `origin` is the `origin` grabbed from the config template record on disk
         create_experience_config_history = text(
             """
-             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, origin, name, disabled, version, component, is_default, allow_language_selection, dismissable, accept_button_label, banner_enabled, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label)
-             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :allow_language_selection, :dismissable, :accept_button_label, :banner_enabled, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label)
+             INSERT INTO privacyexperienceconfighistory (id, experience_config_id, origin, name, disabled, version, component, is_default, allow_language_selection, auto_detect_language, dismissable, accept_button_label, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label, language)
+             VALUES (:history_id, :id, :origin, :name, :disabled, :version, :component, :is_default, :allow_language_selection, :auto_detect_language, :dismissable, :accept_button_label, :description, :privacy_preferences_link_label, :privacy_policy_link_label, :privacy_policy_url, :save_button_label, :title, :banner_description, :banner_title, :reject_button_label, :acknowledge_button_label, :language)
             """
         )
 
@@ -590,18 +594,9 @@ def migrate_experiences(bind):
                 "history_id": generate_record_id("pri"),
                 "version": 1,
                 "is_default": True,
+                "language": "en",
             },
         )
-
-        # backfill language column in all experience config history records
-        update_experience_config_history_language = text(
-            """
-            UPDATE privacyexperienceconfighistory
-            SET language = 'en'
-        """
-        )
-
-        bind.execute(update_experience_config_history_language)
 
     def create_applicable_experiences(experience_config):
         """
@@ -794,13 +789,41 @@ def migrate_notices(bind):
     link_notice_history_to_translation_id = text(
         """
         UPDATE privacynoticehistory
-        SET translation_id = noticetranslation.id, title = privacynoticehistory.name, language = 'en'
+        SET translation_id = noticetranslation.id, title = privacynoticehistory.name
         FROM noticetranslation
         WHERE noticetranslation.privacy_notice_id = privacynoticehistory.privacy_notice_id;
         """
     )
 
     bind.execute(link_notice_history_to_translation_id)
+
+    # Queries the latest historical version for each notice
+    new_notice_histories_to_create_query = text(
+        """
+        select privacy_notice_id, max(version) from privacynoticehistory group by privacy_notice_id;
+        """
+    )
+    # Create a new privacy notice history record that bumps the version and clears regions and displayed_in* fields and sets language
+    for res in bind.execute(new_notice_histories_to_create_query):
+        create_privacy_notice_history_query = text(
+            """
+            INSERT INTO privacynoticehistory (id, name, description, origin, consent_mechanism, data_uses, version, disabled, enforcement_level, has_gpc_flag, internal_description, notice_key, gpp_field_mapping, framework, language, title, translation_id, privacy_notice_id)
+            SELECT :record_id, name, description, origin, consent_mechanism, data_uses, :new_version, disabled, enforcement_level, has_gpc_flag, internal_description, notice_key, gpp_field_mapping, framework, :language, title, translation_id, privacy_notice_id
+            FROM privacynoticehistory
+            WHERE version = :current_version AND
+            privacy_notice_id = :privacy_notice_id
+        """
+        )
+        bind.execute(
+            create_privacy_notice_history_query,
+            {
+                "record_id": generate_record_id("pri"),
+                "language": "en",
+                "new_version": res["max"] + 1,
+                "current_version": res["max"],
+                "privacy_notice_id": res["privacy_notice_id"],
+            },
+        )
 
 
 def downward_migrate_notices(bind):
@@ -815,11 +838,10 @@ def downward_migrate_notices(bind):
     rather than the NoticeTranslation records, as is expected in the old data model.
 
     """
-
     noticetranslation_data_to_notice_query = text(
         """
         UPDATE privacynotice
-        SET name = noticetranslation.title, description = noticetranslation.description,
+        SET name = noticetranslation.title, description = noticetranslation.description
         FROM noticetranslation
         WHERE noticetranslation.privacy_notice_id = privacynotice.id
         """
@@ -853,6 +875,14 @@ def downgrade():
     bind = op.get_bind()
 
     downward_migrate_notices(bind)
+
+    bind.execute(
+        text(
+            """
+            DELETE FROM experiencetranslation;
+            """
+        )
+    )
     remove_existing_experience_data(
         bind
     )  # remove existing experience data to ensure it won't prevent startup on downgraded versions!

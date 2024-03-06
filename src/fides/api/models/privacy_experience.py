@@ -94,8 +94,12 @@ class PrivacyExperienceConfigBase:
     """
 
     allow_language_selection = Column(
-        Boolean, nullable=False, default=True, server_default="t"
+        Boolean,
     )
+    auto_detect_language = Column(
+        Boolean,
+    )
+    dismissable = Column(Boolean)
 
     @declared_attr
     def component(cls) -> Column:
@@ -106,15 +110,24 @@ class PrivacyExperienceConfigBase:
         )
 
     disabled = Column(Boolean, nullable=False, default=True)
-    dismissable = Column(Boolean, nullable=False, default=True, server_default="t")
-    auto_detect_language = Column(
-        Boolean, nullable=False, default=True, server_default="t"
-    )
     name = Column(String)
 
 
 class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     """Table for out-of-the-box Experience Configurations"""
+
+    allow_language_selection = Column(
+        Boolean, nullable=False, default=False, server_default="f"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    dismissable = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    name = Column(
+        String, nullable=False
+    )  # Overriding PrivacyExperienceConfigBase to make non-nullable
 
     privacy_notice_keys = Column(
         ARRAY(String)
@@ -145,7 +158,6 @@ class ExperienceTranslationBase:
                 i.value for i in x
             ],  # allows enum _values_ to be stored rather than name
         ),
-        nullable=False,
     )
 
     privacy_policy_link_label = Column(String)
@@ -156,64 +168,36 @@ class ExperienceTranslationBase:
     title = Column(String)
 
 
-class DeprecatedConfigFields:
-    """Experience Config fields that are pending removal
-
-    # TODO remove all fields from PrivacyExperienceConfig model.
-    # Some are moving to ExperienceTranslation, others are being removed entirely.
-    """
-
-    accept_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    acknowledge_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    banner_description = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    banner_enabled = Column(String(), index=True)  # TODO pending removal
-    banner_title = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    description = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    is_default = Column(Boolean, nullable=False, default=False)  # TODO will be removed
-    privacy_policy_link_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    privacy_policy_url = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    privacy_preferences_link_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    reject_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    save_button_label = Column(
-        String
-    )  # TODO pending removal in favor of ExperienceTranslation
-    title = Column(String)  # TODO pending removal in favor of ExperienceTranslation
-    version = Column(Float, nullable=False, default=1.0)  # TODO pending removal
-
-
-class PrivacyExperienceConfig(
-    DeprecatedConfigFields, PrivacyExperienceConfigBase, Base
-):
+class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     """
     The Privacy Experience Configuration model that stores shared configuration for Privacy Experiences.
 
     - Translations, Notices, and Regions (via Privacy Experiences) are linked to this resource.
     """
 
+    allow_language_selection = Column(
+        Boolean, nullable=False, default=False, server_default="f"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    disabled = Column(
+        Boolean, nullable=False, default=True, index=True
+    )  # Overridding PrivacyExperienceConfigBase to index
+    dismissable = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    name = Column(
+        String, nullable=False
+    )  # Overriding PrivacyExperienceConfigBase to make non-nullable
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
+    # Relationships
     experiences = relationship(
         "PrivacyExperience",
         back_populates="experience_config",
         lazy="dynamic",
+        cascade="all,delete",
     )
 
     privacy_notices: RelationshipProperty[List[PrivacyNotice]] = relationship(
@@ -420,8 +404,22 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
     """Stores all the translations for a given Experience Config"""
 
     experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
+        String,
+        ForeignKey(PrivacyExperienceConfig.id_field_path),
+        nullable=False,
+        index=True,
     )
+
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # allows enum _values_ to be stored rather than name
+        ),
+        nullable=False,
+    )  # Overridding language on ExperienceTranslationBase to make this non-nullable
 
     __table_args__ = (
         UniqueConstraint(
@@ -469,8 +467,19 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         )
 
 
+class DeprecatedPrivacyExperienceConfigHistoryFields:
+    """Fields we no longer collect and save, but are retaining on early records for auditing purposes"""
+
+    banner_enabled = Column(
+        String(), index=True
+    )  # No longer collected, this is now a function of the experience config type itself
+
+
 class PrivacyExperienceConfigHistory(
-    ExperienceTranslationBase, PrivacyExperienceConfigBase, Base
+    ExperienceTranslationBase,
+    PrivacyExperienceConfigBase,
+    DeprecatedPrivacyExperienceConfigHistoryFields,
+    Base,
 ):
     """Experience Config History table for auditing purposes.
 
@@ -482,16 +491,12 @@ class PrivacyExperienceConfigHistory(
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 
     translation_id = Column(
-        String, ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL")
-    )
+        String,
+        ForeignKey(ExperienceTranslation.id_field_path, ondelete="SET NULL"),
+        index=True,
+    )  # If a translation is deleted, this is set to null, but the overall record remains in the database for reporting purposes
 
     version = Column(Float, nullable=False, default=1.0)
-
-    banner_enabled = Column(String(), index=True)  # TODO pending removal
-
-    experience_config_id = Column(
-        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=True
-    )  # TODO slated for removal after data migration
 
 
 class PrivacyExperience(Base):
@@ -506,7 +511,7 @@ class PrivacyExperience(Base):
     experience_config_id = Column(
         String,
         ForeignKey(PrivacyExperienceConfig.id_field_path),
-        nullable=True,  # Privacy Experiences should always have ExperienceConfigs linked, but for historical reasons, it is possible to not have an ExperienceConfig
+        nullable=False,
         index=True,
     )
 
@@ -697,9 +702,13 @@ def create_historical_record_for_config_and_translation(
     history_data.pop("privacy_notices", None)
     history_data.pop("translations", None)
     history_data.pop("properties", None)
+
     updated_translation_data: dict = create_historical_data_from_record(
         experience_translation
     )
+    # Translations have FK's back to experience config but the historical data does not
+    updated_translation_data.pop("experience_config_id", None)
+
     # Create a historical record for reporting purposes, which versions
     # elements from both the PrivacyExperienceConfig and ExperienceTranslation
     PrivacyExperienceConfigHistory.create(

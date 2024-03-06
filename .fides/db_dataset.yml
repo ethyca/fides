@@ -1108,6 +1108,8 @@ dataset:
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
+    - name: banner_enabled
+      data_categories: [ system.operations ]
     - name: accept_button_label
       data_categories: [ system.operations ]
     - name: acknowledge_button_label
@@ -1223,6 +1225,14 @@ dataset:
   - name: privacynoticehistory
     description: For auditing purposes, a record of how a privacy notice and a translation has changed
     fields:
+    - name: displayed_in_api
+      data_categories: [ system.operations ]
+    - name: displayed_in_overlay
+      data_categories: [ system.operations ]
+    - name: displayed_in_privacy_center
+      data_categories: [ system.operations ]
+    - name: regions
+      data_categories: [ system.operations ]
     - name: consent_mechanism
       data_categories: [ system.operations ]
     - name: created_at
