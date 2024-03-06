@@ -452,8 +452,19 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         )
 
 
+class DeprecatedPrivacyExperienceConfigHistoryFields:
+    """Fields we no longer collect and save, but are retaining on early records for auditing purposes"""
+
+    banner_enabled = Column(
+        String(), index=True
+    )  # No longer collected, this is now a function of the experience config type itself
+
+
 class PrivacyExperienceConfigHistory(
-    ExperienceTranslationBase, PrivacyExperienceConfigBase, Base
+    ExperienceTranslationBase,
+    PrivacyExperienceConfigBase,
+    DeprecatedPrivacyExperienceConfigHistoryFields,
+    Base,
 ):
     """Experience Config History table for auditing purposes.
 
@@ -461,10 +472,6 @@ class PrivacyExperienceConfigHistory(
     created here that stores a snapshot of these records combined.  Consent reporting can contain
     an id to this resource which preserves the details of the Experience viewed by the end user.
     """
-
-    banner_enabled = Column(
-        String(), index=True
-    )  # Deprecated field, but left for auditing of early records
 
     origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
 

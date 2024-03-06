@@ -1,4 +1,6 @@
-"""test
+"""cleanup migration for consent multitranslation.
+Removes deprecated fields from privacy notice and privacy experience related tables and adds
+some constraints after the previous data migration guarantees
 
 Revision ID: 32497f08e227
 Revises: 14acee6f5459

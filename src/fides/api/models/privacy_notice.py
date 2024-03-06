@@ -416,7 +416,31 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         return self.privacy_notice_history.id if self.privacy_notice_history else None
 
 
-class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
+class DeprecatedPrivacyNoticeHistoryFields:
+    """
+    Fields we no longer save on the privacy notice, but are now configured on the Experience side.
+
+    However, these fields are retained for auditing purposes on early historical records.
+    """
+
+    displayed_in_privacy_center = Column(
+        Boolean,
+    )
+    displayed_in_overlay = Column(
+        Boolean,
+    )
+    displayed_in_api = Column(
+        Boolean,
+    )
+    regions = Column(
+        ARRAY(EnumColumn(DeprecatedNoticeRegion, native_enum=False)),
+        index=True,
+    )
+
+
+class PrivacyNoticeHistory(
+    NoticeTranslationBase, PrivacyNoticeBase, DeprecatedPrivacyNoticeHistoryFields, Base
+):
     """
     An "audit table" stores all versions of `PrivacyNotice` + `NoticeTranslations`.
 
@@ -437,23 +461,6 @@ class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     # we retain this record for consent reporting
 
     version = Column(Float, nullable=False, default=1.0)
-
-    # Where a notice is displayed is now configured on the Experience side!
-    displayed_in_privacy_center = Column(
-        Boolean,
-    )  # Deprecated field, but retained on early records for auditing purposes
-    displayed_in_overlay = Column(
-        Boolean,
-    )  # Deprecated field, but retained on early records for auditing purposes
-    displayed_in_api = Column(
-        Boolean,
-    )  # Deprecated field, but retained on early records for auditing purposes
-    regions = (
-        Column(  # Deprecated field, but retained on early records for auditing purposes
-            ARRAY(EnumColumn(DeprecatedNoticeRegion, native_enum=False)),
-            index=True,
-        )
-    )
 
 
 def create_historical_record_for_notice_and_translation(
