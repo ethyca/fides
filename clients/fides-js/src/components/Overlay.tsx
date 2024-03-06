@@ -38,7 +38,7 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  savedConsent?: CookieKeyConsent;
+  savedConsent: CookieKeyConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;

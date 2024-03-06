@@ -98,7 +98,7 @@ export const updateConsentPreferences = async ({
   // 3. Save preferences to the cookie in the browser
   debugLog(options.debug, "Saving preferences to cookie");
   saveFidesCookie(cookie, options.base64Cookie);
-  window.Fides.savedConsent = cookie.consent;
+  window.Fides.saved_consent = cookie.consent;
 
   // 4. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {

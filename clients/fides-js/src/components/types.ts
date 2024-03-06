@@ -17,5 +17,5 @@ export interface OverlayProps {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;
-  savedConsent?: CookieKeyConsent;
+  savedConsent: CookieKeyConsent;
 }

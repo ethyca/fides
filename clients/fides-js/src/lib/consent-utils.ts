@@ -208,7 +208,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie,
-  savedConsent?: CookieKeyConsent
+  savedConsent: CookieKeyConsent
 ): boolean => {
   if (experience.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
