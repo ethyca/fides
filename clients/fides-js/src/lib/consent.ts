@@ -17,6 +17,8 @@ export const initOverlay = async ({
   experience,
   fidesRegionString,
   cookie,
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  rename_me_prior_consent,
   options,
   renderOverlay,
 }: OverlayProps & {
@@ -68,6 +70,8 @@ export const initOverlay = async ({
             fidesRegionString,
             cookie,
             options,
+            /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+            rename_me_prior_consent,
           },
           parentElem
         );

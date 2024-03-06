@@ -2,6 +2,7 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  CookieKeyConsent,
   EmptyExperience,
   FidesCookie,
   FidesOptions,
@@ -203,13 +204,12 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
 /**
  * Returns true if there are notices in the experience that require a user preference
  * or if an experience's version hash does not match up.
- *
- * TODO (PROD-1780): inspect the *actually* saved cookie for this, not the
- * "cookie" state we pass around that stores current consent that is not saved yet
  */
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
-  cookie: FidesCookie
+  cookie: FidesCookie,
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  rename_me_prior_consent?: CookieKeyConsent
 ): boolean => {
   if (experience.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
@@ -225,12 +225,16 @@ export const shouldResurfaceConsent = (
   ) {
     return false;
   }
-  // TODO (PROD-1780): determine a way to check cookie vs. current state... but hardcode to true for testing
-  return true;
-  // If not every notice has previous user consent, we need to resurface consent
+  // Always resurface if there is no prior consent
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  if (!rename_me_prior_consent) {
+    return true;
+  }
+  // Lastly, if we do have a prior consent state, resurface if we find *any*
+  // notices that don't have prior consent in that state
   return Boolean(
     !experience.privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, cookie.consent)
+      noticeHasConsentInCookie(notice, rename_me_prior_consent)
     )
   );
 };

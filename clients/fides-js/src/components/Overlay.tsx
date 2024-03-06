@@ -7,6 +7,7 @@ import {
   useRef,
 } from "preact/hooks";
 import {
+  CookieKeyConsent,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -37,6 +38,8 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  rename_me_prior_consent?: CookieKeyConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
@@ -49,6 +52,8 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  rename_me_prior_consent,
   onOpen,
   onDismiss,
   renderBanner,
@@ -145,10 +150,12 @@ const Overlay: FunctionComponent<Props> = ({
     () =>
       !options.fidesDisableBanner &&
       experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie) &&
+      shouldResurfaceConsent(experience, cookie, rename_me_prior_consent) &&
       !options.fidesEmbed,
     [cookie, experience, options]
   );
+
+  /* eslint-disable-next-line no-console -- TODO(PROD-1780) remove log */
   console.warn("renderOverlay showBanner = ", showBanner);
 
   const handleManagePreferencesClick = (): void => {

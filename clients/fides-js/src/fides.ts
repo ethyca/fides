@@ -53,6 +53,7 @@ import {
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
+  CookieKeyConsent,
   FidesConfig,
   FidesCookie,
   FidesOptionsOverrides,
@@ -128,9 +129,16 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
+  // TODO (PROD-1780): keep a copy of the prior consent from cookie before we start updating it anywhere
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  const rename_me_prior_consent: CookieKeyConsent = {
+    ...cookie.consent,
+  };
   const initialFides = getInitialFides({
     ...config,
     cookie,
+    /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+    rename_me_prior_consent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
@@ -141,6 +149,8 @@ const init = async (config: FidesConfig) => {
   const updatedFides = await initialize({
     ...config,
     cookie,
+    /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+    rename_me_prior_consent,
     experience,
     renderOverlay,
     updateExperience: ({

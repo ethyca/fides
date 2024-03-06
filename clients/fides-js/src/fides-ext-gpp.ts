@@ -136,14 +136,19 @@ export const initializeGppCmpApi = () => {
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
-    const { experience } = window.Fides;
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- TODO (PROD-1780): GPP is cheating here by accessing window.Fides
+    const { experience, rename_me_prior_consent } = window.Fides;
     cmpApi.setSupportedAPIs(getSupportedApis());
     // Set status to ready immediately upon initialization, if either:
     // A. Consent should not be resurfaced
     // B. User has no prefs and has all opt-in notices
     if (
       isPrivacyExperience(experience) &&
-      (!shouldResurfaceConsent(experience, event.detail) ||
+      (!shouldResurfaceConsent(
+        experience,
+        event.detail,
+        rename_me_prior_consent
+      ) ||
         (allNoticesAreDefaultOptIn(experience.privacy_notices) &&
           !userHasExistingPrefs(
             event.detail.consent,

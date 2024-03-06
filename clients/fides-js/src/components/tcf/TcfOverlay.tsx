@@ -203,6 +203,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   options,
   cookie,
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  rename_me_prior_consent,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
@@ -292,6 +294,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
+      /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+      rename_me_prior_consent={rename_me_prior_consent}
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}

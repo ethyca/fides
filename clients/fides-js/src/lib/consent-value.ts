@@ -38,6 +38,7 @@ export const resolveConsentValue = (
     return true;
   }
   // Note about GPC - consent has already applied to the cookie at this point, so we can trust preference there
+  // TODO (PROD-1780): this is probably not true anymore...!
   if (consent && noticeHasConsentInCookie(notice, consent)) {
     return !!consent[notice.notice_key];
   }

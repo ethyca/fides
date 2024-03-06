@@ -34,6 +34,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
   fidesRegionString,
   cookie,
+  /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+  rename_me_prior_consent,
 }) => {
   const initialEnabledNoticeKeys = () => {
     if (experience.privacy_notices) {
@@ -148,6 +150,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
+      /* eslint-disable-next-line @typescript-eslint/naming-convention -- TODO(PROD-1780) rename me */
+      rename_me_prior_consent={rename_me_prior_consent}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
