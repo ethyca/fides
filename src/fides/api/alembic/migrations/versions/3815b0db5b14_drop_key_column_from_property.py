@@ -1,7 +1,7 @@
 """drop key column from property
 
 Revision ID: 3815b0db5b14
-Revises: 0c65325843bd
+Revises: 14acee6f5459
 Create Date: 2024-02-29 21:54:38.751678
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "3815b0db5b14"
-down_revision = "0c65325843bd"
+down_revision = "14acee6f5459"
 branch_labels = None
 depends_on = None
 
