@@ -71,8 +71,18 @@ export const groupByBelongsTo = (
   return byGroup;
 };
 
-export const isRegulated = (location: Location) =>
-  !!location.regulation?.length;
+export const isRegulated = (
+  locationOrGroup: Location | LocationGroup,
+  locations: Location[]
+) => {
+  if (locationOrGroup.regulation?.length) {
+    return true;
+  }
+  const locationsInGroup = locations.filter((l) =>
+    l.belongs_to?.includes(locationOrGroup.id)
+  );
+  return locationsInGroup.some((l) => l.regulation?.length);
+};
 
 export const getCheckedStateLocationGroup = ({
   group,
