@@ -268,16 +268,21 @@ def dump_table_to_csv(bind, table_name):
     # Get column names from the result set
     column_names = result.keys()
 
-    # Write results to CSV
-    with open(csv_file_path, "w") as csv_file:
-        csv_writer = csv.writer(csv_file)
+    try:
+        # Write results to CSV
+        with open(csv_file_path, "w") as csv_file:
+            csv_writer = csv.writer(csv_file)
 
-        # Write header row
-        csv_writer.writerow(column_names)
+            # Write header row
+            csv_writer.writerow(column_names)
 
-        # Write data rows
-        for row in result:
-            csv_writer.writerow(row)
+            # Write data rows
+            for row in result:
+                csv_writer.writerow(row)
+    except PermissionError:
+        logger.exception(
+            f"Permission error writing migration backup file {csv_file_path}"
+        )
 
 
 def load_experience_config_from_files(file_paths):
@@ -328,9 +333,9 @@ def load_default_experience_configs():
             experience_config["regions"] = set(experience_config["regions"])
 
         experience_config["privacy_notices"] = set()
-        experience_config[
-            "needs_migration"
-        ] = False  # indicator whether the record requires migration, or we can default to the template values
+        experience_config["needs_migration"] = (
+            False  # indicator whether the record requires migration, or we can default to the template values
+        )
         _reconciled_experience_config_map[experience_config_type] = experience_config
         experience_config["needs_migration"] = False
     return _reconciled_experience_config_map, _raw_experience_config_map
@@ -356,7 +361,13 @@ def backup_existing_data_csv(bind):
         "privacynotice",
         "privacynoticehistory",
     ]:
-        dump_table_to_csv(bind, table_name)
+        try:
+            dump_table_to_csv(bind, table_name)
+        except Exception:
+            # permission error is handled within the function, but just to be extra safe
+            # let's make sure our migration proceeds if ANY error is thrown from the CSV dump,
+            # since this is just a nice-to-have.
+            logger.exception(f"Error backing up table {table_name} to disk")
 
 
 def remove_existing_experience_data(bind):
