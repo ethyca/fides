@@ -144,11 +144,7 @@ export const initializeGppCmpApi = () => {
     // B. User has no prefs and has all opt-in notices
     if (
       isPrivacyExperience(experience) &&
-      (!shouldResurfaceConsent(
-        experience,
-        event.detail,
-        savedConsent
-      ) ||
+      (!shouldResurfaceConsent(experience, event.detail, savedConsent) ||
         (allNoticesAreDefaultOptIn(experience.privacy_notices) &&
           !userHasExistingPrefs(
             savedConsent,

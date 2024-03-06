@@ -150,7 +150,7 @@ const Overlay: FunctionComponent<Props> = ({
       experience.show_banner &&
       shouldResurfaceConsent(experience, cookie, savedConsent) &&
       !options.fidesEmbed,
-    [cookie, experience, options]
+    [cookie, savedConsent, experience, options]
   );
 
   /* eslint-disable-next-line no-console -- TODO(PROD-1780) remove log */
