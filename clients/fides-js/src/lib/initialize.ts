@@ -139,9 +139,6 @@ const automaticallyApplyGPCPreferences = async ({
   );
 
   if (gpcApplied) {
-    console.warn(
-      "GPC applies, updating consent cookie & preferences API async now"
-    );
     await updateConsentPreferences({
       consentPreferencesToSave,
       experience: effectiveExperience,
@@ -154,7 +151,6 @@ const automaticallyApplyGPCPreferences = async ({
     });
     return true;
   }
-  console.warn("GPC does not apply, returning immediately");
   return false;
 };
 
@@ -348,7 +344,7 @@ export const initialize = async ({
       experienceIsValid(effectiveExperience, options)
     ) {
       // First up: apply GPC!
-      // TODO (PROD-1780): we can't delay initialization for this.
+      // TODO (PROD-1780): we can't delay initialization for this; move until afterwards.
       await automaticallyApplyGPCPreferences({
         cookie,
         fidesRegionString,

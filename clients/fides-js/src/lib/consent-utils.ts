@@ -203,6 +203,9 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
 /**
  * Returns true if there are notices in the experience that require a user preference
  * or if an experience's version hash does not match up.
+ *
+ * TODO (PROD-1780): inspect the *actually* saved cookie for this, not the
+ * "cookie" state we pass around that stores current consent that is not saved yet
  */
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
