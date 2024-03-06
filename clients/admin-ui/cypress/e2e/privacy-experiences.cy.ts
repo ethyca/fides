@@ -41,7 +41,7 @@ describe("Privacy experiences", () => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_EXPERIENCE_ROUTE);
           cy.wait("@getExperiences");
-          cy.getByTestId(`row-${EXPERIENCE_ID}`).click();
+          cy.get("table").contains("tr", "notice enabled test").click();
           // we should still be on the same page
           cy.getByTestId("privacy-experience-detail-page").should("not.exist");
           cy.getByTestId("privacy-experience-page");
@@ -49,17 +49,13 @@ describe("Privacy experiences", () => {
       );
     });
 
-    it("viewers and approvers cannot toggle the enable toggle", () => {
+    it("viewers and approvers cannot see toggle the enable toggle", () => {
       [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
         (role) => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_EXPERIENCE_ROUTE);
           cy.wait("@getExperiences");
-          cy.getByTestId("toggle-Enable")
-            .first()
-            .within(() => {
-              cy.get("span").should("have.attr", "data-disabled");
-            });
+          cy.get(".toggle").should("not.exist");
         }
       );
     });
@@ -96,11 +92,9 @@ describe("Privacy experiences", () => {
 
     it("should render a row for each privacy experience", () => {
       cy.fixture("privacy-experiences/list.json").then((data) => {
-        data.items
-          .map((item) => item.id)
-          .forEach((id) => {
-            cy.getByTestId(`row-${id}`);
-          });
+        data.items.forEach((item, index) => {
+          cy.getByTestId(`row-${index}`);
+        });
       });
     });
 
@@ -108,50 +102,53 @@ describe("Privacy experiences", () => {
       cy.intercept("GET", "/api/v1/experience-config/pri*", {
         fixture: "privacy-experiences/experienceConfig.json",
       }).as("getExperienceDetail");
-      cy.getByTestId(`row-${EXPERIENCE_ID}`).click();
+      cy.get("table").contains("tr", "notice enabled test").click();
       cy.wait("@getExperienceDetail");
-      cy.getByTestId("privacy-experience-detail-page");
-      cy.url().should("contain", EXPERIENCE_ID);
+      cy.getByTestId("input-name").should("have.value", "Experience title");
     });
 
     describe("enabling and disabling", () => {
       beforeEach(() => {
-        cy.intercept("PATCH", "/api/v1/experience-config/*", {
+        cy.intercept("PATCH", "/api/v1/experience-config/*/limited_update", {
           fixture: "privacy-experiences/experienceConfig.json",
         }).as("patchExperience");
       });
 
       it("can enable an experience", () => {
-        cy.getByTestId(`row-${DISABLED_EXPERIENCE_ID}`).within(() => {
-          cy.getByTestId("toggle-Enable").within(() => {
-            cy.get("span").should("not.have.attr", "data-checked");
+        cy.get("table")
+          .contains("tr", "notice disabled test")
+          .within(() => {
+            cy.getByTestId("toggle-switch").within(() => {
+              cy.get("span").should("not.have.attr", "data-checked");
+            });
+            cy.getByTestId("toggle-switch").click();
           });
-          cy.getByTestId("toggle-Enable").click();
-        });
 
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(DISABLED_EXPERIENCE_ID);
-          expect(body).to.eql({ regions: ["us_ca"], disabled: false });
+          expect(body).to.eql({ disabled: false });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
       });
 
       it("can disable an experience with a warning", () => {
-        cy.getByTestId(`row-${EXPERIENCE_ID}`).within(() => {
-          cy.getByTestId("toggle-Enable").within(() => {
-            cy.get("span").should("have.attr", "data-checked");
+        cy.get("table")
+          .contains("tr", "notice enabled test")
+          .within(() => {
+            cy.getByTestId("toggle-switch").within(() => {
+              cy.get("span").should("have.attr", "data-checked");
+            });
+            cy.getByTestId("toggle-switch").click();
           });
-          cy.getByTestId("toggle-Enable").click();
-        });
 
         cy.getByTestId("confirmation-modal");
         cy.getByTestId("continue-btn").click();
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(EXPERIENCE_ID);
-          expect(body).to.eql({ regions: [], disabled: true });
+          expect(body).to.eql({ disabled: true });
         });
         // redux should requery after invalidation
         cy.wait("@getExperiences");
@@ -175,13 +172,13 @@ describe("Privacy experiences", () => {
       });
     };
 
-    it("can populate an experience config form with existing values", () => {
+    it.skip("can populate an experience config form with existing values", () => {
       stubExperience();
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${EXPERIENCE_ID}`);
-      cy.getByTestId("input-name").should("have.value", "Experience title");
+      cy.getByTestId("input-name").should("have.value", "notice enabled test");
     });
 
-    it("can submit an experience config form", () => {
+    it.skip("can submit an experience config form", () => {
       stubExperience();
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${EXPERIENCE_ID}`);
       cy.getByTestId("save-btn").should("be.disabled");

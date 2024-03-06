@@ -63,7 +63,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
-              expect(data.signalStatus).to.eql("not ready");
+              expect(data.signalStatus).to.eql("ready");
             });
         });
       });
@@ -98,7 +98,7 @@ describe("Fides-js GPP extension", () => {
             expect(data.eventName).to.eql("listenerRegistered");
             const { cmpDisplayStatus, signalStatus, gppString } = data.pingData;
             expect(cmpDisplayStatus).to.eql("visible");
-            expect(signalStatus).to.eql("not ready");
+            expect(signalStatus).to.eql("ready");
             expect(gppString).to.eql("DBAA"); // empty string, header only
           });
 
@@ -240,13 +240,13 @@ describe("Fides-js GPP extension", () => {
      * Expected flow for a returning user who opens but then closes the modal without making a change:
      * 1. listenerRegistered
      * 2. User opens the modal
-     * 3. signalStatus = not ready
+     * 3. signalStatus = ready
      * 4. cmpDisplayStatus = visible
-     * 5. User closes the modal without saving anything
+     * 5. User closes the modal which automatically triggers preference save
      * 6. cmpDisplayStatus = hidden
-     * 7. signalStatus = ready
+     * 7. signalStatus = not ready
      */
-    it("can handle returning user closing the modal without a preference change", () => {
+    it("can handle returning user closing the modal", () => {
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
       });
@@ -265,11 +265,15 @@ describe("Fides-js GPP extension", () => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
         cy.get("#fides-modal-link").click();
+        cy.get(".fides-modal-content .fides-close-button").click();
         const expected = [
           { eventName: "listenerRegistered", data: true },
-          { eventName: "signalStatus", data: "not ready" },
+          { eventName: "signalStatus", data: "ready" },
           { eventName: "cmpDisplayStatus", data: "visible" },
           { eventName: "cmpDisplayStatus", data: "hidden" },
+          { eventName: "signalStatus", data: "ready" },
+          { eventName: "cmpDisplayStatus", data: "hidden" },
+          { eventName: "sectionChange", data: "tcfeuv2" },
           { eventName: "signalStatus", data: "ready" },
         ];
         cy.get("@gppListener")
@@ -319,7 +323,7 @@ describe("Fides-js GPP extension", () => {
               applicableSections,
               supportedAPIs,
             } = data.pingData;
-            expect(signalStatus).to.eql("not ready");
+            expect(signalStatus).to.eql("ready");
             expect(applicableSections).to.eql([]);
             expect(supportedAPIs).to.eql([]);
             expect(gppString).to.eql("DBAA");
@@ -355,7 +359,7 @@ describe("Fides-js GPP extension", () => {
           .its("lastCall.args")
           .then(([data, success]) => {
             expect(success).to.eql(true);
-            expect(data.signalStatus).to.eql("not ready");
+            expect(data.signalStatus).to.eql("ready");
           });
       });
     });

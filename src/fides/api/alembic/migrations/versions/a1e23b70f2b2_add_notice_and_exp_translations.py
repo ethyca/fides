@@ -207,7 +207,9 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("language", sa.String(), nullable=False),
+        sa.Column(
+            "language", sa.String(), nullable=True
+        ),  # temporarily nullable for existing values
     )
     op.add_column(
         "privacyexperienceconfighistory", sa.Column("name", sa.String(), nullable=True)
@@ -257,6 +259,13 @@ def upgrade():
         ["id"],
         ondelete="SET NULL",
     )
+    # drop FK constraint between PrivacyExperienceConfigHistory and PrivacyExperienceConfig,
+    # to allow us to delete PrivacyExperienceConfigs without removing their associated history records
+    op.drop_constraint(
+        "privacyexperienceconfighistory_experience_config_id_fkey",
+        "privacyexperienceconfighistory",
+        type_="foreignkey",
+    )
     op.alter_column(
         "privacynotice",
         "regions",
@@ -264,10 +273,16 @@ def upgrade():
         nullable=True,
     )
     op.add_column(
-        "privacynoticehistory", sa.Column("language", sa.String(), nullable=False)
+        "privacynoticehistory",
+        sa.Column(
+            "language", sa.String(), nullable=True
+        ),  # temporarily nullable for existing values
     )
     op.add_column(
-        "privacynoticehistory", sa.Column("title", sa.String(), nullable=False)
+        "privacynoticehistory",
+        sa.Column(
+            "title", sa.String(), nullable=True
+        ),  # temporarily nullable for existing values
     )
     op.add_column(
         "privacynoticehistory", sa.Column("translation_id", sa.String(), nullable=True)

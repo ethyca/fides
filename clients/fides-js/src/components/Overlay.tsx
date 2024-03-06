@@ -79,7 +79,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: experience?.experience_config?.translations[0].title || "", // fixme- use internationalization lib
+    title: i18n.t("exp.title"),
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },
@@ -218,9 +218,8 @@ const Overlay: FunctionComponent<Props> = ({
         : null}
       {options.fidesEmbed ? (
         <ConsentContent
-          title={attributes.title}
+          titleProps={attributes.title}
           className="fides-embed"
-          experience={experience.experience_config}
           i18n={i18n}
           renderModalFooter={() =>
             renderModalFooter({
@@ -234,7 +233,6 @@ const Overlay: FunctionComponent<Props> = ({
       ) : (
         <ConsentModal
           attributes={attributes}
-          experience={experience.experience_config}
           i18n={i18n}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>

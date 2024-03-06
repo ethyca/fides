@@ -115,7 +115,7 @@ export const useConsentServed = ({
             .privacy_experience_config_history_id,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
-        // TODO (PROD-1597): pass in specific language shown in UI
+        // TODO (PROD-1744): pass in specific language shown in UI
         privacy_notice_history_ids: notices.map(
           (n: PrivacyNotice) => n.translations[0].privacy_notice_history_id
         ),

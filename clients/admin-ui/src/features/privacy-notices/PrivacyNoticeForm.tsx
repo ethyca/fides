@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  HStack,
-  Stack,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { Button, ButtonGroup, Stack, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -16,7 +8,6 @@ import FormSection from "~/features/common/form/FormSection";
 import {
   CustomSelect,
   CustomSwitch,
-  CustomTextArea,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -27,10 +18,11 @@ import {
   selectEnabledDataUseOptions,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
+import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
 import { PrivacyNoticeCreation, PrivacyNoticeResponse } from "~/types/api";
 
-import ConsentMechanismForm from "./ConsentMechanismForm";
 import {
+  CONSENT_MECHANISM_OPTIONS,
   defaultInitialValues,
   transformPrivacyNoticeResponseToCreation,
   ValidationSchema,
@@ -67,10 +59,15 @@ const PrivacyNoticeForm = ({
   const handleSubmit = async (values: PrivacyNoticeCreation) => {
     let result;
     if (isEditing) {
-      // @ts-ignore
-      result = await patchNoticesMutationTrigger([values]);
+      const valuesToSubmit = {
+        ...values,
+        id: passedInPrivacyNotice!.id,
+        enforcement_level: passedInPrivacyNotice!.enforcement_level,
+        translations: values.translations ?? [],
+      };
+      result = await patchNoticesMutationTrigger(valuesToSubmit);
     } else {
-      result = await postNoticesMutationTrigger([values]);
+      result = await postNoticesMutationTrigger(values);
     }
 
     if (isErrorResult(result)) {
@@ -100,63 +97,45 @@ const PrivacyNoticeForm = ({
             <Stack spacing={6}>
               <FormSection title="Privacy notice details">
                 <CustomTextInput
-                  label="Title of the consent notice as displayed to the user"
+                  label="Notice title"
                   name="name"
-                  variant="stacked"
-                />
-                <CustomTextArea
-                  label="Privacy notice displayed to the user"
-                  name="description"
-                  variant="stacked"
-                />
-              </FormSection>
-              <ConsentMechanismForm />
-              <FormSection title="Privacy notice configuration">
-                <CustomSelect
-                  name="data_uses"
-                  label="Data uses associated with this privacy notice"
-                  options={dataUseOptions}
-                  variant="stacked"
-                  isMulti
-                />
-                <CustomTextArea
-                  label="Description of the privacy notice (visible to internal users only)"
-                  name="internal_description"
-                  variant="stacked"
-                />
-                <CustomSelect
-                  name="regions"
-                  label="Locations where consent notice is shown to visitors"
-                  options={PRIVACY_NOTICE_REGION_OPTIONS}
-                  variant="stacked"
-                  isMulti
                   isRequired
+                  variant="stacked"
+                />
+                <CustomSelect
+                  name="consent_mechanism"
+                  label="Consent mechanism"
+                  options={CONSENT_MECHANISM_OPTIONS}
+                  isRequired
+                  variant="stacked"
                 />
                 <NoticeKeyField isEditing={isEditing} />
-                <Box>
-                  <Text fontSize="sm" fontWeight="medium" mb={2}>
-                    Configure the user experience for how this notice is
-                    displayed
-                  </Text>
-                  <HStack justifyContent="space-between">
-                    <CustomSwitch
-                      label="Show in Privacy Preference Center"
-                      name="displayed_in_privacy_center"
-                      variant="condensed"
-                    />
-                    <CustomSwitch
-                      label="Show in Privacy Overlay"
-                      name="displayed_in_overlay"
-                      variant="condensed"
-                    />
-                    <CustomSwitch
-                      label="API Only"
-                      name="displayed_in_api"
-                      variant="condensed"
-                    />
-                  </HStack>
-                </Box>
+                {passedInPrivacyNotice ? (
+                  <CustomSelect
+                    name="regions"
+                    label="Locations where consent notice is shown to visitors"
+                    tooltip="Add locations to this privacy notice by configuring the corresponding privacy experience"
+                    options={PRIVACY_NOTICE_REGION_OPTIONS}
+                    variant="stacked"
+                    placeholder="No locations assigned"
+                    isDisabled
+                    isMulti
+                  />
+                ) : null}
+                <CustomSwitch
+                  name="has_gpc_flag"
+                  label="Configure whether this notice conforms to the Global Privacy Control"
+                  variant="stacked"
+                />
+                <CustomSelect
+                  name="data_uses"
+                  label="Data use"
+                  options={dataUseOptions}
+                  isMulti
+                  variant="stacked"
+                />
               </FormSection>
+              <PrivacyNoticeTranslationForm />
             </Stack>
             <ButtonGroup size="sm" spacing={2}>
               <Button
