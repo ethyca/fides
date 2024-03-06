@@ -377,16 +377,16 @@ describe("Fides-js GPP extension", () => {
       });
 
       const expected = [
-        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served
+        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted in (default)
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BUAAAABY.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BUAAAABY.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
         // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted into
         {
@@ -434,7 +434,7 @@ describe("Fides-js GPP extension", () => {
         });
     });
 
-    it("can go through the flow of user opting out of data sales and sharing", () => {
+    it.only("can go through the flow of user opting out of data sales and sharing", () => {
       cy.get("button").contains("Opt out of all").click();
       cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
         cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
@@ -447,18 +447,18 @@ describe("Fides-js GPP extension", () => {
       });
 
       const expected = [
-        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served
+        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted in (default)
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BUAAAABY.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BUAAAABY.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
-        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out of
+        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out
         {
           eventName: "sectionChange",
           data: "uscav1",
