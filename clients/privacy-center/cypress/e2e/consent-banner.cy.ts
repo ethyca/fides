@@ -1415,6 +1415,74 @@ describe("Consent overlay", () => {
         cy.getByTestId("consent-modal").should("be.visible");
       });
     });
+
+    describe("when resurfacing consent banner", () => {
+      it("shows consent banner when no saved consent exists", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+          },
+        });
+        cy.get("div#fides-banner").should("be.visible");
+      });
+
+      it("does not resurface consent banner when saved consent exists for all notices", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+          },
+        });
+        cy.get("div#fides-banner").should("be.visible");
+        cy.get("#fides-banner .fides-accept-all-button").click();
+
+        // Reload the page, except this time with our saved consent cookie
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+          },
+        });
+        cy.get("div#fides-banner").should("not.exist");
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: true,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
+      });
+
+      it("resurfaces consent banner when saved consent is missing for a notice", () => {
+        // Save a consent cookie with preferences for only the "advertising" test notice
+        const cookie = {
+          identity: {
+            fides_user_device_id: "4fbb6edf-34f6-4717-a6f1-541fd1e5d585",
+          },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: "2022-12-24T12:00:00.000Z",
+            updatedAt: "2022-12-25T12:00:00.000Z",
+          },
+          consent: {
+            advertising: false,
+          },
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+        // Load the page with all three test notices (advertising, essential,
+        // analytics_opt_out). Since saved consent should only exist for
+        // "advertising", expect the banner to resurface
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+          },
+        });
+        cy.get("div#fides-banner").should("be.visible");
+      });
+    });
   });
 
   describe("when listening for fides.js events", () => {
