@@ -121,7 +121,7 @@ const automaticallyApplyGPCPreferences = ({
   let gpcApplied = false;
   const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
     (notice) => {
-      const hasPriorConsent = noticeHasConsentInCookie(notice, cookie);
+      const hasPriorConsent = noticeHasConsentInCookie(notice, cookie.consent);
       // only apply GPC for notices that do not have prior consent
       if (
         notice.has_gpc_flag &&
@@ -137,7 +137,7 @@ const automaticallyApplyGPCPreferences = ({
       return new SaveConsentPreference(
         notice,
         transformConsentToFidesUserPreference(
-          resolveConsentValue(notice, context, cookie),
+          resolveConsentValue(notice, context, cookie.consent),
           notice.consent_mechanism
         )
       );
