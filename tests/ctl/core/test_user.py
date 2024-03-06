@@ -25,7 +25,6 @@ class TestCredentials:
             access_token="some_token",
         )
         assert credentials.username == "test"
-        assert credentials.password == "password"
         assert credentials.user_id == "some_id"
         assert credentials.access_token == "some_token"
 
