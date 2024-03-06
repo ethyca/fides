@@ -841,7 +841,7 @@ def downward_migrate_notices(bind):
     noticetranslation_data_to_notice_query = text(
         """
         UPDATE privacynotice
-        SET name = noticetranslation.title, description = noticetranslation.description,
+        SET name = noticetranslation.title, description = noticetranslation.description
         FROM noticetranslation
         WHERE noticetranslation.privacy_notice_id = privacynotice.id
         """
@@ -875,6 +875,14 @@ def downgrade():
     bind = op.get_bind()
 
     downward_migrate_notices(bind)
+
+    bind.execute(
+        text(
+            """
+            DELETE FROM experiencetranslation;
+            """
+        )
+    )
     remove_existing_experience_data(
         bind
     )  # remove existing experience data to ensure it won't prevent startup on downgraded versions!
