@@ -383,15 +383,15 @@ def load_regulations() -> Dict[str, LocationRegulationBase]:
         return regulation_dict
 
 
-locations_by_id: Dict[str, Location] = (
-    load_locations()
-)  # should only be accessed for read-only access
-location_groups: Dict[str, LocationGroup] = (
-    load_location_groups()
-)  # should only be accessed for read-only access
-location_group_to_location: Dict[str, Set[str]] = (
-    load_location_group_to_location()
-)  # should only be accessed for read-only access
+locations_by_id: Dict[
+    str, Location
+] = load_locations()  # should only be accessed for read-only access
+location_groups: Dict[
+    str, LocationGroup
+] = load_location_groups()  # should only be accessed for read-only access
+location_group_to_location: Dict[
+    str, Set[str]
+] = load_location_group_to_location()  # should only be accessed for read-only access
 default_selected_locations: Set[str] = {
     id for id, location in locations_by_id.items() if location.default_selected
 }
@@ -402,9 +402,9 @@ def _load_privacy_notice_regions() -> Dict[str, Union[Location, LocationGroup]]:
     return {**locations_by_id, **location_groups}
 
 
-privacy_notice_regions_by_id: Dict[str, Union[Location, LocationGroup]] = (
-    _load_privacy_notice_regions()
-)  # should only be accessed for read-only access
+privacy_notice_regions_by_id: Dict[
+    str, Union[Location, LocationGroup]
+] = _load_privacy_notice_regions()  # should only be accessed for read-only access
 
 
 # dynamically create an enum based on definitions loaded from YAML
@@ -437,9 +437,9 @@ def filter_regions_by_location(
     """
 
     saved_locations: Set[str] = LocationRegulationSelections.get_selected_locations(db)
-    saved_location_groups: Set[str] = (
-        LocationRegulationSelections.get_selected_location_groups(db)
-    )
+    saved_location_groups: Set[
+        str
+    ] = LocationRegulationSelections.get_selected_location_groups(db)
     multilevel_locations: Set[str] = saved_locations.union(saved_location_groups)
 
     # For backwards-compatibility, if no system-wide locations or location groups are set,
