@@ -57,7 +57,7 @@ class Property(Base):
         db: Session,
         *,
         data: dict[str, Any],
-        check_name: bool = False,
+        check_name: bool = True,
     ) -> Property:
         experiences = data.pop("experiences", [])
         prop: Property = super().create(db=db, data=data, check_name=check_name)
@@ -124,7 +124,7 @@ def link_experience_configs_to_property(
     # delayed import to avoid circular declarations
     from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
-    if experience_configs is None:
+    if not experience_configs:
         return []
 
     new_experience_configs = (
