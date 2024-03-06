@@ -129,10 +129,13 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
-  // TODO (PROD-1780): keep a copy of the prior consent from cookie before we start updating it anywhere
+
+  // Keep a copy of saved consent from the cookie, since we update the "cookie"
+  // value during initialization based on overrides, experience, etc.
   const savedConsent: CookieKeyConsent = {
     ...cookie.consent,
   };
+
   const initialFides = getInitialFides({
     ...config,
     cookie,

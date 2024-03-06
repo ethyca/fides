@@ -106,53 +106,32 @@ const automaticallyApplyGPCPreferences = async ({
   fidesRegionString: string | null;
   fidesOptions: FidesOptions;
 }): Promise<boolean> => {
-  console.warn(
-    "start automaticallyApplyGpcPreferences: ",
-    savedConsent,
-    effectiveExperience
-  );
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return false;
   }
 
   const context = getConsentContext();
   if (!context.globalPrivacyControl) {
-    console.warn(
-      "automaticallyApplyGpcPreferences: GPC not detected, return false"
-    );
     return false;
   }
 
   let gpcApplied = false;
   const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
     (notice) => {
-      console.warn(
-        `automaticallyApplyGpcPreferences: process notice '${notice.notice_key}'`,
-        notice
-      );
       const hasPriorConsent = noticeHasConsentInCookie(notice, savedConsent);
-      console.warn(
-        `automaticallyApplyGpcPreferences: notice '${notice.notice_key}' has prior consent? hasPriorConsent = `,
-        hasPriorConsent
-      );
+
       // only apply GPC for notices that do not have prior consent
       if (
         notice.has_gpc_flag &&
         !hasPriorConsent &&
         notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY
       ) {
-        console.warn(
-          `automaticallyApplyGpcPreferences: apply GPC to notice '${notice.notice_key}'`
-        );
         gpcApplied = true;
         return new SaveConsentPreference(
           notice,
           transformConsentToFidesUserPreference(false, notice.consent_mechanism)
         );
       }
-      console.warn(
-        `automaticallyApplyGpcPreferences: do not apply GPC to notice '${notice.notice_key}', saved default preference instead`
-      );
       return new SaveConsentPreference(
         notice,
         transformConsentToFidesUserPreference(
@@ -164,9 +143,6 @@ const automaticallyApplyGPCPreferences = async ({
   );
 
   if (gpcApplied) {
-    console.warn(
-      "automaticallyApplyGpcPreferences: GPC was applied, run updateConsentPreferences()"
-    );
     await updateConsentPreferences({
       consentPreferencesToSave,
       experience: effectiveExperience,
@@ -179,9 +155,6 @@ const automaticallyApplyGPCPreferences = async ({
     });
     return true;
   }
-  console.warn(
-    "automaticallyApplyGpcPreferences: GPC was not applied to any notices, return false"
-  );
   return false;
 };
 

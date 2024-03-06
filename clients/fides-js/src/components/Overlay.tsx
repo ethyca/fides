@@ -153,9 +153,6 @@ const Overlay: FunctionComponent<Props> = ({
     [cookie, savedConsent, experience, options]
   );
 
-  /* eslint-disable-next-line no-console -- TODO(PROD-1780) remove log */
-  console.warn("renderOverlay showBanner = ", showBanner);
-
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
   };

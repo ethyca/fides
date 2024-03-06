@@ -786,7 +786,7 @@ describe("Consent overlay", () => {
         });
       });
 
-      it.only("sends GPC consent override downstream to Fides API", () => {
+      it("sends GPC consent override downstream to Fides API", () => {
         // check that consent was sent to Fides API
         let generatedUserDeviceId: string;
         cy.wait("@patchPrivacyPreference").then((interception) => {

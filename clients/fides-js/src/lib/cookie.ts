@@ -382,8 +382,8 @@ export const getConsentStateFromExperience = (
 };
 
 /**
- * Update the given cookie values with...
- * TODO: comment
+ * Update the "cookie" state with any preferences from the given
+ * PrivacyExperience. See getConsentStateFromExperience for details.
  */
 export const updateCookieFromExperience = ({
   cookie,
