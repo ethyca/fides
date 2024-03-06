@@ -16,7 +16,10 @@ import {
 } from "../../lib/consent-types";
 import { debugLog, getGpcStatusFromNotice } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import { getFidesConsentCookie, updateCookieFromNoticePreferences } from "../../lib/cookie";
+import {
+  getFidesConsentCookie,
+  updateCookieFromNoticePreferences,
+} from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useConsentServed } from "../../lib/hooks";
 import {
