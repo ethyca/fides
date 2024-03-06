@@ -786,7 +786,7 @@ describe("Consent overlay", () => {
         });
       });
 
-      it.only("sends GPC consent override downstream to Fides API", () => {
+      it("sends GPC consent override downstream to Fides API", () => {
         // check that consent was sent to Fides API
         let generatedUserDeviceId: string;
         cy.wait("@patchPrivacyPreference").then((interception) => {
@@ -1835,6 +1835,26 @@ describe("Consent overlay", () => {
     });
 
     it("renders the proper gpc indicator", () => {
+      // Create an existing cookie with preferences, to test that these will
+      // override GPC defaults if present
+      const uuid = "4fbb6edf-34f6-4717-a6f1-52o47rybwuafh5";
+      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+      const notices = {
+        // we skip setting the "applied" notice key since we wish to replicate no user pref here
+        notice_only: true,
+        overridden: true, // this pref should override GPC setting
+      };
+      const originalCookie = {
+        identity: { fides_user_device_id: uuid },
+        fides_meta: {
+          version: "0.9.0",
+          createdAt: CREATED_DATE,
+          updatedAt: UPDATED_DATE,
+        },
+        consent: notices,
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
       stubConfig({
         experience: {
           privacy_notices: [

@@ -92,7 +92,7 @@ const retrieveEffectiveRegionString = async (
  * This does not currently do anything with TCF.
  * Returns true if GPC has been applied
  */
-const automaticallyApplyGPCPreferences = ({
+const automaticallyApplyGPCPreferences = async ({
   cookie,
   fidesRegionString,
   effectiveExperience,
@@ -102,7 +102,7 @@ const automaticallyApplyGPCPreferences = ({
   fidesRegionString: string | null;
   effectiveExperience?: PrivacyExperience;
   fidesOptions: FidesOptions;
-}): boolean => {
+}): Promise<boolean> => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return false;
   }
@@ -139,7 +139,10 @@ const automaticallyApplyGPCPreferences = ({
   );
 
   if (gpcApplied) {
-    updateConsentPreferences({
+    console.warn(
+      "GPC applies, updating consent cookie & preferences API async now"
+    );
+    await updateConsentPreferences({
       consentPreferencesToSave,
       experience: effectiveExperience,
       consentMethod: ConsentMethod.GPC,
@@ -151,6 +154,7 @@ const automaticallyApplyGPCPreferences = ({
     });
     return true;
   }
+  console.warn("GPC does not apply, returning immediately");
   return false;
 };
 
@@ -343,6 +347,15 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
+      // First up: apply GPC!
+      // TODO (PROD-1780): we can't delay initialization for this.
+      await automaticallyApplyGPCPreferences({
+        cookie,
+        fidesRegionString,
+        effectiveExperience,
+        fidesOptions: options,
+      });
+
       // Now that we've determined the effective PrivacyExperience, update it
       // with any client-side edits so that it's ready to use
       const updatedExperience = updateExperience({
@@ -370,14 +383,6 @@ export const initialize = async ({
           options,
           renderOverlay,
         }).catch(() => {});
-
-        // Last step: apply GPC!
-        automaticallyApplyGPCPreferences({
-          cookie,
-          fidesRegionString,
-          effectiveExperience,
-          fidesOptions: options,
-        });
       }
     }
   }

@@ -361,7 +361,7 @@ export const updateCookieFromNoticePreferences = async (
  * values with newer values from the experience.
  */
 export const getConsentStateFromExperience = (
-  experience: PrivacyExperience,
+  experience: PrivacyExperience
 ): CookieKeyConsent => {
   const consent: CookieKeyConsent = {};
   if (!experience.privacy_notices) {
@@ -369,9 +369,13 @@ export const getConsentStateFromExperience = (
   }
   experience.privacy_notices.forEach((notice) => {
     if (notice.current_preference) {
-      consent[notice.notice_key] = transformUserPreferenceToBoolean(notice.current_preference);
+      consent[notice.notice_key] = transformUserPreferenceToBoolean(
+        notice.current_preference
+      );
     } else if (notice.default_preference) {
-      consent[notice.notice_key] = transformUserPreferenceToBoolean(notice.default_preference);
+      consent[notice.notice_key] = transformUserPreferenceToBoolean(
+        notice.default_preference
+      );
     }
   });
   return consent;
@@ -391,6 +395,6 @@ export const updateCookieFromExperience = ({
   const consent = getConsentStateFromExperience(experience);
   return {
     ...cookie,
-    consent
-  }
-}
+    consent,
+  };
+};
