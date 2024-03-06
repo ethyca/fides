@@ -17,6 +17,7 @@ depends_on = None
 
 
 def upgrade():
+    # Privacy Experience > experience_config_id is guaranteed to exist after the data migration so we can make this non-nullable
     op.alter_column(
         "privacyexperience",
         "experience_config_id",
@@ -34,10 +35,12 @@ def upgrade():
         existing_type=sa.VARCHAR(),
         nullable=False,
     )
+    # Dropping the index as a prereq before removing the column
     op.drop_index(
         "ix_privacyexperienceconfig_banner_enabled",
         table_name="privacyexperienceconfig",
     )
+    # Removing the "translatable" columns that have been moved to ExperienceTranslation
     op.drop_column("privacyexperienceconfig", "privacy_policy_url")
     op.drop_column("privacyexperienceconfig", "acknowledge_button_label")
     op.drop_column("privacyexperienceconfig", "description")
@@ -45,27 +48,34 @@ def upgrade():
     op.drop_column("privacyexperienceconfig", "banner_description")
     op.drop_column("privacyexperienceconfig", "accept_button_label")
     op.drop_column("privacyexperienceconfig", "privacy_preferences_link_label")
+    # The Experience Config no longer stores a version
     op.drop_column("privacyexperienceconfig", "version")
     op.drop_column("privacyexperienceconfig", "banner_title")
     op.drop_column("privacyexperienceconfig", "title")
     op.drop_column("privacyexperienceconfig", "privacy_policy_link_label")
+    # New concept by the same name is now stored on the ExperienceTranslatoin table
     op.drop_column("privacyexperienceconfig", "is_default")
     op.drop_column("privacyexperienceconfig", "save_button_label")
     op.drop_column("privacyexperienceconfig", "reject_button_label")
+    # The historical config no longer references the current config, but a translation instead
     op.drop_column("privacyexperienceconfighistory", "experience_config_id")
+    # Dropping notice regions index as a prereq for deleting the column
     op.drop_index("ix_privacynotice_regions", table_name="privacynotice")
+    # Deleting notice constructs that have been moved to the Experience side
     op.drop_column("privacynotice", "displayed_in_api")
     op.drop_column("privacynotice", "description")
     op.drop_column("privacynotice", "regions")
     op.drop_column("privacynotice", "displayed_in_overlay")
-    op.drop_column("privacynotice", "version")
     op.drop_column("privacynotice", "displayed_in_privacy_center")
+    op.drop_column("privacynotice", "version")
+    # Dropping the notice history > notice id FK as a prereq for dropping the column
     op.drop_constraint(
         "privacynoticehistory_privacy_notice_id_fkey",
         "privacynoticehistory",
         type_="foreignkey",
     )
     op.drop_column("privacynoticehistory", "privacy_notice_id")
+    # Similarly removing deprecated concepts off the notice templates
     op.drop_index(
         "ix_privacynoticetemplate_regions", table_name="privacynoticetemplate"
     )
@@ -74,6 +84,7 @@ def upgrade():
     op.drop_column("privacynoticetemplate", "regions")
     op.drop_column("privacynoticetemplate", "displayed_in_overlay")
     op.drop_column("privacynoticetemplate", "displayed_in_privacy_center")
+    # Removing the reference from privacy preference history and served notice history to the experience
     op.drop_column("privacypreferencehistory", "privacy_experience_id")
     op.drop_column("servednoticehistory", "privacy_experience_id")
 
