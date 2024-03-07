@@ -7,6 +7,8 @@ Revises: 14acee6f5459
 Create Date: 2024-03-05 17:08:07.093568
 
 """
+from loguru import logger
+from datetime import datetime
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
@@ -19,6 +21,10 @@ depends_on = None
 
 
 def upgrade():
+    logger.info(
+        f"Starting Consent Multitranslation Schema Migration (#3) {datetime.now()}"
+    )
+
     # Privacy Experience > experience_config_id is guaranteed to exist after the data migration so we can make this non-nullable
     op.alter_column(
         "privacyexperience",
@@ -89,6 +95,8 @@ def upgrade():
     # Removing the reference from privacy preference history and served notice history to the experience
     op.drop_column("privacypreferencehistory", "privacy_experience_id")
     op.drop_column("servednoticehistory", "privacy_experience_id")
+
+    logger.info(f"Consent Multitranslation Migrations Complete {datetime.now()}")
 
 
 def downgrade():
