@@ -8,18 +8,21 @@ import {
 } from "fides-js/src/lib/consent-types";
 import { useFormikContext } from "formik";
 import Script from "next/script";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
+import {
+  buildBaseConfig,
+  FidesPreviewComponent,
+  translationOrDefault,
+} from "~/features/privacy-experience/preview/helpers";
 import { useLazyGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ComponentType,
   ExperienceConfigCreate,
-  ExperienceTranslation,
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeResponse,
-  SupportedLanguage,
 } from "~/types/api";
 
 export type Fides = {
@@ -34,11 +37,6 @@ declare global {
   interface Window {
     Fides: Fides;
   }
-}
-
-enum FidesPreviewComponent {
-  BANNER = "banner",
-  MODAL = "modal",
 }
 
 const Preview = ({
@@ -90,91 +88,11 @@ const Preview = ({
 
   const fidesJsScript = "/lib/fides.js";
 
-  const buildExperienceTranslation = (
-    config: Partial<ExperienceConfigCreate>
-  ): ExperienceTranslation => ({
-    language: config.translations
-      ? config.translations[0].language
-      : SupportedLanguage.EN,
-    accept_button_label: config.translations
-      ? config.translations[0].accept_button_label
-      : "Accept",
-    acknowledge_button_label: config.translations
-      ? config.translations[0].acknowledge_button_label
-      : "OK",
-    banner_description: config.translations
-      ? config.translations[0].banner_description
-      : "",
-    banner_title: config.translations
-      ? config.translations[0].banner_title
-      : "",
-    description: config.translations ? config.translations[0].description : "",
-    is_default: true,
-    privacy_policy_link_label: config.translations
-      ? config.translations[0].privacy_policy_link_label
-      : "",
-    privacy_policy_url: config.translations
-      ? config.translations[0].privacy_policy_url
-      : "",
-    privacy_preferences_link_label: config.translations
-      ? config.translations[0].privacy_preferences_link_label
-      : "",
-    reject_button_label: config.translations
-      ? config.translations[0].reject_button_label
-      : "Reject All",
-    save_button_label: config.translations
-      ? config.translations[0].save_button_label
-      : "Save",
-    title: config.translations ? config.translations[0].title : "",
-  });
-
   // Create the base FidesConfig JSON that will be used to initialize fides.js
-  const baseConfig = {
-    options: {
-      debug: true,
-      geolocationApiUrl: "",
-      isGeolocationEnabled: false,
-      isOverlayEnabled: true,
-      isPrefetchEnabled: false,
-      overlayParentId: "preview-container",
-      modalLinkId: null,
-      privacyCenterUrl: "http://localhost:3000",
-      fidesApiUrl: "http://localhost:8080/api/v1",
-      // todo- get this from config
-      preventDismissal: false,
-      fidesPreviewMode: true,
-      fidesPreviewComponent: FidesPreviewComponent.BANNER,
-      allowHTMLDescription: true,
-      serverSideFidesApiUrl: "",
-      fidesString: null,
-      fidesJsBaseUrl: "",
-      base64Cookie: false,
-    },
-    experience: {
-      id: "pri_111",
-      region: "us_ca",
-      component: "banner_and_modal",
-      experience_config: {
-        id: "pri_222",
-        regions: ["us_ca"],
-        component: "banner_and_modal",
-        disabled: false,
-        is_default: true,
-        dismissable: initialValues.dismissable,
-        allow_language_selection: true,
-        auto_detect_language: true,
-        language: "en",
-        // in preview mode, we show the first translation in the main window, even when multiple translations are configured
-        translations: [buildExperienceTranslation(initialValues)],
-      },
-      privacy_notices: noticesOnConfig,
-    },
-    geolocation: {
-      country: "US",
-      location: "US-CA",
-      region: "CA",
-    },
-  };
+  const baseConfig = useMemo(
+    () => buildBaseConfig(initialValues, noticesOnConfig),
+    [initialValues, noticesOnConfig]
+  );
 
   useEffect(() => {
     // if current component is a modal, we want to force fides.js to show a modal, not a banner component
@@ -183,18 +101,16 @@ const Preview = ({
     }
     // if we're editing a translation, we want to preview the banner/modal with that language,
     // otherwise we show first translation if exists, else keep default
-    const currentTranslation: ExperienceTranslation | undefined = translation
-      ? values.translations?.filter(
-          (i) => i.language === translation.language
-        )[0]
-      : undefined;
+    const currentTranslation = values.translations?.find(
+      (i) => i.language === translation?.language
+    );
     if (currentTranslation) {
       baseConfig.experience.experience_config.translations[0] =
-        currentTranslation;
+        translationOrDefault(currentTranslation);
     } else if (values.translations) {
       // eslint-disable-next-line prefer-destructuring
       baseConfig.experience.experience_config.translations[0] =
-        values.translations[0];
+        translationOrDefault(values.translations[0]);
     }
     baseConfig.options.preventDismissal = !values.dismissable;
     if (window.Fides) {
