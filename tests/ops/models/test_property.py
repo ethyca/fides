@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.models.property import Property
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
@@ -14,7 +13,9 @@ class TestProperty:
     def property_a(self, db) -> Generator:
         prop_a = Property.create(
             db=db,
-            data=PropertySchema(name="New Property", type=PropertyType.website).dict(),
+            data=PropertySchema(
+                name="New Property", type=PropertyType.website, experiences=[]
+            ).dict(),
         )
         yield prop_a
         prop_a.delete(db=db)
@@ -50,7 +51,7 @@ class TestProperty:
         prop = Property.create(
             db=db,
             data=PropertySchema(
-                name="New Property (Prod)", type=PropertyType.website
+                name="New Property (Prod)", type=PropertyType.website, experiences=[]
             ).dict(),
         )
         assert prop.name == "New Property (Prod)"
