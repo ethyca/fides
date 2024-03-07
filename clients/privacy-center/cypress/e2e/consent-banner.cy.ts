@@ -897,7 +897,7 @@ describe("Consent overlay", () => {
       it("shows indicators that GPC has been applied", () => {
         // In the banner
         cy.get("div#fides-banner").within(() => {
-          cy.get("span").contains("Global Privacy Control Signal detected");
+          cy.get("span").contains("Global Privacy Control");
         });
         // And in the modal
         cy.get("button").contains("Manage preferences").click();
@@ -905,10 +905,10 @@ describe("Consent overlay", () => {
           "Global Privacy Control detected"
         );
         cy.get("span")
-          .contains("Test privacy notice with gpc enabled")
+          .contains("Advertising with gpc enabled")
           .parent()
           .within(() => {
-            cy.get("span").contains("Global Privacy Control applied");
+            cy.get("span").contains("Global Privacy Control Applied");
           });
       });
     });
