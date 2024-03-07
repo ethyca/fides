@@ -450,28 +450,28 @@ export const initialize = async ({
           savedConsent,
           renderOverlay,
         }).catch(() => {});
-      }
 
-      /**
-       * Last up: apply GPC to the current preferences automatically. This will
-       * set any applicable notices to "opt-out" unless the user has previously
-       * saved consent, etc.
-       *
-       * NOTE: Do *not* await the results of this function, even though it's
-       * async and returns a Promise! Instead, let the GPC update run
-       * asynchronously but continue our initialization. If GPC applies, this
-       * will kick off an update to the user's consent preferences which will
-       * also call the Fides API, but we want to finish initialization
-       * immediately while those API updates happen in parallel.
-       */
-      automaticallyApplyGPCPreferences({
-        savedConsent,
-        effectiveExperience,
-        cookie,
-        fidesRegionString,
-        fidesOptions: options,
-        i18n,
-      });
+        /**
+         * Last up: apply GPC to the current preferences automatically. This will
+         * set any applicable notices to "opt-out" unless the user has previously
+         * saved consent, etc.
+         *
+         * NOTE: Do *not* await the results of this function, even though it's
+         * async and returns a Promise! Instead, let the GPC update run
+         * asynchronously but continue our initialization. If GPC applies, this
+         * will kick off an update to the user's consent preferences which will
+         * also call the Fides API, but we want to finish initialization
+         * immediately while those API updates happen in parallel.
+         */
+        automaticallyApplyGPCPreferences({
+          savedConsent,
+          effectiveExperience,
+          cookie,
+          fidesRegionString,
+          fidesOptions: options,
+          i18n,
+        });
+      }
     }
   }
 
