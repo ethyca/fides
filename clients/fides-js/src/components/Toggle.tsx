@@ -6,19 +6,19 @@ const Toggle = ({
   checked,
   onChange,
   disabled,
+  onLabel,
+  offLabel,
 }: {
   name: string;
   id: string;
   checked: boolean;
   onChange: (noticeKey: string) => void;
   disabled?: boolean;
+  onLabel?: string;
+  offLabel?: string;
 }) => {
   const labelId = `toggle-${id}`;
-  /* TODO (PROD-1754)
-  if (getCurrentLocale(i18n) == DEFAULT_LOCALE) {
-    const label = checked ? "On" : "Off";
-  }
-  */
+  const labelText = checked ? onLabel : offLabel;
   return (
     <label
       className="fides-toggle"
@@ -38,10 +38,7 @@ const Toggle = ({
         aria-labelledby={labelId}
         disabled={disabled}
       />
-      {/* Mark as `hidden` so it will fall back to a regular checkbox if CSS is not available */}
-      <span className="fides-toggle-display" hidden>
-        {checked ? "On" : "Off"}
-      </span>
+      <span className="fides-toggle-display">{labelText}</span>
     </label>
   );
 };

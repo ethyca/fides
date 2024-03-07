@@ -1,23 +1,26 @@
 import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
-import TcfPurposes from "./TcfPurposes";
+import { I18n } from "../../lib/i18n";
 import { PrivacyExperience } from "../../lib/consent-types";
+import { EnabledIds } from "../../lib/tcf/types";
+import TcfPurposes from "./TcfPurposes";
 import type { UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
 import InfoBox from "../InfoBox";
-import { EnabledIds } from "../../lib/tcf/types";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
 
 const TcfTabs = ({
+  i18n,
   experience,
   enabledIds,
   onChange,
   activeTabIndex,
   onTabChange,
 }: {
+  i18n: I18n;
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
   onChange: (payload: EnabledIds) => void;
@@ -50,6 +53,7 @@ const TcfTabs = ({
             the toggles below.
           </InfoBox>
           <TcfPurposes
+            i18n={i18n}
             allPurposesConsent={experience.tcf_purpose_consents}
             allPurposesLegint={experience.tcf_purpose_legitimate_interests}
             allSpecialPurposes={experience.tcf_special_purposes}
@@ -71,6 +75,7 @@ const TcfTabs = ({
             using the toggles below.
           </InfoBox>
           <TcfFeatures
+            i18n={i18n}
             allFeatures={experience.tcf_features}
             allSpecialFeatures={experience.tcf_special_features}
             enabledFeatureIds={enabledIds.features}
@@ -90,6 +95,7 @@ const TcfTabs = ({
             your rights for each vendor based on the legal basis they assert.
           </InfoBox>
           <TcfVendors
+            i18n={i18n}
             experience={experience}
             enabledVendorConsentIds={enabledIds.vendorsConsent}
             enabledVendorLegintIds={enabledIds.vendorsLegint}

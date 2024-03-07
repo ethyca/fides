@@ -1,6 +1,9 @@
 import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
+import { PrivacyExperience } from "../../lib/consent-types";
+import { I18n } from "../../lib/i18n";
+import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
   GvlDataCategories,
   GvlDataDeclarations,
@@ -8,15 +11,13 @@ import {
   EmbeddedPurpose,
   LegalBasisEnum,
 } from "../../lib/tcf/types";
-import { PrivacyExperience } from "../../lib/consent-types";
-import { UpdateEnabledIds } from "./TcfOverlay";
 import {
   transformExperienceToVendorRecords,
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
+import { UpdateEnabledIds } from "./TcfOverlay";
 import ExternalLink from "../ExternalLink";
 import RecordsList from "./RecordsList";
-import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import RadioGroup from "./RadioGroup";
 import PagingButtons, { usePaging } from "../PagingButtons";
 
@@ -221,11 +222,13 @@ const ToggleChild = ({
 };
 
 const PagedVendorData = ({
+  i18n,
   experience,
   vendors,
   enabledIds,
   onChange,
 }: {
+  i18n: I18n;
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
@@ -252,6 +255,7 @@ const PagedVendorData = ({
   return (
     <Fragment>
       <RecordsList<VendorRecord>
+        i18n={i18n}
         title="IAB TCF vendors"
         items={gvlVendors}
         enabledIds={enabledIds}
@@ -264,6 +268,7 @@ const PagedVendorData = ({
         )}
       />
       <RecordsList<VendorRecord>
+        i18n={i18n}
         title="Other vendors"
         items={otherVendors}
         enabledIds={enabledIds}
@@ -278,11 +283,13 @@ const PagedVendorData = ({
 };
 
 const TcfVendors = ({
+  i18n,
   experience,
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
 }: {
+  i18n: I18n;
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
@@ -318,6 +325,7 @@ const TcfVendors = ({
         onChange={setActiveLegalBasisOption}
       />
       <PagedVendorData
+        i18n={i18n}
         experience={experience}
         vendors={filteredVendors}
         enabledIds={

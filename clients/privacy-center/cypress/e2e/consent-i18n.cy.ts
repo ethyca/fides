@@ -650,6 +650,78 @@ describe("Consent i18n", () => {
     });
   });
 
+  describe("when localizing the 'On'/'Off' toggle labels", () => {
+    describe(`when in the default locale (${ENGLISH_LOCALE})`, () => {
+      it("shows the 'On'/'Off' toggle labels in banner_and_modal components", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_banner_modal.json",
+        });
+        cy.get("#fides-modal-link").click();
+        cy.get("#fides-modal .fides-modal-notices").within(() => {
+          cy.get(".fides-toggle:first").contains("Off");
+          cy.get(".fides-toggle:first").click();
+          cy.get(".fides-toggle:first").contains("On");
+        });
+      });
+
+      it("shows the 'On'/'Off' toggle labels in tcf_overlay components", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_tcf.json",
+          options: { tcfEnabled: true },
+        });
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("records-list-Purposes").within(() => {
+          cy.get(".fides-toggle:first").contains("Off");
+          cy.get(".fides-toggle:first").click();
+          cy.get(".fides-toggle:first").contains("On");
+        });
+      });
+    });
+
+    describe(`when in any non-default locale (${SPANISH_LOCALE})`, () => {
+      it("hides the 'On'/'Off' toggle labels in banner_and_modal components", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: SPANISH_LOCALE,
+          fixture: "experience_banner_modal.json",
+        });
+        cy.get("#fides-modal-link").click();
+        cy.get("#fides-modal .fides-modal-notices").within(() => {
+          cy.get(".fides-toggle:first").contains("Off").should("not.exist");
+          cy.get(".fides-toggle:first .fides-toggle-display").should(
+            "be.empty"
+          );
+          cy.get(".fides-toggle:first").click();
+          cy.get(".fides-toggle:first").contains("On").should("not.exist");
+          cy.get(".fides-toggle:first .fides-toggle-display").should(
+            "be.empty"
+          );
+        });
+      });
+
+      it("hides the 'On'/'Off' toggle labels in tcf_overlay components", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: SPANISH_LOCALE,
+          fixture: "experience_tcf.json",
+          options: { tcfEnabled: true },
+        });
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("records-list-Purposes").within(() => {
+          cy.get(".fides-toggle:first").contains("Off").should("not.exist");
+          cy.get(".fides-toggle:first .fides-toggle-display").should(
+            "be.empty"
+          );
+          cy.get(".fides-toggle:first").click();
+          cy.get(".fides-toggle:first").contains("On").should("not.exist");
+          cy.get(".fides-toggle:first .fides-toggle-display").should(
+            "be.empty"
+          );
+        });
+      });
+    });
+  });
+
   // TODO (PROD-1598): enable this test and add other cases as needed!
   describe.skip("when user selects their own locale", () => {
     it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {

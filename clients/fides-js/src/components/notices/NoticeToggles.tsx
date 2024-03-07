@@ -1,7 +1,7 @@
 import { h } from "preact";
 
 import { GpcStatus } from "../../lib/consent-types";
-import type { I18n } from "../../lib/i18n";
+import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
 
 import Divider from "../Divider";
 
@@ -39,6 +39,14 @@ export const NoticeToggles = ({
     }
   };
 
+  // Only show the toggle labels ("On"/"Off") in English, since our Toggle components are fixed-width!
+  let toggleOnLabel: string | undefined;
+  let toggleOffLabel: string | undefined;
+  if (getCurrentLocale(i18n) === DEFAULT_LOCALE) {
+    toggleOnLabel = "On";
+    toggleOffLabel = "Off";
+  }
+
   return (
     <div>
       {noticeToggles.map((props, idx) => {
@@ -54,6 +62,8 @@ export const NoticeToggles = ({
               onToggle={handleToggle}
               gpcBadge={<GpcBadge i18n={i18n} status={gpcStatus} />}
               disabled={disabled}
+              onLabel={toggleOnLabel}
+              offLabel={toggleOffLabel}
             >
               {description}
             </DataUseToggle>
