@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ComponentType } from "./ComponentType";
+import { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
@@ -12,6 +13,7 @@ export type ExperienceConfigListViewResponse = {
   id: string;
   name?: string;
   regions: Array<PrivacyNoticeRegion>;
+  properties: Array<MinimalProperty>;
   component: ComponentType;
   updated_at: string;
   disabled: boolean;

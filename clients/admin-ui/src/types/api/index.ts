@@ -40,7 +40,6 @@ export type { Classification } from "./models/Classification";
 export type { ClassificationResponse } from "./models/ClassificationResponse";
 export { ClassificationStatus } from "./models/ClassificationStatus";
 export type { ClassifyCollection } from "./models/ClassifyCollection";
-export type { MinimalPrivacyExperience } from "./models/MinimalPrivacyExperience";
 export type { ClassifyDataFlow } from "./models/ClassifyDataFlow";
 export type { ClassifyDataset } from "./models/ClassifyDataset";
 export type { ClassifyDatasetResponse } from "./models/ClassifyDatasetResponse";
@@ -211,6 +210,8 @@ export type { MessagingServiceSecretsMailchimpTransactionalDocs } from "./models
 export { MessagingServiceType } from "./models/MessagingServiceType";
 export type { MessagingTemplateRequest } from "./models/MessagingTemplateRequest";
 export type { MessagingTemplateResponse } from "./models/MessagingTemplateResponse";
+export type { MinimalPrivacyExperience } from "./models/MinimalPrivacyExperience";
+export type { MinimalProperty } from "./models/MinimalProperty";
 export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
 export type { Property } from "./models/Property";
 export type { Page_Property_ } from "./models/Page_Property_";
