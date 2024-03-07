@@ -15,7 +15,11 @@ import {
   FidesOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
-import { debugLog, defaultShowModal, shouldResurfaceConsent } from "../lib/consent-utils";
+import {
+  debugLog,
+  defaultShowModal,
+  shouldResurfaceConsent,
+} from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
 import { useHasMounted } from "../lib/hooks";
 import type { I18n } from "../lib/i18n";
