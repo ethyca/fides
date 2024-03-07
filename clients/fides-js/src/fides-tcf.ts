@@ -52,6 +52,7 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
 import {
+  CookieKeyConsent,
   FidesConfig,
   FidesOptionsOverrides,
   FidesOverrides,
@@ -100,7 +101,7 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateExperience = async ({
+const updateExperience = ({
   cookie,
   experience,
   debug = false,
@@ -110,7 +111,7 @@ const updateExperience = async ({
   experience: PrivacyExperience;
   debug?: boolean;
   isExperienceClientSideFetched: boolean;
-}): Promise<Partial<PrivacyExperience>> => {
+}): Partial<PrivacyExperience> => {
   if (!isExperienceClientSideFetched) {
     // If it's not client side fetched, we don't update anything since the cookie has already
     // been updated earlier.
@@ -160,6 +161,13 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
+
+  // Keep a copy of saved consent from the cookie, since we update the "cookie"
+  // value during initialization based on overrides, experience, etc.
+  const savedConsent: CookieKeyConsent = {
+    ...cookie.consent,
+  };
+
   // Update the fidesString if we have an override and the TC portion is valid
   const { fidesString } = config.options;
   if (fidesString) {
@@ -184,6 +192,7 @@ const init = async (config: FidesConfig) => {
   const initialFides = getInitialFides({
     ...config,
     cookie,
+    savedConsent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
   });
   // Initialize the CMP API early so that listeners are established
@@ -196,6 +205,7 @@ const init = async (config: FidesConfig) => {
   const updatedFides = await initialize({
     ...config,
     cookie,
+    savedConsent,
     experience,
     renderOverlay,
     updateExperience,
@@ -238,6 +248,7 @@ _Fides = {
   fides_meta: {},
   identity: {},
   tcf_consent: {},
+  saved_consent: {},
   gtm,
   init,
   initialized: false,
