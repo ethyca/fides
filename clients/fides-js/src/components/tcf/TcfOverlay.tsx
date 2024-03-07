@@ -205,6 +205,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   i18n,
   fidesRegionString,
   cookie,
+  savedConsent,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
@@ -317,6 +318,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       experience={experience}
       i18n={i18n}
       cookie={cookie}
+      savedConsent={savedConsent}
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}

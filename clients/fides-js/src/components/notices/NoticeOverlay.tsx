@@ -51,6 +51,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   i18n,
   fidesRegionString,
   cookie,
+  savedConsent,
 }) => {
   // TODO (PROD-1597): restore useMemo here, but see #4649
   const initialEnabledNoticeKeys = () => {
@@ -235,6 +236,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       experience={experience}
       i18n={i18n}
       cookie={cookie}
+      savedConsent={savedConsent}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (

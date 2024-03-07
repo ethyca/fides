@@ -2,6 +2,7 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  CookieKeyConsent,
   EmptyExperience,
   FidesCookie,
   FidesOptions,
@@ -209,7 +210,8 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  */
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
-  cookie: FidesCookie
+  cookie: FidesCookie,
+  savedConsent: CookieKeyConsent
 ): boolean => {
   if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
@@ -225,10 +227,15 @@ export const shouldResurfaceConsent = (
   ) {
     return false;
   }
-  // If not every notice has previous user consent, we need to resurface consent
+  // Always resurface if there is no prior consent
+  if (!savedConsent) {
+    return true;
+  }
+  // Lastly, if we do have a prior consent state, resurface if we find *any*
+  // notices that don't have prior consent in that state
   return Boolean(
     !experience.privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, cookie.consent)
+      noticeHasConsentInCookie(notice, savedConsent)
     )
   );
 };
