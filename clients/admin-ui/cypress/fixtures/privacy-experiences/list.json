@@ -20,7 +20,8 @@
       "version": 3.0,
       "created_at": "2023-05-30T23:42:10.300484+00:00",
       "updated_at": "2023-05-31T00:28:24.694384+00:00",
-      "regions": []
+      "regions": [],
+      "properties": []
     },
     {
       "name": "notice disabled test",
@@ -42,7 +43,8 @@
       "version": 2.0,
       "created_at": "2023-05-30T23:40:11.459287+00:00",
       "updated_at": "2023-05-31T00:39:29.906976+00:00",
-      "regions": ["us_ca"]
+      "regions": ["us_ca"],
+      "properties": []
     }
   ],
   "total": 2,
