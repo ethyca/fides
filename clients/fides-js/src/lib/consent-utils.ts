@@ -233,6 +233,8 @@ export const shouldResurfaceConsent = (
   }
   // Lastly, if we do have a prior consent state, resurface if we find *any*
   // notices that don't have prior consent in that state
+  // TODO (PROD-1792): we should *also* resurface in the special case where the
+  // saved consent is only recorded with a consentMethod of "dismiss"
   return Boolean(
     !experience.privacy_notices?.every((notice) =>
       noticeHasConsentInCookie(notice, savedConsent)

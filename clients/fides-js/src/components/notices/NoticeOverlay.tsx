@@ -53,11 +53,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   cookie,
   savedConsent,
 }) => {
-  // TODO (PROD-1597): restore useMemo here, but see #4649
+  // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
   const initialEnabledNoticeKeys = () => {
     if (experience.privacy_notices) {
       // ensure we have most up-to-date cookie vals
-      // TODO (PROD-1597): merge in main and use savedConsent for this
+      // TODO (PROD-1792): we should be able to replace parsedCookie with savedConsent
       const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(

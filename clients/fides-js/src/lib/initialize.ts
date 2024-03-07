@@ -3,7 +3,13 @@ import { ContainerNode } from "preact";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
-import { i18n, initializeI18n } from "./i18n";
+import {
+  i18n,
+  I18n,
+  initializeI18n,
+  selectBestExperienceConfigTranslation,
+  selectBestNoticeTranslation,
+} from "./i18n";
 import { getConsentContext } from "./consent-context";
 import {
   getCookieByName,
@@ -101,16 +107,19 @@ const automaticallyApplyGPCPreferences = async ({
   cookie,
   fidesRegionString,
   fidesOptions,
+  i18n,
 }: {
   savedConsent: CookieKeyConsent;
   effectiveExperience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string | null;
   fidesOptions: FidesOptions;
+  i18n: I18n;
 }): Promise<boolean> => {
   // Early-exit if there is no experience or notices, since we've nothing to do
   if (
     !effectiveExperience ||
+    !effectiveExperience.experience_config ||
     !effectiveExperience.privacy_notices ||
     effectiveExperience.privacy_notices.length === 0
   ) {
@@ -122,10 +131,27 @@ const automaticallyApplyGPCPreferences = async ({
     return false;
   }
 
+  /**
+   * Select the "best" translation that should be used for these saved
+   * preferences based on the currently active locale.
+   *
+   * NOTE: This *feels* a bit weird, and would feel cleaner if this was moved
+   * into the UI components. However, we currently want to keep the GPC
+   * application isolated, so we need to duplicate some of that "best
+   * translation" logic here.
+   */
+  const bestTranslation = selectBestExperienceConfigTranslation(
+    i18n,
+    effectiveExperience.experience_config
+  );
+  const privacyExperienceConfigHistoryId =
+    bestTranslation?.privacy_experience_config_history_id;
+
   let gpcApplied = false;
   const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
     (notice) => {
       const hasPriorConsent = noticeHasConsentInCookie(notice, savedConsent);
+      const bestNoticeTranslation = selectBestNoticeTranslation(i18n, notice);
 
       // only apply GPC for notices that do not have prior consent
       if (
@@ -140,8 +166,7 @@ const automaticallyApplyGPCPreferences = async ({
             false,
             notice.consent_mechanism
           ),
-          // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
-          notice.translations[0].privacy_notice_history_id
+          bestNoticeTranslation?.privacy_notice_history_id
         );
       }
       return new SaveConsentPreference(
@@ -150,17 +175,12 @@ const automaticallyApplyGPCPreferences = async ({
           resolveConsentValue(notice, context, savedConsent),
           notice.consent_mechanism
         ),
-        // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
-        notice.translations[0].privacy_notice_history_id
+        bestNoticeTranslation?.privacy_notice_history_id
       );
     }
   );
 
   if (gpcApplied) {
-    // TODO (PROD-1597): ...figure out the right translation for these preferences, somehow?
-    const privacyExperienceConfigHistoryId =
-      effectiveExperience.experience_config?.translations[0]
-        .privacy_experience_config_history_id;
     await updateConsentPreferences({
       consentPreferencesToSave,
       privacyExperienceConfigHistoryId,
@@ -449,6 +469,7 @@ export const initialize = async ({
         cookie,
         fidesRegionString,
         fidesOptions: options,
+        i18n,
       });
     }
   }

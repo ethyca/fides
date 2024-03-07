@@ -666,6 +666,57 @@ describe("Consent overlay", () => {
           cy.get("input").should("be.checked");
         });
       });
+
+      describe("when dismissing banner and modal", () => {
+        // TODO (PROD-1792): Fix peculiar dismiss issues
+        it.skip("saves default consent preferences, but only when no saved consent cookie exists", () => {
+          // Open & dismiss the modal as a net new user
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-close-button").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { method, preferences } = interception.request.body;
+            expect(method).to.eq("dismiss");
+            expect(
+              preferences.map((p: any) => p.preference)
+            ).to.eql(["opt_out", "opt_in", "acknowledge"]);
+          });
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
+
+          // Re-open the modal and dismiss again
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-close-button").click();
+          // We shouldn't fire a second FidesUpdated event yet!
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
+
+          // Re-open the modal, change preferences and save
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-modal-notices .fides-toggle-input:first").click();
+          cy.get("#fides-modal .fides-save-button").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { method, preferences } = interception.request.body;
+            expect(method).to.eq("save");
+            expect(
+              preferences.map((p: any) => p.preference)
+            ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+          });
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
+
+          // Re-open & dismiss a few more times to confirm that saved preferences are respected
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-modal-notices .fides-toggle-input:first").should("be.checked");
+          cy.get("#fides-modal .fides-save-button").click();
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-modal-notices .fides-toggle-input:first").should("be.checked");
+          cy.get("#fides-modal .fides-save-button").click();
+          // We still should not fire any FidesUpdated events
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
+        });
+
+        // TODO (PROD-1792): resurface consent banner after dismissing
+        it.skip("resurfaces the banner on future visits after dismissing", () => {});
+      });
     });
 
     describe("cookie enforcement tests", () => {

@@ -489,6 +489,7 @@ describe("Consent i18n", () => {
             "id",
             "pri_notice-advertising-000"
           );
+          adsNotice.has_gpc_flag = true;
           adsNotice.translations = adsNotice.translations.filter(
             (e) => e.language === "en"
           );
@@ -522,6 +523,23 @@ describe("Consent i18n", () => {
         "pri_notice-history-essential-es-000", // Spanish (es)
       ];
 
+      // First, expect GPC to auto-apply and save preferences to the API
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { method, served_notice_history_id, privacy_experience_config_history_id, preferences } =
+          interception.request.body;
+        expect(method).to.eq("gpc");
+        // NOTE: GPC preferences are saved before "notices served" could
+        // possibly complete, so we expect this to be undefined
+        expect(served_notice_history_id).to.be.undefined;
+        expect(privacy_experience_config_history_id).to.eq(
+          "pri_exp-history-banner-modal-es-000"
+        );
+        const noticeHistoryIDs = preferences.map(
+          (e: any) => e.privacy_notice_history_id
+        );
+        expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+      });
+
       // Open the modal and test the "notices served" API
       openAndTestModalLocalization(SPANISH_MODAL);
       cy.wait("@patchNoticesServed").then((interception) => {
@@ -538,8 +556,10 @@ describe("Consent i18n", () => {
       // Accept all notices and test the "privacy preferences" API
       cy.get("#fides-modal .fides-accept-all-button").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        const { privacy_experience_config_history_id, preferences } =
+        const { method, served_notice_history_id, privacy_experience_config_history_id, preferences } =
           interception.request.body;
+        expect(method).to.eq("accept");
+        expect(served_notice_history_id).to.eq("ser_notice-history-000");
         expect(privacy_experience_config_history_id).to.eq(
           "pri_exp-history-banner-modal-es-000"
         );
