@@ -593,6 +593,9 @@ describe("Consent overlay", () => {
             location: "US-CA",
             region: "CA",
           },
+          options: {
+            isOverlayEnabled: true,
+          },
         });
 
         cy.contains("button", "Manage preferences").click();
