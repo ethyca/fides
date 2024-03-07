@@ -57,17 +57,17 @@ declare global {
 /**
  * Special GPP util method to determine if user has existing prefs, including those on the cookie or fides string.
  * Specifically, this method does not consider legacy consent has an existing pref, since they aren't relevant for GPP.
- * @param consent: CookieKeyConsent | undefined
+ * @param savedConsent: CookieKeyConsent | undefined
  * @param fides_string: string | undefined
  * @param notices: Array<PrivacyNoticeWithPreference> | undefined
  * @return boolean
  */
 const userHasExistingPrefs = (
-  consent: CookieKeyConsent | undefined,
+  savedConsent: CookieKeyConsent | undefined,
   fides_string: string | undefined,
   notices: Array<PrivacyNoticeWithPreference> | undefined
 ): boolean => {
-  if (!consent) {
+  if (!savedConsent) {
     return false;
   }
   if (fides_string) {
@@ -75,7 +75,7 @@ const userHasExistingPrefs = (
   }
   return Boolean(
     notices &&
-      Object.entries(consent).some(
+      Object.entries(savedConsent).some(
         ([key, val]) =>
           key in notices.map((i) => i.notice_key) && val !== undefined
       )
@@ -136,17 +136,18 @@ export const initializeGppCmpApi = () => {
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
-    const { experience } = window.Fides;
+    // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
+    const { experience, saved_consent: savedConsent } = window.Fides;
     cmpApi.setSupportedAPIs(getSupportedApis());
     // Set status to ready immediately upon initialization, if either:
     // A. Consent should not be resurfaced
     // B. User has no prefs and has all opt-in notices
     if (
       isPrivacyExperience(experience) &&
-      (!shouldResurfaceConsent(experience, event.detail) ||
+      (!shouldResurfaceConsent(experience, event.detail, savedConsent) ||
         (allNoticesAreDefaultOptIn(experience.privacy_notices) &&
           !userHasExistingPrefs(
-            event.detail.consent,
+            savedConsent,
             event.detail.fides_string,
             experience.privacy_notices
           )))
@@ -170,13 +171,13 @@ export const initializeGppCmpApi = () => {
 
   window.addEventListener("FidesUIShown", (event) => {
     // Set US GPP notice fields
-    const { experience } = window.Fides;
+    const { experience, saved_consent: savedConsent } = window.Fides;
     if (isPrivacyExperience(experience)) {
       // set signal status to ready only for users with no existing prefs and if notices are all opt-in by default
       if (
         allNoticesAreDefaultOptIn(experience.privacy_notices) &&
         !userHasExistingPrefs(
-          event.detail.consent,
+          savedConsent,
           event.detail.fides_string,
           experience.privacy_notices
         )
