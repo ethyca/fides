@@ -34,6 +34,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
   fidesRegionString,
   cookie,
+  savedConsent,
 }) => {
   const initialEnabledNoticeKeys = () => {
     if (experience.privacy_notices) {
@@ -148,6 +149,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
+      savedConsent={savedConsent}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (

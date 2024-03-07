@@ -1,4 +1,5 @@
 import type {
+  CookieKeyConsent,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -16,4 +17,5 @@ export interface OverlayProps {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;
+  savedConsent: CookieKeyConsent;
 }
