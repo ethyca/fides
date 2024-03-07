@@ -10,7 +10,7 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
  */
 export type ExperienceConfigListViewResponse = {
   id: string;
-  name?: string;
+  name: string;
   regions: Array<PrivacyNoticeRegion>;
   component: ComponentType;
   updated_at: string;

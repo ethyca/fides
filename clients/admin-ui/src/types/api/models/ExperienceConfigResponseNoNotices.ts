@@ -64,10 +64,11 @@ export type ExperienceConfigResponseNoNotices = {
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string;
-  name?: string;
+  name: string;
   disabled?: boolean;
   dismissable?: boolean;
   allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
   regions: Array<PrivacyNoticeRegion>;
   id: string;
   created_at: string;

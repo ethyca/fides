@@ -43,6 +43,7 @@ import {
 import { isErrorResult } from "~/types/errors";
 
 const validationSchema = Yup.object().shape({
+  name: Yup.string().required().label("Experience name"),
   component: Yup.string().required().label("Experience type"),
   translations: Yup.array().of(
     Yup.object().shape({
@@ -120,8 +121,6 @@ const ConfigurePrivacyExperience = ({
       name: findLanguageDisplayName(translation, allLanguages),
     });
   };
-
-  // const [isEditingStyle, setIsEditingStyle] = useState<boolean>(false);
 
   return (
     <Formik
