@@ -10,6 +10,7 @@ describe("Consent i18n", () => {
   const JAPANESE_LOCALE = "ja-JP";
   type TestFixture =
     | "experience_banner_modal.json"
+    | "experience_banner_modal_notice_only.json"
     | "experience_tcf.json"
     | "experience_privacy_center.json";
 
@@ -19,6 +20,7 @@ describe("Consent i18n", () => {
     privacy_preferences_link_label: string;
     reject_button_label: string;
     accept_button_label: string;
+    acknowledge_button_label: string;
     gpc_label: string;
     gpc_status_label: string;
     privacy_policy_link_label: string | null;
@@ -31,6 +33,7 @@ describe("Consent i18n", () => {
     save_button_label: string;
     reject_button_label: string;
     accept_button_label: string;
+    acknowledge_button_label: string;
     gpc_title: string;
     gpc_description: string;
     privacy_policy_link_label: string | null;
@@ -48,6 +51,7 @@ describe("Consent i18n", () => {
     privacy_preferences_link_label: "Manage preferences",
     reject_button_label: "Opt out of all",
     accept_button_label: "Opt in to all",
+    acknowledge_button_label: "OK",
     gpc_label: "Global Privacy Control",
     gpc_status_label: "Applied",
     privacy_policy_link_label: "Privacy Policy",
@@ -60,6 +64,7 @@ describe("Consent i18n", () => {
     save_button_label: "Save",
     reject_button_label: "Opt out of all",
     accept_button_label: "Opt in to all",
+    acknowledge_button_label: "OK",
     gpc_title: "Global Privacy Control detected",
     gpc_description: "Your global privacy control preference has been honored.",
     privacy_policy_link_label: "Privacy Policy",
@@ -78,6 +83,7 @@ describe("Consent i18n", () => {
     privacy_preferences_link_label: "Administrar preferencias",
     reject_button_label: "No participar en nada",
     accept_button_label: "Participar en todo",
+    acknowledge_button_label: "Aceptar",
     gpc_label: "Control de privacidad global",
     gpc_status_label: "Aplicado",
     privacy_policy_link_label: "Política de privacidad",
@@ -90,6 +96,7 @@ describe("Consent i18n", () => {
     save_button_label: "Guardar",
     reject_button_label: "No participar en nada",
     accept_button_label: "Participar en todo",
+    acknowledge_button_label: "Aceptar",
     gpc_title: "Control de privacidad global detectado",
     gpc_description:
       "Su preferencia de control de privacidad global se ha respetado.",
@@ -153,7 +160,13 @@ describe("Consent i18n", () => {
 
   // Reusable assertions to test that the banner component localizes correctly
   const testBannerLocalization = (expected: TestBannerTranslations) => {
-    // Check banner localization
+    /**
+     * Check banner localization
+     *
+     * NOTE: These checks will not pass on a "notice-only" banner variant, since
+     * many of the buttons are not seen there. See the dedicated notice-only
+     * specs for those tests instead!
+     */
     cy.get("#fides-banner").within(() => {
       cy.get(".fides-banner-title").contains(expected.banner_title);
       cy.get(".fides-banner-description").contains(expected.banner_description);
@@ -180,15 +193,14 @@ describe("Consent i18n", () => {
       } else {
         cy.get("#fides-privacy-policy-link").should("not.exist");
       }
-
-      // TODO (PROD-1597): test notice-only banner
-      // "acknowledge_button_label": "OK",
     });
   };
 
   // Reusable assertions to test that the modal component localizes correctly
   const openAndTestModalLocalization = (expected: TestModalTranslations) => {
     // Start by opening the modal
+    // NOTE: We could also use cy.get("#fides-modal-link").click(), but let's
+    // assume the banner is visible in these tests
     cy.get("#fides-banner .fides-manage-preferences-button").click();
     cy.get("#fides-modal").should("be.visible");
 
@@ -289,6 +301,37 @@ describe("Consent i18n", () => {
         testModalNoticesLocalization(ENGLISH_NOTICES);
       });
 
+      it("localizes banner_and_modal notice-only components in the correct locale", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
+          fixture: "experience_banner_modal_notice_only.json",
+        });
+
+        // Test notice-only banner
+        cy.get("#fides-banner").within(() => {
+          cy.get(".fides-banner-title").contains(ENGLISH_BANNER.banner_title);
+          cy.get(".fides-banner-description").contains(
+            ENGLISH_BANNER.banner_description
+          );
+          cy.get(".fides-acknowledge-button").contains(
+            ENGLISH_BANNER.acknowledge_button_label
+          );
+        });
+
+        // Test notice-only modal
+        cy.get("#fides-modal-link").click();
+        cy.get("#fides-modal").within(() => {
+          cy.get(".fides-modal-title").contains(ENGLISH_MODAL.title);
+          cy.get(".fides-modal-description").contains(
+            ENGLISH_MODAL.description
+          );
+          cy.get(".fides-acknowledge-button").contains(
+            ENGLISH_MODAL.acknowledge_button_label
+          );
+        });
+      });
+
       it.skip("localizes tcf_overlay components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
@@ -298,7 +341,6 @@ describe("Consent i18n", () => {
         cy.window().its("navigator.language").should("eq", ENGLISH_LOCALE);
       });
 
-      it.skip("localizes banner_and_modal notice-only components in the correct locale", () => {});
       it.skip("localizes privacy_center components in the correct locale", () => {});
     });
 
@@ -354,6 +396,37 @@ describe("Consent i18n", () => {
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
 
+      it("localizes banner_and_modal notice-only components in the correct locale", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: SPANISH_LOCALE,
+          globalPrivacyControl: true,
+          fixture: "experience_banner_modal_notice_only.json",
+        });
+
+        // Test notice-only banner
+        cy.get("#fides-banner").within(() => {
+          cy.get(".fides-banner-title").contains(SPANISH_BANNER.banner_title);
+          cy.get(".fides-banner-description").contains(
+            SPANISH_BANNER.banner_description
+          );
+          cy.get(".fides-acknowledge-button").contains(
+            SPANISH_BANNER.acknowledge_button_label
+          );
+        });
+
+        // Test notice-only modal
+        cy.get("#fides-modal-link").click();
+        cy.get("#fides-modal").within(() => {
+          cy.get(".fides-modal-title").contains(SPANISH_MODAL.title);
+          cy.get(".fides-modal-description").contains(
+            SPANISH_MODAL.description
+          );
+          cy.get(".fides-acknowledge-button").contains(
+            SPANISH_MODAL.acknowledge_button_label
+          );
+        });
+      });
+
       it.skip("localizes tcf_overlay components in the correct locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
@@ -363,7 +436,6 @@ describe("Consent i18n", () => {
         cy.window().its("navigator.language").should("eq", SPANISH_LOCALE);
       });
 
-      it.skip("localizes banner_and_modal notice-only components in the correct locale", () => {});
       it.skip("localizes privacy_center components in the correct locale", () => {});
     });
 
@@ -378,18 +450,6 @@ describe("Consent i18n", () => {
         openAndTestModalLocalization(ENGLISH_MODAL);
         testModalNoticesLocalization(ENGLISH_NOTICES);
       });
-
-      it.skip("localizes tcf_overlay components in the correct locale", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: JAPANESE_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_tcf.json",
-        });
-        cy.window().its("navigator.language").should("eq", JAPANESE_LOCALE);
-      });
-
-      it.skip("localizes banner_and_modal notice-only components in the correct locale", () => {});
-      it.skip("localizes privacy_center components in the correct locale", () => {});
     });
   });
 
@@ -518,8 +578,8 @@ describe("Consent i18n", () => {
       });
 
       // Open the modal and check the notices themselves are translated
-      // NOTE: Banner currently does not display when GPC notices exist (see PROD-????)
-      cy.get("#fides-modal-link").click();
+      testBannerLocalization(SPANISH_BANNER);
+      openAndTestModalLocalization(SPANISH_MODAL);
       testModalNoticesLocalization(SPANISH_NOTICES);
 
       // Check the GPC badge labels on the first notice

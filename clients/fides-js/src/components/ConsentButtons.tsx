@@ -95,7 +95,7 @@ export const NoticeConsentButtons = ({
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
   }
-  const { experience_config: config, privacy_notices: notices } = experience;
+  const { privacy_notices: notices } = experience;
 
   const handleAcceptAll = () => {
     onSave(
@@ -126,7 +126,7 @@ export const NoticeConsentButtons = ({
       >
         <Button
           buttonType={ButtonType.PRIMARY}
-          label={config?.translations[0].acknowledge_button_label}
+          label={i18n.t("exp.acknowledge_button_label")}
           onClick={handleAcceptAll}
           className="fides-acknowledge-button"
         />

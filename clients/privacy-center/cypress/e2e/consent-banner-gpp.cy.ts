@@ -19,9 +19,6 @@ describe("Fides-js GPP extension", () => {
    * used to immediately setup Fides for returning users. This means the tests
    * below for returning users all fail - to workaround this and get the test
    * passing for now, we add an ugly delay before we check for GPP in this function.
-   *
-   * TODO: Delete this function and get these tests to pass without requiring
-   * any workarounds!
    */
   const workaroundGppInitializationDelayBug = () => {
     /* eslint-disable-next-line cypress/no-unnecessary-waiting */
