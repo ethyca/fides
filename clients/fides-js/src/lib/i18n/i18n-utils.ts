@@ -373,7 +373,7 @@ export function setupI18n(): I18n {
     },
 
     load: (locale: Locale, messages: Messages): void => {
-      allMessages[locale] = { ...messages, ...allMessages[locale] };
+      allMessages[locale] = { ...allMessages[locale], ...messages };
     },
 
     t: (descriptorOrId: MessageDescriptor | string): string => {

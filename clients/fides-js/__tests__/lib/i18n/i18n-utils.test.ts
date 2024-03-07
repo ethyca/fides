@@ -604,6 +604,16 @@ describe("i18n module", () => {
         expect(testI18n.t({ id: "test.another" })).toEqual("Zam!");
       });
 
+      it("when loading the same message id multiple times, replaces existing messages with newer ones", () => {
+        testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
+        testI18n.activate("zz");
+        testI18n.load("zz", { "test.greeting": "Zalloz zagain, Jest!" });
+        testI18n.load("zz", { "test.greeting": "Zalloz ze final zone, Jest!" });
+        expect(testI18n.t({ id: "test.greeting" })).toEqual(
+          "Zalloz ze final zone, Jest!"
+        );
+      });
+
       it("treats null/empty strings as missing keys", () => {
         testI18n.load("zz", { "test.empty": "", "test.null": null } as any);
         testI18n.activate("zz");
