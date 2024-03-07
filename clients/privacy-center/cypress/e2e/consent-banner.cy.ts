@@ -632,8 +632,13 @@ describe("Consent overlay", () => {
               },
               {
                 privacy_notice_history_id:
-                  "pri_notice-history-analytics-es-000",
+                  "pri_notice-history-analytics-en-000",
                 preference: "opt_in",
+              },
+              {
+                privacy_notice_history_id:
+                  "pri_notice-history-essential-en-000",
+                preference: "acknowledge",
               },
             ],
             privacy_experience_config_history_id:
@@ -677,9 +682,11 @@ describe("Consent overlay", () => {
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { method, preferences } = interception.request.body;
             expect(method).to.eq("dismiss");
-            expect(
-              preferences.map((p: any) => p.preference)
-            ).to.eql(["opt_out", "opt_in", "acknowledge"]);
+            expect(preferences.map((p: any) => p.preference)).to.eql([
+              "opt_out",
+              "opt_in",
+              "acknowledge",
+            ]);
           });
           cy.get("@FidesUpdated").should("have.been.calledOnce");
 
@@ -692,23 +699,31 @@ describe("Consent overlay", () => {
 
           // Re-open the modal, change preferences and save
           cy.get("#fides-modal-link").click();
-          cy.get("#fides-modal .fides-modal-notices .fides-toggle-input:first").click();
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-toggle-input:first"
+          ).click();
           cy.get("#fides-modal .fides-save-button").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { method, preferences } = interception.request.body;
             expect(method).to.eq("save");
-            expect(
-              preferences.map((p: any) => p.preference)
-            ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+            expect(preferences.map((p: any) => p.preference)).to.eql([
+              "opt_in",
+              "opt_in",
+              "acknowledge",
+            ]);
           });
           cy.get("@FidesUpdated").should("have.been.calledTwice");
 
           // Re-open & dismiss a few more times to confirm that saved preferences are respected
           cy.get("#fides-modal-link").click();
-          cy.get("#fides-modal .fides-modal-notices .fides-toggle-input:first").should("be.checked");
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-toggle-input:first"
+          ).should("be.checked");
           cy.get("#fides-modal .fides-save-button").click();
           cy.get("#fides-modal-link").click();
-          cy.get("#fides-modal .fides-modal-notices .fides-toggle-input:first").should("be.checked");
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-toggle-input:first"
+          ).should("be.checked");
           cy.get("#fides-modal .fides-save-button").click();
           // We still should not fire any FidesUpdated events
           cy.get("@FidesUpdated").should("have.been.calledTwice");

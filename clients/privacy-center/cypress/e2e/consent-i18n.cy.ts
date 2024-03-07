@@ -525,12 +525,16 @@ describe("Consent i18n", () => {
 
       // First, expect GPC to auto-apply and save preferences to the API
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        const { method, served_notice_history_id, privacy_experience_config_history_id, preferences } =
-          interception.request.body;
+        const {
+          method,
+          served_notice_history_id,
+          privacy_experience_config_history_id,
+          preferences,
+        } = interception.request.body;
         expect(method).to.eq("gpc");
         // NOTE: GPC preferences are saved before "notices served" could
         // possibly complete, so we expect this to be undefined
-        expect(served_notice_history_id).to.be.undefined;
+        expect(served_notice_history_id).to.eq(undefined);
         expect(privacy_experience_config_history_id).to.eq(
           "pri_exp-history-banner-modal-es-000"
         );
@@ -556,8 +560,12 @@ describe("Consent i18n", () => {
       // Accept all notices and test the "privacy preferences" API
       cy.get("#fides-modal .fides-accept-all-button").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        const { method, served_notice_history_id, privacy_experience_config_history_id, preferences } =
-          interception.request.body;
+        const {
+          method,
+          served_notice_history_id,
+          privacy_experience_config_history_id,
+          preferences,
+        } = interception.request.body;
         expect(method).to.eq("accept");
         expect(served_notice_history_id).to.eq("ser_notice-history-000");
         expect(privacy_experience_config_history_id).to.eq(
