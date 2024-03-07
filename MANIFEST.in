@@ -5,7 +5,6 @@ include dev-requirements.txt
 include optional-requirements.txt
 include versioneer.py
 include src/fides/api/alembic/alembic.ini
-include src/fides/api/alembic/privacy_experience_config_defaults.yml
 include src/fides/_version.py
 include src/fides/py.typed
 

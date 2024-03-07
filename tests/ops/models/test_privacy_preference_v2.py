@@ -24,7 +24,6 @@ class TestPrivacyPreference:
                 "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                     0
                 ].privacy_experience_config_history_id,
-                "privacy_experience_id": privacy_experience_privacy_center.id,
                 "preference": "opt_in",
                 "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
                     0
@@ -63,7 +62,6 @@ class TestPrivacyPreference:
                 "fides_user_device": "051b219f-20e4-45df-82f7-5eb68a00889f",
                 "method": "accept",
                 "privacy_experience_config_history_id": None,
-                "privacy_experience_id": privacy_experience_france_overlay.id,
                 "preference": "tcf",
                 "request_origin": "tcf_overlay",
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",

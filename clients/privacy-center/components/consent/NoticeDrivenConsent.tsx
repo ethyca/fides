@@ -53,13 +53,16 @@ export const resolveConsentValue = (
   const gpcEnabled =
     !!notice.has_gpc_flag &&
     context.globalPrivacyControl === true &&
-    !noticeHasConsentInCookie(notice as PrivacyNoticeWithPreference, cookie);
+    !noticeHasConsentInCookie(
+      notice as PrivacyNoticeWithPreference,
+      cookie.consent
+    );
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
   const preferenceExistsInCookie = noticeHasConsentInCookie(
     notice as PrivacyNoticeWithPreference,
-    cookie
+    cookie.consent
   );
   if (preferenceExistsInCookie) {
     return transformConsentToFidesUserPreference(

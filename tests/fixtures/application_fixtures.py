@@ -1537,7 +1537,7 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_ca provide",
             "notice_key": "example_privacy_notice_us_ca_provide",
-            # no description or origin on this privacy notice to help
+            # no origin on this privacy notice to help
             # cover edge cases due to column nullability
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential"],
@@ -1571,7 +1571,6 @@ def privacy_preference_history_us_ca_provide(
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                 0
             ].privacy_experience_config_history_id,
-            "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_in",
             "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
                 0
@@ -1730,7 +1729,6 @@ def privacy_preference_history_fr_provide_service_frontend_only(
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                 0
             ].privacy_experience_config_history_id,
-            "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.translations[
                 0
@@ -2272,7 +2270,6 @@ def privacy_preference_history(
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                 0
             ].privacy_experience_config_history_id,
-            "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
             "request_origin": "privacy_center",
@@ -2362,6 +2359,7 @@ def experience_config_modal(db: Session) -> Generator:
             "component": "modal",
             "regions": [PrivacyNoticeRegion.it],
             "disabled": False,
+            "name": "Experience Config Modal",
             "translations": [
                 {
                     "language": "en",
@@ -2389,6 +2387,7 @@ def experience_config_privacy_center(db: Session) -> Generator:
         db=db,
         data={
             "component": "privacy_center",
+            "name": "Privacy Center config",
             "translations": [
                 {
                     "language": "en",
@@ -2433,6 +2432,7 @@ def experience_config_banner_and_modal(db: Session) -> Generator:
         data={
             "component": "banner_and_modal",
             "allow_language_selection": False,
+            "name": "Banner and modal config",
             "translations": [
                 {
                     "language": "en",
@@ -2467,6 +2467,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
         db=db,
         data={
             "component": "tcf_overlay",
+            "name": "TCF Config",
             "translations": [
                 {
                     "language": "en",

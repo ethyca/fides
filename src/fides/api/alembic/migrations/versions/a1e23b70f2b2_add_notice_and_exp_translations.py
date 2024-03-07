@@ -34,7 +34,7 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("regions", postgresql.ARRAY(sa.String()), nullable=True),
-        sa.Column("name", sa.String(), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
         sa.Column("component", sa.String(), nullable=False),
         sa.Column("privacy_notice_keys", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column(
@@ -48,7 +48,7 @@ def upgrade():
             "auto_detect_language", sa.Boolean(), server_default="t", nullable=False
         ),
         sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
+            "allow_language_selection", sa.Boolean(), server_default="f", nullable=False
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -145,6 +145,13 @@ def upgrade():
         ["id"],
         unique=False,
     )
+    op.create_index(
+        op.f("ix_experiencetranslation_experience_config_id"),
+        "experiencetranslation",
+        ["experience_config_id"],
+        unique=False,
+    )
+
     op.create_table(
         "noticetranslation",
         sa.Column("id", sa.String(length=255), nullable=False),
@@ -186,7 +193,7 @@ def upgrade():
     op.add_column(
         "privacyexperienceconfig",
         sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
+            "allow_language_selection", sa.Boolean(), server_default="f", nullable=False
         ),
     )
     op.add_column(
@@ -198,6 +205,12 @@ def upgrade():
     op.add_column(
         "privacyexperienceconfig", sa.Column("name", sa.String(), nullable=True)
     )
+    op.create_index(
+        op.f("ix_privacyexperienceconfig_disabled"),
+        "privacyexperienceconfig",
+        ["disabled"],
+        unique=False,
+    )
     op.create_foreign_key(
         "config_template_origin",
         "privacyexperienceconfig",
@@ -207,9 +220,7 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column(
-            "language", sa.String(), nullable=True
-        ),  # temporarily nullable for existing values
+        sa.Column("language", sa.String(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory", sa.Column("name", sa.String(), nullable=True)
@@ -220,23 +231,25 @@ def upgrade():
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column("dismissable", sa.Boolean(), server_default="t", nullable=False),
+        sa.Column("dismissable", sa.Boolean(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column(
-            "auto_detect_language", sa.Boolean(), server_default="t", nullable=False
-        ),
+        sa.Column("auto_detect_language", sa.Boolean(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
-        sa.Column(
-            "allow_language_selection", sa.Boolean(), server_default="t", nullable=False
-        ),
+        sa.Column("allow_language_selection", sa.Boolean(), nullable=True),
     )
     op.add_column(
         "privacyexperienceconfighistory",
         sa.Column("translation_id", sa.String(), nullable=True),
+    )
+    op.create_index(
+        op.f("ix_privacyexperienceconfighistory_translation_id"),
+        "privacyexperienceconfighistory",
+        ["translation_id"],
+        unique=False,
     )
     op.alter_column(
         "privacyexperienceconfighistory",
@@ -273,10 +286,7 @@ def upgrade():
         nullable=True,
     )
     op.add_column(
-        "privacynoticehistory",
-        sa.Column(
-            "language", sa.String(), nullable=True
-        ),  # temporarily nullable for existing values
+        "privacynoticehistory", sa.Column("language", sa.String(), nullable=True)
     )
     op.add_column(
         "privacynoticehistory",
@@ -295,6 +305,24 @@ def upgrade():
     )
     op.alter_column(
         "privacynoticehistory",
+        "displayed_in_privacy_center",
+        existing_type=sa.BOOLEAN(),
+        nullable=True,
+    )
+    op.alter_column(
+        "privacynoticehistory",
+        "displayed_in_overlay",
+        existing_type=sa.BOOLEAN(),
+        nullable=True,
+    )
+    op.alter_column(
+        "privacynoticehistory",
+        "displayed_in_api",
+        existing_type=sa.BOOLEAN(),
+        nullable=True,
+    )
+    op.alter_column(
+        "privacynoticehistory",
         "privacy_notice_id",
         existing_type=sa.VARCHAR(),
         nullable=True,
@@ -306,6 +334,12 @@ def upgrade():
         ["translation_id"],
         ["id"],
         ondelete="SET NULL",
+    )
+    op.create_index(
+        op.f("ix_privacynoticehistory_translation_id"),
+        "privacynoticehistory",
+        ["translation_id"],
+        unique=False,
     )
     op.add_column(
         "privacynoticetemplate",
@@ -380,6 +414,10 @@ def downgrade():
         op.f("ix_privacypreferencehistory_language"),
         table_name="privacypreferencehistory",
     )
+    op.drop_index(
+        op.f("ix_privacyexperienceconfighistory_translation_id"),
+        table_name="privacyexperienceconfighistory",
+    )
     op.drop_column("privacypreferencehistory", "language")
     op.create_foreign_key(
         "privacypreferencehistory_privacy_experience_id_fkey",
@@ -404,6 +442,10 @@ def downgrade():
     op.drop_constraint(
         "noticehistory_translation_id", "privacynoticehistory", type_="foreignkey"
     )
+    op.drop_index(
+        op.f("ix_privacynoticehistory_translation_id"),
+        table_name="privacynoticehistory",
+    )
     op.alter_column(
         "privacynoticehistory",
         "privacy_notice_id",
@@ -426,9 +468,6 @@ def downgrade():
         nullable=True,
     )
     op.drop_constraint(
-        "confighistory_asset", "privacyexperienceconfighistory", type_="foreignkey"
-    )
-    op.drop_constraint(
         "confighistory_translation_id",
         "privacyexperienceconfighistory",
         type_="foreignkey",
@@ -449,9 +488,13 @@ def downgrade():
     op.drop_column("privacyexperienceconfighistory", "origin")
     op.drop_column("privacyexperienceconfighistory", "name")
     op.drop_column("privacyexperienceconfighistory", "language")
-    op.drop_constraint("config_asset_id", "privacyexperienceconfig", type_="foreignkey")
+
     op.drop_constraint(
         "config_template_origin", "privacyexperienceconfig", type_="foreignkey"
+    )
+    op.drop_index(
+        op.f("ix_privacyexperienceconfig_disabled"),
+        table_name="privacyexperienceconfig",
     )
     op.drop_column("privacyexperienceconfig", "name")
     op.drop_column("privacyexperienceconfig", "allow_language_selection")
@@ -469,6 +512,10 @@ def downgrade():
     op.drop_table("noticetranslation")
     op.drop_index(
         op.f("ix_experiencetranslation_id"), table_name="experiencetranslation"
+    )
+    op.drop_index(
+        op.f("ix_experiencetranslation_experience_config_id"),
+        table_name="experiencetranslation",
     )
     op.drop_table("experiencetranslation")
     op.drop_index(

@@ -11,6 +11,7 @@ import { defaultShowModal } from "../fides";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import {
   ComponentType,
+  CookieKeyConsent,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -40,6 +41,7 @@ interface Props {
   experience: PrivacyExperience;
   i18n: I18n;
   cookie: FidesCookie;
+  savedConsent: CookieKeyConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
@@ -53,6 +55,7 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   i18n,
   cookie,
+  savedConsent,
   onOpen,
   onDismiss,
   renderBanner,
@@ -117,9 +120,9 @@ const Overlay: FunctionComponent<Props> = ({
     () =>
       !options.fidesDisableBanner &&
       experience.experience_config?.component !== ComponentType.MODAL &&
-      shouldResurfaceConsent(experience, cookie) &&
+      shouldResurfaceConsent(experience, cookie, savedConsent) &&
       !options.fidesEmbed,
-    [cookie, experience, options]
+    [cookie, savedConsent, experience, options]
   );
 
   useEffect(() => {

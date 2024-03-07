@@ -53,6 +53,7 @@ import {
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
+  CookieKeyConsent,
   FidesConfig,
   FidesCookie,
   FidesOptionsOverrides,
@@ -87,12 +88,12 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateExperience = async (
+const updateExperience = (
   cookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
-): Promise<PrivacyExperience> => {
+): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent
@@ -128,9 +129,17 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
+
+  // Keep a copy of saved consent from the cookie, since we update the "cookie"
+  // value during initialization based on overrides, experience, etc.
+  const savedConsent: CookieKeyConsent = {
+    ...cookie.consent,
+  };
+
   const initialFides = getInitialFides({
     ...config,
     cookie,
+    savedConsent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
@@ -141,6 +150,7 @@ const init = async (config: FidesConfig) => {
   const updatedFides = await initialize({
     ...config,
     cookie,
+    savedConsent,
     experience,
     renderOverlay,
     updateExperience: ({
@@ -203,6 +213,7 @@ _Fides = {
   fides_meta: {},
   identity: {},
   tcf_consent: {},
+  saved_consent: {},
   gtm,
   init,
   initialized: false,
