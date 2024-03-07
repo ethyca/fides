@@ -28,4 +28,4 @@ class Property(FidesSchema):
     name: str
     type: PropertyType
     id: Optional[str] = None
-    experiences: Optional[List[MinimalPrivacyExperience]] = None
+    experiences: List[MinimalPrivacyExperience]
