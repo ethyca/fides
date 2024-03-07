@@ -103,6 +103,8 @@ const TcfPurposes = ({
     enabledSpecialPurposeIds,
   ]);
 
+  // static.tcf.purposes
+  // static.tcf.special_purposes
   return (
     <div>
       <RadioGroup

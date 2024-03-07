@@ -36,6 +36,8 @@ const InitialLayerAccordion = ({
     }
   };
 
+  // static.tcf.purposes_include
+  // static.tcf.purpose_id_name
   return (
     <div
       className={

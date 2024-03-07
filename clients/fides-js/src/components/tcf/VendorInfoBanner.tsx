@@ -53,6 +53,9 @@ const VendorInfoBanner = ({
     return { total, consent, legint };
   }, [experience]);
 
+  // static.tcf.vendors
+  // static.tcf.vendors_using_consent
+  // static.tcf.vendors_using_legint
   return (
     <div className="fides-background-dark fides-vendor-info-banner">
       <VendorInfo

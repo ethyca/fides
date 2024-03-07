@@ -36,6 +36,9 @@ export type PrivacyPreferencesRequest = {
    */
   fides_string?: string;
   policy_key?: string;
+  /**
+   * @deprecated has no effect; use privacy_experience_config_history_id instead!
+   */
   privacy_experience_id?: string;
   privacy_experience_config_history_id?: string;
   user_geography?: string;

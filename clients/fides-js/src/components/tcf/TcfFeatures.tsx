@@ -16,6 +16,8 @@ const FeatureChildren = ({ feature }: { feature: TCFFeatureRecord }) => {
   );
 };
 
+// static.tcf.features
+// static.tcf.special_features
 const TcfFeatures = ({
   allFeatures,
   allSpecialFeatures,
