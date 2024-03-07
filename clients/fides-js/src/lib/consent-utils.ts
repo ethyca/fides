@@ -306,3 +306,10 @@ export const getGpcStatusFromNotice = ({
 
   return GpcStatus.OVERRIDDEN;
 };
+
+export const defaultShowModal = () => {
+  debugLog(
+    window.Fides.options.debug,
+    "The current experience does not support displaying a modal."
+  );
+};

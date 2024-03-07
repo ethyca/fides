@@ -7,7 +7,6 @@ import {
   useRef,
 } from "preact/hooks";
 
-import { defaultShowModal } from "../fides";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import {
   ComponentType,
@@ -16,7 +15,7 @@ import {
   FidesOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
-import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
+import { debugLog, defaultShowModal, shouldResurfaceConsent } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
 import { useHasMounted } from "../lib/hooks";
 import type { I18n } from "../lib/i18n";
