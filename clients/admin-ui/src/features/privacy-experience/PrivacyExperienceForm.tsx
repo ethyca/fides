@@ -74,7 +74,7 @@ export const PrivacyExperienceForm = ({
   allPrivacyNotices,
   onSelectTranslation,
 }: {
-  allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
+  allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[];
   onSelectTranslation: (t: ExperienceTranslation) => void;
 }) => {
   const router = useRouter();

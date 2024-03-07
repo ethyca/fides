@@ -1,3 +1,4 @@
+import { useToast } from "@fidesui/react";
 import {
   CookieKeyConsent,
   EmptyExperience,
@@ -7,14 +8,17 @@ import {
 } from "fides-js/src/lib/consent-types";
 import { useFormikContext } from "formik";
 import Script from "next/script";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
+import { useLazyGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceTranslation,
   LimitedPrivacyNoticeResponseSchema,
+  PrivacyNoticeResponse,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -45,10 +49,44 @@ const Preview = ({
 }: {
   allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
-  translation: TranslationWithLanguageName | undefined;
+  translation?: TranslationWithLanguageName;
   isMobilePreview: boolean;
 }) => {
   const { values } = useFormikContext<ExperienceConfigCreate>();
+  const [noticesOnConfig, setNoticesOnConfig] = useState<
+    PrivacyNoticeResponse[]
+  >([]);
+
+  const toast = useToast();
+
+  const [getPrivacyNoticeByIdTrigger] = useLazyGetPrivacyNoticeByIdQuery();
+
+  const getPrivacyNotice = async (id: string) => {
+    const result = await getPrivacyNoticeByIdTrigger(id);
+    if (result.isError) {
+      const errorMsg = getErrorMessage(
+        result.error,
+        "A problem occurred while fetching privacy notice data.  Some notices may not display correctly on the preview."
+      );
+      toast({ status: "error", description: errorMsg });
+    }
+    const { data } = await getPrivacyNoticeByIdTrigger(id);
+    return data;
+  };
+
+  useEffect(() => {
+    Promise.all(
+      values.privacy_notice_ids!.map((id) => getPrivacyNotice(id))
+    ).then((data) =>
+      // TS can't tell that we filter out notices that are undefined here
+      // @ts-ignore
+      setNoticesOnConfig(data.filter((notice) => notice !== undefined))
+    );
+    // ESLint wants us to have getPrivacyNotice in the dependencies, but doing
+    // so makes the privacy notice queries fire on every re-render;
+    // we can omit it because it isn't calculated from state or props
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values.privacy_notice_ids]);
 
   const fidesJsScript = "/lib/fides.js";
 
@@ -129,61 +167,7 @@ const Preview = ({
         // in preview mode, we show the first translation in the main window, even when multiple translations are configured
         translations: [buildExperienceTranslation(initialValues)],
       },
-      privacy_notices: [
-        {
-          id: "pri_555",
-          origin: "pri_xxx",
-          name: "Example Privacy Notice 1",
-          notice_key: "advertising",
-          description: "Your Privacy Notice Description",
-          internal_description: "Advertising Internal Description Test",
-          consent_mechanism: "opt_in",
-          data_uses: ["marketing.advertising.first_party.targeted"],
-          enforcement_level: "frontend",
-          disabled: false,
-          has_gpc_flag: true,
-          framework: null,
-          default_preference: "opt_out",
-          systems_applicable: false,
-          translations: [
-            {
-              language: "en",
-              title: "Advertising Test",
-              description: "Advertising Description Test",
-              privacy_notice_history_id: "pri_666",
-            },
-          ],
-        },
-        {
-          id: "pri_888",
-          origin: "pri_xxx",
-          name: "Example Privacy Notice 2",
-          notice_key: "analytics",
-          internal_description: "Your Privacy Notice Description",
-          consent_mechanism: "opt_out",
-          data_uses: ["analytics.reporting.ad_performance"],
-          enforcement_level: "frontend",
-          disabled: false,
-          has_gpc_flag: false,
-          framework: null,
-          default_preference: "opt_in",
-          systems_applicable: true,
-          translations: [
-            {
-              language: "en",
-              title: "Analytics Test",
-              description: "Analytics Description Test",
-              privacy_notice_history_id: "pri_999",
-            },
-            {
-              language: "es",
-              title: "Prueba de Analítica",
-              description: "Descripción de la Analítica de Prueba",
-              privacy_notice_history_id: "pri_000",
-            },
-          ],
-        },
-      ],
+      privacy_notices: noticesOnConfig,
     },
     geolocation: {
       country: "US",
@@ -212,17 +196,6 @@ const Preview = ({
       baseConfig.experience.experience_config.translations[0] =
         values.translations[0];
     }
-    // TODO - get notice translation info from the BE!
-    // const noticesFromPrivacyExperienceConfigDetail = undefined;
-    // if (values.privacy_notice_ids && values.privacy_notice_ids.length >= 1) {
-    //   // noticesOnExperience represents the notices that are attached to the experience config, and are the ones we should show
-    //   // in preview mode
-    //   const noticesOnExperience = noticesFromPrivacyExperienceConfigDetail.filter((n) => n.id in values.privacy_notice_ids);
-    //   if (noticesOnExperience) {
-    //     // the below needs some refinement, so that we appropriately map the correct vals from the BE to what fides.js expects
-    //     baseConfig.experience.privacy_notices = noticesOnExperience
-    //   }
-    // }
     baseConfig.options.preventDismissal = !values.dismissable;
     if (window.Fides) {
       window.Fides.init(baseConfig);

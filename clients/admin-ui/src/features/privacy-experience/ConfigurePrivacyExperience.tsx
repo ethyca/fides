@@ -78,6 +78,10 @@ const ConfigurePrivacyExperience = ({
   const allLanguages = useAppSelector(selectAllLanguages);
   const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
 
+  const initialValues = passedInExperience
+    ? transformConfigResponseToCreate(passedInExperience)
+    : defaultInitialValues;
+
   const handleSubmit = async (values: ExperienceConfigCreate) => {
     const valuesToSubmit = {
       ...values,
@@ -110,10 +114,6 @@ const ConfigurePrivacyExperience = ({
       router.push(PRIVACY_EXPERIENCE_ROUTE);
     }
   };
-
-  const initialValues = passedInExperience
-    ? transformConfigResponseToCreate(passedInExperience)
-    : defaultInitialValues;
 
   const [translationToEdit, setTranslationToEdit] = useState<
     TranslationWithLanguageName | undefined
@@ -170,11 +170,13 @@ const ConfigurePrivacyExperience = ({
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
                   onClick={() => setIsMobilePreview(true)}
+                  bgColor={isMobilePreview ? "gray.200" : undefined}
                 />
                 <IconButton
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
                   onClick={() => setIsMobilePreview(false)}
+                  bgColor={!isMobilePreview ? "gray.200" : undefined}
                 />
               </ButtonGroup>
             </Flex>
