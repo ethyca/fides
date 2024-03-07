@@ -4,11 +4,11 @@ import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
-  i18n,
   I18n,
   initializeI18n,
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
+  setupI18n,
 } from "./i18n";
 import { getConsentContext } from "./consent-context";
 import {
@@ -437,6 +437,7 @@ export const initialize = async ({
 
       if (shouldInitOverlay) {
         // Initialize the i18n singleton before we render the overlay
+        const i18n = setupI18n();
         initializeI18n(i18n, window?.navigator, effectiveExperience, options);
 
         // OK, we're (finally) ready to initialize & render the overlay!
