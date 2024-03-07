@@ -29,6 +29,7 @@ The types of changes are:
 
 ### Fixed
 - Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
+- Initialize Fides.consent with default values from experience when saved consent cookie (fides_consent) does not exist [#4665](https://github.com/ethyca/fides/pull/4665)
 
 
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)

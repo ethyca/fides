@@ -17,6 +17,7 @@ export const initOverlay = async ({
   experience,
   fidesRegionString,
   cookie,
+  savedConsent,
   options,
   renderOverlay,
 }: OverlayProps & {
@@ -68,6 +69,7 @@ export const initOverlay = async ({
             fidesRegionString,
             cookie,
             options,
+            savedConsent,
           },
           parentElem
         );
