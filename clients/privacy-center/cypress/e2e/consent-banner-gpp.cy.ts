@@ -539,10 +539,7 @@ describe("Fides-js GPP extension", () => {
         // TODO(PROD-1439): remove this workaround
         workaroundGppInitializationDelayBug();
 
-        // TODO (PROD-1780): re-enable this check; the banner should *not* be
-        // shown to a returning user, but we've hardcoded
-        // shouldResurfaceConsent() = true while experimenting
-        // cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("@FidesUIShown").should("not.have.been.called");
 
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
