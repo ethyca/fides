@@ -30,6 +30,7 @@ The types of changes are:
 - Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
 - Navbar update and new properties page [#4633](https://github.com/ethyca/fides/pull/4633)
 - Access and erasure support for Oracle Responsys [#4618](https://github.com/ethyca/fides/pull/4618)
+- Erasure support for Simon Data [#4552](https://github.com/ethyca/fides/pull/4552)
 
 ### Changed
 - Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
