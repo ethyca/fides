@@ -439,3 +439,7 @@ class MessagingTemplateResponse(MessagingTemplateBase):
 class BulkPutMessagingTemplateResponse(BulkResponse):
     succeeded: List[MessagingTemplateResponse]
     failed: List[BulkUpdateFailed]
+
+
+class UserEmailInviteStatus(BaseModel):
+    enabled: bool

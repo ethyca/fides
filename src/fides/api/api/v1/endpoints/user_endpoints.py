@@ -23,7 +23,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.deps import get_db
+from fides.api.api.deps import get_config_proxy, get_db
 from fides.api.api.v1.endpoints.user_permission_endpoints import validate_user_id
 from fides.api.common_exceptions import AuthenticationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
@@ -413,7 +413,7 @@ def create_user(
     *,
     db: Session = Depends(get_db),
     user_data: UserCreate,
-    config: FidesConfig = Depends(get_config),
+    config_proxy: FidesConfig = Depends(get_config_proxy),
 ) -> FidesUser:
     """
     Create a user given a username and password.
@@ -427,8 +427,8 @@ def create_user(
     # The root user is not stored in the database so make sure here that the user name
     # is not the same as the root user name.
     if (
-        config.security.root_username
-        and config.security.root_username == user_data.username
+        config_proxy.security.root_username
+        and config_proxy.security.root_username == user_data.username
     ):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
@@ -452,7 +452,7 @@ def create_user(
     user = FidesUser.create(db=db, data=user_data.dict())
 
     # invite user via email
-    invite_user(db=db, config=config, user=user)
+    invite_user(db=db, config_proxy=config_proxy, user=user)
 
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
@@ -609,7 +609,7 @@ def user_login(
     )
 
 
-async def verify_invite_code(
+def verify_invite_code(
     username: str,
     invite_code: str,
     db: Session = Depends(get_db),

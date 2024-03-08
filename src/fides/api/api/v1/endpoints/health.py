@@ -28,7 +28,6 @@ class CoreHealthCheck(BaseModel):
     webserver: str
     version: str
     cache: CacheHealth
-    invite_users_via_email: bool
 
 
 class DatabaseHealthCheck(BaseModel):
@@ -186,16 +185,12 @@ async def workers_health() -> Dict:
         },
     },
 )
-async def health(db: Session = Depends(get_db)) -> Dict:
+async def health() -> Dict:
     """Confirm that the API is running and healthy."""
     try:
         cache_health = get_cache_health()
         response = CoreHealthCheck(
-            webserver="healthy",
-            version=str(fides.__version__),
-            cache=cache_health,
-            invite_users_via_email=is_email_messaging_enabled(db)
-            and CONFIG.admin_ui.url is not None,
+            webserver="healthy", version=str(fides.__version__), cache=cache_health
         ).dict()
 
         for _, value in response.items():

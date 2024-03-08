@@ -31,6 +31,10 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreate, UserCreateResponse } from "./types";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
+import {
+  selectIsUserEmailInviteEnabled,
+  useGetEmailInviteStatusQuery,
+} from "~/features/messaging/messaging.slice";
 
 const defaultInitialValues: UserCreate = {
   username: "",
@@ -67,13 +71,14 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
-  const features = useFeatures();
 
   const activeUser = useAppSelector(selectActiveUser);
+  const { data: emailInviteStatus } = useGetEmailInviteStatusQuery();
+  const inviteUsersViaEmail = emailInviteStatus?.enabled;
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
-  const showPasswordField = isNewUser && !features.inviteUsersViaEmail;
+  const showPasswordField = isNewUser && !inviteUsersViaEmail;
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user

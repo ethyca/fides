@@ -157,8 +157,11 @@ def dispatch_message(
     logger.info("Getting custom messaging template for action type: {}", action_type)
     messaging_template = get_messaging_template_by_key(db=db, key=action_type.value)
 
+    config_proxy = ConfigProxy(db=db)
+
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
+            config_proxy=config_proxy,
             action_type=action_type,
             body_params=message_body_params,
             messaging_template=messaging_template,
@@ -269,6 +272,7 @@ def _render(template_str: str, variables: Optional[Dict] = None) -> str:
 
 
 def _build_email(  # pylint: disable=too-many-return-statements
+    config_proxy: ConfigProxy,
     action_type: MessagingActionType,
     body_params: Any,
     messaging_template: Optional[MessagingTemplate] = None,
@@ -369,7 +373,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
             subject="Welcome to Fides",
             body=base_template.render(
                 {
-                    "admin_ui_url": CONFIG.admin_ui.url,
+                    "admin_ui_url": config_proxy.admin_ui.url,
                     "username": body_params.username,
                     "invite_code": body_params.invite_code,
                 }

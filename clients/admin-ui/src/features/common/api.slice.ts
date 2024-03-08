@@ -32,6 +32,7 @@ export const baseApi = createApi({
     "Datastore Connection",
     "Dataset",
     "Datasets",
+    "Email Invite Status",
     "Fides Cloud Config",
     "Locations",
     "Messaging Templates",

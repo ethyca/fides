@@ -70,6 +70,7 @@ MESSAGING_STATUS = "/messaging/default/status"
 MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
 MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
 MESSAGING_TEST = "/messaging/config/test"
+MESSAGING_EMAIL_INVITE_STATUS = "/messaging/email-invite/status"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"

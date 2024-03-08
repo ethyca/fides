@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from citext import CIText
-from sqlalchemy import Column, String
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,11 @@ class FidesUserInvite(Base):
     def __tablename__(self) -> str:
         return "fides_user_invite"
 
-    username = Column(CIText, primary_key=True, index=True)
+    username = Column(
+        CIText,
+        ForeignKey("fidesuser.username", ondelete="CASCADE"),
+        primary_key=True,
+    )
     hashed_invite_code = Column(String, nullable=False)
     salt = Column(String, nullable=False)
 
@@ -30,11 +34,11 @@ class FidesUserInvite(Base):
         """Utility function to hash a user's invite code with a generated salt."""
 
         salt = generate_salt()
-        hashed_password = hash_with_salt(
+        hashed_invite_code = hash_with_salt(
             invite_code.encode(encoding),
             salt.encode(encoding),
         )
-        return hashed_password, salt
+        return hashed_invite_code, salt
 
     @classmethod
     def create(

@@ -5,6 +5,7 @@ Revises: 956d21f13def
 Create Date: 2024-02-01 00:50:46.547803
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from citext import CIText
@@ -36,6 +37,9 @@ def upgrade():
         sa.Column("username", CIText(), nullable=False),
         sa.Column("hashed_invite_code", sa.String(), nullable=False),
         sa.Column("salt", sa.String(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["username"], ["fidesuser.username"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id", "username"),
     )
     op.create_index(
@@ -57,11 +61,13 @@ def upgrade():
             nullable=True,
         ),
     )
-    op.create_unique_constraint(None, "fidesuser", ["email_address"])
+    op.create_unique_constraint(
+        "fidesuser_email_address", "fidesuser", ["email_address"]
+    )
 
 
 def downgrade():
-    op.drop_constraint(None, "fidesuser", type_="unique")
+    op.drop_constraint("fidesuser_email_address", "fidesuser", type_="unique")
     op.drop_column("fidesuser", "disabled_reason")
     op.drop_column("fidesuser", "disabled")
     op.drop_column("fidesuser", "email_address")

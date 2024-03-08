@@ -139,7 +139,6 @@ export type Features = {
   dictionaryService: boolean;
   fidesCloud: boolean;
   tcf: boolean;
-  inviteUsersViaEmail: boolean;
 
   flags: FlagsFor<FlagConfig>;
 };
@@ -151,7 +150,6 @@ export const useFeatures = (): Features => {
   const initialConnections = useAppSelector(selectInitialConnections);
 
   const version = health?.version;
-  const inviteUsersViaEmail = health?.invite_users_via_email || false;
 
   const plus = plusHealth !== undefined;
   const plusVersion = plusHealth?.fidesplus_version;
@@ -182,6 +180,5 @@ export const useFeatures = (): Features => {
     fidesCloud,
     tcf,
     flags,
-    inviteUsersViaEmail,
   };
 };
