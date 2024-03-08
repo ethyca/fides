@@ -153,30 +153,35 @@ export const PrivacyExperienceForm = ({
         label="Name (internal admin use only)"
         variant="stacked"
       />
-      <CustomSelect
-        name="component"
-        id="component"
-        options={componentTypeOptions}
-        label="Experience Type"
-        variant="stacked"
-        isDisabled={!!values.component}
-        isRequired
-      />
-      <Collapse
-        in={
-          values.component && values.component !== ComponentType.PRIVACY_CENTER
-        }
-        animateOpacity
-      >
-        <Box p="1px">
-          <CustomSwitch
-            name="dismissable"
-            id="dismissable"
-            label="Modal is dismissable"
+      {values.component !== ComponentType.TCF_OVERLAY ? (
+        <>
+          <CustomSelect
+            name="component"
+            id="component"
+            options={componentTypeOptions}
+            label="Experience Type"
             variant="stacked"
+            isDisabled={!!values.component}
+            isRequired
           />
-        </Box>
-      </Collapse>
+          <Collapse
+            in={
+              values.component &&
+              values.component !== ComponentType.PRIVACY_CENTER
+            }
+            animateOpacity
+          >
+            <Box p="1px">
+              <CustomSwitch
+                name="dismissable"
+                id="dismissable"
+                label="Modal is dismissable"
+                variant="stacked"
+              />
+            </Box>
+          </Collapse>
+        </>
+      ) : null}
       <Divider />
       {values.component !== ComponentType.TCF_OVERLAY ? (
         <>
