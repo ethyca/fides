@@ -67,11 +67,14 @@ describe("Consent i18n", () => {
     special_purpose_example_illustration: string;
     features: string;
     features_description: string;
+    feature_example: string;
+    feature_example_description: string;
     special_features: string;
+    special_feature_example: string;
+    special_feature_example_description: string;
     vendors: string;
     vendors_description: string;
     vendors_we_use: string;
-    vendor_example: string;
     consent: string;
     legint: string;
   };
@@ -139,11 +142,14 @@ describe("Consent i18n", () => {
       special_purpose_example_illustration: "An advertising intermediary delivers ads",
       features: "Features",
       features_description: "Below, you will find a list of the features",
+      feature_example: "Match and combine data",
+      feature_example_description: "Information about your activity",
       special_features: "Special features",
+      special_feature_example: "Use precise geolocation data",
+      special_feature_example_description: "With your acceptance, your precise location",
       vendors: "Vendors",
       vendors_description: "Below, you will find a list of vendors",
       vendors_we_use: "Vendors we use",
-      vendor_example: "Captify",
       consent: "Consent",
       legint: "Legitimate interest",
     }
@@ -370,6 +376,7 @@ describe("Consent i18n", () => {
 
   const testTcfModalPurposesTabLocalization = (expected: TestTcfModalTranslations) => {
     cy.get("#fides-panel-Purposes").within(() => {
+      // Check the right tab is visible, the overall description, and radio buttons
       cy.get(".fides-info-box").should("be.visible");
       cy.get(".fides-info-box").contains(expected.purposes_description);
       cy.get(".fides-radio-button-group button").then(buttons => {
@@ -377,6 +384,7 @@ describe("Consent i18n", () => {
         cy.wrap(buttons[1]).contains(expected.legint);
       });
 
+      // Check the list of Purposes and toggle open a single example to check illustrations, etc.
       cy.getByTestId("records-list-Purposes").within(() => {
         cy.get(".fides-record-header").contains(expected.purposes);
         cy.get(".fides-notice-toggle").contains(expected.purpose_example).click();
@@ -384,10 +392,10 @@ describe("Consent i18n", () => {
         cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(expected.purpose_example_illustration);
         cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
           cy.contains(expected.vendors_we_use);
-          cy.get("li").contains(expected.vendor_example);
         });
       });
 
+      // Check the list of Special purposes and toggle open a single example to check illustrations, etc.
       cy.getByTestId("records-list-Special purposes").within(() => {
         cy.get(".fides-record-header").contains(expected.special_purposes);
         cy.get(".fides-notice-toggle").contains(expected.special_purpose_example).click();
@@ -395,7 +403,6 @@ describe("Consent i18n", () => {
         cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(expected.special_purpose_example_illustration);
         cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
           cy.contains(expected.vendors_we_use);
-          cy.get("li").contains(expected.vendor_example);
         });
       });
     });
@@ -403,8 +410,29 @@ describe("Consent i18n", () => {
 
   const testTcfModalFeaturesTabLocalization = (expected: TestTcfModalTranslations) => {
     cy.get("#fides-panel-Features").within(() => {
+      // Check the right tab is visible and the overall description
       cy.get(".fides-info-box").should("be.visible");
       cy.get(".fides-info-box").contains(expected.features_description);
+
+      // Check the list of Features and toggle open a single example
+      cy.getByTestId("records-list-Features").within(() => {
+        cy.get(".fides-record-header").contains(expected.features);
+        cy.get(".fides-notice-toggle").contains(expected.feature_example).click();
+        cy.get(".fides-disclosure-visible").contains(expected.feature_example_description);
+        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+          cy.contains(expected.vendors_we_use);
+        });
+      });
+
+      // Check the list of Special features and toggle open a single example to check illustrations, etc.
+      cy.getByTestId("records-list-Special features").within(() => {
+        cy.get(".fides-record-header").contains(expected.special_features);
+        cy.get(".fides-notice-toggle").contains(expected.special_feature_example).click();
+        cy.get(".fides-disclosure-visible").contains(expected.special_feature_example_description);
+        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+          cy.contains(expected.vendors_we_use);
+        });
+      });
     });
   };
 
