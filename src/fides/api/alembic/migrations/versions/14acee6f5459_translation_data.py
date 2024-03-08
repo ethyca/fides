@@ -108,7 +108,6 @@ EXPERIENCE_CONFIG_DEFAULTS = [
             "ca_nu",
             "ca_on",
             "ca_pe",
-            "ca_qc",
             "ca_sk",
             "ca_yt",
         ],
@@ -117,8 +116,22 @@ EXPERIENCE_CONFIG_DEFAULTS = [
         "auto_detect_language": True,
         "dismissable": True,
         "disabled": True,
-        "privacy_notice_keys": ["essential", "functional", "analytics", "marketing"],
+        "privacy_notice_keys": ["marketing"],
         "origin": "pri-694e-02bd-4afe-81b3-2a2ban-modal",
+    },
+    {
+        "id": "pri-d9ed6-25e7-4953-8977-772ban-modal-config",
+        "name": "Quebec Banner + Modal",
+        "regions": [
+            "ca_qc",
+        ],
+        "component": "banner_and_modal",
+        "allow_language_selection": False,
+        "auto_detect_language": True,
+        "dismissable": True,
+        "disabled": True,
+        "privacy_notice_keys": ["essential", "analytics", "marketing"],
+        "origin": "pri-d9ed6-25e7-4953-8977-772ban-modal",
     },
     {
         "id": "d7c3ce0a-a3b3-43ff-bf6f-3d8-tcf-over-config",
@@ -189,6 +202,7 @@ class DefaultExperienceConfigTypes(Enum):
     US_MODAL = "pri-76b8-cc52-11ee-9eaa-8ef97a-modal-config"
     US_PRIVACY_CENTER = "pri-27d4-cc53-11ee-9eaa-8ef97a04-pri-config"
     CANADA_BANNER_MODAL = "pri-694e-02bd-4afe-81b3-2a2ban-modal-config"
+    QUEBEC_BANNER_MODAL = "pri-d9ed6-25e7-4953-8977-772ban-modal-config"
 
 
 class ComponentType(Enum):
@@ -214,6 +228,10 @@ CANADA_MAPPING = {
     ComponentType.Overlay: DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
 }
 
+QUEBEC_MAPPING = {
+    ComponentType.Overlay: DefaultExperienceConfigTypes.QUEBEC_BANNER_MODAL,
+}
+
 # this map contains the biggest _assumption_ about the migration -
 # these are the notices that will be associated with our new OOB experience configs.
 # any existing notices besides these will remain "orphaned" post-migration.
@@ -221,10 +239,10 @@ CANADA_MAPPING = {
 # will be used to infer the regions associated with the post-migration experience
 # configs to which they map.
 NOTICES_TO_EXPERIENCE_CONFIG = {
-    "marketing": [EEA_MAPPING, CANADA_MAPPING],
-    "functional": [EEA_MAPPING, CANADA_MAPPING],
-    "essential": [EEA_MAPPING, CANADA_MAPPING],
-    "analytics": [EEA_MAPPING, CANADA_MAPPING],
+    "marketing": [EEA_MAPPING, CANADA_MAPPING, QUEBEC_MAPPING],
+    "functional": [EEA_MAPPING],
+    "essential": [EEA_MAPPING, QUEBEC_MAPPING],
+    "analytics": [EEA_MAPPING, QUEBEC_MAPPING],
     "data_sales_and_sharing": [US_MAPPING],
 }
 
@@ -321,12 +339,13 @@ def load_default_experience_configs():
 
         # the reconciled experience config will have its regions populated by existing notices that are
         # associated with this experience config. so in most cases, we start "fresh" with an empty set.
-        # the TCF experience and Canada banner modal experience are exceptions:
+        # the TCF experience and Canada/Quebec banner modal experiences are exceptions:
         # their regions are not derived from existing notices (TCF is not linked to notices; Canada experience config is net-new),
         # so we hardcode their regions to the config defaults.
         if experience_config_type not in (
             DefaultExperienceConfigTypes.EEA_TCF_OVERLAY,
             DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
+            DefaultExperienceConfigTypes.QUEBEC_BANNER_MODAL,
         ):
             experience_config["regions"] = set()
         else:
@@ -430,11 +449,11 @@ def determine_needed_experience_configs(bind):
         component_mappings = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key, [])
         if component_mappings:
             for component_mapping in component_mappings:
-                if (
-                    component_mapping.get(ComponentType.Overlay)
-                    == DefaultExperienceConfigTypes.CANADA_BANNER_MODAL
-                ):
-                    # If this is a Canadian Banner and Modal, skip updating regions, and just use OOB
+                if component_mapping.get(ComponentType.Overlay) in {
+                    DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
+                    DefaultExperienceConfigTypes.QUEBEC_BANNER_MODAL,
+                }:
+                    # If this is a Canadian/Quebec Banner and Modal, skip updating regions, and just use OOB
                     regions_to_add = set()
                 else:
                     regions_to_add = set(existing_notice["regions"]).copy()
@@ -503,6 +522,8 @@ def determine_needed_experience_configs(bind):
                 configs.append(reconciled_experience_config_map.get(us_config_id))
             if canada_config_id := CANADA_MAPPING.get(component):
                 configs.append(reconciled_experience_config_map.get(canada_config_id))
+            if quebec_config_id := QUEBEC_MAPPING.get(component):
+                configs.append(reconciled_experience_config_map.get(quebec_config_id))
             for config in configs:
                 if config:
                     config["accept_button_label"] = eec["accept_button_label"]
