@@ -10,6 +10,7 @@ import {
   Table,
   TableContainer,
   Tbody,
+  Td,
   Th,
   Thead,
   Tr,
@@ -57,7 +58,10 @@ const HeaderContent = <T,>({
 }) => {
   if (!header.column.columnDef.meta?.showHeaderMenu) {
     return (
-      <Box style={{ ...getTableTHandTDStyles(header.column.id) }}>
+      <Box
+        data-testid={`${header.id}-header`}
+        style={{ ...getTableTHandTDStyles(header.column.id) }}
+      >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
     );
@@ -72,11 +76,17 @@ const HeaderContent = <T,>({
         width="100%"
         pr={1}
         textAlign="start"
+        data-testid={`${header.id}-header-menu`}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </MenuButton>
       <Portal>
-        <MenuList fontSize="xs" minW="0" w="158px">
+        <MenuList
+          fontSize="xs"
+          minW="0"
+          w="158px"
+          data-testid={`${header.id}-header-menu-list`}
+        >
           <MenuItem
             color={!isDisplayAll ? "complimentary.500" : undefined}
             onClick={() => onGroupAll(header.id)}
@@ -102,6 +112,7 @@ type Props<T> = {
   footer?: ReactNode;
   onRowClick?: (row: T) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
+  emptyTableNotice?: ReactNode;
 };
 
 const TableBody = <T,>({
@@ -110,6 +121,7 @@ const TableBody = <T,>({
   onRowClick,
   renderRowTooltipLabel,
   displayAllColumns,
+  emptyTableNotice,
 }: Omit<Props<T>, "footer"> & { displayAllColumns: string[] }) => (
   <Tbody data-testid="fidesTable-body">
     {rowActionBar}
@@ -122,6 +134,13 @@ const TableBody = <T,>({
         displayAllColumns={displayAllColumns}
       />
     ))}
+    {tableInstance.getRowModel().rows.length === 0 && emptyTableNotice && (
+      <Tr>
+        <Td colSpan={100} borderLeftWidth="1px" borderRightWidth="1px">
+          {emptyTableNotice}
+        </Td>
+      </Tr>
+    )}
   </Tbody>
 );
 
@@ -144,6 +163,7 @@ export const FidesTableV2 = <T,>({
   footer,
   onRowClick,
   renderRowTooltipLabel,
+  emptyTableNotice,
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useState<string[]>([]);
 
@@ -251,6 +271,7 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
+            emptyTableNotice={emptyTableNotice}
           />
         ) : (
           <TableBody
@@ -259,6 +280,7 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
+            emptyTableNotice={emptyTableNotice}
           />
         )}
         {footer}

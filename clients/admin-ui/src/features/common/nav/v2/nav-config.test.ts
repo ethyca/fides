@@ -21,6 +21,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.ORGANIZATION_UPDATE,
   ScopeRegistryEnum.PRIVACY_NOTICE_READ,
   ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
+  ScopeRegistryEnum.PROPERTY_READ,
   ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
   ScopeRegistryEnum.CONFIG_READ,
   ScopeRegistryEnum.CONFIG_UPDATE,
@@ -41,9 +42,9 @@ describe("configureNavGroups", () => {
 
     // NOTE: the data map should _not_ include the Plus routes (/plus/datamap, /classify-systems, etc.)
     expect(navGroups[1]).toMatchObject({
-      title: "Data map",
+      title: "Data inventory",
       children: [
-        { title: "View systems", path: routes.SYSTEM_ROUTE },
+        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
       ],
@@ -78,14 +79,13 @@ describe("configureNavGroups", () => {
 
     // The data map _should_ include the actual "/plus/datamap".
     expect(navGroups[1]).toMatchObject({
-      title: "Data map",
+      title: "Data inventory",
       children: [
-        { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
-        { title: "View map", path: routes.DATAMAP_ROUTE },
-        { title: "View systems", path: routes.SYSTEM_ROUTE },
+        { title: "Data lineage", path: routes.DATAMAP_ROUTE },
+        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
-        { title: "Classify systems", path: routes.CLASSIFY_SYSTEMS_ROUTE },
+        { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
       ],
     });
   });
@@ -103,8 +103,8 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[1]).toMatchObject({
-        title: "Data map",
-        children: [{ title: "View systems", path: routes.SYSTEM_ROUTE }],
+        title: "Data inventory",
+        children: [{ title: "Systems & vendors", path: routes.SYSTEM_ROUTE }],
       });
     });
 
@@ -147,9 +147,9 @@ describe("configureNavGroups", () => {
 
       // The data map should _not_ include the actual "/plus/datamap".
       expect(navGroups[1]).toMatchObject({
-        title: "Data map",
+        title: "Data inventory",
         children: [
-          { title: "View systems", path: routes.SYSTEM_ROUTE },
+          { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
           { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
           { title: "Manage datasets", path: routes.DATASET_ROUTE },
         ],
@@ -158,7 +158,7 @@ describe("configureNavGroups", () => {
   });
 
   describe("fides cloud", () => {
-    it("shows domain records page when fides cloud is enabled", () => {
+    it("shows domain verification page when fides cloud is enabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -170,11 +170,11 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "Domain records")
-      ).toEqual("Domain records");
+          .find((title) => title === "Domain verification")
+      ).toEqual("Domain verification");
     });
 
-    it("does not show domain records page when fides cloud is disabled", () => {
+    it("does not show domain verification page when fides cloud is disabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -186,13 +186,13 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "Domain records")
+          .find((title) => title === "Domain verification")
       ).toEqual(undefined);
     });
   });
 
   describe("fides plus", () => {
-    it("shows cors management when plus and scopes are enabled", () => {
+    it("shows domain management when plus and scopes are enabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: [
@@ -210,11 +210,11 @@ describe("configureNavGroups", () => {
           .find((c) => c.title === "Domains")
       ).toEqual({
         title: "Domains",
-        path: routes.CORS_CONFIGURATION_ROUTE,
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
       });
     });
 
-    it("hide cors management when plus is disabled", () => {
+    it("hide domain management when plus is disabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: [
@@ -229,11 +229,11 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Manage domains")
+          .find((c) => c.title === "Domains")
       ).toEqual(undefined);
     });
 
-    it("hide cors management when scopes are wrong", () => {
+    it("hide domain management when scopes are wrong", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: [
@@ -248,7 +248,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1]?.children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Manage domains")
+          .find((c) => c.title === "Domains")
       ).toEqual(undefined);
     });
   });
@@ -318,21 +318,21 @@ describe("findActiveNav", () => {
     {
       path: routes.SYSTEM_ROUTE,
       expected: {
-        title: "Data map",
+        title: "Data inventory",
         path: routes.SYSTEM_ROUTE,
       },
     },
     {
       path: routes.DATAMAP_ROUTE,
       expected: {
-        title: "Data map",
+        title: "Data inventory",
         path: routes.DATAMAP_ROUTE,
       },
     },
     {
       path: routes.ADD_SYSTEMS_ROUTE,
       expected: {
-        title: "Data map",
+        title: "Data inventory",
         path: routes.ADD_SYSTEMS_ROUTE,
       },
     },

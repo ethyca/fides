@@ -80,6 +80,9 @@ export const NavSideBarLink = ({
             color: "white",
             backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
           }}
+          _focus={{
+            outline: "none",
+          }}
           data-testid={`${title}-nav-link`}
         >
           {title}
@@ -150,7 +153,7 @@ export const UnconnectedMainSideNav = ({
     maxWidth={NAV_WIDTH}
     backgroundColor={NAV_BACKGROUND_COLOR}
     height="100%"
-    overflow="scroll"
+    overflow="auto"
   >
     <VStack
       as="nav"

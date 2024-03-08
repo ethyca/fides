@@ -71,6 +71,7 @@ setup(
     license="Apache License 2.0",
     install_requires=install_requires,
     dev_requires=dev_requires,
+    extras_require=extras,
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3 :: Only",

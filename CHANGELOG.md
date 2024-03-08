@@ -15,7 +15,50 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.29.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.31.1...main)
+
+### Changed
+- Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
+
+### Fixed
+
+- Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
+
+## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
+
+### Added
+- Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
+- Navbar update and new properties page [#4633](https://github.com/ethyca/fides/pull/4633)
+- Access and erasure support for Oracle Responsys [#4618](https://github.com/ethyca/fides/pull/4618)
+
+### Changed
+- Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
+
+### Fixed
+- Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
+- Initialize Fides.consent with default values from experience when saved consent cookie (fides_consent) does not exist [#4665](https://github.com/ethyca/fides/pull/4665)
+
+
+## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
+
+### Fixed
+- Configure logger correctly on worker initialization [#4624](https://github.com/ethyca/fides/pull/4624)
+
+
+## [2.30.0](https://github.com/ethyca/fides/compare/2.29.0...2.30.0)
+
+### Added
+
+- Add enum and registry of supported languages [#4592](https://github.com/ethyca/fides/pull/4592)
+- Access and erasure support for Talkable [#4589](https://github.com/ethyca/fides/pull/4589)
+- Support temporary credentials in AWS generate + scan features [#4607](https://github.com/ethyca/fides/pull/4603), [#4608](https://github.com/ethyca/fides/pull/4608)
+- Add ability to store and read Fides cookie in Base64 format [#4556](https://github.com/ethyca/fides/pull/4556)
+- Structured logging for SaaS connector requests [#4594](https://github.com/ethyca/fides/pull/4594)
+- Added Fides.showModal() to fides.js to allow programmatic opening of consent modals [#4617](https://github.com/ethyca/fides/pull/4617)
+
+### Fixed
+
+- Fixing issue when modifying Policies, Rules, or RuleTargets as a root user [#4582](https://github.com/ethyca/fides/pull/4582)
 
 ## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
 
@@ -23,6 +66,7 @@ The types of changes are:
 
 - View more modal to regulations page [#4574](https://github.com/ethyca/fides/pull/4574)
 - Columns in data map reporting, adding multiple systems, and consent configuration tables can be resized. In the data map reporting table, fields with multiple values can show all or collapse all [#4569](https://github.com/ethyca/fides/pull/4569)
+- Show custom fields in the data map report table [#4579](https://github.com/ethyca/fides/pull/4579)
 
 ### Added
 - Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
@@ -31,9 +75,10 @@ The types of changes are:
 
 - Delay rendering the nav until all necessary queries are finished loading [#4571](https://github.com/ethyca/fides/pull/4571)
 - Updating return value for crud.get_custom_fields_filtered [#4575](https://github.com/ethyca/fides/pull/4575)
-- Updated user deletion confirmation flow to only require one confirmatory input [#4402](https://github.com/ethyca/fides/pull/4402) 
+- Updated user deletion confirmation flow to only require one confirmatory input [#4402](https://github.com/ethyca/fides/pull/4402)
 - Moved `pymssl` to an optional dependency no longer installed by default with our python package [#4581](https://github.com/ethyca/fides/pull/4581)
-
+- Fixed CORS domain update functionality [#4570](https://github.com/ethyca/fides/pull/4570)
+- Update Domains page with ability to add/remove "organization" domains, view "administrator" domains set via security settings, and improve various UX bugs and copy [#4584](https://github.com/ethyca/fides/pull/4584)
 
 ### Fixed
 

@@ -219,6 +219,19 @@ def aws_secret_access_key_option(command: Callable) -> Callable:
     return command
 
 
+def aws_session_token_option(command: Callable) -> Callable:
+    "Use a session token with temporary access keys to connect to aws. Requires options --access_key_id, --secret_access_key and --region"
+    command = click.option(
+        "--session_token",
+        type=str,
+        default="",
+        help="Connect to AWS using a temporary `Access Key`. _Requires options `--access_key_id`, `--secret_access_key`, `--session_token`, & `--region`._",
+    )(
+        command
+    )  # type: ignore
+    return command
+
+
 def aws_region_option(command: Callable) -> Callable:
     "Use region option to connect to aws. Requires options --access_key_id, access_key and --region"
     command = click.option(

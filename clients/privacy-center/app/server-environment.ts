@@ -56,6 +56,7 @@ export interface PrivacyCenterSettings {
   FIDES_JS_BASE_URL: string; // A base URL to a directory of fides.js scripts
   PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
   ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
+  BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
 }
 
 /**
@@ -84,6 +85,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_JS_BASE_URL"
   | "PREVENT_DISMISSAL"
   | "ALLOW_HTML_DESCRIPTION"
+  | "BASE_64_COOKIE"
 >;
 
 export type Styles = string;
@@ -355,6 +357,9 @@ export const loadPrivacyCenterEnvironment =
         .FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION
         ? process.env.FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION === "true"
         : null,
+      BASE_64_COOKIE: process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE
+        ? process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE === "true"
+        : false,
     };
 
     // Load configuration file (if it exists)
@@ -385,6 +390,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_JS_BASE_URL: settings.FIDES_JS_BASE_URL,
       PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
       ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
+      BASE_64_COOKIE: settings.BASE_64_COOKIE,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

@@ -2047,3 +2047,17 @@ dataset:
         data_categories: [system.operations]
       - name: username
         data_categories: [user.account.username]
+  - name: plus_property
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: type
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
