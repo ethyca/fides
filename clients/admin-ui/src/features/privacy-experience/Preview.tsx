@@ -1,4 +1,4 @@
-import { useToast } from "@fidesui/react";
+import { Flex, Text, useToast } from "@fidesui/react";
 import {
   CookieKeyConsent,
   EmptyExperience,
@@ -39,6 +39,27 @@ declare global {
   }
 }
 
+const NoPreviewNotice = () => (
+  <Flex
+    bgColor="white"
+    borderRadius="md"
+    p={6}
+    boxShadow="md"
+    direction="column"
+    align="center"
+    gap="2"
+    maxW="512px"
+  >
+    <Text fontSize="lg" fontWeight="500" align="center">
+      No privacy notices added
+    </Text>
+    <Text color="gray.500" align="center">
+      To view a preview of this experience, add a privacy notice under
+      &quot;Privacy Notices&quot; to the left.
+    </Text>
+  </Flex>
+);
+
 const Preview = ({
   allPrivacyNotices,
   initialValues,
@@ -73,13 +94,17 @@ const Preview = ({
   };
 
   useEffect(() => {
-    Promise.all(
-      values.privacy_notice_ids!.map((id) => getPrivacyNotice(id))
-    ).then((data) =>
-      // TS can't tell that we filter out notices that are undefined here
-      // @ts-ignore
-      setNoticesOnConfig(data.filter((notice) => notice !== undefined))
-    );
+    if (values.privacy_notice_ids) {
+      Promise.all(
+        values.privacy_notice_ids!.map((id) => getPrivacyNotice(id))
+      ).then((data) =>
+        // TS can't tell that we filter out notices that are undefined here
+        // @ts-ignore
+        setNoticesOnConfig(data.filter((notice) => notice !== undefined))
+      );
+    } else {
+      setNoticesOnConfig([]);
+    }
     // ESLint wants us to have getPrivacyNotice in the dependencies, but doing
     // so makes the privacy notice queries fire on every re-render;
     // we can omit it because it isn't calculated from state or props
@@ -108,68 +133,97 @@ const Preview = ({
       baseConfig.experience.experience_config.translations[0] =
         translationOrDefault(currentTranslation);
     } else if (values.translations) {
-      // eslint-disable-next-line prefer-destructuring
       baseConfig.experience.experience_config.translations[0] =
         translationOrDefault(values.translations[0]);
     }
     baseConfig.options.preventDismissal = !values.dismissable;
-    if (window.Fides) {
+    if (window.Fides && values.privacy_notice_ids?.length) {
       window.Fides.init(baseConfig);
     }
   }, [values, translation, baseConfig, allPrivacyNotices]);
 
+  const modal = document.getElementById("fides-modal");
+  if (modal) {
+    modal.removeAttribute("tabindex");
+  }
+
   return (
-    <>
-      {/* style overrides for preview model */}
-      <style jsx global>{`
-        div#fides-overlay {
-          z-index: 5000 !important;
-        }
-        div#preview-container {
-          margin: auto !important;
-        }
-        div#fides-banner-container {
-          position: static !important;
-          transform: none !important;
-          transition: none !important;
-        }
-        div#fides-banner-container.fides-banner-hidden {
-          display: none;
-        }
-        .fides-modal-container,
-        .fides-modal-overlay {
-          background-color: inherit !important;
-          position: static !important;
-        }
-        div.fides-modal-content {
-          position: relative !important;
-          transform: none !important;
-          left: initial !important;
-          top: initial !important;
-        }
-      `}</style>
-      {isMobilePreview ? (
-        <style>{`
+    <Flex h="full" justify="center" align="center" overflow="scroll">
+      {noticesOnConfig.length === 0 ? (
+        <NoPreviewNotice />
+      ) : (
+        <>
+          {/* style overrides for preview model */}
+          <style jsx global>{`
+            div#fides-overlay {
+              z-index: 5000 !important;
+            }
+            div#preview-container {
+              margin: auto !important;
+              pointer-events: none;
+            }
+            div#fides-banner-container {
+              position: static !important;
+              transform: none !important;
+              transition: none !important;
+            }
+            div#fides-banner-container.fides-banner-hidden {
+              display: none;
+            }
+            ${values.component === ComponentType.BANNER_AND_MODAL ||
+            values.component === ComponentType.MODAL
+              ? `div#fides-modal {
+          display: flex !important;
+          ${
+            values.component === ComponentType.MODAL
+              ? "padding-top: 3rem;"
+              : null
+          }
+          justify-content: center;
+          background_color: unset;
+        }`
+              : null}
+            .fides-modal-container {
+              background-color: unset !important;
+              position: static !important;
+              display: none !important;
+            }
+            .fides-modal-overlay {
+              background-color: inherit !important;
+              position: static !important;
+              display: none !important;
+            }
+            div.fides-modal-content {
+              position: relative !important;
+              transform: none !important;
+              left: initial !important;
+              top: initial !important;
+            }
+          `}</style>
+          {isMobilePreview ? (
+            <style>{`
             div#preview-container {
               width: 70% !important;
             }
             `}</style>
-      ) : (
-        <style>{`
+          ) : (
+            <style>{`
             div#fides-banner {
               width: 90% !important;
             }
             `}</style>
+          )}
+          <Script
+            id="fides-js-base"
+            src={fidesJsScript}
+            onReady={() => {
+              window.Fides?.init(baseConfig);
+            }}
+          />
+          <div id="preview-container" />
+        </>
       )}
-      <Script
-        id="fides-js-base"
-        src={fidesJsScript}
-        onReady={() => {
-          window.Fides?.init(baseConfig);
-        }}
-      />
-      <div id="preview-container" />
-    </>
+    </Flex>
   );
 };
 
