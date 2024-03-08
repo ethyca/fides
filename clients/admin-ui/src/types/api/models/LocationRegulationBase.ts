@@ -5,7 +5,7 @@
 import type { Continent } from "./Continent";
 
 /**
- * A base template for all other Fides Schemas to inherit from.
+ * Base Location Regulation Schema
  */
 export type LocationRegulationBase = {
   id: string;
