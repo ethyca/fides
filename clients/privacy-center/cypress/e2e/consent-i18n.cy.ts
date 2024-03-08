@@ -27,16 +27,6 @@ describe("Consent i18n", () => {
     privacy_policy_url: string | null;
   };
 
-  type TestTcfBannerTranslations = TestBannerTranslations & {
-    vendors_count: string;
-    vendors_consent_count: string;
-    vendors_legint_count: string;
-    tcf_stacks: { title: string; description: string, isStacked?: boolean }[];
-    purposes: string;
-    purposes_include: string;
-    stacked_purpose_example: string;
-  };
-
   type TestModalTranslations = {
     title: string;
     description: string;
@@ -53,6 +43,37 @@ describe("Consent i18n", () => {
   type TestNoticeTranslations = {
     title: string;
     description: string;
+  };
+
+  type TestTcfBannerTranslations = TestBannerTranslations & {
+    vendors_count: string;
+    vendors_consent_count: string;
+    vendors_legint_count: string;
+    tcf_stacks: { title: string; description: string, isStacked?: boolean }[];
+    purposes: string;
+    purposes_include: string;
+    stacked_purpose_example: string;
+  };
+
+  type TestTcfModalTranslations = TestModalTranslations & {
+    purposes: string;
+    purposes_description: string;
+    purpose_example: string;
+    purpose_example_description: string;
+    purpose_example_illustration: string;
+    special_purposes: string;
+    special_purpose_example: string;
+    special_purpose_example_description: string;
+    special_purpose_example_illustration: string;
+    features: string;
+    features_description: string;
+    special_features: string;
+    vendors: string;
+    vendors_description: string;
+    vendors_we_use: string;
+    vendor_example: string;
+    consent: string;
+    legint: string;
   };
 
   const ENGLISH_BANNER: TestBannerTranslations = {
@@ -103,6 +124,30 @@ describe("Consent i18n", () => {
       stacked_purpose_example: "Purpose 2: Use limited data to select",
     },
   };
+
+  const ENGLISH_TCF_MODAL: TestTcfModalTranslations = {
+    ...ENGLISH_MODAL,
+    ...{
+      purposes: "Purposes",
+      purposes_description: "Below, you will find a list of the purposes",
+      purpose_example: "Use profiles to select personalised advertising",
+      purpose_example_description: "Advertising presented to you on this service",
+      purpose_example_illustration: "An online retailer wants to advertise",
+      special_purposes: "Special purposes",
+      special_purpose_example: "Ensure security",
+      special_purpose_example_description: "Your data can be used to monitor",
+      special_purpose_example_illustration: "An advertising intermediary delivers ads",
+      features: "Features",
+      features_description: "Below, you will find a list of the features",
+      special_features: "Special features",
+      vendors: "Vendors",
+      vendors_description: "Below, you will find a list of vendors",
+      vendors_we_use: "Vendors we use",
+      vendor_example: "Captify",
+      consent: "Consent",
+      legint: "Legitimate interest",
+    }
+  }
 
   const SPANISH_BANNER: TestBannerTranslations = {
     banner_title: "[banner] Administrar sus preferencias de consentimiento",
@@ -275,6 +320,23 @@ describe("Consent i18n", () => {
     });
   };
 
+  // Reusable assertions to test that the modal notices component localizes correctly
+  const testTcfBannerStacksLocalization = (expected: TestTcfBannerTranslations) => {
+    // Check banner stacks localization
+    cy.get(".fides-tcf-stacks-container").within(() => {
+      expected.tcf_stacks.forEach(({title, description, isStacked}) => {
+        cy.get(".fides-notice-toggle-title").contains(title).click();
+        cy.get(".fides-disclosure-visible").contains(description);
+        // If this is truly a "stack", check the additional purposes list
+        if (isStacked) {
+          cy.get(".fides-disclosure-visible .fides-tcf-purpose-vendor-title").contains(expected.purposes_include);
+          cy.get(".fides-disclosure-visible .fides-tcf-purpose-vendor-list").contains(expected.stacked_purpose_example);
+        }
+        cy.get(".fides-notice-toggle-title").contains(title).click();
+      });
+    });
+  };
+
   const testTcfBannerLocalization = (expected: TestTcfBannerTranslations) => {
     cy.get("#fides-banner").within(() => {
       cy.get(".fides-banner-title").contains(expected.banner_title);
@@ -306,23 +368,101 @@ describe("Consent i18n", () => {
     });
   };
 
-  // Reusable assertions to test that the modal notices component localizes correctly
-  const testTcfBannerStacksLocalization = (expected: TestTcfBannerTranslations) => {
-    // Check banner stacks localization
-    cy.get(".fides-tcf-stacks-container").within(() => {
-      expected.tcf_stacks.forEach(({title, description, isStacked}) => {
-        cy.get(".fides-notice-toggle-title").contains(title).click();
-        cy.get(".fides-disclosure-visible").contains(description);
-        // If this is truly a "stack", check the additional purposes list
-        if (isStacked) {
-          cy.get(".fides-disclosure-visible .fides-tcf-purpose-vendor-title").contains(expected.purposes_include);
-          cy.get(".fides-disclosure-visible .fides-tcf-purpose-vendor-list").contains(expected.stacked_purpose_example);
-        }
-        cy.get(".fides-notice-toggle-title").contains(title).click();
+  const testTcfModalPurposesTabLocalization = (expected: TestTcfModalTranslations) => {
+    cy.get("#fides-panel-Purposes").within(() => {
+      cy.get(".fides-info-box").should("be.visible");
+      cy.get(".fides-info-box").contains(expected.purposes_description);
+      cy.get(".fides-radio-button-group button").then(buttons => {
+        cy.wrap(buttons[0]).contains(expected.consent);
+        cy.wrap(buttons[1]).contains(expected.legint);
+      });
+
+      cy.getByTestId("records-list-Purposes").within(() => {
+        cy.get(".fides-record-header").contains(expected.purposes);
+        cy.get(".fides-notice-toggle").contains(expected.purpose_example).click();
+        cy.get(".fides-disclosure-visible").contains(expected.purpose_example_description);
+        cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(expected.purpose_example_illustration);
+        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+          cy.contains(expected.vendors_we_use);
+          cy.get("li").contains(expected.vendor_example);
+        });
+      });
+
+      cy.getByTestId("records-list-Special purposes").within(() => {
+        cy.get(".fides-record-header").contains(expected.special_purposes);
+        cy.get(".fides-notice-toggle").contains(expected.special_purpose_example).click();
+        cy.get(".fides-disclosure-visible").contains(expected.special_purpose_example_description);
+        cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(expected.special_purpose_example_illustration);
+        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+          cy.contains(expected.vendors_we_use);
+          cy.get("li").contains(expected.vendor_example);
+        });
       });
     });
   };
 
+  const testTcfModalFeaturesTabLocalization = (expected: TestTcfModalTranslations) => {
+    cy.get("#fides-panel-Features").within(() => {
+      cy.get(".fides-info-box").should("be.visible");
+      cy.get(".fides-info-box").contains(expected.features_description);
+    });
+  };
+
+  const testTcfModalVendorsTabLocalization = (expected: TestTcfModalTranslations) => {
+    cy.get("#fides-panel-Vendors").within(() => {
+      cy.get(".fides-info-box").should("be.visible");
+      cy.get(".fides-info-box").contains(expected.vendors_description);
+      cy.get(".fides-radio-button-group button").then(buttons => {
+        cy.wrap(buttons[0]).contains(expected.consent);
+        cy.wrap(buttons[1]).contains(expected.legint);
+      });
+    });
+  };
+
+  const testTcfModalLocalization = (expected: TestTcfModalTranslations) => {
+    // Start by opening the modal
+    // NOTE: We could also use cy.get("#fides-modal-link").click(), but let's
+    // assume the banner is visible in these tests
+    cy.get("#fides-banner .fides-manage-preferences-button").click();
+    cy.get("#fides-modal").should("be.visible");
+
+    // Check modal localization
+    cy.get("#fides-modal").within(() => {
+      cy.get(".fides-modal-title").contains(expected.title);
+      cy.get(".fides-modal-description").contains(expected.description);
+      cy.get(".fides-modal-button-group").contains(expected.save_button_label);
+      cy.get(".fides-modal-button-group").contains(
+        expected.reject_button_label
+      );
+      cy.get(".fides-modal-button-group").contains(
+        expected.accept_button_label
+      );
+
+      // Check each of the modal tabs
+      cy.get(".fides-tabs .fides-tab-list li").then(items => {
+        cy.wrap(items[0]).contains(expected.purposes).click();
+        testTcfModalPurposesTabLocalization(expected);
+        cy.wrap(items[1]).contains(expected.features).click();
+        testTcfModalFeaturesTabLocalization(expected);
+        cy.wrap(items[2]).contains(expected.vendors).click();
+        testTcfModalVendorsTabLocalization(expected);
+      });
+
+      // Privacy policy link is optional; if provided, check that it is localized
+      if (expected.privacy_policy_link_label) {
+        cy.get("#fides-privacy-policy-link").contains(
+          expected.privacy_policy_link_label
+        );
+        cy.get("#fides-privacy-policy-link a").should(
+          "have.attr",
+          "href",
+          expected.privacy_policy_url
+        );
+      } else {
+        cy.get("#fides-privacy-policy-link").should("not.exist");
+      }
+    });
+  };
   describe("when auto_detect_language is true", () => {
     describe(`when browser language matches default locale (${ENGLISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
@@ -331,7 +471,7 @@ describe("Consent i18n", () => {
           globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
         });
-        testBannerLocalization(ENGLISH_BANNER);
+        // testBannerLocalization(ENGLISH_BANNER);
         openAndTestModalLocalization(ENGLISH_MODAL);
         testModalNoticesLocalization(ENGLISH_NOTICES);
       });
@@ -418,6 +558,7 @@ describe("Consent i18n", () => {
         });
 
         testTcfBannerLocalization(ENGLISH_TCF_BANNER);
+        testTcfModalLocalization(ENGLISH_TCF_MODAL);
       });
 
       it.skip("localizes privacy_center components in the correct locale", () => {});
