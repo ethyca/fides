@@ -1,0 +1,21 @@
+{
+    "static.tcf.purposes": "Svrhe",
+    "static.tcf.consent": "Saglasnost",
+    "static.tcf.legint": "Legitimni interes",
+    "static.tcf.special_purposes": "Posebne namene",
+    "static.toggle.on": "Uklj.",
+    "static.toggle.off": "Isklj.",
+    "static.tcf.purposes.description": "U nastavku sledi spisak svrha i posebnih namena u koje se vaši podaci obrađuju. Svoja prava možete ostvariti u određene svrhe, na osnovu saglasnosti ili legitimnog interesa, koristeći prekidače ispod.",
+    "static.tcf.features": "Namene",
+    "static.tcf.features.description": "U nastavku sledi spisak namena u koje se vaši podaci obrađuju. Svoja prava možete ostvariti u određene svrhe koristeći prekidače u nastavku.",
+    "static.tcf.special_features": "Posebne namene",
+    "static.tcf.vendors": "Dobavljači",
+    "static.tcf.vendors.description": "U nastavku sledi spisak dobavljača koji obrađuju vaše podatke i svrhe ili namene obrade koje oni deklarišu. Svoja prava možete ostvariti za svakog dobavljača na osnovu pravne osnove koju oni navode.",
+    "static.tcf.vendors.iab": "IAB TCF dobavljači",
+    "static.pagination": "1-10 od 500",
+    "static.gpc.title": "Otkrivena je globalna kontrola privatnosti",
+    "static.gpc.description": "Vaša globalna postavka kontrole privatnosti se poštuje. Automatski ste isključeni iz slučajeva korišćenja podataka koji podležu globalnoj kontroli privatnosti.",
+    "static.gpc.status.applied": "Primenjeno",
+    "static.gpc.status.overridden": "Zaobiđeno",
+    "static.gpc": "Globalna kontrola privatnosti"
+}

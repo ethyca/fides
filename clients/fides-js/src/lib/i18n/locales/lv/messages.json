@@ -1,0 +1,21 @@
+{
+    "static.tcf.purposes": "Mērķi",
+    "static.tcf.consent": "Piekrišana",
+    "static.tcf.legint": "Leģitīmas intereses",
+    "static.tcf.special_purposes": "Īpaši mērķi",
+    "static.toggle.on": "Ieslēgts",
+    "static.toggle.off": "Izslēgts",
+    "static.tcf.purposes.description": "Tālāk ir sniegts saraksts ar konkrētiem mērķiem un funkcijām, kuru dēļ tiek apstrādāti jūsu dati. Izmantojot tālāk norādītos slēdžus, varat īstenot savas tiesības konkrētiem mērķiem, ņemot vērā mums piešķirtās atļaujas vai likumīgo interesi.",
+    "static.tcf.features": "Iespējas",
+    "static.tcf.features.description": "Tālāk ir sniegts saraksts ar konkrētiem mērķiem, kuru dēļ tiek apstrādāti jūsu dati. Izmantojot tālāk norādītos slēdžus, varat īstenot savas tiesības, ņemot vērā īpašas funkcijas.",
+    "static.tcf.special_features": "Speciālas iespējas",
+    "static.tcf.vendors": "Preču pārdevēji/pakalpojumu sniedzēji",
+    "static.tcf.vendors.description": "Tālāk ir sniegts to pārdevēju/pakalpojumu sniedzēju saraksts, kuri apstrādā jūsu datus, kā arī apstrādes mērķi vai iespējas, ko viņi deklarē. Atkarībā no juridiskā pamatojuma, ko izmanto katrs pārdevējs/pakalpojumu sniedzējs, varat īstenot savas tiesības attiecībās ar katru no preču pārdevējiem/pakalpojumu sniedzējiem.",
+    "static.tcf.vendors.iab": "IAB PPI preču pārdevēji/pakalpojumu sniedzēji",
+    "static.pagination": "1-10 no 500",
+    "static.gpc.title": "Konstatēta globālā privātuma kontrole",
+    "static.gpc.description": "Mēs esam izpildījuši jūsu prasību kontrolēt globālo privātumu. Pēc noklusējuma esat noņemts no datu lietojuma pieteikumiem, kas atbilst globālajai privātuma kontrolei.",
+    "static.gpc.status.applied": "Pielietots",
+    "static.gpc.status.overridden": "Ignorēts",
+    "static.gpc": "Globālā privātuma kontrole"
+}

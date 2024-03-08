@@ -1,0 +1,21 @@
+{
+    "static.tcf.purposes": "Eesmärgid",
+    "static.tcf.consent": "Nõusolek",
+    "static.tcf.legint": "Õigustatud huvi",
+    "static.tcf.special_purposes": "Erieesmärgid",
+    "static.toggle.on": "Sees",
+    "static.toggle.off": "Väljas",
+    "static.tcf.purposes.description": "Allpool on esitatud loetelu teie andmete töötlemise eesmärkidest ja erifunktsioonidest. Alltoodud lüliteid kasutades võite kasutada oma õigusi konkreetsetel eesmärkidel, mis põhinevad nõusolekul või õigustatud huvil.",
+    "static.tcf.features": "Funktsioonid",
+    "static.tcf.features.description": "Allpool on esitatud loetelu funktsioonidest, mille nimel teie andmeid töödeldakse Vastavaid lüliteid kasutades võite kasutada oma õigusi erifunktsioonidele.",
+    "static.tcf.special_features": "Erifunktsioonid",
+    "static.tcf.vendors": "Kaupmehed",
+    "static.tcf.vendors.description": "Allpool on esitatud loetelu kaupmeestest, kes teie andmeid töötlevad, ja nende esitatud töötlemise eesmärkidest või funktsioonidest. Võite rakendada oma õigusi vastavalt iga kaupmehe esitatud õiguslikule alusele.",
+    "static.tcf.vendors.iab": "IAB ja TCF-i kaupmehed",
+    "static.pagination": "1–10 / 500",
+    "static.gpc.title": "Tuvastatud üldine andmekaitsekontroll",
+    "static.gpc.description": "Teie üldist andmekaitse-eelistust on arvestatud. Teid on automaatselt välja arvatud andmete kasutamise juhtudest, mis järgivad üldist andmekaitsekontrolli.",
+    "static.gpc.status.applied": "Rakendatud",
+    "static.gpc.status.overridden": "Tühistatud",
+    "static.gpc": "Üldine andmekaitsekontroll"
+}
