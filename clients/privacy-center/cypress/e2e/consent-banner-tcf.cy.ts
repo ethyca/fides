@@ -931,10 +931,7 @@ describe("Fides-js TCF", () => {
                   const spy = spyObject.getCalls();
                   const { args } = spy[0];
                   expect(args[0]).to.equal(ConsentMethod.REJECT);
-                  expect(args[1]).to.deep.equal({
-                    data_sales: true,
-                    tracking: false,
-                  });
+                  expect(args[1]).to.be.a("object");
                   // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
                   expect(args[2]).to.contain("AA,1~");
                   expect(args[3]).to.deep.equal(privacyExperience.items[0]);

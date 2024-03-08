@@ -3,6 +3,7 @@ import type {
   FidesOptions,
   PrivacyExperience,
 } from "./consent-types";
+import { debugLog } from "./consent-utils";
 
 export const setupExtensions = async ({
   options,
@@ -14,9 +15,9 @@ export const setupExtensions = async ({
   if (experience?.gpp_settings?.enabled) {
     try {
       await import(`${options.fidesJsBaseUrl}/fides-ext-gpp.js`);
+      debugLog(options.debug, "Imported & executed GPP extension");
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error("Unable to import GPP extension", e);
+      debugLog(options.debug, "Unable to import GPP extension");
     }
   }
 };

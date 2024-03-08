@@ -26,7 +26,6 @@ class Credentials(BaseModel):
     """
 
     username: str
-    password: str
     user_id: str
     access_token: str
 

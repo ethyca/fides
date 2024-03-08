@@ -7,6 +7,7 @@ import {
   useRef,
 } from "preact/hooks";
 import {
+  CookieKeyConsent,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -37,6 +38,7 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
+  savedConsent: CookieKeyConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
@@ -49,6 +51,7 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
+  savedConsent,
   onOpen,
   onDismiss,
   renderBanner,
@@ -145,9 +148,9 @@ const Overlay: FunctionComponent<Props> = ({
     () =>
       !options.fidesDisableBanner &&
       experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie) &&
+      shouldResurfaceConsent(experience, cookie, savedConsent) &&
       !options.fidesEmbed,
-    [cookie, experience, options]
+    [cookie, savedConsent, experience, options]
   );
 
   const handleManagePreferencesClick = (): void => {
