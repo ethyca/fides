@@ -366,6 +366,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       }}
       renderModalContent={() => (
         <TcfTabs
+          i18n={i18n}
           experience={experience}
           enabledIds={draftIds}
           onChange={(updatedIds) => {

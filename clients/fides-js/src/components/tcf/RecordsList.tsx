@@ -1,5 +1,6 @@
 import { VNode, h } from "preact";
 import DataUseToggle from "../DataUseToggle";
+import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
 
 interface Item {
   id: string | number;
@@ -7,6 +8,7 @@ interface Item {
 }
 
 interface Props<T extends Item> {
+  i18n: I18n;
   items: T[];
   title: string;
   enabledIds: string[];
@@ -17,6 +19,7 @@ interface Props<T extends Item> {
 }
 
 const RecordsList = <T extends Item>({
+  i18n,
   items,
   title,
   enabledIds,
@@ -38,6 +41,14 @@ const RecordsList = <T extends Item>({
     }
   };
 
+  // Only show the toggle labels ("On"/"Off") in English, since our Toggle components are fixed-width!
+  let toggleOnLabel: string | undefined;
+  let toggleOffLabel: string | undefined;
+  if (getCurrentLocale(i18n) === DEFAULT_LOCALE) {
+    toggleOnLabel = "On";
+    toggleOffLabel = "Off";
+  }
+
   return (
     <div data-testid={`records-list-${title}`}>
       <div className="fides-record-header">{title}</div>
@@ -51,6 +62,8 @@ const RecordsList = <T extends Item>({
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}
           includeToggle={!hideToggles}
+          onLabel={toggleOnLabel}
+          offLabel={toggleOffLabel}
         >
           {renderToggleChild(item)}
         </DataUseToggle>

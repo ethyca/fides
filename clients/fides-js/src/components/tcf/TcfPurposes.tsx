@@ -2,6 +2,9 @@ import { h } from "preact";
 
 import { useMemo, useState } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
+import { I18n } from "../../lib/i18n";
+import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
+import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import {
   EnabledIds,
   LegalBasisEnum,
@@ -11,9 +14,7 @@ import {
   TCFSpecialPurposeRecord,
 } from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import RecordsList from "./RecordsList";
-import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import RadioGroup from "./RadioGroup";
 import EmbeddedVendorList from "./EmbeddedVendorList";
 
@@ -38,6 +39,7 @@ const PurposeDetails = ({ purpose }: { purpose: TCFPurposeRecord }) => {
 };
 
 const TcfPurposes = ({
+  i18n,
   allPurposesConsent = [],
   allPurposesLegint = [],
   allSpecialPurposes,
@@ -46,6 +48,7 @@ const TcfPurposes = ({
   enabledSpecialPurposeIds,
   onChange,
 }: {
+  i18n: I18n;
   allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
   enabledPurposeConsentIds: string[];
   allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
@@ -113,6 +116,7 @@ const TcfPurposes = ({
         onChange={setActiveLegalBasisOption}
       />
       <RecordsList<PurposeRecord>
+        i18n={i18n}
         title="Purposes"
         items={activeData.purposes}
         enabledIds={activeData.enabledPurposeIds}
@@ -124,6 +128,7 @@ const TcfPurposes = ({
         key={`purpose-record-${activeLegalBasisOption.value}`}
       />
       <RecordsList<TCFSpecialPurposeRecord>
+        i18n={i18n}
         title="Special purposes"
         items={activeData.specialPurposes}
         enabledIds={activeData.enabledSpecialPurposeIds}
