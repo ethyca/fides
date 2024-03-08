@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import string
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
 from sqlalchemy import Column, ForeignKey, String
