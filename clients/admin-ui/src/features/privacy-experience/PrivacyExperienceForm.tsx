@@ -22,6 +22,11 @@ import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
+import {
+  selectLocationsRegulations,
+  useGetLocationsRegulationsQuery,
+} from "~/features/locations/locations.slice";
+import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
   selectAllPrivacyNotices,
@@ -33,7 +38,6 @@ import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceTranslation,
-  PrivacyNoticeRegion,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -89,9 +93,13 @@ export const PrivacyExperienceForm = ({
     return notice?.name ?? id;
   };
 
-  const allRegions = Object.entries(PrivacyNoticeRegion).map(
-    (entry) => entry[1]
-  ) as PrivacyNoticeRegion[];
+  useGetLocationsRegulationsQuery();
+  const locationsRegulations = useAppSelector(selectLocationsRegulations);
+
+  const allSelectedRegions = [
+    ...getSelectedRegionIds(locationsRegulations.locations),
+    ...getSelectedRegionIds(locationsRegulations.location_groups),
+  ];
 
   const allLanguages = useAppSelector(selectAllLanguages);
 
@@ -189,7 +197,7 @@ export const PrivacyExperienceForm = ({
       <ScrollableList
         label="Locations for this experience"
         addButtonLabel="Add location"
-        allItems={allRegions}
+        allItems={allSelectedRegions}
         values={values.regions ?? []}
         setValues={(newValues) => setFieldValue("regions", newValues)}
         getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
