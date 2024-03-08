@@ -59,7 +59,7 @@ FROM python:${PYTHON_VERSION}-slim-bookworm as backend
 
 # Add the fidesuser user but don't switch to it yet
 RUN addgroup --system --gid 1001 fidesgroup
-RUN adduser --system --uid 1001 fidesuser
+RUN adduser --system --uid 1001 fidesuser --home /home/fidesuser fidesuser
 
 
 RUN apt-get update && \
