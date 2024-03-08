@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- TODO (PROD-1744): re-enable after fixing preference save bug */
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
@@ -235,10 +234,9 @@ describe("Consent overlay", () => {
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
             expect(generatedUserDeviceId).to.be.a("string");
             expect(body.preferences).to.eql(expected.preferences);
-            // TODO (PROD-1744): re-enable after fixing preference save bug
-            // expect(body.privacy_experience_config_history_id).to.eql(
-            //   expected.privacy_experience_config_history_id
-            // );
+            expect(body.privacy_experience_config_history_id).to.eql(
+              expected.privacy_experience_config_history_id
+            );
             expect(body.user_geography).to.eql(expected.user_geography);
             expect(body.method).to.eql(expected.method);
           });
@@ -549,8 +547,7 @@ describe("Consent overlay", () => {
             method: ConsentMethod.SAVE,
             served_notice_history_id: "ser_notice-history-000",
           };
-          // TODO (PROD-1744): re-enable after fixing preference save bug
-          // expect(body).to.eql(expected);
+          expect(body).to.eql(expected);
         });
 
         // check that the cookie updated
@@ -596,6 +593,9 @@ describe("Consent overlay", () => {
             location: "US-CA",
             region: "CA",
           },
+          options: {
+            isOverlayEnabled: true,
+          },
         });
 
         cy.contains("button", "Manage preferences").click();
@@ -632,8 +632,13 @@ describe("Consent overlay", () => {
               },
               {
                 privacy_notice_history_id:
-                  "pri_notice-history-analytics-es-000",
+                  "pri_notice-history-analytics-en-000",
                 preference: "opt_in",
+              },
+              {
+                privacy_notice_history_id:
+                  "pri_notice-history-essential-en-000",
+                preference: "acknowledge",
               },
             ],
             privacy_experience_config_history_id:
@@ -642,8 +647,7 @@ describe("Consent overlay", () => {
             method: ConsentMethod.SAVE,
             served_notice_history_id: "ser_notice-history-000",
           };
-          // TODO (PROD-1744): re-enable after fixing preference save bug
-          // expect(body).to.eql(expected);
+          expect(body).to.eql(expected);
         });
 
         // check that the cookie updated
@@ -666,6 +670,67 @@ describe("Consent overlay", () => {
           cy.get("input").should("be.disabled");
           cy.get("input").should("be.checked");
         });
+      });
+
+      describe("when dismissing banner and modal", () => {
+        // TODO (PROD-1792): Fix peculiar dismiss issues
+        it.skip("saves default consent preferences, but only when no saved consent cookie exists", () => {
+          // Open & dismiss the modal as a net new user
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-close-button").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { method, preferences } = interception.request.body;
+            expect(method).to.eq("dismiss");
+            expect(preferences.map((p: any) => p.preference)).to.eql([
+              "opt_out",
+              "opt_in",
+              "acknowledge",
+            ]);
+          });
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
+
+          // Re-open the modal and dismiss again
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-close-button").click();
+          // We shouldn't fire a second FidesUpdated event yet!
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
+
+          // Re-open the modal, change preferences and save
+          cy.get("#fides-modal-link").click();
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-toggle-input:first"
+          ).click();
+          cy.get("#fides-modal .fides-save-button").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { method, preferences } = interception.request.body;
+            expect(method).to.eq("save");
+            expect(preferences.map((p: any) => p.preference)).to.eql([
+              "opt_in",
+              "opt_in",
+              "acknowledge",
+            ]);
+          });
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
+
+          // Re-open & dismiss a few more times to confirm that saved preferences are respected
+          cy.get("#fides-modal-link").click();
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-toggle-input:first"
+          ).should("be.checked");
+          cy.get("#fides-modal .fides-save-button").click();
+          cy.get("#fides-modal-link").click();
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-toggle-input:first"
+          ).should("be.checked");
+          cy.get("#fides-modal .fides-save-button").click();
+          // We still should not fire any FidesUpdated events
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
+        });
+
+        // TODO (PROD-1792): resurface consent banner after dismissing
+        it.skip("resurfaces the banner on future visits after dismissing", () => {});
       });
     });
 
@@ -860,10 +925,9 @@ describe("Consent overlay", () => {
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
           expect(generatedUserDeviceId).to.be.a("string");
           expect(body.preferences).to.eql(expected.preferences);
-          // TODO (PROD-1744): re-enable after fixing preference save bug
-          // expect(body.privacy_experience_config_history_id).to.eql(
-          //   expected.privacy_experience_config_history_id
-          // );
+          expect(body.privacy_experience_config_history_id).to.eql(
+            expected.privacy_experience_config_history_id
+          );
           expect(body.user_geography).to.eql(expected.user_geography);
           expect(body.method).to.eql(expected.method);
         });
@@ -2084,10 +2148,8 @@ describe("Consent overlay", () => {
           noticesServedInterception.request.body;
         expect(identity.fides_user_device_id).to.be.a("string");
         expect(body).to.eql({
-          // This is the privacy_experience_config_history_id of the associated translation
-          // TODO (PROD-1744): re-enable after fixing notice served save bug; this *must* use the history id
-          // privacy_experience_config_history_id: "pri_exp-history-banner-modal-en-000",
-          privacy_experience_id: "pri_exp-history-banner-modal-en-000",
+          privacy_experience_config_history_id:
+            "pri_exp-history-banner-modal-en-000",
           user_geography: "us_ca",
           acknowledge_mode: false,
           serving_component: "modal",

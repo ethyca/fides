@@ -4,7 +4,6 @@ import {
   FidesOptions,
   PrivacyExperience,
   RecordConsentServedRequest,
-  PrivacyNotice,
   ServingComponent,
   RecordsServedResponse,
 } from "./consent-types";
@@ -79,16 +78,18 @@ const extractIds = <T extends { id: string | number }[]>(
 };
 
 export const useConsentServed = ({
-  notices,
   options,
-  userGeography,
   privacyExperience,
+  privacyExperienceConfigHistoryId,
+  privacyNoticeHistoryIds,
+  userGeography,
   acknowledgeMode,
 }: {
-  notices: PrivacyNotice[];
   options: FidesOptions;
-  userGeography?: string;
   privacyExperience: PrivacyExperience;
+  privacyExperienceConfigHistoryId?: string;
+  privacyNoticeHistoryIds?: string[];
+  userGeography?: string;
   acknowledgeMode?: boolean;
 }) => {
   const [servedNotice, setServedNotice] =
@@ -110,15 +111,11 @@ export const useConsentServed = ({
       }
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_id:
-          privacyExperience.experience_config?.translations[0]
-            .privacy_experience_config_history_id,
+        privacy_experience_config_history_id:
+          privacyExperienceConfigHistoryId || "",
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
-        // TODO (PROD-1744): pass in specific language shown in UI
-        privacy_notice_history_ids: notices.map(
-          (n: PrivacyNotice) => n.translations[0].privacy_notice_history_id
-        ),
+        privacy_notice_history_ids: privacyNoticeHistoryIds || [],
         tcf_purpose_consents: extractIds(
           privacyExperience?.tcf_purpose_consents
         ),
@@ -140,7 +137,7 @@ export const useConsentServed = ({
         tcf_system_legitimate_interests: extractIds(
           privacyExperience?.tcf_system_legitimate_interests
         ),
-        serving_component: event.detail.extraDetails.servingComponent,
+        serving_component: String(event.detail.extraDetails.servingComponent),
       };
       const result = await patchNoticesServed({
         request,
@@ -150,7 +147,14 @@ export const useConsentServed = ({
         setServedNotice(result);
       }
     },
-    [notices, options, acknowledgeMode, privacyExperience, userGeography]
+    [
+      privacyExperienceConfigHistoryId,
+      privacyNoticeHistoryIds,
+      options,
+      acknowledgeMode,
+      privacyExperience,
+      userGeography,
+    ]
   );
 
   useEffect(() => {
