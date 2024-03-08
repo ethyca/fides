@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.30.1"
+    "version": "2.31.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17375,6 +17375,7 @@
           "sk",
           "fi",
           "se",
+          "gb",
           "gb_eng",
           "gb_sct",
           "gb_wls",
