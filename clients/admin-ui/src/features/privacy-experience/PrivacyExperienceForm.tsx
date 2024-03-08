@@ -179,14 +179,6 @@ export const PrivacyExperienceForm = ({
           />
         </Box>
       </Collapse>
-      <Button
-        onClick={() => setEditingStyle(true)}
-        size="sm"
-        variant="outline"
-        rightIcon={<ArrowForwardIcon />}
-      >
-        Customize appearance
-      </Button>
       <ScrollableList
         label="Associated properties"
         addButtonLabel="Add property"
