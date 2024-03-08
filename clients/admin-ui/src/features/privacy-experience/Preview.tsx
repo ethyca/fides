@@ -147,82 +147,84 @@ const Preview = ({
     modal.removeAttribute("tabindex");
   }
 
+  if (!values.privacy_notice_ids?.length) {
+    return (
+      <Flex h="full" justify="center" align="center">
+        <NoPreviewNotice />
+      </Flex>
+    );
+  }
+
   return (
     <Flex h="full" justify="center" align="center" overflow="scroll">
-      {noticesOnConfig.length === 0 ? (
-        <NoPreviewNotice />
-      ) : (
-        <>
-          {/* style overrides for preview model */}
-          <style jsx global>{`
-            div#fides-overlay {
-              z-index: 5000 !important;
-            }
-            div#preview-container {
-              margin: auto !important;
-              pointer-events: none;
-            }
-            div#fides-banner-container {
-              position: static !important;
-              transform: none !important;
-              transition: none !important;
-            }
-            div#fides-banner-container.fides-banner-hidden {
-              display: none;
-            }
-            ${values.component === ComponentType.BANNER_AND_MODAL ||
-            values.component === ComponentType.MODAL
-              ? `div#fides-modal {
+      {/* style overrides for preview model */}
+      <style jsx global>{`
+        div#fides-overlay {
+          z-index: 5000 !important;
+        }
+        div#preview-container {
+          margin: auto !important;
+          pointer-events: none;
+        }
+        div#fides-banner-container {
+          position: static !important;
+          transform: none !important;
+          transition: none !important;
+        }
+        div#fides-banner-container.fides-banner-hidden {
+          display: none;
+        }
+        ${values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.MODAL
+          ? `div#fides-modal {
           display: flex !important;
           ${
-            values.component === ComponentType.MODAL
+            values.component === ComponentType.BANNER_AND_MODAL
               ? "padding-top: 3rem;"
               : null
           }
           justify-content: center;
           background_color: unset;
         }`
-              : null}
-            .fides-modal-container {
-              background-color: unset !important;
-              position: static !important;
-              display: none !important;
-            }
-            .fides-modal-overlay {
-              background-color: inherit !important;
-              position: static !important;
-              display: none !important;
-            }
-            div.fides-modal-content {
-              position: relative !important;
-              transform: none !important;
-              left: initial !important;
-              top: initial !important;
-            }
-          `}</style>
-          {isMobilePreview ? (
-            <style>{`
+          : null}
+        .fides-modal-container {
+          background-color: unset !important;
+          position: static !important;
+          display: none !important;
+        }
+        .fides-modal-overlay {
+          background-color: inherit !important;
+          position: static !important;
+          display: none !important;
+        }
+        div.fides-modal-content {
+          position: relative !important;
+          transform: none !important;
+          left: initial !important;
+          top: initial !important;
+        }
+      `}</style>
+      {isMobilePreview ? (
+        <style>{`
             div#preview-container {
               width: 70% !important;
             }
             `}</style>
-          ) : (
-            <style>{`
+      ) : (
+        <style>{`
             div#fides-banner {
               width: 90% !important;
             }
             `}</style>
-          )}
-          <Script
-            id="fides-js-base"
-            src={fidesJsScript}
-            onReady={() => {
-              window.Fides?.init(baseConfig);
-            }}
-          />
-          <div id="preview-container" />
-        </>
       )}
+      <Script
+        id="fides-js-base"
+        src={fidesJsScript}
+        onReady={() => {
+          window.Fides?.init(baseConfig);
+        }}
+      />
+      <div id="preview-container" />
     </Flex>
   );
 };
