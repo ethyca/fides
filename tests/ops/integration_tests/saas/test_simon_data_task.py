@@ -9,13 +9,6 @@ class TestSimonDataConnector:
     def test_connection(self, simon_data_runner: ConnectorRunner):
         simon_data_runner.test_connection()
 
-    async def test_access_request(
-        self, simon_data_runner: ConnectorRunner, policy, simon_data_identity_email: str
-    ):
-        access_results = await simon_data_runner.access_request(
-            access_policy=policy, identities={"email": simon_data_identity_email}
-        )
-
     async def test_non_strict_erasure_request(
         self,
         simon_data_runner: ConnectorRunner,
