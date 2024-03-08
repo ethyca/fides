@@ -18,7 +18,6 @@ from sqlalchemy import text
 from sqlalchemy.engine import ResultProxy
 
 # revision identifiers, used by Alembic.
-from sqlalchemy.exc import InvalidRequestError
 
 revision = "14acee6f5459"
 down_revision = "0c65325843bd"
