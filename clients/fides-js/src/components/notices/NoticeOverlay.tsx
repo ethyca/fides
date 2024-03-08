@@ -3,6 +3,7 @@ import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
+  FidesCookie,
   PrivacyNotice,
   SaveConsentPreference,
   ServingComponent,
@@ -18,7 +19,10 @@ import { NoticeConsentButtons } from "../ConsentButtons";
 import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
 import { useConsentServed } from "../../lib/hooks";
-import { updateCookieFromNoticePreferences } from "../../lib/cookie";
+import {
+  getFidesConsentCookie,
+  updateCookieFromNoticePreferences,
+} from "../../lib/cookie";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { dispatchFidesEvent } from "../../lib/events";
 import { resolveConsentValue } from "../../lib/consent-value";
@@ -30,20 +34,27 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
   fidesRegionString,
   cookie,
+  savedConsent,
 }) => {
-  const initialEnabledNoticeKeys = useMemo(() => {
+  const initialEnabledNoticeKeys = () => {
     if (experience.privacy_notices) {
+      // ensure we have most up-to-date cookie vals
+      const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
       return experience.privacy_notices.map((notice) => {
-        const val = resolveConsentValue(notice, getConsentContext(), cookie);
+        const val = resolveConsentValue(
+          notice,
+          getConsentContext(),
+          parsedCookie?.consent
+        );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
     }
     return [];
-  }, [cookie, experience]);
+  };
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>
-  >(initialEnabledNoticeKeys);
+  >(initialEnabledNoticeKeys());
 
   const privacyNotices = useMemo(
     () => experience.privacy_notices ?? [],
@@ -124,7 +135,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys);
+    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys());
   }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
 
   if (!experience.experience_config) {
@@ -138,6 +149,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
+      savedConsent={savedConsent}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (

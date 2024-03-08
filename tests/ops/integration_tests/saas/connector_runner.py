@@ -500,3 +500,9 @@ def _process_external_references(
 
 def generate_random_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+def generate_random_phone_number() -> str:
+    """
+    Generate a random phone number in the format of E.164, +1112223333
+    """
+    return f"+{random.randrange(100,999)}555{random.randrange(1000,9999)}"
