@@ -3,7 +3,13 @@ import { ContainerNode } from "preact";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
-import { i18n, initializeI18n } from "./i18n";
+import {
+  I18n,
+  initializeI18n,
+  selectBestExperienceConfigTranslation,
+  selectBestNoticeTranslation,
+  setupI18n,
+} from "./i18n";
 import { getConsentContext } from "./consent-context";
 import {
   getCookieByName,
@@ -101,16 +107,19 @@ const automaticallyApplyGPCPreferences = async ({
   cookie,
   fidesRegionString,
   fidesOptions,
+  i18n,
 }: {
   savedConsent: CookieKeyConsent;
   effectiveExperience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string | null;
   fidesOptions: FidesOptions;
+  i18n: I18n;
 }): Promise<boolean> => {
   // Early-exit if there is no experience or notices, since we've nothing to do
   if (
     !effectiveExperience ||
+    !effectiveExperience.experience_config ||
     !effectiveExperience.privacy_notices ||
     effectiveExperience.privacy_notices.length === 0
   ) {
@@ -122,10 +131,27 @@ const automaticallyApplyGPCPreferences = async ({
     return false;
   }
 
+  /**
+   * Select the "best" translation that should be used for these saved
+   * preferences based on the currently active locale.
+   *
+   * NOTE: This *feels* a bit weird, and would feel cleaner if this was moved
+   * into the UI components. However, we currently want to keep the GPC
+   * application isolated, so we need to duplicate some of that "best
+   * translation" logic here.
+   */
+  const bestTranslation = selectBestExperienceConfigTranslation(
+    i18n,
+    effectiveExperience.experience_config
+  );
+  const privacyExperienceConfigHistoryId =
+    bestTranslation?.privacy_experience_config_history_id;
+
   let gpcApplied = false;
   const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
     (notice) => {
       const hasPriorConsent = noticeHasConsentInCookie(notice, savedConsent);
+      const bestNoticeTranslation = selectBestNoticeTranslation(i18n, notice);
 
       // only apply GPC for notices that do not have prior consent
       if (
@@ -136,7 +162,11 @@ const automaticallyApplyGPCPreferences = async ({
         gpcApplied = true;
         return new SaveConsentPreference(
           notice,
-          transformConsentToFidesUserPreference(false, notice.consent_mechanism)
+          transformConsentToFidesUserPreference(
+            false,
+            notice.consent_mechanism
+          ),
+          bestNoticeTranslation?.privacy_notice_history_id
         );
       }
       return new SaveConsentPreference(
@@ -144,7 +174,8 @@ const automaticallyApplyGPCPreferences = async ({
         transformConsentToFidesUserPreference(
           resolveConsentValue(notice, context, savedConsent),
           notice.consent_mechanism
-        )
+        ),
+        bestNoticeTranslation?.privacy_notice_history_id
       );
     }
   );
@@ -152,6 +183,7 @@ const automaticallyApplyGPCPreferences = async ({
   if (gpcApplied) {
     await updateConsentPreferences({
       consentPreferencesToSave,
+      privacyExperienceConfigHistoryId,
       experience: effectiveExperience,
       consentMethod: ConsentMethod.GPC,
       options: fidesOptions,
@@ -405,6 +437,7 @@ export const initialize = async ({
 
       if (shouldInitOverlay) {
         // Initialize the i18n singleton before we render the overlay
+        const i18n = setupI18n();
         initializeI18n(i18n, window?.navigator, effectiveExperience, options);
 
         // OK, we're (finally) ready to initialize & render the overlay!
@@ -417,27 +450,28 @@ export const initialize = async ({
           savedConsent,
           renderOverlay,
         }).catch(() => {});
-      }
 
-      /**
-       * Last up: apply GPC to the current preferences automatically. This will
-       * set any applicable notices to "opt-out" unless the user has previously
-       * saved consent, etc.
-       *
-       * NOTE: Do *not* await the results of this function, even though it's
-       * async and returns a Promise! Instead, let the GPC update run
-       * asynchronously but continue our initialization. If GPC applies, this
-       * will kick off an update to the user's consent preferences which will
-       * also call the Fides API, but we want to finish initialization
-       * immediately while those API updates happen in parallel.
-       */
-      automaticallyApplyGPCPreferences({
-        savedConsent,
-        effectiveExperience,
-        cookie,
-        fidesRegionString,
-        fidesOptions: options,
-      });
+        /**
+         * Last up: apply GPC to the current preferences automatically. This will
+         * set any applicable notices to "opt-out" unless the user has previously
+         * saved consent, etc.
+         *
+         * NOTE: Do *not* await the results of this function, even though it's
+         * async and returns a Promise! Instead, let the GPC update run
+         * asynchronously but continue our initialization. If GPC applies, this
+         * will kick off an update to the user's consent preferences which will
+         * also call the Fides API, but we want to finish initialization
+         * immediately while those API updates happen in parallel.
+         */
+        automaticallyApplyGPCPreferences({
+          savedConsent,
+          effectiveExperience,
+          cookie,
+          fidesRegionString,
+          fidesOptions: options,
+          i18n,
+        });
+      }
     }
   }
 

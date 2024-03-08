@@ -1,6 +1,9 @@
 import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
+import { PrivacyExperience } from "../../lib/consent-types";
+import { I18n } from "../../lib/i18n";
+import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
   GvlDataCategories,
   GvlDataDeclarations,
@@ -8,15 +11,13 @@ import {
   EmbeddedPurpose,
   LegalBasisEnum,
 } from "../../lib/tcf/types";
-import { PrivacyExperience } from "../../lib/consent-types";
-import { UpdateEnabledIds } from "./TcfOverlay";
 import {
   transformExperienceToVendorRecords,
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
+import { UpdateEnabledIds } from "./TcfOverlay";
 import ExternalLink from "../ExternalLink";
 import RecordsList from "./RecordsList";
-import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import RadioGroup from "./RadioGroup";
 import PagingButtons, { usePaging } from "../PagingButtons";
 
@@ -33,6 +34,9 @@ const VendorDetails = ({
 
   const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
+  // static.tcf.retention
+  // static.tcf.retention_period_days
+  // static.tcf.retention_period_na
   return (
     <table className="fides-vendor-details-table">
       <thead>
@@ -79,6 +83,8 @@ const PurposeVendorDetails = ({
     return null;
   }
 
+  // static.tcf.purposes
+  // static.tcf.special_purposes
   return (
     <Fragment>
       <VendorDetails label="Purposes" lineItems={purposes} />
@@ -102,6 +108,7 @@ const DataCategories = ({
     // @ts-ignore this type doesn't exist in v2.2 but does in v3
     gvlVendor.dataDeclaration;
 
+  // static.tcf.data_categories
   return (
     <table className="fides-vendor-details-table">
       <thead>
@@ -132,6 +139,10 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
     cookie_refresh: cookieRefresh,
   } = vendor;
   let disclosure = "";
+  // static.tcf.cookie_disclosure_intro
+  // static.tcf.cookie_disclosure_refresh
+  // static.tcf.cookie_disclosure_non_cookie
+  // static.tcf.non_cookie_disclosure
   if (usesCookies) {
     const days = cookieMaxAgeSeconds
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
@@ -172,6 +183,10 @@ const ToggleChild = ({
     experience.gvl?.dataCategories;
   const hasUrls =
     vendor.privacy_policy_url || vendor.legitimate_interest_disclosure_url;
+  // static.tcf.privacy_policy
+  // static.tcf.legint_disclosure
+  // static.tcf.features
+  // static.tcf.special_features
   return (
     <Fragment>
       <StorageDisclosure vendor={vendor} />
@@ -207,11 +222,13 @@ const ToggleChild = ({
 };
 
 const PagedVendorData = ({
+  i18n,
   experience,
   vendors,
   enabledIds,
   onChange,
 }: {
+  i18n: I18n;
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
@@ -233,9 +250,12 @@ const PagedVendorData = ({
     [activeChunk]
   );
 
+  // static.tcf.iab_tcf_vendors
+  // static.tcf.other_vendors
   return (
     <Fragment>
       <RecordsList<VendorRecord>
+        i18n={i18n}
         title="IAB TCF vendors"
         items={gvlVendors}
         enabledIds={enabledIds}
@@ -248,6 +268,7 @@ const PagedVendorData = ({
         )}
       />
       <RecordsList<VendorRecord>
+        i18n={i18n}
         title="Other vendors"
         items={otherVendors}
         enabledIds={enabledIds}
@@ -262,11 +283,13 @@ const PagedVendorData = ({
 };
 
 const TcfVendors = ({
+  i18n,
   experience,
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
 }: {
+  i18n: I18n;
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
@@ -302,6 +325,7 @@ const TcfVendors = ({
         onChange={setActiveLegalBasisOption}
       />
       <PagedVendorData
+        i18n={i18n}
         experience={experience}
         vendors={filteredVendors}
         enabledIds={

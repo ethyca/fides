@@ -26,7 +26,7 @@ from fides.api.schemas.language import SupportedLanguage
 
 class ExperienceNotices(Base):
     """
-    A many-to-many table that linkes Privacy Notices to shared Privacy Experience Configs.
+    A many-to-many table that links Privacy Notices to shared Privacy Experience Configs.
     """
 
     def generate_uuid(self) -> str:
@@ -99,6 +99,8 @@ class PrivacyExperienceConfigBase:
     auto_detect_language = Column(
         Boolean,
     )
+    disabled = Column(Boolean, nullable=False, default=True)
+
     dismissable = Column(Boolean)
 
     @declared_attr
@@ -109,7 +111,6 @@ class PrivacyExperienceConfigBase:
             index=True,
         )
 
-    disabled = Column(Boolean, nullable=False, default=True)
     name = Column(String)
 
 
@@ -141,7 +142,10 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
 
 
 class ExperienceTranslationBase:
-    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceHistory."""
+    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceHistory.
+
+    These are translated fields
+    """
 
     accept_button_label = Column(String)
     acknowledge_button_label = Column(String)
@@ -190,7 +194,9 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     name = Column(
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
-    origin = Column(String, ForeignKey(ExperienceConfigTemplate.id_field_path))
+    origin = Column(
+        String, ForeignKey(ExperienceConfigTemplate.id_field_path)
+    )  # The template from which this config was created if applicable
 
     # Relationships
     experiences = relationship(
@@ -265,7 +271,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         properties = data.pop("properties", [])
         data.pop(
             "id", None
-        )  # Default templates may have ids but we don't want to use them here
+        )  # Default templates have ids but we don't want to use them here
 
         experience_config: PrivacyExperienceConfig = super().create(
             db=db, data=data, check_name=check_name
@@ -728,7 +734,8 @@ def delete_experience_config_translations(
     privacy_experience_config: PrivacyExperienceConfig,
     request_translations: Dict,
 ) -> None:
-    """Removes any translations that are currently stored on the PrivacyExperienceConfig but not in the update request"""
+    """Removes any translations that are currently stored on the PrivacyExperienceConfig
+    but not in the update request"""
     experience_translations: List[
         ExperienceTranslation
     ] = privacy_experience_config.translations

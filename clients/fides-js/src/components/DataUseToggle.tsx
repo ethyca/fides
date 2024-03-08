@@ -11,6 +11,8 @@ const DataUseToggle = ({
   badge,
   gpcBadge,
   disabled,
+  onLabel,
+  offLabel,
   isHeader,
   includeToggle = true,
 }: {
@@ -22,6 +24,8 @@ const DataUseToggle = ({
   badge?: string;
   gpcBadge?: VNode;
   disabled?: boolean;
+  onLabel?: string;
+  offLabel?: string;
   isHeader?: boolean;
   includeToggle?: boolean;
 }) => {
@@ -74,6 +78,8 @@ const DataUseToggle = ({
             checked={checked}
             onChange={onToggle}
             disabled={disabled}
+            onLabel={onLabel}
+            offLabel={offLabel}
           />
         ) : null}
       </div>

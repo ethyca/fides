@@ -57,6 +57,11 @@ interface I18n {
   activate(locale: Locale): void;
 
   /**
+   * Get the currently active locale.
+   */
+  get locale(): Locale;
+
+  /**
    * "Load" a message catalog for a particular locale. This can be either a
    * static object (e.g. "lib/i18n/locales/en/messages.js") or a dynamic
    * object received at runtime from an API.

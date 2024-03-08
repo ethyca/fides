@@ -42,6 +42,7 @@ import Button from "../Button";
 import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
+import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
@@ -233,8 +234,22 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
+  // Determine which ExperienceConfig history ID should be used for the
+  // reporting APIs, based on the selected locale
+  const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
+    if (experience.experience_config) {
+      const bestTranslation = selectBestExperienceConfigTranslation(
+        i18n,
+        experience.experience_config
+      );
+      return bestTranslation?.privacy_experience_config_history_id;
+    }
+    return undefined;
+  }, [experience, i18n]);
+
   const { servedNotice } = useConsentServed({
-    notices: [],
+    privacyExperienceConfigHistoryId,
+    privacyNoticeHistoryIds: [],
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: false,
@@ -249,6 +264,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       updateConsentPreferences({
         consentPreferencesToSave: [],
+        privacyExperienceConfigHistoryId,
         experience,
         consentMethod,
         options,
@@ -262,7 +278,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       setDraftIds(enabledIds);
     },
-    [cookie, experience, fidesRegionString, options, servedNotice]
+    [
+      cookie,
+      experience,
+      fidesRegionString,
+      options,
+      privacyExperienceConfigHistoryId,
+      servedNotice,
+    ]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -343,6 +366,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       }}
       renderModalContent={() => (
         <TcfTabs
+          i18n={i18n}
           experience={experience}
           enabledIds={draftIds}
           onChange={(updatedIds) => {

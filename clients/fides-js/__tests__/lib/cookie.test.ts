@@ -534,7 +534,8 @@ describe("updateCookieFromNoticePreferences", () => {
       (n) =>
         new SaveConsentPreference(
           n,
-          n.current_preference ?? UserConsentPreference.OPT_OUT
+          n.current_preference ?? UserConsentPreference.OPT_OUT,
+          `pri_notice-history-mock-${n.notice_key}`
         )
     );
     const updatedCookie = await updateCookieFromNoticePreferences(
