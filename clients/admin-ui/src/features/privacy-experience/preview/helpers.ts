@@ -71,7 +71,7 @@ export const buildBaseConfig = (
       is_default: true,
       dismissable: experienceConfig.dismissable,
       allow_language_selection: true,
-      auto_detect_language: true,
+      auto_detect_language: false,
       language: "en",
       // in preview mode, we show the first translation in the main window, even when multiple translations are configured
       translations: [buildExperienceTranslation(experienceConfig)],

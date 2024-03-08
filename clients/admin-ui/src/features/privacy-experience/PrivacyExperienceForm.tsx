@@ -178,20 +178,24 @@ export const PrivacyExperienceForm = ({
         </Box>
       </Collapse>
       <Divider />
-      <Heading fontSize="md" fontWeight="semibold">
-        Privacy notices
-      </Heading>
-      <ScrollableList
-        addButtonLabel="Add privacy notice"
-        allItems={allPrivacyNotices.map((n) => n.id)}
-        values={values.privacy_notice_ids ?? []}
-        setValues={(newValues) =>
-          setFieldValue("privacy_notice_ids", newValues)
-        }
-        getItemLabel={getPrivacyNoticeName}
-        draggable
-      />
-      <Divider />
+      {values.component !== ComponentType.TCF_OVERLAY ? (
+        <>
+          <Heading fontSize="md" fontWeight="semibold">
+            Privacy notices
+          </Heading>
+          <ScrollableList
+            addButtonLabel="Add privacy notice"
+            allItems={allPrivacyNotices.map((n) => n.id)}
+            values={values.privacy_notice_ids ?? []}
+            setValues={(newValues) =>
+              setFieldValue("privacy_notice_ids", newValues)
+            }
+            getItemLabel={getPrivacyNoticeName}
+            draggable
+          />
+          <Divider />
+        </>
+      ) : null}
       <Text as="h2" fontWeight="600">
         Locations & Languages
       </Text>

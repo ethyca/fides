@@ -60,6 +60,27 @@ const NoPreviewNotice = () => (
   </Flex>
 );
 
+const TCFExperienceNotice = () => (
+  <Flex
+    bgColor="white"
+    borderRadius="md"
+    p={6}
+    boxShadow="md"
+    direction="column"
+    align="center"
+    gap="2"
+    maxW="512px"
+  >
+    <Text fontSize="lg" fontWeight="500" align="center">
+      TCF preview not available
+    </Text>
+    <Text color="gray.500" align="center">
+      There is no preview available for TCF. You can edit the available settings
+      and languages to the left.
+    </Text>
+  </Flex>
+);
+
 const Preview = ({
   allPrivacyNotices,
   initialValues,
@@ -145,6 +166,14 @@ const Preview = ({
   const modal = document.getElementById("fides-modal");
   if (modal) {
     modal.removeAttribute("tabindex");
+  }
+
+  if (values.component === ComponentType.TCF_OVERLAY) {
+    return (
+      <Flex h="full" justify="center" align="center">
+        <TCFExperienceNotice />
+      </Flex>
+    );
   }
 
   if (!values.privacy_notice_ids?.length) {
