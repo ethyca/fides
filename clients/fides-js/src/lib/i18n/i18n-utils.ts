@@ -5,7 +5,6 @@ import {
   PrivacyExperience,
   PrivacyNotice,
   PrivacyNoticeTranslation,
-  PrivacyNoticeWithPreference,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
@@ -89,63 +88,6 @@ function extractMessagesFromExperienceConfig(
 }
 
 /**
- * Helper function to extract all the translated messages from a PrivacyNotice
- * API response.  Returns an object that maps locales -> messages, using the
- * PrivacyNotice's id to prefix each message like "exp.notices.{id}.title"
- *
- * For example, returns a message catalog like:
- * {
- *   "en": {
- *     "exp.notices.pri_123.title": "Advertising",
- *     "exp.notices.pri_123.description": "We perform advertising based on...",
- *     ...
- *   },
- *   "es": {
- *     ...
- *   }
- * }
- */
-function extractMessagesFromNotice(
-  notice: PrivacyNotice
-): Record<Locale, Messages> {
-  const extracted: Record<Locale, Messages> = {};
-  const NOTICE_TRANSLATION_FIELDS = ["description", "title"] as const;
-  if (notice?.translations) {
-    notice.translations.forEach((translation: PrivacyNoticeTranslation) => {
-      // For each translation, extract each of the translated fields
-      const locale = translation.language;
-      const messages: Messages = {};
-      NOTICE_TRANSLATION_FIELDS.forEach((key) => {
-        const message = translation[key];
-        if (typeof message === "string") {
-          messages[`exp.notices.${notice.id}.${key}`] = message;
-        }
-      });
-
-      // Combine these extracted messages with all the other locales
-      extracted[locale] = { ...messages, ...extracted[locale] };
-    });
-  } else {
-    // For backwards-compatibility, when "translations" don't exist, look for
-    // the fields on the PrivacyNotice itself
-    const anyNotice = notice as any;
-    const locale = DEFAULT_LOCALE;
-    const messages: Messages = {};
-    if (typeof anyNotice.description === "string") {
-      messages[`exp.notices.${notice.id}.description`] = anyNotice.description;
-    }
-    // NOTE: for backwards-compatibility; we used to use "name" for the title :)
-    if (typeof anyNotice.name === "string") {
-      messages[`exp.notices.${notice.id}.title`] = anyNotice.name;
-    }
-
-    // Combine these extracted messages with all the other locales
-    extracted[locale] = { ...messages, ...extracted[locale] };
-  }
-  return extracted;
-}
-
-/**
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
@@ -160,6 +102,15 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
  * into the message catalog.
+ *
+ * NOTE: We don't extract any messages from the PrivacyNotices and their linked
+ * translations. This is because notices are dynamic and their list of available
+ * translations isn't guaranteed to match the overall experience config; since
+ * there's too much uncertainty there, it's best to handle selecting the "best"
+ * translation and displaying it within the UI components themselves.
+ *
+ * See `selectBestNoticeTranslation` below for how that selection is done based
+ * on the i18n locale.
  */
 export function loadMessagesFromExperience(
   i18n: I18n,
@@ -179,22 +130,6 @@ export function loadMessagesFromExperience(
     });
   }
 
-  // Extract messages from privacy_notices[].translations
-  if (experience?.privacy_notices) {
-    experience.privacy_notices.forEach(
-      (notice: PrivacyNoticeWithPreference) => {
-        const extracted: Record<Locale, Messages> =
-          extractMessagesFromNotice(notice);
-        Object.keys(extracted).forEach((locale) => {
-          allMessages[locale] = {
-            ...extracted[locale],
-            ...allMessages[locale],
-          };
-        });
-      }
-    );
-  }
-
   // Load all the extracted messages into the i18n module
   const updatedLocales: Locale[] = Object.keys(allMessages);
   updatedLocales.forEach((locale) => {
@@ -203,6 +138,13 @@ export function loadMessagesFromExperience(
 
   // Return all the locales we extracted & updated
   return updatedLocales;
+}
+
+/**
+ * Get the currently active locale.
+ */
+export function getCurrentLocale(i18n: I18n): Locale {
+  return i18n.locale;
 }
 
 /**
@@ -276,6 +218,95 @@ export function messageExists(i18n: I18n, id: string): boolean {
 }
 
 /**
+ * Helper function to select the "best" translation from a notice, based on the
+ * current locale. This searches through the available translations for the
+ * given notice and selects the best match in this order:
+ * 1) Look for an exact match for current locale
+ * 2) Fallback to default locale, if an exact match isn't found
+ * 3) Fallback to first translation in the list, if the default locale isn't found
+ *
+ * NOTE: We use this "best" translation instead of relying directly on
+ * the i18n module because we can't guarantee a notice will have a translation
+ * that matches the PrivacyExperience - it's completely possible to, for
+ * example, configure an experience with Spanish translations but forget to
+ * translate all the linked notices!
+ *
+ * Since we can't provide that guarantee, instead we rely on the UI components
+ * (e.g. NoticeOverlay) to pick the "best" translation to show for each notice
+ * and handle that state.
+ */
+export function selectBestNoticeTranslation(
+  i18n: I18n,
+  notice: PrivacyNotice
+): PrivacyNoticeTranslation | null {
+  // Defensive checks
+  if (!notice || !notice.translations) {
+    return null;
+  }
+
+  // 1) Look for an exact match for the current locale
+  const currentLocale = getCurrentLocale(i18n);
+  const matchTranslation = notice.translations.find(
+    (e) => e.language === currentLocale
+  );
+  if (matchTranslation) {
+    return matchTranslation;
+  }
+
+  // 2) Fallback to default locale, if an exact match isn't found
+  const defaultTranslation = notice.translations.find(
+    (e) => e.language === DEFAULT_LOCALE
+  );
+  if (defaultTranslation) {
+    return defaultTranslation;
+  }
+
+  // 3) Fallback to first translation in the list, if the default locale isn't found
+  return notice.translations[0] || null;
+}
+
+/**
+ * Helper function to select the "best" translation from the given
+ * ExperienceConfig, based on the current locale. This is used to ensure that
+ * our reporting APIs (notices served & save preferences) are given the right
+ * history IDs to use based on which locale is selected by the i18n module.
+ *
+ * NOTE: Unlike with notices, an "exact match" should occur 99% of the time,
+ * since our i18n module selects the current locale from this list of available
+ * translations! However, we do need to handle the edge case where our API might
+ * miss default English translations in the future...
+ */
+export function selectBestExperienceConfigTranslation(
+  i18n: I18n,
+  experience: ExperienceConfig
+): ExperienceConfigTranslation | null {
+  // Defensive checks
+  if (!experience || !experience.translations) {
+    return null;
+  }
+
+  // 1) Look for an exact match for the current locale
+  const currentLocale = getCurrentLocale(i18n);
+  const matchTranslation = experience.translations.find(
+    (e) => e.language === currentLocale
+  );
+  if (matchTranslation) {
+    return matchTranslation;
+  }
+
+  // 2) Fallback to default locale, if an exact match isn't found
+  const defaultTranslation = experience.translations.find(
+    (e) => e.language === DEFAULT_LOCALE
+  );
+  if (defaultTranslation) {
+    return defaultTranslation;
+  }
+
+  // 3) Fallback to first translation in the list, if the default locale isn't found
+  return experience.translations[0] || null;
+}
+
+/**
  * Initialize the given i18n singleton by:
  * 1) Loading all static messages from locale files
  * 2) Detecting the user's locale
@@ -337,8 +368,12 @@ export function setupI18n(): I18n {
       currentLocale = locale;
     },
 
+    get locale() {
+      return currentLocale;
+    },
+
     load: (locale: Locale, messages: Messages): void => {
-      allMessages[locale] = { ...messages, ...allMessages[locale] };
+      allMessages[locale] = { ...allMessages[locale], ...messages };
     },
 
     t: (descriptorOrId: MessageDescriptor | string): string => {

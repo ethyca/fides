@@ -199,9 +199,16 @@ export class SaveConsentPreference {
 
   notice: PrivacyNotice;
 
-  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
+  noticeHistoryId?: string;
+
+  constructor(
+    notice: PrivacyNotice,
+    consentPreference: UserConsentPreference,
+    noticeHistoryId?: string
+  ) {
     this.notice = notice;
     this.consentPreference = consentPreference;
+    this.noticeHistoryId = noticeHistoryId;
   }
 }
 
@@ -641,7 +648,11 @@ export type PrivacyPreferencesRequest = {
   system_consent_preferences?: Array<TCFVendorSave>;
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   policy_key?: string;
+  /**
+   * @deprecated has no effect; use privacy_experience_config_history_id instead!
+   */
   privacy_experience_id?: string;
+  privacy_experience_config_history_id?: string;
   user_geography?: string;
   method?: ConsentMethod;
   served_notice_history_id?: string;
@@ -700,10 +711,14 @@ export type RecordConsentServedRequest = {
   tcf_special_features?: Array<number>;
   tcf_system_consents?: Array<string>;
   tcf_system_legitimate_interests?: Array<string>;
+  /**
+   * @deprecated has no effect; use privacy_experience_config_history_id instead!
+   */
   privacy_experience_id?: string;
+  privacy_experience_config_history_id?: string;
   user_geography?: string;
   acknowledge_mode?: boolean;
-  serving_component: ServingComponent;
+  serving_component: string; // NOTE: uses a generic string instead of an enum
 };
 
 /**

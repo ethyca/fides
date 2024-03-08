@@ -244,7 +244,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         - For each Notice translation, we also create a PrivacyNoticeHistory record which versions details
         from both the Notice and the Translation itself for auditing purposes.
-        - Privacy preferences are saved against the PrivacyNoticeHistory record which contains all the info
+        - Privacy preferences can be saved separately against this PrivacyNoticeHistory record which contains all the info
         about the notice and the translation to which the user supplied a consent preference.
         """
         translations = data.pop("translations", []) or []
@@ -349,7 +349,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
 
 class NoticeTranslationBase:
-    """Base fields for Notice Translations"""
+    """Base fields for Notice Translations
+    These fields are translated
+    """
 
     description = Column(String)
     language = Column(

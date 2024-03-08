@@ -7,12 +7,15 @@ import {
 import {
   LOCALE_REGEX,
   detectUserLocale,
+  getCurrentLocale,
   initializeI18n,
   loadMessagesFromExperience,
   loadMessagesFromFiles,
+  selectBestNoticeTranslation,
   matchAvailableLocales,
   messageExists,
   setupI18n,
+  selectBestExperienceConfigTranslation,
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
@@ -22,15 +25,21 @@ import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
+  let mockCurrentLocale = "";
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    activate: jest.fn((locale: Locale): void => {}),
+    activate: jest.fn((locale: Locale): void => {
+      mockCurrentLocale = locale;
+    }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
     t: jest.fn(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
     ),
+    get locale(): Locale {
+      return mockCurrentLocale;
+    },
   };
 
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
@@ -123,10 +132,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
-        "exp.notices.pri_555.title": "Advertising Test",
-        "exp.notices.pri_555.description": "Advertising Description Test",
-        "exp.notices.pri_888.title": "Analytics Test",
-        "exp.notices.pri_888.description": "Analytics Description Test",
       });
       const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
       expect(secondLocale).toEqual("es");
@@ -143,12 +148,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Rechazar Prueba",
         "exp.save_button_label": "Guardar Prueba",
         "exp.title": "Título de la Prueba",
-        "exp.notices.pri_555.title": "Prueba de Publicidad",
-        "exp.notices.pri_555.description":
-          "Descripción de la Publicidad de Prueba",
-        "exp.notices.pri_888.title": "Prueba de Analítica",
-        "exp.notices.pri_888.description":
-          "Descripción de la Analítica de Prueba",
       });
     });
 
@@ -159,11 +158,9 @@ describe("i18n-utils", () => {
 
       // Test that an empty string is treated as a valid message and is loaded
       mockExpEdited.experience_config.translations[0].save_button_label = "";
-      mockExpEdited.privacy_notices[0].translations[0].title = "";
 
       // Test that a null value is treated as an invalid message and is ignored
       mockExpEdited.experience_config.translations[0].banner_title = null;
-      mockExpEdited.privacy_notices[0].translations[0].description = null;
 
       // Load the "no translations" version of the experience and run tests
       loadMessagesFromExperience(mockI18n, mockExpEdited as any);
@@ -171,9 +168,7 @@ describe("i18n-utils", () => {
       expect(locale).toEqual("en");
       expect(messages).toHaveProperty(["exp.title"], "Title Test");
       expect(messages).toHaveProperty(["exp.save_button_label"], "");
-      expect(messages).toHaveProperty(["exp.notices.pri_555.title"], "");
       expect(messages).not.toHaveProperty(["exp.banner_title"]);
-      expect(messages).not.toHaveProperty(["exp.notices.pri_555.description"]);
     });
 
     it("handles missing experience/notice translations by falling back to legacy properties", () => {
@@ -182,14 +177,7 @@ describe("i18n-utils", () => {
       const mockExpNoTranslations = JSON.parse(JSON.stringify(mockExperience));
 
       // Edit the experience data to match the legacy format (w/o translations)
-      /* eslint-disable no-param-reassign */
       delete mockExpNoTranslations.experience_config.translations;
-      mockExpNoTranslations.privacy_notices.forEach((notice: any) => {
-        notice.name = notice.translations[0].title;
-        notice.description = notice.translations[0].description;
-        delete notice.translations;
-      });
-      /* eslint-enable no-param-reassign */
 
       // Load the "no translations" version of the experience and run tests
       const updatedLocales = loadMessagesFromExperience(
@@ -214,10 +202,6 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
-        "exp.notices.pri_555.title": "Advertising Test",
-        "exp.notices.pri_555.description": "Advertising Description Test",
-        "exp.notices.pri_888.title": "Analytics Test",
-        "exp.notices.pri_888.description": "Analytics Description Test",
       });
     });
   });
@@ -274,6 +258,124 @@ describe("i18n-utils", () => {
       expect(matchAvailableLocales("fr-CA", ["es", "fr_CA"])).toEqual("fr_CA");
       expect(matchAvailableLocales("fr_CA", ["es", "fr_CA"])).toEqual("fr_CA");
       expect(matchAvailableLocales("fr_ca", ["es", "fr-CA"])).toEqual("fr-CA");
+    });
+  });
+
+  describe("selectBestNoticeTranslation", () => {
+    let mockNotice: PrivacyNoticeWithPreference;
+
+    beforeEach(() => {
+      // Assert our test data is valid, so that Typescript is happy!
+      if (!mockExperience.privacy_notices) {
+        throw new Error("Invalid mock experience test data!");
+      }
+      [mockNotice] = mockExperience.privacy_notices;
+    });
+
+    it("selects an exact match for current locale if available", () => {
+      mockCurrentLocale = "es";
+      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
+        "language",
+        "es"
+      );
+    });
+
+    it("falls back to the default locale if an exact match isn't available", () => {
+      mockCurrentLocale = "zh";
+      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
+        "language",
+        "en"
+      );
+    });
+
+    it("falls back to the first locale if neither exact match nor default locale are available", () => {
+      const mockNoticeNoEnglish: PrivacyNoticeWithPreference = JSON.parse(
+        JSON.stringify(mockNotice)
+      );
+      mockNoticeNoEnglish.translations = [mockNotice.translations[1]];
+      expect(mockNoticeNoEnglish.translations.map((e) => e.language)).toEqual([
+        "es",
+      ]);
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish)
+      ).toHaveProperty("language", "es");
+    });
+
+    it("returns null for invalid/missing translations", () => {
+      expect(selectBestNoticeTranslation(mockI18n, null as any)).toBeNull();
+      expect(
+        selectBestNoticeTranslation(mockI18n, { translations: [] } as any)
+      ).toBeNull();
+      expect(
+        selectBestNoticeTranslation(mockI18n, { translations: null } as any)
+      ).toBeNull();
+      expect(
+        selectBestNoticeTranslation(mockI18n, {
+          translations: undefined,
+        } as any)
+      ).toBeNull();
+    });
+  });
+
+  describe("selectBestExperienceConfigTranslation", () => {
+    let mockExperienceConfig: ExperienceConfig;
+
+    beforeEach(() => {
+      // Assert our test data is valid, so that Typescript is happy!
+      if (!mockExperience.experience_config) {
+        throw new Error("Invalid mock experience test data!");
+      }
+      mockExperienceConfig = mockExperience.experience_config;
+    });
+
+    it("selects an exact match for current locale if available", () => {
+      mockCurrentLocale = "es";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+      ).toHaveProperty("language", "es");
+    });
+
+    it("falls back to the default locale if an exact match isn't available", () => {
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+      ).toHaveProperty("language", "en");
+    });
+
+    it("falls back to the first locale if neither exact match nor default locale are available", () => {
+      const mockExpNoEnglish: ExperienceConfig = JSON.parse(
+        JSON.stringify(mockExperienceConfig)
+      );
+      mockExpNoEnglish.translations = [mockExpNoEnglish.translations[1]];
+      expect(mockExpNoEnglish.translations.map((e) => e.language)).toEqual([
+        "es",
+      ]);
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExpNoEnglish)
+      ).toHaveProperty("language", "es");
+    });
+
+    it("returns null for invalid/missing translations", () => {
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, null as any)
+      ).toBeNull();
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, {
+          translations: [],
+        } as any)
+      ).toBeNull();
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, {
+          translations: null,
+        } as any)
+      ).toBeNull();
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, {
+          translations: undefined,
+        } as any)
+      ).toBeNull();
     });
   });
 
@@ -339,6 +441,17 @@ describe("i18n-utils", () => {
       expect(messageExists(testI18n, "test.missing")).toBeFalsy();
       expect(messageExists(testI18n, { invalid: 1 } as any)).toBeFalsy();
       expect(messageExists(testI18n, "")).toBeFalsy();
+    });
+  });
+
+  describe("getCurrentLocale", () => {
+    it("returns the currently active locale", () => {
+      // NOTE: use a "real" i18n instance here to test the library itself
+      const testI18n: I18n = setupI18n();
+      testI18n.load("es", { "test.greeting": "Hola" });
+      expect(getCurrentLocale(testI18n)).toEqual("en");
+      testI18n.activate("es");
+      expect(getCurrentLocale(testI18n)).toEqual("es");
     });
   });
 
@@ -490,14 +603,34 @@ describe("i18n module", () => {
         expect(testI18n.t({ id: "test.greeting" })).toEqual("Zalloz, Jest!");
         expect(testI18n.t({ id: "test.another" })).toEqual("Zam!");
       });
+
+      it("when loading the same message id multiple times, replaces existing messages with newer ones", () => {
+        testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
+        testI18n.activate("zz");
+        testI18n.load("zz", { "test.greeting": "Zalloz zagain, Jest!" });
+        testI18n.load("zz", { "test.greeting": "Zalloz ze final zone, Jest!" });
+        expect(testI18n.t({ id: "test.greeting" })).toEqual(
+          "Zalloz ze final zone, Jest!"
+        );
+      });
+
+      it("treats null/empty strings as missing keys", () => {
+        testI18n.load("zz", { "test.empty": "", "test.null": null } as any);
+        testI18n.activate("zz");
+        expect(testI18n.t({ id: "test.empty" })).toEqual("test.empty");
+        expect(testI18n.t({ id: "test.null" })).toEqual("test.null");
+        expect(testI18n.t({ id: "test.missing" })).toEqual("test.missing");
+      });
     });
 
-    it("treats null/empty strings as missing keys", () => {
-      testI18n.load("zz", { "test.empty": "", "test.null": null } as any);
-      testI18n.activate("zz");
-      expect(testI18n.t({ id: "test.empty" })).toEqual("test.empty");
-      expect(testI18n.t({ id: "test.null" })).toEqual("test.null");
-      expect(testI18n.t({ id: "test.missing" })).toEqual("test.missing");
+    describe("locale getter", () => {
+      it("returns the currently active locale", () => {
+        expect(testI18n.locale).toEqual("en");
+        testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
+        expect(testI18n.locale).toEqual("en");
+        testI18n.activate("zz");
+        expect(testI18n.locale).toEqual("zz");
+      });
     });
   });
 });

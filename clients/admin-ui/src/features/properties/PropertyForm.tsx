@@ -26,7 +26,7 @@ interface Props {
 
 export interface FormValues {
   name: string;
-  type: string;
+  type?: PropertyType;
 }
 
 const PropertyForm = ({ property }: Props) => {
@@ -35,7 +35,7 @@ const PropertyForm = ({ property }: Props) => {
   const [createProperty] = useCreatePropertyMutation();
 
   const initialValues = useMemo(
-    () => property || { name: "", type: "" },
+    () => property || { name: "", type: undefined },
     [property]
   );
 

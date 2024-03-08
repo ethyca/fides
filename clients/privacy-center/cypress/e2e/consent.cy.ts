@@ -283,8 +283,14 @@ describe("Consent settings", () => {
       });
     });
 
-    // TODO (PROD-1597): re-enable this test; it's failing because overlay is not disabled!
-    it.skip("reflects their choices using fides.js", () => {
+    /**
+     * TODO (PROD-1748): update this test to *override* the config to not rely
+     * on any local ENV settings for the running Privacy Center... right now
+     * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
+     * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
+     * doesn't obey the overrideSettings above.
+     */
+    it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getRadio("false").check({ force: true });
@@ -388,8 +394,14 @@ describe("Consent settings", () => {
     });
   });
 
-  // TODO (PROD-1597): re-enable this test; it's failing because overlay is not disabled!
-  describe.skip("when the user hasn't modified their consent", () => {
+  /**
+   * TODO (PROD-1748): update this test to *override* the config to not rely
+   * on any local ENV settings for the running Privacy Center... right now
+   * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
+   * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
+   * doesn't obey the overrideSettings above.
+   */
+  describe("when the user hasn't modified their consent", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
@@ -428,8 +440,14 @@ describe("Consent settings", () => {
       });
     });
 
-    // TODO (PROD-1597): re-enable this test; it's failing because overlay is not disabled!
-    describe.skip("when globalPrivacyControl is enabled", () => {
+    /**
+     * TODO (PROD-1748): update this test to *override* the config to not rely
+     * on any local ENV settings for the running Privacy Center... right now
+     * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
+     * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
+     * doesn't obey the overrideSettings above.
+     */
+    describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
         cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
         cy.get("#consent-json");

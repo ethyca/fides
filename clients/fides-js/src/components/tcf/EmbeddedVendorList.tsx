@@ -19,6 +19,8 @@ const EmbeddedVendorList = ({
     return null;
   }
 
+  // static.tcf.vendors_we_use
+  // static.tcf.total_vendors_count
   return (
     <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
       <span className="fides-tcf-purpose-vendor-title">
