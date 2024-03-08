@@ -449,10 +449,10 @@ def determine_needed_experience_configs(bind):
         component_mappings = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key, [])
         if component_mappings:
             for component_mapping in component_mappings:
-                if component_mapping.get(ComponentType.Overlay) in [
+                if component_mapping.get(ComponentType.Overlay) in {
                     DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
                     DefaultExperienceConfigTypes.QUEBEC_BANNER_MODAL,
-                ]:
+                }:
                     # If this is a Canadian/Quebec Banner and Modal, skip updating regions, and just use OOB
                     regions_to_add = set()
                 else:
