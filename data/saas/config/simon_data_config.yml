@@ -9,6 +9,8 @@ saas_config:
     - name: domain
       default_value: api.simondata.com
     - name: api_token
+      label: API token
+      sensitive: True
 
   client_config:
     protocol: https
