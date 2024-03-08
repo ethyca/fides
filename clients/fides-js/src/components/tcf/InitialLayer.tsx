@@ -63,7 +63,7 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   }, [stacks, specialFeatureIds, experience.tcf_special_features]);
 
   return (
-    <div>
+    <div className="fides-tcf-stacks-container">
       <div>
         {stacks.map((s) => {
           const stackPurposes = uniquePurposes.filter(
