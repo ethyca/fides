@@ -91,6 +91,11 @@ export default async function handler(
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
+  // Check if a property_id was provided in the query params
+  const propertyId = Array.isArray(req.query.property_id)
+    ? req.query.property_id[0]
+    : req.query.property_id;
+
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
@@ -113,7 +118,8 @@ export default async function handler(
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
         environment.settings.DEBUG,
-        null
+        null,
+        propertyId
       );
     }
   }
