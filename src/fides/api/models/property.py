@@ -115,28 +115,28 @@ class PrivacyExperienceConfigProperty(Base):
 def link_experience_configs_to_property(
     db: Session,
     *,
-    experience_configs: Optional[List[Dict[str, Any]]] = None,
+    experience_configs: List[Dict[str, Any]],
     prop: Property,
 ) -> List[PrivacyExperienceConfig]:
     """
     Link supplied experience configs to the property.
     """
+
     # delayed import to avoid circular declarations
     from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
-    if not experience_configs:
-        return []
-
-    new_experience_configs = (
-        db.query(PrivacyExperienceConfig)
-        .filter(
-            PrivacyExperienceConfig.id.in_(
-                [experience_config["id"] for experience_config in experience_configs]
-            )
+    if experience_configs:
+        experience_config_ids = [
+            experience_config["id"] for experience_config in experience_configs
+        ]
+        new_experience_configs = (
+            db.query(PrivacyExperienceConfig)
+            .filter(PrivacyExperienceConfig.id.in_(experience_config_ids))
+            .all()
         )
-        .all()
-    )
+        prop.experiences = new_experience_configs
+    else:
+        prop.experiences = []
 
-    prop.experiences = new_experience_configs
     prop.save(db)
     return prop.experiences
