@@ -1,5 +1,4 @@
 import {
-  ArrowForwardIcon,
   Box,
   Button,
   ButtonGroup,
@@ -169,14 +168,6 @@ export const PrivacyExperienceForm = ({
           />
         </Box>
       </Collapse>
-      <Button
-        onClick={() => setEditingStyle(true)}
-        size="sm"
-        variant="outline"
-        rightIcon={<ArrowForwardIcon />}
-      >
-        Customize appearance
-      </Button>
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
         Privacy notices
