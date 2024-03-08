@@ -63,6 +63,7 @@ describe("Banner and modal dismissal", () => {
           it("should dismiss the banner by clicking the x", () => {
             cy.get("#fides-banner").should("be.visible");
             cy.get("#fides-banner .fides-close-button").click();
+            cy.get("@FidesUpdated").should("have.been.called");
             cy.get("#fides-banner").should("not.be.visible");
             assertDismissCalled();
           });
