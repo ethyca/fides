@@ -75,8 +75,19 @@ describe("Consent i18n", () => {
     vendors: string;
     vendors_description: string;
     vendors_we_use: string;
+    vendors_iab: string;
+    vendor_iab_example: string;
+    vendor_iab_example_description: string;
+    vendors_other: string;
+    vendor_other_example: string;
+    vendor_other_example_description: string;
+    vendor_privacy_policy: string;
+    vendor_legint_disclosure: string;
+    iab: string;
+    retention: string;
     consent: string;
     legint: string;
+    data_categories: string;
   };
 
   const ENGLISH_BANNER: TestBannerTranslations = {
@@ -150,8 +161,19 @@ describe("Consent i18n", () => {
       vendors: "Vendors",
       vendors_description: "Below, you will find a list of vendors",
       vendors_we_use: "Vendors we use",
+      vendors_iab: "IAB TCF vendors",
+      vendor_iab_example: "Captify",
+      vendor_iab_example_description: "Captify stores cookies with a maximum duration",
+      vendors_other: "Other vendors",
+      vendor_other_example: "Fides System",
+      vendor_other_example_description: "Fides System stores cookies with a maximum duration",
+      vendor_privacy_policy: "Privacy policy",
+      vendor_legint_disclosure: "Legitimate interest disclosure",
+      iab: "IAB TCF",
+      retention: "Retention",
       consent: "Consent",
       legint: "Legitimate interest",
+      data_categories: "Data categories",
     }
   }
 
@@ -438,12 +460,70 @@ describe("Consent i18n", () => {
 
   const testTcfModalVendorsTabLocalization = (expected: TestTcfModalTranslations) => {
     cy.get("#fides-panel-Vendors").within(() => {
+      // Check the right tab is visible, the overall description, and radio buttons
       cy.get(".fides-info-box").should("be.visible");
       cy.get(".fides-info-box").contains(expected.vendors_description);
       cy.get(".fides-radio-button-group button").then(buttons => {
         cy.wrap(buttons[0]).contains(expected.consent);
         cy.wrap(buttons[1]).contains(expected.legint);
       });
+
+      // Check the list of IAB TCF vendors and toggle open a single example
+      cy.getByTestId("records-list-IAB TCF vendors").within(() => {
+        cy.get(".fides-record-header").contains(expected.vendors_iab);
+        cy.get(".fides-notice-badge").contains(expected.iab);
+        cy.get(".fides-notice-toggle").contains(expected.vendor_iab_example).click();
+        cy.get(".fides-disclosure-visible").within(() => {
+          cy.get("p").contains(expected.vendor_iab_example_description);
+          cy.get("a.fides-external-link").then(links => {
+            cy.wrap(links[0]).contains(expected.vendor_privacy_policy);
+            cy.wrap(links[1]).contains(expected.vendor_legint_disclosure);
+          });
+          cy.get(".fides-vendor-details-table").then(tables => {
+            cy.wrap(tables[0]).within(() => {
+              cy.get("thead").contains(expected.purposes);
+              cy.get("thead").contains(expected.retention);
+              cy.get("tr").contains(expected.purpose_example);
+            });
+            cy.wrap(tables[1]).within(() => {
+              cy.get("thead").contains(expected.special_purposes);
+              cy.get("thead").contains(expected.retention);
+              cy.get("tr").contains(expected.special_purpose_example);
+            });
+            cy.wrap(tables[2]).within(() => {
+              cy.get("thead").contains(expected.data_categories);
+            });
+          });
+        });
+      });
+
+      // Toggle over to Legitimate interest vendors to view Other
+      cy.get(".fides-radio-button-group button").contains(expected.legint).click();
+
+      // Check the list of Other vendors and toggle open a single example
+      cy.getByTestId("records-list-Other vendors").within(() => {
+        cy.get(".fides-record-header").contains(expected.vendors_other);
+        cy.get(".fides-notice-badge").should("not.exist");
+        cy.get(".fides-notice-toggle").contains(expected.vendor_other_example).click();
+        cy.get(".fides-disclosure-visible").within(() => {
+          cy.get("p").contains(expected.vendor_other_example_description);
+          cy.get(".fides-vendor-details-table").then(tables => {
+            cy.wrap(tables[0]).within(() => {
+              cy.get("thead").contains(expected.purposes);
+              cy.get("thead").contains(expected.retention);
+            });
+            cy.wrap(tables[1]).within(() => {
+              cy.get("thead").contains(expected.special_purposes);
+              cy.get("thead").contains(expected.retention);
+              cy.get("tr").contains(expected.special_purpose_example);
+            });
+            cy.wrap(tables[2]).within(() => {
+              cy.get("thead").contains(expected.features);
+            });
+          });
+        });
+      });
+
     });
   };
 
@@ -491,6 +571,7 @@ describe("Consent i18n", () => {
       }
     });
   };
+
   describe("when auto_detect_language is true", () => {
     describe(`when browser language matches default locale (${ENGLISH_LOCALE})`, () => {
       it("localizes banner_and_modal components in the correct locale", () => {
