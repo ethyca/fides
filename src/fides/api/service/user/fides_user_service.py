@@ -12,7 +12,6 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
-    UserEmailInviteStatus,
     UserInviteBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity

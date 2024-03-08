@@ -1,8 +1,8 @@
 """table updates for user invite
 
-Revision ID: 4d34d270f3ea
+Revision ID: 31493e48c1d8
 Revises: 956d21f13def
-Create Date: 2024-02-01 00:50:46.547803
+Create Date: 2024-03-08 18:05:31.392727
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 from citext import CIText
 
 # revision identifiers, used by Alembic.
-revision = "4d34d270f3ea"
+revision = "31493e48c1d8"
 down_revision = "956d21f13def"
 branch_labels = None
 depends_on = None
@@ -45,12 +45,6 @@ def upgrade():
     op.create_index(
         op.f("ix_fides_user_invite_id"), "fides_user_invite", ["id"], unique=False
     )
-    op.create_index(
-        op.f("ix_fides_user_invite_username"),
-        "fides_user_invite",
-        ["username"],
-        unique=False,
-    )
     op.add_column("fidesuser", sa.Column("email_address", CIText(), nullable=True))
     op.add_column("fidesuser", sa.Column("disabled", sa.Boolean(), nullable=False))
     op.add_column(
@@ -71,7 +65,6 @@ def downgrade():
     op.drop_column("fidesuser", "disabled_reason")
     op.drop_column("fidesuser", "disabled")
     op.drop_column("fidesuser", "email_address")
-    op.drop_index(op.f("ix_fides_user_invite_username"), table_name="fides_user_invite")
     op.drop_index(op.f("ix_fides_user_invite_id"), table_name="fides_user_invite")
     op.drop_table("fides_user_invite")
     op.execute("drop type disabledreason")

@@ -19,7 +19,7 @@ class FidesUserInvite(Base):
     def __tablename__(self) -> str:
         return "fides_user_invite"
 
-    username = Column(
+    username = Column(  # type: ignore
         CIText,
         ForeignKey("fidesuser.username", ondelete="CASCADE"),
         primary_key=True,

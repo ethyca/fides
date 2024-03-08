@@ -20,21 +20,17 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreate, UserCreateResponse } from "./types";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
-import {
-  selectIsUserEmailInviteEnabled,
-  useGetEmailInviteStatusQuery,
-} from "~/features/messaging/messaging.slice";
 
 const defaultInitialValues: UserCreate = {
   username: "",

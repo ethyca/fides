@@ -71,6 +71,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1 import urn_registry as urls
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig, get_config
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
@@ -413,7 +414,7 @@ def create_user(
     *,
     db: Session = Depends(get_db),
     user_data: UserCreate,
-    config_proxy: FidesConfig = Depends(get_config_proxy),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
 ) -> FidesUser:
     """
     Create a user given a username and password.

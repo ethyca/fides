@@ -223,7 +223,7 @@ def get_messaging_status(
 
     if not messaging_config or (
         messaging_method
-        and get_messaging_method(messaging_config.service_type.value)
+        and get_messaging_method(messaging_config.service_type.value)  # type: ignore
         != messaging_method
     ):
         detail = "No active default messaging configuration found"
