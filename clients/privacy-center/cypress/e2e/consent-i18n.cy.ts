@@ -417,7 +417,7 @@ describe("Consent i18n", () => {
     ];
 
     // Reusable assertions to test that the banner component localizes correctly
-    const testBannerLocalization = (expected: TestBannerTranslations) => {
+    const testBannerLocalization = (t: TestBannerTranslations) => {
       /**
        * Check banner localization
        *
@@ -426,29 +426,27 @@ describe("Consent i18n", () => {
        * specs for those tests instead!
        */
       cy.get("#fides-banner").within(() => {
-        cy.get(".fides-banner-title").contains(expected.banner_title);
-        cy.get(".fides-banner-description").contains(
-          expected.banner_description
-        );
+        cy.get(".fides-banner-title").contains(t.banner_title);
+        cy.get(".fides-banner-description").contains(t.banner_description);
         cy.get("#fides-button-group").contains(
-          expected.privacy_preferences_link_label
+          t.privacy_preferences_link_label
         );
-        cy.get("#fides-button-group").contains(expected.reject_button_label);
-        cy.get("#fides-button-group").contains(expected.accept_button_label);
-        cy.get(".fides-gpc-label").contains(expected.gpc_label);
+        cy.get("#fides-button-group").contains(t.reject_button_label);
+        cy.get("#fides-button-group").contains(t.accept_button_label);
+        cy.get(".fides-gpc-label").contains(t.gpc_label);
         cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-          expected.gpc_status_label
+          t.gpc_status_label
         );
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (expected.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label) {
           cy.get("#fides-privacy-policy-link").contains(
-            expected.privacy_policy_link_label
+            t.privacy_policy_link_label
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            expected.privacy_policy_url
+            t.privacy_policy_url
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
@@ -457,7 +455,7 @@ describe("Consent i18n", () => {
     };
 
     // Reusable assertions to test that the modal component localizes correctly
-    const openAndTestModalLocalization = (expected: TestModalTranslations) => {
+    const openAndTestModalLocalization = (t: TestModalTranslations) => {
       // Start by opening the modal
       // NOTE: We could also use cy.get("#fides-modal-link").click(), but let's
       // assume the banner is visible in these tests
@@ -466,31 +464,23 @@ describe("Consent i18n", () => {
 
       // Check modal localization
       cy.get("#fides-modal").within(() => {
-        cy.get(".fides-modal-title").contains(expected.title);
-        cy.get(".fides-modal-description").contains(expected.description);
-        cy.get(".fides-modal-button-group").contains(
-          expected.save_button_label
-        );
-        cy.get(".fides-modal-button-group").contains(
-          expected.reject_button_label
-        );
-        cy.get(".fides-modal-button-group").contains(
-          expected.accept_button_label
-        );
-        cy.get(".fides-gpc-banner .fides-gpc-header").contains(
-          expected.gpc_title
-        );
-        cy.get(".fides-gpc-banner").contains(expected.gpc_title);
+        cy.get(".fides-modal-title").contains(t.title);
+        cy.get(".fides-modal-description").contains(t.description);
+        cy.get(".fides-modal-button-group").contains(t.save_button_label);
+        cy.get(".fides-modal-button-group").contains(t.reject_button_label);
+        cy.get(".fides-modal-button-group").contains(t.accept_button_label);
+        cy.get(".fides-gpc-banner .fides-gpc-header").contains(t.gpc_title);
+        cy.get(".fides-gpc-banner").contains(t.gpc_title);
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (expected.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label) {
           cy.get("#fides-privacy-policy-link").contains(
-            expected.privacy_policy_link_label
+            t.privacy_policy_link_label
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            expected.privacy_policy_url
+            t.privacy_policy_url
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
@@ -499,12 +489,10 @@ describe("Consent i18n", () => {
     };
 
     // Reusable assertions to test that the modal notices component localizes correctly
-    const testModalNoticesLocalization = (
-      expected: TestNoticeTranslations[]
-    ) => {
+    const testModalNoticesLocalization = (t: TestNoticeTranslations[]) => {
       // Check modal notices localization
       cy.get("#fides-modal .fides-modal-notices").within(() => {
-        expected.forEach((notice) => {
+        t.forEach((notice) => {
           cy.get(".fides-notice-toggle-title").contains(notice.title).click();
           cy.get(".fides-disclosure-visible").contains(notice.description);
           cy.get(".fides-notice-toggle-title").contains(notice.title).click();
@@ -834,60 +822,56 @@ describe("Consent i18n", () => {
    *
    **********************************************************/
   describe("when localizing tcf_overlay components", () => {
-    const testTcfBannerStacksLocalization = (
-      expected: TestTcfBannerTranslations
-    ) => {
+    const testTcfBannerStacksLocalization = (t: TestTcfBannerTranslations) => {
       // Check banner stacks localization
       cy.get(".fides-tcf-stacks-container").within(() => {
-        expected.tcf_stacks.forEach(({ title, description, isStacked }) => {
+        t.tcf_stacks.forEach(({ title, description, isStacked }) => {
           cy.get(".fides-notice-toggle-title").contains(title).click();
           cy.get(".fides-disclosure-visible").contains(description);
           // If this is truly a "stack", check the additional purposes list
           if (isStacked) {
             cy.get(
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-title"
-            ).contains(expected.purposes_include);
+            ).contains(t.purposes_include);
             cy.get(
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
-            ).contains(expected.stacked_purpose_example);
+            ).contains(t.stacked_purpose_example);
           }
           cy.get(".fides-notice-toggle-title").contains(title).click();
         });
       });
     };
 
-    const testTcfBannerLocalization = (expected: TestTcfBannerTranslations) => {
+    const testTcfBannerLocalization = (t: TestTcfBannerTranslations) => {
       cy.get("#fides-banner").within(() => {
-        cy.get(".fides-banner-title").contains(expected.banner_title);
-        cy.get(".fides-banner-description").contains(
-          expected.banner_description
-        );
+        cy.get(".fides-banner-title").contains(t.banner_title);
+        cy.get(".fides-banner-description").contains(t.banner_description);
         cy.get("#fides-button-group").contains(
-          expected.privacy_preferences_link_label
+          t.privacy_preferences_link_label
         );
-        cy.get("#fides-button-group").contains(expected.reject_button_label);
-        cy.get("#fides-button-group").contains(expected.accept_button_label);
+        cy.get("#fides-button-group").contains(t.reject_button_label);
+        cy.get("#fides-button-group").contains(t.accept_button_label);
         cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
-          expected.vendors_count
-        );
-        cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
-          expected.vendors_consent_count
+          t.vendors_count
         );
         cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
-          expected.vendors_legint_count
+          t.vendors_consent_count
+        );
+        cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
+          t.vendors_legint_count
         );
 
         testTcfBannerStacksLocalization(ENGLISH_TCF_BANNER);
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (expected.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label) {
           cy.get("#fides-privacy-policy-link").contains(
-            expected.privacy_policy_link_label
+            t.privacy_policy_link_label
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            expected.privacy_policy_url
+            t.privacy_policy_url
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
@@ -896,168 +880,160 @@ describe("Consent i18n", () => {
     };
 
     const testTcfModalPurposesTabLocalization = (
-      expected: TestTcfModalTranslations
+      t: TestTcfModalTranslations
     ) => {
       cy.get("#fides-panel-Purposes").within(() => {
         // Check the right tab is visible, the overall description, and radio buttons
         cy.get(".fides-info-box").should("be.visible");
-        cy.get(".fides-info-box").contains(expected.purposes_description);
+        cy.get(".fides-info-box").contains(t.purposes_description);
         cy.get(".fides-radio-button-group button").then((buttons) => {
-          cy.wrap(buttons[0]).contains(expected.consent);
-          cy.wrap(buttons[1]).contains(expected.legint);
+          cy.wrap(buttons[0]).contains(t.consent);
+          cy.wrap(buttons[1]).contains(t.legint);
         });
 
         // Check the list of Purposes and toggle open a single example to check illustrations, etc.
         cy.getByTestId("records-list-Purposes").within(() => {
-          cy.get(".fides-record-header").contains(expected.purposes);
-          cy.get(".fides-notice-toggle")
-            .contains(expected.purpose_example)
-            .click();
+          cy.get(".fides-record-header").contains(t.purposes);
+          cy.get(".fides-notice-toggle").contains(t.purpose_example).click();
           cy.get(".fides-disclosure-visible").contains(
-            expected.purpose_example_description
+            t.purpose_example_description
           );
           cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(
-            expected.purpose_example_illustration
+            t.purpose_example_illustration
           );
           cy.get(
             ".fides-disclosure-visible .fides-tcf-toggle-content:last"
           ).within(() => {
-            cy.contains(expected.vendors_we_use);
+            cy.contains(t.vendors_we_use);
           });
         });
 
         // Check the list of Special purposes and toggle open a single example to check illustrations, etc.
         cy.getByTestId("records-list-Special purposes").within(() => {
-          cy.get(".fides-record-header").contains(expected.special_purposes);
+          cy.get(".fides-record-header").contains(t.special_purposes);
           cy.get(".fides-notice-toggle")
-            .contains(expected.special_purpose_example)
+            .contains(t.special_purpose_example)
             .click();
           cy.get(".fides-disclosure-visible").contains(
-            expected.special_purpose_example_description
+            t.special_purpose_example_description
           );
           cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(
-            expected.special_purpose_example_illustration
+            t.special_purpose_example_illustration
           );
           cy.get(
             ".fides-disclosure-visible .fides-tcf-toggle-content:last"
           ).within(() => {
-            cy.contains(expected.vendors_we_use);
+            cy.contains(t.vendors_we_use);
           });
         });
       });
     };
 
     const testTcfModalFeaturesTabLocalization = (
-      expected: TestTcfModalTranslations
+      t: TestTcfModalTranslations
     ) => {
       cy.get("#fides-panel-Features").within(() => {
         // Check the right tab is visible and the overall description
         cy.get(".fides-info-box").should("be.visible");
-        cy.get(".fides-info-box").contains(expected.features_description);
+        cy.get(".fides-info-box").contains(t.features_description);
 
         // Check the list of Features and toggle open a single example
         cy.getByTestId("records-list-Features").within(() => {
-          cy.get(".fides-record-header").contains(expected.features);
-          cy.get(".fides-notice-toggle")
-            .contains(expected.feature_example)
-            .click();
+          cy.get(".fides-record-header").contains(t.features);
+          cy.get(".fides-notice-toggle").contains(t.feature_example).click();
           cy.get(".fides-disclosure-visible").contains(
-            expected.feature_example_description
+            t.feature_example_description
           );
           cy.get(
             ".fides-disclosure-visible .fides-tcf-toggle-content:last"
           ).within(() => {
-            cy.contains(expected.vendors_we_use);
+            cy.contains(t.vendors_we_use);
           });
         });
 
         // Check the list of Special features and toggle open a single example to check illustrations, etc.
         cy.getByTestId("records-list-Special features").within(() => {
-          cy.get(".fides-record-header").contains(expected.special_features);
+          cy.get(".fides-record-header").contains(t.special_features);
           cy.get(".fides-notice-toggle")
-            .contains(expected.special_feature_example)
+            .contains(t.special_feature_example)
             .click();
           cy.get(".fides-disclosure-visible").contains(
-            expected.special_feature_example_description
+            t.special_feature_example_description
           );
           cy.get(
             ".fides-disclosure-visible .fides-tcf-toggle-content:last"
           ).within(() => {
-            cy.contains(expected.vendors_we_use);
+            cy.contains(t.vendors_we_use);
           });
         });
       });
     };
 
     const testTcfModalVendorsTabLocalization = (
-      expected: TestTcfModalTranslations
+      t: TestTcfModalTranslations
     ) => {
       cy.get("#fides-panel-Vendors").within(() => {
         // Check the right tab is visible, the overall description, and radio buttons
         cy.get(".fides-info-box").should("be.visible");
-        cy.get(".fides-info-box").contains(expected.vendors_description);
+        cy.get(".fides-info-box").contains(t.vendors_description);
         cy.get(".fides-radio-button-group button").then((buttons) => {
-          cy.wrap(buttons[0]).contains(expected.consent);
-          cy.wrap(buttons[1]).contains(expected.legint);
+          cy.wrap(buttons[0]).contains(t.consent);
+          cy.wrap(buttons[1]).contains(t.legint);
         });
 
         // Check the list of IAB TCF vendors and toggle open a single example
         cy.getByTestId("records-list-IAB TCF vendors").within(() => {
-          cy.get(".fides-record-header").contains(expected.vendors_iab);
-          cy.get(".fides-notice-badge").contains(expected.iab);
-          cy.get(".fides-notice-toggle")
-            .contains(expected.vendor_iab_example)
-            .click();
+          cy.get(".fides-record-header").contains(t.vendors_iab);
+          cy.get(".fides-notice-badge").contains(t.iab);
+          cy.get(".fides-notice-toggle").contains(t.vendor_iab_example).click();
           cy.get(".fides-disclosure-visible").within(() => {
-            cy.get("p").contains(expected.vendor_iab_example_description);
+            cy.get("p").contains(t.vendor_iab_example_description);
             cy.get("a.fides-external-link").then((links) => {
-              cy.wrap(links[0]).contains(expected.vendor_privacy_policy);
-              cy.wrap(links[1]).contains(expected.vendor_legint_disclosure);
+              cy.wrap(links[0]).contains(t.vendor_privacy_policy);
+              cy.wrap(links[1]).contains(t.vendor_legint_disclosure);
             });
             cy.get(".fides-vendor-details-table").then((tables) => {
               cy.wrap(tables[0]).within(() => {
-                cy.get("thead").contains(expected.purposes);
-                cy.get("thead").contains(expected.retention);
-                cy.get("tr").contains(expected.purpose_example);
+                cy.get("thead").contains(t.purposes);
+                cy.get("thead").contains(t.retention);
+                cy.get("tr").contains(t.purpose_example);
               });
               cy.wrap(tables[1]).within(() => {
-                cy.get("thead").contains(expected.special_purposes);
-                cy.get("thead").contains(expected.retention);
-                cy.get("tr").contains(expected.special_purpose_example);
+                cy.get("thead").contains(t.special_purposes);
+                cy.get("thead").contains(t.retention);
+                cy.get("tr").contains(t.special_purpose_example);
               });
               cy.wrap(tables[2]).within(() => {
-                cy.get("thead").contains(expected.data_categories);
+                cy.get("thead").contains(t.data_categories);
               });
             });
           });
         });
 
         // Toggle over to Legitimate interest vendors to view Other
-        cy.get(".fides-radio-button-group button")
-          .contains(expected.legint)
-          .click();
+        cy.get(".fides-radio-button-group button").contains(t.legint).click();
 
         // Check the list of Other vendors and toggle open a single example
         cy.getByTestId("records-list-Other vendors").within(() => {
-          cy.get(".fides-record-header").contains(expected.vendors_other);
+          cy.get(".fides-record-header").contains(t.vendors_other);
           cy.get(".fides-notice-badge").should("not.exist");
           cy.get(".fides-notice-toggle")
-            .contains(expected.vendor_other_example)
+            .contains(t.vendor_other_example)
             .click();
           cy.get(".fides-disclosure-visible").within(() => {
-            cy.get("p").contains(expected.vendor_other_example_description);
+            cy.get("p").contains(t.vendor_other_example_description);
             cy.get(".fides-vendor-details-table").then((tables) => {
               cy.wrap(tables[0]).within(() => {
-                cy.get("thead").contains(expected.purposes);
-                cy.get("thead").contains(expected.retention);
+                cy.get("thead").contains(t.purposes);
+                cy.get("thead").contains(t.retention);
               });
               cy.wrap(tables[1]).within(() => {
-                cy.get("thead").contains(expected.special_purposes);
-                cy.get("thead").contains(expected.retention);
-                cy.get("tr").contains(expected.special_purpose_example);
+                cy.get("thead").contains(t.special_purposes);
+                cy.get("thead").contains(t.retention);
+                cy.get("tr").contains(t.special_purpose_example);
               });
               cy.wrap(tables[2]).within(() => {
-                cy.get("thead").contains(expected.features);
+                cy.get("thead").contains(t.features);
               });
             });
           });
@@ -1065,7 +1041,7 @@ describe("Consent i18n", () => {
       });
     };
 
-    const testTcfModalLocalization = (expected: TestTcfModalTranslations) => {
+    const testTcfModalLocalization = (t: TestTcfModalTranslations) => {
       // Start by opening the modal
       // NOTE: We could also use cy.get("#fides-modal-link").click(), but let's
       // assume the banner is visible in these tests
@@ -1074,37 +1050,31 @@ describe("Consent i18n", () => {
 
       // Check modal localization
       cy.get("#fides-modal").within(() => {
-        cy.get(".fides-modal-title").contains(expected.title);
-        cy.get(".fides-modal-description").contains(expected.description);
-        cy.get(".fides-modal-button-group").contains(
-          expected.save_button_label
-        );
-        cy.get(".fides-modal-button-group").contains(
-          expected.reject_button_label
-        );
-        cy.get(".fides-modal-button-group").contains(
-          expected.accept_button_label
-        );
+        cy.get(".fides-modal-title").contains(t.title);
+        cy.get(".fides-modal-description").contains(t.description);
+        cy.get(".fides-modal-button-group").contains(t.save_button_label);
+        cy.get(".fides-modal-button-group").contains(t.reject_button_label);
+        cy.get(".fides-modal-button-group").contains(t.accept_button_label);
 
         // Check each of the modal tabs
         cy.get(".fides-tabs .fides-tab-list li").then((items) => {
-          cy.wrap(items[0]).contains(expected.purposes).click();
-          testTcfModalPurposesTabLocalization(expected);
-          cy.wrap(items[1]).contains(expected.features).click();
-          testTcfModalFeaturesTabLocalization(expected);
-          cy.wrap(items[2]).contains(expected.vendors).click();
-          testTcfModalVendorsTabLocalization(expected);
+          cy.wrap(items[0]).contains(t.purposes).click();
+          testTcfModalPurposesTabLocalization(t);
+          cy.wrap(items[1]).contains(t.features).click();
+          testTcfModalFeaturesTabLocalization(t);
+          cy.wrap(items[2]).contains(t.vendors).click();
+          testTcfModalVendorsTabLocalization(t);
         });
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (expected.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label) {
           cy.get("#fides-privacy-policy-link").contains(
-            expected.privacy_policy_link_label
+            t.privacy_policy_link_label
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            expected.privacy_policy_url
+            t.privacy_policy_url
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
