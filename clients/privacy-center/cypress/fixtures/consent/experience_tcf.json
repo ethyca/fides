@@ -543,7 +543,7 @@
           },
           "7": {
             "id": 7,
-            "purposes": [2, 4, 7],
+            "purposes": [2, 4, 7, 9],
             "specialFeatures": [],
             "name": "Selection of personalised advertising, advertising measurement, and audience research",
             "description": "Advertising can be personalised based on your profile. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
@@ -1134,7 +1134,7 @@
             },
             "7": {
               "id": 7,
-              "purposes": [2, 4, 7],
+              "purposes": [2, 4, 7, 9],
               "specialFeatures": [],
               "name": "Selection of personalised advertising, advertising measurement, and audience research",
               "description": "Advertising can be personalised based on your profile. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
@@ -1664,7 +1664,7 @@
             },
             "7": {
               "id": 7,
-              "purposes": [2, 4, 7],
+              "purposes": [2, 4, 7, 9],
               "specialFeatures": [],
               "name": "Selección de publicidad personalizada, medición publicitaria e investigación de audiencia",
               "description": "La publicidad puede personalizarse basándose en tu perfil. El rendimiento de la publicidad puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
