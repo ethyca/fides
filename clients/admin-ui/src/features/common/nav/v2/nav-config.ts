@@ -158,7 +158,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
-        requiresFlag: "locationRegulationConfiguration",
       },
       {
         title: "Regulations",
@@ -168,7 +167,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
-        requiresFlag: "locationRegulationConfiguration",
       },
       {
         title: "Taxonomy",
