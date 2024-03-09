@@ -8,6 +8,8 @@
   "static.tcf.features.description": "Below, you will find a list of the features for which your data is being processed. You may exercise your rights for special features using the toggles below.",
   "static.tcf.special_features": "Special features",
   "static.tcf.vendors": "Vendors",
+  "static.tcf.vendors_using_consent": "Vendors using consent",
+  "static.tcf.vendors_using_legint": "Vendors using legitimate interest",
   "static.tcf.vendors.description": "Below, you will find a list of vendors processing your data and the purposes or features of processing they declare. You may exercise your rights for each vendor based on the legal basis they assert.",
   "static.tcf.vendors.iab": "IAB TCF Vendors",
   "static.gpc": "Global Privacy Control",

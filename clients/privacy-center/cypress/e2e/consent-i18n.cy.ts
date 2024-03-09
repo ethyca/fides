@@ -871,7 +871,7 @@ describe("Consent i18n", () => {
           t.vendors_legint_count
         );
 
-        testTcfBannerStacksLocalization(ENGLISH_TCF_BANNER);
+        testTcfBannerStacksLocalization(t);
 
         // Privacy policy link is optional; if provided, check that it is localized
         if (t.privacy_policy_link_label) {

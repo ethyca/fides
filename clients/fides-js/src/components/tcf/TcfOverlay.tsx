@@ -357,6 +357,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             <div id="fides-tcf-banner-inner">
               <VendorInfoBanner
                 experience={experience}
+                i18n={i18n}
                 goToVendorTab={goToVendorTab}
               />
               <InitialLayer experience={experience} />
