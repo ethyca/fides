@@ -831,7 +831,7 @@ describe("Consent i18n", () => {
    * FIDESJS TCF BANNER + MODAL TESTS
    *
    **********************************************************/
-  describe("when localizing tcf_overlay components", () => {
+  describe.only("when localizing tcf_overlay components", () => {
     const testTcfBannerStacksLocalization = (t: TestTcfBannerTranslations) => {
       // Check banner stacks localization
       cy.get(".fides-tcf-stacks-container").within(() => {
@@ -1103,8 +1103,12 @@ describe("Consent i18n", () => {
         banner: ENGLISH_TCF_BANNER,
         modal: ENGLISH_TCF_MODAL,
       },
-      // TODO (PROD-1683): test in Spanish!
-      // { navigatorLanguage: SPANISH_LOCALE, banner: SPANISH_TCF_BANNER, modal: SPANISH_TCF_MODAL },
+      {
+        navigatorLanguage: SPANISH_LOCALE,
+        locale: SPANISH_LOCALE,
+        banner: SPANISH_TCF_BANNER,
+        modal: SPANISH_TCF_MODAL,
+      },
     ];
 
     tests.forEach(({ navigatorLanguage, locale, banner, modal }) => {
