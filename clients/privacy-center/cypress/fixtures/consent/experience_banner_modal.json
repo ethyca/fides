@@ -43,7 +43,7 @@
         "auto_detect_language": true,
         "disabled": false,
         "id": "pri_exp-banner-modal-000",
-        "component": "modal",
+        "component": "banner_and_modal",
         "created_at": "2024-01-01T12:00:00.000000+00:00",
         "updated_at": "2024-01-01T12:00:00.000000+00:00"
       },

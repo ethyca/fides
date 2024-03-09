@@ -5,7 +5,7 @@ describe("Consent i18n", () => {
   /**
    * Define (lots of) reusable test data for all the specs below!
    */
-  const ENGLISH_LOCALE = "en-US";
+  const ENGLISH_LOCALE = "en";
   const SPANISH_LOCALE = "es";
   const JAPANESE_LOCALE = "ja-JP";
   type TestFixture =
@@ -36,6 +36,9 @@ describe("Consent i18n", () => {
     acknowledge_button_label: string;
     gpc_title: string;
     gpc_description: string;
+    gpc_label: string;
+    gpc_applied_label: string;
+    gpc_overridden_label: string;
     privacy_policy_link_label: string | null;
     privacy_policy_url: string | null;
   };
@@ -49,7 +52,7 @@ describe("Consent i18n", () => {
     vendors_count: string;
     vendors_consent_count: string;
     vendors_legint_count: string;
-    tcf_stacks: { title: string; description: string, isStacked?: boolean }[];
+    tcf_stacks: { title: string; description: string; isStacked?: boolean }[];
     purposes: string;
     purposes_include: string;
     stacked_purpose_example: string;
@@ -112,6 +115,9 @@ describe("Consent i18n", () => {
     acknowledge_button_label: "OK",
     gpc_title: "Global Privacy Control detected",
     gpc_description: "Your global privacy control preference has been honored.",
+    gpc_label: "Global Privacy Control",
+    gpc_applied_label: "Applied",
+    gpc_overridden_label: "Overridden",
     privacy_policy_link_label: "Privacy Policy",
     privacy_policy_url: "https://privacy.example.com/",
   };
@@ -123,15 +129,25 @@ describe("Consent i18n", () => {
   ];
 
   const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
-    ...ENGLISH_BANNER, 
+    ...ENGLISH_BANNER,
     ...{
       vendors_count: "Vendors",
       vendors_consent_count: "Vendors using consent",
       vendors_legint_count: "Vendors using legitimate interest",
       tcf_stacks: [
-        { title: "Selection of personalised advertising", description: "Advertising can be personalised", isStacked: true },
-        { title: "Use profiles to select", description: "Content presented to you" },
-        { title: "Use precise geolocation", description: "With your acceptance, your precise location" },
+        {
+          title: "Selection of personalised advertising",
+          description: "Advertising can be personalised",
+          isStacked: true,
+        },
+        {
+          title: "Use profiles to select",
+          description: "Content presented to you",
+        },
+        {
+          title: "Use precise geolocation",
+          description: "With your acceptance, your precise location",
+        },
       ],
       purposes: "Purposes",
       purposes_include: "Purposes include",
@@ -145,28 +161,33 @@ describe("Consent i18n", () => {
       purposes: "Purposes",
       purposes_description: "Below, you will find a list of the purposes",
       purpose_example: "Use profiles to select personalised advertising",
-      purpose_example_description: "Advertising presented to you on this service",
+      purpose_example_description:
+        "Advertising presented to you on this service",
       purpose_example_illustration: "An online retailer wants to advertise",
       special_purposes: "Special purposes",
       special_purpose_example: "Ensure security",
       special_purpose_example_description: "Your data can be used to monitor",
-      special_purpose_example_illustration: "An advertising intermediary delivers ads",
+      special_purpose_example_illustration:
+        "An advertising intermediary delivers ads",
       features: "Features",
       features_description: "Below, you will find a list of the features",
       feature_example: "Match and combine data",
       feature_example_description: "Information about your activity",
       special_features: "Special features",
       special_feature_example: "Use precise geolocation data",
-      special_feature_example_description: "With your acceptance, your precise location",
+      special_feature_example_description:
+        "With your acceptance, your precise location",
       vendors: "Vendors",
       vendors_description: "Below, you will find a list of vendors",
       vendors_we_use: "Vendors we use",
       vendors_iab: "IAB TCF vendors",
       vendor_iab_example: "Captify",
-      vendor_iab_example_description: "Captify stores cookies with a maximum duration",
+      vendor_iab_example_description:
+        "Captify stores cookies with a maximum duration",
       vendors_other: "Other vendors",
       vendor_other_example: "Fides System",
-      vendor_other_example_description: "Fides System stores cookies with a maximum duration",
+      vendor_other_example_description:
+        "Fides System stores cookies with a maximum duration",
       vendor_privacy_policy: "Privacy policy",
       vendor_legint_disclosure: "Legitimate interest disclosure",
       iab: "IAB TCF",
@@ -174,8 +195,8 @@ describe("Consent i18n", () => {
       consent: "Consent",
       legint: "Legitimate interest",
       data_categories: "Data categories",
-    }
-  }
+    },
+  };
 
   const SPANISH_BANNER: TestBannerTranslations = {
     banner_title: "[banner] Administrar sus preferencias de consentimiento",
@@ -200,6 +221,9 @@ describe("Consent i18n", () => {
     gpc_title: "Control de privacidad global detectado",
     gpc_description:
       "Su preferencia de control de privacidad global se ha respetado.",
+    gpc_label: "Control de privacidad global",
+    gpc_applied_label: "Aplicado",
+    gpc_overridden_label: "Anulado",
     privacy_policy_link_label: "Política de privacidad",
     privacy_policy_url: "https://privacy.example.com/",
   };
@@ -349,16 +373,22 @@ describe("Consent i18n", () => {
   };
 
   // Reusable assertions to test that the modal notices component localizes correctly
-  const testTcfBannerStacksLocalization = (expected: TestTcfBannerTranslations) => {
+  const testTcfBannerStacksLocalization = (
+    expected: TestTcfBannerTranslations
+  ) => {
     // Check banner stacks localization
     cy.get(".fides-tcf-stacks-container").within(() => {
-      expected.tcf_stacks.forEach(({title, description, isStacked}) => {
+      expected.tcf_stacks.forEach(({ title, description, isStacked }) => {
         cy.get(".fides-notice-toggle-title").contains(title).click();
         cy.get(".fides-disclosure-visible").contains(description);
         // If this is truly a "stack", check the additional purposes list
         if (isStacked) {
-          cy.get(".fides-disclosure-visible .fides-tcf-purpose-vendor-title").contains(expected.purposes_include);
-          cy.get(".fides-disclosure-visible .fides-tcf-purpose-vendor-list").contains(expected.stacked_purpose_example);
+          cy.get(
+            ".fides-disclosure-visible .fides-tcf-purpose-vendor-title"
+          ).contains(expected.purposes_include);
+          cy.get(
+            ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
+          ).contains(expected.stacked_purpose_example);
         }
         cy.get(".fides-notice-toggle-title").contains(title).click();
       });
@@ -374,9 +404,15 @@ describe("Consent i18n", () => {
       );
       cy.get("#fides-button-group").contains(expected.reject_button_label);
       cy.get("#fides-button-group").contains(expected.accept_button_label);
-      cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(expected.vendors_count);
-      cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(expected.vendors_consent_count);
-      cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(expected.vendors_legint_count);
+      cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
+        expected.vendors_count
+      );
+      cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
+        expected.vendors_consent_count
+      );
+      cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
+        expected.vendors_legint_count
+      );
 
       testTcfBannerStacksLocalization(ENGLISH_TCF_BANNER);
 
@@ -396,12 +432,14 @@ describe("Consent i18n", () => {
     });
   };
 
-  const testTcfModalPurposesTabLocalization = (expected: TestTcfModalTranslations) => {
+  const testTcfModalPurposesTabLocalization = (
+    expected: TestTcfModalTranslations
+  ) => {
     cy.get("#fides-panel-Purposes").within(() => {
       // Check the right tab is visible, the overall description, and radio buttons
       cy.get(".fides-info-box").should("be.visible");
       cy.get(".fides-info-box").contains(expected.purposes_description);
-      cy.get(".fides-radio-button-group button").then(buttons => {
+      cy.get(".fides-radio-button-group button").then((buttons) => {
         cy.wrap(buttons[0]).contains(expected.consent);
         cy.wrap(buttons[1]).contains(expected.legint);
       });
@@ -409,10 +447,18 @@ describe("Consent i18n", () => {
       // Check the list of Purposes and toggle open a single example to check illustrations, etc.
       cy.getByTestId("records-list-Purposes").within(() => {
         cy.get(".fides-record-header").contains(expected.purposes);
-        cy.get(".fides-notice-toggle").contains(expected.purpose_example).click();
-        cy.get(".fides-disclosure-visible").contains(expected.purpose_example_description);
-        cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(expected.purpose_example_illustration);
-        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+        cy.get(".fides-notice-toggle")
+          .contains(expected.purpose_example)
+          .click();
+        cy.get(".fides-disclosure-visible").contains(
+          expected.purpose_example_description
+        );
+        cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(
+          expected.purpose_example_illustration
+        );
+        cy.get(
+          ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+        ).within(() => {
           cy.contains(expected.vendors_we_use);
         });
       });
@@ -420,17 +466,27 @@ describe("Consent i18n", () => {
       // Check the list of Special purposes and toggle open a single example to check illustrations, etc.
       cy.getByTestId("records-list-Special purposes").within(() => {
         cy.get(".fides-record-header").contains(expected.special_purposes);
-        cy.get(".fides-notice-toggle").contains(expected.special_purpose_example).click();
-        cy.get(".fides-disclosure-visible").contains(expected.special_purpose_example_description);
-        cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(expected.special_purpose_example_illustration);
-        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+        cy.get(".fides-notice-toggle")
+          .contains(expected.special_purpose_example)
+          .click();
+        cy.get(".fides-disclosure-visible").contains(
+          expected.special_purpose_example_description
+        );
+        cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(
+          expected.special_purpose_example_illustration
+        );
+        cy.get(
+          ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+        ).within(() => {
           cy.contains(expected.vendors_we_use);
         });
       });
     });
   };
 
-  const testTcfModalFeaturesTabLocalization = (expected: TestTcfModalTranslations) => {
+  const testTcfModalFeaturesTabLocalization = (
+    expected: TestTcfModalTranslations
+  ) => {
     cy.get("#fides-panel-Features").within(() => {
       // Check the right tab is visible and the overall description
       cy.get(".fides-info-box").should("be.visible");
@@ -439,9 +495,15 @@ describe("Consent i18n", () => {
       // Check the list of Features and toggle open a single example
       cy.getByTestId("records-list-Features").within(() => {
         cy.get(".fides-record-header").contains(expected.features);
-        cy.get(".fides-notice-toggle").contains(expected.feature_example).click();
-        cy.get(".fides-disclosure-visible").contains(expected.feature_example_description);
-        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+        cy.get(".fides-notice-toggle")
+          .contains(expected.feature_example)
+          .click();
+        cy.get(".fides-disclosure-visible").contains(
+          expected.feature_example_description
+        );
+        cy.get(
+          ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+        ).within(() => {
           cy.contains(expected.vendors_we_use);
         });
       });
@@ -449,21 +511,29 @@ describe("Consent i18n", () => {
       // Check the list of Special features and toggle open a single example to check illustrations, etc.
       cy.getByTestId("records-list-Special features").within(() => {
         cy.get(".fides-record-header").contains(expected.special_features);
-        cy.get(".fides-notice-toggle").contains(expected.special_feature_example).click();
-        cy.get(".fides-disclosure-visible").contains(expected.special_feature_example_description);
-        cy.get(".fides-disclosure-visible .fides-tcf-toggle-content:last").within(() => {
+        cy.get(".fides-notice-toggle")
+          .contains(expected.special_feature_example)
+          .click();
+        cy.get(".fides-disclosure-visible").contains(
+          expected.special_feature_example_description
+        );
+        cy.get(
+          ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+        ).within(() => {
           cy.contains(expected.vendors_we_use);
         });
       });
     });
   };
 
-  const testTcfModalVendorsTabLocalization = (expected: TestTcfModalTranslations) => {
+  const testTcfModalVendorsTabLocalization = (
+    expected: TestTcfModalTranslations
+  ) => {
     cy.get("#fides-panel-Vendors").within(() => {
       // Check the right tab is visible, the overall description, and radio buttons
       cy.get(".fides-info-box").should("be.visible");
       cy.get(".fides-info-box").contains(expected.vendors_description);
-      cy.get(".fides-radio-button-group button").then(buttons => {
+      cy.get(".fides-radio-button-group button").then((buttons) => {
         cy.wrap(buttons[0]).contains(expected.consent);
         cy.wrap(buttons[1]).contains(expected.legint);
       });
@@ -472,14 +542,16 @@ describe("Consent i18n", () => {
       cy.getByTestId("records-list-IAB TCF vendors").within(() => {
         cy.get(".fides-record-header").contains(expected.vendors_iab);
         cy.get(".fides-notice-badge").contains(expected.iab);
-        cy.get(".fides-notice-toggle").contains(expected.vendor_iab_example).click();
+        cy.get(".fides-notice-toggle")
+          .contains(expected.vendor_iab_example)
+          .click();
         cy.get(".fides-disclosure-visible").within(() => {
           cy.get("p").contains(expected.vendor_iab_example_description);
-          cy.get("a.fides-external-link").then(links => {
+          cy.get("a.fides-external-link").then((links) => {
             cy.wrap(links[0]).contains(expected.vendor_privacy_policy);
             cy.wrap(links[1]).contains(expected.vendor_legint_disclosure);
           });
-          cy.get(".fides-vendor-details-table").then(tables => {
+          cy.get(".fides-vendor-details-table").then((tables) => {
             cy.wrap(tables[0]).within(() => {
               cy.get("thead").contains(expected.purposes);
               cy.get("thead").contains(expected.retention);
@@ -498,16 +570,20 @@ describe("Consent i18n", () => {
       });
 
       // Toggle over to Legitimate interest vendors to view Other
-      cy.get(".fides-radio-button-group button").contains(expected.legint).click();
+      cy.get(".fides-radio-button-group button")
+        .contains(expected.legint)
+        .click();
 
       // Check the list of Other vendors and toggle open a single example
       cy.getByTestId("records-list-Other vendors").within(() => {
         cy.get(".fides-record-header").contains(expected.vendors_other);
         cy.get(".fides-notice-badge").should("not.exist");
-        cy.get(".fides-notice-toggle").contains(expected.vendor_other_example).click();
+        cy.get(".fides-notice-toggle")
+          .contains(expected.vendor_other_example)
+          .click();
         cy.get(".fides-disclosure-visible").within(() => {
           cy.get("p").contains(expected.vendor_other_example_description);
-          cy.get(".fides-vendor-details-table").then(tables => {
+          cy.get(".fides-vendor-details-table").then((tables) => {
             cy.wrap(tables[0]).within(() => {
               cy.get("thead").contains(expected.purposes);
               cy.get("thead").contains(expected.retention);
@@ -523,7 +599,6 @@ describe("Consent i18n", () => {
           });
         });
       });
-
     });
   };
 
@@ -547,7 +622,7 @@ describe("Consent i18n", () => {
       );
 
       // Check each of the modal tabs
-      cy.get(".fides-tabs .fides-tab-list li").then(items => {
+      cy.get(".fides-tabs .fides-tab-list li").then((items) => {
         cy.wrap(items[0]).contains(expected.purposes).click();
         testTcfModalPurposesTabLocalization(expected);
         cy.wrap(items[1]).contains(expected.features).click();
@@ -572,498 +647,442 @@ describe("Consent i18n", () => {
     });
   };
 
-  describe("when auto_detect_language is true", () => {
-    describe(`when browser language matches default locale (${ENGLISH_LOCALE})`, () => {
-      it("localizes banner_and_modal components in the correct locale", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_banner_modal.json",
+  /**
+   * Localization tests for FidesJS Banner & Modal
+   */
+  describe("when localizing banner_and_modal components", () => {
+    const fixture = "experience_banner_modal.json";
+    const tests = [
+      {
+        navigatorLanguage: ENGLISH_LOCALE,
+        locale: ENGLISH_LOCALE,
+        banner: ENGLISH_BANNER,
+        modal: ENGLISH_MODAL,
+        notices: ENGLISH_NOTICES,
+      },
+      {
+        navigatorLanguage: SPANISH_LOCALE,
+        locale: SPANISH_LOCALE,
+        banner: SPANISH_BANNER,
+        modal: SPANISH_MODAL,
+        notices: SPANISH_NOTICES,
+      },
+    ];
+    tests.forEach(({ navigatorLanguage, locale, banner, modal, notices }) => {
+      describe(`when browser language matches available locale (${navigatorLanguage})`, () => {
+        it(`localizes banner_and_modal components in the correct locale (${locale})`, () => {
+          visitDemoWithI18n({
+            navigatorLanguage: navigatorLanguage,
+            globalPrivacyControl: true,
+            fixture,
+          });
+          testBannerLocalization(banner);
+          openAndTestModalLocalization(modal);
+          testModalNoticesLocalization(notices);
         });
-        // testBannerLocalization(ENGLISH_BANNER);
-        openAndTestModalLocalization(ENGLISH_MODAL);
-        testModalNoticesLocalization(ENGLISH_NOTICES);
+
+        it("handles optional translations for banner_and_modal components", () => {
+          // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
+          visitDemoWithI18n({
+            navigatorLanguage: navigatorLanguage,
+            globalPrivacyControl: true,
+            fixture,
+            overrideExperience: (experience: any) => {
+              /* eslint-disable no-param-reassign */
+              const translations =
+                experience.experience_config.translations.find(
+                  (e: any) => e.language === locale
+                );
+              translations.banner_description = null;
+              translations.banner_title = "";
+              translations.privacy_policy_link_label = null;
+              translations.privacy_policy_url = null;
+              return experience;
+              /* eslint-enable no-param-reassign */
+            },
+          });
+
+          testBannerLocalization({
+            ...banner,
+            ...{
+              // Expect banner to fallback to modal translations
+              banner_title: modal.title,
+              banner_description: modal.description,
+              // Expect privacy policy link to not exist
+              privacy_policy_link_label: null,
+              privacy_policy_link_url: null,
+            },
+          });
+          openAndTestModalLocalization({
+            ...modal,
+            ...{
+              // Expect privacy policy link to not exist
+              privacy_policy_link_label: null,
+              privacy_policy_link_url: null,
+            },
+          });
+          testModalNoticesLocalization(notices);
+        });
+
+        it(`localizes banner_and_modal notice-only components in the correct locale (${locale})`, () => {
+          visitDemoWithI18n({
+            navigatorLanguage: navigatorLanguage,
+            globalPrivacyControl: true,
+            fixture: "experience_banner_modal_notice_only.json",
+          });
+
+          // Test notice-only banner
+          cy.get("#fides-banner").within(() => {
+            cy.get(".fides-banner-title").contains(banner.banner_title);
+            cy.get(".fides-banner-description").contains(
+              banner.banner_description
+            );
+            cy.get(".fides-acknowledge-button").contains(
+              banner.acknowledge_button_label
+            );
+          });
+
+          // Test notice-only modal
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal").within(() => {
+            cy.get(".fides-modal-title").contains(modal.title);
+            cy.get(".fides-modal-description").contains(modal.description);
+            cy.get(".fides-acknowledge-button").contains(
+              modal.acknowledge_button_label
+            );
+          });
+        });
+
+        it.skip(`localizes modal components in the correct locale (${locale})`, () => {});
+
+        it(`localizes GPC badges on notices in the correct locale ($locale})`, () => {
+          // Set GPC flag on the first notice
+          visitDemoWithI18n({
+            navigatorLanguage: navigatorLanguage,
+            globalPrivacyControl: true,
+            fixture,
+            overrideExperience: (experience: any) => {
+              /* eslint-disable no-param-reassign */
+              // Modify the first notice (Advertising) to set the GPC flag
+              const notices: PrivacyNotice[] = experience.privacy_notices;
+              const adsNotice = notices[0];
+              cy.wrap(adsNotice).should(
+                "have.property",
+                "id",
+                "pri_notice-advertising-000"
+              );
+              adsNotice.has_gpc_flag = true;
+              return experience;
+              /* eslint-enable no-param-reassign */
+            },
+          });
+
+          // Open the modal and check the notices themselves are translated
+          testBannerLocalization(banner);
+          openAndTestModalLocalization(modal);
+          testModalNoticesLocalization(notices);
+
+          // Check the GPC badge labels on the first notice
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-notice-toggle:first"
+          ).within(() => {
+            cy.get(".fides-notice-toggle-title").contains(notices[0].title);
+            cy.get(".fides-gpc-label").contains(modal.gpc_label);
+            cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+              modal.gpc_applied_label
+            );
+            cy.get(".fides-toggle-input").click();
+            cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+              modal.gpc_overridden_label
+            );
+          });
+          cy.get(
+            "#fides-modal .fides-modal-notices .fides-notice-toggle:last"
+          ).within(() => {
+            cy.get(".fides-gpc-label").should("not.exist");
+          });
+        });
       });
 
-      it("handles optional translations for banner_and_modal components in the correct locale", () => {
-        // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
-        visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_banner_modal.json",
-          overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
-            const translations = experience.experience_config.translations[0];
-            translations.banner_description = null;
-            translations.banner_title = "";
-            translations.privacy_policy_link_label = null;
-            translations.privacy_policy_url = null;
-            return experience;
-            /* eslint-enable no-param-reassign */
-          },
-        });
-
-        testBannerLocalization({
-          ...ENGLISH_BANNER,
-          ...{
-            // Expect banner to fallback to modal translations
-            banner_title: ENGLISH_MODAL.title,
-            banner_description: ENGLISH_MODAL.description,
-            // Expect privacy policy link to not exist
-            privacy_policy_link_label: null,
-            privacy_policy_link_url: null,
-          },
-        });
-        openAndTestModalLocalization({
-          ...ENGLISH_MODAL,
-          ...{
-            // Expect privacy policy link to not exist
-            privacy_policy_link_label: null,
-            privacy_policy_link_url: null,
-          },
-        });
-        testModalNoticesLocalization(ENGLISH_NOTICES);
-      });
-
-      it("localizes banner_and_modal notice-only components in the correct locale", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_banner_modal_notice_only.json",
-        });
-
-        // Test notice-only banner
-        cy.get("#fides-banner").within(() => {
-          cy.get(".fides-banner-title").contains(ENGLISH_BANNER.banner_title);
-          cy.get(".fides-banner-description").contains(
-            ENGLISH_BANNER.banner_description
-          );
-          cy.get(".fides-acknowledge-button").contains(
-            ENGLISH_BANNER.acknowledge_button_label
-          );
-        });
-
-        // Test notice-only modal
-        cy.get("#fides-modal-link").click();
-        cy.get("#fides-modal").within(() => {
-          cy.get(".fides-modal-title").contains(ENGLISH_MODAL.title);
-          cy.get(".fides-modal-description").contains(
-            ENGLISH_MODAL.description
-          );
-          cy.get(".fides-acknowledge-button").contains(
-            ENGLISH_MODAL.acknowledge_button_label
-          );
+      describe(`when browser language does not match any available locale (${JAPANESE_LOCALE})`, () => {
+        it(`localizes banner_and_modal components in the default locale (${ENGLISH_LOCALE})`, () => {
+          visitDemoWithI18n({
+            navigatorLanguage: JAPANESE_LOCALE,
+            globalPrivacyControl: true,
+            fixture,
+          });
+          testBannerLocalization(ENGLISH_BANNER);
+          openAndTestModalLocalization(ENGLISH_MODAL);
+          testModalNoticesLocalization(ENGLISH_NOTICES);
         });
       });
 
-      it.skip("localizes modal components in the correct locale", () => {});
-
-      it.only("localizes tcf_overlay components in the correct locale", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_tcf.json",
-          options: { tcfEnabled: true },
+      describe("when auto_detect_language is false", () => {
+        it(`ignores browser locale and localizes in the default locale (${ENGLISH_LOCALE})`, () => {
+          // Visit the demo site in Spanish, but expect English translations when auto-detection is disabled
+          visitDemoWithI18n({
+            navigatorLanguage: SPANISH_LOCALE,
+            globalPrivacyControl: true,
+            fixture,
+            overrideExperience: (experience) => {
+              /* eslint-disable-next-line no-param-reassign */
+              experience.experience_config!.auto_detect_language = false;
+              return experience;
+            },
+          });
+          testBannerLocalization(ENGLISH_BANNER);
+          openAndTestModalLocalization(ENGLISH_MODAL);
+          testModalNoticesLocalization(ENGLISH_NOTICES);
         });
-
-        testTcfBannerLocalization(ENGLISH_TCF_BANNER);
-        testTcfModalLocalization(ENGLISH_TCF_MODAL);
       });
 
-      it.skip("localizes privacy_center components in the correct locale", () => {});
+      // TODO (PROD-1598): enable this test and add other cases as needed!
+      describe.skip("when user selects their own locale", () => {
+        it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
+          // Visit the demo site in English, but expect Spanish translations when the user selects
+          visitDemoWithI18n({
+            navigatorLanguage: ENGLISH_LOCALE,
+            globalPrivacyControl: true,
+            fixture: "experience_banner_modal.json",
+          });
+          // TODO (PROD-1598): select Spanish from banner
+          testBannerLocalization(SPANISH_BANNER);
+          openAndTestModalLocalization(SPANISH_MODAL);
+          testModalNoticesLocalization(SPANISH_NOTICES);
+        });
+      });
     });
 
-    describe(`when browser language matches an available locale (${SPANISH_LOCALE})`, () => {
-      it("localizes banner_and_modal components in the correct locale", () => {
+    /**
+     * Localization tests for FidesJS TCF Banner & Modal
+     */
+    describe("when localizing tcf_overlay components", () => {
+      const fixture = "experience_tcf.json";
+      const tests = [
+        {
+          navigatorLanguage: ENGLISH_LOCALE,
+          locale: ENGLISH_LOCALE,
+          banner: ENGLISH_TCF_BANNER,
+          modal: ENGLISH_TCF_MODAL,
+        },
+        // { navigatorLanguage: SPANISH_LOCALE, banner: SPANISH_TCF_BANNER, modal: SPANISH_TCF_MODAL },
+      ];
+      tests.forEach(({ navigatorLanguage, locale, banner, modal }) => {
+        it(`localizes tcf_overlay components in the correct locale (${locale})`, () => {
+          visitDemoWithI18n({
+            navigatorLanguage: navigatorLanguage,
+            globalPrivacyControl: true,
+            fixture,
+            options: { tcfEnabled: true },
+          });
+          testTcfBannerLocalization(banner);
+          testTcfModalLocalization(modal);
+        });
+      });
+    });
+
+    describe.skip("when localizing privacy_center components", () => {});
+
+    /**
+     * Special-case tests for various edge cases or potential gotchas
+     */
+    describe(`when notices are missing translations that are available in the experience for the correct language (${SPANISH_LOCALE})`, () => {
+      beforeEach(() => {
+        // Visit the demo in Spanish, but remove all non-English translations from the Advertising notice
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
           globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
+          overrideExperience: (experience: any) => {
+            /* eslint-disable no-param-reassign */
+            // Modify the first notice (Advertising) and delete all non-English translations
+            const notices: PrivacyNotice[] = experience.privacy_notices;
+            const adsNotice = notices[0];
+            cy.wrap(adsNotice).should(
+              "have.property",
+              "id",
+              "pri_notice-advertising-000"
+            );
+            adsNotice.has_gpc_flag = true;
+            adsNotice.translations = adsNotice.translations.filter(
+              (e) => e.language === "en"
+            );
+            return experience;
+            /* eslint-enable no-param-reassign */
+          },
+        });
+      });
+
+      it(`falls back to showing notices in the default locale (${ENGLISH_LOCALE}) and the experience in the correct locale (${SPANISH_LOCALE})`, () => {
+        testBannerLocalization(SPANISH_BANNER);
+        openAndTestModalLocalization(SPANISH_MODAL);
+        testModalNoticesLocalization([
+          ENGLISH_NOTICES[0], // fallback to English translation for first (Advertising) notice
+          SPANISH_NOTICES[1],
+          SPANISH_NOTICES[2],
+        ]);
+      });
+
+      /* eslint-disable @typescript-eslint/naming-convention */
+      it(`reports notices served and preferences saved using the correct privacy_notice_history_id for the default locale (${ENGLISH_LOCALE})`, () => {
+        /**
+         * Expect the notice history IDs used should be a mixture of English and Spanish notices:
+         * 1) English advertising notice (fallback for missing Spanish translation)
+         * 2) Spanish analytics notice (correct Spanish translation)
+         * 3) Spanish essential notice (correct Spanish translation)
+         */
+        const EXPECTED_NOTICE_HISTORY_IDS = [
+          "pri_notice-history-advertising-en-000", // English (en)
+          "pri_notice-history-analytics-es-000", // Spanish (es)
+          "pri_notice-history-essential-es-000", // Spanish (es)
+        ];
+
+        // First, expect GPC to auto-apply and save preferences to the API
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const {
+            method,
+            served_notice_history_id,
+            privacy_experience_config_history_id,
+            preferences,
+          } = interception.request.body;
+          expect(method).to.eq("gpc");
+          // NOTE: GPC preferences are saved before "notices served" could
+          // possibly complete, so we expect this to be undefined
+          expect(served_notice_history_id).to.eq(undefined);
+          expect(privacy_experience_config_history_id).to.eq(
+            "pri_exp-history-banner-modal-es-000"
+          );
+          const noticeHistoryIDs = preferences.map(
+            (e: any) => e.privacy_notice_history_id
+          );
+          expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+        });
+
+        // Open the modal and test the "notices served" API
+        openAndTestModalLocalization(SPANISH_MODAL);
+        cy.wait("@patchNoticesServed").then((interception) => {
+          const {
+            privacy_experience_config_history_id,
+            privacy_notice_history_ids,
+          } = interception.request.body;
+          expect(privacy_experience_config_history_id).to.eq(
+            "pri_exp-history-banner-modal-es-000"
+          );
+          expect(privacy_notice_history_ids).to.eql(
+            EXPECTED_NOTICE_HISTORY_IDS
+          );
+        });
+
+        // Accept all notices and test the "privacy preferences" API
+        cy.get("#fides-modal .fides-accept-all-button").click();
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const {
+            method,
+            served_notice_history_id,
+            privacy_experience_config_history_id,
+            preferences,
+          } = interception.request.body;
+          expect(method).to.eq("accept");
+          expect(served_notice_history_id).to.eq("ser_notice-history-000");
+          expect(privacy_experience_config_history_id).to.eq(
+            "pri_exp-history-banner-modal-es-000"
+          );
+          const noticeHistoryIDs = preferences.map(
+            (e: any) => e.privacy_notice_history_id
+          );
+          expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+        });
+
+        // TODO (PROD-1598): test that correct history ID used after user changes language
+      });
+      /* eslint-enable @typescript-eslint/naming-convention */
+    });
+
+    describe(`when ?fides_locale override param is set to an available locale (${SPANISH_LOCALE})`, () => {
+      it(`ignores browser locale and localizes in the override locale (${SPANISH_LOCALE})`, () => {
+        // Visit the demo site in English, but expect Spanish translations when fides_locale override is set
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
+          fixture: "experience_banner_modal.json",
+          queryParams: { fides_locale: SPANISH_LOCALE },
         });
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
-
-      it("handles optional translations for banner_and_modal components in the correct locale", () => {
-        // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
-        visitDemoWithI18n({
-          navigatorLanguage: SPANISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_banner_modal.json",
-          overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
-            const translations = experience.experience_config.translations[1];
-            translations.banner_description = null;
-            translations.banner_title = "";
-            translations.privacy_policy_link_label = null;
-            translations.privacy_policy_url = null;
-            return experience;
-            /* eslint-enable no-param-reassign */
-          },
-        });
-
-        testBannerLocalization({
-          ...SPANISH_BANNER,
-          ...{
-            // Expect banner to fallback to modal translations
-            banner_title: SPANISH_MODAL.title,
-            banner_description: SPANISH_MODAL.description,
-            // Expect privacy policy link to not exist
-            privacy_policy_link_label: null,
-            privacy_policy_link_url: null,
-          },
-        });
-        openAndTestModalLocalization({
-          ...SPANISH_MODAL,
-          ...{
-            // Expect privacy policy link to not exist
-            privacy_policy_link_label: null,
-            privacy_policy_link_url: null,
-          },
-        });
-        testModalNoticesLocalization(SPANISH_NOTICES);
-      });
-
-      it("localizes banner_and_modal notice-only components in the correct locale", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: SPANISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_banner_modal_notice_only.json",
-        });
-
-        // Test notice-only banner
-        cy.get("#fides-banner").within(() => {
-          cy.get(".fides-banner-title").contains(SPANISH_BANNER.banner_title);
-          cy.get(".fides-banner-description").contains(
-            SPANISH_BANNER.banner_description
-          );
-          cy.get(".fides-acknowledge-button").contains(
-            SPANISH_BANNER.acknowledge_button_label
-          );
-        });
-
-        // Test notice-only modal
-        cy.get("#fides-modal-link").click();
-        cy.get("#fides-modal").within(() => {
-          cy.get(".fides-modal-title").contains(SPANISH_MODAL.title);
-          cy.get(".fides-modal-description").contains(
-            SPANISH_MODAL.description
-          );
-          cy.get(".fides-acknowledge-button").contains(
-            SPANISH_MODAL.acknowledge_button_label
-          );
-        });
-      });
-
-      it.skip("localizes tcf_overlay components in the correct locale", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: SPANISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_tcf.json",
-        });
-        cy.window().its("navigator.language").should("eq", SPANISH_LOCALE);
-      });
-
-      it.skip("localizes privacy_center components in the correct locale", () => {});
     });
 
-    describe(`when browser language does not match any available locale (${JAPANESE_LOCALE})`, () => {
-      it("localizes banner_and_modal components in the correct locale", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: JAPANESE_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_banner_modal.json",
+    describe("when localizing the 'On'/'Off' toggle labels", () => {
+      describe(`when in the default locale (${ENGLISH_LOCALE})`, () => {
+        it("shows the 'On'/'Off' toggle labels in banner_and_modal components", () => {
+          visitDemoWithI18n({
+            navigatorLanguage: ENGLISH_LOCALE,
+            fixture: "experience_banner_modal.json",
+          });
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-modal-notices").within(() => {
+            cy.get(".fides-toggle:first").contains("Off");
+            cy.get(".fides-toggle:first").click();
+            cy.get(".fides-toggle:first").contains("On");
+          });
         });
-        testBannerLocalization(ENGLISH_BANNER);
-        openAndTestModalLocalization(ENGLISH_MODAL);
-        testModalNoticesLocalization(ENGLISH_NOTICES);
-      });
-    });
-  });
 
-  describe("when auto_detect_language is false", () => {
-    it(`ignores browser locale and localizes in the default locale (${ENGLISH_LOCALE})`, () => {
-      // Visit the demo site in Spanish, but expect English translations when auto-detection is disabled
-      visitDemoWithI18n({
-        navigatorLanguage: SPANISH_LOCALE,
-        globalPrivacyControl: true,
-        fixture: "experience_banner_modal.json",
-        overrideExperience: (experience) => {
-          /* eslint-disable-next-line no-param-reassign */
-          experience.experience_config!.auto_detect_language = false;
-          return experience;
-        },
-      });
-      testBannerLocalization(ENGLISH_BANNER);
-      openAndTestModalLocalization(ENGLISH_MODAL);
-      testModalNoticesLocalization(ENGLISH_NOTICES);
-    });
-  });
-
-  describe(`when notices are missing translations that are available in the experience for the correct language (${SPANISH_LOCALE})`, () => {
-    beforeEach(() => {
-      // Visit the demo in Spanish, but remove all non-English translations from the Advertising notice
-      visitDemoWithI18n({
-        navigatorLanguage: SPANISH_LOCALE,
-        globalPrivacyControl: true,
-        fixture: "experience_banner_modal.json",
-        overrideExperience: (experience: any) => {
-          /* eslint-disable no-param-reassign */
-          // Modify the first notice (Advertising) and delete all non-English translations
-          const notices: PrivacyNotice[] = experience.privacy_notices;
-          const adsNotice = notices[0];
-          cy.wrap(adsNotice).should(
-            "have.property",
-            "id",
-            "pri_notice-advertising-000"
-          );
-          adsNotice.has_gpc_flag = true;
-          adsNotice.translations = adsNotice.translations.filter(
-            (e) => e.language === "en"
-          );
-          return experience;
-          /* eslint-enable no-param-reassign */
-        },
-      });
-    });
-
-    it(`falls back to showing notices in the default locale (${ENGLISH_LOCALE}) and the experience in the correct locale (${SPANISH_LOCALE})`, () => {
-      testBannerLocalization(SPANISH_BANNER);
-      openAndTestModalLocalization(SPANISH_MODAL);
-      testModalNoticesLocalization([
-        ENGLISH_NOTICES[0], // fallback to English translation for first (Advertising) notice
-        SPANISH_NOTICES[1],
-        SPANISH_NOTICES[2],
-      ]);
-    });
-
-    /* eslint-disable @typescript-eslint/naming-convention */
-    it(`reports notices served and preferences saved using the correct privacy_notice_history_id for the default locale (${ENGLISH_LOCALE})`, () => {
-      /**
-       * Expect the notice history IDs used should be a mixture of English and Spanish notices:
-       * 1) English advertising notice (fallback for missing Spanish translation)
-       * 2) Spanish analytics notice (correct Spanish translation)
-       * 3) Spanish essential notice (correct Spanish translation)
-       */
-      const EXPECTED_NOTICE_HISTORY_IDS = [
-        "pri_notice-history-advertising-en-000", // English (en)
-        "pri_notice-history-analytics-es-000", // Spanish (es)
-        "pri_notice-history-essential-es-000", // Spanish (es)
-      ];
-
-      // First, expect GPC to auto-apply and save preferences to the API
-      cy.wait("@patchPrivacyPreference").then((interception) => {
-        const {
-          method,
-          served_notice_history_id,
-          privacy_experience_config_history_id,
-          preferences,
-        } = interception.request.body;
-        expect(method).to.eq("gpc");
-        // NOTE: GPC preferences are saved before "notices served" could
-        // possibly complete, so we expect this to be undefined
-        expect(served_notice_history_id).to.eq(undefined);
-        expect(privacy_experience_config_history_id).to.eq(
-          "pri_exp-history-banner-modal-es-000"
-        );
-        const noticeHistoryIDs = preferences.map(
-          (e: any) => e.privacy_notice_history_id
-        );
-        expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
-      });
-
-      // Open the modal and test the "notices served" API
-      openAndTestModalLocalization(SPANISH_MODAL);
-      cy.wait("@patchNoticesServed").then((interception) => {
-        const {
-          privacy_experience_config_history_id,
-          privacy_notice_history_ids,
-        } = interception.request.body;
-        expect(privacy_experience_config_history_id).to.eq(
-          "pri_exp-history-banner-modal-es-000"
-        );
-        expect(privacy_notice_history_ids).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
-      });
-
-      // Accept all notices and test the "privacy preferences" API
-      cy.get("#fides-modal .fides-accept-all-button").click();
-      cy.wait("@patchPrivacyPreference").then((interception) => {
-        const {
-          method,
-          served_notice_history_id,
-          privacy_experience_config_history_id,
-          preferences,
-        } = interception.request.body;
-        expect(method).to.eq("accept");
-        expect(served_notice_history_id).to.eq("ser_notice-history-000");
-        expect(privacy_experience_config_history_id).to.eq(
-          "pri_exp-history-banner-modal-es-000"
-        );
-        const noticeHistoryIDs = preferences.map(
-          (e: any) => e.privacy_notice_history_id
-        );
-        expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
-      });
-
-      // TODO (PROD-1598): test that correct history ID used after user changes language
-    });
-    /* eslint-enable @typescript-eslint/naming-convention */
-  });
-
-  describe("when notices are enabled for GPC", () => {
-    it(`localizes GPC badges on notices in the correct locale (${SPANISH_LOCALE})`, () => {
-      // Visit the demo in Spanish and set GPC flag on the first notice
-      visitDemoWithI18n({
-        navigatorLanguage: SPANISH_LOCALE,
-        globalPrivacyControl: true,
-        fixture: "experience_banner_modal.json",
-        overrideExperience: (experience: any) => {
-          /* eslint-disable no-param-reassign */
-          // Modify the first notice (Advertising) to set the GPC flag
-          const notices: PrivacyNotice[] = experience.privacy_notices;
-          const adsNotice = notices[0];
-          cy.wrap(adsNotice).should(
-            "have.property",
-            "id",
-            "pri_notice-advertising-000"
-          );
-          adsNotice.has_gpc_flag = true;
-          return experience;
-          /* eslint-enable no-param-reassign */
-        },
-      });
-
-      // Open the modal and check the notices themselves are translated
-      testBannerLocalization(SPANISH_BANNER);
-      openAndTestModalLocalization(SPANISH_MODAL);
-      testModalNoticesLocalization(SPANISH_NOTICES);
-
-      // Check the GPC badge labels on the first notice
-      const expectedGpcLabel = SPANISH_BANNER.gpc_label;
-      const expectedGpcStatusAppliedLabel = "Aplicado";
-      const expectedGpcStatusOverriddenLabel = "Anulado";
-      cy.get(
-        "#fides-modal .fides-modal-notices .fides-notice-toggle:first"
-      ).within(() => {
-        cy.get(".fides-notice-toggle-title").contains(SPANISH_NOTICES[0].title);
-        cy.get(".fides-gpc-label").contains(expectedGpcLabel);
-        cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-          expectedGpcStatusAppliedLabel
-        );
-        cy.get(".fides-toggle-input").click();
-        cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-          expectedGpcStatusOverriddenLabel
-        );
-      });
-      cy.get(
-        "#fides-modal .fides-modal-notices .fides-notice-toggle:last"
-      ).within(() => {
-        cy.get(".fides-gpc-label").should("not.exist");
-      });
-    });
-  });
-
-  describe(`when ?fides_locale override param is set to an available locale (${SPANISH_LOCALE})`, () => {
-    it(`ignores browser locale and localizes in the override locale (${SPANISH_LOCALE})`, () => {
-      // Visit the demo site in English, but expect Spanish translations when fides_locale override is set
-      visitDemoWithI18n({
-        navigatorLanguage: ENGLISH_LOCALE,
-        globalPrivacyControl: true,
-        fixture: "experience_banner_modal.json",
-        queryParams: { fides_locale: SPANISH_LOCALE },
-      });
-      testBannerLocalization(SPANISH_BANNER);
-      openAndTestModalLocalization(SPANISH_MODAL);
-      testModalNoticesLocalization(SPANISH_NOTICES);
-    });
-  });
-
-  describe("when localizing the 'On'/'Off' toggle labels", () => {
-    describe(`when in the default locale (${ENGLISH_LOCALE})`, () => {
-      it("shows the 'On'/'Off' toggle labels in banner_and_modal components", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
-          fixture: "experience_banner_modal.json",
-        });
-        cy.get("#fides-modal-link").click();
-        cy.get("#fides-modal .fides-modal-notices").within(() => {
-          cy.get(".fides-toggle:first").contains("Off");
-          cy.get(".fides-toggle:first").click();
-          cy.get(".fides-toggle:first").contains("On");
+        it("shows the 'On'/'Off' toggle labels in tcf_overlay components", () => {
+          visitDemoWithI18n({
+            navigatorLanguage: ENGLISH_LOCALE,
+            fixture: "experience_tcf.json",
+            options: { tcfEnabled: true },
+          });
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("records-list-Purposes").within(() => {
+            cy.get(".fides-toggle:first").contains("Off");
+            cy.get(".fides-toggle:first").click();
+            cy.get(".fides-toggle:first").contains("On");
+          });
         });
       });
 
-      it("shows the 'On'/'Off' toggle labels in tcf_overlay components", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
-          fixture: "experience_tcf.json",
-          options: { tcfEnabled: true },
+      describe(`when in any non-default locale (${SPANISH_LOCALE})`, () => {
+        it("hides the 'On'/'Off' toggle labels in banner_and_modal components", () => {
+          visitDemoWithI18n({
+            navigatorLanguage: SPANISH_LOCALE,
+            fixture: "experience_banner_modal.json",
+          });
+          cy.get("#fides-modal-link").click();
+          cy.get("#fides-modal .fides-modal-notices").within(() => {
+            cy.get(".fides-toggle:first").contains("Off").should("not.exist");
+            cy.get(".fides-toggle:first .fides-toggle-display").should(
+              "be.empty"
+            );
+            cy.get(".fides-toggle:first").click();
+            cy.get(".fides-toggle:first").contains("On").should("not.exist");
+            cy.get(".fides-toggle:first .fides-toggle-display").should(
+              "be.empty"
+            );
+          });
         });
-        cy.get("#fides-modal-link").click();
-        cy.getByTestId("records-list-Purposes").within(() => {
-          cy.get(".fides-toggle:first").contains("Off");
-          cy.get(".fides-toggle:first").click();
-          cy.get(".fides-toggle:first").contains("On");
-        });
-      });
-    });
 
-    describe(`when in any non-default locale (${SPANISH_LOCALE})`, () => {
-      it("hides the 'On'/'Off' toggle labels in banner_and_modal components", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: SPANISH_LOCALE,
-          fixture: "experience_banner_modal.json",
-        });
-        cy.get("#fides-modal-link").click();
-        cy.get("#fides-modal .fides-modal-notices").within(() => {
-          cy.get(".fides-toggle:first").contains("Off").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
-          cy.get(".fides-toggle:first").click();
-          cy.get(".fides-toggle:first").contains("On").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
-        });
-      });
-
-      it("hides the 'On'/'Off' toggle labels in tcf_overlay components", () => {
-        visitDemoWithI18n({
-          navigatorLanguage: SPANISH_LOCALE,
-          fixture: "experience_tcf.json",
-          options: { tcfEnabled: true },
-        });
-        cy.get("#fides-modal-link").click();
-        cy.getByTestId("records-list-Purposes").within(() => {
-          cy.get(".fides-toggle:first").contains("Off").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
-          cy.get(".fides-toggle:first").click();
-          cy.get(".fides-toggle:first").contains("On").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
+        it("hides the 'On'/'Off' toggle labels in tcf_overlay components", () => {
+          visitDemoWithI18n({
+            navigatorLanguage: SPANISH_LOCALE,
+            fixture: "experience_tcf.json",
+            options: { tcfEnabled: true },
+          });
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("records-list-Purposes").within(() => {
+            cy.get(".fides-toggle:first").contains("Off").should("not.exist");
+            cy.get(".fides-toggle:first .fides-toggle-display").should(
+              "be.empty"
+            );
+            cy.get(".fides-toggle:first").click();
+            cy.get(".fides-toggle:first").contains("On").should("not.exist");
+            cy.get(".fides-toggle:first .fides-toggle-display").should(
+              "be.empty"
+            );
+          });
         });
       });
-    });
-  });
-
-  // TODO (PROD-1598): enable this test and add other cases as needed!
-  describe.skip("when user selects their own locale", () => {
-    it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
-      // Visit the demo site in English, but expect Spanish translations when the user selects
-      visitDemoWithI18n({
-        navigatorLanguage: ENGLISH_LOCALE,
-        globalPrivacyControl: true,
-        fixture: "experience_banner_modal.json",
-      });
-      // TODO (PROD-1598): select Spanish from banner
-      testBannerLocalization(SPANISH_BANNER);
-      openAndTestModalLocalization(SPANISH_MODAL);
-      testModalNoticesLocalization(SPANISH_NOTICES);
     });
   });
 });
