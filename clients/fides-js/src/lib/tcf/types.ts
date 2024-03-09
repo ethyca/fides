@@ -245,12 +245,28 @@ export type GVLJson = Pick<
   | "vendorListVersion"
   | "tcfPolicyVersion"
   | "lastUpdated"
-  | "stacks"
   | "purposes"
   | "specialPurposes"
   | "features"
   | "specialFeatures"
   | "vendors"
+  | "stacks"
+  | "dataCategories"
+>;
+
+// GVL translations are a subset of the GVL (basically, no vendors)
+export type GVLTranslationJson = Pick<
+  GVLJson, 
+  | "gvlSpecificationVersion"
+  | "vendorListVersion"
+  | "tcfPolicyVersion"
+  | "lastUpdated"
+  | "purposes"
+  | "specialPurposes"
+  | "features"
+  | "specialFeatures"
+  | "stacks"
+  | "dataCategories"
 >;
 
 // GVL types—we should be able to get these from the library at some point,

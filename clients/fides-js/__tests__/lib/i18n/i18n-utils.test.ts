@@ -16,12 +16,14 @@ import {
   messageExists,
   setupI18n,
   selectBestExperienceConfigTranslation,
+  selectBestGVLTranslation,
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
+import { GVLTranslationJson } from "~/lib/tcf/types";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
@@ -367,6 +369,68 @@ describe("i18n-utils", () => {
           translations: undefined,
         } as any)
       ).toBeNull();
+    });
+  });
+
+
+  describe("selectBestGVLTranslation", () => {
+    const fixture: Record<Locale, Partial<GVLTranslationJson>> = {
+      "en": {
+        "purposes": {
+          "1": { "id": 1, "name": "Example", "description": "Example" }
+        }
+      },
+      "es": {
+        "purposes": {
+          "1": { "id": 1, "name": "Ejemplo", "description": "Ejemplo" }
+        }
+      },
+    };
+    const mockGVLTranslations: Record<Locale, GVLTranslationJson> = fixture as any;
+
+    it("selects an exact match for current locale if available", () => {
+      mockCurrentLocale = "es";
+      expect(
+        selectBestGVLTranslation(mockI18n, mockGVLTranslations)
+      ).toMatchObject({
+        locale: "es",
+        translation: mockGVLTranslations["es"],
+      });
+    });
+
+    it("falls back to the default locale if an exact match isn't available", () => {
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestGVLTranslation(mockI18n, mockGVLTranslations)
+      ).toMatchObject({
+        locale: "en",
+        translation: mockGVLTranslations["en"],
+      });
+    });
+
+    it("falls back to the first locale if neither exact match nor default locale are available", () => {
+      const mockGVLNoEnglish: Record<Locale, GVLTranslationJson> = {
+        "es": mockGVLTranslations["es"],
+      };
+      mockCurrentLocale = "zh";
+      expect(
+        selectBestGVLTranslation(mockI18n, mockGVLNoEnglish)
+      ).toMatchObject({
+        locale: "es",
+        translation: mockGVLTranslations["es"],
+      });
+    });
+
+    it("returns empty object for invalid/missing translations", () => {
+      expect(
+        selectBestGVLTranslation(mockI18n, null as any)
+      ).toEqual({});
+      expect(
+        selectBestGVLTranslation(mockI18n, {} as any)
+      ).toEqual({});
+      expect(
+        selectBestGVLTranslation(mockI18n, [] as any)
+      ).toEqual({});
     });
   });
 

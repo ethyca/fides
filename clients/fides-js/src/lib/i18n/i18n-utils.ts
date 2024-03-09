@@ -10,6 +10,7 @@ import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
 import { STATIC_MESSAGES } from "./locales";
+import { GVLTranslationJson } from "../tcf/types";
 
 /**
  * Helper function to extract all the translated messages from an
@@ -292,6 +293,37 @@ export function selectBestExperienceConfigTranslation(
 
   // 3) Fallback to first translation in the list, if the default locale isn't found
   return experience.translations[0] || null;
+}
+
+/**
+ * Helper function to select the "best" translation from the given
+ * GVL translations object, based on the current locale. This is used to combine
+ * the IAB translations alongside both the ExperienceConfig translations and
+ * static messages to fully localized the TCF CMP UI.
+ */
+export function selectBestGVLTranslation(
+  i18n: I18n,
+  gvl_translations: Record<Locale, GVLTranslationJson>,
+): { locale?: Locale, translation?: GVLTranslationJson } {
+  // Defensive checks
+  if (!gvl_translations) {
+    return {};
+  }
+
+  // 1) Look for an exact match for the current locale
+  const currentLocale = getCurrentLocale(i18n);
+  if (gvl_translations[currentLocale]) {
+    return { locale: currentLocale, translation: gvl_translations[currentLocale] };
+  }
+
+  // 2) Fallback to default locale, if an exact match isn't found
+  if (gvl_translations[DEFAULT_LOCALE]) {
+    return { locale: DEFAULT_LOCALE, translation: gvl_translations[DEFAULT_LOCALE] };
+  }
+
+  // 3) Fallback to first translation in the list, if the default locale isn't found
+  const firstLocale = Object.keys(gvl_translations)[0];
+  return { locale: firstLocale, translation: gvl_translations[firstLocale] };
 }
 
 /**
