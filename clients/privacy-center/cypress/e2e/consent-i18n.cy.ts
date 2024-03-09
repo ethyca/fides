@@ -150,12 +150,13 @@ const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
     vendors_legint_count: "Vendors using legitimate interest",
     tcf_stacks: [
       {
-        title: "Selection of personalised advertising",
+        title:
+          "Selection of personalised advertising, advertising measurement, and audience research",
         description: "Advertising can be personalised",
         isStacked: true,
       },
       {
-        title: "Use profiles to select",
+        title: "Use profiles to select personalised content",
         description: "Content presented to you",
       },
       {
@@ -262,73 +263,82 @@ const SPANISH_NOTICES: TestNoticeTranslations[] = [
 /**
  * Spanish translations for TCF banner & modal
  */
-// TODO: get translations
+// TODO (PROD-1683): update i18n files
 const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
   ...SPANISH_BANNER,
   ...{
-    vendors_count: "Vendors",
-    vendors_consent_count: "Vendors using consent",
-    vendors_legint_count: "Vendors using legitimate interest",
+    vendors_count: "Proveedores",
+    vendors_consent_count: "Proveedores using consent TODO",
+    vendors_legint_count: "Proveedores using legitimate interest TODO",
     tcf_stacks: [
       {
-        title: "Selection of personalised advertising",
-        description: "Advertising can be personalised",
+        title:
+          "Selección de publicidad personalizada, medición publicitaria e investigación de audiencia",
+        description: "La publicidad puede personalizarse basándose",
         isStacked: true,
       },
       {
-        title: "Use profiles to select",
-        description: "Content presented to you",
+        title: "Uso de perfiles para la selección de contenido personalizado",
+        description: "El contenido que se te presenta",
       },
       {
-        title: "Use precise geolocation",
-        description: "With your acceptance, your precise location",
+        title: "Utilizar datos de localización geográfica precisa",
+        description: "Al contar con tu aprobación, tu ubicación exacta",
       },
     ],
-    purposes: "Purposes",
-    purposes_include: "Purposes include",
-    stacked_purpose_example: "Purpose 2: Use limited data to select",
+    purposes: "Propósitos",
+    purposes_include: "Propósitos include",
+    stacked_purpose_example:
+      "Propósito 2: Uso de datos limitados para seleccionar anuncios básicos",
   },
 };
 
 const SPANISH_TCF_MODAL: TestTcfModalTranslations = {
   ...SPANISH_MODAL,
   ...{
-    purposes: "Purposes",
-    purposes_description: "Below, you will find a list of the purposes",
-    purpose_example: "Use profiles to select personalised advertising",
-    purpose_example_description: "Advertising presented to you on this service",
-    purpose_example_illustration: "An online retailer wants to advertise",
-    special_purposes: "Special purposes",
-    special_purpose_example: "Ensure security",
-    special_purpose_example_description: "Your data can be used to monitor",
+    purposes: "Propósitos",
+    purposes_description:
+      "A continuación encontrará una lista de los propósitos",
+    purpose_example:
+      "Utilizar perfiles para seleccionar la publicidad personalizada",
+    purpose_example_description: "La publicidad presentada en este servicio",
+    purpose_example_illustration: "Un minorista que opera en Internet",
+    special_purposes: "Propósitos especiales",
+    special_purpose_example: "Garantizar la seguridad",
+    special_purpose_example_description:
+      "Tus datos pueden utilizarse para supervisar",
     special_purpose_example_illustration:
-      "An advertising intermediary delivers ads",
-    features: "Features",
-    features_description: "Below, you will find a list of the features",
-    feature_example: "Match and combine data",
-    feature_example_description: "Information about your activity",
-    special_features: "Special features",
-    special_feature_example: "Use precise geolocation data",
+      "Un intermediario publicitario entrega anuncios",
+    features: "Características",
+    features_description:
+      "A continuación encontrará una lista de las características",
+    feature_example:
+      "Cotejo y combinación de datos procedentes de otras fuentes de información",
+    feature_example_description: "La información en relación con tu actividad",
+    special_features: "Características especiales",
+    special_feature_example:
+      "Utilizar datos de localización geográfica precisa",
     special_feature_example_description:
-      "With your acceptance, your precise location",
-    vendors: "Vendors",
-    vendors_description: "Below, you will find a list of vendors",
-    vendors_we_use: "Vendors we use",
-    vendors_iab: "IAB TCF vendors",
+      "Al contar con tu aprobación, tu ubicación exacta",
+    vendors: "Proveedores",
+    vendors_description:
+      "A continuación encontrará una lista de los proveedores",
+    vendors_we_use: "Proveedores we use",
+    vendors_iab: "Proveedores IAB TCF",
     vendor_iab_example: "Captify",
     vendor_iab_example_description:
-      "Captify stores cookies with a maximum duration",
-    vendors_other: "Other vendors",
+      "Captify stores cookies with a maximum duration TODO",
+    vendors_other: "Other proveedores",
     vendor_other_example: "Fides System",
     vendor_other_example_description:
-      "Fides System stores cookies with a maximum duration",
-    vendor_privacy_policy: "Privacy policy",
-    vendor_legint_disclosure: "Legitimate interest disclosure",
+      "Fides System stores cookies with a maximum duration TODO",
+    vendor_privacy_policy: "Política de privacidad",
+    vendor_legint_disclosure: "Legitimate interest disclosure TODO",
     iab: "IAB TCF",
-    retention: "Retention",
-    consent: "Consent",
-    legint: "Legitimate interest",
-    data_categories: "Data categories",
+    retention: "Retention TODO",
+    consent: "Consentimiento",
+    legint: "Interés legítimo",
+    data_categories: "Data categories TODO",
   },
 };
 
