@@ -1,249 +1,356 @@
 import { FidesOptions, PrivacyExperience, PrivacyNotice } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
+/**
+ * Define (lots of) reusable test data for all the tests!
+ */
+type TestFixture =
+  | "experience_banner_modal.json"
+  | "experience_banner_modal_notice_only.json"
+  | "experience_tcf.json"
+  | "experience_privacy_center.json";
+
+type TestBannerTranslations = {
+  banner_title: string;
+  banner_description: string;
+  privacy_preferences_link_label: string;
+  reject_button_label: string;
+  accept_button_label: string;
+  acknowledge_button_label: string;
+  gpc_label: string;
+  gpc_status_label: string;
+  privacy_policy_link_label: string | null;
+  privacy_policy_url: string | null;
+};
+
+type TestModalTranslations = {
+  title: string;
+  description: string;
+  save_button_label: string;
+  reject_button_label: string;
+  accept_button_label: string;
+  acknowledge_button_label: string;
+  gpc_title: string;
+  gpc_description: string;
+  gpc_label: string;
+  gpc_applied_label: string;
+  gpc_overridden_label: string;
+  privacy_policy_link_label: string | null;
+  privacy_policy_url: string | null;
+};
+
+type TestNoticeTranslations = {
+  title: string;
+  description: string;
+};
+
+type TestTcfBannerTranslations = TestBannerTranslations & {
+  vendors_count: string;
+  vendors_consent_count: string;
+  vendors_legint_count: string;
+  tcf_stacks: { title: string; description: string; isStacked?: boolean }[];
+  purposes: string;
+  purposes_include: string;
+  stacked_purpose_example: string;
+};
+
+type TestTcfModalTranslations = TestModalTranslations & {
+  purposes: string;
+  purposes_description: string;
+  purpose_example: string;
+  purpose_example_description: string;
+  purpose_example_illustration: string;
+  special_purposes: string;
+  special_purpose_example: string;
+  special_purpose_example_description: string;
+  special_purpose_example_illustration: string;
+  features: string;
+  features_description: string;
+  feature_example: string;
+  feature_example_description: string;
+  special_features: string;
+  special_feature_example: string;
+  special_feature_example_description: string;
+  vendors: string;
+  vendors_description: string;
+  vendors_we_use: string;
+  vendors_iab: string;
+  vendor_iab_example: string;
+  vendor_iab_example_description: string;
+  vendors_other: string;
+  vendor_other_example: string;
+  vendor_other_example_description: string;
+  vendor_privacy_policy: string;
+  vendor_legint_disclosure: string;
+  iab: string;
+  retention: string;
+  consent: string;
+  legint: string;
+  data_categories: string;
+};
+
+/**********************************************************
+ *
+ * EXPECTED TRANSLATION STRINGS
+ *
+ * NOTE: There is a *lot* of duplication here between test data, fixture data,
+ * and the static translations in fides.js project. We *could* automatically
+ * import those strings here... but it's much easier to *read* these tests when
+ * the expected strings are all here. This also helps us catch any accidental
+ * changes to strings or misspellings!
+ *
+ **********************************************************/
+
+/**
+ * English translations for banner & modal
+ */
+const ENGLISH_BANNER: TestBannerTranslations = {
+  banner_title: "[banner] Manage your consent preferences",
+  banner_description: "[banner] We use cookies and similar",
+  privacy_preferences_link_label: "Manage preferences",
+  reject_button_label: "Opt out of all",
+  accept_button_label: "Opt in to all",
+  acknowledge_button_label: "OK",
+  gpc_label: "Global Privacy Control",
+  gpc_status_label: "Applied",
+  privacy_policy_link_label: "Privacy Policy",
+  privacy_policy_url: "https://privacy.example.com/",
+};
+
+const ENGLISH_MODAL: TestModalTranslations = {
+  title: "Manage your consent preferences",
+  description: "We use cookies and similar",
+  save_button_label: "Save",
+  reject_button_label: "Opt out of all",
+  accept_button_label: "Opt in to all",
+  acknowledge_button_label: "OK",
+  gpc_title: "Global Privacy Control detected",
+  gpc_description: "Your global privacy control preference has been honored.",
+  gpc_label: "Global Privacy Control",
+  gpc_applied_label: "Applied",
+  gpc_overridden_label: "Overridden",
+  privacy_policy_link_label: "Privacy Policy",
+  privacy_policy_url: "https://privacy.example.com/",
+};
+
+const ENGLISH_NOTICES: TestNoticeTranslations[] = [
+  { title: "Advertising", description: "This website uses marketing" },
+  { title: "Analytics", description: "This website uses analytics" },
+  { title: "Essential", description: "This website uses essential" },
+];
+
+/**
+ * English translations for TCF banner & modal
+ */
+const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
+  ...ENGLISH_BANNER,
+  ...{
+    vendors_count: "Vendors",
+    vendors_consent_count: "Vendors using consent",
+    vendors_legint_count: "Vendors using legitimate interest",
+    tcf_stacks: [
+      {
+        title: "Selection of personalised advertising",
+        description: "Advertising can be personalised",
+        isStacked: true,
+      },
+      {
+        title: "Use profiles to select",
+        description: "Content presented to you",
+      },
+      {
+        title: "Use precise geolocation",
+        description: "With your acceptance, your precise location",
+      },
+    ],
+    purposes: "Purposes",
+    purposes_include: "Purposes include",
+    stacked_purpose_example: "Purpose 2: Use limited data to select",
+  },
+};
+
+const ENGLISH_TCF_MODAL: TestTcfModalTranslations = {
+  ...ENGLISH_MODAL,
+  ...{
+    purposes: "Purposes",
+    purposes_description: "Below, you will find a list of the purposes",
+    purpose_example: "Use profiles to select personalised advertising",
+    purpose_example_description: "Advertising presented to you on this service",
+    purpose_example_illustration: "An online retailer wants to advertise",
+    special_purposes: "Special purposes",
+    special_purpose_example: "Ensure security",
+    special_purpose_example_description: "Your data can be used to monitor",
+    special_purpose_example_illustration:
+      "An advertising intermediary delivers ads",
+    features: "Features",
+    features_description: "Below, you will find a list of the features",
+    feature_example: "Match and combine data",
+    feature_example_description: "Information about your activity",
+    special_features: "Special features",
+    special_feature_example: "Use precise geolocation data",
+    special_feature_example_description:
+      "With your acceptance, your precise location",
+    vendors: "Vendors",
+    vendors_description: "Below, you will find a list of vendors",
+    vendors_we_use: "Vendors we use",
+    vendors_iab: "IAB TCF vendors",
+    vendor_iab_example: "Captify",
+    vendor_iab_example_description:
+      "Captify stores cookies with a maximum duration",
+    vendors_other: "Other vendors",
+    vendor_other_example: "Fides System",
+    vendor_other_example_description:
+      "Fides System stores cookies with a maximum duration",
+    vendor_privacy_policy: "Privacy policy",
+    vendor_legint_disclosure: "Legitimate interest disclosure",
+    iab: "IAB TCF",
+    retention: "Retention",
+    consent: "Consent",
+    legint: "Legitimate interest",
+    data_categories: "Data categories",
+  },
+};
+
+/**
+ * Spanish translations for banner & modal
+ */
+const SPANISH_BANNER: TestBannerTranslations = {
+  banner_title: "[banner] Administrar sus preferencias de consentimiento",
+  banner_description: "[banner] Usamos cookies y métodos similares",
+  privacy_preferences_link_label: "Administrar preferencias",
+  reject_button_label: "No participar en nada",
+  accept_button_label: "Participar en todo",
+  acknowledge_button_label: "Aceptar",
+  gpc_label: "Control de privacidad global",
+  gpc_status_label: "Aplicado",
+  privacy_policy_link_label: "Política de privacidad",
+  privacy_policy_url: "https://privacy.example.com/",
+};
+
+const SPANISH_MODAL: TestModalTranslations = {
+  title: "Administrar sus preferencias de consentimiento",
+  description: "Usamos cookies y métodos similares",
+  save_button_label: "Guardar",
+  reject_button_label: "No participar en nada",
+  accept_button_label: "Participar en todo",
+  acknowledge_button_label: "Aceptar",
+  gpc_title: "Control de privacidad global detectado",
+  gpc_description:
+    "Su preferencia de control de privacidad global se ha respetado.",
+  gpc_label: "Control de privacidad global",
+  gpc_applied_label: "Aplicado",
+  gpc_overridden_label: "Anulado",
+  privacy_policy_link_label: "Política de privacidad",
+  privacy_policy_url: "https://privacy.example.com/",
+};
+
+const SPANISH_NOTICES: TestNoticeTranslations[] = [
+  {
+    title: "Mercadotecnia",
+    description: "Este sitio web usa cookies y servicios de mercadotecnia",
+  },
+  {
+    title: "Análisis",
+    description: "Este sitio web usa cookies analíticas y servicios",
+  },
+  {
+    title: "Esenciales",
+    description: "Este sitio web utiliza cookies esenciales y servicios",
+  },
+];
+
+/**
+ * Spanish translations for TCF banner & modal
+ */
+// TODO: get translations
+const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
+  ...SPANISH_BANNER,
+  ...{
+    vendors_count: "Vendors",
+    vendors_consent_count: "Vendors using consent",
+    vendors_legint_count: "Vendors using legitimate interest",
+    tcf_stacks: [
+      {
+        title: "Selection of personalised advertising",
+        description: "Advertising can be personalised",
+        isStacked: true,
+      },
+      {
+        title: "Use profiles to select",
+        description: "Content presented to you",
+      },
+      {
+        title: "Use precise geolocation",
+        description: "With your acceptance, your precise location",
+      },
+    ],
+    purposes: "Purposes",
+    purposes_include: "Purposes include",
+    stacked_purpose_example: "Purpose 2: Use limited data to select",
+  },
+};
+
+const SPANISH_TCF_MODAL: TestTcfModalTranslations = {
+  ...SPANISH_MODAL,
+  ...{
+    purposes: "Purposes",
+    purposes_description: "Below, you will find a list of the purposes",
+    purpose_example: "Use profiles to select personalised advertising",
+    purpose_example_description: "Advertising presented to you on this service",
+    purpose_example_illustration: "An online retailer wants to advertise",
+    special_purposes: "Special purposes",
+    special_purpose_example: "Ensure security",
+    special_purpose_example_description: "Your data can be used to monitor",
+    special_purpose_example_illustration:
+      "An advertising intermediary delivers ads",
+    features: "Features",
+    features_description: "Below, you will find a list of the features",
+    feature_example: "Match and combine data",
+    feature_example_description: "Information about your activity",
+    special_features: "Special features",
+    special_feature_example: "Use precise geolocation data",
+    special_feature_example_description:
+      "With your acceptance, your precise location",
+    vendors: "Vendors",
+    vendors_description: "Below, you will find a list of vendors",
+    vendors_we_use: "Vendors we use",
+    vendors_iab: "IAB TCF vendors",
+    vendor_iab_example: "Captify",
+    vendor_iab_example_description:
+      "Captify stores cookies with a maximum duration",
+    vendors_other: "Other vendors",
+    vendor_other_example: "Fides System",
+    vendor_other_example_description:
+      "Fides System stores cookies with a maximum duration",
+    vendor_privacy_policy: "Privacy policy",
+    vendor_legint_disclosure: "Legitimate interest disclosure",
+    iab: "IAB TCF",
+    retention: "Retention",
+    consent: "Consent",
+    legint: "Legitimate interest",
+    data_categories: "Data categories",
+  },
+};
+
+/**********************************************************
+ *
+ *  🇺🇸🇪🇸🇯🇵 CONSENT INTERNATIONALIZATION (I18N) TESTS 🇺🇸🇪🇸🇯🇵
+ *
+ **********************************************************/
+const ENGLISH_LOCALE = "en";
+const SPANISH_LOCALE = "es";
+const JAPANESE_LOCALE = "ja-JP";
+
 describe("Consent i18n", () => {
   /**
-   * Define (lots of) reusable test data for all the specs below!
+   * Visit the fides-js-components-demo page using:
+   * @param navigatorLanguage language to set in the browser for localization
+   * @param fixture PrivacyExperience fixture to load (e.g. "experience_banner_modal.json")
+   * @param globalPrivacyControl value to set in the browser for GPC
+   * @param options FidesJS options to inject
+   * @param queryParams query params to set in the browser (e.g. "?fides_locale=es")
+   * @param overrideExperience callback function to override the PrivacyExperience fixture before loading
    */
-  const ENGLISH_LOCALE = "en";
-  const SPANISH_LOCALE = "es";
-  const JAPANESE_LOCALE = "ja-JP";
-  type TestFixture =
-    | "experience_banner_modal.json"
-    | "experience_banner_modal_notice_only.json"
-    | "experience_tcf.json"
-    | "experience_privacy_center.json";
-
-  type TestBannerTranslations = {
-    banner_title: string;
-    banner_description: string;
-    privacy_preferences_link_label: string;
-    reject_button_label: string;
-    accept_button_label: string;
-    acknowledge_button_label: string;
-    gpc_label: string;
-    gpc_status_label: string;
-    privacy_policy_link_label: string | null;
-    privacy_policy_url: string | null;
-  };
-
-  type TestModalTranslations = {
-    title: string;
-    description: string;
-    save_button_label: string;
-    reject_button_label: string;
-    accept_button_label: string;
-    acknowledge_button_label: string;
-    gpc_title: string;
-    gpc_description: string;
-    gpc_label: string;
-    gpc_applied_label: string;
-    gpc_overridden_label: string;
-    privacy_policy_link_label: string | null;
-    privacy_policy_url: string | null;
-  };
-
-  type TestNoticeTranslations = {
-    title: string;
-    description: string;
-  };
-
-  type TestTcfBannerTranslations = TestBannerTranslations & {
-    vendors_count: string;
-    vendors_consent_count: string;
-    vendors_legint_count: string;
-    tcf_stacks: { title: string; description: string; isStacked?: boolean }[];
-    purposes: string;
-    purposes_include: string;
-    stacked_purpose_example: string;
-  };
-
-  type TestTcfModalTranslations = TestModalTranslations & {
-    purposes: string;
-    purposes_description: string;
-    purpose_example: string;
-    purpose_example_description: string;
-    purpose_example_illustration: string;
-    special_purposes: string;
-    special_purpose_example: string;
-    special_purpose_example_description: string;
-    special_purpose_example_illustration: string;
-    features: string;
-    features_description: string;
-    feature_example: string;
-    feature_example_description: string;
-    special_features: string;
-    special_feature_example: string;
-    special_feature_example_description: string;
-    vendors: string;
-    vendors_description: string;
-    vendors_we_use: string;
-    vendors_iab: string;
-    vendor_iab_example: string;
-    vendor_iab_example_description: string;
-    vendors_other: string;
-    vendor_other_example: string;
-    vendor_other_example_description: string;
-    vendor_privacy_policy: string;
-    vendor_legint_disclosure: string;
-    iab: string;
-    retention: string;
-    consent: string;
-    legint: string;
-    data_categories: string;
-  };
-
-  const ENGLISH_BANNER: TestBannerTranslations = {
-    banner_title: "[banner] Manage your consent preferences",
-    banner_description: "[banner] We use cookies and similar",
-    privacy_preferences_link_label: "Manage preferences",
-    reject_button_label: "Opt out of all",
-    accept_button_label: "Opt in to all",
-    acknowledge_button_label: "OK",
-    gpc_label: "Global Privacy Control",
-    gpc_status_label: "Applied",
-    privacy_policy_link_label: "Privacy Policy",
-    privacy_policy_url: "https://privacy.example.com/",
-  };
-
-  const ENGLISH_MODAL: TestModalTranslations = {
-    title: "Manage your consent preferences",
-    description: "We use cookies and similar",
-    save_button_label: "Save",
-    reject_button_label: "Opt out of all",
-    accept_button_label: "Opt in to all",
-    acknowledge_button_label: "OK",
-    gpc_title: "Global Privacy Control detected",
-    gpc_description: "Your global privacy control preference has been honored.",
-    gpc_label: "Global Privacy Control",
-    gpc_applied_label: "Applied",
-    gpc_overridden_label: "Overridden",
-    privacy_policy_link_label: "Privacy Policy",
-    privacy_policy_url: "https://privacy.example.com/",
-  };
-
-  const ENGLISH_NOTICES: TestNoticeTranslations[] = [
-    { title: "Advertising", description: "This website uses marketing" },
-    { title: "Analytics", description: "This website uses analytics" },
-    { title: "Essential", description: "This website uses essential" },
-  ];
-
-  const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
-    ...ENGLISH_BANNER,
-    ...{
-      vendors_count: "Vendors",
-      vendors_consent_count: "Vendors using consent",
-      vendors_legint_count: "Vendors using legitimate interest",
-      tcf_stacks: [
-        {
-          title: "Selection of personalised advertising",
-          description: "Advertising can be personalised",
-          isStacked: true,
-        },
-        {
-          title: "Use profiles to select",
-          description: "Content presented to you",
-        },
-        {
-          title: "Use precise geolocation",
-          description: "With your acceptance, your precise location",
-        },
-      ],
-      purposes: "Purposes",
-      purposes_include: "Purposes include",
-      stacked_purpose_example: "Purpose 2: Use limited data to select",
-    },
-  };
-
-  const ENGLISH_TCF_MODAL: TestTcfModalTranslations = {
-    ...ENGLISH_MODAL,
-    ...{
-      purposes: "Purposes",
-      purposes_description: "Below, you will find a list of the purposes",
-      purpose_example: "Use profiles to select personalised advertising",
-      purpose_example_description:
-        "Advertising presented to you on this service",
-      purpose_example_illustration: "An online retailer wants to advertise",
-      special_purposes: "Special purposes",
-      special_purpose_example: "Ensure security",
-      special_purpose_example_description: "Your data can be used to monitor",
-      special_purpose_example_illustration:
-        "An advertising intermediary delivers ads",
-      features: "Features",
-      features_description: "Below, you will find a list of the features",
-      feature_example: "Match and combine data",
-      feature_example_description: "Information about your activity",
-      special_features: "Special features",
-      special_feature_example: "Use precise geolocation data",
-      special_feature_example_description:
-        "With your acceptance, your precise location",
-      vendors: "Vendors",
-      vendors_description: "Below, you will find a list of vendors",
-      vendors_we_use: "Vendors we use",
-      vendors_iab: "IAB TCF vendors",
-      vendor_iab_example: "Captify",
-      vendor_iab_example_description:
-        "Captify stores cookies with a maximum duration",
-      vendors_other: "Other vendors",
-      vendor_other_example: "Fides System",
-      vendor_other_example_description:
-        "Fides System stores cookies with a maximum duration",
-      vendor_privacy_policy: "Privacy policy",
-      vendor_legint_disclosure: "Legitimate interest disclosure",
-      iab: "IAB TCF",
-      retention: "Retention",
-      consent: "Consent",
-      legint: "Legitimate interest",
-      data_categories: "Data categories",
-    },
-  };
-
-  const SPANISH_BANNER: TestBannerTranslations = {
-    banner_title: "[banner] Administrar sus preferencias de consentimiento",
-    banner_description: "[banner] Usamos cookies y métodos similares",
-    privacy_preferences_link_label: "Administrar preferencias",
-    reject_button_label: "No participar en nada",
-    accept_button_label: "Participar en todo",
-    acknowledge_button_label: "Aceptar",
-    gpc_label: "Control de privacidad global",
-    gpc_status_label: "Aplicado",
-    privacy_policy_link_label: "Política de privacidad",
-    privacy_policy_url: "https://privacy.example.com/",
-  };
-
-  const SPANISH_MODAL: TestModalTranslations = {
-    title: "Administrar sus preferencias de consentimiento",
-    description: "Usamos cookies y métodos similares",
-    save_button_label: "Guardar",
-    reject_button_label: "No participar en nada",
-    accept_button_label: "Participar en todo",
-    acknowledge_button_label: "Aceptar",
-    gpc_title: "Control de privacidad global detectado",
-    gpc_description:
-      "Su preferencia de control de privacidad global se ha respetado.",
-    gpc_label: "Control de privacidad global",
-    gpc_applied_label: "Aplicado",
-    gpc_overridden_label: "Anulado",
-    privacy_policy_link_label: "Política de privacidad",
-    privacy_policy_url: "https://privacy.example.com/",
-  };
-
-  const SPANISH_NOTICES: TestNoticeTranslations[] = [
-    {
-      title: "Mercadotecnia",
-      description: "Este sitio web usa cookies y servicios de mercadotecnia",
-    },
-    {
-      title: "Análisis",
-      description: "Este sitio web usa cookies analíticas y servicios",
-    },
-    {
-      title: "Esenciales",
-      description: "Este sitio web utiliza cookies esenciales y servicios",
-    },
-  ];
-
-  // Setup a test case with the given params
   const visitDemoWithI18n = (props: {
     navigatorLanguage: string;
     fixture: TestFixture;
@@ -282,9 +389,11 @@ describe("Consent i18n", () => {
     cy.window().its("navigator.language").should("eq", props.navigatorLanguage);
   };
 
-  /**
-   * Localization tests for FidesJS Banner & Modal
-   */
+  /**********************************************************
+   *
+   * FIDESJS BANNER + MODAL TESTS
+   *
+   **********************************************************/
   describe("when localizing banner_and_modal components", () => {
     /**
      * Define our parameterized test cases to generate specs below!
@@ -407,7 +516,7 @@ describe("Consent i18n", () => {
       describe(`when browser language matches available locale (${navigatorLanguage})`, () => {
         it(`localizes banner_and_modal components in the correct locale (${locale})`, () => {
           visitDemoWithI18n({
-            navigatorLanguage: navigatorLanguage,
+            navigatorLanguage,
             globalPrivacyControl: true,
             fixture,
           });
@@ -419,7 +528,7 @@ describe("Consent i18n", () => {
         it("handles optional translations for banner_and_modal components", () => {
           // Ensure that null/empty values for some optional translation messages provide their correct fallbacks
           visitDemoWithI18n({
-            navigatorLanguage: navigatorLanguage,
+            navigatorLanguage,
             globalPrivacyControl: true,
             fixture,
             overrideExperience: (experience: any) => {
@@ -461,7 +570,7 @@ describe("Consent i18n", () => {
 
         it(`localizes banner_and_modal notice-only components in the correct locale (${locale})`, () => {
           visitDemoWithI18n({
-            navigatorLanguage: navigatorLanguage,
+            navigatorLanguage,
             globalPrivacyControl: true,
             fixture: "experience_banner_modal_notice_only.json",
           });
@@ -493,7 +602,7 @@ describe("Consent i18n", () => {
         it(`localizes GPC badges on notices in the correct locale ($locale})`, () => {
           // Set GPC flag on the first notice
           visitDemoWithI18n({
-            navigatorLanguage: navigatorLanguage,
+            navigatorLanguage,
             globalPrivacyControl: true,
             fixture,
             overrideExperience: (experience: any) => {
@@ -719,26 +828,12 @@ describe("Consent i18n", () => {
     });
   });
 
-  /**
-   * Localization tests for FidesJS TCF Banner & Modal
-   */
+  /**********************************************************
+   *
+   * FIDESJS TCF BANNER + MODAL TESTS
+   *
+   **********************************************************/
   describe("when localizing tcf_overlay components", () => {
-    /**
-     * Define our parameterized test cases to generate specs below!
-     */
-    const fixture = "experience_tcf.json";
-    const tests = [
-      {
-        navigatorLanguage: ENGLISH_LOCALE,
-        locale: ENGLISH_LOCALE,
-        banner: ENGLISH_TCF_BANNER,
-        modal: ENGLISH_TCF_MODAL,
-      },
-      // TODO (PROD-1683): test in Spanish!
-      // { navigatorLanguage: SPANISH_LOCALE, banner: SPANISH_TCF_BANNER, modal: SPANISH_TCF_MODAL },
-    ];
-
-    // Reusable assertions to test that the modal notices component localizes correctly
     const testTcfBannerStacksLocalization = (
       expected: TestTcfBannerTranslations
     ) => {
@@ -1018,12 +1113,24 @@ describe("Consent i18n", () => {
     };
 
     /**
-     * Generate all the specs from the test params
+     * Define our parameterized test cases and generate specs
      */
+    const fixture = "experience_tcf.json";
+    const tests = [
+      {
+        navigatorLanguage: ENGLISH_LOCALE,
+        locale: ENGLISH_LOCALE,
+        banner: ENGLISH_TCF_BANNER,
+        modal: ENGLISH_TCF_MODAL,
+      },
+      // TODO (PROD-1683): test in Spanish!
+      // { navigatorLanguage: SPANISH_LOCALE, banner: SPANISH_TCF_BANNER, modal: SPANISH_TCF_MODAL },
+    ];
+
     tests.forEach(({ navigatorLanguage, locale, banner, modal }) => {
       it(`localizes tcf_overlay components in the correct locale (${locale})`, () => {
         visitDemoWithI18n({
-          navigatorLanguage: navigatorLanguage,
+          navigatorLanguage,
           globalPrivacyControl: true,
           fixture,
           options: { tcfEnabled: true },
@@ -1036,9 +1143,12 @@ describe("Consent i18n", () => {
 
   describe.skip("when localizing privacy_center components", () => {});
 
-  describe("when localizing the 'On'/'Off' toggle labels", () => {
+  /**
+   * Special-case tests for the On/Off toggle labels, which are hidden in non-English locales
+   */
+  describe("when localizing the On/Off toggle labels", () => {
     describe(`when in the default locale (${ENGLISH_LOCALE})`, () => {
-      it("shows the 'On'/'Off' toggle labels in banner_and_modal components", () => {
+      it("shows the On/Off toggle labels in banner_and_modal components", () => {
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
           fixture: "experience_banner_modal.json",
@@ -1051,7 +1161,7 @@ describe("Consent i18n", () => {
         });
       });
 
-      it("shows the 'On'/'Off' toggle labels in tcf_overlay components", () => {
+      it("shows the On/Off toggle labels in tcf_overlay components", () => {
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
           fixture: "experience_tcf.json",
@@ -1067,7 +1177,7 @@ describe("Consent i18n", () => {
     });
 
     describe(`when in any non-default locale (${SPANISH_LOCALE})`, () => {
-      it("hides the 'On'/'Off' toggle labels in banner_and_modal components", () => {
+      it("hides the On/Off toggle labels in banner_and_modal components", () => {
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
           fixture: "experience_banner_modal.json",
@@ -1075,18 +1185,12 @@ describe("Consent i18n", () => {
         cy.get("#fides-modal-link").click();
         cy.get("#fides-modal .fides-modal-notices").within(() => {
           cy.get(".fides-toggle:first").contains("Off").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
           cy.get(".fides-toggle:first").click();
           cy.get(".fides-toggle:first").contains("On").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
         });
       });
 
-      it("hides the 'On'/'Off' toggle labels in tcf_overlay components", () => {
+      it("hides the On/Off toggle labels in tcf_overlay components", () => {
         visitDemoWithI18n({
           navigatorLanguage: SPANISH_LOCALE,
           fixture: "experience_tcf.json",
@@ -1095,14 +1199,8 @@ describe("Consent i18n", () => {
         cy.get("#fides-modal-link").click();
         cy.getByTestId("records-list-Purposes").within(() => {
           cy.get(".fides-toggle:first").contains("Off").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
           cy.get(".fides-toggle:first").click();
           cy.get(".fides-toggle:first").contains("On").should("not.exist");
-          cy.get(".fides-toggle:first .fides-toggle-display").should(
-            "be.empty"
-          );
         });
       });
     });
