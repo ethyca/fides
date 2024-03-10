@@ -231,19 +231,60 @@ describe("i18n-utils", () => {
 
         // Confirm that the English gvl_translations are loaded
         const expectedMessagesEn: Record<string, RegExp> = {
+          // Example purposes
           "exp.tcf.purposes.1.name": /^Store and\/or access/,
           "exp.tcf.purposes.1.description": /^Cookies, device or similar/,
           "exp.tcf.purposes.1.illustrations.0": /^Most purposes explained/,
+          "exp.tcf.purposes.11.name": /^Use limited data to select content/,
+          "exp.tcf.purposes.11.description": /^Content presented to you/,
+          "exp.tcf.purposes.11.illustrations.1": /^A sports news mobile/,
+          // Example special purpose
+          "exp.tcf.specialPurposes.2.name": /^Deliver and present/,
+          "exp.tcf.specialPurposes.2.description": /^Certain information /,
+          "exp.tcf.specialPurposes.2.illustrations.0": /^Clicking on a link/,
+          // Example feature
+          "exp.tcf.features.3.name": /^Identify devices based on information/,
+          "exp.tcf.features.3.description": /^Your device might be /,
+          // Example special feature
+          "exp.tcf.specialFeatures.1.name": /^Use precise geolocation data/,
+          "exp.tcf.specialFeatures.1.description": /^With your acceptance/,
+          // Example stack
+          "exp.tcf.stacks.40.name": /^Personalised advertising.*development$/,
+          "exp.tcf.stacks.40.description": /^Advertising can be personalised/,
+          // Example data category
+          "exp.tcf.dataCategories.9.name": /^Precise location data$/,
+          "exp.tcf.dataCategories.9.description": /^Your precise location/,
         };
         Object.entries(expectedMessagesEn).forEach(([id, regex]) => {
+          expect(messagesEn).toHaveProperty([id]);
           expect(messagesEn[id]).toMatch(regex);
         });
 
         // Confirm that the Spanish gvl_translations are loaded
         const expectedMessagesEs: Record<string, RegExp> = {
+          // Example purposes
           "exp.tcf.purposes.1.name": /^Almacenar la información/,
           "exp.tcf.purposes.1.description": /^Las cookies, los identificadores/,
-          "exp.tcf.purposes.1.illustrations.0": /^La mayoría de las finalidades/,
+          "exp.tcf.purposes.1.illustrations.0": /^La mayoría de las finalid/,
+          "exp.tcf.purposes.11.name": /^Uso de datos limitados con el objetivo/,
+          "exp.tcf.purposes.11.description": /^El contenido que se presenta/,
+          "exp.tcf.purposes.11.illustrations.1": /^Una aplicación móvil/,
+          // Example special purpose
+          "exp.tcf.specialPurposes.2.name": /^Ofrecer y presentar publicidad/,
+          "exp.tcf.specialPurposes.2.description": /^Cierta información/,
+          "exp.tcf.specialPurposes.2.illustrations.0": /^Hacer clic en el/,
+          // Example feature
+          "exp.tcf.features.3.name": /^Identificación de dispositivos/,
+          "exp.tcf.features.3.description": /^Tu dispositivo podría/,
+          // Example special feature
+          "exp.tcf.specialFeatures.1.name": /^Utilizar datos de localización/,
+          "exp.tcf.specialFeatures.1.description": /^Al contar con tu/,
+          // Example stack
+          "exp.tcf.stacks.40.name": /^Publicidad personalizada.*de servicios$/,
+          "exp.tcf.stacks.40.description": /^La publicidad puede personaliza/,
+          // Example data category
+          "exp.tcf.dataCategories.9.name": /^Datos de localización geográfica/,
+          "exp.tcf.dataCategories.9.description": /^Tu ubicación precisa/,
         };
         Object.entries(expectedMessagesEs).forEach(([id, regex]) => {
           expect(messagesEs[id]).toMatch(regex);
@@ -258,7 +299,7 @@ describe("i18n-utils", () => {
             features: /exp\.tcf\.features\.\d+\.name/,
             specialFeatures: /exp\.tcf\.specialFeatures\.\d+\.name/,
             stacks: /exp\.tcf\.stacks\.\d+\.name/,
-            dataCategories: /exp\.tcf\.stacks\.\d+\.name/,
+            dataCategories: /exp\.tcf\.dataCategories\.\d+\.name/,
           };
           const recordCounts: Record<string, number> = {};
           const ids = Object.keys(messages);
@@ -272,11 +313,11 @@ describe("i18n-utils", () => {
         // Confirm the translated record counts
         const expectedCounts = {
           purposes: 11,
-          // specialPurposes: 2,
-          // features: 3,
-          // specialFeatures: 2,
-          // stacks: 45,
-          // dataCategories: 11,
+          specialPurposes: 2,
+          features: 3,
+          specialFeatures: 2,
+          stacks: 45,
+          dataCategories: 11,
         };
         expect(getRecordCounts(messagesEn)).toMatchObject(expectedCounts);
         expect(getRecordCounts(messagesEs)).toMatchObject(expectedCounts);

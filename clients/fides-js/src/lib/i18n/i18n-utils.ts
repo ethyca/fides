@@ -106,26 +106,30 @@ function extractMessagesFromGVLTranslations(
   // itself is not available in most languages
   const extracted: Record<Locale, Messages> = {};
   locales.forEach((locale) => {
-    const gvlTranslation = gvl_translations[locale];
+    const gvlTranslation = gvl_translations[locale] as any;
     const messages: Messages = {};
 
-    Object.keys(gvlTranslation.purposes).forEach((id) => {
-      const record = gvlTranslation.purposes[id];
-      const prefix = `exp.tcf.purposes.${id}`;
-      messages[`${prefix}.name`] = record.name;
-      messages[`${prefix}.description`] = record.description;
-      if (record.illustrations && record.illustrations.length > 0) {
-        record.illustrations.forEach((illustration, i) => {
-          messages[`${prefix}.illustrations.${i}`] = illustration;
-        });
-      }
+    const recordTypes = [
+      "purposes",
+      "specialPurposes",
+      "features",
+      "specialFeatures",
+      "stacks",
+      "dataCategories",
+    ];
+    recordTypes.forEach((type) => {
+      Object.keys(gvlTranslation[type]).forEach((id) => {
+        const record = gvlTranslation[type][id];
+        const prefix = `exp.tcf.${type}.${id}`;
+        messages[`${prefix}.name`] = record.name;
+        messages[`${prefix}.description`] = record.description;
+        if (record.illustrations && record.illustrations.length > 0) {
+          record.illustrations.forEach((illustration: string, i: number) => {
+            messages[`${prefix}.illustrations.${i}`] = illustration;
+          });
+        }
+      });
     });
-    // gvlTranslation.purposes
-    // gvlTranslation.specialPurposes
-    // gvlTranslation.features
-    // gvlTranslation.specialFeatures
-    // gvlTranslation.stacks
-    // gvlTranslation.dataCategories
 
     // Combine these extracted messages with all the other locales
     extracted[locale] = { ...messages, ...extracted[locale] };
