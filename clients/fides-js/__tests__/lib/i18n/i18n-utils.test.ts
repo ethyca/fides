@@ -21,9 +21,10 @@ import {
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
+import type { GVLTranslationJson } from "~/lib/tcf/types";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
-import { GVLTranslationJson } from "~/lib/tcf/types";
+import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
@@ -166,7 +167,7 @@ describe("i18n-utils", () => {
       expect(messages).not.toHaveProperty(["exp.banner_title"]);
     });
 
-    it("handles missing experience/notice translations by falling back to legacy properties", () => {
+    it("handles missing experience_config translations by falling back to legacy properties", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
       const mockExpNoTranslations = JSON.parse(JSON.stringify(mockExperience));
@@ -195,6 +196,90 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
+      });
+    });
+
+    describe("when loading from a tcf_overlay experience", () => {
+      it("reads all messages from gvl_translations API response and loads into the i18n catalog", () => {
+        // Mock out a partial response for a tcf_overlay including translations
+        const mockExpWithGVLTranslations = JSON.parse(
+          JSON.stringify(mockExperience)
+        );
+        mockExpWithGVLTranslations.experience_config.component = "tcf_overlay";
+        mockExpWithGVLTranslations.gvl_translations = mockGVLTranslationsJSON;
+
+        // Load all the translations
+        const updatedLocales = loadMessagesFromExperience(
+          mockI18n,
+          mockExpWithGVLTranslations
+        );
+
+        // First, confirm that the "regular" experience_config translations are loaded
+        const EXPECTED_NUM_TRANSLATIONS = 2;
+        expect(updatedLocales).toEqual(["en", "es"]);
+        expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+        const [, messagesEn] = mockI18n.load.mock.calls[0];
+        const [, messagesEs] = mockI18n.load.mock.calls[1];
+        expect(messagesEn).toMatchObject({
+          "exp.accept_button_label": "Accept Test",
+          "exp.acknowledge_button_label": "Acknowledge Test",
+        });
+        expect(messagesEs).toMatchObject({
+          "exp.accept_button_label": "Aceptar Prueba",
+          "exp.acknowledge_button_label": "Reconocer Prueba",
+        });
+
+        // Confirm that the English gvl_translations are loaded
+        const expectedMessagesEn: Record<string, RegExp> = {
+          "exp.tcf.purposes.1.name": /^Store and\/or access/,
+          "exp.tcf.purposes.1.description": /^Cookies, device or similar/,
+          "exp.tcf.purposes.1.illustrations.0": /^Most purposes explained/,
+        };
+        Object.entries(expectedMessagesEn).forEach(([id, regex]) => {
+          expect(messagesEn[id]).toMatch(regex);
+        });
+
+        // Confirm that the Spanish gvl_translations are loaded
+        const expectedMessagesEs: Record<string, RegExp> = {
+          "exp.tcf.purposes.1.name": /^Almacenar la información/,
+          "exp.tcf.purposes.1.description": /^Las cookies, los identificadores/,
+          "exp.tcf.purposes.1.illustrations.0": /^La mayoría de las finalidades/,
+        };
+        Object.entries(expectedMessagesEs).forEach(([id, regex]) => {
+          expect(messagesEs[id]).toMatch(regex);
+        });
+
+        // Quick helper function to count the number of unique records
+        // (purposes, features, etc.) in the translated messages
+        const getRecordCounts = (messages: Messages) => {
+          const regexes = {
+            purposes: /exp\.tcf\.purposes\.\d+\.name/,
+            specialPurposes: /exp\.tcf\.specialPurposes\.\d+\.name/,
+            features: /exp\.tcf\.features\.\d+\.name/,
+            specialFeatures: /exp\.tcf\.specialFeatures\.\d+\.name/,
+            stacks: /exp\.tcf\.stacks\.\d+\.name/,
+            dataCategories: /exp\.tcf\.stacks\.\d+\.name/,
+          };
+          const recordCounts: Record<string, number> = {};
+          const ids = Object.keys(messages);
+          Object.entries(regexes).forEach(([type, regex]) => {
+            const count = ids.filter((id) => id.match(regex)).length;
+            recordCounts[type] = count;
+          });
+          return recordCounts;
+        };
+
+        // Confirm the translated record counts
+        const expectedCounts = {
+          purposes: 11,
+          // specialPurposes: 2,
+          // features: 3,
+          // specialFeatures: 2,
+          // stacks: 45,
+          // dataCategories: 11,
+        };
+        expect(getRecordCounts(messagesEn)).toMatchObject(expectedCounts);
+        expect(getRecordCounts(messagesEs)).toMatchObject(expectedCounts);
       });
     });
   });
@@ -372,21 +457,21 @@ describe("i18n-utils", () => {
     });
   });
 
-
   describe("selectBestGVLTranslation", () => {
     const fixture: Record<Locale, Partial<GVLTranslationJson>> = {
-      "en": {
-        "purposes": {
-          "1": { "id": 1, "name": "Example", "description": "Example" }
-        }
+      en: {
+        purposes: {
+          "1": { id: 1, name: "Example", description: "Example" },
+        },
       },
-      "es": {
-        "purposes": {
-          "1": { "id": 1, "name": "Ejemplo", "description": "Ejemplo" }
-        }
+      es: {
+        purposes: {
+          "1": { id: 1, name: "Ejemplo", description: "Ejemplo" },
+        },
       },
     };
-    const mockGVLTranslations: Record<Locale, GVLTranslationJson> = fixture as any;
+    const mockGVLTranslations: Record<Locale, GVLTranslationJson> =
+      fixture as any;
 
     it("selects an exact match for current locale if available", () => {
       mockCurrentLocale = "es";
@@ -410,7 +495,7 @@ describe("i18n-utils", () => {
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
       const mockGVLNoEnglish: Record<Locale, GVLTranslationJson> = {
-        "es": mockGVLTranslations["es"],
+        es: mockGVLTranslations["es"],
       };
       mockCurrentLocale = "zh";
       expect(
@@ -422,15 +507,9 @@ describe("i18n-utils", () => {
     });
 
     it("returns empty object for invalid/missing translations", () => {
-      expect(
-        selectBestGVLTranslation(mockI18n, null as any)
-      ).toEqual({});
-      expect(
-        selectBestGVLTranslation(mockI18n, {} as any)
-      ).toEqual({});
-      expect(
-        selectBestGVLTranslation(mockI18n, [] as any)
-      ).toEqual({});
+      expect(selectBestGVLTranslation(mockI18n, null as any)).toEqual({});
+      expect(selectBestGVLTranslation(mockI18n, {} as any)).toEqual({});
+      expect(selectBestGVLTranslation(mockI18n, [] as any)).toEqual({});
     });
   });
 

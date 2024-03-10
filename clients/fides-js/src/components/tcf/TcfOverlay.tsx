@@ -43,7 +43,10 @@ import Button from "../Button";
 import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
-import { selectBestExperienceConfigTranslation, selectBestGVLTranslation } from "../../lib/i18n";
+import {
+  selectBestExperienceConfigTranslation,
+  selectBestGVLTranslation,
+} from "../../lib/i18n";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
@@ -255,7 +258,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         i18n,
         experience.gvl_translations
       );
-      return translation
+      return translation;
     }
     return undefined;
   }, [experience, i18n]);
@@ -373,7 +376,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 i18n={i18n}
                 goToVendorTab={goToVendorTab}
               />
-              <InitialLayer experience={experience} gvlTranslation={gvlTranslation} i18n={i18n} />
+              <InitialLayer
+                experience={experience}
+                gvlTranslation={gvlTranslation}
+                i18n={i18n}
+              />
             </div>
           </ConsentBanner>
         );

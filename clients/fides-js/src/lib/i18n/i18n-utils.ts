@@ -10,7 +10,7 @@ import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
 import { STATIC_MESSAGES } from "./locales";
-import { GVLTranslationJson } from "../tcf/types";
+import { GVLTranslationJson, GVLTranslations } from "../tcf/types";
 
 /**
  * Helper function to extract all the translated messages from an
@@ -79,6 +79,61 @@ function extractMessagesFromExperienceConfig(
 }
 
 /**
+ * Helper function to extract all the translated messages from the "gvl_translations"
+ * API response. Returns an object that maps locales -> messages, e.g.
+ * {
+ *   "en": {
+ *     "gvl.purposes.1.name": "Store and/or access information on a device",
+ *     "gvl.purposes.1.description": "description": "Cookies, device or similar...",
+ *     "gvl.purposes.1.illustrations.0": "Most purposes explained in this...",
+ *   },
+ *   "es": {
+ *     ...
+ *   }
+ * }
+ *
+ * This allows convenient access to any translated message from all points in
+ * the TCF code by using the well-worn GVL IDs as locators. However, note that
+ * the "illustrations" array can be a bit awkward to use as a flattened list of
+ * messages; use the helper getAllTranslatedIllustrations(...) to simplify this.
+ */
+function extractMessagesFromGVLTranslations(
+  gvl_translations: GVLTranslations,
+  locales: Locale[]
+): Record<Locale, Messages> {
+  // Extract translations, but only those that match the given "locales" list;
+  // this avoids loading translations that will be unused when the experience
+  // itself is not available in most languages
+  const extracted: Record<Locale, Messages> = {};
+  locales.forEach((locale) => {
+    const gvlTranslation = gvl_translations[locale];
+    const messages: Messages = {};
+
+    Object.keys(gvlTranslation.purposes).forEach((id) => {
+      const record = gvlTranslation.purposes[id];
+      const prefix = `exp.tcf.purposes.${id}`;
+      messages[`${prefix}.name`] = record.name;
+      messages[`${prefix}.description`] = record.description;
+      if (record.illustrations && record.illustrations.length > 0) {
+        record.illustrations.forEach((illustration, i) => {
+          messages[`${prefix}.illustrations.${i}`] = illustration;
+        });
+      }
+    });
+    // gvlTranslation.purposes
+    // gvlTranslation.specialPurposes
+    // gvlTranslation.features
+    // gvlTranslation.specialFeatures
+    // gvlTranslation.stacks
+    // gvlTranslation.dataCategories
+
+    // Combine these extracted messages with all the other locales
+    extracted[locale] = { ...messages, ...extracted[locale] };
+  });
+  return extracted;
+}
+
+/**
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
@@ -118,15 +173,30 @@ export function loadMessagesFromExperience(
       };
     });
   }
+  const extractedLocales: Locale[] = Object.keys(allMessages);
+
+  // Extract messages from gvl_translations
+  if (experience?.gvl_translations) {
+    const extracted: Record<Locale, Messages> =
+      extractMessagesFromGVLTranslations(
+        experience.gvl_translations,
+        extractedLocales
+      );
+    Object.keys(extracted).forEach((locale) => {
+      allMessages[locale] = {
+        ...extracted[locale],
+        ...allMessages[locale],
+      };
+    });
+  }
 
   // Load all the extracted messages into the i18n module
-  const updatedLocales: Locale[] = Object.keys(allMessages);
-  updatedLocales.forEach((locale) => {
+  extractedLocales.forEach((locale) => {
     i18n.load(locale, allMessages[locale]);
   });
 
   // Return all the locales we extracted & updated
-  return updatedLocales;
+  return extractedLocales;
 }
 
 /**
@@ -300,11 +370,12 @@ export function selectBestExperienceConfigTranslation(
  * GVL translations object, based on the current locale. This is used to combine
  * the IAB translations alongside both the ExperienceConfig translations and
  * static messages to fully localized the TCF CMP UI.
+ * TODO (PROD-1683): delete this helper
  */
 export function selectBestGVLTranslation(
   i18n: I18n,
-  gvl_translations: Record<Locale, GVLTranslationJson>,
-): { locale?: Locale, translation?: GVLTranslationJson } {
+  gvl_translations: GVLTranslations
+): { locale?: Locale; translation?: GVLTranslationJson } {
   // Defensive checks
   if (!gvl_translations) {
     return {};
@@ -313,12 +384,18 @@ export function selectBestGVLTranslation(
   // 1) Look for an exact match for the current locale
   const currentLocale = getCurrentLocale(i18n);
   if (gvl_translations[currentLocale]) {
-    return { locale: currentLocale, translation: gvl_translations[currentLocale] };
+    return {
+      locale: currentLocale,
+      translation: gvl_translations[currentLocale],
+    };
   }
 
   // 2) Fallback to default locale, if an exact match isn't found
   if (gvl_translations[DEFAULT_LOCALE]) {
-    return { locale: DEFAULT_LOCALE, translation: gvl_translations[DEFAULT_LOCALE] };
+    return {
+      locale: DEFAULT_LOCALE,
+      translation: gvl_translations[DEFAULT_LOCALE],
+    };
   }
 
   // 3) Fallback to first translation in the list, if the default locale isn't found
