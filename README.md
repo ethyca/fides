@@ -89,7 +89,7 @@ Join the conversation on:
 
 ### Contributing
 
-We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://ethyca.com/docs/community) to opening issues for bugs, new features, and security or experience enhancements.
+We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://ethyca.com/docs/community/development/overview) to opening issues for bugs, new features, and security or experience enhancements.
 
 Read about the [Fides community](https://ethyca.com/docs/community) or dive into the [contributor guides](https://ethyca.com/docs/community/hints_tips) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.com/docs/community/code_of_conduct).
 
