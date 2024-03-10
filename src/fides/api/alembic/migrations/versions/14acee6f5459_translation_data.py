@@ -440,7 +440,7 @@ def determine_needed_experience_configs(bind):
     to capture the full range of configuration on current Notices.
     """
 
-    notice_query = """select id, name, regions, displayed_in_overlay, displayed_in_privacy_center, notice_key from privacynotice;"""
+    notice_query = """select id, name, regions, disabled, displayed_in_overlay, displayed_in_privacy_center, notice_key from privacynotice;"""
     experience_config_query = """SELECT id, component, disabled, accept_button_label, description, privacy_preferences_link_label, privacy_policy_link_label, privacy_policy_url, save_button_label, title, banner_description, banner_title, reject_button_label, acknowledge_button_label from privacyexperienceconfig;"""
 
     existing_notices: ResultProxy = bind.execute(text(notice_query))
@@ -480,6 +480,12 @@ def determine_needed_experience_configs(bind):
                         reconciled_experience_config_map[experience_config][
                             "privacy_notices"
                         ].add(existing_notice["id"])
+                        if not existing_notice["disabled"]:
+                            # Disabled by default, but if any notices are enabled, let's enable this Experience Config
+                            # as the safer default
+                            reconciled_experience_config_map[experience_config][
+                                "disabled"
+                            ] = False
                         reconciled_experience_config_map[experience_config][
                             "needs_migration"
                         ] = True
@@ -495,6 +501,13 @@ def determine_needed_experience_configs(bind):
                         reconciled_experience_config_map[experience_config][
                             "privacy_notices"
                         ].add(existing_notice["id"])
+                        if not existing_notice["disabled"]:
+                            # Disabled by default, but if any notices are enabled, let's enable this Experience Config
+                            # as the safer default
+                            reconciled_experience_config_map[experience_config][
+                                "disabled"
+                            ] = False
+
                         reconciled_experience_config_map[experience_config][
                             "needs_migration"
                         ] = True
@@ -542,6 +555,10 @@ def determine_needed_experience_configs(bind):
                     config["save_button_label"] = eec["save_button_label"]
                     config["title"] = eec["title"]
                     config["needs_migration"] = True
+
+                    if eec["component"] == "tcf_overlay":
+                        # TCF doesn't have notices so enable the new TCF overlay if its existing overlay is enabled
+                        config["disabled"] = eec["disabled"]
 
     if has_existing_experience_configs:
         return reconciled_experience_config_map
