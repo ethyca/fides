@@ -8,7 +8,6 @@ import {
   createStacks,
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
-import { GVLTranslationJson } from "../../lib/tcf/types";
 
 import InitialLayerAccordion from "./InitialLayerAccordion";
 
@@ -81,8 +80,8 @@ const InitialLayer = ({
             <InitialLayerAccordion
               key={s.id}
               i18n={i18n}
-              title={s.name}
-              description={s.description}
+              title={i18n.t(`exp.tcf.stacks.${s.id}.name`)}
+              description={i18n.t(`exp.tcf.stacks.${s.id}.description`)}
               purposes={stackPurposes}
             />
           );
@@ -93,8 +92,8 @@ const InitialLayer = ({
           <InitialLayerAccordion
             key={p.id}
             i18n={i18n}
-            title={p.name}
-            description={p.description}
+            title={i18n.t(`exp.tcf.purposes.${p.id}.name`)}
+            description={i18n.t(`exp.tcf.purposes.${p.id}.description`)}
           />
         ))}
       </div>
@@ -103,8 +102,8 @@ const InitialLayer = ({
           <InitialLayerAccordion
             key={sf.id}
             i18n={i18n}
-            title={sf.name}
-            description={sf.description}
+            title={i18n.t(`exp.tcf.specialFeatures.${sf.id}.name`)}
+            description={i18n.t(`exp.tcf.specialFeatures.${sf.id}.description`)}
           />
         ))}
       </div>
