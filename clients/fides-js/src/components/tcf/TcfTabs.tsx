@@ -35,23 +35,12 @@ const TcfTabs = ({
     [enabledIds, onChange]
   );
 
-  // static.tcf.purposes
-  // static.tcf.purposes_info
-  // static.tcf.features
-  // static.tcf.features_info
-  // static.tcf.vendors
-  // static.tcf.vendors_info
   const tcfTabs = [
     {
-      name: "Purposes",
+      name: i18n.t("static.tcf.purposes"),
       content: (
         <div>
-          <InfoBox>
-            Below, you will find a list of the purposes and special features for
-            which your data is being processed. You may exercise your rights for
-            specific purposes, based on consent or legitimate interest, using
-            the toggles below.
-          </InfoBox>
+          <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
           <TcfPurposes
             i18n={i18n}
             allPurposesConsent={experience.tcf_purpose_consents}
@@ -66,14 +55,10 @@ const TcfTabs = ({
       ),
     },
     {
-      name: "Features",
+      name: i18n.t("static.tcf.features"),
       content: (
         <div>
-          <InfoBox>
-            Below, you will find a list of the features for which your data is
-            being processed. You may exercise your rights for special features
-            using the toggles below.
-          </InfoBox>
+          <InfoBox>{i18n.t("static.tcf.features.description")}</InfoBox>
           <TcfFeatures
             i18n={i18n}
             allFeatures={experience.tcf_features}
@@ -86,14 +71,10 @@ const TcfTabs = ({
       ),
     },
     {
-      name: "Vendors",
+      name: i18n.t("static.tcf.vendors"),
       content: (
         <div>
-          <InfoBox>
-            Below, you will find a list of vendors processing your data and the
-            purposes or features of processing they declare. You may exercise
-            your rights for each vendor based on the legal basis they assert.
-          </InfoBox>
+          <InfoBox>{i18n.t("static.tcf.vendors.description")}</InfoBox>
           <TcfVendors
             i18n={i18n}
             experience={experience}

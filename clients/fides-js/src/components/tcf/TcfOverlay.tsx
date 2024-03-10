@@ -43,9 +43,7 @@ import Button from "../Button";
 import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
-import {
-  selectBestExperienceConfigTranslation,
-} from "../../lib/i18n";
+import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
@@ -363,10 +361,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 i18n={i18n}
                 goToVendorTab={goToVendorTab}
               />
-              <InitialLayer
-                experience={experience}
-                i18n={i18n}
-              />
+              <InitialLayer experience={experience} i18n={i18n} />
             </div>
           </ConsentBanner>
         );
@@ -398,10 +393,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               firstButton={
                 <Button
                   buttonType={ButtonType.SECONDARY}
-                  label={
-                    experience.experience_config?.translations[0]
-                      .save_button_label
-                  }
+                  label={i18n.t("exp.save_button_label")}
                   onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                   className="fides-save-button"
                 />
