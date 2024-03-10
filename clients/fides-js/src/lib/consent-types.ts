@@ -1,7 +1,6 @@
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
-  GVLTranslationJson,
   GVLTranslations,
   TCFFeatureRecord,
   TCFFeatureSave,

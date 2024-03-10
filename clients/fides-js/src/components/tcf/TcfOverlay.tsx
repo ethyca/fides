@@ -12,7 +12,6 @@ import { OverlayProps } from "../types";
 
 import type {
   EnabledIds,
-  GVLTranslationJson,
   TCFFeatureRecord,
   TCFFeatureSave,
   TcfModels,

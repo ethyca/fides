@@ -10,7 +10,7 @@ import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
 import { STATIC_MESSAGES } from "./locales";
-import { GVLTranslationJson, GVLTranslations } from "../tcf/types";
+import { GVLTranslations } from "../tcf/types";
 
 /**
  * Helper function to extract all the translated messages from an

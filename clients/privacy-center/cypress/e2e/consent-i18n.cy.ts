@@ -1,3 +1,4 @@
+/* eslint-disable spaced-comment */
 import { FidesOptions, PrivacyExperience, PrivacyNotice } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
@@ -828,7 +829,7 @@ describe("Consent i18n", () => {
    * FIDESJS TCF BANNER + MODAL TESTS
    *
    **********************************************************/
-  describe.only("when localizing tcf_overlay components", () => {
+  describe("when localizing tcf_overlay components", () => {
     const testTcfBannerStacksLocalization = (t: TestTcfBannerTranslations) => {
       // Check banner stacks localization
       cy.get(".fides-tcf-stacks-container").within(() => {

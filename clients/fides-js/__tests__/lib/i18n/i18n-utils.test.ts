@@ -20,7 +20,6 @@ import {
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
-import type { GVLTranslationJson } from "~/lib/tcf/types";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
@@ -217,13 +216,13 @@ describe("i18n-utils", () => {
         const EXPECTED_NUM_TRANSLATIONS = 2;
         expect(updatedLocales).toEqual(["en", "es"]);
         expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-        const [, messagesEn] = mockI18n.load.mock.calls[0];
-        const [, messagesEs] = mockI18n.load.mock.calls[1];
-        expect(messagesEn).toMatchObject({
+        const [, loadedMessagesEn] = mockI18n.load.mock.calls[0];
+        const [, loadedMessagesEs] = mockI18n.load.mock.calls[1];
+        expect(loadedMessagesEn).toMatchObject({
           "exp.accept_button_label": "Accept Test",
           "exp.acknowledge_button_label": "Acknowledge Test",
         });
-        expect(messagesEs).toMatchObject({
+        expect(loadedMessagesEs).toMatchObject({
           "exp.accept_button_label": "Aceptar Prueba",
           "exp.acknowledge_button_label": "Reconocer Prueba",
         });
@@ -255,8 +254,8 @@ describe("i18n-utils", () => {
           "exp.tcf.dataCategories.9.description": /^Your precise location/,
         };
         Object.entries(expectedMessagesEn).forEach(([id, regex]) => {
-          expect(messagesEn).toHaveProperty([id]);
-          expect(messagesEn[id]).toMatch(regex);
+          expect(loadedMessagesEn).toHaveProperty([id]);
+          expect(loadedMessagesEn[id]).toMatch(regex);
         });
 
         // Confirm that the Spanish gvl_translations are loaded
@@ -286,7 +285,7 @@ describe("i18n-utils", () => {
           "exp.tcf.dataCategories.9.description": /^Tu ubicación precisa/,
         };
         Object.entries(expectedMessagesEs).forEach(([id, regex]) => {
-          expect(messagesEs[id]).toMatch(regex);
+          expect(loadedMessagesEs[id]).toMatch(regex);
         });
 
         // Quick helper function to count the number of unique records
@@ -318,8 +317,8 @@ describe("i18n-utils", () => {
           stacks: 45,
           dataCategories: 11,
         };
-        expect(getRecordCounts(messagesEn)).toMatchObject(expectedCounts);
-        expect(getRecordCounts(messagesEs)).toMatchObject(expectedCounts);
+        expect(getRecordCounts(loadedMessagesEn)).toMatchObject(expectedCounts);
+        expect(getRecordCounts(loadedMessagesEs)).toMatchObject(expectedCounts);
       });
     });
   });
