@@ -50,7 +50,6 @@ type TestTcfBannerTranslations = TestBannerTranslations & {
   vendors_legint_count: string;
   tcf_stacks: { title: string; description: string; isStacked?: boolean }[];
   purposes: string;
-  purposes_include: string;
   stacked_purpose_example: string;
 };
 
@@ -165,7 +164,6 @@ const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
       },
     ],
     purposes: "Purposes",
-    purposes_include: "Purposes include",
     stacked_purpose_example: "Purpose 2: Use limited data to select",
   },
 };
@@ -287,7 +285,6 @@ const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
       },
     ],
     purposes: "Propósitos",
-    purposes_include: "Propósitos include",
     stacked_purpose_example:
       "Propósito 2: Uso de datos limitados para seleccionar anuncios básicos",
   },
@@ -842,7 +839,7 @@ describe("Consent i18n", () => {
           if (isStacked) {
             cy.get(
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-title"
-            ).contains(t.purposes_include);
+            ).contains(t.purposes);
             cy.get(
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
             ).contains(t.stacked_purpose_example);

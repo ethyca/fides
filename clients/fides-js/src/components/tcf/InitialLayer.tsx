@@ -1,16 +1,26 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
-import { PrivacyExperience } from "../../lib/consent-types";
 
+import { PrivacyExperience } from "../../lib/consent-types";
+import type { I18n } from "../../lib/i18n";
+import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
 import {
   createStacks,
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
+import { GVLTranslationJson } from "../../lib/tcf/types";
+
 import InitialLayerAccordion from "./InitialLayerAccordion";
 
-import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
-
-const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
+const InitialLayer = ({
+  experience,
+  i18n,
+  gvlTranslation,
+}: {
+  experience: PrivacyExperience;
+  i18n: I18n;
+  gvlTranslation?: GVLTranslationJson;
+}) => {
   const {
     tcf_purpose_consents: consentPurposes = [],
     tcf_purpose_legitimate_interests: legintPurposes = [],
@@ -28,15 +38,15 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   );
 
   const stacks = useMemo(() => {
-    if (!experience.gvl || Object.keys(experience.gvl).length === 0) {
+    if (!gvlTranslation || !gvlTranslation.stacks) {
       return [];
     }
     return createStacks({
       purposeIds: uniquePurposeIds,
       specialFeatureIds,
-      stacks: experience.gvl.stacks,
+      stacks: gvlTranslation.stacks,
     });
-  }, [uniquePurposeIds, specialFeatureIds, experience.gvl]);
+  }, [uniquePurposeIds, specialFeatureIds, gvlTranslation]);
 
   const purposes = useMemo(() => {
     const ids = getIdsNotRepresentedInStacks({
@@ -72,6 +82,7 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
           return (
             <InitialLayerAccordion
               key={s.id}
+              i18n={i18n}
               title={s.name}
               description={s.description}
               purposes={stackPurposes}
@@ -83,6 +94,7 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
         {purposes.map((p) => (
           <InitialLayerAccordion
             key={p.id}
+            i18n={i18n}
             title={p.name}
             description={p.description}
           />
@@ -92,6 +104,7 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
         {specialFeatures.map((sf) => (
           <InitialLayerAccordion
             key={sf.id}
+            i18n={i18n}
             title={sf.name}
             description={sf.description}
           />
