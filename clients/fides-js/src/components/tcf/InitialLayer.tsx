@@ -15,11 +15,9 @@ import InitialLayerAccordion from "./InitialLayerAccordion";
 const InitialLayer = ({
   experience,
   i18n,
-  gvlTranslation,
 }: {
   experience: PrivacyExperience;
   i18n: I18n;
-  gvlTranslation?: GVLTranslationJson;
 }) => {
   const {
     tcf_purpose_consents: consentPurposes = [],
@@ -38,15 +36,15 @@ const InitialLayer = ({
   );
 
   const stacks = useMemo(() => {
-    if (!gvlTranslation || !gvlTranslation.stacks) {
+    if (!experience.gvl || !experience.gvl.stacks) {
       return [];
     }
     return createStacks({
       purposeIds: uniquePurposeIds,
       specialFeatureIds,
-      stacks: gvlTranslation.stacks,
+      stacks: experience.gvl.stacks,
     });
-  }, [uniquePurposeIds, specialFeatureIds, gvlTranslation]);
+  }, [uniquePurposeIds, specialFeatureIds, experience]);
 
   const purposes = useMemo(() => {
     const ids = getIdsNotRepresentedInStacks({
