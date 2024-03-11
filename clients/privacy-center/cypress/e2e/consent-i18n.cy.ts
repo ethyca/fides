@@ -81,7 +81,6 @@ type TestTcfModalTranslations = TestModalTranslations & {
   vendor_other_example_description: string;
   vendor_privacy_policy: string;
   vendor_legint_disclosure: string;
-  iab: string;
   retention: string;
   consent: string;
   legint: string;
