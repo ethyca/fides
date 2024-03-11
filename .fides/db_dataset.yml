@@ -2047,3 +2047,15 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]  
+  - name: plus_privacy_experience_config_property
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: privacy_experience_config_id
+      data_categories: [system.operations] 
+    - name: property_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations] 

@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.31.1...main)
 
+### Added
+- Ability to link Properties to Privacy Experiences [#4658](https://github.com/ethyca/fides/pull/4658)
+
 ### Changed
 - Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
 - Data model changes to support Notice and Experience-level translations [#4576](https://github.com/ethyca/fides/pull/4576)

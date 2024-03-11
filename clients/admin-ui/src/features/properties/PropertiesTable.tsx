@@ -12,6 +12,7 @@ import {
   DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
+  GroupCountBadgeCell,
   PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
@@ -21,11 +22,12 @@ import _ from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
-import { useGetPropertiesQuery } from "~/features/properties/property.slice";
-import { Page_Property_, Property } from "~/types/api";
+import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
+import { Page_Property_, Property, ScopeRegistryEnum } from "~/types/api";
 
-import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
 import AddPropertyButton from "./AddPropertyButton";
 import PropertyActions from "./PropertyActions";
 
@@ -54,16 +56,20 @@ const EmptyTableNotice = () => (
       <Text fontSize="md" fontWeight="600">
         No properties found.
       </Text>
-      <Text fontSize="sm">
-        Click “Add property” to add your first property to Fides.
-      </Text>
+      <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
+        <Text fontSize="sm">
+          Click “Add property” to add your first property to Fides.
+        </Text>
+        <AddPropertyButton buttonLabel="Add property" buttonVariant="primary" />
+      </Restrict>
     </VStack>
-    <AddPropertyButton buttonLabel="Add property" buttonVariant="primary" />
   </VStack>
 );
 
 export const PropertiesTable = () => {
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
+
+  const userCanUpdate = useHasPermission([ScopeRegistryEnum.PROPERTY_UPDATE]);
 
   const {
     PAGE_SIZES,
@@ -91,9 +97,9 @@ export const PropertiesTable = () => {
     isFetching,
     isLoading,
     data: properties,
-  } = useGetPropertiesQuery({
-    pageIndex,
-    pageSize,
+  } = useGetAllPropertiesQuery({
+    page: pageIndex,
+    size: pageSize,
     search: globalFilter,
   });
 
@@ -119,6 +125,21 @@ export const PropertiesTable = () => {
         cell: (props) => <DefaultCell value={_.capitalize(props.getValue())} />,
         header: (props) => <DefaultHeaderCell value="Type" {...props} />,
       }),
+      columnHelper.accessor((row) => row.experiences.map((exp) => exp.name), {
+        id: "experiences",
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="experiences"
+            value={props.getValue()}
+            {...props}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Experience" {...props} />,
+        meta: {
+          displayText: "Experience",
+          showHeaderMenu: true,
+        },
+      }),
       columnHelper.display({
         id: "actions",
         header: "Actions",
@@ -141,7 +162,9 @@ export const PropertiesTable = () => {
   });
 
   const onRowClick = (property: Property) => {
-    router.push(`${PROPERTIES_ROUTE}/${property.key}`);
+    if (userCanUpdate) {
+      router.push(`${PROPERTIES_ROUTE}/${property.id}`);
+    }
   };
 
   if (isLoading || isLoadingHealthCheck) {
@@ -157,10 +180,12 @@ export const PropertiesTable = () => {
             placeholder="Search property"
           />
           <HStack alignItems="center" spacing={4}>
-            <AddPropertyButton
-              buttonLabel="Add property"
-              buttonVariant="outline"
-            />
+            <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
+              <AddPropertyButton
+                buttonLabel="Add property"
+                buttonVariant="outline"
+              />
+            </Restrict>
           </HStack>
         </TableActionBar>
         <FidesTableV2

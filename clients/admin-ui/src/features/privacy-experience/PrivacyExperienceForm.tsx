@@ -35,6 +35,12 @@ import {
   useGetAllPrivacyNoticesQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
 import {
+  selectAllProperties,
+  selectPage as selectPropertyPage,
+  selectPageSize as selectPropertyPageSize,
+  useGetAllPropertiesQuery,
+} from "~/features/properties/property.slice";
+import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceTranslation,
@@ -109,6 +115,11 @@ export const PrivacyExperienceForm = ({
     return `${name}${t.is_default ? " (Default)" : ""}`;
   };
 
+  const propertyPage = useAppSelector(selectPropertyPage);
+  const propertyPageSize = useAppSelector(selectPropertyPageSize);
+  useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
+  const allProperties = useAppSelector(selectAllProperties);
+
   if (editingStyle) {
     return (
       <>
@@ -176,6 +187,19 @@ export const PrivacyExperienceForm = ({
           />
         </Box>
       </Collapse>
+      <ScrollableList
+        label="Associated properties"
+        addButtonLabel="Add property"
+        idField="id"
+        nameField="name"
+        allItems={allProperties.map((property) => ({
+          id: property.id,
+          name: property.name,
+        }))}
+        values={values.properties ?? []}
+        setValues={(newValues) => setFieldValue("properties", newValues)}
+        draggable
+      />
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
         Privacy notices

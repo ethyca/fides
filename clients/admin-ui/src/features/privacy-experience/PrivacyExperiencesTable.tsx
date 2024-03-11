@@ -153,6 +153,26 @@ export const PrivacyExperiencesTable = () => {
             showHeaderMenu: true,
           },
         }),
+        columnHelper.accessor(
+          (row) => row.properties.map((property) => property.name),
+          {
+            id: "properties",
+            cell: (props) => (
+              <GroupCountBadgeCell
+                suffix="Properties"
+                value={props.getValue()}
+                {...props}
+              />
+            ),
+            header: (props) => (
+              <DefaultHeaderCell value="Properties" {...props} />
+            ),
+            meta: {
+              displayText: "Properties",
+              showHeaderMenu: true,
+            },
+          }
+        ),
         columnHelper.accessor((row) => row.updated_at, {
           id: "updated_at",
           cell: (props) => (
