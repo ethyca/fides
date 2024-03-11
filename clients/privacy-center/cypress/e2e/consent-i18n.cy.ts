@@ -400,27 +400,6 @@ describe("Consent i18n", () => {
    *
    **********************************************************/
   describe("when localizing banner_and_modal components", () => {
-    /**
-     * Define our parameterized test cases to generate specs below!
-     */
-    const fixture = "experience_banner_modal.json";
-    const tests = [
-      {
-        navigatorLanguage: ENGLISH_LOCALE,
-        locale: ENGLISH_LOCALE,
-        banner: ENGLISH_BANNER,
-        modal: ENGLISH_MODAL,
-        notices: ENGLISH_NOTICES,
-      },
-      {
-        navigatorLanguage: SPANISH_LOCALE,
-        locale: SPANISH_LOCALE,
-        banner: SPANISH_BANNER,
-        modal: SPANISH_MODAL,
-        notices: SPANISH_NOTICES,
-      },
-    ];
-
     // Reusable assertions to test that the banner component localizes correctly
     const testBannerLocalization = (t: TestBannerTranslations) => {
       /**
@@ -504,6 +483,27 @@ describe("Consent i18n", () => {
         });
       });
     };
+
+    /**
+     * Define our parameterized test cases to generate specs below!
+     */
+    const fixture = "experience_banner_modal.json";
+    const tests = [
+      {
+        navigatorLanguage: ENGLISH_LOCALE,
+        locale: ENGLISH_LOCALE,
+        banner: ENGLISH_BANNER,
+        modal: ENGLISH_MODAL,
+        notices: ENGLISH_NOTICES,
+      },
+      {
+        navigatorLanguage: SPANISH_LOCALE,
+        locale: SPANISH_LOCALE,
+        banner: SPANISH_BANNER,
+        modal: SPANISH_MODAL,
+        notices: SPANISH_NOTICES,
+      },
+    ];
 
     tests.forEach(({ navigatorLanguage, locale, banner, modal, notices }) => {
       describe(`when browser language matches available locale (${navigatorLanguage})`, () => {
@@ -1088,7 +1088,7 @@ describe("Consent i18n", () => {
     };
 
     /**
-     * Define our parameterized test cases and generate specs
+     * Define our parameterized test cases to generate specs below!
      */
     const fixture = "experience_tcf.json";
     const tests = [

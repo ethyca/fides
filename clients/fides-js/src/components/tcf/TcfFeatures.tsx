@@ -7,7 +7,6 @@ import type { UpdateEnabledIds } from "./TcfOverlay";
 import RecordsList, { RecordListType } from "./RecordsList";
 import EmbeddedVendorList from "./EmbeddedVendorList";
 
-// todo: support special feature
 const FeatureChildren = ({
   i18n,
   type,

@@ -43,7 +43,7 @@ const InitialLayer = ({
       specialFeatureIds,
       stacks: experience.gvl.stacks,
     });
-  }, [uniquePurposeIds, specialFeatureIds, experience]);
+  }, [uniquePurposeIds, specialFeatureIds, experience.gvl]);
 
   const purposes = useMemo(() => {
     const ids = getIdsNotRepresentedInStacks({
