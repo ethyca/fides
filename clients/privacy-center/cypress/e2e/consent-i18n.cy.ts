@@ -201,7 +201,6 @@ const ENGLISH_TCF_MODAL: TestTcfModalTranslations = {
       "Fides System stores cookies with a maximum duration",
     vendor_privacy_policy: "Privacy policy",
     vendor_legint_disclosure: "Legitimate interest disclosure",
-    iab: "IAB TCF",
     retention: "Retention",
     consent: "Consent",
     legint: "Legitimate interest",
@@ -329,7 +328,6 @@ const SPANISH_TCF_MODAL: TestTcfModalTranslations = {
       "Fides System stores cookies with a maximum duration of about TODO",
     vendor_privacy_policy: "Privacy policy TODO",
     vendor_legint_disclosure: "Legitimate interest disclosure TODO",
-    iab: "IAB TCF",
     retention: "Retention TODO",
     consent: "Consentimiento",
     legint: "Interés legítimo",
@@ -989,7 +987,7 @@ describe("Consent i18n", () => {
         // Check the list of IAB TCF vendors and toggle open a single example
         cy.getByTestId("records-list-vendors").within(() => {
           cy.get(".fides-record-header").contains(t.vendors_iab);
-          cy.get(".fides-notice-badge").contains(t.iab);
+          cy.get(".fides-notice-badge").contains("IAB TCF");
           cy.get(".fides-notice-toggle").contains(t.vendor_iab_example).click();
           cy.get(".fides-disclosure-visible").within(() => {
             cy.get("p").contains(t.vendor_iab_example_description);

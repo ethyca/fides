@@ -301,7 +301,7 @@ const PagedVendorData = ({
         onToggle={onChange}
         renderBadgeLabel={(vendor) =>
           vendorGvlEntry(vendor.id, experience.gvl)
-            ? i18n.t("static.tcf.iab")
+            ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
             : undefined
         }
         renderToggleChild={(vendor) => (
