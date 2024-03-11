@@ -326,7 +326,7 @@ const SPANISH_TCF_MODAL: TestTcfModalTranslations = {
     vendor_other_example: "Fides System",
     vendor_other_example_description:
       "Fides System stores cookies with a maximum duration of about TODO",
-    vendor_privacy_policy: "Privacy policy TODO",
+    vendor_privacy_policy: "Política de privacidad",
     vendor_legint_disclosure: "Legitimate interest disclosure TODO",
     retention: "Retention TODO",
     consent: "Consentimiento",
