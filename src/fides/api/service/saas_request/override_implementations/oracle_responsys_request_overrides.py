@@ -1,6 +1,6 @@
+import json
 from typing import Any, Dict, List
 
-import json
 import pydash
 
 from fides.api.common_exceptions import FidesopsException
