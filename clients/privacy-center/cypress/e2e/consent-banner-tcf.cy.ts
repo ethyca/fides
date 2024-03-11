@@ -422,7 +422,7 @@ describe("Fides-js TCF", () => {
 
           // Check cookie disclosure
           cy.get("p").contains(
-            'Captify stores cookies with a maximum duration of about 5 Day(s). These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
+            'Captify stores cookies with a maximum duration of about 5 day(s). These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
           );
         });
         // Check the cookie disclosure on the system
@@ -435,7 +435,7 @@ describe("Fides-js TCF", () => {
         cy.get(".fides-notice-toggle-title").contains(SYSTEM_1.name).click();
         cy.get(".fides-disclosure-visible").within(() => {
           cy.get("p").contains(
-            "Fides System stores cookies with a maximum duration of about 5 Day(s)"
+            "Fides System stores cookies with a maximum duration of about 5 day(s)"
           );
         });
       });
@@ -467,7 +467,8 @@ describe("Fides-js TCF", () => {
       });
 
       it("separates purpose tab by legal bases", () => {
-        const legintSpecialPurposeName = "Legint special purpose";
+        const legintSpecialPurposeName =
+          "Deliver and present advertising and content";
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience = payload.items[0];
           const specialPurposeCopy = JSON.parse(
@@ -3057,24 +3058,24 @@ describe("Fides-js TCF", () => {
         consentIds.slice(0, 10).forEach((id) => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
         cy.get(".fides-paging-previous-button").should("be.disabled");
         // Go to the next page
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("11-20 of 51");
+        cy.get(".fides-paging-info").contains("11-20 / 51");
         consentIds.slice(10, 20).forEach((id) => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
         // Can go back to the previous page
         cy.get(".fides-paging-previous-button").click();
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
         // Check the last page
         Array(5)
           .fill(null)
           .forEach(() => {
             cy.get(".fides-paging-next-button").click();
           });
-        cy.get(".fides-paging-info").contains("51-51 of 51");
+        cy.get(".fides-paging-info").contains("51-51 / 51");
         cy.get(".fides-paging-next-button").should("be.disabled");
 
         // Check legitimate interest
@@ -3085,7 +3086,7 @@ describe("Fides-js TCF", () => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
         // And that paging reset back to 1
-        cy.get(".fides-paging-info").contains("1-10 of 50");
+        cy.get(".fides-paging-info").contains("1-10 / 50");
       });
     });
 
@@ -3093,7 +3094,7 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-tab-features").click();
       cy.get("#fides-panel-features").within(() => {
         cy.get("span").contains(FEATURE_1.name).click();
-        cy.get(".fides-paging-info").contains("1-10 of 101");
+        cy.get(".fides-paging-info").contains("1-10 / 101");
         VENDOR_IDS.slice(0, 10).forEach((id) => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
@@ -3111,16 +3112,16 @@ describe("Fides-js TCF", () => {
         cy.get(".fides-record-header")
           .contains("Other vendors")
           .should("not.exist");
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("11-20 of 51");
+        cy.get(".fides-paging-info").contains("11-20 / 51");
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("21-30 of 51");
+        cy.get(".fides-paging-info").contains("21-30 / 51");
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("31-40 of 51");
+        cy.get(".fides-paging-info").contains("31-40 / 51");
         // Now go to a page that will show both IAB and other vendors
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("41-50 of 51");
+        cy.get(".fides-paging-info").contains("41-50 / 51");
         cy.get(".fides-record-header").contains("IAB TCF Vendors");
         cy.get(".fides-record-header").contains("Other vendors");
         // Last page should only have other vendors
@@ -3136,7 +3137,7 @@ describe("Fides-js TCF", () => {
         legintIds.slice(0, 10).forEach((id) => {
           cy.get(".fides-notice-toggle-title").contains(id);
         });
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
       });
     });
   });

@@ -322,12 +322,12 @@ const SPANISH_TCF_MODAL: TestTcfModalTranslations = {
     vendors_iab: "Proveedores IAB TCF",
     vendor_iab_example: "Captify",
     vendor_iab_example_description:
-      "Captify stores cookies with a maximum duration TODO",
-    vendors_other: "Other proveedores",
+      "Captify stores cookies with a maximum duration of about TODO",
+    vendors_other: "Proveedores other TODO",
     vendor_other_example: "Fides System",
     vendor_other_example_description:
-      "Fides System stores cookies with a maximum duration TODO",
-    vendor_privacy_policy: "Política de privacidad",
+      "Fides System stores cookies with a maximum duration of about TODO",
+    vendor_privacy_policy: "Privacy policy TODO",
     vendor_legint_disclosure: "Legitimate interest disclosure TODO",
     iab: "IAB TCF",
     retention: "Retention TODO",
@@ -826,7 +826,7 @@ describe("Consent i18n", () => {
    * FIDESJS TCF BANNER + MODAL TESTS
    *
    **********************************************************/
-  describe.only("when localizing tcf_overlay components", () => {
+  describe("when localizing tcf_overlay components", () => {
     const testTcfBannerStacksLocalization = (t: TestTcfBannerTranslations) => {
       // Check banner stacks localization
       cy.get(".fides-tcf-stacks-container").within(() => {

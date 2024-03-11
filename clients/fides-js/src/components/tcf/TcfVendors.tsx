@@ -21,10 +21,20 @@ import RecordsList from "./RecordsList";
 import RadioGroup from "./RadioGroup";
 import PagingButtons, { usePaging } from "../PagingButtons";
 
+type VendorDetailsType =
+  | "purposes"
+  | "specialPurposes"
+  | "features"
+  | "specialFeatures";
+
 const VendorDetails = ({
+  i18n,
+  type,
   label,
   lineItems,
 }: {
+  i18n: I18n;
+  type: VendorDetailsType;
   label: string;
   lineItems: EmbeddedPurpose[] | undefined;
 }) => {
@@ -34,9 +44,7 @@ const VendorDetails = ({
 
   const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
-  // static.tcf.retention
-  // static.tcf.retention_period_days
-  // static.tcf.retention_period_na
+  // TODO (PROD-1683): better i18n solution for retention periods
   return (
     <table className="fides-vendor-details-table">
       <thead>
@@ -44,7 +52,7 @@ const VendorDetails = ({
           <th width="80%">{label}</th>
           {hasRetentionInfo ? (
             <th width="20%" style={{ textAlign: "right" }}>
-              Retention
+              {i18n.t("static.tcf.retention")}
             </th>
           ) : null}
         </tr>
@@ -52,12 +60,14 @@ const VendorDetails = ({
       <tbody>
         {lineItems.map((item) => (
           <tr key={item.id}>
-            <td>{item.name}</td>
+            <td>{i18n.t(`exp.tcf.${type}.${item.id}.name`)}</td>
             {hasRetentionInfo ? (
               <td style={{ textAlign: "right" }}>
                 {item.retention_period
-                  ? `${item.retention_period} day(s)`
-                  : "N/A"}
+                  ? `${item.retention_period} ${i18n.t(
+                      "static.tcf.retention_period_days"
+                    )}`
+                  : i18n.t("static.tcf.retention_period_na")}
               </td>
             ) : null}
           </tr>
@@ -68,9 +78,11 @@ const VendorDetails = ({
 };
 
 const PurposeVendorDetails = ({
+  i18n,
   purposes,
   specialPurposes,
 }: {
+  i18n: I18n;
   purposes: EmbeddedPurpose[] | undefined;
   specialPurposes: EmbeddedPurpose[] | undefined;
 }) => {
@@ -83,20 +95,30 @@ const PurposeVendorDetails = ({
     return null;
   }
 
-  // static.tcf.purposes
-  // static.tcf.special_purposes
   return (
     <Fragment>
-      <VendorDetails label="Purposes" lineItems={purposes} />
-      <VendorDetails label="Special purposes" lineItems={specialPurposes} />
+      <VendorDetails
+        i18n={i18n}
+        type="purposes"
+        label={i18n.t("static.tcf.purposes")}
+        lineItems={purposes}
+      />
+      <VendorDetails
+        i18n={i18n}
+        type="specialPurposes"
+        label={i18n.t("static.tcf.special_purposes")}
+        lineItems={specialPurposes}
+      />
     </Fragment>
   );
 };
 
 const DataCategories = ({
+  i18n,
   gvlVendor,
   dataCategories,
 }: {
+  i18n: I18n;
   gvlVendor: Vendor | undefined;
   dataCategories: GvlDataCategories | undefined;
 }) => {
@@ -108,29 +130,31 @@ const DataCategories = ({
     // @ts-ignore this type doesn't exist in v2.2 but does in v3
     gvlVendor.dataDeclaration;
 
-  // static.tcf.data_categories
   return (
     <table className="fides-vendor-details-table">
       <thead>
         <tr>
-          <th>Data categories</th>
+          <th>{i18n.t("static.tcf.data_categories")}</th>
         </tr>
       </thead>
       <tbody>
-        {declarations?.map((id) => {
-          const category = dataCategories[id];
-          return (
-            <tr key={id}>
-              <td>{category?.name || ""}</td>
-            </tr>
-          );
-        })}
+        {declarations?.map((id) => (
+          <tr key={id}>
+            <td>{i18n.t(`exp.tcf.dataCategories.${id}.name`)}</td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );
 };
 
-const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
+const StorageDisclosure = ({
+  i18n,
+  vendor,
+}: {
+  i18n: I18n;
+  vendor: VendorRecord;
+}) => {
   const {
     name,
     uses_cookies: usesCookies,
@@ -138,25 +162,28 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
     cookie_max_age_seconds: cookieMaxAgeSeconds,
     cookie_refresh: cookieRefresh,
   } = vendor;
+  // TODO (PROD-1683): better i18n solution for storage disclosure
+  /* eslint-disable prefer-template */
   let disclosure = "";
-  // static.tcf.cookie_disclosure_intro
-  // static.tcf.cookie_disclosure_refresh
-  // static.tcf.cookie_disclosure_non_cookie
-  // static.tcf.non_cookie_disclosure
   if (usesCookies) {
     const days = cookieMaxAgeSeconds
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
-    disclosure = `${name} stores cookies with a maximum duration of about ${days} Day(s).`;
+    const disclosureIntro = `${name} ${i18n.t(
+      "static.tcf.cookie_disclosure.intro"
+    )} ${days} ${i18n.t("static.tcf.retention_period_days")}.`;
+    disclosure += disclosureIntro;
     if (cookieRefresh) {
-      disclosure = `${disclosure} These cookies may be refreshed.`;
+      disclosure += " " + i18n.t("static.tcf.cookie_disclosure.refresh");
     }
     if (usesNonCookieAccess) {
-      disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+      disclosure +=
+        " " + i18n.t("static.tcf.cookie_disclosure.also_non_cookie");
     }
   } else if (usesNonCookieAccess) {
-    disclosure = `${name} uses methods like "local storage" to store and access information on your device.`;
+    disclosure += " " + i18n.t("static.tcf.cookie_disclosure.non_cookie");
   }
+  /* eslint-enable prefer-template */
 
   if (disclosure === "") {
     return null;
@@ -173,50 +200,61 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
 const ToggleChild = ({
   vendor,
   experience,
+  i18n,
 }: {
   vendor: VendorRecord;
   experience: PrivacyExperience;
+  i18n: I18n;
 }) => {
   const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
   const dataCategories: GvlDataCategories | undefined =
     // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
     experience.gvl?.dataCategories;
+  // TODO (PROD-1683): lookup vendor URLs by langId...
   const hasUrls =
     vendor.privacy_policy_url || vendor.legitimate_interest_disclosure_url;
-  // static.tcf.privacy_policy
-  // static.tcf.legint_disclosure
-  // static.tcf.features
-  // static.tcf.special_features
   return (
     <Fragment>
-      <StorageDisclosure vendor={vendor} />
+      <StorageDisclosure i18n={i18n} vendor={vendor} />
       {hasUrls && (
         <div>
           {vendor.privacy_policy_url && (
             <ExternalLink href={vendor.privacy_policy_url}>
-              Privacy policy
+              {i18n.t("static.tcf.privacy_policy")}
             </ExternalLink>
           )}
           {vendor.legitimate_interest_disclosure_url && (
             <ExternalLink href={vendor.legitimate_interest_disclosure_url}>
-              Legitimate interest disclosure
+              {i18n.t("static.tcf.legint_disclosure")}
             </ExternalLink>
           )}
         </div>
       )}
       <PurposeVendorDetails
+        i18n={i18n}
         purposes={[
           ...(vendor.purpose_consents || []),
           ...(vendor.purpose_legitimate_interests || []),
         ]}
         specialPurposes={vendor.special_purposes}
       />
-      <VendorDetails label="Features" lineItems={vendor.features} />
       <VendorDetails
-        label="Special features"
+        i18n={i18n}
+        type="features"
+        label={i18n.t("static.tcf.features")}
+        lineItems={vendor.features}
+      />
+      <VendorDetails
+        i18n={i18n}
+        type="specialFeatures"
+        label={i18n.t("static.tcf.special_features")}
         lineItems={vendor.special_features}
       />
-      <DataCategories gvlVendor={gvlVendor} dataCategories={dataCategories} />
+      <DataCategories
+        i18n={i18n}
+        gvlVendor={gvlVendor}
+        dataCategories={dataCategories}
+      />
     </Fragment>
   );
 };
@@ -265,7 +303,7 @@ const PagedVendorData = ({
             : undefined
         }
         renderToggleChild={(vendor) => (
-          <ToggleChild vendor={vendor} experience={experience} />
+          <ToggleChild i18n={i18n} vendor={vendor} experience={experience} />
         )}
       />
       <RecordsList<VendorRecord>
@@ -276,7 +314,7 @@ const PagedVendorData = ({
         enabledIds={enabledIds}
         onToggle={onChange}
         renderToggleChild={(vendor) => (
-          <ToggleChild vendor={vendor} experience={experience} />
+          <ToggleChild i18n={i18n} vendor={vendor} experience={experience} />
         )}
       />
       <PagingButtons {...paging} />

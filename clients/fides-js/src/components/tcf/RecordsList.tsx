@@ -58,14 +58,13 @@ const RecordsList = <T extends Item>({
     toggleOffLabel = "Off";
   }
 
-  const getNameForType = (type: RecordListType, item: Item) => {
+  const getNameForItem = (item: Item) => {
     if (type === "vendors") {
       // Return the (non-localized!) name for vendors
       return item.name;
-    } else {
-      // Otherwise, return the localized name for purposes/features/etc.
-      return i18n.t(`exp.tcf.${type}.${item.id}.name`)
     }
+    // Otherwise, return the localized name for purposes/features/etc.
+    return i18n.t(`exp.tcf.${type}.${item.id}.name`);
   };
 
   return (
@@ -73,7 +72,7 @@ const RecordsList = <T extends Item>({
       <div className="fides-record-header">{title}</div>
       {items.map((item) => (
         <DataUseToggle
-          title={getNameForType(type, item)}
+          title={getNameForItem(item)}
           noticeKey={`${item.id}`}
           onToggle={() => {
             handleToggle(item);
