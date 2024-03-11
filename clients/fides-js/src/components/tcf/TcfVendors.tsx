@@ -347,7 +347,7 @@ const TcfVendors = ({
 
   const filteredVendors = useMemo(() => {
     const legalBasisFiltered =
-      activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+      activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
         ? vendors.filter((v) => v.isConsent)
         : vendors.filter((v) => v.isLegint);
     // Put "other vendors" last in the list
@@ -370,7 +370,7 @@ const TcfVendors = ({
         experience={experience}
         vendors={filteredVendors}
         enabledIds={
-          activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+          activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
             ? enabledVendorConsentIds
             : enabledVendorLegintIds
         }
@@ -378,7 +378,7 @@ const TcfVendors = ({
           onChange({
             newEnabledIds,
             modelType:
-              activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+              activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
                 ? "vendorsConsent"
                 : "vendorsLegint",
           })

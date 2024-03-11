@@ -87,7 +87,7 @@ const TcfPurposes = ({
     enabledSpecialPurposeIds: string[];
   } = useMemo(() => {
     const specialPurposes = allSpecialPurposes ?? [];
-    if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT) {
+    if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       return {
         purposes: uniquePurposes.filter((p) => p.isConsent),
         purposeModelType: "purposesConsent",
