@@ -303,21 +303,6 @@ def dump_table_to_csv(bind, table_name):
         )
 
 
-def load_experience_config_from_files(file_paths):
-    """
-    Attempts loading the experience config from a set of given file paths until it finds a valid yaml
-    """
-    for path in file_paths:
-        try:
-            with open(path, "r") as f:
-                return yaml.safe_load(f).get("privacy_experience_configs")
-        except FileNotFoundError:
-            # If the file is not found in the current path, try the next one
-            continue
-
-    raise Exception("No privacy experience config file was found for migration!")
-
-
 def load_default_experience_configs():
     """
     Loads default experience config definitions from yml file.
