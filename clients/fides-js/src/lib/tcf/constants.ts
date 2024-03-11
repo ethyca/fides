@@ -76,6 +76,9 @@ export const EXPERIENCE_KEYS_WITH_PREFERENCES = TCF_KEY_MAP.filter(
 ).map((key) => key.experienceKey);
 
 export const LEGAL_BASIS_OPTIONS = [
-  { label: "static.tcf.consent", value: LegalBasisEnum.CONSENT },
-  { label: "static.tcf.legint", value: LegalBasisEnum.LEGITIMATE_INTERESTS },
+  { i18nMessageID: "static.tcf.consent", value: LegalBasisEnum.CONSENT },
+  {
+    i18nMessageID: "static.tcf.legint",
+    value: LegalBasisEnum.LEGITIMATE_INTERESTS,
+  },
 ];

@@ -210,7 +210,7 @@ const ToggleChild = ({
   const dataCategories: GvlDataCategories | undefined =
     // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
     experience.gvl?.dataCategories;
-  // TODO (PROD-1683): lookup vendor URLs by langId...
+  // DEFER (PROD-1804): Check to see if localized URLs exist in the GVL vendor data
   const hasUrls =
     vendor.privacy_policy_url || vendor.legitimate_interest_disclosure_url;
   return (
