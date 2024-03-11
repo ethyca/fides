@@ -153,9 +153,11 @@ const Preview = ({
     if (currentTranslation) {
       baseConfig.experience.experience_config.translations[0] =
         translationOrDefault(currentTranslation);
+      baseConfig.options.fidesLocale = currentTranslation.language;
     } else if (values.translations) {
       baseConfig.experience.experience_config.translations[0] =
         translationOrDefault(values.translations[0]);
+      baseConfig.options.fidesLocale = values.translations[0].language;
     }
     baseConfig.options.preventDismissal = !values.dismissable;
     if (window.Fides && values.privacy_notice_ids?.length) {

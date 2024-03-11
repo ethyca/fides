@@ -7,16 +7,16 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
-const defaultTranslation = {
+const defaultTranslation: ExperienceTranslation = {
   language: SupportedLanguage.EN,
   accept_button_label: "Accept",
   acknowledge_button_label: "OK",
   banner_description: "",
   banner_title: "",
-  description: "",
+  description: "Description",
   privacy_policy_link_label: "",
   privacy_policy_url: "",
-  privacy_preferences_link_label: "",
+  privacy_preferences_link_label: "Privacy preferences",
   reject_button_label: "Reject All",
   save_button_label: "Save",
   title: "Manage your consent preferences",
@@ -49,7 +49,6 @@ export const buildBaseConfig = (
     modalLinkId: null,
     privacyCenterUrl: "http://localhost:3000",
     fidesApiUrl: "http://localhost:8080/api/v1",
-    // todo- get this from config
     preventDismissal: experienceConfig.dismissable ?? false,
     fidesPreviewMode: true,
     fidesPreviewComponent: FidesPreviewComponent.BANNER,
@@ -58,6 +57,7 @@ export const buildBaseConfig = (
     fidesString: null,
     fidesJsBaseUrl: "",
     base64Cookie: false,
+    fidesLocale: experienceConfig.translations?.[0].language,
   },
   experience: {
     id: "pri_111",
@@ -85,17 +85,25 @@ export const buildBaseConfig = (
   },
 });
 
-// fill in any empty strings in a translations with the defaults above
+// fill in any empty strings in a translation with the defaults above
 export const translationOrDefault = (
   translation: ExperienceTranslation
 ): ExperienceTranslation => {
-  const { language, is_default, ...textFields } = translation;
-  const newTextFields = Object.entries(textFields)
-    .map(([key, value]) => ({
-      [key]: !!value
-        ? value
-        : defaultTranslation[key as keyof ExperienceTranslation],
-    }))
+  const { language, is_default, ...textFields } = defaultTranslation;
+  const newTextFields = Object.keys(textFields)
+    .map((key) => {
+      const value = translation[key as keyof ExperienceTranslation];
+      return {
+        [key]:
+          value !== undefined
+            ? value
+            : defaultTranslation[key as keyof ExperienceTranslation],
+      };
+    })
     .reduce((acc, current) => ({ ...acc, ...current }), {});
-  return { language, is_default, ...newTextFields };
+  return {
+    language: translation.language,
+    is_default: translation.is_default,
+    ...newTextFields,
+  };
 };
