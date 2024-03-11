@@ -1,0 +1,18 @@
+{
+  "static.tcf.purposes": "Hensikter",
+  "static.tcf.consent": "Samtykke",
+  "static.tcf.legint": "Berettiget interesse",
+  "static.tcf.special_purposes": "Spesialhensikter",
+  "static.tcf.purposes.description": "Nedenfor finner du en liste over hensiktene og spesialfunksjonene dataene dine blir håndtert for. Du kan utøve rettighetene dine for bestemte hensikter, basert på samtykke eller berettiget interesse, ved å bruke av/på-knappene nedenfor.",
+  "static.tcf.features": "Funksjoner",
+  "static.tcf.features.description": "Nedenfor finner du en liste over funksjonene dataene dine blir håndtert for. Du kan utøve rettighetene dine for spesialfunksjoner ved å bruke av/på-knappene nedenfor.",
+  "static.tcf.special_features": "Spesialfunksjoner",
+  "static.tcf.vendors": "Leverandører",
+  "static.tcf.vendors.description": "Nedenfor finner du en liste over leverandører som håndterer dataene dine samt hensiktene eller funksjonene de har eller utøver med denne databehandlingen. Du kan utøve rettighetene dine for hver leverandør basert på det juridiske grunnlaget de hevder eierskap til.",
+  "static.tcf.vendors.iab": "IAB TCF-leverandører",
+  "static.gpc.title": "Globale personverninnstillinger er oppdaget",
+  "static.gpc.description": "Preferansene dine vedrørende de globale personverninnstilingene dine er godtatt. Du har automatisk takket nei til databruksaker som følger globale personverninnstillinger.",
+  "static.gpc.status.applied": "Anvendt",
+  "static.gpc.status.overridden": "Overstyrt",
+  "static.gpc": "Globale personverninnstillinger"
+}

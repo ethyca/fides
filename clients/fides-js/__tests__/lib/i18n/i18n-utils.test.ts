@@ -95,17 +95,14 @@ describe("i18n-utils", () => {
       const updatedLocales = loadMessagesFromFiles(mockI18n);
 
       // Check the updated locales list is what we expect
-      const EXPECTED_NUM_STATIC_LOCALES = 3; // NOTE: manually update this as new locales added
-      expect(updatedLocales).toEqual(["en", "es", "fr"]);
+      const EXPECTED_NUM_STATIC_LOCALES = 40; // NOTE: manually update this as new locales added
+      expect(updatedLocales).toHaveLength(EXPECTED_NUM_STATIC_LOCALES);
+      expect(updatedLocales).toContain("en");
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
 
-      // Verify the first two locales match the expected catalogues, too
-      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
-      const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
-      expect(firstLocale).toEqual("en");
-      expect(firstMessages).toEqual(messagesEn);
-      expect(secondLocale).toEqual("es");
-      expect(secondMessages).toEqual(messagesEs);
+      // Verify a few of our expected locales match their expected catalogues, too
+      expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
     });
   });
 
@@ -118,9 +115,7 @@ describe("i18n-utils", () => {
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(updatedLocales).toEqual(["en", "es"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
-      expect(firstLocale).toEqual("en");
-      expect(firstMessages).toEqual({
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
         "exp.accept_button_label": "Accept Test",
         "exp.acknowledge_button_label": "Acknowledge Test",
         "exp.banner_description": "Banner Description Test",
@@ -133,9 +128,7 @@ describe("i18n-utils", () => {
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
       });
-      const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
-      expect(secondLocale).toEqual("es");
-      expect(secondMessages).toEqual({
+      expect(mockI18n.load).toHaveBeenCalledWith("es", {
         "exp.accept_button_label": "Aceptar Prueba",
         "exp.acknowledge_button_label": "Reconocer Prueba",
         "exp.banner_description": "Descripción del Banner de Prueba",
@@ -188,9 +181,7 @@ describe("i18n-utils", () => {
       const EXPECTED_NUM_TRANSLATIONS = 1;
       expect(updatedLocales).toEqual(["en"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
-      expect(firstLocale).toEqual("en");
-      expect(firstMessages).toEqual({
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
         "exp.accept_button_label": "Accept Test",
         "exp.acknowledge_button_label": "Acknowledge Test",
         "exp.banner_description": "Banner Description Test",

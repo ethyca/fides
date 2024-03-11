@@ -9,17 +9,7 @@ import {
 import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
-
-/**
- * Statically load all the pre-localized dictionaries from the ./locales directory.
- *
- * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
- * 1) Add the static import of the new ./locales/{locale}/messages.json file
- * 2) Add the locale to the loadMessagesFromFiles() function below
- */
-import messagesEn from "./locales/en/messages.json";
-import messagesEs from "./locales/es/messages.json";
-import messagesFr from "./locales/fr/messages.json";
+import { STATIC_MESSAGES } from "./locales";
 
 /**
  * Helper function to extract all the translated messages from an
@@ -91,12 +81,10 @@ function extractMessagesFromExperienceConfig(
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
-  // NOTE: This doesn't automatically infer the list of locale files from
-  // source, so you'll need to manually add any new locales here!
-  i18n.load("en", messagesEn);
-  i18n.load("es", messagesEs);
-  i18n.load("fr", messagesFr);
-  return ["en", "es", "fr"];
+  Object.keys(STATIC_MESSAGES).forEach((locale) => {
+    i18n.load(locale, STATIC_MESSAGES[locale]);
+  });
+  return Object.keys(STATIC_MESSAGES);
 }
 
 /**

@@ -6,9 +6,10 @@ Create Date: 2024-02-01 21:49:20.792733
 
 """
 from datetime import datetime
-from loguru import logger
+
 import sqlalchemy as sa
 from alembic import op
+from loguru import logger
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
