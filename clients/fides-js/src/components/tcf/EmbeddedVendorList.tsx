@@ -22,7 +22,7 @@ const EmbeddedVendorList = ({
     return null;
   }
 
-  // TODO (PROD-1683): static.tcf.vendors_count won't i18n well, right?
+  // TODO (PROD-1683): update i18n for vendors_count based on translator feedback
   return (
     <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
       <span className="fides-tcf-purpose-vendor-title">
