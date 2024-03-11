@@ -250,18 +250,19 @@ const PagedVendorData = ({
     [activeChunk]
   );
 
-  // static.tcf.iab_tcf_vendors
-  // static.tcf.other_vendors
   return (
     <Fragment>
       <RecordsList<VendorRecord>
         i18n={i18n}
-        title="IAB TCF vendors"
+        type="vendors"
+        title={i18n.t("static.tcf.vendors.iab")}
         items={gvlVendors}
         enabledIds={enabledIds}
         onToggle={onChange}
         renderBadgeLabel={(vendor) =>
-          vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
+          vendorGvlEntry(vendor.id, experience.gvl)
+            ? i18n.t("static.tcf.iab")
+            : undefined
         }
         renderToggleChild={(vendor) => (
           <ToggleChild vendor={vendor} experience={experience} />
@@ -269,7 +270,8 @@ const PagedVendorData = ({
       />
       <RecordsList<VendorRecord>
         i18n={i18n}
-        title="Other vendors"
+        type="vendors"
+        title={i18n.t("static.tcf.vendors.other")}
         items={otherVendors}
         enabledIds={enabledIds}
         onToggle={onChange}

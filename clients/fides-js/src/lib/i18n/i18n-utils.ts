@@ -83,9 +83,9 @@ function extractMessagesFromExperienceConfig(
  * API response. Returns an object that maps locales -> messages, e.g.
  * {
  *   "en": {
- *     "gvl.purposes.1.name": "Store and/or access information on a device",
- *     "gvl.purposes.1.description": "description": "Cookies, device or similar...",
- *     "gvl.purposes.1.illustrations.0": "Most purposes explained in this...",
+ *     "exp.tcf.purposes.1.name": "Store and/or access information on a device",
+ *     "exp.tcf.purposes.1.description": "description": "Cookies, device or similar...",
+ *     "exp.tcf.purposes.1.illustrations.0": "Most purposes explained in this...",
  *   },
  *   "es": {
  *     ...
@@ -95,7 +95,8 @@ function extractMessagesFromExperienceConfig(
  * This allows convenient access to any translated message from all points in
  * the TCF code by using the well-worn GVL IDs as locators. However, note that
  * the "illustrations" array can be a bit awkward to use as a flattened list of
- * messages; use the helper getAllTranslatedIllustrations(...) to simplify this.
+ * messages - we need to make sure we carefully look up illustrations using
+ * their zero-based index (e.g. i18n.t("exp.tcf.purposes.1.illustrations.0")
  */
 function extractMessagesFromGVLTranslations(
   gvl_translations: GVLTranslations,

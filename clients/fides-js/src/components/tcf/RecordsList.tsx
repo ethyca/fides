@@ -2,6 +2,13 @@ import { VNode, h } from "preact";
 import DataUseToggle from "../DataUseToggle";
 import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
 
+export type RecordListType =
+  | "purposes"
+  | "specialPurposes"
+  | "features"
+  | "specialFeatures"
+  | "vendors";
+
 interface Item {
   id: string | number;
   name?: string;
@@ -10,6 +17,7 @@ interface Item {
 interface Props<T extends Item> {
   i18n: I18n;
   items: T[];
+  type: RecordListType;
   title: string;
   enabledIds: string[];
   renderToggleChild: (item: T) => VNode;
@@ -21,6 +29,7 @@ interface Props<T extends Item> {
 const RecordsList = <T extends Item>({
   i18n,
   items,
+  type,
   title,
   enabledIds,
   renderToggleChild,
@@ -49,12 +58,22 @@ const RecordsList = <T extends Item>({
     toggleOffLabel = "Off";
   }
 
+  const getNameForType = (type: RecordListType, item: Item) => {
+    if (type === "vendors") {
+      // Return the (non-localized!) name for vendors
+      return item.name;
+    } else {
+      // Otherwise, return the localized name for purposes/features/etc.
+      return i18n.t(`exp.tcf.${type}.${item.id}.name`)
+    }
+  };
+
   return (
-    <div data-testid={`records-list-${title}`}>
+    <div data-testid={`records-list-${type}`}>
       <div className="fides-record-header">{title}</div>
       {items.map((item) => (
         <DataUseToggle
-          title={item.name}
+          title={getNameForType(type, item)}
           noticeKey={`${item.id}`}
           onToggle={() => {
             handleToggle(item);

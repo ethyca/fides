@@ -38,6 +38,7 @@ const TcfTabs = ({
   const tcfTabs = [
     {
       name: i18n.t("static.tcf.purposes"),
+      type: "purposes",
       content: (
         <div>
           <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
@@ -56,6 +57,7 @@ const TcfTabs = ({
     },
     {
       name: i18n.t("static.tcf.features"),
+      type: "features",
       content: (
         <div>
           <InfoBox>{i18n.t("static.tcf.features.description")}</InfoBox>
@@ -72,6 +74,7 @@ const TcfTabs = ({
     },
     {
       name: i18n.t("static.tcf.vendors"),
+      type: "vendors",
       content: (
         <div>
           <InfoBox>{i18n.t("static.tcf.vendors.description")}</InfoBox>
@@ -112,10 +115,10 @@ const TcfTabs = ({
   return (
     <div className="fides-tabs">
       <ul role="tablist" className="fides-tab-list">
-        {tcfTabs.map(({ name }, idx) => (
-          <li role="presentation" key={name}>
+        {tcfTabs.map(({ name, type }, idx) => (
+          <li role="presentation" key={type}>
             <button
-              id={`fides-tab-${name}`}
+              id={`fides-tab-${type}`}
               aria-selected={idx === activeTabIndex}
               onClick={() => {
                 onTabChange(idx);
@@ -133,14 +136,14 @@ const TcfTabs = ({
         ))}
       </ul>
       <div className="tabpanel-container">
-        {tcfTabs.map(({ name, content }, idx) => (
+        {tcfTabs.map(({ type, content }, idx) => (
           <section
             role="tabpanel"
-            id={`fides-panel-${name}`}
-            aria-labelledby={`fides-tab-${name}`}
+            id={`fides-panel-${type}`}
+            aria-labelledby={`fides-tab-${type}`}
             tabIndex={-1}
             hidden={idx !== activeTabIndex}
-            key={name}
+            key={type}
           >
             {content}
           </section>

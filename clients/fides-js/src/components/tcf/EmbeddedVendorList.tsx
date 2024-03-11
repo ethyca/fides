@@ -1,12 +1,15 @@
 import { h } from "preact";
 
+import { I18n } from "../../lib/i18n";
 import { EmbeddedVendor } from "../../lib/tcf/types";
 
 import PagingButtons, { usePaging } from "../PagingButtons";
 
 const EmbeddedVendorList = ({
+  i18n,
   vendors: totalVendors,
 }: {
+  i18n: I18n;
   vendors: EmbeddedVendor[];
 }) => {
   const {
@@ -19,13 +22,14 @@ const EmbeddedVendorList = ({
     return null;
   }
 
-  // static.tcf.vendors_we_use
-  // static.tcf.total_vendors_count
+  // TODO (PROD-1683): static.tcf.vendors_count won't i18n well, right?
   return (
     <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
       <span className="fides-tcf-purpose-vendor-title">
-        Vendors we use for this purpose
-        <span>{totalVendors.length} vendor(s)</span>
+        {i18n.t("static.tcf.vendors")}
+        <span>
+          {totalVendors.length} {i18n.t("static.tcf.vendors_count")}
+        </span>
       </span>
       <ul className="fides-tcf-purpose-vendor-list">
         {vendors.map((v) => (
