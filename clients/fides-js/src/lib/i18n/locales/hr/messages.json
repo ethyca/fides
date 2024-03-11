@@ -14,5 +14,6 @@
   "static.gpc.description": "Poštuju se vaše preferencije globalne kontrole privatnosti. Automatski se isključeni iz slučajeve korištenja podataka koji se pridržavaju globalne kontrole privatnosti.",
   "static.gpc.status.applied": "Primijenjeno",
   "static.gpc.status.overridden": "Premošćeno",
-  "static.gpc": "Globalna kontrola privatnosti"
+  "static.gpc": "Globalna kontrola privatnosti",
+  "static.tcf.privacy_policy": "Pravila o zaštiti privatnosti"
 }

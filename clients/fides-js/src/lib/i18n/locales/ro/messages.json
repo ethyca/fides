@@ -14,5 +14,6 @@
   "static.gpc.description": "Preferința dvs. de control global al confidențialității a fost onorată. Ați fost exclus(ă) automat de la cazurile de utilizare a datelor care respectă controlul global al confidențialității.",
   "static.gpc.status.applied": "Aplicat",
   "static.gpc.status.overridden": "Suprascris",
-  "static.gpc": "Control global al confidențialității"
+  "static.gpc": "Control global al confidențialității",
+  "static.tcf.privacy_policy": "Politică de confidențialitate"
 }

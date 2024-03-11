@@ -14,5 +14,6 @@
   "static.gpc.description": "S’ha respectat la vostra preferència pel que fa al control de privadesa global. Se us ha exclòs automàticament dels casos d’ús de dades que s’adhereixen al control de privadesa global.",
   "static.gpc.status.applied": "Aplicat",
   "static.gpc.status.overridden": "Anul·lat",
-  "static.gpc": "Control de privadesa global"
+  "static.gpc": "Control de privadesa global",
+  "static.tcf.privacy_policy": "Política de privadesa"
 }

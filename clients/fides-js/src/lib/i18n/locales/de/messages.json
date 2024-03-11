@@ -14,5 +14,6 @@
   "static.gpc.description": "Ihre globale Datenschutzeinstellungen werden berücksichtigt. Sie wurden automatisch von Anwendungsfällen ausgenommen, die nicht Ihren globalen Datenschutzeinstellungen unterliegen.",
   "static.gpc.status.applied": "Angewendet",
   "static.gpc.status.overridden": "Überschrieben",
-  "static.gpc": "Globale Datenschutzeinstellungen"
+  "static.gpc": "Globale Datenschutzeinstellungen",
+  "static.tcf.privacy_policy": "Datenschutzrichtlinie"
 }

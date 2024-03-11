@@ -14,5 +14,6 @@
   "static.gpc.description": "Il-preferenza globali tiegħek għall-kontroll tal-privatezza ġiet onorata. Inti awtomatikament għażilt li ma tibqax tuża d-dejta f'każijiet li jirrispettaw il-kontroll globali tal-privatezza.",
   "static.gpc.status.applied": "Applikat",
   "static.gpc.status.overridden": "Maqbuża",
-  "static.gpc": "Kontroll Globali tal-Privatezza"
+  "static.gpc": "Kontroll Globali tal-Privatezza",
+  "static.tcf.privacy_policy": "Politika tal-Privatezza"
 }

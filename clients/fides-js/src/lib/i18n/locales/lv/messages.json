@@ -14,5 +14,6 @@
   "static.gpc.description": "Mēs esam izpildījuši jūsu prasību kontrolēt globālo privātumu. Pēc noklusējuma esat noņemts no datu lietojuma pieteikumiem, kas atbilst globālajai privātuma kontrolei.",
   "static.gpc.status.applied": "Pielietots",
   "static.gpc.status.overridden": "Ignorēts",
-  "static.gpc": "Globālā privātuma kontrole"
+  "static.gpc": "Globālā privātuma kontrole",
+  "static.tcf.privacy_policy": "Privātuma politika"
 }

@@ -14,5 +14,6 @@
   "static.gpc.description": "グローバルプライバシーコントロールの設定は尊重されます。グローバルプライバシーコントロールに従うデータのユースケースからは自動的にオプトアウトされています。",
   "static.gpc.status.applied": "適用",
   "static.gpc.status.overridden": "変更",
-  "static.gpc": "グローバルプライバシーコントロール"
+  "static.gpc": "グローバルプライバシーコントロール",
+  "static.tcf.privacy_policy": "プライバシーポリシー"
 }

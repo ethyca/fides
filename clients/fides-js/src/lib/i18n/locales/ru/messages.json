@@ -14,5 +14,6 @@
   "static.gpc.description": "Ваша настройка Global Privacy Control учтена. Вы автоматически исключаетесь в сценариях, где используется Global Privacy Control.",
   "static.gpc.status.applied": "Применено",
   "static.gpc.status.overridden": "Изменено",
-  "static.gpc": "Global Privacy Control"
+  "static.gpc": "Global Privacy Control",
+  "static.tcf.privacy_policy": "Политика конфиденциальности"
 }

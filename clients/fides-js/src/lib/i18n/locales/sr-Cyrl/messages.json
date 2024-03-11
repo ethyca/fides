@@ -14,5 +14,6 @@
   "static.gpc.description": "Ваша глобална поставка контроле приватности је подешена. Аутоматски сте искључени из случајева употребе података који су у складу са глобалном контролом приватности.",
   "static.gpc.status.applied": "Примењена",
   "static.gpc.status.overridden": "Замењена",
-  "static.gpc": "Global Privacy Control"
+  "static.gpc": "Global Privacy Control",
+  "static.tcf.privacy_policy": "Правила о приватности"
 }

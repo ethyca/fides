@@ -14,5 +14,6 @@
   "static.gpc.description": "Byly dodrženy vaše globální preference ochrany osobních údajů. Automaticky jste byli vyřazeni z používání údajů v případech, na které se vztahuje globální ochrana osobních údajů.",
   "static.gpc.status.applied": "Aplikováno",
   "static.gpc.status.overridden": "Přepsáno",
-  "static.gpc": "Globální kontrola ochrany osobních údajů"
+  "static.gpc": "Globální kontrola ochrany osobních údajů",
+  "static.tcf.privacy_policy": "Zásady ochrany osobních údajů"
 }

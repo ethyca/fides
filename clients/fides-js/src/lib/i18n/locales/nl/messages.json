@@ -14,5 +14,6 @@
   "static.gpc.description": "Uw Global Privacy Control-voorkeur wordt gerespecteerd. U bent automatisch afgemeld voor gegevensgebruiksscenario's die zich houden aan Global Privacy Control.",
   "static.gpc.status.applied": "Toegepast",
   "static.gpc.status.overridden": "Genegeerd",
-  "static.gpc": "Global Privacy Control"
+  "static.gpc": "Global Privacy Control",
+  "static.tcf.privacy_policy": "Privacybeleid"
 }

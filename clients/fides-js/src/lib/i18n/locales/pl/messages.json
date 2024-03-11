@@ -14,5 +14,6 @@
   "static.gpc.description": "Twoja preferencja dotycząca ogólnej kontroli prywatności została uwzględniona. Automatycznie odmówiono zgody na Twoje przypadki wykorzystania danych, które są zgodne z Ogólną kontrolą prywatności.",
   "static.gpc.status.applied": "Zastosowano",
   "static.gpc.status.overridden": "Nadpisano",
-  "static.gpc": "Ogólna kontrola prywatności"
+  "static.gpc": "Ogólna kontrola prywatności",
+  "static.tcf.privacy_policy": "Polityka prywatności"
 }

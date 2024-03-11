@@ -14,5 +14,6 @@
   "static.gpc.description": "Maailmanlaajuinen tietosuojavalvontanne on vahvistettu. Teidät on automaattisesti poistettu tietojen käyttötapauksista, jotka noudattavat maailmanlaajuista tietosuojavalvontaa.",
   "static.gpc.status.applied": "Käytössä",
   "static.gpc.status.overridden": "Ohitettu",
-  "static.gpc": "Maailmanlaajunen tietosuojavalvonta"
+  "static.gpc": "Maailmanlaajunen tietosuojavalvonta",
+  "static.tcf.privacy_policy": "Tietosuojakäytäntö"
 }
