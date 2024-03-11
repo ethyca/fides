@@ -39,24 +39,31 @@ declare global {
   }
 }
 
-const NoPreviewNotice = () => (
-  <Flex
-    bgColor="white"
-    borderRadius="md"
-    p={6}
-    boxShadow="md"
-    direction="column"
-    align="center"
-    gap="2"
-    maxW="512px"
-  >
-    <Text fontSize="lg" fontWeight="500" align="center">
-      No privacy notices added
-    </Text>
-    <Text color="gray.500" align="center">
-      To view a preview of this experience, add a privacy notice under
-      &quot;Privacy Notices&quot; to the left.
-    </Text>
+const NoPreviewNotice = ({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) => (
+  <Flex h="full" justify="center" align="center">
+    <Flex
+      bgColor="white"
+      borderRadius="md"
+      p={6}
+      boxShadow="md"
+      direction="column"
+      align="center"
+      gap="2"
+      maxW="512px"
+    >
+      <Text fontSize="lg" fontWeight="500" align="center">
+        {title}
+      </Text>
+      <Text color="gray.500" align="center">
+        {description}
+      </Text>
+    </Flex>
   </Flex>
 );
 
@@ -149,11 +156,23 @@ const Preview = ({
     modal.removeAttribute("tabindex");
   }
 
+  if (values.component === ComponentType.TCF_OVERLAY) {
+    return (
+      <NoPreviewNotice
+        title="TCF preview not available"
+        description="There is no preview available for TCF. You can edit the available settings
+      and languages to the left."
+      />
+    );
+  }
+
   if (!values.privacy_notice_ids?.length) {
     return (
-      <Flex h="full" justify="center" align="center">
-        <NoPreviewNotice />
-      </Flex>
+      <NoPreviewNotice
+        title="No privacy notices added"
+        description='To view a preview of this experience, add a privacy notice under
+      "Privacy Notices" to the left.'
+      />
     );
   }
 
