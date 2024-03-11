@@ -1,7 +1,7 @@
 """drop key column from property
 
 Revision ID: 3815b0db5b14
-Revises: 14acee6f5459
+Revises: 32497f08e227
 Create Date: 2024-02-29 21:54:38.751678
 
 """

@@ -1,0 +1,18 @@
+{
+  "static.tcf.purposes": "Ändamål",
+  "static.tcf.consent": "Samtycke",
+  "static.tcf.legint": "Berättigat intresse",
+  "static.tcf.special_purposes": "Särskilda ändamål",
+  "static.tcf.purposes.description": "Här nedan hittar du en lista av de ändamål och särskilda funktioner för vilka dina uppgifter behandlas. Du kan utöva dina rättigheter för särskilda ändamål, baserat på samtycke och berättigat intresse, genom menyvalen här nedan.",
+  "static.tcf.features": "Funktioner",
+  "static.tcf.features.description": "Här nedan hittar du en lista av de funktioner för vilka dina uppgifter behandlas. Du kan utöva dina rättigheter för särskilda funktioner genom menyvalen här nedan.",
+  "static.tcf.special_features": "Särskilda funktioner",
+  "static.tcf.vendors": "Leverantörer",
+  "static.tcf.vendors.description": "Här nedan hittar du en lista av leverantörer som behandlar dina uppgifter och ändamålen eller funktionerna för behandlingen de uppgivit. Du kan utöva dina rättigheter för varje leverantör baserat på den rättsliga grund de hävdar.",
+  "static.tcf.vendors.iab": "IAB TCF Leverantörer",
+  "static.gpc.title": "Global integritetskontroll upptäcktes",
+  "static.gpc.description": "Dina preferenser för global integritetskontroll har efterföljts. Du har automatiskt valt bort användningsfall för uppgifter som efterföljer global integritetskontroll.",
+  "static.gpc.status.applied": "Tillämpad",
+  "static.gpc.status.overridden": "Åsidosatt",
+  "static.gpc": "Global integritetskontroll"
+}
