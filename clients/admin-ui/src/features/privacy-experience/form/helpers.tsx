@@ -56,11 +56,24 @@ export const transformTranslationResponseToCreate = (
   response: ExperienceTranslationResponse
 ): ExperienceTranslationCreate => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { privacy_experience_config_history_id, ...rest } = response;
+  const { language, is_default, accept_button_label, reject_button_label } =
+    response;
+  // replace "null"s from the backend with "undefined"s
   return {
-    ...rest,
-    description: response.description ?? "",
-    title: response.title ?? "",
+    language,
+    is_default,
+    accept_button_label,
+    reject_button_label,
+    title: response.title!,
+    description: response.description!,
+    acknowledge_button_label: response.acknowledge_button_label ?? undefined,
+    banner_title: response.banner_title ?? undefined,
+    banner_description: response.banner_description ?? undefined,
+    privacy_policy_link_label: response.privacy_policy_link_label ?? undefined,
+    privacy_policy_url: response.privacy_policy_url ?? undefined,
+    privacy_preferences_link_label:
+      response.privacy_preferences_link_label ?? undefined,
+    save_button_label: response.save_button_label ?? undefined,
   };
 };
 
@@ -131,7 +144,7 @@ export const getTranslationFormFields = (
       acknowledge_button_label: { included: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
-      privacy_preferences_link_label: { included: true },
+      privacy_preferences_link_label: { included: true, required: true },
     };
   }
   return {
@@ -143,6 +156,6 @@ export const getTranslationFormFields = (
     acknowledge_button_label: { included: true },
     privacy_policy_link_label: { included: true },
     privacy_policy_url: { included: true },
-    privacy_preferences_link_label: { included: true },
+    privacy_preferences_link_label: { included: true, required: true },
   };
 };
