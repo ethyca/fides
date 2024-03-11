@@ -119,6 +119,7 @@ const TcfPurposes = ({
   return (
     <div>
       <RadioGroup
+        i18n={i18n}
         options={LEGAL_BASIS_OPTIONS}
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}

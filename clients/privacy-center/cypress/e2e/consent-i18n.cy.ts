@@ -891,10 +891,10 @@ describe("Consent i18n", () => {
         // Check the right tab is visible, the overall description, and radio buttons
         cy.get(".fides-info-box").should("be.visible");
         cy.get(".fides-info-box").contains(t.purposes_description);
-        // cy.get(".fides-radio-button-group button").then((buttons) => {
-        //   cy.wrap(buttons[0]).contains(t.consent);
-        //   cy.wrap(buttons[1]).contains(t.legint);
-        // });
+        cy.get(".fides-radio-button-group button").then((buttons) => {
+          cy.wrap(buttons[0]).contains(t.consent);
+          cy.wrap(buttons[1]).contains(t.legint);
+        });
 
         // Check the list of Purposes and toggle open a single example to check illustrations, etc.
         cy.getByTestId("records-list-purposes").within(() => {
@@ -981,10 +981,10 @@ describe("Consent i18n", () => {
         // Check the right tab is visible, the overall description, and radio buttons
         cy.get(".fides-info-box").should("be.visible");
         cy.get(".fides-info-box").contains(t.vendors_description);
-        // cy.get(".fides-radio-button-group button").then((buttons) => {
-        //   cy.wrap(buttons[0]).contains(t.consent);
-        //   cy.wrap(buttons[1]).contains(t.legint);
-        // });
+        cy.get(".fides-radio-button-group button").then((buttons) => {
+          cy.wrap(buttons[0]).contains(t.consent);
+          cy.wrap(buttons[1]).contains(t.legint);
+        });
 
         // Check the list of IAB TCF vendors and toggle open a single example
         cy.getByTestId("records-list-vendors").within(() => {
