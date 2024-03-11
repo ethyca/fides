@@ -11,6 +11,7 @@ import {
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
+import { verifyConditionsForPropertyId } from "~/common/property-id";
 
 // one hour, how long the client should cache fides.js for
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
@@ -91,10 +92,12 @@ export default async function handler(
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
-  // Check if a property_id was provided in the query params
-  const propertyId = Array.isArray(req.query.property_id)
-    ? req.query.property_id[0]
-    : req.query.property_id;
+  const propertyId = verifyConditionsForPropertyId(
+    req,
+    geolocation,
+    environment,
+    fidesString
+  );
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
