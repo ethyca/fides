@@ -20,7 +20,6 @@
   "static.tcf.legint_disclosure": "Legitimate interest disclosure",
   "static.tcf.retention": "Retention",
   "static.tcf.retention_period_days": "day(s)",
-  "static.tcf.retention_period_na": "N/A",
   "static.tcf.data_categories": "Data categories",
   "static.tcf.cookie_disclosure.intro": "stores cookies with a maximum duration of about",
   "static.tcf.cookie_disclosure.refresh": "These cookies may be refreshed.",

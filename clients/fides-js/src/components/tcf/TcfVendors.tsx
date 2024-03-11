@@ -44,7 +44,7 @@ const VendorDetails = ({
 
   const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
-  // TODO (PROD-1683): better i18n solution for retention periods
+  // TODO (PROD-1683): update i18n for retention periods based on translator feedback
   return (
     <table className="fides-vendor-details-table">
       <thead>
@@ -63,11 +63,13 @@ const VendorDetails = ({
             <td>{i18n.t(`exp.tcf.${type}.${item.id}.name`)}</td>
             {hasRetentionInfo ? (
               <td style={{ textAlign: "right" }}>
-                {item.retention_period
-                  ? `${item.retention_period} ${i18n.t(
-                      "static.tcf.retention_period_days"
-                    )}`
-                  : i18n.t("static.tcf.retention_period_na")}
+                {
+                  item.retention_period
+                    ? `${item.retention_period} ${i18n.t(
+                        "static.tcf.retention_period_days"
+                      )}`
+                    : "-" /* show "-" instead of "N/A" to be language-agnostic */
+                }
               </td>
             ) : null}
           </tr>
