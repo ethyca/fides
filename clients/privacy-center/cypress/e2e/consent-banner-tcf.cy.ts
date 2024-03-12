@@ -263,11 +263,9 @@ describe("Fides-js TCF", () => {
         cy.get("span").contains(PURPOSE_6.name);
 
         cy.get("span").contains(STACK_1.name).click();
-        [PURPOSE_4.id, PURPOSE_9.id, PURPOSE_7.id, PURPOSE_2.id].forEach(
-          (id) => {
-            cy.get("li").contains(`Purpose ${id}`);
-          }
-        );
+        [PURPOSE_4, PURPOSE_9, PURPOSE_7, PURPOSE_2].forEach((purpose) => {
+          cy.get("li").contains(purpose.name);
+        });
       });
     });
 
@@ -422,7 +420,7 @@ describe("Fides-js TCF", () => {
 
           // Check cookie disclosure
           cy.get("p").contains(
-            'Captify stores cookies with a maximum duration of about 5 day(s). These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
+            'Captify stores cookies with a maximum duration of about this many days: 5. These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
           );
         });
         // Check the cookie disclosure on the system
@@ -435,7 +433,7 @@ describe("Fides-js TCF", () => {
         cy.get(".fides-notice-toggle-title").contains(SYSTEM_1.name).click();
         cy.get(".fides-disclosure-visible").within(() => {
           cy.get("p").contains(
-            "Fides System stores cookies with a maximum duration of about 5 day(s)"
+            "Fides System stores cookies with a maximum duration of about this many days: 5."
           );
         });
       });
