@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Aşağıda, verilerinizi işleyen satıcıların bir listesini ve beyan ettikleri işleme amaçlarını veya özelliklerini bulabilirsiniz. Haklarınızı her satıcı için onların ileri sürdüğü yasal dayanaklara göre kullanabilirsiniz.",
   "static.tcf.vendors.iab": "IAB TCF Satıcıları",
   "static.tcf.vendors.other": "Diğer satıcılar",
-  "static.tcf.vendors_count": "X satıcı",
+  "static.tcf.vendors_count": "satıcı",
   "static.tcf.vendors_using_consent": "Onay kullanan satıcılar",
   "static.tcf.vendors_using_legint": "Meşru menfaat kullanan satıcılar"
 }

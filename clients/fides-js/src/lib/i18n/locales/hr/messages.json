@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "U nastavku se nalazi popis uslužnih tvrtki koje obrađuju vaše podatke i svrhe ili prihvaćene značajke obrada. Svoja prava u odnosu na svaku uslužnu tvrtku možete iskoristiti  na temelju pravne osnove koja je korištena.",
   "static.tcf.vendors.iab": "Uslužne tvrtke IAB TCF",
   "static.tcf.vendors.other": "Drugi pružatelji usluga",
-  "static.tcf.vendors_count": "X pružatelj(a) usluga",
+  "static.tcf.vendors_count": "pružatelj(a) usluga",
   "static.tcf.vendors_using_consent": "Pružatelji usluga koji koriste privolu",
   "static.tcf.vendors_using_legint": "Pružatelji usluga koji koriste legitimni interes"
 }

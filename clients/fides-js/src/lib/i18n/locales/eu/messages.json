@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Azpian, zure datuak prozesatzen dituzten hornitzaileen zerrenda aurkituko duzu, bai eta adierazten dituzten prozesamenduaren xede edo ezaugarriak ere. Saltzaile bakoitzari aurka egiteko eskubideak erabil ditzakezu, baieztatzen duten oinarri juridikoaren arabera.",
   "static.tcf.vendors.iab": "IAB TCF hornitzaileak",
   "static.tcf.vendors.other": "Beste hornitzaile batzuk",
-  "static.tcf.vendors_count": "X hornitzaile",
+  "static.tcf.vendors_count": "hornitzaile",
   "static.tcf.vendors_using_consent": "Baimena erabiltzen duten hornitzaileak",
   "static.tcf.vendors_using_legint": "Interes legitimoa erabiltzen duten hornitzaileak"
 }

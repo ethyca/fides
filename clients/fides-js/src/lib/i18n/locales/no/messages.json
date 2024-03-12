@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Nedenfor finner du en liste over leverandører som håndterer dataene dine samt hensiktene eller funksjonene de har eller utøver med denne databehandlingen. Du kan utøve rettighetene dine for hver leverandør basert på det juridiske grunnlaget de hevder eierskap til.",
   "static.tcf.vendors.iab": "IAB TCF-leverandører",
   "static.tcf.vendors.other": "Andre leverandører",
-  "static.tcf.vendors_count": "X leverandør(er)",
+  "static.tcf.vendors_count": "leverandør(er)",
   "static.tcf.vendors_using_consent": "Leverandørbruk samtykke",
   "static.tcf.vendors_using_legint": "Leverandørbruk  berettiget interesse"
 }

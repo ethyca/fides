@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Poniżej prezentujemy listę podwykonawców przetwarzających Twoje dane wraz z deklarowanymi przez nich celami lub funkcjami przetwarzania. Możesz wykonać swoje prawa w odniesieniu do każdego podwykonawcy w oparciu o zapewniane przez nich ramy prawne.",
   "static.tcf.vendors.iab": "Podwykonawcy IAB TCF",
   "static.tcf.vendors.other": "Inni dostawcy",
-  "static.tcf.vendors_count": "X dostawca(-y)",
+  "static.tcf.vendors_count": "dostawca(-y)",
   "static.tcf.vendors_using_consent": "Dostawcy wykorzystujący zgodę",
   "static.tcf.vendors_using_legint": "Dostawcy wykorzystujący uzasadniony interes"
 }

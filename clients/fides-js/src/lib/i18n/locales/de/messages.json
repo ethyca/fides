@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Nachstehend finden Sie eine Liste der Anbieter, die Ihre Daten verarbeiten, sowie die Verarbeitungszwecke oder -funktionen, die diese angeben. Sie können Ihre Rechte für jeden Anbieter auf Grundlage der von ihm angegebenen Rechtsgrundlage ausüben.",
   "static.tcf.vendors.iab": "IAB TCF Anbieter",
   "static.tcf.vendors.other": "Andere Anbieter",
-  "static.tcf.vendors_count": "X Anbieter",
+  "static.tcf.vendors_count": "Anbieter",
   "static.tcf.vendors_using_consent": "Anbieter mit Einwilligung",
   "static.tcf.vendors_using_legint": "Anbieter mit berechtigtem Interesse"
 }

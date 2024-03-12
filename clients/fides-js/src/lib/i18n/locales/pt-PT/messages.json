@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Abaixo, encontra-se uma lista dos fornecedores que tratam os seus dados e os fins ou características do tratamento que declaram. Pode exercer os seus direitos relativamente a cada fornecedor com base no fundamento jurídico que este defende.",
   "static.tcf.vendors.iab": "Fornecedores IAB TCF",
   "static.tcf.vendors.other": "Outros fornecedores",
-  "static.tcf.vendors_count": "X fornecedor(es)",
+  "static.tcf.vendors_count": "fornecedor(es)",
   "static.tcf.vendors_using_consent": "Fornecedores que utilizam o consentimento",
   "static.tcf.vendors_using_legint": "Fornecedores que utilizam o interesse legítimo"
 }

@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Nižšie nájdete zoznam dodávateľov, ktorí spracúvajú vaše údaje, a účely alebo funkcie spracúvania, ktoré deklarujú. Svoje práva môžete uplatniť u každého dodávateľa na základe právneho základu, ktorý uplatňuje.",
   "static.tcf.vendors.iab": "Dodávatelia IAB TCF",
   "static.tcf.vendors.other": "Ostatní dodávatelia",
-  "static.tcf.vendors_count": "X dodávateľ/lia/ov",
+  "static.tcf.vendors_count": "dodávateľ/lia/ov",
   "static.tcf.vendors_using_consent": "Dodávatelia využívajúci súhlas",
   "static.tcf.vendors_using_legint": "Dodávatelia využívajúci oprávnený záujem"
 }

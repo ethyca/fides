@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Hawn taħt, issib lista ta' bejjiegħa li jipproċessaw id-dejta tiegħek u l-għanijiet jew il-karatteristiċi tal-ipproċessar li jiddikjaraw. Tista' teżerċita d-drittijiet tiegħek għal kull bejjiegħ abbażi tal-bażi legali li jaffermaw.",
   "static.tcf.vendors.iab": "Bejjiegħa tat-TCF IAB",
   "static.tcf.vendors.other": "Bejjiegħa oħra",
-  "static.tcf.vendors_count": "X bejjiegħ(a)",
+  "static.tcf.vendors_count": "bejjiegħ(a)",
   "static.tcf.vendors_using_consent": "Bejjiegħa li jużaw il-kunsens",
   "static.tcf.vendors_using_legint": "Bejjiegħa li jużaw interess leġittimu"
 }

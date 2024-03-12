@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "У наставку ћете пронаћи листу добављача који обрађују ваше податке и сврхе или карактеристике обраде које су декларирали. Можете остварити своја права за сваког добављача на основу правне основе коју они тврде.",
   "static.tcf.vendors.iab": "IAB TCF Добављачи",
   "static.tcf.vendors.other": "Други добављачи",
-  "static.tcf.vendors_count": "X добављач(а)",
+  "static.tcf.vendors_count": "добављач(а)",
   "static.tcf.vendors_using_consent": "Добављачи који користе сагласност",
   "static.tcf.vendors_using_legint": "Добављачи који користе легитимни интерес"
 }

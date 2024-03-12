@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "在下面，您可以看到处理您数据的供应商列表，及其声明的处理目的或功能。您可以根据每个供应商主张的法律依据对其行使权利。",
   "static.tcf.vendors.iab": "IAB TCF 供应商",
   "static.tcf.vendors.other": "其他供应商",
-  "static.tcf.vendors_count": "X 个供应商",
+  "static.tcf.vendors_count": "个供应商",
   "static.tcf.vendors_using_consent": "供应商使用同意函",
   "static.tcf.vendors_using_legint": "供应商使用合法权益"
 }

@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Toliau pateikiamas jūsų duomenis tvarkančių pardavėjų sąrašas ir jų deklaruojami duomenų tvarkymo tikslai ar funkcijos. Kiekvieno pardavėjo teisėmis galite pasinaudoti remdamiesi jo nurodytu teisiniu pagrindu.",
   "static.tcf.vendors.iab": "„IAB TCF“ pardavėjai",
   "static.tcf.vendors.other": "Kiti pardavėjai",
-  "static.tcf.vendors_count": "X pardavėjas (-ai)",
+  "static.tcf.vendors_count": "pardavėjas (-ai)",
   "static.tcf.vendors_using_consent": "Sutikimą naudojantys pardavėjai",
   "static.tcf.vendors_using_legint": "Teisėtą interesą naudojantys pardavėjai"
 }

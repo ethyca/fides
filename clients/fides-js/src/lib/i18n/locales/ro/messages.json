@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Mai jos se regăsește o listă de furnizori care vă prelucrează datele și scopurile sau opțiunile de prelucrare pe care le declară. Vă puteți exercita drepturile pentru fiecare furnizor în parte pe baza temeiului juridic pe care îl declară.",
   "static.tcf.vendors.iab": "Furnizori IAB TCF",
   "static.tcf.vendors.other": "Alți furnizori",
-  "static.tcf.vendors_count": "X furnizori",
+  "static.tcf.vendors_count": "furnizori",
   "static.tcf.vendors_using_consent": "Furnizori care folosesc consimțământul",
   "static.tcf.vendors_using_legint": "Furnizori care folosesc interesul legitim"
 }

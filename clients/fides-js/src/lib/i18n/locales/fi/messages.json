@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Alla olevassa luettelossa esitetään luettelo tietojanne käsittelevistä toimittajista ja niiden ilmoittamien käsittelyn tarkoituksesta tai ominaisuuksista. Voitte käyttää oikeuksianne kunkin toimittajan kohdalla niiden esittämien oikeusperusteiden perusteilla.",
   "static.tcf.vendors.iab": "IAB TCF toimittajat",
   "static.tcf.vendors.other": "Muut toimittajat",
-  "static.tcf.vendors_count": "X toimittaja(t)",
+  "static.tcf.vendors_count": "toimittaja(t)",
   "static.tcf.vendors_using_consent": "Toimittajat, jotka käyttävät suostumusta",
   "static.tcf.vendors_using_legint": "Toimittajat, jotka käyttävät oikeutettua etua"
 }

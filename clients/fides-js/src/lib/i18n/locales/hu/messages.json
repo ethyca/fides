@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Az alábbiaknak az Ön adatait kezelő értékesítők listáját láthatja, valamint az adatkezelés általuk bejelentett céljait vagy funkcióit. Minden értékesítőre vonatkozóan érvényesítheti jogait, az általuk meghatározott jogalap szerint.",
   "static.tcf.vendors.iab": "IAB TCF értékesítők",
   "static.tcf.vendors.other": "Egyéb szállítók",
-  "static.tcf.vendors_count": "X szállító",
+  "static.tcf.vendors_count": "szállító",
   "static.tcf.vendors_using_consent": "Hozzájárulást használó szállítók",
   "static.tcf.vendors_using_legint": "Jogos érdeket használó szállítók"
 }

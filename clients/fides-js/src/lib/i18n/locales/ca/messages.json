@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "A continuació, trobareu una llista dels proveïdors que tracten les vostres dades i les finalitats o característiques del tractament que declaren. Podeu exercir els vostres drets per a cadascun dels proveïdors en funció de la base legal que facin valer.",
   "static.tcf.vendors.iab": "Proveïdors IAB TCF",
   "static.tcf.vendors.other": "Altres proveïdors",
-  "static.tcf.vendors_count": "X proveïdor(s)",
+  "static.tcf.vendors_count": "proveïdor(s)",
   "static.tcf.vendors_using_consent": "Proveïdors que utilitzen el consentiment",
   "static.tcf.vendors_using_legint": "Proveïdors que utilitzen l’interès legítim"
 }

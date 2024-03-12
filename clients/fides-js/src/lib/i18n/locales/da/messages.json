@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Nedenfor finder du en liste over forhandlere, der behandler dine data, og de behandlingsformål eller -funktioner, de angiver. Du kan udøve dine rettigheder for hver forhandler baseret på det retsgrundlag, de hævder.",
   "static.tcf.vendors.iab": "IAB TCF forhandlere",
   "static.tcf.vendors.other": "Andre forhandlere",
-  "static.tcf.vendors_count": "X forhandler(e)",
+  "static.tcf.vendors_count": "forhandler(e)",
   "static.tcf.vendors_using_consent": "Forhandlere, der anvender samtykke",
   "static.tcf.vendors_using_legint": "Forhandlere, der anvender legitim interesse"
 }

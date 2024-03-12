@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "U nastavku sledi spisak dobavljača koji obrađuju vaše podatke i svrhe ili namene obrade koje oni deklarišu. Svoja prava možete ostvariti za svakog dobavljača na osnovu pravne osnove koju oni navode.",
   "static.tcf.vendors.iab": "IAB TCF dobavljači",
   "static.tcf.vendors.other": "Drugi dobavljači",
-  "static.tcf.vendors_count": "X dobavljač(a)",
+  "static.tcf.vendors_count": "dobavljač(a)",
   "static.tcf.vendors_using_consent": "Dobavljači koji koriste saglasnost",
   "static.tcf.vendors_using_legint": "Dobavljači koji koriste legitiman interes"
 }

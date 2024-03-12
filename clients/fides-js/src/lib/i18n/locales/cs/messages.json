@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Níže je uveden seznam dodavatelů zpracovávajících vaše údaje a účely nebo funkce zpracování, které uvedli. Svá práva můžete uplatnit u každého dodavatele v souladu s právním základem, který používá.",
   "static.tcf.vendors.iab": "Dodavatelé IAB TCF",
   "static.tcf.vendors.other": "Další dodavatelé",
-  "static.tcf.vendors_count": "X dodavatel(ů)",
+  "static.tcf.vendors_count": "dodavatel(ů)",
   "static.tcf.vendors_using_consent": "Dodavatelé využívající souhlas",
   "static.tcf.vendors_using_legint": "Dodavatelé využívající legitimní zájem"
 }

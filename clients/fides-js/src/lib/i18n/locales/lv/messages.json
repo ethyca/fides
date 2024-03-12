@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Tālāk ir sniegts to pārdevēju/pakalpojumu sniedzēju saraksts, kuri apstrādā jūsu datus, kā arī apstrādes mērķi vai iespējas, ko viņi deklarē. Atkarībā no juridiskā pamatojuma, ko izmanto katrs pārdevējs/pakalpojumu sniedzējs, varat īstenot savas tiesības attiecībās ar katru no preču pārdevējiem/pakalpojumu sniedzējiem.",
   "static.tcf.vendors.iab": "IAB PPI preču pārdevēji/pakalpojumu sniedzēji",
   "static.tcf.vendors.other": "Citi pārdevēji/pakalpojumu sniedzēji",
-  "static.tcf.vendors_count": "X pārdevējs(-i)/ pakalpojumu sniedzējs(-i)",
+  "static.tcf.vendors_count": "pārdevējs(-i)/ pakalpojumu sniedzējs(-i)",
   "static.tcf.vendors_using_consent": "Pārdevēji/ pakalpojumu sniedzēji, kas izmanto piekrišanu",
   "static.tcf.vendors_using_legint": "Pārdevēji/ pakalpojumu sniedzēji, kas izmanto leģitīmās intereses"
 }

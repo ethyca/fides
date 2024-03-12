@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "V nadaljevanju je prikazan seznam partnerjev, ki obdelujejo vaše podatke, in nameni ali funkcije obdelave, ki jih prijavljajo. Za vsakega partnerja lahko uveljavljate svoje pravice na podlagi pravne podlage, ki jo uveljavlja.",
   "static.tcf.vendors.iab": "Partnerji IAB TCF",
   "static.tcf.vendors.other": "Drugi partnerji",
-  "static.tcf.vendors_count": "X partner(jev)",
+  "static.tcf.vendors_count": "partner(jev)",
   "static.tcf.vendors_using_consent": "Partnerji, ki uporabljajo privolitev",
   "static.tcf.vendors_using_legint": "Partnerji, ki uporabljajo zakoniti interes"
 }

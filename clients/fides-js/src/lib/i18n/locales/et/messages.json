@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "Allpool on esitatud loetelu kaupmeestest, kes teie andmeid töötlevad, ja nende esitatud töötlemise eesmärkidest või funktsioonidest. Võite rakendada oma õigusi vastavalt iga kaupmehe esitatud õiguslikule alusele.",
   "static.tcf.vendors.iab": "IAB ja TCF-i kaupmehed",
   "static.tcf.vendors.other": "Muud kaupmehed",
-  "static.tcf.vendors_count": "X kaupmees(t)",
+  "static.tcf.vendors_count": "kaupmees(t)",
   "static.tcf.vendors_using_consent": "Nõusolekut kasutavad kaupmehed",
   "static.tcf.vendors_using_legint": "Õigustatud huvi kasutavad kaupmehed"
 }

@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "नीचे, आपको आपके डेटा को संसाधित करने वाले वेंडर्स की एक सूची और उनके द्वारा घोषित संसाधनों के प्रयोजनों या सुविधाओं की एक सूची मिलेगी। प्रत्येक वेंडर के लिए उनके द्वारा बताए गए कानूनी आधार के आधार पर अपने अधिकारों का प्रयोग किया जा सकता है।",
   "static.tcf.vendors.iab": "IAB TCF वेंडर्स",
   "static.tcf.vendors.other": "अन्य वेंडर",
-  "static.tcf.vendors_count": "X वेंडर",
+  "static.tcf.vendors_count": "वेंडर",
   "static.tcf.vendors_using_consent": "सहमति उपयोग करने वाले वेंडर",
   "static.tcf.vendors_using_legint": "वैध रुचि उपयोग करने वाले वेंडर"
 }
