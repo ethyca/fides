@@ -1,0 +1,19 @@
+{
+  "static.gpc": "Global fortrolighedskontrol",
+  "static.gpc.description": "Din præference i forbindelse med global fortrolighedskontrol er blevet efterkommet. Du er automatisk blevet frameldt tilfælde af databrug, der overholder global fortrolighedskontrol.",
+  "static.gpc.status.applied": "Anvendt",
+  "static.gpc.status.overridden": "Tilsidesat",
+  "static.gpc.title": "Der blev påvist global fortrolighedskontrol",
+  "static.tcf.consent": "Samtykke",
+  "static.tcf.features": "Funktioner",
+  "static.tcf.features.description": "Nedenfor finder du en liste over de funktioner, hvortil dine data bliver behandlet. Du kan udøve dine rettigheder for særlige funktioner ved hjælp af on/off-knapperne nedenfor.",
+  "static.tcf.legint": "Legitim interesse",
+  "static.tcf.privacy_policy": "Fortrolighedspolitik",
+  "static.tcf.purposes": "Formål",
+  "static.tcf.purposes.description": "Nedenfor finder du en liste over de formål og særlige funktioner, hvortil dine data bliver behandlet. Du kan udøve dine rettigheder for særlige formål, baseret på samtykke eller legitim interesse, ved hjælp af on/off-knapperne nedenfor.",
+  "static.tcf.special_features": "Særlige funktioner",
+  "static.tcf.special_purposes": "Særlige formål",
+  "static.tcf.vendors": "Forhandlere",
+  "static.tcf.vendors.description": "Nedenfor finder du en liste over forhandlere, der behandler dine data, og de behandlingsformål eller -funktioner, de angiver. Du kan udøve dine rettigheder for hver forhandler baseret på det retsgrundlag, de hævder.",
+  "static.tcf.vendors.iab": "IAB TCF forhandlere"
+}

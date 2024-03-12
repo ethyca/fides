@@ -1,0 +1,19 @@
+{
+  "static.gpc": "グローバルプライバシーコントロール",
+  "static.gpc.description": "グローバルプライバシーコントロールの設定は尊重されます。グローバルプライバシーコントロールに従うデータのユースケースからは自動的にオプトアウトされています。",
+  "static.gpc.status.applied": "適用",
+  "static.gpc.status.overridden": "変更",
+  "static.gpc.title": "グローバルプライバシーコントロールを検出しました",
+  "static.tcf.consent": "同意",
+  "static.tcf.features": "機能",
+  "static.tcf.features.description": "以下に示すのは、皆様のデータを処理する機能のリストです。以下のトグルを切り替えることにより、特別な機能に関する皆様の権利を行使できます。",
+  "static.tcf.legint": "正当な利益",
+  "static.tcf.privacy_policy": "プライバシーポリシー",
+  "static.tcf.purposes": "目的",
+  "static.tcf.purposes.description": "以下に示すのは、皆様のデータを処理する目的と特別な機能のリストです。以下のトグルを切り替えることにより、同意または正当な利益に基づき、特別な目的に関する皆様の権利を行使できます。",
+  "static.tcf.special_features": "特別な機能",
+  "static.tcf.special_purposes": "特別な目的",
+  "static.tcf.vendors": "ベンダー",
+  "static.tcf.vendors.description": "以下に示すのは、皆様のデータを処理するベンダーのリストと、ベンダーが宣言する処理の目的と機能です。ベンダーが主張する法的根拠をもとに、ベンダーごとに皆様の権利を行使できます。",
+  "static.tcf.vendors.iab": "IAB TCFベンダー"
+}

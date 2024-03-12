@@ -1,0 +1,19 @@
+{
+  "static.gpc": "Global Privacy Control",
+  "static.gpc.description": "Uw Global Privacy Control-voorkeur wordt gerespecteerd. U bent automatisch afgemeld voor gegevensgebruiksscenario's die zich houden aan Global Privacy Control.",
+  "static.gpc.status.applied": "Toegepast",
+  "static.gpc.status.overridden": "Genegeerd",
+  "static.gpc.title": "Global Privacy Control gedetecteerd",
+  "static.tcf.consent": "Toestemming",
+  "static.tcf.features": "Functies",
+  "static.tcf.features.description": "Hieronder vindt u een lijst van de functies waarvoor uw gegevens worden verwerkt. Via onderstaande wisselknoppen kunt u uw rechten uitoefenen voor speciale functies.",
+  "static.tcf.legint": "Gerechtvaardigd belang",
+  "static.tcf.privacy_policy": "Privacybeleid",
+  "static.tcf.purposes": "Doeleinden",
+  "static.tcf.purposes.description": "Hieronder vindt u een lijst van de doeleinden en speciale functies waarvoor uw gegevens worden verwerkt. Via onderstaande wisselknoppen kunt u uw rechten uitoefenen voor specifieke doeleinden, gebaseerd op toestemming of gerechtvaardigd belang.",
+  "static.tcf.special_features": "Speciale functies",
+  "static.tcf.special_purposes": "Speciale doeleinden",
+  "static.tcf.vendors": "Leveranciers",
+  "static.tcf.vendors.description": "Hieronder vindt u een lijst van leveranciers die uw gegevens verwerken en de doeleinden of functies voor verwerking die zij vermelden. U kunt uw rechten uitoefenen voor elke leverancier op basis van de grondslag die zij aangeven.",
+  "static.tcf.vendors.iab": "IAB TCF-leveranciers"
+}

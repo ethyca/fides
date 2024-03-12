@@ -1,0 +1,19 @@
+{
+  "static.gpc": "Visuotinė privatumo kontrolė",
+  "static.gpc.description": "Buvo atsižvelgta į jūsų visuotinės privatumo kontrolės pageidavimą. Buvote automatiškai atšauktas iš duomenų naudojimo atvejų, kai laikomasi visuotinės privatumo kontrolės.",
+  "static.gpc.status.applied": "Taikoma",
+  "static.gpc.status.overridden": "Nebegaliojantis",
+  "static.gpc.title": "Aptikta visuotinė privatumo kontrolė",
+  "static.tcf.consent": "Sutikimas",
+  "static.tcf.features": "Funkcijos",
+  "static.tcf.features.description": "Toliau rasite funkcijų, dėl kurių tvarkomi jūsų duomenys, sąrašą. Naudodamiesi toliau nurodytais perjungikliaisk, galite pasinaudoti specialiųjų funkcijų teisėmis.",
+  "static.tcf.legint": "Teisinis interesas",
+  "static.tcf.privacy_policy": "Privatumo politika",
+  "static.tcf.purposes": "Tikslai",
+  "static.tcf.purposes.description": "Toliau rasite tikslų ir specialių funkcijų, dėl kurių tvarkomi jūsų duomenys, sąrašą. Naudodamiesi toliau nurodytais perjungikliais, galite pasinaudoti savo teisėmis konkrečiais tikslais, remdamiesi sutikimu arba teisėtu interesu.",
+  "static.tcf.special_features": "Specialiosios funkcijos",
+  "static.tcf.special_purposes": "Specialieji tikslai",
+  "static.tcf.vendors": "Pardavėjai",
+  "static.tcf.vendors.description": "Toliau pateikiamas jūsų duomenis tvarkančių pardavėjų sąrašas ir jų deklaruojami duomenų tvarkymo tikslai ar funkcijos. Kiekvieno pardavėjo teisėmis galite pasinaudoti remdamiesi jo nurodytu teisiniu pagrindu.",
+  "static.tcf.vendors.iab": "„IAB TCF“ pardavėjai"
+}

@@ -22,6 +22,7 @@ import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
+import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
 
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
@@ -95,17 +96,14 @@ describe("i18n-utils", () => {
       const updatedLocales = loadMessagesFromFiles(mockI18n);
 
       // Check the updated locales list is what we expect
-      const EXPECTED_NUM_STATIC_LOCALES = 3; // NOTE: manually update this as new locales added
-      expect(updatedLocales).toEqual(["en", "es", "fr"]);
+      const EXPECTED_NUM_STATIC_LOCALES = 40; // NOTE: manually update this as new locales added
+      expect(updatedLocales).toHaveLength(EXPECTED_NUM_STATIC_LOCALES);
+      expect(updatedLocales).toContain("en");
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
 
-      // Verify the first two locales match the expected catalogues, too
-      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
-      const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
-      expect(firstLocale).toEqual("en");
-      expect(firstMessages).toEqual(messagesEn);
-      expect(secondLocale).toEqual("es");
-      expect(secondMessages).toEqual(messagesEs);
+      // Verify a few of our expected locales match their expected catalogues, too
+      expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
     });
   });
 
@@ -118,9 +116,7 @@ describe("i18n-utils", () => {
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(updatedLocales).toEqual(["en", "es"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
-      expect(firstLocale).toEqual("en");
-      expect(firstMessages).toEqual({
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
         "exp.accept_button_label": "Accept Test",
         "exp.acknowledge_button_label": "Acknowledge Test",
         "exp.banner_description": "Banner Description Test",
@@ -133,9 +129,7 @@ describe("i18n-utils", () => {
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
       });
-      const [secondLocale, secondMessages] = mockI18n.load.mock.calls[1];
-      expect(secondLocale).toEqual("es");
-      expect(secondMessages).toEqual({
+      expect(mockI18n.load).toHaveBeenCalledWith("es", {
         "exp.accept_button_label": "Aceptar Prueba",
         "exp.acknowledge_button_label": "Reconocer Prueba",
         "exp.banner_description": "Descripción del Banner de Prueba",
@@ -171,7 +165,7 @@ describe("i18n-utils", () => {
       expect(messages).not.toHaveProperty(["exp.banner_title"]);
     });
 
-    it("handles missing experience/notice translations by falling back to legacy properties", () => {
+    it("handles missing experience_config translations by falling back to legacy properties", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
       const mockExpNoTranslations = JSON.parse(JSON.stringify(mockExperience));
@@ -188,9 +182,7 @@ describe("i18n-utils", () => {
       const EXPECTED_NUM_TRANSLATIONS = 1;
       expect(updatedLocales).toEqual(["en"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      const [firstLocale, firstMessages] = mockI18n.load.mock.calls[0];
-      expect(firstLocale).toEqual("en");
-      expect(firstMessages).toEqual({
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
         "exp.accept_button_label": "Accept Test",
         "exp.acknowledge_button_label": "Acknowledge Test",
         "exp.banner_description": "Banner Description Test",
@@ -202,6 +194,131 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
+      });
+    });
+
+    describe("when loading from a tcf_overlay experience", () => {
+      it("reads all messages from gvl_translations API response and loads into the i18n catalog", () => {
+        // Mock out a partial response for a tcf_overlay including translations
+        const mockExpWithGVLTranslations = JSON.parse(
+          JSON.stringify(mockExperience)
+        );
+        mockExpWithGVLTranslations.experience_config.component = "tcf_overlay";
+        mockExpWithGVLTranslations.gvl_translations = mockGVLTranslationsJSON;
+
+        // Load all the translations
+        const updatedLocales = loadMessagesFromExperience(
+          mockI18n,
+          mockExpWithGVLTranslations
+        );
+
+        // First, confirm that the "regular" experience_config translations are loaded
+        const EXPECTED_NUM_TRANSLATIONS = 2;
+        expect(updatedLocales).toEqual(["en", "es"]);
+        expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+        const [, loadedMessagesEn] = mockI18n.load.mock.calls[0];
+        const [, loadedMessagesEs] = mockI18n.load.mock.calls[1];
+        expect(loadedMessagesEn).toMatchObject({
+          "exp.accept_button_label": "Accept Test",
+          "exp.acknowledge_button_label": "Acknowledge Test",
+        });
+        expect(loadedMessagesEs).toMatchObject({
+          "exp.accept_button_label": "Aceptar Prueba",
+          "exp.acknowledge_button_label": "Reconocer Prueba",
+        });
+
+        // Confirm that the English gvl_translations are loaded
+        const expectedMessagesEn: Record<string, RegExp> = {
+          // Example purposes
+          "exp.tcf.purposes.1.name": /^Store and\/or access/,
+          "exp.tcf.purposes.1.description": /^Cookies, device or similar/,
+          "exp.tcf.purposes.1.illustrations.0": /^Most purposes explained/,
+          "exp.tcf.purposes.11.name": /^Use limited data to select content/,
+          "exp.tcf.purposes.11.description": /^Content presented to you/,
+          "exp.tcf.purposes.11.illustrations.1": /^A sports news mobile/,
+          // Example special purpose
+          "exp.tcf.specialPurposes.2.name": /^Deliver and present/,
+          "exp.tcf.specialPurposes.2.description": /^Certain information /,
+          "exp.tcf.specialPurposes.2.illustrations.0": /^Clicking on a link/,
+          // Example feature
+          "exp.tcf.features.3.name": /^Identify devices based on information/,
+          "exp.tcf.features.3.description": /^Your device might be /,
+          // Example special feature
+          "exp.tcf.specialFeatures.1.name": /^Use precise geolocation data/,
+          "exp.tcf.specialFeatures.1.description": /^With your acceptance/,
+          // Example stack
+          "exp.tcf.stacks.40.name": /^Personalised advertising.*development$/,
+          "exp.tcf.stacks.40.description": /^Advertising can be personalised/,
+          // Example data category
+          "exp.tcf.dataCategories.9.name": /^Precise location data$/,
+          "exp.tcf.dataCategories.9.description": /^Your precise location/,
+        };
+        Object.entries(expectedMessagesEn).forEach(([id, regex]) => {
+          expect(loadedMessagesEn).toHaveProperty([id]);
+          expect(loadedMessagesEn[id]).toMatch(regex);
+        });
+
+        // Confirm that the Spanish gvl_translations are loaded
+        const expectedMessagesEs: Record<string, RegExp> = {
+          // Example purposes
+          "exp.tcf.purposes.1.name": /^Almacenar la información/,
+          "exp.tcf.purposes.1.description": /^Las cookies, los identificadores/,
+          "exp.tcf.purposes.1.illustrations.0": /^La mayoría de las finalid/,
+          "exp.tcf.purposes.11.name": /^Uso de datos limitados con el objetivo/,
+          "exp.tcf.purposes.11.description": /^El contenido que se presenta/,
+          "exp.tcf.purposes.11.illustrations.1": /^Una aplicación móvil/,
+          // Example special purpose
+          "exp.tcf.specialPurposes.2.name": /^Ofrecer y presentar publicidad/,
+          "exp.tcf.specialPurposes.2.description": /^Cierta información/,
+          "exp.tcf.specialPurposes.2.illustrations.0": /^Hacer clic en el/,
+          // Example feature
+          "exp.tcf.features.3.name": /^Identificación de dispositivos/,
+          "exp.tcf.features.3.description": /^Tu dispositivo podría/,
+          // Example special feature
+          "exp.tcf.specialFeatures.1.name": /^Utilizar datos de localización/,
+          "exp.tcf.specialFeatures.1.description": /^Al contar con tu/,
+          // Example stack
+          "exp.tcf.stacks.40.name": /^Publicidad personalizada.*de servicios$/,
+          "exp.tcf.stacks.40.description": /^La publicidad puede personaliza/,
+          // Example data category
+          "exp.tcf.dataCategories.9.name": /^Datos de localización geográfica/,
+          "exp.tcf.dataCategories.9.description": /^Tu ubicación precisa/,
+        };
+        Object.entries(expectedMessagesEs).forEach(([id, regex]) => {
+          expect(loadedMessagesEs[id]).toMatch(regex);
+        });
+
+        // Quick helper function to count the number of unique records
+        // (purposes, features, etc.) in the translated messages
+        const getRecordCounts = (messages: Messages) => {
+          const regexes = {
+            purposes: /exp\.tcf\.purposes\.\d+\.name/,
+            specialPurposes: /exp\.tcf\.specialPurposes\.\d+\.name/,
+            features: /exp\.tcf\.features\.\d+\.name/,
+            specialFeatures: /exp\.tcf\.specialFeatures\.\d+\.name/,
+            stacks: /exp\.tcf\.stacks\.\d+\.name/,
+            dataCategories: /exp\.tcf\.dataCategories\.\d+\.name/,
+          };
+          const recordCounts: Record<string, number> = {};
+          const ids = Object.keys(messages);
+          Object.entries(regexes).forEach(([type, regex]) => {
+            const count = ids.filter((id) => id.match(regex)).length;
+            recordCounts[type] = count;
+          });
+          return recordCounts;
+        };
+
+        // Confirm the translated record counts
+        const expectedCounts = {
+          purposes: 11,
+          specialPurposes: 2,
+          features: 3,
+          specialFeatures: 2,
+          stacks: 45,
+          dataCategories: 11,
+        };
+        expect(getRecordCounts(loadedMessagesEn)).toMatchObject(expectedCounts);
+        expect(getRecordCounts(loadedMessagesEs)).toMatchObject(expectedCounts);
       });
     });
   });

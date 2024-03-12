@@ -1,0 +1,19 @@
+{
+  "static.gpc": "Maailmanlaajunen tietosuojavalvonta",
+  "static.gpc.description": "Maailmanlaajuinen tietosuojavalvontanne on vahvistettu. Teidät on automaattisesti poistettu tietojen käyttötapauksista, jotka noudattavat maailmanlaajuista tietosuojavalvontaa.",
+  "static.gpc.status.applied": "Käytössä",
+  "static.gpc.status.overridden": "Ohitettu",
+  "static.gpc.title": "Maailmanlaajuinen tietosuojavalvonta havaittu",
+  "static.tcf.consent": "Suostumus",
+  "static.tcf.features": "Ominaisuudet",
+  "static.tcf.features.description": "Alla olevassa luettelossa esitetään ominaisuudet, joita varten tietojanne käsitellään. Voitte käyttää erityisiä ominaisuuksia koskevia oikeuksianne alla olevilla valitsimilla.",
+  "static.tcf.legint": "Oikeutetut edut",
+  "static.tcf.privacy_policy": "Tietosuojakäytäntö",
+  "static.tcf.purposes": "Tarkoitukset",
+  "static.tcf.purposes.description": "Alla olevassa luettelossa esitetään tarkoitukset ja erityiset ominaisuudet, joita varten tietojanne käsitellään. Voitte käyttää oikeuksianne tiettyihin suostumuksen tai oikeutetun edun perusteella käytettyihin tarkoituksiin alla olevilla valitsimilla.",
+  "static.tcf.special_features": "Erityiset ominaisuudet",
+  "static.tcf.special_purposes": "Erityiset tarkoitukset",
+  "static.tcf.vendors": "Toimittajat",
+  "static.tcf.vendors.description": "Alla olevassa luettelossa esitetään luettelo tietojanne käsittelevistä toimittajista ja niiden ilmoittamien käsittelyn tarkoituksesta tai ominaisuuksista. Voitte käyttää oikeuksianne kunkin toimittajan kohdalla niiden esittämien oikeusperusteiden perusteilla.",
+  "static.tcf.vendors.iab": "IAB TCF toimittajat"
+}

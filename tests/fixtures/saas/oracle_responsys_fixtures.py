@@ -1,9 +1,9 @@
-from requests import post
 from typing import Any, Dict, Generator
 
 import pydash
-import requests
 import pytest
+import requests
+from requests import post
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,

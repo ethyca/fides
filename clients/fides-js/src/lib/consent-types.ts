@@ -1,6 +1,7 @@
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
+  GVLTranslations,
   TCFFeatureRecord,
   TCFFeatureSave,
   TCFPurposeConsentRecord,
@@ -368,7 +369,7 @@ export type PrivacyExperience = {
    */
   experience_config?: ExperienceConfig; // NOTE: uses our client-side ExperienceConfig type
   gvl?: GVLJson; // NOTE: uses our client-side GVLJson type
-  gvl_translations?: any;
+  gvl_translations?: GVLTranslations;
   meta?: ExperienceMeta;
 };
 

@@ -1,0 +1,19 @@
+{
+  "static.gpc": "Kontroll Globali tal-Privatezza",
+  "static.gpc.description": "Il-preferenza globali tiegħek għall-kontroll tal-privatezza ġiet onorata. Inti awtomatikament għażilt li ma tibqax tuża d-dejta f'każijiet li jirrispettaw il-kontroll globali tal-privatezza.",
+  "static.gpc.status.applied": "Applikat",
+  "static.gpc.status.overridden": "Maqbuża",
+  "static.gpc.title": "Instab il-Kontroll Globali tal-Privatezza",
+  "static.tcf.consent": "Kunsens",
+  "static.tcf.features": "Karatteristiċi",
+  "static.tcf.features.description": "Hawn taħt se ssib lista tal-karatteristiċi li d-dejta tiegħek qed tiġi pproċessata għalihom. Tista' teżerċita d-drittijiet tiegħek għal karatteristiċi speċjali billi tuża l-bidliet t'hawn taħt.",
+  "static.tcf.legint": "Interess Leġittimu",
+  "static.tcf.privacy_policy": "Politika tal-Privatezza",
+  "static.tcf.purposes": "Għanijiet",
+  "static.tcf.purposes.description": "Hawn taħt se ssib lista tal-għanijiet u l-għanijiet speċjali li għalihom qed tiġi pproċessata d-dejta tiegħek. Tista' teżerċita d-drittijiet tiegħek għal skopijiet speċifiċi, ibbażati fuq il-kunsens jew l-interess leġittimu, billi tuża l-bidliet t'hawn taħt.",
+  "static.tcf.special_features": "Karatteristiċi speċjali",
+  "static.tcf.special_purposes": "Għanijiet Speċjali",
+  "static.tcf.vendors": "Bejjiegħa",
+  "static.tcf.vendors.description": "Hawn taħt, issib lista ta' bejjiegħa li jipproċessaw id-dejta tiegħek u l-għanijiet jew il-karatteristiċi tal-ipproċessar li jiddikjaraw. Tista' teżerċita d-drittijiet tiegħek għal kull bejjiegħ abbażi tal-bażi legali li jaffermaw.",
+  "static.tcf.vendors.iab": "Bejjiegħa tat-TCF IAB"
+}

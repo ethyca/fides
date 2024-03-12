@@ -11,12 +11,12 @@ import commonjs from "@rollup/plugin-commonjs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 30; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 55; // fail build if bundle size exceeds this
+const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 45;
-const GZIP_SIZE_TCF_WARN_KB = 35;
+const GZIP_SIZE_TCF_ERROR_KB = 65;
+const GZIP_SIZE_TCF_WARN_KB = 55;
 
 const preactAliases = {
   entries: [

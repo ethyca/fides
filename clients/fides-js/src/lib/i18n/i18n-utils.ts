@@ -9,17 +9,8 @@ import {
 import { debugLog } from "../consent-utils";
 import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
 import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
-
-/**
- * Statically load all the pre-localized dictionaries from the ./locales directory.
- *
- * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
- * 1) Add the static import of the new ./locales/{locale}/messages.json file
- * 2) Add the locale to the loadMessagesFromFiles() function below
- */
-import messagesEn from "./locales/en/messages.json";
-import messagesEs from "./locales/es/messages.json";
-import messagesFr from "./locales/fr/messages.json";
+import { STATIC_MESSAGES } from "./locales";
+import { GVLTranslations } from "../tcf/types";
 
 /**
  * Helper function to extract all the translated messages from an
@@ -88,15 +79,73 @@ function extractMessagesFromExperienceConfig(
 }
 
 /**
+ * Helper function to extract all the translated messages from the "gvl_translations"
+ * API response. Returns an object that maps locales -> messages, e.g.
+ * {
+ *   "en": {
+ *     "exp.tcf.purposes.1.name": "Store and/or access information on a device",
+ *     "exp.tcf.purposes.1.description": "description": "Cookies, device or similar...",
+ *     "exp.tcf.purposes.1.illustrations.0": "Most purposes explained in this...",
+ *   },
+ *   "es": {
+ *     ...
+ *   }
+ * }
+ *
+ * This allows convenient access to any translated message from all points in
+ * the TCF code by using the well-worn GVL IDs as locators. However, note that
+ * the "illustrations" array can be a bit awkward to use as a flattened list of
+ * messages - we need to make sure we carefully look up illustrations using
+ * their zero-based index (e.g. i18n.t("exp.tcf.purposes.1.illustrations.0")
+ */
+function extractMessagesFromGVLTranslations(
+  gvl_translations: GVLTranslations,
+  locales: Locale[]
+): Record<Locale, Messages> {
+  // Extract translations, but only those that match the given "locales" list;
+  // this avoids loading translations that will be unused when the experience
+  // itself is not available in most languages
+  const extracted: Record<Locale, Messages> = {};
+  locales.forEach((locale) => {
+    const gvlTranslation = gvl_translations[locale] as any;
+    const messages: Messages = {};
+
+    const recordTypes = [
+      "purposes",
+      "specialPurposes",
+      "features",
+      "specialFeatures",
+      "stacks",
+      "dataCategories",
+    ];
+    recordTypes.forEach((type) => {
+      Object.keys(gvlTranslation[type]).forEach((id) => {
+        const record = gvlTranslation[type][id];
+        const prefix = `exp.tcf.${type}.${id}`;
+        messages[`${prefix}.name`] = record.name;
+        messages[`${prefix}.description`] = record.description;
+        if (record.illustrations && record.illustrations.length > 0) {
+          record.illustrations.forEach((illustration: string, i: number) => {
+            messages[`${prefix}.illustrations.${i}`] = illustration;
+          });
+        }
+      });
+    });
+
+    // Combine these extracted messages with all the other locales
+    extracted[locale] = { ...messages, ...extracted[locale] };
+  });
+  return extracted;
+}
+
+/**
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
-  // NOTE: This doesn't automatically infer the list of locale files from
-  // source, so you'll need to manually add any new locales here!
-  i18n.load("en", messagesEn);
-  i18n.load("es", messagesEs);
-  i18n.load("fr", messagesFr);
-  return ["en", "es", "fr"];
+  Object.keys(STATIC_MESSAGES).forEach((locale) => {
+    i18n.load(locale, STATIC_MESSAGES[locale]);
+  });
+  return Object.keys(STATIC_MESSAGES);
 }
 
 /**
@@ -129,15 +178,30 @@ export function loadMessagesFromExperience(
       };
     });
   }
+  const extractedLocales: Locale[] = Object.keys(allMessages);
+
+  // Extract messages from gvl_translations
+  if (experience?.gvl_translations) {
+    const extracted: Record<Locale, Messages> =
+      extractMessagesFromGVLTranslations(
+        experience.gvl_translations,
+        extractedLocales
+      );
+    Object.keys(extracted).forEach((locale) => {
+      allMessages[locale] = {
+        ...extracted[locale],
+        ...allMessages[locale],
+      };
+    });
+  }
 
   // Load all the extracted messages into the i18n module
-  const updatedLocales: Locale[] = Object.keys(allMessages);
-  updatedLocales.forEach((locale) => {
+  extractedLocales.forEach((locale) => {
     i18n.load(locale, allMessages[locale]);
   });
 
   // Return all the locales we extracted & updated
-  return updatedLocales;
+  return extractedLocales;
 }
 
 /**
