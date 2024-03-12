@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.31.1...main)
 
+### Added
+- Erasure support for Simon Data [#4552](https://github.com/ethyca/fides/pull/4552)
+
 ### Changed
 - Removed location and regulation beta flag [#4660](https://github.com/ethyca/fides/pull/4660)
 - Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
