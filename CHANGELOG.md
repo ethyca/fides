@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Ability to link Properties to Privacy Experiences [#4658](https://github.com/ethyca/fides/pull/4658)
+- Added property_id query param to fides.js to filter for specific experiences when prefetch is enabled [#4676](https://github.com/ethyca/fides/pull/4676)
 
 ### Changed
 - Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
