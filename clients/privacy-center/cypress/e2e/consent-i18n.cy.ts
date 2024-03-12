@@ -163,7 +163,7 @@ const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
       },
     ],
     purposes: "Purposes",
-    stacked_purpose_example: "Purpose 2: Use limited data to select",
+    stacked_purpose_example: "Use limited data to select",
   },
 };
 
@@ -258,13 +258,12 @@ const SPANISH_NOTICES: TestNoticeTranslations[] = [
 /**
  * Spanish translations for TCF banner & modal
  */
-// TODO (PROD-1683): update i18n files
 const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
   ...SPANISH_BANNER,
   ...{
     vendors_count: "Proveedores",
-    vendors_consent_count: "Proveedores using consent TODO",
-    vendors_legint_count: "Proveedores using legitimate interest TODO",
+    vendors_consent_count: "Proveedores que utilizan el consentimiento",
+    vendors_legint_count: "Proveedores que utilizan el interés legítimo",
     tcf_stacks: [
       {
         title:
@@ -283,7 +282,7 @@ const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
     ],
     purposes: "Propósitos",
     stacked_purpose_example:
-      "Propósito 2: Uso de datos limitados para seleccionar anuncios básicos",
+      "Uso de datos limitados para seleccionar anuncios básicos",
   },
 };
 
@@ -319,18 +318,17 @@ const SPANISH_TCF_MODAL: TestTcfModalTranslations = {
       "A continuación encontrará una lista de los proveedores",
     vendors_iab: "Proveedores IAB TCF",
     vendor_iab_example: "Captify",
-    vendor_iab_example_description:
-      "Captify stores cookies with a maximum duration of about TODO",
-    vendors_other: "Proveedores other TODO",
+    vendor_iab_example_description: "Captify almacena cookies con una duración",
+    vendors_other: "Otros proveedores",
     vendor_other_example: "Fides System",
     vendor_other_example_description:
-      "Fides System stores cookies with a maximum duration of about TODO",
+      "Fides System almacena cookies con una duración",
     vendor_privacy_policy: "Política de privacidad",
-    vendor_legint_disclosure: "Legitimate interest disclosure TODO",
-    retention: "Retention TODO",
+    vendor_legint_disclosure: "Revelación de interés legítimo",
+    retention: "Conservación",
     consent: "Consentimiento",
     legint: "Interés legítimo",
-    data_categories: "Data categories TODO",
+    data_categories: "Categorías de datos",
   },
 };
 

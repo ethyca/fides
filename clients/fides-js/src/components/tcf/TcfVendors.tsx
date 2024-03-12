@@ -44,7 +44,6 @@ const VendorDetails = ({
 
   const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
-  // TODO (PROD-1683): update i18n for retention_period_days based on translator feedback
   return (
     <table className="fides-vendor-details-table">
       <thead>
@@ -164,17 +163,15 @@ const StorageDisclosure = ({
     cookie_max_age_seconds: cookieMaxAgeSeconds,
     cookie_refresh: cookieRefresh,
   } = vendor;
-  // TODO (PROD-1683): update i18n for storage disclosure based on translator feedback
   /* eslint-disable prefer-template */
   let disclosure = "";
   if (usesCookies) {
     const days = cookieMaxAgeSeconds
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
-    const disclosureIntro = `${name} ${i18n.t(
+    disclosure += `${name} ${i18n.t(
       "static.tcf.cookie_disclosure.intro"
-    )} ${days} ${i18n.t("static.tcf.retention_period_days")}.`;
-    disclosure += disclosureIntro;
+    )} ${days}.`;
     if (cookieRefresh) {
       disclosure += " " + i18n.t("static.tcf.cookie_disclosure.refresh");
     }

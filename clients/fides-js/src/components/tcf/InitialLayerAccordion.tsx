@@ -68,10 +68,7 @@ const InitialLayerAccordion = ({
             </div>
             <ul className="fides-tcf-purpose-vendor-list fides-tcf-toggle-content">
               {purposes.map((purpose) => (
-                <li>
-                  {i18n.t("static.tcf.purpose")} {purpose.id}:{" "}
-                  {i18n.t(`exp.tcf.purposes.${purpose.id}.name`)}
-                </li>
+                <li>{i18n.t(`exp.tcf.purposes.${purpose.id}.name`)}</li>
               ))}
             </ul>
           </div>
