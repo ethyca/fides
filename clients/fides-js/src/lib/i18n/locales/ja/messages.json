@@ -18,7 +18,7 @@
   "static.tcf.purposes": "目的",
   "static.tcf.purposes.description": "以下に示すのは、皆様のデータを処理する目的と特別な機能のリストです。以下のトグルを切り替えることにより、同意または正当な利益に基づき、特別な目的に関する皆様の権利を行使できます。",
   "static.tcf.retention": "保持期間",
-  "static.tcf.retention_period_days": "X日",
+  "static.tcf.retention_period_days": "日",
   "static.tcf.special_features": "特別な機能",
   "static.tcf.special_purposes": "特別な目的",
   "static.tcf.vendors": "ベンダー",

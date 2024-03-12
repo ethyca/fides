@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Célok",
   "static.tcf.purposes.description": "Az alábbiakban azoknak a céloknak és különleges funkcióknak a listáját láthatja, amelyekhez adatait kezeljük. A csúszkák segítségével gyakorolhatja jogait az egyes, hozzájáruláson vagy jogos érdeken alapuló különleges célokra vonatkozóan.",
   "static.tcf.retention": "Megőrzés",
-  "static.tcf.retention_period_days": "X nap",
+  "static.tcf.retention_period_days": "nap",
   "static.tcf.special_features": "Különleges funkciók",
   "static.tcf.special_purposes": "Különleges célok",
   "static.tcf.vendors": "Értékesítők",

@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Eesmärgid",
   "static.tcf.purposes.description": "Allpool on esitatud loetelu teie andmete töötlemise eesmärkidest ja erifunktsioonidest. Alltoodud lüliteid kasutades võite kasutada oma õigusi konkreetsetel eesmärkidel, mis põhinevad nõusolekul või õigustatud huvil.",
   "static.tcf.retention": "Säilitamine",
-  "static.tcf.retention_period_days": "X päev(a)",
+  "static.tcf.retention_period_days": "päev(a)",
   "static.tcf.special_features": "Erifunktsioonid",
   "static.tcf.special_purposes": "Erieesmärgid",
   "static.tcf.vendors": "Kaupmehed",

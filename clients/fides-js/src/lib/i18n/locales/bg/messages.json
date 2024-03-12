@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Цели",
   "static.tcf.purposes.description": "По-долу ще намерите списък на целите и специалните функции, за които се обработват Вашите данни. Можете да упражните правата си за конкретни цели, основани на съгласие или законен интерес, като използвате превключвателите по-долу.",
   "static.tcf.retention": "Съхранение",
-  "static.tcf.retention_period_days": "X ден(дни)",
+  "static.tcf.retention_period_days": "ден(дни)",
   "static.tcf.special_features": "Специални функции",
   "static.tcf.special_purposes": "Специални цели",
   "static.tcf.vendors": "Доставчици",

@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Hensikter",
   "static.tcf.purposes.description": "Nedenfor finner du en liste over hensiktene og spesialfunksjonene dataene dine blir håndtert for. Du kan utøve rettighetene dine for bestemte hensikter, basert på samtykke eller berettiget interesse, ved å bruke av/på-knappene nedenfor.",
   "static.tcf.retention": "Oppbevaring",
-  "static.tcf.retention_period_days": "X dag(er)",
+  "static.tcf.retention_period_days": "dag(er)",
   "static.tcf.special_features": "Spesialfunksjoner",
   "static.tcf.special_purposes": "Spesialhensikter",
   "static.tcf.vendors": "Leverandører",

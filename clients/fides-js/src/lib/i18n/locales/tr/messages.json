@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Amaçlar",
   "static.tcf.purposes.description": "Verilerinizin işlenme amaçları ve işlendiği özel niteliklerin bir listesini aşağıda bulabilirsiniz. Aşağıdaki düğmeleri kullanarak haklarınızı belirli amaçlar doğrultusunda, izne veya meşru menfaate dayalı olarak kullanabilirsiniz.",
   "static.tcf.retention": "Tutma",
-  "static.tcf.retention_period_days": "X gün",
+  "static.tcf.retention_period_days": "gün",
   "static.tcf.special_features": "Özel nitelikler",
   "static.tcf.special_purposes": "Özel amaçlar",
   "static.tcf.vendors": "Satıcılar",

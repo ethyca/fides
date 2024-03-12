@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Nameni",
   "static.tcf.purposes.description": "V nadaljevanju je prikazan seznam namenov in posebnih funkcij, za katere se obdelujejo vaši podatki. Svoje pravice za posebne namene, ki temeljijo na privolitvi ali zakonitem interesu, lahko uveljavljate s spodnjimi stikali.",
   "static.tcf.retention": "Hramba",
-  "static.tcf.retention_period_days": "X dni",
+  "static.tcf.retention_period_days": "dni",
   "static.tcf.special_features": "Posebne funkcije",
   "static.tcf.special_purposes": "Posebni nameni",
   "static.tcf.vendors": "Partnerji",

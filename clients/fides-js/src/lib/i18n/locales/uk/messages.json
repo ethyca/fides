@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Цілі",
   "static.tcf.purposes.description": "Нижче вказаний перелік цілей і спеціальних функцій, для яких обробляються ваші дані. Ви можете скористатися своїми правами для конкретних цілей на основі згоди або законного інтересу, використовуючи перемикачі нижче.",
   "static.tcf.retention": "Зберігання",
-  "static.tcf.retention_period_days": "X день(днів)",
+  "static.tcf.retention_period_days": "день(днів)",
   "static.tcf.special_features": "Спеціальні функції",
   "static.tcf.special_purposes": "Спеціальні цілі",
   "static.tcf.vendors": "Постачальники",

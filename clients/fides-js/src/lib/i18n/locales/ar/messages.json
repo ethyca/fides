@@ -18,7 +18,7 @@
   "static.tcf.purposes": "الأغراض",
   "static.tcf.purposes.description": "ستجد أدناه قائمة بالأغراض والميزات الخاصة التي تُعالج بياناتك من أجلها. يجوز لك ممارسة حقوقك لأغراض محددة بناءً على الموافقة أو المصلحة المشروعة باستخدام مفاتيح التبديل أدناه.",
   "static.tcf.retention": "الحفظ",
-  "static.tcf.retention_period_days": "يوم (أيام) س",
+  "static.tcf.retention_period_days": "يوم (أيام)",
   "static.tcf.special_features": "الميزات الخاصة",
   "static.tcf.special_purposes": "أغراض خاصة",
   "static.tcf.vendors": "الموردون",

@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Tikslai",
   "static.tcf.purposes.description": "Toliau rasite tikslų ir specialių funkcijų, dėl kurių tvarkomi jūsų duomenys, sąrašą. Naudodamiesi toliau nurodytais perjungikliais, galite pasinaudoti savo teisėmis konkrečiais tikslais, remdamiesi sutikimu arba teisėtu interesu.",
   "static.tcf.retention": "Saugojimas",
-  "static.tcf.retention_period_days": "X diena (-os)",
+  "static.tcf.retention_period_days": "diena (-os)",
   "static.tcf.special_features": "Specialiosios funkcijos",
   "static.tcf.special_purposes": "Specialieji tikslai",
   "static.tcf.vendors": "Pardavėjai",

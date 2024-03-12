@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Zwecke",
   "static.tcf.purposes.description": "Nachstehend finden Sie eine Liste der Zwecke und besonderen Funktionen, für die Ihre Daten verarbeitet werden. Sie können Ihre Rechte für bestimmte Zwecke ausüben, die auf Ihrer Einwilligung oder einem berechtigten Interesse beruhen, indem Sie die nachstehenden Schalter aktivieren oder deaktivieren.",
   "static.tcf.retention": "Aufbewahrungsdauer",
-  "static.tcf.retention_period_days": "X Tag(e)",
+  "static.tcf.retention_period_days": "Tag(e)",
   "static.tcf.special_features": "Besondere Funktionen",
   "static.tcf.special_purposes": "Besondere Zwecke",
   "static.tcf.vendors": "Anbieter",

@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Tarkoitukset",
   "static.tcf.purposes.description": "Alla olevassa luettelossa esitetään tarkoitukset ja erityiset ominaisuudet, joita varten tietojanne käsitellään. Voitte käyttää oikeuksianne tiettyihin suostumuksen tai oikeutetun edun perusteella käytettyihin tarkoituksiin alla olevilla valitsimilla.",
   "static.tcf.retention": "Säilyttäminen",
-  "static.tcf.retention_period_days": "X päivä(ä)",
+  "static.tcf.retention_period_days": "päivä(ä)",
   "static.tcf.special_features": "Erityiset ominaisuudet",
   "static.tcf.special_purposes": "Erityiset tarkoitukset",
   "static.tcf.vendors": "Toimittajat",

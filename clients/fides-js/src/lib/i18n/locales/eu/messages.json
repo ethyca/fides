@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Xedeak",
   "static.tcf.purposes.description": "Azpian, zure datuak prozesatzeko erabiltzen diren xede eta ezaugarri berezien zerrenda aurkituko duzu. Berariazko xedeei aurka egiteko eskubideak erabil ditzakezu, baimenean edo interes legitimoan oinarrituta, ondorengo botoiekin.",
   "static.tcf.retention": "Atxikipena",
-  "static.tcf.retention_period_days": "X egun",
+  "static.tcf.retention_period_days": "egun",
   "static.tcf.special_features": "Ezaugarri bereziak",
   "static.tcf.special_purposes": "Xede bereziak",
   "static.tcf.vendors": "Hornitzaileak",

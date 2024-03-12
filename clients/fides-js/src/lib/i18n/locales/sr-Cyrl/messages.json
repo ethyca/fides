@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Намене",
   "static.tcf.purposes.description": "У наставку ћете пронаћи листу намена и посебних карактеристика за које се ваши подаци обрађују. Своја права можете остварити у одређене сврхе, на основу сагласности или легитимног интереса, користећи дугмиће у наставку.",
   "static.tcf.retention": "Задржавање",
-  "static.tcf.retention_period_days": "X дан(а)",
+  "static.tcf.retention_period_days": "дан(а)",
   "static.tcf.special_features": "Посебне карактеристике",
   "static.tcf.special_purposes": "Посебне намене",
   "static.tcf.vendors": "Добављачи",

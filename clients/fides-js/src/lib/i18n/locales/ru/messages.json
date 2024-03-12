@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Цели",
   "static.tcf.purposes.description": "Ниже приведен список целей и специальных возможностей, для которых обрабатываются ваши данные. Чтобы воспользоваться своими правами для конкретных целей в зависимости от согласия или законного интереса, установите переключатели ниже.",
   "static.tcf.retention": "Хранение",
-  "static.tcf.retention_period_days": "X дн.",
+  "static.tcf.retention_period_days": "дн.",
   "static.tcf.special_features": "Специальные функции",
   "static.tcf.special_purposes": "Специальные цели",
   "static.tcf.vendors": "Поставщики услуг",

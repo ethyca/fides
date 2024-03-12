@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Účely",
   "static.tcf.purposes.description": "Nižšie nájdete zoznam účelov a špeciálnych funkcií, na ktoré sa vaše údaje spracúvajú. Svoje práva pre konkrétne účely môžete uplatniť na základe súhlasu alebo oprávneného záujmu pomocou nižšie uvedených prepínačov.",
   "static.tcf.retention": "Uchovávanie",
-  "static.tcf.retention_period_days": "X deň/i/í",
+  "static.tcf.retention_period_days": "deň/i/í",
   "static.tcf.special_features": "Špeciálne funkcie",
   "static.tcf.special_purposes": "Špeciálne účely",
   "static.tcf.vendors": "Dodávatelia",

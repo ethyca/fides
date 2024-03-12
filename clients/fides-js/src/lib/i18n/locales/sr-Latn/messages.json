@@ -18,7 +18,7 @@
   "static.tcf.purposes": "Svrhe",
   "static.tcf.purposes.description": "U nastavku sledi spisak svrha i posebnih namena u koje se vaši podaci obrađuju. Svoja prava možete ostvariti u određene svrhe, na osnovu saglasnosti ili legitimnog interesa, koristeći prekidače ispod.",
   "static.tcf.retention": "Zadržavanje",
-  "static.tcf.retention_period_days": "X dan(a)",
+  "static.tcf.retention_period_days": "dan(a)",
   "static.tcf.special_features": "Posebne namene",
   "static.tcf.special_purposes": "Posebne namene",
   "static.tcf.vendors": "Dobavljači",
