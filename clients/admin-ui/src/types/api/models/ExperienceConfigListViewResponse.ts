@@ -11,7 +11,7 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
  */
 export type ExperienceConfigListViewResponse = {
   id: string;
-  name?: string;
+  name: string;
   regions: Array<PrivacyNoticeRegion>;
   properties: Array<MinimalProperty>;
   component: ComponentType;

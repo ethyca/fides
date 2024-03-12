@@ -13,10 +13,11 @@ import type { Property } from "./Property";
  * Privacy notices are specified as a list of ids instead of keys like the template
  */
 export type ExperienceConfigCreate = {
-  name?: string;
+  name: string;
   disabled?: boolean;
   dismissable?: boolean;
   allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
   regions?: Array<PrivacyNoticeRegion>;
   component: ComponentType;
   privacy_notice_ids?: Array<string>;

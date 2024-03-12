@@ -26,7 +26,8 @@ export const fetchExperience = async (
   userLocationString: string,
   fidesApiUrl: string,
   debug: boolean,
-  apiOptions?: FidesApiOptions | null
+  apiOptions?: FidesApiOptions | null,
+  propertyId?: string | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
@@ -65,6 +66,7 @@ export const fetchExperience = async (
     systems_applicable: "true",
     include_gvl: "true",
     include_meta: "true",
+    ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
   const response = await fetch(

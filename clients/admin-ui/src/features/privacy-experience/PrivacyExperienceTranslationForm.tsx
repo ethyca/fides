@@ -42,6 +42,7 @@ const PrivacyExperienceTranslationForm = ({
     const { name, ...rest } = translation;
     return rest as ExperienceTranslation;
   }, [translation]);
+  const isEditing = !!initialTranslation.title;
 
   const formConfig = getTranslationFormFields(values.component);
 
@@ -69,7 +70,7 @@ const PrivacyExperienceTranslationForm = ({
   const discardChanges = () => {
     const newTranslations = values.translations!.slice();
     // when editing, revert all changes to the translation being edited
-    if (initialTranslation.title) {
+    if (isEditing) {
       newTranslations[translationIndex] = {
         ...initialTranslation,
         title: initialTranslation.title!,
@@ -128,7 +129,7 @@ const PrivacyExperienceTranslationForm = ({
         data-testid="save-btn"
         onClick={handleSaveTranslation}
       >
-        Add translation
+        {isEditing ? "Save" : "Add translation"}
       </Button>
     </ButtonGroup>
   );
@@ -216,12 +217,13 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
-      {formConfig.privacy_policy_link_label?.included ? (
+      {formConfig.privacy_preferences_link_label?.included ? (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_preferences_link_label`}
           id={`translations.${translationIndex}.privacy_preferences_link_label`}
           label={`"Manage privacy preferences" button label`}
           variant="stacked"
+          isRequired={formConfig.privacy_preferences_link_label?.required}
         />
       ) : null}
       {formConfig.save_button_label?.included ? (

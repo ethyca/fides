@@ -20,6 +20,7 @@ export type ExperienceConfigUpdate = {
   disabled?: boolean;
   dismissable?: boolean;
   allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
   regions: Array<PrivacyNoticeRegion>;
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;

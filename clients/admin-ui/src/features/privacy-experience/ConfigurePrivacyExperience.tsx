@@ -29,31 +29,46 @@ import {
   selectPageSize as selectLanguagePageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
+import Preview from "~/features/privacy-experience/Preview";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
+import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import {
+  ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+const translationSchema = (requirePreferencesLink: boolean) =>
+  Yup.object().shape({
+    title: Yup.string().required().label("Title"),
+    description: Yup.string().required().label("Description"),
+    accept_button_label: Yup.string().required().label("Accept button label"),
+    reject_button_label: Yup.string().required().label("Reject button label"),
+    privacy_policy_url: Yup.string().url().nullable(),
+    is_default: Yup.boolean(),
+    privacy_preferences_link_label: requirePreferencesLink
+      ? Yup.string().required().label("Privacy preferences link label")
+      : Yup.string().label("Privacy preferences link label"),
+  });
+
 const validationSchema = Yup.object().shape({
+  name: Yup.string().required().label("Experience name"),
   component: Yup.string().required().label("Experience type"),
-  translations: Yup.array().of(
-    Yup.object().shape({
-      title: Yup.string().required().label("Title"),
-      description: Yup.string().required().label("Description"),
-      accept_button_label: Yup.string().required().label("Accept button label"),
-      reject_button_label: Yup.string().required().label("Reject button label"),
-      privacy_policy_url: Yup.string().url().nullable(),
-      is_default: Yup.boolean(),
-    })
-  ),
+  // translations: Yup.array().of(translationSchema),
+  translations: Yup.array().when("component", {
+    is: (value: ComponentType) =>
+      value === ComponentType.BANNER_AND_MODAL ||
+      value === ComponentType.TCF_OVERLAY,
+    then: (schema) => schema.of(translationSchema(true)),
+    otherwise: (schema) => schema.of(translationSchema(false)),
+  }),
 });
 
 const ConfigurePrivacyExperience = ({
@@ -66,12 +81,19 @@ const ConfigurePrivacyExperience = ({
 
   const toast = useToast();
 
+  const [isMobilePreview, setIsMobilePreview] = useState(false);
+
   const router = useRouter();
 
   const languagePage = useAppSelector(selectLanguagePage);
   const languagePageSize = useAppSelector(selectLanguagePageSize);
   useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
   const allLanguages = useAppSelector(selectAllLanguages);
+  const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
+
+  const initialValues = passedInExperience
+    ? transformConfigResponseToCreate(passedInExperience)
+    : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
     const valuesToSubmit = {
@@ -106,10 +128,6 @@ const ConfigurePrivacyExperience = ({
     }
   };
 
-  const initialValues = passedInExperience
-    ? transformConfigResponseToCreate(passedInExperience)
-    : defaultInitialValues;
-
   const [translationToEdit, setTranslationToEdit] = useState<
     TranslationWithLanguageName | undefined
   >(undefined);
@@ -120,8 +138,6 @@ const ConfigurePrivacyExperience = ({
       name: findLanguageDisplayName(translation, allLanguages),
     });
   };
-
-  // const [isEditingStyle, setIsEditingStyle] = useState<boolean>(false);
 
   return (
     <Formik
@@ -144,6 +160,7 @@ const ConfigurePrivacyExperience = ({
             />
           ) : (
             <PrivacyExperienceForm
+              allPrivacyNotices={allPrivacyNotices}
               onSelectTranslation={handleNewTranslationSelected}
             />
           )}
@@ -163,13 +180,23 @@ const ConfigurePrivacyExperience = ({
                 <IconButton
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
+                  onClick={() => setIsMobilePreview(true)}
+                  bgColor={isMobilePreview ? "gray.200" : undefined}
                 />
                 <IconButton
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
+                  onClick={() => setIsMobilePreview(false)}
+                  bgColor={!isMobilePreview ? "gray.200" : undefined}
                 />
               </ButtonGroup>
             </Flex>
+            <Preview
+              allPrivacyNotices={allPrivacyNotices}
+              initialValues={initialValues}
+              translation={translationToEdit}
+              isMobilePreview={isMobilePreview}
+            />
           </Flex>
         </Flex>
       </Form>

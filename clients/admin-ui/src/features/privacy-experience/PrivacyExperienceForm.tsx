@@ -29,7 +29,6 @@ import {
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
-  selectAllPrivacyNotices,
   selectPage as selectNoticePage,
   selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
@@ -44,6 +43,7 @@ import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceTranslation,
+  LimitedPrivacyNoticeResponseSchema,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -80,8 +80,10 @@ export const PrivacyExperienceConfigColumnLayout = ({
 );
 
 export const PrivacyExperienceForm = ({
+  allPrivacyNotices,
   onSelectTranslation,
 }: {
+  allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[];
   onSelectTranslation: (t: ExperienceTranslation) => void;
 }) => {
   const router = useRouter();
@@ -92,7 +94,6 @@ export const PrivacyExperienceForm = ({
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
-  const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
 
   const getPrivacyNoticeName = (id: string) => {
     const notice = allPrivacyNotices.find((n) => n.id === id);
@@ -161,32 +162,38 @@ export const PrivacyExperienceForm = ({
         name="name"
         id="name"
         label="Name (internal admin use only)"
-        variant="stacked"
-      />
-      <CustomSelect
-        name="component"
-        id="component"
-        options={componentTypeOptions}
-        label="Experience Type"
-        variant="stacked"
-        isDisabled={!!values.component}
         isRequired
+        variant="stacked"
       />
-      <Collapse
-        in={
-          values.component && values.component !== ComponentType.PRIVACY_CENTER
-        }
-        animateOpacity
-      >
-        <Box p="1px">
-          <CustomSwitch
-            name="dismissable"
-            id="dismissable"
-            label="Modal is dismissable"
+      {values.component !== ComponentType.TCF_OVERLAY ? (
+        <>
+          <CustomSelect
+            name="component"
+            id="component"
+            options={componentTypeOptions}
+            label="Experience Type"
             variant="stacked"
+            isDisabled={!!values.component}
+            isRequired
           />
-        </Box>
-      </Collapse>
+          <Collapse
+            in={
+              values.component &&
+              values.component !== ComponentType.PRIVACY_CENTER
+            }
+            animateOpacity
+          >
+            <Box p="1px">
+              <CustomSwitch
+                name="dismissable"
+                id="dismissable"
+                label="Modal is dismissable"
+                variant="stacked"
+              />
+            </Box>
+          </Collapse>
+        </>
+      ) : null}
       <ScrollableList
         label="Associated properties"
         addButtonLabel="Add property"
@@ -201,20 +208,24 @@ export const PrivacyExperienceForm = ({
         draggable
       />
       <Divider />
-      <Heading fontSize="md" fontWeight="semibold">
-        Privacy notices
-      </Heading>
-      <ScrollableList
-        addButtonLabel="Add privacy notice"
-        allItems={allPrivacyNotices.map((n) => n.id)}
-        values={values.privacy_notice_ids ?? []}
-        setValues={(newValues) =>
-          setFieldValue("privacy_notice_ids", newValues)
-        }
-        getItemLabel={getPrivacyNoticeName}
-        draggable
-      />
-      <Divider />
+      {values.component !== ComponentType.TCF_OVERLAY ? (
+        <>
+          <Heading fontSize="md" fontWeight="semibold">
+            Privacy notices
+          </Heading>
+          <ScrollableList
+            addButtonLabel="Add privacy notice"
+            allItems={allPrivacyNotices.map((n) => n.id)}
+            values={values.privacy_notice_ids ?? []}
+            setValues={(newValues) =>
+              setFieldValue("privacy_notice_ids", newValues)
+            }
+            getItemLabel={getPrivacyNoticeName}
+            draggable
+          />
+          <Divider />
+        </>
+      ) : null}
       <Text as="h2" fontWeight="600">
         Locations & Languages
       </Text>
@@ -250,12 +261,12 @@ export const PrivacyExperienceForm = ({
         selectOnAdd
         draggable
       />
-      {/* <CustomSwitch
+      <CustomSwitch
         name="auto_detect_language"
         id="auto_detect_language"
         label="Auto detect language"
         variant="stacked"
-      /> */}
+      />
     </PrivacyExperienceConfigColumnLayout>
   );
 };
