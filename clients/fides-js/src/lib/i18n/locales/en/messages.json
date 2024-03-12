@@ -6,7 +6,7 @@
   "static.gpc.title": "Global Privacy Control detected",
   "static.tcf.consent": "Consent",
   "static.tcf.cookie_disclosure.also_non_cookie": "This vendor also uses other methods like \"local storage\" to store and access information on your device.",
-  "static.tcf.cookie_disclosure.intro": "stores cookies with a maximum duration of about",
+  "static.tcf.cookie_disclosure.intro": "stores cookies with a maximum duration of about this many days:",
   "static.tcf.cookie_disclosure.non_cookie": "uses methods like \"local storage\" to store and access information on your device.",
   "static.tcf.cookie_disclosure.refresh": "These cookies may be refreshed.",
   "static.tcf.data_categories": "Data categories",

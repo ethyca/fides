@@ -171,10 +171,9 @@ const StorageDisclosure = ({
     const days = cookieMaxAgeSeconds
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
-    const disclosureIntro = `${name} ${i18n.t(
+    disclosure += `${name} ${i18n.t(
       "static.tcf.cookie_disclosure.intro"
-    )} ${days} ${i18n.t("static.tcf.retention_period_days")}.`;
-    disclosure += disclosureIntro;
+    )} ${days}.`;
     if (cookieRefresh) {
       disclosure += " " + i18n.t("static.tcf.cookie_disclosure.refresh");
     }
