@@ -184,6 +184,7 @@ const Preview = ({
           z-index: 5000 !important;
         }
         div#preview-container {
+          padding-top: 45px;
           margin: auto !important;
           pointer-events: none;
         }
@@ -201,7 +202,7 @@ const Preview = ({
           display: flex !important;
           ${
             values.component === ComponentType.BANNER_AND_MODAL
-              ? "padding-top: 3rem;"
+              ? "padding-top: 3rem; padding-bottom: 3rem;"
               : null
           }
           justify-content: center;
@@ -224,11 +225,21 @@ const Preview = ({
           left: initial !important;
           top: initial !important;
         }
+        div.fides-modal-footer {
+          width: unset;
+        }
       `}</style>
       {isMobilePreview ? (
         <style>{`
             div#preview-container {
               width: 70% !important;
+            }
+            div.fides-modal-button-group {
+              flex-direction: column !important;
+            }
+            div#fides-modal {
+              width: 70% !important;
+              margin: auto;
             }
             `}</style>
       ) : (
