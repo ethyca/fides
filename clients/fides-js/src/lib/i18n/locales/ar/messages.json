@@ -25,7 +25,7 @@
   "static.tcf.vendors.description": "ستجد أدناه قائمة بالموردين الذين يعالجون بياناتك وأغراض أو ميزات المعالجة التي يعلنونها. يجوز لك ممارسة حقوقك مع كل بائع بناءً على الأساس القانوني الذي يؤكده.",
   "static.tcf.vendors.iab": "بائعون IAB TCF",
   "static.tcf.vendors.other": "بائعون آخرون",
-  "static.tcf.vendors_count": "بائع (بائعون) س",
+  "static.tcf.vendors_count": "بائع (بائعون)",
   "static.tcf.vendors_using_consent": "البائعون الذين يستخدمون الموافقة",
   "static.tcf.vendors_using_legint": "البائعون الذين يستخدمون المصلحة المشروعة"
 }
