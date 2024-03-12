@@ -10,8 +10,8 @@ import csv
 import uuid
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
-import yaml
 from alembic import op
 from loguru import logger
 from sqlalchemy import text
@@ -418,6 +418,16 @@ def remove_existing_experience_data(bind):
     delete_experience_configs(bind)
 
 
+def is_canada_or_quebec_experience(
+    config_type: Optional[DefaultExperienceConfigTypes],
+) -> bool:
+    """Helper to determine whether the target experience config type is a canada or quebec experience"""
+    return config_type in {
+        DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
+        DefaultExperienceConfigTypes.QUEBEC_BANNER_MODAL,
+    }
+
+
 def determine_needed_experience_configs(bind):
     """
     Our data model changes necessitate the creation of new Experience Configs. Now that "where" a Notice is served
@@ -434,10 +444,9 @@ def determine_needed_experience_configs(bind):
         component_mappings = NOTICES_TO_EXPERIENCE_CONFIG.get(notice_key, [])
         if component_mappings:
             for component_mapping in component_mappings:
-                if component_mapping.get(ComponentType.Overlay) in {
-                    DefaultExperienceConfigTypes.CANADA_BANNER_MODAL,
-                    DefaultExperienceConfigTypes.QUEBEC_BANNER_MODAL,
-                }:
+                if is_canada_or_quebec_experience(
+                    component_mapping.get(ComponentType.Overlay)
+                ):
                     # If this is a Canadian/Quebec Banner and Modal, skip updating regions, and just use OOB
                     regions_to_add = set()
                 else:
@@ -465,9 +474,11 @@ def determine_needed_experience_configs(bind):
                         reconciled_experience_config_map[experience_config][
                             "privacy_notices"
                         ].add(existing_notice["id"])
-                        if not existing_notice["disabled"]:
-                            # Disabled by default, but if any notices are enabled, let's enable this Experience Config
-                            # as the safer default
+                        if not existing_notice[
+                            "disabled"
+                        ] and not is_canada_or_quebec_experience(experience_config):
+                            # Disabled by default, but if not a Canada/Quebec experience and any notices are enabled,
+                            # let's enable this Experience Config as the safer default
                             reconciled_experience_config_map[experience_config][
                                 "disabled"
                             ] = False
@@ -486,9 +497,11 @@ def determine_needed_experience_configs(bind):
                         reconciled_experience_config_map[experience_config][
                             "privacy_notices"
                         ].add(existing_notice["id"])
-                        if not existing_notice["disabled"]:
-                            # Disabled by default, but if any notices are enabled, let's enable this Experience Config
-                            # as the safer default
+                        if not existing_notice[
+                            "disabled"
+                        ] and not is_canada_or_quebec_experience(experience_config):
+                            # Disabled by default, but if not a Canada/Quebec experience and any notices are enabled,
+                            # let's enable this Experience Config as the safer default
                             reconciled_experience_config_map[experience_config][
                                 "disabled"
                             ] = False
