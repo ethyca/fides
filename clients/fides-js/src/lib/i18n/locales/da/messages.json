@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Særlige formål",
   "static.tcf.vendors": "Forhandlere",
   "static.tcf.vendors.description": "Nedenfor finder du en liste over forhandlere, der behandler dine data, og de behandlingsformål eller -funktioner, de angiver. Du kan udøve dine rettigheder for hver forhandler baseret på det retsgrundlag, de hævder.",
-  "static.tcf.vendors.iab": "IAB TCF forhandlere"
+  "static.tcf.vendors.iab": "IAB TCF forhandlere",
+  "static.tcf.vendors_using_consent": "Forhandlere, der anvender samtykke",
+  "static.tcf.vendors_using_legint": "Forhandlere, der anvender legitim interesse",
+  "static.tcf.vendors_count": "X forhandler(e)",
+  "static.tcf.legint_disclosure": "Offentliggørelse af legitim interesse",
+  "static.tcf.data_categories": "Datakategorier",
+  "static.tcf.retention": "Opbevaring",
+  "static.tcf.retention_period_days": "X dag(e)",
+  "static.tcf.purpose": "Formål X",
+  "static.tcf.cookie_disclosure.intro": "${name} gemmer cookies med en maksimal varighed på ca. så mange dage:",
+  "static.tcf.cookie_disclosure.refresh": "Disse cookies kan blive opdateret.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Denne forhandler anvender også andre metoder som f.eks. \"lokalt lager\" til at gemme og tage sig adgang til oplysninger på din enhed.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} anvender metoder som f.eks. \"lokalt lager\" til at gemme og tage sig adgang til oplysninger på din enhed.",
+  "static.tcf.vendors.other": "Andre forhandlere"
 }

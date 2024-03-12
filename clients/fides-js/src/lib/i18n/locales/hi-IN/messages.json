@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "विशेष प्रयोजन",
   "static.tcf.vendors": "वेंडर्स",
   "static.tcf.vendors.description": "नीचे, आपको आपके डेटा को संसाधित करने वाले वेंडर्स की एक सूची और उनके द्वारा घोषित संसाधनों के प्रयोजनों या सुविधाओं की एक सूची मिलेगी। प्रत्येक वेंडर के लिए उनके द्वारा बताए गए कानूनी आधार के आधार पर अपने अधिकारों का प्रयोग किया जा सकता है।",
-  "static.tcf.vendors.iab": "IAB TCF वेंडर्स"
+  "static.tcf.vendors.iab": "IAB TCF वेंडर्स",
+  "static.tcf.vendors_using_consent": "सहमति उपयोग करने वाले वेंडर",
+  "static.tcf.vendors_using_legint": "वैध रुचि उपयोग करने वाले वेंडर",
+  "static.tcf.vendors_count": "X वेंडर",
+  "static.tcf.legint_disclosure": "वैध रुचि खुलासा",
+  "static.tcf.data_categories": "डेटा श्रेणियां",
+  "static.tcf.retention": "रिटेंशन",
+  "static.tcf.retention_period_days": "X दिन",
+  "static.tcf.purpose": "प्रयोजन X",
+  "static.tcf.cookie_disclosure.intro": "${name} लगभग इतने दिनों की अधिकतम अवधि वाली कुकीज़ संग्रहीत करता है:",
+  "static.tcf.cookie_disclosure.refresh": "इन कुकीज़ को रीफ्रेश किया जा सकता है।",
+  "static.tcf.cookie_disclosure.also_non_cookie": "यह वेंडर आपकी डिवाइस पर जानकारी संग्रहीत करने और उस तक पहुंचने के लिए \"स्थानीय भंडारण\" जैसी अन्य विधियों का भी उपयोग करता है।",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} आपकी डिवाइस पर जानकारी संग्रहीत करने और उस तक पहुंचने के लिए \"स्थानीय भंडारण\" जैसी विधियों का उपयोग करता है।",
+  "static.tcf.vendors.other": "अन्य वेंडर"
 }

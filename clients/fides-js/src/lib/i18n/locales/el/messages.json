@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Ειδικοί σκοποί",
   "static.tcf.vendors": "Προμηθευτές",
   "static.tcf.vendors.description": "Παρακάτω, θα βρείτε μια λίστα με τους προμηθευτές που επεξεργάζονται τα δεδομένα σας και τους σκοπούς ή τα χαρακτηριστικά της επεξεργασίας που δηλώνουν. Μπορείτε να ασκήσετε τα δικαιώματά σας για κάθε προμηθευτή βάσει της νομικής βάσης που αξιώνει.",
-  "static.tcf.vendors.iab": "Προμηθευτές IAB TCF"
+  "static.tcf.vendors.iab": "Προμηθευτές IAB TCF",
+  "static.tcf.vendors_using_consent": "Προμηθευτές που χρησιμοποιούν συναίνεση",
+  "static.tcf.vendors_using_legint": "Προμηθευτές που χρησιμοποιούν έννομο συμφέρον",
+  "static.tcf.vendors_count": "X προμηθευτής(-ές)",
+  "static.tcf.legint_disclosure": "Αποκάλυψη έννομου συμφέροντος",
+  "static.tcf.data_categories": "Κατηγορίες δεδομένων",
+  "static.tcf.retention": "Διατήρηση",
+  "static.tcf.retention_period_days": "Χ ημέρα(-ες)",
+  "static.tcf.purpose": "Σκοπός X",
+  "static.tcf.cookie_disclosure.intro": "Το ${name} αποθηκεύει cookie με μέγιστη διάρκεια περίπου τόσες ημέρες:",
+  "static.tcf.cookie_disclosure.refresh": "Αυτά τα cookie ενδέχεται να ανανεωθούν.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Αυτός ο προμηθευτής χρησιμοποιεί επίσης άλλες μεθόδους, όπως «τοπική αποθήκευση», για την αποθήκευση και την πρόσβαση σε πληροφορίες στη συσκευή σας.",
+  "static.tcf.cookie_disclosure.non_cookie": "Το ${name} χρησιμοποιεί μεθόδους όπως η «τοπική αποθήκευση» για την αποθήκευση και την πρόσβαση σε πληροφορίες στη συσκευή σας.",
+  "static.tcf.vendors.other": "Λοιποί προμηθευτές"
 }

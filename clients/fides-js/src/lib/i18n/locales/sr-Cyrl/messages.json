@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Посебне намене",
   "static.tcf.vendors": "Добављачи",
   "static.tcf.vendors.description": "У наставку ћете пронаћи листу добављача који обрађују ваше податке и сврхе или карактеристике обраде које су декларирали. Можете остварити своја права за сваког добављача на основу правне основе коју они тврде.",
-  "static.tcf.vendors.iab": "IAB TCF Добављачи"
+  "static.tcf.vendors.iab": "IAB TCF Добављачи",
+  "static.tcf.vendors_using_consent": "Добављачи који користе сагласност",
+  "static.tcf.vendors_using_legint": "Добављачи који користе легитимни интерес",
+  "static.tcf.vendors_count": "X добављач(а)",
+  "static.tcf.legint_disclosure": "Објављивање легитимног интереса",
+  "static.tcf.data_categories": "Категорије података",
+  "static.tcf.retention": "Задржавање",
+  "static.tcf.retention_period_days": "X дан(а)",
+  "static.tcf.purpose": "Сврха X",
+  "static.tcf.cookie_disclosure.intro": "${name} чува колачиће са максималним трајањем од отприлике оволико дана:",
+  "static.tcf.cookie_disclosure.refresh": "Ови колачићи се могу освежити.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Ови добављачи такође користе друге методе као што су „локално складиштење“ за складиштење и приступ информацијама на вашем уређају.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} користи методе као што су „локално складиштење“ за складиштење и приступ информацијама на вашем уређају.",
+  "static.tcf.vendors.other": "Други добављачи"
 }

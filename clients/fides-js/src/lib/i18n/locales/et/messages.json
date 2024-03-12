@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Erieesmärgid",
   "static.tcf.vendors": "Kaupmehed",
   "static.tcf.vendors.description": "Allpool on esitatud loetelu kaupmeestest, kes teie andmeid töötlevad, ja nende esitatud töötlemise eesmärkidest või funktsioonidest. Võite rakendada oma õigusi vastavalt iga kaupmehe esitatud õiguslikule alusele.",
-  "static.tcf.vendors.iab": "IAB ja TCF-i kaupmehed"
+  "static.tcf.vendors.iab": "IAB ja TCF-i kaupmehed",
+  "static.tcf.vendors_using_consent": "Nõusolekut kasutavad kaupmehed",
+  "static.tcf.vendors_using_legint": "Õigustatud huvi kasutavad kaupmehed",
+  "static.tcf.vendors_count": "X kaupmees(t)",
+  "static.tcf.legint_disclosure": "Õigustatud huvi avaldus",
+  "static.tcf.data_categories": "Andmekategooriad",
+  "static.tcf.retention": "Säilitamine",
+  "static.tcf.retention_period_days": "X päev(a)",
+  "static.tcf.purpose": "Eesmärk X",
+  "static.tcf.cookie_disclosure.intro": "${name} salvestab küpsiseid, mille maksimaalne kestvus on umbes nii mitu päeva:",
+  "static.tcf.cookie_disclosure.refresh": "Neid küpsiseid võidakse uuendada.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "See kaupmees kasutab ka muid meetodeid, nt „kohalik salvestusruum“, et hoida ja kasutada teavet teie seadmes.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} kasutab selliseid meetodeid nagu „kohalik salvestusruum“, et hoida ja kasutada teavet teie seadmes.",
+  "static.tcf.vendors.other": "Muud kaupmehed"
 }

@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Propósitos especiais",
   "static.tcf.vendors": "Provedores",
   "static.tcf.vendors.description": "A continuación atopará unha listaxe dos provedores que procesan os seus datos e os propósitos ou funcións de procesamento que declaran. Pode exercer os seus dereitos para cada provedor segundo a base xurídica que faga valer.",
-  "static.tcf.vendors.iab": "Provedores IAB TCF"
+  "static.tcf.vendors.iab": "Provedores IAB TCF",
+  "static.tcf.vendors_using_consent": "Subministradores que empregan consentimento",
+  "static.tcf.vendors_using_legint": "Subministradores que empregan interese lexítimo",
+  "static.tcf.vendors_count": "X subministrador(es)",
+  "static.tcf.legint_disclosure": "Divulgación de intereses lexítimos",
+  "static.tcf.data_categories": "Categorías de datos",
+  "static.tcf.retention": "Retención",
+  "static.tcf.retention_period_days": "X día(s)",
+  "static.tcf.purpose": "Propósito X",
+  "static.tcf.cookie_disclosure.intro": "${name} almacena cookies cunha duración máxima aproximada destes días:",
+  "static.tcf.cookie_disclosure.refresh": "Estas cookies poden refrescarse.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Este subministrador tamén emprega outros métodos, como \"almacenamento local\" para gardar e acceder a información do seu dispositivo.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} emprega métodos como \"almacenamento local\" para gardar e acceder a información do seu dispositivo.",
+  "static.tcf.vendors.other": "Outros subministradores"
 }

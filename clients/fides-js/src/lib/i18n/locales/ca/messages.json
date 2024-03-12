@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Finalitats especials",
   "static.tcf.vendors": "Proveïdors",
   "static.tcf.vendors.description": "A continuació, trobareu una llista dels proveïdors que tracten les vostres dades i les finalitats o característiques del tractament que declaren. Podeu exercir els vostres drets per a cadascun dels proveïdors en funció de la base legal que facin valer.",
-  "static.tcf.vendors.iab": "Proveïdors IAB TCF"
+  "static.tcf.vendors.iab": "Proveïdors IAB TCF",
+  "static.tcf.vendors_using_consent": "Proveïdors que utilitzen el consentiment",
+  "static.tcf.vendors_using_legint": "Proveïdors que utilitzen l’interès legítim",
+  "static.tcf.vendors_count": "X proveïdor(s)",
+  "static.tcf.legint_disclosure": "Declaració sobre els interessos legítims",
+  "static.tcf.data_categories": "Categories de dades",
+  "static.tcf.retention": "Retenció",
+  "static.tcf.retention_period_days": "X dies",
+  "static.tcf.purpose": "Finalitat X",
+  "static.tcf.cookie_disclosure.intro": "${name} emmagatzema galetes amb una durada màxima d’aproximadament aquest nombre de dies:",
+  "static.tcf.cookie_disclosure.refresh": "Aquestes galetes es poden actualitzar.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Aquest proveïdor també utilitza altres mètodes, com ara l’ “emmagatzematge local”, per emmagatzemar i accedir a la informació del vostre dispositiu.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} utilitza mètodes com ara l’“emmagatzematge local” per emmagatzemar i accedir a la informació del vostre dispositiu.",
+  "static.tcf.vendors.other": "Altres proveïdors"
 }

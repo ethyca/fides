@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Posebni nameni",
   "static.tcf.vendors": "Partnerji",
   "static.tcf.vendors.description": "V nadaljevanju je prikazan seznam partnerjev, ki obdelujejo vaše podatke, in nameni ali funkcije obdelave, ki jih prijavljajo. Za vsakega partnerja lahko uveljavljate svoje pravice na podlagi pravne podlage, ki jo uveljavlja.",
-  "static.tcf.vendors.iab": "Partnerji IAB TCF"
+  "static.tcf.vendors.iab": "Partnerji IAB TCF",
+  "static.tcf.vendors_using_consent": "Partnerji, ki uporabljajo privolitev",
+  "static.tcf.vendors_using_legint": "Partnerji, ki uporabljajo zakoniti interes",
+  "static.tcf.vendors_count": "X partner(jev)",
+  "static.tcf.legint_disclosure": "Razkritje zakonitega interesa",
+  "static.tcf.data_categories": "Kategorije podatkov",
+  "static.tcf.retention": "Hramba",
+  "static.tcf.retention_period_days": "X dni",
+  "static.tcf.purpose": "Namen X",
+  "static.tcf.cookie_disclosure.intro": "${name} shranjuje piškotke z najdaljšim trajanjem približno toliko dni:",
+  "static.tcf.cookie_disclosure.refresh": "Ti piškotki se lahko osvežijo.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Ta partner za shranjevanje in dostop do informacij v vaši napravi uporablja tudi druge metode, kot je »lokalna shramba«.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} za shranjevanje in dostop do informacij v vaši napravi uporablja metode, kot je »lokalna shramba«.",
+  "static.tcf.vendors.other": "Drugi partnerji"
 }

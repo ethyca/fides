@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Özel amaçlar",
   "static.tcf.vendors": "Satıcılar",
   "static.tcf.vendors.description": "Aşağıda, verilerinizi işleyen satıcıların bir listesini ve beyan ettikleri işleme amaçlarını veya özelliklerini bulabilirsiniz. Haklarınızı her satıcı için onların ileri sürdüğü yasal dayanaklara göre kullanabilirsiniz.",
-  "static.tcf.vendors.iab": "IAB TCF Satıcıları"
+  "static.tcf.vendors.iab": "IAB TCF Satıcıları",
+  "static.tcf.vendors_using_consent": "Onay kullanan satıcılar",
+  "static.tcf.vendors_using_legint": "Meşru menfaat kullanan satıcılar",
+  "static.tcf.vendors_count": "X satıcı",
+  "static.tcf.legint_disclosure": "Meşru menfaat açıklaması",
+  "static.tcf.data_categories": "Veri kategorileri",
+  "static.tcf.retention": "Tutma",
+  "static.tcf.retention_period_days": "X gün",
+  "static.tcf.purpose": "Amaç X",
+  "static.tcf.cookie_disclosure.intro": "${name} çerezleri en fazla yaklaşık şu kadar gün saklar:",
+  "static.tcf.cookie_disclosure.refresh": "Bu çerezler yenilenebilir.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Bu satıcı ayrıca cihazınızdaki bilgileri depolamak ve bilgilere erişmek için \"yerel depolama\" gibi başka yöntemler de kullanır.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} cihazınızdaki bilgileri depolamak ve bilgilere erişmek için \"yerel depolama\" gibi yöntemler kullanır.",
+  "static.tcf.vendors.other": "Diğer satıcılar"
 }

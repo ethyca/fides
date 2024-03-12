@@ -15,5 +15,18 @@
   "static.tcf.special_purposes": "Cele szczególne",
   "static.tcf.vendors": "Dostawcy",
   "static.tcf.vendors.description": "Poniżej prezentujemy listę podwykonawców przetwarzających Twoje dane wraz z deklarowanymi przez nich celami lub funkcjami przetwarzania. Możesz wykonać swoje prawa w odniesieniu do każdego podwykonawcy w oparciu o zapewniane przez nich ramy prawne.",
-  "static.tcf.vendors.iab": "Podwykonawcy IAB TCF"
+  "static.tcf.vendors.iab": "Podwykonawcy IAB TCF",
+  "static.tcf.vendors_using_consent": "Dostawcy wykorzystujący zgodę",
+  "static.tcf.vendors_using_legint": "Dostawcy wykorzystujący uzasadniony interes",
+  "static.tcf.vendors_count": "X dostawca(-y)",
+  "static.tcf.legint_disclosure": "Objaśnienie uzasadnionego interesu",
+  "static.tcf.data_categories": "Kategorie danych",
+  "static.tcf.retention": "Przechowywanie",
+  "static.tcf.retention_period_days": "X dzień/dni",
+  "static.tcf.purpose": "Cel X",
+  "static.tcf.cookie_disclosure.intro": "${name} przechowuje pliki cookie przez taką przybliżoną maksymalną liczbę dni:",
+  "static.tcf.cookie_disclosure.refresh": "Te pliki cookie mogą być odświeżane.",
+  "static.tcf.cookie_disclosure.also_non_cookie": "Ten dostawca wykorzystuje także takie metody jak „magazyn lokalny” do przechowywania informacji na Państwa urządzeniu i uzyskiwaniu do nich dostępu.",
+  "static.tcf.cookie_disclosure.non_cookie": "${name} wykorzystuje takie metody jak „magazyn lokalny” do przechowywania informacji na Państwa urządzeniu i uzyskiwaniu do nich dostępu.",
+  "static.tcf.vendors.other": "Inni dostawcy"
 }
