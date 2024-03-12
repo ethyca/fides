@@ -36,6 +36,7 @@ export const defaultTranslations: ExperienceTranslationCreate[] = [
 ];
 
 export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
+  name: "",
   disabled: false,
   allow_language_selection: false,
   regions: [],
