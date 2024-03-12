@@ -11,10 +11,11 @@ import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
  * An API representation of ExperienceConfig used for response payloads
  */
 export type ExperienceConfigResponse = {
-  name?: string;
+  name: string;
   disabled?: boolean;
   dismissable?: boolean;
   allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
   regions: Array<PrivacyNoticeRegion>;
   id: string;
   created_at: string;

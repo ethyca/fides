@@ -8,7 +8,6 @@ import type { EnforcementLevel } from "./EnforcementLevel";
 import type { GPPFieldMapping } from "./GPPFieldMapping";
 import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
-import { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
@@ -36,5 +35,4 @@ export type PrivacyNoticeResponse = {
   systems_applicable?: boolean;
   translations?: Array<NoticeTranslationResponse>;
   gpp_field_mapping?: Array<GPPFieldMapping>;
-  configured_regions?: Array<PrivacyNoticeRegion>;
 };

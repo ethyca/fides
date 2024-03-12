@@ -12,6 +12,7 @@ export type LocationGroup = {
   selected?: boolean;
   name: string;
   continent: Continent;
+  default_selected?: boolean;
   belongs_to?: Array<string>;
   regulation?: Array<string>;
 };

@@ -38,24 +38,37 @@ import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExpe
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import {
+  ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+const translationSchema = (requirePreferencesLink: boolean) =>
+  Yup.object().shape({
+    title: Yup.string().required().label("Title"),
+    description: Yup.string().required().label("Description"),
+    accept_button_label: Yup.string().required().label("Accept button label"),
+    reject_button_label: Yup.string().required().label("Reject button label"),
+    privacy_policy_url: Yup.string().url().nullable(),
+    is_default: Yup.boolean(),
+    privacy_preferences_link_label: requirePreferencesLink
+      ? Yup.string().required().label("Privacy preferences link label")
+      : Yup.string().label("Privacy preferences link label"),
+  });
+
 const validationSchema = Yup.object().shape({
+  name: Yup.string().required().label("Experience name"),
   component: Yup.string().required().label("Experience type"),
-  translations: Yup.array().of(
-    Yup.object().shape({
-      title: Yup.string().required().label("Title"),
-      description: Yup.string().required().label("Description"),
-      accept_button_label: Yup.string().required().label("Accept button label"),
-      reject_button_label: Yup.string().required().label("Reject button label"),
-      privacy_policy_url: Yup.string().url().nullable(),
-      is_default: Yup.boolean(),
-    })
-  ),
+  // translations: Yup.array().of(translationSchema),
+  translations: Yup.array().when("component", {
+    is: (value: ComponentType) =>
+      value === ComponentType.BANNER_AND_MODAL ||
+      value === ComponentType.TCF_OVERLAY,
+    then: (schema) => schema.of(translationSchema(true)),
+    otherwise: (schema) => schema.of(translationSchema(false)),
+  }),
 });
 
 const ConfigurePrivacyExperience = ({
@@ -125,8 +138,6 @@ const ConfigurePrivacyExperience = ({
       name: findLanguageDisplayName(translation, allLanguages),
     });
   };
-
-  // const [isEditingStyle, setIsEditingStyle] = useState<boolean>(false);
 
   return (
     <Formik

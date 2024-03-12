@@ -162,6 +162,7 @@ export const PrivacyExperienceForm = ({
         name="name"
         id="name"
         label="Name (internal admin use only)"
+        isRequired
         variant="stacked"
       />
       {values.component !== ComponentType.TCF_OVERLAY ? (
@@ -260,12 +261,12 @@ export const PrivacyExperienceForm = ({
         selectOnAdd
         draggable
       />
-      {/* <CustomSwitch
+      <CustomSwitch
         name="auto_detect_language"
         id="auto_detect_language"
         label="Auto detect language"
         variant="stacked"
-      /> */}
+      />
     </PrivacyExperienceConfigColumnLayout>
   );
 };
