@@ -1,6 +1,7 @@
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
+  GVLTranslations,
   TCFFeatureRecord,
   TCFFeatureSave,
   TCFPurposeConsentRecord,
@@ -103,6 +104,13 @@ export type FidesOptions = {
 
   // Allows specifying the preferred locale used for translations
   fidesLocale?: string;
+
+  // Allows preview of banner components for internal use or testing, such that saving to cookie disabled,
+  // and some buttons are disabled on the Fides components
+  fidesPreviewMode: boolean;
+
+  // Allows preview mode to specify which component to open, banner or modal
+  fidesPreviewComponent?: string | null;
 };
 
 /**
@@ -361,7 +369,7 @@ export type PrivacyExperience = {
    */
   experience_config?: ExperienceConfig; // NOTE: uses our client-side ExperienceConfig type
   gvl?: GVLJson; // NOTE: uses our client-side GVLJson type
-  gvl_translations?: any;
+  gvl_translations?: GVLTranslations;
   meta?: ExperienceMeta;
 };
 

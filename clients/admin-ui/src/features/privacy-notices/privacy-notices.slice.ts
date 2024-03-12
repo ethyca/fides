@@ -103,6 +103,7 @@ export const {
   usePatchPrivacyNoticesMutation,
   useLimitedPatchPrivacyNoticesMutation,
   useGetPrivacyNoticeByIdQuery,
+  useLazyGetPrivacyNoticeByIdQuery,
   usePostPrivacyNoticeMutation,
 } = privacyNoticesApi;
 

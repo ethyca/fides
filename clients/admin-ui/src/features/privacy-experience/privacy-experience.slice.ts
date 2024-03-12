@@ -84,7 +84,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
           body,
         };
       },
-      invalidatesTags: () => ["Privacy Experience Configs"],
+      invalidatesTags: () => ["Privacy Experience Configs", "Property"],
     }),
     limitedPatchExperienceConfig: build.mutation<
       ExperienceConfigResponse,
@@ -114,7 +114,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
         url: `experience-config/`,
         body: payload,
       }),
-      invalidatesTags: () => ["Privacy Experience Configs"],
+      invalidatesTags: () => ["Privacy Experience Configs", "Property"],
     }),
   }),
 });
@@ -137,6 +137,7 @@ export const { reducer } = privacyExperienceConfigSlice;
 
 const selectPrivacyExperienceConfig = (state: RootState) =>
   state.privacyExperienceConfig;
+
 export const selectPage = createSelector(
   selectPrivacyExperienceConfig,
   (state) => state.page

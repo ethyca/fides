@@ -20,6 +20,7 @@ from fides.api.models import (
 )
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import PrivacyNotice
+from fides.api.models.property import Property
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -219,6 +220,13 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         order_by="ExperienceTranslation.created_at",
     )
 
+    properties: RelationshipProperty[List[Property]] = relationship(
+        "Property",
+        secondary="plus_privacy_experience_config_property",
+        back_populates="experiences",
+        lazy="selectin",
+    )
+
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
         """Return the regions using this experience config"""
@@ -260,6 +268,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         translations = data.pop("translations", [])
         regions = data.pop("regions", [])
         privacy_notice_ids = data.pop("privacy_notice_ids", [])
+        properties = data.pop("properties", [])
         data.pop(
             "id", None
         )  # Default templates have ids but we don't want to use them here
@@ -287,6 +296,8 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         link_notices_to_experience_config(
             db, notice_ids=privacy_notice_ids, experience_config=experience_config
         )
+        # Link Properties to this Privacy Experience config via the PrivacyExperienceConfigProperty table
+        link_properties_to_experience_config(db, properties, experience_config)
 
         return experience_config
 
@@ -305,6 +316,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         request_translations = data.pop("translations", [])
         regions = data.pop("regions", [])
         privacy_notice_ids = data.pop("privacy_notice_ids", [])
+        properties = data.pop("properties", [])
 
         # Do a patch update of the existing privacy experience config if applicable
         config_updated = update_if_modified(self, db=db, data=data)
@@ -350,6 +362,8 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         link_notices_to_experience_config(
             db, notice_ids=privacy_notice_ids, experience_config=self
         )
+        # Link Properties to this Privacy Experience config via the PrivacyExperienceConfigProperty table
+        link_properties_to_experience_config(db, properties, self)
 
         return self  # type: ignore[return-value]
 
@@ -369,6 +383,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         # to prevent the ExperienceConfig "dry_update" from being added to Session.new
         # (which would cause another PrivacyExperienceConfig to be created!)
         updated_attributes.pop("privacy_notices", [])
+        updated_attributes.pop("properties", [])
 
         return PrivacyExperienceConfig(**updated_attributes)
 
@@ -659,6 +674,24 @@ def link_notices_to_experience_config(
     return experience_config.privacy_notices
 
 
+def link_properties_to_experience_config(
+    db: Session,
+    properties: List[Dict[str, Any]],
+    experience_config: PrivacyExperienceConfig,
+) -> List[Property]:
+    """
+    Link supplied properties to ExperienceConfig and unlink any properties not supplied.
+    """
+    new_properties = (
+        db.query(Property)
+        .filter(Property.id.in_([prop["id"] for prop in properties]))
+        .all()
+    )
+    experience_config.properties = new_properties
+    experience_config.save(db)
+    return experience_config.properties
+
+
 def create_historical_record_for_config_and_translation(
     db: Session,
     privacy_experience_config: PrivacyExperienceConfig,
@@ -674,6 +707,7 @@ def create_historical_record_for_config_and_translation(
     history_data: dict = create_historical_data_from_record(privacy_experience_config)
     history_data.pop("privacy_notices", None)
     history_data.pop("translations", None)
+    history_data.pop("properties", None)
 
     updated_translation_data: dict = create_historical_data_from_record(
         experience_translation

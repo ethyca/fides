@@ -30,6 +30,7 @@ export const defaultTranslations: ExperienceTranslationCreate[] = [
     description: "Description",
     accept_button_label: "Accept",
     reject_button_label: "Reject",
+    save_button_label: "Save",
     privacy_preferences_link_label: "Privacy Preferences",
   },
 ];
@@ -126,6 +127,7 @@ export const getTranslationFormFields = (
       description: { included: true, required: true },
       accept_button_label: { included: true, required: true },
       reject_button_label: { included: true, required: true },
+      save_button_label: { included: true, required: true },
       acknowledge_button_label: { included: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
@@ -141,6 +143,7 @@ export const getTranslationFormFields = (
       banner_description: { included: true },
       accept_button_label: { included: true, required: true },
       reject_button_label: { included: true, required: true },
+      save_button_label: { included: true, required: true },
       acknowledge_button_label: { included: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },

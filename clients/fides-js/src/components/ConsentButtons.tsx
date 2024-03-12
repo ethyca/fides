@@ -79,6 +79,7 @@ interface NoticeConsentButtonProps {
   isInModal?: boolean;
   isMobile: boolean;
   saveOnly?: boolean;
+  fidesPreviewMode?: boolean;
 }
 
 export const NoticeConsentButtons = ({
@@ -91,6 +92,7 @@ export const NoticeConsentButtons = ({
   isAcknowledge,
   isMobile,
   saveOnly = false,
+  fidesPreviewMode = false,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
@@ -98,6 +100,9 @@ export const NoticeConsentButtons = ({
   const { privacy_notices: notices } = experience;
 
   const handleAcceptAll = () => {
+    if (fidesPreviewMode) {
+      return;
+    }
     onSave(
       ConsentMethod.ACCEPT,
       notices.map((n) => n.notice_key)
@@ -105,6 +110,9 @@ export const NoticeConsentButtons = ({
   };
 
   const handleRejectAll = () => {
+    if (fidesPreviewMode) {
+      return;
+    }
     onSave(
       ConsentMethod.REJECT,
       notices
@@ -114,6 +122,9 @@ export const NoticeConsentButtons = ({
   };
 
   const handleSave = () => {
+    if (fidesPreviewMode) {
+      return;
+    }
     onSave(ConsentMethod.SAVE, enabledKeys);
   };
 

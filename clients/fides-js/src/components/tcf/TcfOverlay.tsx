@@ -357,9 +357,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             <div id="fides-tcf-banner-inner">
               <VendorInfoBanner
                 experience={experience}
+                i18n={i18n}
                 goToVendorTab={goToVendorTab}
               />
-              <InitialLayer experience={experience} />
+              <InitialLayer experience={experience} i18n={i18n} />
             </div>
           </ConsentBanner>
         );
@@ -391,10 +392,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               firstButton={
                 <Button
                   buttonType={ButtonType.SECONDARY}
-                  label={
-                    experience.experience_config?.translations[0]
-                      .save_button_label
-                  }
+                  label={i18n.t("exp.save_button_label")}
                   onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                   className="fides-save-button"
                 />

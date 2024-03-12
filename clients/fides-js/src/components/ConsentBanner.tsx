@@ -80,7 +80,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         <div id="fides-banner-inner">
           <CloseButton
             ariaLabel="Close banner"
-            onClick={onClose}
+            onClick={window.Fides.options.fidesPreviewMode ? () => {} : onClose}
             hidden={window.Fides?.options?.preventDismissal}
           />
           <div
