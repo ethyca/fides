@@ -281,7 +281,8 @@ const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
       },
     ],
     purposes: "Propósitos",
-    stacked_purpose_example: "Uso de datos limitados para seleccionar anuncios básicos",
+    stacked_purpose_example:
+      "Uso de datos limitados para seleccionar anuncios básicos",
   },
 };
 
@@ -320,7 +321,8 @@ const SPANISH_TCF_MODAL: TestTcfModalTranslations = {
     vendor_iab_example_description: "Captify almacena cookies con una duración",
     vendors_other: "Otros proveedores",
     vendor_other_example: "Fides System",
-    vendor_other_example_description: "Fides System almacena cookies con una duración",
+    vendor_other_example_description:
+      "Fides System almacena cookies con una duración",
     vendor_privacy_policy: "Política de privacidad",
     vendor_legint_disclosure: "Revelación de interés legítimo",
     retention: "Conservación",
