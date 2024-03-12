@@ -1100,7 +1100,7 @@ describe("Consent i18n", () => {
     ];
 
     tests.forEach(({ navigatorLanguage, locale, banner, modal }) => {
-      it.only(`localizes tcf_overlay components in the correct locale (${locale})`, () => {
+      it(`localizes tcf_overlay components in the correct locale (${locale})`, () => {
         visitDemoWithI18n({
           navigatorLanguage,
           globalPrivacyControl: true,
