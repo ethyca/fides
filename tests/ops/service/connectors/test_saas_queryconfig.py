@@ -632,6 +632,8 @@ class TestSaaSQueryConfig:
         mock_custom_privacy_request_fields.return_value = {
             "first_name": "John",
             "last_name": "Doe",
+            "subscriber_ids": ["123", "456"],
+            "account_ids": [123, 456],
         }
         connector = SaaSConnector(saas_example_connection_config)
         saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
@@ -655,6 +657,8 @@ class TestSaaSQueryConfig:
                 CUSTOM_PRIVACY_REQUEST_FIELDS: {
                     "first_name": "John",
                     "last_name": "Doe",
+                    "subscriber_ids": ["123", "456"],
+                    "account_ids": [123, 456],
                 },
             },
             policy,
@@ -666,6 +670,8 @@ class TestSaaSQueryConfig:
         assert json.loads(read_request.body) == {
             "last_name": "Doe",
             "order_id": None,
+            "subscriber_ids": ["123", "456"],
+            "account_ids": [123, 456],
         }
 
         update_request: SaaSRequestParams = config.generate_update_stmt(
@@ -675,9 +681,13 @@ class TestSaaSQueryConfig:
         assert update_request.path == "/v1/internal/"
         assert update_request.query_params == {}
         assert json.loads(update_request.body) == {
-            "user_info": {"first_name": "John", "last_name": "Doe"}
+            "user_info": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "subscriber_ids": ["123", "456"],
+                "account_ids": [123, 456],
+            }
         }
-
         opt_in_request: SaaSRequest = config.generate_consent_stmt(
             consent_policy,
             privacy_request,

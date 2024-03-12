@@ -60,9 +60,14 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
-from fides.api.schemas.redis_cache import Identity, IdentityBase
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestFieldValue,
+    Identity,
+    IdentityBase,
+)
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
+    CustomJSONEncoder,
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
@@ -364,7 +369,11 @@ class PrivacyRequest(
                 if item is not None:
                     cache.set_with_autoexpire(
                         get_custom_privacy_request_field_cache_key(self.id, key),
-                        item.value,
+                        (
+                            json.dumps(item.value, cls=CustomJSONEncoder)
+                            if isinstance(item.value, list)
+                            else f'"{item.value}"'
+                        ),
                     )
         else:
             logger.info(
@@ -533,7 +542,12 @@ class PrivacyRequest(
         prefix = f"id-{self.id}-custom-privacy-request-field-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
+        result = {}
+        for key in keys:
+            value = cache.get(key)
+            if value:
+                result[key.split("-")[-1]] = json.loads(value)
+        return result
 
     def get_results(self) -> Dict[str, Any]:
         """Retrieves all cached identity data associated with this Privacy Request"""
@@ -1071,11 +1085,11 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         value: str,
         encoding: str = "UTF-8",
     ) -> str:
-        """Utility function to hash the value with a generated salt"""
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        """Utility function to hash the value(s) with a generated salt"""
+        salt = generate_salt()
         hashed_value = hash_with_salt(
             value.encode(encoding),
-            SALT.encode(encoding),
+            salt.encode(encoding),
         )
         return hashed_value
 
@@ -1146,16 +1160,23 @@ class CustomPrivacyRequestField(Base):
     @classmethod
     def hash_value(
         cls,
-        value: str,
+        value: CustomPrivacyRequestFieldValue,
         encoding: str = "UTF-8",
-    ) -> str:
-        """Utility function to hash the value with a generated salt"""
-        salt = generate_salt()
-        hashed_value = hash_with_salt(
-            value.encode(encoding),
-            salt.encode(encoding),
-        )
-        return hashed_value
+    ) -> Union[str, List[str]]:
+        """Utility function to hash the value(s) with a generated salt"""
+
+        def hash_single_value(value: Union[str, int]) -> str:
+            salt = generate_salt()
+            value_str = str(value)
+            hashed_value = hash_with_salt(
+                value_str.encode(encoding),
+                salt.encode(encoding),
+            )
+            return hashed_value
+
+        if isinstance(value, list):
+            return [hash_single_value(item) for item in value]
+        return hash_single_value(value)
 
 
 class Consent(Base):
