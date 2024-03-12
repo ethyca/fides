@@ -1,4 +1,4 @@
-# Admin UI
+# Admin UI 
 
 Admin UI for managing Fides privacy requests. A web application built in Next.js with the FidesUI component library.
 
