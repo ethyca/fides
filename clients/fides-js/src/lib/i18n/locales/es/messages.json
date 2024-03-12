@@ -24,7 +24,7 @@
   "static.tcf.special_purposes": "Propósitos especiales",
   "static.tcf.vendors": "Proveedores",
   "static.tcf.vendors.description": "A continuación encontrará una lista de los proveedores que procesan sus datos y los propósitos o características de procesamiento que declaran. Puede ejercer sus derechos para cada proveedor basándose en la base legal que afirman.",
-  "static.tcf.vendors.iab": "Proveedores IAB TCF TODO",
+  "static.tcf.vendors.iab": "Proveedores IAB TCF",
   "static.tcf.vendors.other": "Otros proveedores",
   "static.tcf.vendors_count": "X proveedor(es)",
   "static.tcf.vendors_using_consent": "Proveedores que utilizan el consentimiento",
