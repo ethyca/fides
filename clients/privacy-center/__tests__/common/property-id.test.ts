@@ -1,9 +1,9 @@
 import { PrivacyCenterEnvironment } from "~/app/server-environment";
-import { verifyConditionsForPropertyId } from "~/common/property-id";
+import { safeLookupPropertyId } from "~/common/property-id";
 import { createRequest } from "node-mocks-http";
 import { UserGeolocation } from "fides-js";
 
-describe("verifyConditionsForPropertyId", () => {
+describe("safeLookupPropertyId", () => {
   const environment = {
     settings: {
       IS_OVERLAY_ENABLED: true,
@@ -20,9 +20,9 @@ describe("verifyConditionsForPropertyId", () => {
       url: "https://privacy.example.com/fides.js",
       query: { property_id: validPropertyId },
     });
-    expect(
-      verifyConditionsForPropertyId(req, geolocation, environment, null)
-    ).toBe(validPropertyId);
+    expect(safeLookupPropertyId(req, geolocation, environment, null)).toBe(
+      validPropertyId
+    );
   });
 
   it("throws an error if property_id is an array", () => {
@@ -32,7 +32,7 @@ describe("verifyConditionsForPropertyId", () => {
       query: { property_id: [validPropertyId] },
     });
     expect(() => {
-      verifyConditionsForPropertyId(req, geolocation, environment, null);
+      safeLookupPropertyId(req, geolocation, environment, null);
     }).toThrow("Invalid property_id: only one value must be provided.");
   });
 
@@ -43,7 +43,7 @@ describe("verifyConditionsForPropertyId", () => {
       query: { property_id: validPropertyId },
     });
     expect(() => {
-      verifyConditionsForPropertyId(req, null, environment, null);
+      safeLookupPropertyId(req, null, environment, null);
     }).toThrow("Geolocation must be provided if a property_id is specified.");
   });
 
@@ -57,7 +57,7 @@ describe("verifyConditionsForPropertyId", () => {
       settings: { ...environment.settings, IS_OVERLAY_ENABLED: false },
     };
     expect(() => {
-      verifyConditionsForPropertyId(req, geolocation, updatedEnvironment, null);
+      safeLookupPropertyId(req, geolocation, updatedEnvironment, null);
     }).toThrow(
       "IS_OVERLAY_ENABLED must be enabled in environment settings if a property_id is specified."
     );
@@ -73,7 +73,7 @@ describe("verifyConditionsForPropertyId", () => {
       settings: { ...environment.settings, IS_PREFETCH_ENABLED: false },
     };
     expect(() => {
-      verifyConditionsForPropertyId(req, geolocation, updatedEnvironment, null);
+      safeLookupPropertyId(req, geolocation, updatedEnvironment, null);
     }).toThrow(
       "IS_PREFETCH_ENABLED must be enabled in environment settings if a property_id is specified."
     );
@@ -86,12 +86,7 @@ describe("verifyConditionsForPropertyId", () => {
       query: { property_id: validPropertyId },
     });
     expect(() => {
-      verifyConditionsForPropertyId(
-        req,
-        geolocation,
-        environment,
-        "mock-fides-string"
-      );
+      safeLookupPropertyId(req, geolocation, environment, "mock-fides-string");
     }).toThrow(
       "FidesString must not be provided if a property_id is specified."
     );
@@ -103,7 +98,7 @@ describe("verifyConditionsForPropertyId", () => {
       url: "https://privacy.example.com/fides.js",
     });
     expect(
-      verifyConditionsForPropertyId(req, geolocation, environment, null)
+      safeLookupPropertyId(req, geolocation, environment, null)
     ).toBeUndefined();
   });
 });

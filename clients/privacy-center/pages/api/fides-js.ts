@@ -11,7 +11,7 @@ import {
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
-import { verifyConditionsForPropertyId } from "~/common/property-id";
+import { safeLookupPropertyId } from "~/common/property-id";
 
 // one hour, how long the client should cache fides.js for
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
@@ -39,6 +39,12 @@ let autoRefresh: boolean = true;
  *         schema:
  *           type: string
  *         example: US-CA
+ *       - in: query
+ *         name: property_id
+ *         required: false
+ *         description: Optional identifier used to filter for experiences associated with the given property. If omitted, returns all experiences not associated with any properties.
+ *         schema:
+ *           type: string
  *       - in: query
  *         name: refresh
  *         required: false
@@ -92,7 +98,7 @@ export default async function handler(
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
-  const propertyId = verifyConditionsForPropertyId(
+  const propertyId = safeLookupPropertyId(
     req,
     geolocation,
     environment,
