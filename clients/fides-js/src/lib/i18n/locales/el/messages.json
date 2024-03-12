@@ -6,7 +6,7 @@
   "static.gpc.title": "Εντοπίστηκε καθολικός έλεγχος απορρήτου",
   "static.tcf.consent": "Συναίνεση",
   "static.tcf.cookie_disclosure.also_non_cookie": "Αυτός ο προμηθευτής χρησιμοποιεί επίσης άλλες μεθόδους, όπως «τοπική αποθήκευση», για την αποθήκευση και την πρόσβαση σε πληροφορίες στη συσκευή σας.",
-  "static.tcf.cookie_disclosure.intro": "Το ${name} αποθηκεύει cookie με μέγιστη διάρκεια περίπου τόσες ημέρες:",
+  "static.tcf.cookie_disclosure.intro": "αποθηκεύει cookie με μέγιστη διάρκεια περίπου τόσες ημέρες:",
   "static.tcf.cookie_disclosure.non_cookie": "Το ${name} χρησιμοποιεί μεθόδους όπως η «τοπική αποθήκευση» για την αποθήκευση και την πρόσβαση σε πληροφορίες στη συσκευή σας.",
   "static.tcf.cookie_disclosure.refresh": "Αυτά τα cookie ενδέχεται να ανανεωθούν.",
   "static.tcf.data_categories": "Κατηγορίες δεδομένων",

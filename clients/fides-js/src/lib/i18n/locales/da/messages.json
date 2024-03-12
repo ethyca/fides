@@ -6,7 +6,7 @@
   "static.gpc.title": "Der blev påvist global fortrolighedskontrol",
   "static.tcf.consent": "Samtykke",
   "static.tcf.cookie_disclosure.also_non_cookie": "Denne forhandler anvender også andre metoder som f.eks. \"lokalt lager\" til at gemme og tage sig adgang til oplysninger på din enhed.",
-  "static.tcf.cookie_disclosure.intro": "${name} gemmer cookies med en maksimal varighed på ca. så mange dage:",
+  "static.tcf.cookie_disclosure.intro": "gemmer cookies med en maksimal varighed på ca. så mange dage:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} anvender metoder som f.eks. \"lokalt lager\" til at gemme og tage sig adgang til oplysninger på din enhed.",
   "static.tcf.cookie_disclosure.refresh": "Disse cookies kan blive opdateret.",
   "static.tcf.data_categories": "Datakategorier",

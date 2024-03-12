@@ -6,7 +6,7 @@
   "static.gpc.title": "Globale Datenschutzeinstellungen entdeckt",
   "static.tcf.consent": "Einwilligung",
   "static.tcf.cookie_disclosure.also_non_cookie": "Dieser Anbieter verwendet auch andere Methoden wie den „lokalen Speicher“, um Informationen auf Ihrem Gerät zu speichern und darauf zuzugreifen.",
-  "static.tcf.cookie_disclosure.intro": "${name} speichert Cookies mit einer maximalen Speicherdauer von etwa so vielen Tagen:",
+  "static.tcf.cookie_disclosure.intro": "speichert Cookies mit einer maximalen Speicherdauer von etwa so vielen Tagen:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} verwendet Methoden wie den „lokalen Speicher“, um Informationen auf Ihrem Gerät zu speichern und darauf zuzugreifen.",
   "static.tcf.cookie_disclosure.refresh": "Diese Cookies können erneuert werden.",
   "static.tcf.data_categories": "Datenkategorien",

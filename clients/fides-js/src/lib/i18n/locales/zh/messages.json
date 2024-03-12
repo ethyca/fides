@@ -6,7 +6,7 @@
   "static.gpc.title": "检测到全局隐私控制",
   "static.tcf.consent": "同意函",
   "static.tcf.cookie_disclosure.also_non_cookie": "该供应商还使用“本地存储”等其他方法来存储和访问您设备上的信息。",
-  "static.tcf.cookie_disclosure.intro": "${name} 存储 cookie 的最大预估持续时间（天数）：",
+  "static.tcf.cookie_disclosure.intro": "存储 cookie 的最大预估持续时间（天数）：",
   "static.tcf.cookie_disclosure.non_cookie": "${name} 使用“本地存储”等其他方法来存储和访问您设备上的信息。",
   "static.tcf.cookie_disclosure.refresh": "这些 cookie 可能会被刷新。",
   "static.tcf.data_categories": "数据类别",

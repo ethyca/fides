@@ -6,7 +6,7 @@
   "static.gpc.title": "Instab il-Kontroll Globali tal-Privatezza",
   "static.tcf.consent": "Kunsens",
   "static.tcf.cookie_disclosure.also_non_cookie": "Dan il-bejjiegħ juża wkoll metodi oħra bħal \"ħażna lokali\" biex jaħżen u jaċċessa informazzjoni fuq l-apparat tiegħek.",
-  "static.tcf.cookie_disclosure.intro": "${name} jaħżen cookies b'tul ta' żmien massimu ta' madwar dil-ġranet:",
+  "static.tcf.cookie_disclosure.intro": "jaħżen cookies b'tul ta' żmien massimu ta' madwar dil-ġranet:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} juża metodi bħal \"ħażna lokali\" biex jaħżen u jaċċessa l-informazzjoni fuq it-tagħmir tiegħek.",
   "static.tcf.cookie_disclosure.refresh": "Dawn il-cookies jistgħu jiġu aġġornati.",
   "static.tcf.data_categories": "Kategoriji tad-dejta",

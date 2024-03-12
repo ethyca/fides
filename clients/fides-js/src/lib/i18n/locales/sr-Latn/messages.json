@@ -6,7 +6,7 @@
   "static.gpc.title": "Otkrivena je globalna kontrola privatnosti",
   "static.tcf.consent": "Saglasnost",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ovaj dobavljač koristi i druge metode, kao što je „lokalno skladište“ za skladištenje i pristup informacijama na vašem uređaju.",
-  "static.tcf.cookie_disclosure.intro": "${name} čuva kolačiće sa maksimalnim trajanjem od oko ovoliko dana:",
+  "static.tcf.cookie_disclosure.intro": "čuva kolačiće sa maksimalnim trajanjem od oko ovoliko dana:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} koristi metode kao što je „lokalno skladište“ za skladištenje i pristup informacijama na vašem uređaju.",
   "static.tcf.cookie_disclosure.refresh": "Ovi kolačići mogu da se osvežavaju.",
   "static.tcf.data_categories": "Kategorije podataka",

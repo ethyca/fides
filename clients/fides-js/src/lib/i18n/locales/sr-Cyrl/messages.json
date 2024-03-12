@@ -6,7 +6,7 @@
   "static.gpc.title": "Global Privacy Control откривен",
   "static.tcf.consent": "Сагласност",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ови добављачи такође користе друге методе као што су „локално складиштење“ за складиштење и приступ информацијама на вашем уређају.",
-  "static.tcf.cookie_disclosure.intro": "${name} чува колачиће са максималним трајањем од отприлике оволико дана:",
+  "static.tcf.cookie_disclosure.intro": "чува колачиће са максималним трајањем од отприлике оволико дана:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} користи методе као што су „локално складиштење“ за складиштење и приступ информацијама на вашем уређају.",
   "static.tcf.cookie_disclosure.refresh": "Ови колачићи се могу освежити.",
   "static.tcf.data_categories": "Категорије података",

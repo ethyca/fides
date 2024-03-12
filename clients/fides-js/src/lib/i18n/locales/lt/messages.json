@@ -6,7 +6,7 @@
   "static.gpc.title": "Aptikta visuotinė privatumo kontrolė",
   "static.tcf.consent": "Sutikimas",
   "static.tcf.cookie_disclosure.also_non_cookie": "Šis pardavėjas taip pat naudoja kitus metodus, pvz., „vietinę saugyklą“, kad išsaugotų ir pasiektų jūsų įrenginyje esančią informaciją.",
-  "static.tcf.cookie_disclosure.intro": "${name} saugo slapukus, kurių maksimali trukmė yra maždaug tiek dienų:",
+  "static.tcf.cookie_disclosure.intro": "saugo slapukus, kurių maksimali trukmė yra maždaug tiek dienų:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} naudoja kitus metodus, pvz., „vietinę saugyklą“, kad išsaugotų ir pasiektų jūsų įrenginyje esančią informaciją.",
   "static.tcf.cookie_disclosure.refresh": "Šie slapukai gali būti atnaujinti.",
   "static.tcf.data_categories": "Duomenų kategorijos",

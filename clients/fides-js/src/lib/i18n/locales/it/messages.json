@@ -6,7 +6,7 @@
   "static.gpc.title": "Controllo Globale della Privacy rilevato",
   "static.tcf.consent": "Consenso",
   "static.tcf.cookie_disclosure.also_non_cookie": "Questo fornitore utilizza anche altri metodi come lo \"storage locale\" per memorizzare e accedere alle informazioni sul tuo dispositivo.",
-  "static.tcf.cookie_disclosure.intro": "${name} conserva i cookie con una durata massima approssimativa di giorni:",
+  "static.tcf.cookie_disclosure.intro": "conserva i cookie con una durata massima approssimativa di giorni:",
   "static.tcf.cookie_disclosure.non_cookie": "${nome} utilizza metodi come lo \"storage locale\" per memorizzare e accedere alle informazioni sul tuo dispositivo.",
   "static.tcf.cookie_disclosure.refresh": "Questi cookie possono essere aggiornati.",
   "static.tcf.data_categories": "Categorie di dati",

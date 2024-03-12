@@ -6,7 +6,7 @@
   "static.gpc.title": "Wykryta Ogólna kontrola prywatności",
   "static.tcf.consent": "Zgoda",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ten dostawca wykorzystuje także takie metody jak „magazyn lokalny” do przechowywania informacji na Państwa urządzeniu i uzyskiwaniu do nich dostępu.",
-  "static.tcf.cookie_disclosure.intro": "${name} przechowuje pliki cookie przez taką przybliżoną maksymalną liczbę dni:",
+  "static.tcf.cookie_disclosure.intro": "przechowuje pliki cookie przez taką przybliżoną maksymalną liczbę dni:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} wykorzystuje takie metody jak „magazyn lokalny” do przechowywania informacji na Państwa urządzeniu i uzyskiwaniu do nich dostępu.",
   "static.tcf.cookie_disclosure.refresh": "Te pliki cookie mogą być odświeżane.",
   "static.tcf.data_categories": "Kategorie danych",

@@ -6,7 +6,7 @@
   "static.gpc.title": "Global Privacy Control gedetecteerd",
   "static.tcf.consent": "Toestemming",
   "static.tcf.cookie_disclosure.also_non_cookie": "Deze leverancier gebruikt ook andere methoden zoals 'lokale opslag' om informatie op uw apparaat te bewaren en te gebruiken.",
-  "static.tcf.cookie_disclosure.intro": "${name} bewaart cookies gedurende een maximale termijn van ongeveer dit aantal dagen:",
+  "static.tcf.cookie_disclosure.intro": "bewaart cookies gedurende een maximale termijn van ongeveer dit aantal dagen:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} gebruikt methoden zoals 'lokale opslag' om informatie op uw apparaat te bewaren en te gebruiken.",
   "static.tcf.cookie_disclosure.refresh": "Deze cookies kunnen vernieuwd worden.",
   "static.tcf.data_categories": "Gegevenscategorieën",

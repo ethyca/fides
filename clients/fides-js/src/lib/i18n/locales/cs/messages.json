@@ -6,7 +6,7 @@
   "static.gpc.title": "Bylo zjištěna globální kontrola ochrany osobních údajů",
   "static.tcf.consent": "Souhlas",
   "static.tcf.cookie_disclosure.also_non_cookie": "Tento dodavatel také používá jiné metody jako „místní úložiště“ k ukládání a přístupu k informacím na vašem zařízení.",
-  "static.tcf.cookie_disclosure.intro": "${name} ukládá soubory cookie maximálně přibližně na následující počet dnů:",
+  "static.tcf.cookie_disclosure.intro": "ukládá soubory cookie maximálně přibližně na následující počet dnů:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} používá metody jako „místní úložiště“ k ukládání a přístupu k informacím na vašem zařízení.",
   "static.tcf.cookie_disclosure.refresh": "Tyto soubory cookie mohou být obnoveny.",
   "static.tcf.data_categories": "Kategorie údajů",

@@ -6,7 +6,7 @@
   "static.gpc.title": "グローバルプライバシーコントロールを検出しました",
   "static.tcf.consent": "同意",
   "static.tcf.cookie_disclosure.also_non_cookie": "このベンダーは、ユーザーのデバイスに情報を保存し、これにアクセスするため、「ローカルストレージ」など他の方法も使用します。",
-  "static.tcf.cookie_disclosure.intro": "${name}は、概ねこの日数を最大期間としてクッキーを保存します：",
+  "static.tcf.cookie_disclosure.intro": "は、概ねこの日数を最大期間としてクッキーを保存します：",
   "static.tcf.cookie_disclosure.non_cookie": "${name}は、ユーザーのデバイスに情報を保存し、これにアクセスするため、「ローカルストレージ」などの方法を使用します。",
   "static.tcf.cookie_disclosure.refresh": "これらのクッキーは更新される場合があります。",
   "static.tcf.data_categories": "データのカテゴリー",

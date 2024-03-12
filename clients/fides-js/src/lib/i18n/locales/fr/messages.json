@@ -6,7 +6,7 @@
   "static.gpc.title": "Global Privacy Control (GPC) détecté",
   "static.tcf.consent": "Consentement",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ce fournisseur utilise également d’autres méthodes de « stockage local » pour stocker les informations présentes sur votre appareil et y accéder.",
-  "static.tcf.cookie_disclosure.intro": "${name} stocke les cookies pour une durée maximale approximative du nombre de jours suivants :",
+  "static.tcf.cookie_disclosure.intro": "stocke les cookies pour une durée maximale approximative du nombre de jours suivants :",
   "static.tcf.cookie_disclosure.non_cookie": "${name} utilise des méthodes comme le « stockage local » pour stocker les informations présentes sur votre appareil et y accéder.",
   "static.tcf.cookie_disclosure.refresh": "Ces cookies peuvent être actualisés.",
   "static.tcf.data_categories": "Catégories de données",

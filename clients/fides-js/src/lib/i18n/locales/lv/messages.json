@@ -6,7 +6,7 @@
   "static.gpc.title": "Konstatēta globālā privātuma kontrole",
   "static.tcf.consent": "Piekrišana",
   "static.tcf.cookie_disclosure.also_non_cookie": "Turklāt šis pārdevējs/pakalpojumu sniedzējs saglabā un izgūst datus no jūsu ierīces, izmantojot papildu metodes, piemēram, \"vietējo krātuvi\".",
-  "static.tcf.cookie_disclosure.intro": "${name} saglabā sīkdatnes, kuru maksimālais dienu ilgums ir aptuveni:",
+  "static.tcf.cookie_disclosure.intro": "saglabā sīkdatnes, kuru maksimālais dienu ilgums ir aptuveni:",
   "static.tcf.cookie_disclosure.non_cookie": "${name} izmanto tādas metodes kā \"Vietējā krātuve\", lai saglabātu un piekļūtu informācijai jūsu ierīcē.",
   "static.tcf.cookie_disclosure.refresh": "Šīs sīkdatnes var tikt atsvaidzinātas.",
   "static.tcf.data_categories": "Datu kategorijas",
