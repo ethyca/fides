@@ -21,6 +21,7 @@ The types of changes are:
 - Removed location and regulation beta flag [#4660](https://github.com/ethyca/fides/pull/4660)
 - Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
 - Bumped supported Python versions to `3.10.13`, `3.9.18`, and `3.8.18`. Bumped Debian base image from `-bullseye` to `-bookworm`. [#4630](https://github.com/ethyca/fides/pull/4630)
+- Bumped Node.js base image from `16` to `20`. [#4684](https://github.com/ethyca/fides/pull/4684)
 
 ### Fixed
 - Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
