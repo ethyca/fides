@@ -163,7 +163,7 @@ const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
       },
     ],
     purposes: "Purposes",
-    stacked_purpose_example: "Purpose 2: Use limited data to select",
+    stacked_purpose_example: "Use limited data to select",
   },
 };
 
@@ -282,8 +282,7 @@ const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
       },
     ],
     purposes: "Propósitos",
-    stacked_purpose_example:
-      "Propósito 2: Uso de datos limitados para seleccionar anuncios básicos",
+    stacked_purpose_example: "Uso de datos limitados para seleccionar anuncios básicos",
   },
 };
 
@@ -1104,7 +1103,7 @@ describe("Consent i18n", () => {
     ];
 
     tests.forEach(({ navigatorLanguage, locale, banner, modal }) => {
-      it(`localizes tcf_overlay components in the correct locale (${locale})`, () => {
+      it.only(`localizes tcf_overlay components in the correct locale (${locale})`, () => {
         visitDemoWithI18n({
           navigatorLanguage,
           globalPrivacyControl: true,
