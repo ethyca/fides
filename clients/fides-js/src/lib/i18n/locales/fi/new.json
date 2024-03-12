@@ -1,0 +1,20 @@
+{
+    "B2": "Käytämme evästeitä ja vastaavia menetelmiä tunnistaaksemme vierailijat ja muistaaksemme heidän mieltymyksensä. Voimme käyttää näitä tekniikoita myös mainoskampanjoiden tehokkuuden mittaamiseen, mainosten kohdistamiseen ja verkkosivuston liikenteen analysointiin. Jotkut näistä teknologioista ovat välttämättömiä palvelun tai verkkosivuston moitteettoman toiminnan varmistamiseksi, eikä niitä voi poistaa käytöstä. Toiset taas ovat valinnaisia, mutta ne parantavat käyttökokemusta eri tavoin.\n\nYhteistyössä kumppaneidemme kanssa tallennamme käyttäjän laitteelle tietoja ja/tai käytämme niitä, mukaan lukien, mutta ei rajoittuen, IP-osoitteet, yksilölliset tunnisteet ja evästeisiin tallennetut selaustiedot henkilötietojen käsittelyä varten. Asetuksia voi hallita valitsemalla ”Hallinnoi asetuksia” -vaihtoehdon sivun alatunnisteessa. Toimittajasivullamme voi tarkastaa tai vastustaa tapauksia, joissa kumppanimme käyttävät oikeutettua etua tietojen hyödyntämiseen.",
+    "B3": "Toimittajat, jotka käyttävät suostumusta",
+    "B4": "Toimittajat, jotka käyttävät oikeutettua etua",
+    "B5": "Käytetyt toimittajat",
+    "B6": "Tietojen myynti, jakaminen ja kohdennettu mainonta",
+    "B7": "Toimittajat, joita käytämme tähän tarkoitukseen",
+    "B8": "X toimittaja(t)",
+    "B9": "Ilmoitus oikeutetusta edusta",
+    "B10": "Tietoluokat",
+    "B11": "Säilyttäminen",
+    "B12": "X päivä(ä)",
+    "B13": "Käyttötarkoituksia ovat",
+    "B14": "Käyttötarkoitus X",
+    "B15": "${name} tallentaa evästeitä, joiden enimmäiskesto on päivissä noin:",
+    "B16": "Näitä evästeitä voidaan päivittää.",
+    "B17": "Tämä toimittaja käyttää myös muita menetelmiä, kuten ”paikallista tallennusta” tietojen tallentamiseen ja käyttämiseen laitteella.",
+    "B18": "${name} käyttää menetelmiä, kuten ”paikallista tallennusta” tietojen tallentamiseen ja käyttämiseen laitteella.",
+    "B19": "Muut toimittajat"
+}

@@ -1,0 +1,20 @@
+{
+    "B2": "Kolačiće i slične metode koristimo kako bismo prepoznali posjetitelje i zapamtili njihove sklonosti. Ove tehnologije također možemo koristiti za procjenu učinkovitosti reklamnih kampanja, ciljanih oglasa i analizu prometa web-mjesta. Neke od ovih tehnologija ključne su za osiguravanje pravilnog funkcioniranja usluge ili web-mjesta i ne mogu biti onesposobljene, dok druge nisu obavezne, ali služe za poboljšanje korisničkog doživljaja na različite načine.\n\nMi, u suradnji s našim partnerima, pohranjujemo i/ili pristupamo informacijama na korisnikovom uređaju, uključujući, ali ne ograničavajući se na IP adrese, jedinstvene identifikatore i pregledavanje podataka pohranjenih u kolačićima kako bismo obradili osobne podatke. Vi imate mogućnost upravljanja preferencijama odabirom opcije „Upravljanje preferencijama“ koja se nalazi u podnožju stranice. Da biste pregledali ili prigovorili na slučajeve kada naši partneri tvrde da imaju legitimni interes za korištenje vaših podataka, posjetite našu stranicu za pružatelje usluga.",
+    "B3": "Pružatelji usluga koji koriste privolu",
+    "B4": "Pružatelji usluga koji koriste legitimni interes",
+    "B5": "Korišteni pružatelji usluga",
+    "B6": "Prodaja podataka, dijeljenje i ciljano oglašavanje",
+    "B7": "Pružatelji usluga koje koristimo u sljedeće svrhe",
+    "B8": "X pružatelj(a) usluga",
+    "B9": "Izjava o legitimnom interesu",
+    "B10": "Kategorije podataka",
+    "B11": "Zadržavanje",
+    "B12": "X dan(a)",
+    "B13": "Svrhe uključuju",
+    "B14": "Svrha X",
+    "B15": "${name} sprema kolačiće maksimalnog trajanja od otprilike ovoliko dana:",
+    "B16": "Ovi se kolačići mogu obnoviti.",
+    "B17": "Ovaj pružatelj usluga također koristi druge metode, kao što je „lokalno spremanje“ za pohranu i pristup podacima na vašem uređaju.",
+    "B18": "${name} koristi metode kao što je „lokalno spremanje“ za pohranu i pristup podacima na vašem uređaju.",
+    "B19": "Drugi pružatelji usluga"
+}
