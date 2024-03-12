@@ -99,6 +99,13 @@ const Overlay: FunctionComponent<Props> = ({
     }
   }, [instance, onOpen]);
 
+  const handleCloseModal = useCallback(() => {
+    if (instance) {
+      instance.hide();
+      onDismiss();
+    }
+  }, [instance, onDismiss]);
+
   const handleCloseModalAfterSave = useCallback(() => {
     if (instance && !options.fidesEmbed) {
       instance.hide();
@@ -123,12 +130,35 @@ const Overlay: FunctionComponent<Props> = ({
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      if (showBanner) {
+      if (!options.fidesPreviewMode) {
+        if (showBanner) {
+          setBannerIsOpen(true);
+        }
+      } else if (options.fidesPreviewComponent === "modal") {
+        // close banner, open modal
+        handleOpenModal();
+      } else if (options.fidesPreviewComponent === "banner") {
+        // close modal, open banner
+        handleCloseModal();
         setBannerIsOpen(true);
+      } else {
+        debugLog(
+          options.debug,
+          "Preview component is not supported",
+          options.fidesPreviewComponent
+        );
       }
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [showBanner, setBannerIsOpen]);
+  }, [
+    showBanner,
+    setBannerIsOpen,
+    options.fidesPreviewMode,
+    options.fidesPreviewComponent,
+    options.debug,
+    handleOpenModal,
+    handleCloseModal,
+  ]);
 
   useEffect(() => {
     window.Fides.showModal = handleOpenModal;

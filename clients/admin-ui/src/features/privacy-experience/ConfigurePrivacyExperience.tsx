@@ -29,12 +29,14 @@ import {
   selectPageSize as selectLanguagePageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
+import Preview from "~/features/privacy-experience/Preview";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
+import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
@@ -66,12 +68,19 @@ const ConfigurePrivacyExperience = ({
 
   const toast = useToast();
 
+  const [isMobilePreview, setIsMobilePreview] = useState(false);
+
   const router = useRouter();
 
   const languagePage = useAppSelector(selectLanguagePage);
   const languagePageSize = useAppSelector(selectLanguagePageSize);
   useGetAllLanguagesQuery({ page: languagePage, size: languagePageSize });
   const allLanguages = useAppSelector(selectAllLanguages);
+  const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
+
+  const initialValues = passedInExperience
+    ? transformConfigResponseToCreate(passedInExperience)
+    : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
     const valuesToSubmit = {
@@ -105,10 +114,6 @@ const ConfigurePrivacyExperience = ({
       router.push(PRIVACY_EXPERIENCE_ROUTE);
     }
   };
-
-  const initialValues = passedInExperience
-    ? transformConfigResponseToCreate(passedInExperience)
-    : defaultInitialValues;
 
   const [translationToEdit, setTranslationToEdit] = useState<
     TranslationWithLanguageName | undefined
@@ -144,6 +149,7 @@ const ConfigurePrivacyExperience = ({
             />
           ) : (
             <PrivacyExperienceForm
+              allPrivacyNotices={allPrivacyNotices}
               onSelectTranslation={handleNewTranslationSelected}
             />
           )}
@@ -163,13 +169,23 @@ const ConfigurePrivacyExperience = ({
                 <IconButton
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
+                  onClick={() => setIsMobilePreview(true)}
+                  bgColor={isMobilePreview ? "gray.200" : undefined}
                 />
                 <IconButton
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
+                  onClick={() => setIsMobilePreview(false)}
+                  bgColor={!isMobilePreview ? "gray.200" : undefined}
                 />
               </ButtonGroup>
             </Flex>
+            <Preview
+              allPrivacyNotices={allPrivacyNotices}
+              initialValues={initialValues}
+              translation={translationToEdit}
+              isMobilePreview={isMobilePreview}
+            />
           </Flex>
         </Flex>
       </Form>
