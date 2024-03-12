@@ -7,7 +7,7 @@
   "static.tcf.consent": "Consimțământ",
   "static.tcf.cookie_disclosure.also_non_cookie": "Acest furnizor folosește și alte metode, cum ar fi „stocarea locală” și accesul la informațiile de pe dispozitivul dvs.",
   "static.tcf.cookie_disclosure.intro": "stochează modulele cookie cu o durată maximă de aproximativ atatea zile:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} folosește și alte metode, cum ar fi „stocarea locală” și accesul la informațiile de pe dispozitivul dvs.",
+  "static.tcf.cookie_disclosure.non_cookie": "folosește și alte metode, cum ar fi „stocarea locală” și accesul la informațiile de pe dispozitivul dvs.",
   "static.tcf.cookie_disclosure.refresh": "Aceste module cookie pot fi reactualizate",
   "static.tcf.data_categories": "Categorii de date",
   "static.tcf.features": "Opțiuni",

@@ -7,7 +7,7 @@
   "static.tcf.consent": "Privolitev",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ta partner za shranjevanje in dostop do informacij v vaši napravi uporablja tudi druge metode, kot je »lokalna shramba«.",
   "static.tcf.cookie_disclosure.intro": "shranjuje piškotke z najdaljšim trajanjem približno toliko dni:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} za shranjevanje in dostop do informacij v vaši napravi uporablja metode, kot je »lokalna shramba«.",
+  "static.tcf.cookie_disclosure.non_cookie": "za shranjevanje in dostop do informacij v vaši napravi uporablja metode, kot je »lokalna shramba«.",
   "static.tcf.cookie_disclosure.refresh": "Ti piškotki se lahko osvežijo.",
   "static.tcf.data_categories": "Kategorije podatkov",
   "static.tcf.features": "Funkcije",

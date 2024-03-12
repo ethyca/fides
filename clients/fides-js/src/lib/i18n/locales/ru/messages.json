@@ -7,7 +7,7 @@
   "static.tcf.consent": "Согласие",
   "static.tcf.cookie_disclosure.also_non_cookie": "Этот поставщик также использует другие методы, например локальное хранилище, для хранения информации на вашем устройстве и доступа к ней.",
   "static.tcf.cookie_disclosure.intro": "хранит файлы cookie в течение максимум примерно такого количества дней:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} использует некоторые методы, например локальное хранилище, для хранения информации на вашем устройстве и доступа к ней.",
+  "static.tcf.cookie_disclosure.non_cookie": "использует некоторые методы, например локальное хранилище, для хранения информации на вашем устройстве и доступа к ней.",
   "static.tcf.cookie_disclosure.refresh": "Эти файлы cookie могут обновляться.",
   "static.tcf.data_categories": "Категории данных",
   "static.tcf.features": "Функции",

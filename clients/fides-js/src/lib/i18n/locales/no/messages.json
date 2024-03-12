@@ -7,7 +7,7 @@
   "static.tcf.consent": "Samtykke",
   "static.tcf.cookie_disclosure.also_non_cookie": "Denne leverandøren bruker også metoder som «lokal lagring» til å lagre og få tilgang til informasjon på enheten din.",
   "static.tcf.cookie_disclosure.intro": "lagrer informasjonskapsler med en maksimal varighet på ca. følgende antall dager:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} bruker metoder som «lokal lagring» til å lagre og få tilgang til informasjon på enheten din.",
+  "static.tcf.cookie_disclosure.non_cookie": "bruker metoder som «lokal lagring» til å lagre og få tilgang til informasjon på enheten din.",
   "static.tcf.cookie_disclosure.refresh": "Disse informasjonskapslene kan oppdateres.",
   "static.tcf.data_categories": "Datakategorier",
   "static.tcf.features": "Funksjoner",

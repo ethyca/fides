@@ -7,7 +7,7 @@
   "static.tcf.consent": "Privola",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ovaj pružatelj usluga također koristi druge metode, kao što je „lokalno spremanje“ za pohranu i pristup podacima na vašem uređaju.",
   "static.tcf.cookie_disclosure.intro": "sprema kolačiće maksimalnog trajanja od otprilike ovoliko dana:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} koristi metode kao što je „lokalno spremanje“ za pohranu i pristup podacima na vašem uređaju.",
+  "static.tcf.cookie_disclosure.non_cookie": "koristi metode kao što je „lokalno spremanje“ za pohranu i pristup podacima na vašem uređaju.",
   "static.tcf.cookie_disclosure.refresh": "Ovi se kolačići mogu obnoviti.",
   "static.tcf.data_categories": "Kategorije podataka",
   "static.tcf.features": "Značajke",

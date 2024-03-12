@@ -7,7 +7,7 @@
   "static.tcf.consent": "Consentimento",
   "static.tcf.cookie_disclosure.also_non_cookie": "Este subministrador tamén emprega outros métodos, como \"almacenamento local\" para gardar e acceder a información do seu dispositivo.",
   "static.tcf.cookie_disclosure.intro": "almacena cookies cunha duración máxima aproximada destes días:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} emprega métodos como \"almacenamento local\" para gardar e acceder a información do seu dispositivo.",
+  "static.tcf.cookie_disclosure.non_cookie": "emprega métodos como \"almacenamento local\" para gardar e acceder a información do seu dispositivo.",
   "static.tcf.cookie_disclosure.refresh": "Estas cookies poden refrescarse.",
   "static.tcf.data_categories": "Categorías de datos",
   "static.tcf.features": "Funcións",

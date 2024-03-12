@@ -7,7 +7,7 @@
   "static.tcf.consent": "Samtycke",
   "static.tcf.cookie_disclosure.also_non_cookie": "Denna leverantör använder också andra metoder som ”lokal lagring” för att lagra och få tillgång till information på din enhet.",
   "static.tcf.cookie_disclosure.intro": "lagrar kakor max ungefär så här många dagar:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} använder också metoder som ”lokal lagring” för att lagra och få tillgång till information på din enhet.",
+  "static.tcf.cookie_disclosure.non_cookie": "använder också metoder som ”lokal lagring” för att lagra och få tillgång till information på din enhet.",
   "static.tcf.cookie_disclosure.refresh": "Dessa kakor kan komma att förnyas.",
   "static.tcf.data_categories": "Datakategorier",
   "static.tcf.features": "Funktioner",

@@ -7,7 +7,7 @@
   "static.tcf.consent": "Consentimento",
   "static.tcf.cookie_disclosure.also_non_cookie": "Este fornecedor também utiliza outros métodos como \"armazenamento local\" para armazenar e acessar informações no seu dispositivo.",
   "static.tcf.cookie_disclosure.intro": "armazena cookies com uma duração máxima de aproximadamente o seguinte número de dias:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} utiliza \"armazenamento local\" para armazenar e acessar informações no seu dispositivo.",
+  "static.tcf.cookie_disclosure.non_cookie": "utiliza \"armazenamento local\" para armazenar e acessar informações no seu dispositivo.",
   "static.tcf.cookie_disclosure.refresh": "Estes cookies podem ser atualizados.",
   "static.tcf.data_categories": "Categorias de dados",
   "static.tcf.features": "Recursos",

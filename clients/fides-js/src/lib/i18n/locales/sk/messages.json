@@ -7,7 +7,7 @@
   "static.tcf.consent": "Súhlas",
   "static.tcf.cookie_disclosure.also_non_cookie": "Tento dodávateľ používa na ukladanie a prístup k informáciám vo vašom zariadení aj iné metódy, napríklad „lokálny ukladací priestor“.",
   "static.tcf.cookie_disclosure.intro": "ukladá súbory cookie s maximálnou dĺžkou trvania približne toľko dní:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} používa na ukladanie a prístup k informáciám vo vašom zariadení metódy, ako je „lokálny ukladací priestor“.",
+  "static.tcf.cookie_disclosure.non_cookie": "používa na ukladanie a prístup k informáciám vo vašom zariadení metódy, ako je „lokálny ukladací priestor“.",
   "static.tcf.cookie_disclosure.refresh": "Tieto súbory cookie sa môžu obnovovať.",
   "static.tcf.data_categories": "Kategórie údajov",
   "static.tcf.features": "Funkcie",

@@ -7,7 +7,7 @@
   "static.tcf.consent": "Suostumus",
   "static.tcf.cookie_disclosure.also_non_cookie": "Tämä toimittaja käyttää myös muita menetelmiä, kuten ”paikallista tallennusta” tietojen tallentamiseen ja käyttämiseen laitteella.",
   "static.tcf.cookie_disclosure.intro": "tallentaa evästeitä, joiden enimmäiskesto on päivissä noin:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} käyttää menetelmiä, kuten ”paikallista tallennusta” tietojen tallentamiseen ja käyttämiseen laitteella.",
+  "static.tcf.cookie_disclosure.non_cookie": "käyttää menetelmiä, kuten ”paikallista tallennusta” tietojen tallentamiseen ja käyttämiseen laitteella.",
   "static.tcf.cookie_disclosure.refresh": "Näitä evästeitä voidaan päivittää.",
   "static.tcf.data_categories": "Tietoluokat",
   "static.tcf.features": "Ominaisuudet",

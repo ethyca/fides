@@ -7,7 +7,7 @@
   "static.tcf.consent": "Съгласие",
   "static.tcf.cookie_disclosure.also_non_cookie": "Този доставчик използва и други методи като “локално съхранение”, за да съхранява и да получава достъп до информация на Вашето устройство.",
   "static.tcf.cookie_disclosure.intro": "съхранява “бисквитки” с максимална продължителност около този брой дни:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} използва методи като “локално съхранение” за съхраняване и достъп до информация на Вашето устройство.",
+  "static.tcf.cookie_disclosure.non_cookie": "използва методи като “локално съхранение” за съхраняване и достъп до информация на Вашето устройство.",
   "static.tcf.cookie_disclosure.refresh": "Тези бисквитки могат да бъдат опреснени.",
   "static.tcf.data_categories": "Категории данни",
   "static.tcf.features": "Функции",

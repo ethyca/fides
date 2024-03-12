@@ -7,7 +7,7 @@
   "static.tcf.consent": "Consentement",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ce fournisseur utilise également d’autres méthodes comme « le stockage local » pour conserver et accéder à l’information sur votre appareil.",
   "static.tcf.cookie_disclosure.intro": "conserve les témoins sur une durée maximale de tant de jours :",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} utilise des méthodes comme le « stockage local » pour conserver et accéder à l’information sur votre appareil.",
+  "static.tcf.cookie_disclosure.non_cookie": "utilise des méthodes comme le « stockage local » pour conserver et accéder à l’information sur votre appareil.",
   "static.tcf.cookie_disclosure.refresh": "Ces témoins peuvent être rafraîchis.",
   "static.tcf.data_categories": "Catégories de données",
   "static.tcf.features": "Fonctionnalités",

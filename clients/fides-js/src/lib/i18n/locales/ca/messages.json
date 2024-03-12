@@ -7,7 +7,7 @@
   "static.tcf.consent": "Consentiment",
   "static.tcf.cookie_disclosure.also_non_cookie": "Aquest proveïdor també utilitza altres mètodes, com ara l’ “emmagatzematge local”, per emmagatzemar i accedir a la informació del vostre dispositiu.",
   "static.tcf.cookie_disclosure.intro": "emmagatzema galetes amb una durada màxima d’aproximadament aquest nombre de dies:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} utilitza mètodes com ara l’“emmagatzematge local” per emmagatzemar i accedir a la informació del vostre dispositiu.",
+  "static.tcf.cookie_disclosure.non_cookie": "utilitza mètodes com ara l’“emmagatzematge local” per emmagatzemar i accedir a la informació del vostre dispositiu.",
   "static.tcf.cookie_disclosure.refresh": "Aquestes galetes es poden actualitzar.",
   "static.tcf.data_categories": "Categories de dades",
   "static.tcf.features": "Característiques",

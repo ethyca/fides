@@ -7,7 +7,7 @@
   "static.tcf.consent": "सहमति",
   "static.tcf.cookie_disclosure.also_non_cookie": "यह वेंडर आपकी डिवाइस पर जानकारी संग्रहीत करने और उस तक पहुंचने के लिए \"स्थानीय भंडारण\" जैसी अन्य विधियों का भी उपयोग करता है।",
   "static.tcf.cookie_disclosure.intro": "लगभग इतने दिनों की अधिकतम अवधि वाली कुकीज़ संग्रहीत करता है:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} आपकी डिवाइस पर जानकारी संग्रहीत करने और उस तक पहुंचने के लिए \"स्थानीय भंडारण\" जैसी विधियों का उपयोग करता है।",
+  "static.tcf.cookie_disclosure.non_cookie": "आपकी डिवाइस पर जानकारी संग्रहीत करने और उस तक पहुंचने के लिए \"स्थानीय भंडारण\" जैसी विधियों का उपयोग करता है।",
   "static.tcf.cookie_disclosure.refresh": "इन कुकीज़ को रीफ्रेश किया जा सकता है।",
   "static.tcf.data_categories": "डेटा श्रेणियां",
   "static.tcf.features": "सुविधाएं",

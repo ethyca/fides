@@ -7,7 +7,7 @@
   "static.tcf.consent": "الموافقة",
   "static.tcf.cookie_disclosure.also_non_cookie": "يستخدم هذا البائع أيضًا طرقًا أخرى مثل \"التخزين المحلي\" لتخزين المعلومات الموجودة على جهازك والوصول إليها.",
   "static.tcf.cookie_disclosure.intro": "يخزن ملفات تعريف الارتباط لمدة أقصاها عدة أيام تقريبا:",
-  "static.tcf.cookie_disclosure.non_cookie": "${name} يستخدم طرقًا مثل \"التخزين المحلي\" لتخزين المعلومات الموجودة على جهازك والوصول إليها.",
+  "static.tcf.cookie_disclosure.non_cookie": "يستخدم طرقًا مثل \"التخزين المحلي\" لتخزين المعلومات الموجودة على جهازك والوصول إليها.",
   "static.tcf.cookie_disclosure.refresh": "قد تُحدّث ملفات تعريف الارتباط هذه.",
   "static.tcf.data_categories": "فئات البيانات",
   "static.tcf.features": "الميزات",
