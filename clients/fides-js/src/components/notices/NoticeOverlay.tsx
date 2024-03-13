@@ -242,6 +242,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}
+          dismissable={experience.experience_config?.dismissable}
           onOpen={dispatchOpenBannerEvent}
           onClose={() => {
             onClose();

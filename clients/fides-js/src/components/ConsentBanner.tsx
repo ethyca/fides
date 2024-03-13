@@ -13,6 +13,7 @@ interface ButtonGroupProps {
 
 interface BannerProps {
   i18n: I18n;
+  dismissable: boolean | undefined;
   onOpen: () => void;
   onClose: () => void;
   bannerIsOpen: boolean;
@@ -28,6 +29,7 @@ interface BannerProps {
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   i18n,
+  dismissable,
   onOpen,
   onClose,
   bannerIsOpen,
@@ -81,7 +83,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           <CloseButton
             ariaLabel="Close banner"
             onClick={window.Fides.options.fidesPreviewMode ? () => {} : onClose}
-            hidden={window.Fides?.options?.preventDismissal}
+            hidden={window.Fides?.options?.preventDismissal || !dismissable}
           />
           <div
             id="fides-banner-inner-container"
