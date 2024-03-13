@@ -127,6 +127,7 @@
         }
       ],
       "gvl": {},
+      "gvl_translations": {},
       "meta": {
         "version_hash": null,
         "accept_all_fides_string": null,
