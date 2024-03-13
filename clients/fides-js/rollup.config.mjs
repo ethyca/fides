@@ -39,7 +39,7 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
     minify: !IS_DEV,
   }),
   copy({
-    // Automatically add the built script to the privacy center's static files for bundling:
+    // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
       {
         src: `dist/${name}.js`,
