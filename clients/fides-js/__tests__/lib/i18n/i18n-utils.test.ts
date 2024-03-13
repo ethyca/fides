@@ -325,6 +325,9 @@ describe("i18n-utils", () => {
         mockExpWithGVL.experience_config.component = "tcf_overlay";
         mockExpWithGVL.gvl_translations = mockGVLTranslationsJSON;
 
+        // Modify "en" to be "EN" (uppercased!), which shouldn't be treated as a mismatch!
+        mockExpWithGVL.experience_config.translations[0].language = "EN";
+
         // Replace "es" with "es-MX" in the experience_config.translations to force a mismatch
         mockExpWithGVL.experience_config.translations[1].language = "es-MX";
 
@@ -333,7 +336,7 @@ describe("i18n-utils", () => {
           mockExpWithGVL.experience_config.translations.map(
             (e: any) => e.language
           )
-        ).toEqual(["en", "es-MX"]);
+        ).toEqual(["EN", "es-MX"]);
         expect(Object.keys(mockExpWithGVL.gvl_translations)).toEqual([
           "en",
           "es",
@@ -346,7 +349,7 @@ describe("i18n-utils", () => {
         );
 
         // Confirm that only the overlapping locales are loaded
-        expect(updatedLocales).toEqual(["en"]);
+        expect(updatedLocales).toEqual(["EN"]);
         const [, loadedMessagesEn] = mockI18n.load.mock.calls[0];
         expect(loadedMessagesEn).toMatchObject({
           "exp.accept_button_label": "Accept Test",

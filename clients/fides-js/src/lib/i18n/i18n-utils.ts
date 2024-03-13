@@ -107,9 +107,14 @@ function extractMessagesFromGVLTranslations(
   // itself is not available in most languages
   const extracted: Record<Locale, Messages> = {};
   locales.forEach((locale) => {
-    // DEFER (PROD-1811): prefer a case-insensitive locale match
-    const gvlTranslation = gvl_translations[locale] as any;
-    if (gvlTranslation) {
+    // Lookup the locale in the GVL using a case-insensitive match
+    const gvlLocaleMatch = Object.keys(gvl_translations).find(
+      (gvlLocale) =>
+        gvlLocale.toLowerCase().replaceAll("_", "-") ===
+        locale.toLowerCase().replaceAll("_", "-")
+    );
+    if (gvlLocaleMatch) {
+      const gvlTranslation = gvl_translations[gvlLocaleMatch] as any;
       const messages: Messages = {};
 
       const recordTypes = [
