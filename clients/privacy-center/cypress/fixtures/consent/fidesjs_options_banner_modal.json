@@ -154,7 +154,9 @@
           }
         ]
       }
-    ]
+    ],
+    "gvl": {},
+    "gvl_translations": {}
   },
   "geolocation": {
     "country": "US",

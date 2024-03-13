@@ -634,7 +634,7 @@ describe("i18n-utils", () => {
      */
     type MockPrivacyExperience = Omit<
       PrivacyExperience,
-      "component" | "experience_config" | "privacy_notices"
+      "component" | "experience_config" | "privacy_notices" | "gvl"
     > & {
       component: string;
       experience_config: Omit<ExperienceConfig, "component"> & {
