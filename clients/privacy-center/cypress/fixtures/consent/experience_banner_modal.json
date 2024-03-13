@@ -141,7 +141,9 @@
             }
           ]
         }
-      ]
+      ],
+      "gvl": {},
+      "gvl_translations": {}
     }
   ],
   "total": 1,

@@ -1,4 +1,5 @@
 import {
+  ComponentType,
   ExperienceConfig,
   ExperienceConfigTranslation,
   FidesOptions,
@@ -181,39 +182,45 @@ export function loadMessagesFromExperience(
   experience: Partial<PrivacyExperience>
 ): Locale[] {
   const allMessages: Record<Locale, Messages> = {};
+  let availableLocales: Locale[] = [];
 
   // Extract messages from experience_config.translations
   if (experience?.experience_config) {
+    const config = experience.experience_config;
     const extracted: Record<Locale, Messages> =
-      extractMessagesFromExperienceConfig(experience.experience_config);
+      extractMessagesFromExperienceConfig(config);
     Object.keys(extracted).forEach((locale) => {
       allMessages[locale] = {
         ...extracted[locale],
         ...allMessages[locale],
       };
     });
-  }
-  let availableLocales: Locale[] = Object.keys(allMessages);
 
-  // Extract messages from gvl_translations, filtering to only locales that
-  // exist in experience_config above
-  if (experience?.gvl_translations) {
-    const extracted: Record<Locale, Messages> =
-      extractMessagesFromGVLTranslations(
-        experience.gvl_translations,
-        availableLocales
-      );
-    // Filter the locales further to include only those that existed in
-    // gvl_translations as well
-    availableLocales = Object.keys(extracted);
+    // Set availableLocales to all locales extracted from the experience_config
+    availableLocales = Object.keys(allMessages);
 
-    // Combine extracted messages with those from experience_config above
-    Object.keys(extracted).forEach((locale) => {
-      allMessages[locale] = {
-        ...extracted[locale],
-        ...allMessages[locale],
-      };
-    });
+    // Extract messages from gvl_translations, filtering to only availableLocales
+    if (
+      config.component === ComponentType.TCF_OVERLAY &&
+      experience?.gvl_translations
+    ) {
+      const extractedGVL: Record<Locale, Messages> =
+        extractMessagesFromGVLTranslations(
+          experience.gvl_translations,
+          availableLocales
+        );
+      // Filter the locales further to include only those that existed in
+      // gvl_translations as well
+      availableLocales = Object.keys(extractedGVL);
+
+      // Combine extracted messages with those from experience_config above
+      Object.keys(extractedGVL).forEach((locale) => {
+        allMessages[locale] = {
+          ...extractedGVL[locale],
+          ...allMessages[locale],
+        };
+      });
+    }
   }
 
   // Load all the extracted messages into the i18n module
