@@ -13,6 +13,55 @@ import { STATIC_MESSAGES } from "./locales";
 import { GVLTranslations } from "../tcf/types";
 
 /**
+ * Match the user's preferred locale to the best match from the given locales.
+ *
+ * NOTE: This might seem trivial but doing it *correctly* is pretty complex.
+ * There's a standards-track proposal to define a "Intl.LocaleMatcher" function as
+ * part of the core library you can see here:
+ * https://github.com/tc39/proposal-intl-localematcher
+ *
+ * This function follows the basic structure of that LocaleMatcher function (with fewer options) and does the following:
+ * 1) Parse the locale string (e.g. "fr-CA" into {language}-{region})
+ * 2) Return an exact match for {language}-{region} if possible (e.g. "fr-CA" -> "fr-CA")
+ * 3) Fallback to the {language} only if possible (e.g. "fr-CA" -> "fr")
+ * 4) Fallback to the default locale otherwise (e.g. "fr-CA" -> "en")
+ */
+export function matchAvailableLocales(
+  requestedLocale: Locale,
+  availableLocales: Locale[],
+  defaultLocale: Locale = DEFAULT_LOCALE
+): Locale {
+  // 1) Parse the requested locale string using our regex
+  const match = requestedLocale.match(LOCALE_REGEX);
+  if (match) {
+    const [locale, language] = match;
+
+    // 2) Look for an exact match of the requested locale
+    const exactMatch = availableLocales.find(
+      (elem) =>
+        elem.toLowerCase().replaceAll("_", "-") ===
+        locale.toLowerCase().replaceAll("_", "-")
+    );
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    // 3) Fallback to the {language} of the requested locale
+    const languageMatch = availableLocales.find(
+      (elem) =>
+        elem.toLowerCase().replaceAll("_", "-") ===
+        language.toLowerCase().replaceAll("_", "-")
+    );
+    if (languageMatch) {
+      return languageMatch;
+    }
+  }
+
+  // 4) Fallback to default locale
+  return defaultLocale;
+}
+
+/**
  * Helper function to extract all the translated messages from an
  * ExperienceConfig API response. Returns an object that maps locales -> messages, e.g.
  * {
@@ -107,9 +156,13 @@ function extractMessagesFromGVLTranslations(
   // itself is not available in most languages
   const extracted: Record<Locale, Messages> = {};
   locales.forEach((locale) => {
-    // DEFER (PROD-1811): prefer a case-insensitive locale match
-    const gvlTranslation = gvl_translations[locale] as any;
-    if (gvlTranslation) {
+    // Find the "best" match in the GVL translations for this locale; this
+    // allows us to use generic GVL translations (e.g. "es") in some cases like
+    // "es-MX", since the GVL only supplies a limited set of languages!
+    const gvlLocales = Object.keys(gvl_translations);
+    const gvlLocaleMatch = matchAvailableLocales(locale, gvlLocales, "none");
+    if (gvlLocaleMatch !== "none") {
+      const gvlTranslation = gvl_translations[gvlLocaleMatch] as any;
       const messages: Messages = {};
 
       const recordTypes = [
@@ -237,54 +290,6 @@ export function detectUserLocale(
   const browserLocale = navigator?.language;
   const fidesLocaleOverride = options?.fidesLocale;
   return fidesLocaleOverride || browserLocale || DEFAULT_LOCALE;
-}
-
-/**
- * Match the user's preferred locale to the best match from the given locales.
- *
- * NOTE: This might seem trivial but doing it *correctly* is pretty complex.
- * There's a standards-track proposal to define a "Intl.LocaleMatcher" function as
- * part of the core library you can see here:
- * https://github.com/tc39/proposal-intl-localematcher
- *
- * This function follows the basic structure of that LocaleMatcher function (with fewer options) and does the following:
- * 1) Parse the locale string (e.g. "fr-CA" into {language}-{region})
- * 2) Return an exact match for {language}-{region} if possible (e.g. "fr-CA" -> "fr-CA")
- * 3) Fallback to the {language} only if possible (e.g. "fr-CA" -> "fr")
- * 4) Fallback to the default locale otherwise (e.g. "fr-CA" -> "en")
- */
-export function matchAvailableLocales(
-  requestedLocale: Locale,
-  availableLocales: Locale[]
-): Locale {
-  // 1) Parse the requested locale string using our regex
-  const match = requestedLocale.match(LOCALE_REGEX);
-  if (match) {
-    const [locale, language] = match;
-
-    // 2) Look for an exact match of the requested locale
-    const exactMatch = availableLocales.find(
-      (elem) =>
-        elem.toLowerCase().replaceAll("_", "-") ===
-        locale.toLowerCase().replaceAll("_", "-")
-    );
-    if (exactMatch) {
-      return exactMatch;
-    }
-
-    // 3) Fallback to the {language} of the requested locale
-    const languageMatch = availableLocales.find(
-      (elem) =>
-        elem.toLowerCase().replaceAll("_", "-") ===
-        language.toLowerCase().replaceAll("_", "-")
-    );
-    if (languageMatch) {
-      return languageMatch;
-    }
-  }
-
-  // 4) Fallback to default locale
-  return DEFAULT_LOCALE;
 }
 
 /**

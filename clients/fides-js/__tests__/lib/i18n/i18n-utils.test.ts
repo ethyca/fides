@@ -325,15 +325,20 @@ describe("i18n-utils", () => {
         mockExpWithGVL.experience_config.component = "tcf_overlay";
         mockExpWithGVL.gvl_translations = mockGVLTranslationsJSON;
 
-        // Replace "es" with "es-MX" in the experience_config.translations to force a mismatch
+        // Fake a new translation in the experience_config that doesn't exist in the gvl_translations to force a mismatch
+        mockExpWithGVL.experience_config.translations.push({
+          ...mockExpWithGVL.experience_config.translations[1],
+          ...{ language: "fr" },
+        });
+        // Modify the "es" translation to be "es-MX" in the experience_config.translations to force a *slight* mismatch
         mockExpWithGVL.experience_config.translations[1].language = "es-MX";
 
-        // Confirm our test setup shows a mismatch between experience_config & gvl_translations
+        // Confirm our test setup shows the expected mismatches between experience_config & gvl_translations
         expect(
           mockExpWithGVL.experience_config.translations.map(
             (e: any) => e.language
           )
-        ).toEqual(["en", "es-MX"]);
+        ).toEqual(["en", "es-MX", "fr"]);
         expect(Object.keys(mockExpWithGVL.gvl_translations)).toEqual([
           "en",
           "es",
@@ -345,9 +350,12 @@ describe("i18n-utils", () => {
           mockExpWithGVL
         );
 
-        // Confirm that only the overlapping locales are loaded
-        expect(updatedLocales).toEqual(["en"]);
+        // Confirm the loaded locales include:
+        // 1) "en": exact match between both experience_config & gvl_translations
+        // 2) "es-MX": partial match; allow the "es" translations from GVL to be used for a "es-MX" experience
+        expect(updatedLocales).toEqual(["en", "es-MX"]);
         const [, loadedMessagesEn] = mockI18n.load.mock.calls[0];
+        const [, loadedMessagesEs] = mockI18n.load.mock.calls[1];
         expect(loadedMessagesEn).toMatchObject({
           "exp.accept_button_label": "Accept Test",
           "exp.acknowledge_button_label": "Acknowledge Test",
@@ -355,6 +363,16 @@ describe("i18n-utils", () => {
             "Store and/or access information on a device",
           "exp.tcf.purposes.1.description": expect.stringMatching(
             /^Cookies, device or similar/
+          ),
+        });
+        expect(loadedMessagesEs).toMatchObject({
+          "exp.accept_button_label": "Aceptar Prueba",
+          "exp.acknowledge_button_label": "Reconocer Prueba",
+          "exp.tcf.purposes.1.name": expect.stringMatching(
+            /^Almacenar la información en un dispositivo/
+          ),
+          "exp.tcf.purposes.1.description": expect.stringMatching(
+            /^Las cookies, los identificadores de dispositivos/
           ),
         });
       });
@@ -401,6 +419,9 @@ describe("i18n-utils", () => {
       const availableLocales = ["en", "es", "fr"];
       expect(matchAvailableLocales("zh", availableLocales)).toEqual("en");
       expect(matchAvailableLocales("foo", availableLocales)).toEqual("en");
+      expect(matchAvailableLocales("foo", availableLocales, "zz")).toEqual(
+        "zz"
+      );
     });
 
     it("performs a case-insensitive lookup", () => {
