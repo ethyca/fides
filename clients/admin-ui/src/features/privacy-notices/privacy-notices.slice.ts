@@ -8,6 +8,7 @@ import {
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
+  PrivacyNoticeResponseWithRegions,
   PrivacyNoticeUpdate,
 } from "~/types/api";
 
@@ -76,14 +77,16 @@ const privacyNoticesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Privacy Notices"],
     }),
-    getPrivacyNoticeById: build.query<PrivacyNoticeResponse, string>({
-      query: (id) => ({
-        url: `privacy-notice/${id}`,
-      }),
-      providesTags: (result, error, arg) => [
-        { type: "Privacy Notices", id: arg },
-      ],
-    }),
+    getPrivacyNoticeById: build.query<PrivacyNoticeResponseWithRegions, string>(
+      {
+        query: (id) => ({
+          url: `privacy-notice/${id}`,
+        }),
+        providesTags: (result, error, arg) => [
+          { type: "Privacy Notices", id: arg },
+        ],
+      }
+    ),
     postPrivacyNotice: build.mutation<
       PrivacyNoticeResponse[],
       PrivacyNoticeCreation

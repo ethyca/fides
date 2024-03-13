@@ -17,5 +17,6 @@
       "title": "English Title",
       "description": "This is a description in English"
     }
-  ]
+  ],
+  "configured_regions": ["us", "us_ca"]
 }

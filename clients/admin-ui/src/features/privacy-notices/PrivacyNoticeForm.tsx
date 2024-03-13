@@ -1,4 +1,14 @@
-import { Button, ButtonGroup, Stack, useToast } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Flex,
+  FormLabel,
+  Stack,
+  useToast,
+  VStack,
+} from "@fidesui/react";
+import { Select } from "chakra-react-select";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -9,17 +19,23 @@ import {
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
+  SELECT_STYLES,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import { PRIVACY_NOTICE_REGION_OPTIONS } from "~/features/common/privacy-notice-regions";
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectEnabledDataUseOptions,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
-import { PrivacyNoticeCreation, PrivacyNoticeResponse } from "~/types/api";
+import {
+  PrivacyNoticeCreation,
+  PrivacyNoticeRegion,
+  PrivacyNoticeResponseWithRegions,
+} from "~/types/api";
 
 import {
   CONSENT_MECHANISM_OPTIONS,
@@ -33,10 +49,57 @@ import {
   usePostPrivacyNoticeMutation,
 } from "./privacy-notices.slice";
 
+const PrivacyNoticeLocationDisplay = ({
+  regions,
+  label,
+  tooltip,
+}: {
+  regions?: PrivacyNoticeRegion[];
+  label: string;
+  tooltip: string;
+}) => (
+  <VStack align="start">
+    <Flex align="start">
+      {label ? (
+        <FormLabel htmlFor="regions" fontSize="xs" my={0} mr={1}>
+          {label}
+        </FormLabel>
+      ) : null}
+      {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+    </Flex>
+    <Box w="100%" data-testid="notice-locations">
+      <Select
+        chakraStyles={{
+          ...SELECT_STYLES,
+          dropdownIndicator: (provided) => ({
+            ...provided,
+            display: "none",
+          }),
+          multiValueRemove: (provided) => ({
+            ...provided,
+            display: "none",
+          }),
+        }}
+        classNamePrefix="notice-locations"
+        size="sm"
+        isMulti
+        isDisabled
+        placeholder="No locations assigned"
+        value={
+          regions?.map((r) => ({
+            label: PRIVACY_NOTICE_REGION_RECORD[r],
+            value: r,
+          })) ?? []
+        }
+      />
+    </Box>
+  </VStack>
+);
+
 const PrivacyNoticeForm = ({
   privacyNotice: passedInPrivacyNotice,
 }: {
-  privacyNotice?: PrivacyNoticeResponse;
+  privacyNotice?: PrivacyNoticeResponseWithRegions;
 }) => {
   const router = useRouter();
   const toast = useToast();
@@ -110,18 +173,11 @@ const PrivacyNoticeForm = ({
                   variant="stacked"
                 />
                 <NoticeKeyField isEditing={isEditing} />
-                {passedInPrivacyNotice ? (
-                  <CustomSelect
-                    name="regions"
-                    label="Locations where consent notice is shown to visitors"
-                    tooltip="Add locations to this privacy notice by configuring the corresponding privacy experience"
-                    options={PRIVACY_NOTICE_REGION_OPTIONS}
-                    variant="stacked"
-                    placeholder="No locations assigned"
-                    isDisabled
-                    isMulti
-                  />
-                ) : null}
+                <PrivacyNoticeLocationDisplay
+                  regions={passedInPrivacyNotice?.configured_regions}
+                  label="Locations where consent notice is shown to visitors"
+                  tooltip="To configure locations, change the privacy experiences where this notice is shown"
+                />
                 <CustomSwitch
                   name="has_gpc_flag"
                   label="Configure whether this notice conforms to the Global Privacy Control"
