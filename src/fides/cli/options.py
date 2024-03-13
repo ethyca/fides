@@ -330,3 +330,8 @@ def username_argument(command: Callable) -> Callable:
 def password_argument(command: Callable) -> Callable:
     command = click.argument("password", type=str)(command)  # type: ignore
     return command
+
+
+def email_address_argument(command: Callable) -> Callable:
+    command = click.argument("email_address", type=str)(command)  # type: ignore
+    return command

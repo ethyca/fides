@@ -71,6 +71,9 @@ The types of changes are:
 - Columns in data map reporting, adding multiple systems, and consent configuration tables can be resized. In the data map reporting table, fields with multiple values can show all or collapse all [#4569](https://github.com/ethyca/fides/pull/4569)
 - Show custom fields in the data map report table [#4579](https://github.com/ethyca/fides/pull/4579)
 
+### Added
+- Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
+
 ### Changed
 
 - Delay rendering the nav until all necessary queries are finished loading [#4571](https://github.com/ethyca/fides/pull/4571)

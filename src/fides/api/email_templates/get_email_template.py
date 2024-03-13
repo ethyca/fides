@@ -16,6 +16,7 @@ from fides.api.email_templates.template_names import (
     PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE,
     SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
     TEST_MESSAGE_TEMPLATE,
+    USER_INVITE,
 )
 from fides.api.schemas.messaging.messaging import MessagingActionType
 
@@ -53,6 +54,8 @@ def get_email_template(  # pylint: disable=too-many-return-statements
         return template_env.get_template(PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE)
     if action_type == MessagingActionType.TEST_MESSAGE:
         return template_env.get_template(TEST_MESSAGE_TEMPLATE)
+    if action_type == MessagingActionType.USER_INVITE:
+        return template_env.get_template(USER_INVITE)
 
     logger.error("No corresponding template linked to the {}", action_type)
     raise EmailTemplateUnhandledActionType(

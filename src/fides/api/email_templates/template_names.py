@@ -9,3 +9,4 @@ PRIVACY_REQUEST_ERROR_NOTIFICATION_TEMPLATE = "privacy_request_error_notificatio
 PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE = "privacy_request_review_deny.html"
 PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE = "privacy_request_review_approve.html"
 TEST_MESSAGE_TEMPLATE = "test_message.html"
+USER_INVITE = "user_invite.html"
