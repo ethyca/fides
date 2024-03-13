@@ -67,7 +67,7 @@ const PrivacyNoticeLocationDisplay = ({
       ) : null}
       {tooltip ? <QuestionTooltip label={tooltip} /> : null}
     </Flex>
-    <Box w="100%">
+    <Box w="100%" data-testid="notice-locations">
       <Select
         chakraStyles={{
           ...SELECT_STYLES,
@@ -80,6 +80,7 @@ const PrivacyNoticeLocationDisplay = ({
             display: "none",
           }),
         }}
+        classNamePrefix="notice-locations"
         size="sm"
         isMulti
         isDisabled

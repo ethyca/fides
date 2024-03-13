@@ -237,6 +237,14 @@ describe("Privacy notices", () => {
         cy.getSelectValueContainer("input-consent_mechanism").contains(
           "Notice only"
         );
+        cy.getByTestId("notice-locations").within(() => {
+          cy.get(".notice-locations--is-disabled");
+          cy.get(".notice-locations__value-container").should(
+            "contain",
+            "United States"
+          );
+        });
+        cy.getByTestId("notice-locations");
         cy.getByTestId("input-has_gpc_flag").within(() => {
           cy.get("span").should("not.have.attr", "data-checked");
         });
