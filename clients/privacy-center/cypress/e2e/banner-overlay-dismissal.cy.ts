@@ -32,7 +32,9 @@ describe("Banner and modal dismissal", () => {
   // Test all combinations of TCF enabled/disabled and prevent dismissal enabled/disabled
   interface TestCaseOptions {
     tcfEnabled: boolean;
+    // this comes from the env var "PREVENT_DISMISSAL", and should take precedence over the below
     preventDismissal: boolean;
+    // this comes from the experience config
     dismissable: boolean;
     expectation: Expectation;
   }
