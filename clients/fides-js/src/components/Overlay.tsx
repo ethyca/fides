@@ -209,6 +209,7 @@ const Overlay: FunctionComponent<Props> = ({
       ) : (
         <ConsentModal
           attributes={attributes}
+          dismissable={experience.experience_config.dismissable}
           i18n={i18n}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>
