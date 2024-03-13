@@ -196,19 +196,6 @@ const Preview = ({
         div#fides-banner-container.fides-banner-hidden {
           display: none;
         }
-        ${values.component === ComponentType.BANNER_AND_MODAL ||
-        values.component === ComponentType.MODAL
-          ? `div#fides-modal {
-          display: flex !important;
-          ${
-            values.component === ComponentType.BANNER_AND_MODAL
-              ? "padding-top: 3rem; padding-bottom: 3rem;"
-              : null
-          }
-          justify-content: center;
-          background_color: unset;
-        }`
-          : null}
         .fides-modal-container {
           background-color: unset !important;
           position: static !important;
@@ -229,6 +216,21 @@ const Preview = ({
           width: unset;
         }
       `}</style>
+      {values.component === ComponentType.BANNER_AND_MODAL ||
+      values.component === ComponentType.MODAL ? (
+        <style>
+          {`div#fides-modal {
+          display: flex !important;
+          justify-content: center;
+          background-color: unset;
+          ${
+            values.component === ComponentType.BANNER_AND_MODAL
+              ? "padding-top: 3rem; padding-bottom: 3rem;"
+              : ""
+          }
+        }`}
+        </style>
+      ) : null}
       {isMobilePreview ? (
         <style>{`
             div#preview-container {
