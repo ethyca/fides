@@ -107,33 +107,37 @@ function extractMessagesFromGVLTranslations(
   // itself is not available in most languages
   const extracted: Record<Locale, Messages> = {};
   locales.forEach((locale) => {
+    // TODO (PROD-1811): prefer a case-insensitive locale match
     const gvlTranslation = gvl_translations[locale] as any;
-    const messages: Messages = {};
+    if (gvlTranslation) {
+      const messages: Messages = {};
 
-    const recordTypes = [
-      "purposes",
-      "specialPurposes",
-      "features",
-      "specialFeatures",
-      "stacks",
-      "dataCategories",
-    ];
-    recordTypes.forEach((type) => {
-      Object.keys(gvlTranslation[type]).forEach((id) => {
-        const record = gvlTranslation[type][id];
-        const prefix = `exp.tcf.${type}.${id}`;
-        messages[`${prefix}.name`] = record.name;
-        messages[`${prefix}.description`] = record.description;
-        if (record.illustrations && record.illustrations.length > 0) {
-          record.illustrations.forEach((illustration: string, i: number) => {
-            messages[`${prefix}.illustrations.${i}`] = illustration;
-          });
-        }
+      const recordTypes = [
+        "purposes",
+        "specialPurposes",
+        "features",
+        "specialFeatures",
+        "stacks",
+        "dataCategories",
+      ];
+      recordTypes.forEach((type) => {
+        const records = gvlTranslation[type] || {};
+        Object.keys(records).forEach((id) => {
+          const record = records[id];
+          const prefix = `exp.tcf.${type}.${id}`;
+          messages[`${prefix}.name`] = record.name;
+          messages[`${prefix}.description`] = record.description;
+          if (record.illustrations && record.illustrations.length > 0) {
+            record.illustrations.forEach((illustration: string, i: number) => {
+              messages[`${prefix}.illustrations.${i}`] = illustration;
+            });
+          }
+        });
       });
-    });
 
-    // Combine these extracted messages with all the other locales
-    extracted[locale] = { ...messages, ...extracted[locale] };
+      // Combine these extracted messages with all the other locales
+      extracted[locale] = { ...messages, ...extracted[locale] };
+    }
   });
   return extracted;
 }
@@ -150,7 +154,13 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
- * into the message catalog.
+ * into the message catalog. Extracts translations from two sources:
+ * 1) experience.experience_config
+ * 2) experience.gvl_translations
+ *
+ * Returns a list of locales that exist in *both* these sources, discarding any
+ * locales that exist in one but not the other. This is done to encourage only
+ * using locales with "full" translation catalogs.
  *
  * NOTE: We don't extract any messages from the PrivacyNotices and their linked
  * translations. This is because notices are dynamic and their list of available
@@ -178,15 +188,21 @@ export function loadMessagesFromExperience(
       };
     });
   }
-  const extractedLocales: Locale[] = Object.keys(allMessages);
+  let availableLocales: Locale[] = Object.keys(allMessages);
 
-  // Extract messages from gvl_translations
+  // Extract messages from gvl_translations, filtering to only locales that
+  // exist in experience_config above
   if (experience?.gvl_translations) {
     const extracted: Record<Locale, Messages> =
       extractMessagesFromGVLTranslations(
         experience.gvl_translations,
-        extractedLocales
+        availableLocales
       );
+    // Filter the locales further to include only those that existed in
+    // gvl_translations as well
+    availableLocales = Object.keys(extracted);
+
+    // Combine extracted messages with those from experience_config above
     Object.keys(extracted).forEach((locale) => {
       allMessages[locale] = {
         ...extracted[locale],
@@ -196,12 +212,12 @@ export function loadMessagesFromExperience(
   }
 
   // Load all the extracted messages into the i18n module
-  extractedLocales.forEach((locale) => {
+  availableLocales.forEach((locale) => {
     i18n.load(locale, allMessages[locale]);
   });
 
   // Return all the locales we extracted & updated
-  return extractedLocales;
+  return availableLocales;
 }
 
 /**

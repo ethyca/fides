@@ -330,11 +330,14 @@ describe("i18n-utils", () => {
         mockExpWithGVLTranslations.gvl_translations = mockGVLTranslationsJSON;
 
         // Replace "es" with "es-MX" in the experience_config.translations to force a mismatch
-        mockExpWithGVLTranslations.experience_config.translations[1].language = "es-MX";
+        mockExpWithGVLTranslations.experience_config.translations[1].language =
+          "es-MX";
 
         // Confirm our test setup shows a mismatch between experience_config & gvl_translations
         expect(
-          mockExpWithGVLTranslations.experience_config.translations.map((e: any) => e.language)
+          mockExpWithGVLTranslations.experience_config.translations.map(
+            (e: any) => e.language
+          )
         ).toEqual(["en", "es-MX"]);
         expect(
           Object.keys(mockExpWithGVLTranslations.gvl_translations)
@@ -353,8 +356,11 @@ describe("i18n-utils", () => {
         expect(loadedMessagesEn).toMatchObject({
           "exp.accept_button_label": "Accept Test",
           "exp.acknowledge_button_label": "Acknowledge Test",
-          "exp.tcf.purposes.1.name": "Store and/or access information on a device",
-          "exp.tcf.purposes.1.description": expect.stringMatching(/^Cookies, device or similar/),
+          "exp.tcf.purposes.1.name":
+            "Store and/or access information on a device",
+          "exp.tcf.purposes.1.description": expect.stringMatching(
+            /^Cookies, device or similar/
+          ),
         });
       });
     });
