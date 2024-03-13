@@ -140,13 +140,16 @@ export const PrivacyNoticesTable = () => {
         }),
         columnHelper.accessor((row) => row.configured_regions, {
           id: "regions",
-          cell: (props) => (
-            <GroupCountBadgeCell
-              suffix="Locations"
-              value={getRegions(props.getValue())}
-              {...props}
-            />
-          ),
+          cell: (props) =>
+            getRegions(props.getValue())?.length ? (
+              <GroupCountBadgeCell
+                suffix="Locations"
+                value={getRegions(props.getValue())}
+                {...props}
+              />
+            ) : (
+              <DefaultCell value="Unassigned" />
+            ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
           meta: {
             displayText: "Locations",
