@@ -8,11 +8,13 @@ import ConsentContent from "./ConsentContent";
 
 const ConsentModal = ({
   attributes,
+  dismissable,
   i18n,
   renderModalFooter,
   renderModalContent,
 }: {
   attributes: Attributes;
+  dismissable: boolean | undefined;
   i18n: I18n;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode;
@@ -42,7 +44,7 @@ const ConsentModal = ({
                 ? () => {}
                 : closeButton.onClick
             }
-            hidden={window.Fides.options.preventDismissal}
+            hidden={window.Fides.options.preventDismissal || !dismissable}
           />
         </div>
         <ConsentContent

@@ -332,6 +332,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         return (
           <ConsentBanner
             i18n={i18n}
+            dismissable={experience.experience_config?.dismissable}
             bannerIsOpen={isOpen}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
