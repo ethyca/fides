@@ -47,6 +47,7 @@ The types of changes are:
 
 ### Fixed
 - Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
+- Various FE fixes for Admin-UI experience config form [#4707](https://github.com/ethyca/fides/pull/4707)
 
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
 
