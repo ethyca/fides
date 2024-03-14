@@ -31,6 +31,7 @@ The types of changes are:
 - Added Locations & Regulations pages to allow a wider selection of locations for consent [#4660](https://github.com/ethyca/fides/pull/4660)
 - Erasure support for Simon Data [#4552](https://github.com/ethyca/fides/pull/4552)
 - Added notice there will be no preview for Privacy Center types in the Experience preview [#4709](https://github.com/ethyca/fides/pull/4709)
+- Removed properties beta flag [#4710](https://github.com/ethyca/fides/pull/4710)
 
 ### Changed
 - Moved location-targeting from Notices to Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
