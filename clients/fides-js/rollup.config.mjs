@@ -11,8 +11,8 @@ import commonjs from "@rollup/plugin-commonjs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 65; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 55; // log a warning if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
+const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
 
 // TCF
 const GZIP_SIZE_TCF_ERROR_KB = 85;
