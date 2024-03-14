@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetPropertyByIdQuery,
@@ -31,7 +30,6 @@ const EditPropertyPage: NextPage = () => {
     }
 
     toast(successToastParams(`Property ${values.name} updated successfully`));
-    router.push(`${PROPERTIES_ROUTE}`);
   };
 
   if (!data) {
