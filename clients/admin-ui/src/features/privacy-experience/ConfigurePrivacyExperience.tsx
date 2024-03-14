@@ -51,6 +51,10 @@ const translationSchema = (requirePreferencesLink: boolean) =>
     description: Yup.string().required().label("Description"),
     accept_button_label: Yup.string().required().label("Accept button label"),
     reject_button_label: Yup.string().required().label("Reject button label"),
+    save_button_label: Yup.string().required().label("Save button label"),
+    acknowledge_button_label: Yup.string()
+      .required()
+      .label("Acknowledge button label"),
     privacy_policy_url: Yup.string().url().nullable(),
     is_default: Yup.boolean(),
     privacy_preferences_link_label: requirePreferencesLink
