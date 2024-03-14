@@ -8,11 +8,12 @@ import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
 import commonjs from "@rollup/plugin-commonjs";
+import { visualizer } from "rollup-plugin-visualizer";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 65; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 55; // log a warning if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
+const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
 
 // TCF
 const GZIP_SIZE_TCF_ERROR_KB = 85;
@@ -63,13 +64,15 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
         if (gzipSizeKb > gzipErrorSizeKb) {
           console.error(
             `❌ ERROR: ${fileName} build failed! Gzipped size (${gzipSize}) exceeded maximum size (${gzipErrorSizeKb} KB)!`,
-            `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs`
+            `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs.`,
+            `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`
           );
           process.exit(1);
         } else if (gzipSizeKb > gzipWarnSizeKb) {
           console.warn(
             `️🚨 WARN: ${fileName} build is getting large! Gzipped size (${gzipSize}) exceeded warning size (${gzipWarnSizeKb} KB)!`,
-            `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs`
+            `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs.`,
+            `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`
           );
           if (IS_DEV) {
             process.exit(1);
@@ -81,6 +84,9 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
         }
       },
     ],
+  }),
+  visualizer({
+    filename: `bundle-size-stats/${name}-stats.html`,
   }),
 ];
 
@@ -122,7 +128,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
-        sourcemap: IS_DEV,
+        sourcemap: true, //IS_DEV,
       },
     ],
   };
