@@ -30,6 +30,7 @@ The types of changes are:
 - Added property_id query param to fides.js to filter experiences by Property when installed [#4676](https://github.com/ethyca/fides/pull/4676)
 - Added Locations & Regulations pages to allow a wider selection of locations for consent [#4660](https://github.com/ethyca/fides/pull/4660)
 - Erasure support for Simon Data [#4552](https://github.com/ethyca/fides/pull/4552)
+- Added notice there will be no preview for Privacy Center types in the Experience preview [#4709](https://github.com/ethyca/fides/pull/4709)
 
 ### Changed
 - Moved location-targeting from Notices to Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
@@ -47,6 +48,7 @@ The types of changes are:
 
 ### Fixed
 - Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
+- Various FE fixes for Admin-UI experience config form [#4707](https://github.com/ethyca/fides/pull/4707)
 - Optimize FidesJS bundle size by only loading TCF static stings when needed [#4711](https://github.com/ethyca/fides/pull/4711)
 
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)

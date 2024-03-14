@@ -185,7 +185,8 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
-      {values.component === ComponentType.BANNER_AND_MODAL ? (
+      {values.component === ComponentType.BANNER_AND_MODAL ||
+      values.component === ComponentType.TCF_OVERLAY ? (
         <>
           <CustomTextInput
             name={`translations.${translationIndex}.banner_title`}
@@ -231,8 +232,8 @@ const PrivacyExperienceTranslationForm = ({
           name={`translations.${translationIndex}.save_button_label`}
           id={`translations.${translationIndex}.save_button_label`}
           label={`"Save" button label`}
-          isRequired={formConfig.save_button_label.required}
           variant="stacked"
+          isRequired={formConfig.save_button_label.required}
         />
       ) : null}
       {formConfig.acknowledge_button_label?.included ? (
@@ -241,13 +242,14 @@ const PrivacyExperienceTranslationForm = ({
           id={`translations.${translationIndex}.acknowledge_button_label`}
           label={`"Acknowledge" button label`}
           variant="stacked"
+          isRequired={formConfig.acknowledge_button_label.required}
         />
       ) : null}
       {formConfig.privacy_policy_link_label?.included ? (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_policy_link_label`}
           id={`translations.${translationIndex}.privacy_policy_link_label`}
-          label="Privacy policy link label"
+          label="Privacy policy link label (optional)"
           variant="stacked"
         />
       ) : null}
@@ -255,7 +257,7 @@ const PrivacyExperienceTranslationForm = ({
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_policy_url`}
           id={`translations.${translationIndex}.privacy_policy_url`}
-          label="Privacy policy link URL"
+          label="Privacy policy link URL (optional)"
           variant="stacked"
         />
       ) : null}
