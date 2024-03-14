@@ -206,6 +206,7 @@ export const PrivacyExperienceForm = ({
         values={values.properties ?? []}
         setValues={(newValues) => setFieldValue("properties", newValues)}
         draggable
+        maxHeight={100}
       />
       <Divider />
       {values.component !== ComponentType.TCF_OVERLAY ? (

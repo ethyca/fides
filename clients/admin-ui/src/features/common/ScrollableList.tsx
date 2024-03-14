@@ -22,12 +22,14 @@ const ScrollableListItem = <T extends unknown>({
   draggable,
   onDeleteItem,
   onRowClick,
+  maxH = 10,
 }: {
   item: T;
   label: string;
   draggable?: boolean;
   onDeleteItem?: (item: T) => void;
   onRowClick?: (item: T) => void;
+  maxH?: number;
 }) => {
   const dragControls = useDragControls();
 
@@ -36,7 +38,7 @@ const ScrollableListItem = <T extends unknown>({
       <Flex
         direction="row"
         gap={2}
-        maxH={10}
+        maxH={maxH}
         px={2}
         align="center"
         role="group"
@@ -147,6 +149,7 @@ const ScrollableList = <T extends unknown>({
   selectOnAdd,
   getItemLabel,
   createNewValue,
+  maxHeight = 36,
 }: {
   label?: string;
   tooltip?: string;
@@ -162,6 +165,7 @@ const ScrollableList = <T extends unknown>({
   selectOnAdd?: boolean;
   getItemLabel?: (item: T) => string;
   createNewValue?: (opt: Option) => T;
+  maxHeight?: number;
 }) => {
   const getItemId = (item: T) =>
     item instanceof Object && idField && idField in item
@@ -217,7 +221,6 @@ const ScrollableList = <T extends unknown>({
     borderColor: "gray.200",
     borderRadius: "md",
     w: "full",
-    maxH: 36,
     overflowY: "scroll",
   } as ChakraProps;
 
@@ -239,6 +242,7 @@ const ScrollableList = <T extends unknown>({
             }
             onRowClick={onRowClick}
             draggable
+            maxH={maxHeight}
           />
         ))}
       </Reorder.Group>
@@ -253,6 +257,7 @@ const ScrollableList = <T extends unknown>({
             label={getItemDisplayName(item)}
             onRowClick={onRowClick}
             onDeleteItem={handleDeleteItem}
+            maxH={maxHeight}
           />
         ))}
       </List>
