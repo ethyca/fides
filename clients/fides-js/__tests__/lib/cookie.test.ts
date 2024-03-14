@@ -265,6 +265,7 @@ describe("saveFidesCookie", () => {
   );
 
   // DEFER: known issue https://github.com/ethyca/fides/issues/2072
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip.each([
     {
       url: "https://privacy.subdomain.example.co.uk",
@@ -533,7 +534,8 @@ describe("updateCookieFromNoticePreferences", () => {
       (n) =>
         new SaveConsentPreference(
           n,
-          n.current_preference ?? UserConsentPreference.OPT_OUT
+          n.current_preference ?? UserConsentPreference.OPT_OUT,
+          `pri_notice-history-mock-${n.notice_key}`
         )
     );
     const updatedCookie = await updateCookieFromNoticePreferences(

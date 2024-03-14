@@ -1,5 +1,6 @@
 import { h } from "preact";
 import { useDisclosure } from "../../lib/hooks";
+import type { I18n } from "../../lib/i18n";
 import {
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
@@ -15,10 +16,12 @@ const ArrowDown = () => (
 );
 
 const InitialLayerAccordion = ({
+  i18n,
   title,
   description,
   purposes,
 }: {
+  i18n: I18n;
   title: string;
   description: string;
   purposes?: Array<
@@ -61,13 +64,11 @@ const InitialLayerAccordion = ({
         {purposes?.length ? (
           <div className="fides-tcf-purpose-vendor fides-background-dark">
             <div className="fides-tcf-purpose-vendor-title fides-tcf-toggle-content">
-              Purposes include
+              {i18n.t("static.tcf.purposes")}
             </div>
             <ul className="fides-tcf-purpose-vendor-list fides-tcf-toggle-content">
               {purposes.map((purpose) => (
-                <li>
-                  Purpose {purpose.id}: {purpose.name}
-                </li>
+                <li>{i18n.t(`exp.tcf.purposes.${purpose.id}.name`)}</li>
               ))}
             </ul>
           </div>

@@ -2,7 +2,7 @@ import { Box, Heading, Text } from "@fidesui/react";
 import React from "react";
 
 import Layout from "~/features/common/Layout";
-import PrivacyExperiencesTable from "~/features/privacy-experience/PrivacyExperiencesTable";
+import { PrivacyExperiencesTable } from "~/features/privacy-experience/PrivacyExperiencesTable";
 
 const PrivacyExperiencePage = () => (
   <Layout title="Privacy experiences">

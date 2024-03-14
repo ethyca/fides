@@ -104,9 +104,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
           cookie
         );
         if (pref) {
-          newPreferences[notice.privacy_notice_history_id] = pref;
+          // todo- set to default language, extract into helper util fn to keep this logic centralized.
+          newPreferences[notice.translations[0].privacy_notice_history_id] =
+            pref;
         } else {
-          newPreferences[notice.privacy_notice_history_id] =
+          newPreferences[notice.translations[0].privacy_notice_history_id] =
             UserConsentPreference.OPT_OUT;
         }
       });
@@ -130,9 +132,14 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
-          privacy_experience_id: experience?.id,
+          // TODO (PROD-1748): pass in specific language shown in UI
+          privacy_experience_config_history_id:
+            experience?.experience_config?.translations[0]
+              .privacy_experience_config_history_id,
+          // TODO (PROD-1748): pass in specific language shown in UI
           privacy_notice_history_ids: experience.privacy_notices.map(
-            (p) => p.privacy_notice_history_id
+            // @ts-ignore
+            (p: PrivacyNotice) => p.translations[0].privacy_notice_history_id
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
           user_geography: region,
@@ -157,7 +164,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     }
 
     return notices.map((notice) => {
-      const preference = draftPreferences[notice.privacy_notice_history_id];
+      const preference =
+        draftPreferences[notice.translations[0].privacy_notice_history_id];
       const value = transformUserPreferenceToBoolean(preference);
       const gpcStatus = getGpcStatusFromNotice({
         value,
@@ -167,9 +175,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
       return {
         name: notice.name || "",
-        description: notice.description || "",
+        description: notice.translations[0].description || "",
         id: notice.id,
-        historyId: notice.privacy_notice_history_id,
+        historyId: notice.translations[0].privacy_notice_history_id,
         highlight: false,
         url: undefined,
         value,
@@ -196,7 +204,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
         const notice = notices.find(
-          (n) => n.privacy_notice_history_id === historyKey
+          // TODO (PROD-1748): pass in specific language shown in UI
+          (n) => n.translations[0].privacy_notice_history_id === historyKey
         );
         return { historyKey, preference, notice };
       }
@@ -221,7 +230,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       browser_identity: browserIdentities,
       preferences,
       user_geography: region,
-      privacy_experience_id: experience?.id,
+      // TODO (PROD-1748): pass in specific language shown in UI
+      privacy_experience_config_history_id:
+        experience?.experience_config?.translations[0]
+          .privacy_experience_config_history_id,
       method: ConsentMethod.SAVE,
       code: verificationCode,
       served_notice_history_id: servedNotice?.served_notice_history_id,
@@ -309,7 +321,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       <SaveCancel
         onSave={handleSave}
         onCancel={handleCancel}
-        saveLabel={experience?.experience_config?.save_button_label}
+        saveLabel={
+          experience?.experience_config?.translations[0]?.save_button_label
+        }
         justifyContent="center"
       />
       <PrivacyPolicyLink alignSelf="center" experience={experience} />

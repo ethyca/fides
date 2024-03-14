@@ -244,6 +244,8 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
+    fidesPreviewMode: false,
+    fidesPreviewComponent: null,
   },
   fides_meta: {},
   identity: {},
@@ -262,7 +264,6 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides-tcf.mjs as a module
-export * from "./components";
 export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";

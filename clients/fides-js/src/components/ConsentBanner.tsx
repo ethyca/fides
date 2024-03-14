@@ -1,17 +1,19 @@
 import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { getConsentContext } from "../lib/consent-context";
-import { ExperienceConfig } from "../lib/consent-types";
+import { GpcStatus } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
 import ExperienceDescription from "./ExperienceDescription";
+import { I18n, messageExists } from "../lib/i18n";
 
 interface ButtonGroupProps {
   isMobile: boolean;
 }
 
 interface BannerProps {
-  experience: ExperienceConfig;
+  i18n: I18n;
+  dismissable: boolean | undefined;
   onOpen: () => void;
   onClose: () => void;
   bannerIsOpen: boolean;
@@ -26,7 +28,8 @@ interface BannerProps {
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
-  experience,
+  i18n,
+  dismissable,
   onOpen,
   onClose,
   bannerIsOpen,
@@ -61,9 +64,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   // If explicit "banner_description" or "banner_title" values are set, use
   // those to populate the banner. Otherwise, use the generic "description" and
   // "title" values that are shared with the modal component
-  const bannerDescription =
-    experience.banner_description || experience.description;
-  const bannerTitle = experience.banner_title || experience.title;
+  const bannerTitle = messageExists(i18n, "exp.banner_title")
+    ? i18n.t("exp.banner_title")
+    : i18n.t("exp.title");
+  const bannerDescription = messageExists(i18n, "exp.banner_description")
+    ? i18n.t("exp.banner_description")
+    : i18n.t("exp.description");
 
   return (
     <div
@@ -76,8 +82,8 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         <div id="fides-banner-inner">
           <CloseButton
             ariaLabel="Close banner"
-            onClick={onClose}
-            hidden={window.Fides?.options?.preventDismissal}
+            onClick={window.Fides.options.fidesPreviewMode ? () => {} : onClose}
+            hidden={window.Fides?.options?.preventDismissal || !dismissable}
           />
           <div
             id="fides-banner-inner-container"
@@ -91,10 +97,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                   {bannerTitle}
                 </div>
                 {showGpcBadge && (
-                  <GpcBadge
-                    label="Global Privacy Control Signal"
-                    status="detected"
-                  />
+                  <GpcBadge i18n={i18n} status={GpcStatus.APPLIED} />
                 )}
               </div>
               <div

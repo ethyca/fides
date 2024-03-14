@@ -11,12 +11,12 @@ import commonjs from "@rollup/plugin-commonjs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 25; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 65; // fail build if bundle size exceeds this
+const GZIP_SIZE_WARN_KB = 55; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 43;
-const GZIP_SIZE_TCF_WARN_KB = 35;
+const GZIP_SIZE_TCF_ERROR_KB = 85;
+const GZIP_SIZE_TCF_WARN_KB = 75;
 
 const preactAliases = {
   entries: [
@@ -39,11 +39,15 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
     minify: !IS_DEV,
   }),
   copy({
-    // Automatically add the built script to the privacy center's static files for bundling:
+    // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
       {
         src: `dist/${name}.js`,
         dest: `../privacy-center/public/lib/`,
+      },
+      {
+        src: `dist/${name}.js`,
+        dest: `../admin-ui/public/lib/`,
       },
     ],
     verbose: true,
