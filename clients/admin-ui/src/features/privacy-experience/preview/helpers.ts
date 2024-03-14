@@ -30,11 +30,6 @@ export const buildExperienceTranslation = (
   ...(config.translations ? config.translations[0] : {}),
 });
 
-export enum FidesPreviewComponent {
-  BANNER = "banner",
-  MODAL = "modal",
-}
-
 export const buildBaseConfig = (
   experienceConfig: Partial<ExperienceConfigCreate>,
   notices: PrivacyNoticeResponse[]
@@ -51,7 +46,6 @@ export const buildBaseConfig = (
     fidesApiUrl: "http://localhost:8080/api/v1",
     preventDismissal: experienceConfig.dismissable ?? false,
     fidesPreviewMode: true,
-    fidesPreviewComponent: FidesPreviewComponent.BANNER,
     allowHTMLDescription: true,
     serverSideFidesApiUrl: "",
     fidesString: null,
