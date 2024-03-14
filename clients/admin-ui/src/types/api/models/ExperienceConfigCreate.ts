@@ -4,6 +4,7 @@
 
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationCreate } from "./ExperienceTranslationCreate";
+import { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { Property } from "./Property";
 
@@ -22,5 +23,5 @@ export type ExperienceConfigCreate = {
   component: ComponentType;
   privacy_notice_ids?: Array<string>;
   translations?: Array<ExperienceTranslationCreate>;
-  properties?: Array<Property>;
+  properties?: Array<MinimalProperty>;
 };
