@@ -858,7 +858,8 @@ def migrate_notices(bind):
             SELECT :record_id, name, description, origin, consent_mechanism, data_uses, :new_version, disabled, enforcement_level, has_gpc_flag, internal_description, notice_key, gpp_field_mapping, framework, :language, title, translation_id, privacy_notice_id
             FROM privacynoticehistory
             WHERE version = :current_version AND
-            privacy_notice_id = :privacy_notice_id
+            privacy_notice_id = :privacy_notice_id 
+            ORDER BY created_at DESC LIMIT 1
         """
         )
         bind.execute(

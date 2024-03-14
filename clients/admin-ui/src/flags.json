@@ -35,11 +35,5 @@
     "development": true,
     "test": true,
     "production": false
-  },
-  "properties": {
-    "description": "Page to view properties",
-    "development": true,
-    "test": true,
-    "production": false
   }
 }
