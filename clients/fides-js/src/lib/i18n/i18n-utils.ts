@@ -267,7 +267,8 @@ export function detectUserLocale(
  */
 export function matchAvailableLocales(
   requestedLocale: Locale,
-  availableLocales: Locale[]
+  availableLocales: Locale[],
+  defaultLocale: Locale = DEFAULT_LOCALE,
 ): Locale {
   // 1) Parse the requested locale string using our regex
   const match = requestedLocale.match(LOCALE_REGEX);
@@ -296,7 +297,7 @@ export function matchAvailableLocales(
   }
 
   // 4) Fallback to default locale
-  return DEFAULT_LOCALE;
+  return defaultLocale;
 }
 
 /**

@@ -461,6 +461,13 @@ describe("i18n-utils", () => {
       expect(matchAvailableLocales("foo", availableLocales)).toEqual("en");
     });
 
+    it("falls back to a user-specified default language when no match is found", () => {
+      const userDefaultLocale = "fr";
+      const availableLocales = ["en", "es", "fr"];
+      expect(matchAvailableLocales("zh", availableLocales, userDefaultLocale)).toEqual("fr");
+      expect(matchAvailableLocales("foo", availableLocales, userDefaultLocale)).toEqual("fr");
+    });
+
     it("performs a case-insensitive lookup", () => {
       expect(matchAvailableLocales("fr-ca", ["es", "fr-CA"])).toEqual("fr-CA");
       expect(matchAvailableLocales("Fr-Ca", ["es", "fr-CA"])).toEqual("fr-CA");
