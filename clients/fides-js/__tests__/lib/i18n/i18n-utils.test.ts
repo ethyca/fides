@@ -11,13 +11,13 @@ import {
   initializeI18n,
   loadMessagesFromExperience,
   loadMessagesFromFiles,
-  loadTcfMessagesFromFiles,
   selectBestNoticeTranslation,
   matchAvailableLocales,
   messageExists,
   setupI18n,
   selectBestExperienceConfigTranslation,
 } from "~/lib/i18n";
+import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import messagesTcfEn from "~/lib/tcf/i18n/locales/en/messages-tcf.json";
