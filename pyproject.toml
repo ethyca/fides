@@ -46,6 +46,7 @@ module = [
   "fideslog.*",
   "firebase_admin.*",
   "google.api_core.*",
+  "nh3.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",

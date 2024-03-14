@@ -4,6 +4,9 @@ import {
   getConsentContext,
   resolveLegacyConsentValue,
   GpcStatus,
+  FidesCookie,
+  getOrMakeFidesCookie,
+  saveFidesCookie,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
@@ -11,7 +14,7 @@ import {
   selectFidesKeyToConsent,
   useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatus } from "~/features/consent/helpers";
+import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
 
 import { useConfig } from "~/features/common/config.slice";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
@@ -24,8 +27,10 @@ import SaveCancel from "./SaveCancel";
 
 const ConfigDrivenConsent = ({
   storePreferences,
+  base64Cookie,
 }: {
   storePreferences: (data: ConsentPreferences) => void;
+  base64Cookie: boolean;
 }) => {
   const config = useConfig();
   const consentOptions = useMemo(
@@ -48,6 +53,11 @@ const ConfigDrivenConsent = ({
    * Update the consent choices on the backend.
    */
   const saveUserConsentOptions = useCallback(() => {
+    const newConsent = makeCookieKeyConsent({
+      consentOptions,
+      fidesKeyToConsent,
+      consentContext,
+    });
     const consent = consentOptions.map((option) => {
       const defaultValue = resolveLegacyConsentValue(
         option.default,
@@ -68,6 +78,8 @@ const ConfigDrivenConsent = ({
         conflicts_with_gpc: gpcStatus === GpcStatus.OVERRIDDEN,
       };
     });
+    const cookie: FidesCookie = getOrMakeFidesCookie();
+    saveFidesCookie({ ...cookie, consent: newConsent }, base64Cookie);
 
     const executableOptions = consentOptions.map((option) => ({
       data_use: option.fidesDataUseKey,
@@ -94,6 +106,7 @@ const ConfigDrivenConsent = ({
     fidesKeyToConsent,
     updateConsentRequestPreferencesMutationTrigger,
     verificationCode,
+    base64Cookie,
   ]);
 
   const toastError = useCallback(

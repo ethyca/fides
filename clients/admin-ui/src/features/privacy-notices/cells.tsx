@@ -4,13 +4,20 @@ import { CellProps } from "react-table";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { EnableCell, MapCell } from "~/features/common/table/";
-import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
+import {
+  FRAMEWORK_MAP,
+  MECHANISM_MAP,
+} from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse } from "~/types/api";
 
 export const MechanismCell = (
   cellProps: CellProps<typeof MECHANISM_MAP, string>
 ) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
+
+export const FrameworkCell = (
+  cellProps: CellProps<typeof FRAMEWORK_MAP, string>
+) => <MapCell map={FRAMEWORK_MAP} {...cellProps} />;
 
 type TagNames = "available" | "enabled" | "inactive";
 
@@ -31,7 +38,7 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
       backgroundColor: "gray.100",
       color: "gray.800",
       tooltip:
-        "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
+        "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
     },
   };
 
@@ -75,9 +82,14 @@ export const EnablePrivacyNoticeCell = (
       },
     ]);
 
-  const { systems_applicable: systemsApplicable, disabled: noticeIsDisabled } =
-    row.original;
-  const toggleIsDisabled = noticeIsDisabled && !systemsApplicable;
+  const {
+    systems_applicable: systemsApplicable,
+    disabled: noticeIsDisabled,
+    data_uses: dataUses,
+  } = row.original;
+  const hasDataUses = !!dataUses;
+  const toggleIsDisabled =
+    (noticeIsDisabled && !systemsApplicable) || !hasDataUses;
 
   return (
     <EnableCell<PrivacyNoticeResponse>
@@ -98,8 +110,14 @@ export const PrivacyNoticeStatusCell = (
   const { row } = cellProps;
 
   let tagValue: TagNames | undefined;
-  const { systems_applicable: systemsApplicable, disabled } = row.original;
-  if (systemsApplicable) {
+  const {
+    systems_applicable: systemsApplicable,
+    disabled,
+    data_uses: dataUses,
+  } = row.original;
+  if (!dataUses) {
+    tagValue = "inactive";
+  } else if (systemsApplicable) {
     tagValue = disabled ? "available" : "enabled";
   } else {
     tagValue = "inactive";

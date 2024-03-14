@@ -7,10 +7,11 @@ import filesize from "rollup-plugin-filesize";
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
+import commonjs from "@rollup/plugin-commonjs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 24; // fail build if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 25; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
 // TCF
@@ -29,6 +30,7 @@ const preactAliases = {
 const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   alias(preactAliases),
   nodeResolve(),
+  commonjs(),
   json(),
   postcss({
     minimize: !IS_DEV,
@@ -126,6 +128,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
       alias(preactAliases),
       json(),
       nodeResolve(),
+      commonjs(),
       postcss(),
       esbuild(),
     ],

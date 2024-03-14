@@ -72,6 +72,7 @@ export const generateFidesString = async ({
     tcModel.cmpVersion = CMP_VERSION;
     tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
     tcModel.isServiceSpecific = true;
+    tcModel.supportOOB = false;
 
     // Narrow the GVL to say we've only showed these vendors provided by our experience
     tcModel.gvl.narrowVendorsTo(uniqueGvlVendorIds(experience));
@@ -131,8 +132,8 @@ export const generateFidesString = async ({
       // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
       // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
       encodedString = TCString.encode(tcModel, {
-        // We choose just CORE and VENDORS_DISCLOSED for now (PROD#1312)
-        segments: [Segment.CORE, Segment.VENDORS_DISCLOSED],
+        // We do not want to include vendors disclosed or publisher tc at the moment
+        segments: [Segment.CORE],
       });
 
       // Attach the AC string

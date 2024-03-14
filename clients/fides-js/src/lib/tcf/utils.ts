@@ -1,12 +1,13 @@
 import { TCString } from "@iabtechlabtcf/core";
-import { ConsentMechanism, PrivacyExperience } from "../consent-types";
-import { FidesCookie } from "../cookie";
-import {
-  debugLog,
-  transformConsentToFidesUserPreference,
-} from "../consent-utils";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
+import {
+  ConsentMechanism,
+  FidesCookie,
+  PrivacyExperience,
+} from "../consent-types";
+import { debugLog } from "../consent-utils";
 import { decodeFidesString, idsFromAcString } from "./fidesString";
+import { transformConsentToFidesUserPreference } from "../shared-consent-utils";
 
 /**
  * Populates TCF entities with items from both cookie.tcf_consent and cookie.fides_string.
@@ -35,7 +36,8 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
     const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
     // @ts-ignore the array map should ensure we will get the right record type
     tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
-      const preference = Object.hasOwn(cookieConsent, item.id)
+      // Object.keys converts keys to strings, so we coerce id to string here
+      const preference = Object.keys(cookieConsent).includes(item.id as string)
         ? transformConsentToFidesUserPreference(
             Boolean(cookieConsent[item.id]),
             ConsentMechanism.OPT_IN
@@ -103,6 +105,7 @@ export const updateExperienceFromCookieConsentTcf = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
+  // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
     experience,
     cookie

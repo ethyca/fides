@@ -17,6 +17,7 @@ export const initOverlay = async ({
   experience,
   fidesRegionString,
   cookie,
+  savedConsent,
   options,
   renderOverlay,
 }: OverlayProps & {
@@ -63,7 +64,13 @@ export const initOverlay = async ({
       ) {
         // Render the Overlay to the DOM!
         renderOverlay(
-          { experience, fidesRegionString, cookie, options },
+          {
+            experience,
+            fidesRegionString,
+            cookie,
+            options,
+            savedConsent,
+          },
           parentElem
         );
         debugLog(options.debug, "Fides overlay is now showing!");

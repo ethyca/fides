@@ -13,10 +13,24 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
+)
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
+from fides.api.models.privacy_request import (
+    PrivacyRequest,
+    PrivacyRequestStatus,
+    ProvidedIdentity,
+)
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
+from fides.api.service.privacy_request.request_runner_service import (
+    build_consent_dataset_graph,
+)
 from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.cache import FidesopsRedis
@@ -76,11 +90,15 @@ class ConnectorRunner:
         self,
         access_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Dict[str, List[Row]]:
         """Access request for a given access policy and identities"""
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
-            id=f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            id=(
+                privacy_request_id
+                or f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            )
         )
         identity = Identity(**identities)
         privacy_request.cache_identity(identity)
@@ -117,6 +135,7 @@ class ConnectorRunner:
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to true,
@@ -128,7 +147,7 @@ class ConnectorRunner:
         CONFIG.execution.masking_strict = True
 
         access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities
+            access_policy, erasure_policy, identities, privacy_request_id
         )
 
         # reset masking_strict value
@@ -140,6 +159,7 @@ class ConnectorRunner:
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to false,
@@ -152,22 +172,110 @@ class ConnectorRunner:
         CONFIG.execution.masking_strict = False
 
         access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities
+            access_policy, erasure_policy, identities, privacy_request_id
         )
 
         # reset masking_strict value
         CONFIG.execution.masking_strict = masking_strict
         return access_results, erasure_results
 
+    async def old_consent_request(
+        self, consent_policy: Policy, identities: Dict[str, Any]
+    ):
+        """
+        Consent requests using consent preferences on the privacy request (old workflow)
+        """
+        privacy_request = PrivacyRequest(
+            id=f"test_{self.connection_config.key}_old_consent_request_{random.randint(0, 1000)}",
+            status=PrivacyRequestStatus.pending,
+        )
+        identity = Identity(**identities)
+        privacy_request.cache_identity(identity)
+
+        privacy_request.consent_preferences = [
+            {"data_use": "marketing.advertising", "opt_in": True}
+        ]
+        privacy_request.save(self.db)
+        opt_in = await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([self.dataset_config]),
+            [self.connection_config],
+            identities,
+            self.db,
+        )
+
+        privacy_request.consent_preferences = [
+            {"data_use": "marketing.advertising", "opt_in": False}
+        ]
+        privacy_request.save(self.db)
+        opt_out = await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([self.dataset_config]),
+            [self.connection_config],
+            identities,
+            self.db,
+        )
+
+        return {"opt_in": opt_in.popitem()[1], "opt_out": opt_out.popitem()[1]}
+
+    async def new_consent_request(
+        self,
+        consent_policy: Policy,
+        identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
+    ):
+        """
+        Consent requests using privacy preference history (new workflow)
+        """
+        privacy_request = PrivacyRequest(
+            id=(
+                privacy_request_id
+                or f"test_{self.connection_config.key}_new_consent_request_{random.randint(0, 1000)}"
+            ),
+            status=PrivacyRequestStatus.pending,
+        )
+        privacy_request.save(self.db)
+
+        identity = Identity(**identities)
+        privacy_request.cache_identity(identity)
+
+        _privacy_preference_history(self.db, privacy_request, identities, opt_in=True)
+        opt_in = await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([self.dataset_config]),
+            [self.connection_config],
+            identities,
+            self.db,
+        )
+
+        _privacy_preference_history(self.db, privacy_request, identities, opt_in=False)
+        opt_out = await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([self.dataset_config]),
+            [self.connection_config],
+            identities,
+            self.db,
+        )
+
+        return {"opt_in": opt_in.popitem()[1], "opt_out": opt_out.popitem()[1]}
+
     async def _base_erasure_request(
         self,
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
+        privacy_request_id: Optional[str] = None,
     ) -> Tuple[Dict, Dict]:
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
-            id=f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            id=(
+                privacy_request_id
+                or f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
+            )
         )
         identity = Identity(**identities)
         privacy_request.cache_identity(identity)
@@ -282,6 +390,52 @@ def dataset_config(
     return dataset
 
 
+def _privacy_preference_history(
+    db, privacy_request: PrivacyRequest, identities: Dict[str, Any], opt_in: bool
+):
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice",
+            "notice_key": "example_privacy_notice",
+            "description": "example privacy notice",
+            "regions": [
+                PrivacyNoticeRegion.us_ca,
+                PrivacyNoticeRegion.us_co,
+            ],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "displayed_in_privacy_center": True,
+            "displayed_in_overlay": True,
+            "displayed_in_api": False,
+        },
+    )
+
+    email_identity = identities["email"]
+    provided_identity = ProvidedIdentity.create(
+        db,
+        data={
+            "privacy_request_id": None,
+            "field_name": "email",
+            "hashed_value": ProvidedIdentity.hash_value(email_identity),
+            "encrypted_value": {"value": email_identity},
+        },
+    )
+
+    privacy_preference_history = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "privacy_request_id": privacy_request.id,
+            "preference": "opt_in" if opt_in else "opt_out",
+            "privacy_notice_history_id": privacy_notice.histories[0].id,
+        },
+        check_name=False,
+    )
+
+    return privacy_preference_history
+
+
 def _external_dataset(
     connector_type: str, external_references: List[Dict[str, Any]]
 ) -> Dict[str, Any]:
@@ -346,3 +500,9 @@ def _process_external_references(
 
 def generate_random_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+def generate_random_phone_number() -> str:
+    """
+    Generate a random phone number in the format of E.164, +1112223333
+    """
+    return f"+{random.randrange(100,999)}555{random.randrange(1000,9999)}"

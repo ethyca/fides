@@ -18,26 +18,26 @@
     "test": true,
     "production": false
   },
-  "configureConsent": {
-    "description": "Page to configure vendors and cookies for consent",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "standaloneConnections": {
     "description": "Allow the creation of standalone connections for testing",
     "development": true,
     "test": true,
     "production": false
   },
-  "separateVendorSelector": {
-    "description": "When creating a system, allow vendor to be selected separately from system name",
+  "consentReporting": {
+    "description": "Page to download consent reports by date",
     "development": true,
     "test": true,
     "production": false
   },
-  "consentReporting": {
-    "description": "Page to download consent reports by date",
+  "datamapReportingPage": {
+    "description": "Page to view datamap reports",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "properties": {
+    "description": "Page to view properties",
     "development": true,
     "test": true,
     "production": false

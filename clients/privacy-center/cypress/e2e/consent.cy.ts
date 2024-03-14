@@ -113,7 +113,7 @@ describe("Consent settings", () => {
             const cookie = JSON.parse(
               decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(
+            expect(body.identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
           });
@@ -136,7 +136,7 @@ describe("Consent settings", () => {
         });
         cy.wait("@postConsentRequest").then((interception) => {
           const { body } = interception.request;
-          expect(body.fides_user_device_id).to.eql(uuid);
+          expect(body.identity.fides_user_device_id).to.eql(uuid);
         });
       });
 
@@ -166,7 +166,7 @@ describe("Consent settings", () => {
             const cookie = JSON.parse(
               decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(
+            expect(body.identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
             expect(cookie.consent).to.eql(previousCookie);
@@ -255,14 +255,14 @@ describe("Consent settings", () => {
 
         // there should be no browser identity
         expect(body.browser_identity).to.eql(undefined);
-      });
 
-      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
-      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-        const cookie = JSON.parse(
-          decodeURIComponent(cookieJson!.value)
-        ) as FidesCookie;
-        expect(cookie.consent.data_sales).to.eql(true);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+          const cookie = JSON.parse(
+            decodeURIComponent(cookieJson!.value)
+          ) as FidesCookie;
+          expect(cookie.consent.data_sales).to.eql(true);
+        });
       });
     });
 

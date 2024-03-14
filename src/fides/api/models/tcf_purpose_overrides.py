@@ -20,4 +20,4 @@ class TCFPurposeOverride(Base):
     is_included = Column(Boolean, server_default="t", default=True)
     required_legal_basis = Column(String)
 
-    UniqueConstraint("purpose")
+    __table_args__ = (UniqueConstraint("purpose"),)

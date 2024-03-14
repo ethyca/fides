@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from copy import copy
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -17,27 +16,6 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     create_historical_data_from_record,
     update_if_modified,
-)
-from fides.api.models.privacy_preference import (
-    CurrentPrivacyPreference,
-    LastServedNotice,
-)
-from fides.api.models.privacy_request import ProvidedIdentity
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.tcf import (
-    TCFFeatureRecord,
-    TCFPurposeConsentRecord,
-    TCFPurposeLegitimateInterestsRecord,
-    TCFSpecialFeatureRecord,
-    TCFSpecialPurposeRecord,
-    TCFVendorConsentRecord,
-    TCFVendorLegitimateInterestsRecord,
-    TCFVendorRelationships,
-)
-from fides.api.util.tcf.tcf_experience_contents import (
-    TCF_SECTION_MAPPING,
-    ConsentRecordType,
-    TCFExperienceContents,
 )
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
@@ -71,7 +49,9 @@ class ExperienceConfigBase:
 
     accept_button_label = Column(String)
     acknowledge_button_label = Column(String)
+    banner_description = Column(String)
     banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
+    banner_title = Column(String)
     component = Column(EnumColumn(ComponentType), nullable=False, index=True)
     description = Column(String)
     disabled = Column(Boolean, nullable=False, default=False)
@@ -242,6 +222,11 @@ class PrivacyExperience(Base):
     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
     show_banner: bool
 
+    @property
+    def region_country(self) -> str:
+        """The experience's country, based on naming convention of its region string."""
+        return region_country(self.region.value)  # type: ignore[attr-defined]
+
     def get_should_show_banner(
         self, db: Session, show_disabled: Optional[bool] = True
     ) -> bool:
@@ -265,7 +250,7 @@ class PrivacyExperience(Base):
                 return True
 
         privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, self.region, self.component  # type: ignore[arg-type]
+            db, [self.region.value], self.component  # type: ignore[arg-type, attr-defined]
         )
         if show_disabled is False:
             privacy_notice_query = privacy_notice_query.filter(
@@ -277,93 +262,6 @@ class PrivacyExperience(Base):
                 PrivacyNotice.consent_mechanism.in_(BANNER_CONSENT_MECHANISMS)
             ).count()
         )
-
-    def get_related_privacy_notices(
-        self,
-        db: Session,
-        show_disabled: Optional[bool] = True,
-        systems_applicable: Optional[bool] = False,
-        fides_user_provided_identity: Optional[ProvidedIdentity] = None,
-    ) -> List[PrivacyNotice]:
-        """Return privacy notices that overlap on at least one region
-        and match on ComponentType
-
-        If show_disabled=False, only return enabled notices.
-        If fides user provided identity supplied, additionally lookup any saved
-        preferences for that user id and attach if they exist.
-        """
-        if self.component == ComponentType.tcf_overlay:
-            return []
-        privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, self.region, self.component  # type: ignore[arg-type]
-        )
-        if show_disabled is False:
-            privacy_notice_query = privacy_notice_query.filter(
-                PrivacyNotice.disabled.is_(False)
-            )
-
-        if systems_applicable:
-            data_uses: set[str] = System.get_data_uses(
-                System.all(db), include_parents=True
-            )
-            privacy_notice_query = privacy_notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
-
-        if not fides_user_provided_identity:
-            return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
-
-        notices: List[PrivacyNotice] = []
-        for notice in privacy_notice_query.order_by(PrivacyNotice.created_at.desc()):
-            cache_saved_and_served_on_consent_record(
-                db=db,
-                consent_record=notice,
-                fides_user_provided_identity=fides_user_provided_identity,
-                record_type=ConsentRecordType.privacy_notice_id,
-            )
-            notices.append(notice)
-
-        return notices
-
-    def update_with_tcf_contents(
-        self,
-        db: Session,
-        base_tcf_contents: TCFExperienceContents,
-        fides_user_provided_identity: Optional[ProvidedIdentity],
-    ) -> bool:
-        """
-        Supplements the given TCF experience in-place with TCF contents at runtime, and returns whether
-        TCF contents exist.
-
-        The TCF experience is determined by systems in the data map as well as any previous records
-        of a user being served TCF components and/or consenting to any individual TCF components.
-        """
-        if self.component == ComponentType.tcf_overlay:
-            tcf_contents = copy(base_tcf_contents)
-
-            has_tcf_contents = False
-            for (
-                tcf_section_name,
-                corresponding_db_field_name,
-            ) in TCF_SECTION_MAPPING.items():
-                # Loop through each top-level section in the TCF Contents
-                tcf_section: List = getattr(tcf_contents, tcf_section_name)
-                for record in tcf_section:
-                    # Loop through each record within a TCF section, and cache
-                    # any previously saved preferences if applicable
-                    cache_saved_and_served_on_consent_record(
-                        db,
-                        record,
-                        fides_user_provided_identity=fides_user_provided_identity,
-                        record_type=corresponding_db_field_name,
-                    )
-                # Now supplement the TCF Experience with this new section
-                setattr(self, tcf_section_name, tcf_section)
-                if tcf_section:
-                    has_tcf_contents = True
-
-            if has_tcf_contents:
-                return True
-
-        return False
 
     @staticmethod
     def create_default_experience_for_region(
@@ -457,7 +355,7 @@ class PrivacyExperience(Base):
 
 
 def get_privacy_notices_by_region_and_component(
-    db: Session, region: PrivacyNoticeRegion, component: ComponentType
+    db: Session, regions: List[str], component: ComponentType
 ) -> Query:
     """
     Return relevant privacy notices that should be displayed for a certain
@@ -465,7 +363,7 @@ def get_privacy_notices_by_region_and_component(
     """
     return (
         db.query(PrivacyNotice)
-        .filter(PrivacyNotice.regions.any(region.value))  # type: ignore[attr-defined]
+        .filter(PrivacyNotice.regions.overlap(regions))  # type: ignore[attr-defined]
         .filter(
             or_(
                 and_(
@@ -508,10 +406,12 @@ def upsert_privacy_experiences_after_notice_update(
         )
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
-            db, region, ComponentType.privacy_center
+            db,
+            [region.value, region_country(region.value)],
+            ComponentType.privacy_center,
         )
         overlay_notices: Query = get_privacy_notices_by_region_and_component(
-            db, region, ComponentType.overlay
+            db, [region.value, region_country(region.value)], ComponentType.overlay
         )
 
         # See if we need to create a Privacy Center Experience for the Privacy Center Notices
@@ -614,68 +514,9 @@ def upsert_privacy_experiences_after_config_update(
     return linked_regions, unlinked_regions
 
 
-def cache_saved_and_served_on_consent_record(
-    db: Session,
-    consent_record: Union[
-        PrivacyNotice,
-        TCFPurposeConsentRecord,
-        TCFPurposeLegitimateInterestsRecord,
-        TCFSpecialPurposeRecord,
-        TCFFeatureRecord,
-        TCFSpecialFeatureRecord,
-        TCFVendorConsentRecord,
-        TCFVendorLegitimateInterestsRecord,
-        TCFVendorRelationships,
-    ],
-    fides_user_provided_identity: Optional[ProvidedIdentity],
-    record_type: Optional[ConsentRecordType],
-) -> None:
-    """For display purposes, look up whether the resource was served to the given user and/or the user has saved
-    preferences for that resource and add this to the consent_record
-
-    Updates the consent_record in place.
+def region_country(region: str) -> str:
     """
-    if not fides_user_provided_identity:
-        return
-
-    if not record_type:
-        # Some elements of the TCF form, like vendor relationships don't have saved preferences
-        return
-
-    assert not isinstance(consent_record, TCFVendorRelationships)  # For mypy
-
-    consent_record.current_preference = None
-    consent_record.outdated_preference = None
-    consent_record.current_served = None
-    consent_record.outdated_served = None
-
-    # Check if we have any previously saved preferences for this user
-    saved_preference = (
-        CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
-            db=db,
-            fides_user_provided_identity=fides_user_provided_identity,
-            preference_type=record_type,
-            preference_value=consent_record.id,
-        )
-    )
-    if saved_preference:
-        if saved_preference.record_is_current:
-            consent_record.current_preference = saved_preference.preference
-        else:
-            consent_record.outdated_preference = saved_preference.preference
-
-    # Check if we have previously served this record to this user
-    served_record: Optional[
-        LastServedNotice
-    ] = LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
-        db=db,
-        fides_user_provided_identity=fides_user_provided_identity,
-        record_type=record_type,
-        preference_value=consent_record.id,
-    )
-
-    if served_record:
-        if served_record.record_is_current:
-            consent_record.current_served = True
-        else:
-            consent_record.outdated_served = True
+    Utility function to extract the country string from a region string,
+    based on naming convention (i.e. `country_subregion`)
+    """
+    return region.split("_")[0]

@@ -1,19 +1,9 @@
-import { PRIVACY_REQUESTS_ROUTE } from "@fidesui/components";
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  Center,
-  Heading,
-  Spinner,
-  Text,
-} from "@fidesui/react";
-import NextLink from "next/link";
+import { Box, Center, Heading, Spinner, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
-import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
 import PrivacyExperienceForm from "~/features/privacy-experience/form/PrivacyExperienceForm";
 import { useGetExperienceConfigByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import { ComponentType } from "~/types/api";
@@ -65,41 +55,11 @@ const PrivacyExperienceDetailPage = () => {
 
   return (
     <Layout title={`Privacy experience ${data.component}`}>
-      <Box mb={4}>
-        <Heading
-          fontSize="2xl"
-          fontWeight="semibold"
-          mb={2}
-          data-testid="header"
-        >
-          {header}
-        </Heading>
-        <Box>
-          <Breadcrumb
-            fontWeight="medium"
-            fontSize="sm"
-            color="gray.600"
-            data-testid="breadcrumbs"
-          >
-            <BreadcrumbItem>
-              <NextLink href={PRIVACY_REQUESTS_ROUTE}>
-                Privacy requests
-              </NextLink>
-            </BreadcrumbItem>
-            {/* TODO: Add Consent breadcrumb once the page exists */}
-            <BreadcrumbItem>
-              <NextLink href={PRIVACY_EXPERIENCE_ROUTE}>
-                Privacy experience
-              </NextLink>
-            </BreadcrumbItem>
-            <BreadcrumbItem color="complimentary.500">
-              <NextLink href="#">
-                {COMPONENT_MAP.get(data.component || "") ?? data.component}
-              </NextLink>
-            </BreadcrumbItem>
-          </Breadcrumb>
-        </Box>
-      </Box>
+      <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} />
+      <Heading fontSize="2xl" fontWeight="semibold" mb={4} data-testid="header">
+        {header}
+      </Heading>
+
       <Box width={{ base: "100%", lg: "70%" }}>
         <Text fontSize="sm" mb={8}>
           {description}

@@ -211,24 +211,16 @@ describe("User management", () => {
       cy.getByTestId("delete-user-modal");
       cy.getByTestId("submit-btn").should("be.disabled");
 
-      // type mismatching usernames
-      cy.getByTestId("input-username").type("user_1");
+      // type mismatching username
       cy.getByTestId("input-usernameConfirmation").type("user_one");
       // trigger blur event
-      cy.getByTestId("delete-user-modal").click();
-      cy.getByTestId("delete-user-modal").contains("Usernames must match");
+      cy.getByTestId("input-usernameConfirmation").blur();
       cy.getByTestId("submit-btn").should("be.disabled");
-
-      // type matching but incorrect username
-      cy.getByTestId("input-username").clear().type("user_one");
-      cy.getByTestId("input-usernameConfirmation").clear().type("user_one");
-      cy.getByTestId("delete-user-modal").contains(
-        "Username must match this user's"
+      cy.getByTestId("error-usernameConfirmation").contains(
+        "Confirmation input must match the username"
       );
-      cy.getByTestId("submit-btn").should("be.disabled");
 
       // now enter the proper thing
-      cy.getByTestId("input-username").clear().type("user_1");
       cy.getByTestId("input-usernameConfirmation").clear().type("user_1");
       cy.getByTestId("submit-btn").should("be.enabled");
       cy.getByTestId("submit-btn").click();
@@ -249,7 +241,6 @@ describe("User management", () => {
       cy.getByTestId("delete-user-btn").click();
 
       cy.getByTestId("delete-user-modal").within(() => {
-        cy.getByTestId("input-username").type("user_1");
         cy.getByTestId("input-usernameConfirmation").type("user_1");
         cy.getByTestId("submit-btn").should("be.enabled");
         cy.getByTestId("submit-btn").click();

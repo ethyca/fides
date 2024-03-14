@@ -23,10 +23,6 @@ export type DataUseDeclaration = {
    */
   data_use: string;
   /**
-   * Deprecated. The fides key of the data qualifier describing a system in a privacy declaration.
-   */
-  data_qualifier?: string;
-  /**
    * An array of data subjects describing a system in a privacy declaration.
    */
   data_subjects?: Array<string>;

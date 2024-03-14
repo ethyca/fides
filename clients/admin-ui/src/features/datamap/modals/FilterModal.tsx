@@ -17,7 +17,6 @@ import { HeaderGroup } from "react-table";
 import { DatamapRow } from "~/features/datamap";
 import {
   DATA_CATEGORY_COLUMN_ID,
-  SYSTEM_DATA_RESPONSIBILITY_TITLE,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
@@ -103,14 +102,6 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose }) => {
                 SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME
               )}
             </FilterSection>
-          ) : null}
-          {anyFiltersActive(headers, [SYSTEM_DATA_RESPONSIBILITY_TITLE]) ? (
-            <>
-              <Divider />
-              <FilterSection heading="Responsibility">
-                {getHeaderFilter(headers, SYSTEM_DATA_RESPONSIBILITY_TITLE)}
-              </FilterSection>
-            </>
           ) : null}
         </ModalBody>
         <ModalFooter>

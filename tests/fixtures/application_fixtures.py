@@ -47,7 +47,9 @@ from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
-from fides.api.models.privacy_preference import (
+from fides.api.models.privacy_preference_v2 import (
+    ConsentIdentitiesMixin,
+    CurrentPrivacyPreferenceV2,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
 )
@@ -69,7 +71,7 @@ from fides.api.models.storage import (
     default_storage_config_name,
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
-from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
@@ -1493,84 +1495,10 @@ def served_notice_history(
         data={
             "acknowledge_mode": False,
             "serving_component": "overlay",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
-def served_notice_history_for_tcf_purpose(
-    db: Session, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "acknowledge_mode": False,
-            "serving_component": "tcf_overlay",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "purpose_consent": 8,
-        },
-        check_name=False,
-    )
-    pref_1.tcf_version = "2.0"
-    pref_1.save(db)
-    pref_1.last_served_record.tcf_version = "2.0"
-    pref_1.last_served_record.save(db)
-
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
-def served_notice_history_for_vendor_legitimate_interests(
-    db: Session, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "serving_component": "tcf_overlay",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "vendor_legitimate_interests": "gvl.42",
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
-def served_notice_history_for_tcf_feature(
-    db: Session, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "acknowledge_mode": False,
-            "serving_component": "tcf_overlay",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "feature": 2,
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
-def served_notice_history_for_tcf_special_purpose(
-    db: Session, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "acknowledge_mode": False,
-            "serving_component": "tcf_overlay",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "special_purpose": 1,
+            "email": "test@example.com",
+            "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
+            "served_notice_history_id": "ser_12345",
         },
         check_name=False,
     )
@@ -1602,81 +1530,33 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_preference_history_us_ca_provide(
-    db: Session, privacy_notice_us_ca_provide
+    db: Session,
+    privacy_notice_us_ca_provide,
+    privacy_preference_history,
+    privacy_experience_privacy_center,
+    served_notice_history,
 ) -> Generator:
-    provided_identity_data = {
-        "privacy_request_id": None,
-        "field_name": "email",
-        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
-        "encrypted_value": {"value": "test2@email.com"},
-    }
-    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
-
-    pref_1 = PrivacyPreferenceHistory.create(
+    preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
+            "anonymized_ip_address": "92.158.1.0",
+            "email": "test@email.com",
+            "method": "button",
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
+            "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_in",
-            "provided_identity_id": provided_identity.id,
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[0].id,
+            "request_origin": "privacy_center",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+            "user_geography": "us_ca",
+            "url_recorded": "https://example.com/privacy_center",
+            "served_notice_history_id": served_notice_history.served_notice_history_id,
         },
         check_name=False,
     )
-    yield pref_1
-    pref_1.delete(db)
-    provided_identity.delete(db)
 
-
-@pytest.fixture(scope="function")
-def served_notice_history_us_provide_for_fides_user(
-    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "acknowledge_mode": False,
-            "serving_component": "overlay",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_us_ca_provide_for_fides_user(
-    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
-) -> Generator:
-    pref_1 = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "preference": "opt_in",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
-def served_notice_history_us_ca_provide_for_fides_user(
-    db: Session, privacy_notice_us_ca_provide, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "acknowledge_mode": False,
-            "serving_component": "overlay",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
+    yield preference_history_record
+    preference_history_record.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1735,6 +1615,7 @@ def privacy_experience_france_tcf_overlay(
     )
 
     yield privacy_experience
+
     privacy_experience.delete(db)
 
 
@@ -1799,29 +1680,34 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
 
 @pytest.fixture(scope="function")
 def privacy_preference_history_fr_provide_service_frontend_only(
-    db: Session, privacy_notice_fr_provide_service_frontend_only
+    db: Session,
+    privacy_notice_fr_provide_service_frontend_only,
+    privacy_experience_privacy_center,
+    served_notice_history,
 ) -> Generator:
-    provided_identity_data = {
-        "privacy_request_id": None,
-        "field_name": "email",
-        "hashed_value": ProvidedIdentity.hash_value("test2@email.com"),
-        "encrypted_value": {"value": "test2@email.com"},
-    }
-    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
-
-    pref_1 = PrivacyPreferenceHistory.create(
+    preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
-            "preference": "opt_in",
-            "provided_identity_id": provided_identity.id,
-            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.privacy_notice_history_id,
+            "anonymized_ip_address": "92.158.1.0",
+            "email": "test@email.com",
+            "method": "button",
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
+            "privacy_experience_id": privacy_experience_privacy_center.id,
+            "preference": "opt_out",
+            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+                0
+            ].id,
+            "request_origin": "privacy_center",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "fr_idg",
+            "url_recorded": "https://example.com/privacy_center",
+            "served_notice_history_id": served_notice_history.served_notice_history_id,
         },
         check_name=False,
     )
-    yield pref_1
-    pref_1.delete(db)
-    provided_identity.delete(db)
+
+    yield preference_history_record
+    preference_history_record.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1831,8 +1717,6 @@ def ctl_dataset(db: Session, example_datasets):
         organization_fides_key="default_organization",
         name="Postgres Example Subscribers Dataset",
         description="Example Postgres dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-        retention="No retention or erasure policy",
         collections=[
             {
                 "name": "subscriptions",
@@ -1866,8 +1750,6 @@ def unlinked_dataset(db: Session):
         organization_fides_key="default_organization",
         name="Unlinked Dataset",
         description="Example dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-        retention="No retention or erasure policy",
         collections=[
             {
                 "name": "subscriptions",
@@ -1901,8 +1783,6 @@ def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generato
         organization_fides_key="default_organization",
         name="Linked Dataset",
         description="Example dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.linked_pseudonymized.pseudonymized.identified",
-        retention="No retention or erasure policy",
         collections=[
             {
                 "name": "subscriptions",
@@ -2236,6 +2116,22 @@ def provided_identity_and_consent_request(
 
 
 @pytest.fixture(scope="function")
+def provided_identity_and_consent_request_with_custom_fields(
+    db,
+    provided_identity_and_consent_request,
+):
+    _, consent_request = provided_identity_and_consent_request
+    consent_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields={
+            "first_name": CustomPrivacyRequestField(label="First name", value="John"),
+            "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+        },
+    )
+    return consent_request
+
+
+@pytest.fixture(scope="function")
 def fides_user_provided_identity(db):
     provided_identity_data = {
         "privacy_request_id": None,
@@ -2284,14 +2180,49 @@ def executable_consent_request(
 
 
 @pytest.fixture(scope="function")
-def privacy_preference_history(
+def current_privacy_preference(
     db,
-    provided_identity_and_consent_request,
     privacy_notice,
     privacy_experience_privacy_center,
     served_notice_history,
 ):
-    provided_identity, consent_request = provided_identity_and_consent_request
+    pref = CurrentPrivacyPreferenceV2.create(
+        db=db,
+        data={
+            "email": "test@email.com",
+            "hashed_email": ConsentIdentitiesMixin.hash_value("test@email.com"),
+            "preferences": {
+                "purpose_consent_preferences": [],
+                "purpose_legitimate_interests_preferences": [],
+                "vendor_consent_preferences": [],
+                "vendor_legitimate_interests_preferences": [],
+                "special_feature_preferences": [],
+                "preferences": [
+                    {
+                        "privacy_notice_history_id": privacy_notice.histories[0].id,
+                        "preference": "opt_out",
+                    }
+                ],
+                "special_purpose_preferences": [],
+                "feature_preferences": [],
+                "system_consent_preferences": [],
+                "system_legitimate_interests_preferences": [],
+            },
+        },
+    )
+
+    yield pref
+
+    pref.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_preference_history(
+    db,
+    privacy_notice,
+    privacy_experience_privacy_center,
+    served_notice_history,
+):
     privacy_notice_history = privacy_notice.histories[0]
 
     preference_history_record = PrivacyPreferenceHistory.create(
@@ -2304,241 +2235,11 @@ def privacy_preference_history(
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
-            "provided_identity_id": provided_identity.id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
             "url_recorded": "https://example.com/privacy_center",
-            "served_notice_history_id": served_notice_history.id,
-        },
-        check_name=False,
-    )
-    yield preference_history_record
-    preference_history_record.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_for_tcf_purpose_consent(
-    db,
-    provided_identity_and_consent_request,
-    privacy_experience_france_overlay,
-    fides_user_provided_identity,
-    served_notice_history_for_tcf_purpose,
-):
-    """Fixture that saves a privacy preference against a TCF purpose directly"""
-    preference_history_record = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "anonymized_ip_address": "92.158.1.0",
-            "email": "test@email.com",
-            "fides_user_device": "051b219f-20e4-45df-82f7-5eb68a00889f",
-            "method": "button",
-            "purpose_consent": 8,
-            "privacy_experience_config_history_id": None,
-            "privacy_experience_id": privacy_experience_france_overlay.id,
-            "preference": "opt_out",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "request_origin": "tcf_overlay",
-            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
-            "user_geography": "fr_idg",
-            "url_recorded": "example.com/",
-            "served_notice_history_id": served_notice_history_for_tcf_purpose.id,
-        },
-        check_name=False,
-    )
-    preference_history_record.tcf_version = "2.0"
-    preference_history_record.save(db)
-
-    preference_history_record.current_privacy_preference.tcf_version = "2.0"
-    preference_history_record.current_privacy_preference.save(db)
-
-    yield preference_history_record
-    preference_history_record.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_for_tcf_purpose_legitimate_interests(
-    db,
-    provided_identity_and_consent_request,
-    privacy_experience_france_overlay,
-    fides_user_provided_identity,
-):
-    """Fixture that saves a privacy preference against a TCF purpose directly"""
-    preference_history_record = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "anonymized_ip_address": "92.158.1.0",
-            "email": "test@email.com",
-            "fides_user_device": "051b219f-20e4-45df-82f7-5eb68a00889f",
-            "method": "button",
-            "purpose_legitimate_interests": 8,
-            "privacy_experience_config_history_id": None,
-            "privacy_experience_id": privacy_experience_france_overlay.id,
-            "preference": "opt_in",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "request_origin": "tcf_overlay",
-        },
-        check_name=False,
-    )
-    yield preference_history_record
-    preference_history_record.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_for_vendor(
-    db,
-    provided_identity_and_consent_request,
-    privacy_experience_france_overlay,
-    fides_user_provided_identity,
-):
-    """Fixture that saves a privacy preference against a TCF vendor directly"""
-    preference_history_record = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "anonymized_ip_address": "92.158.1.0",
-            "email": "test@email.com",
-            "method": "button",
-            "vendor_consent": "gvl.42",
-            "privacy_experience_config_history_id": None,
-            "privacy_experience_id": privacy_experience_france_overlay.id,
-            "preference": "opt_out",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "request_origin": "tcf_overlay",
-            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
-            "user_geography": "fr_idg",
-            "url_recorded": "example.com/",
-        },
-        check_name=False,
-    )
-    yield preference_history_record
-    preference_history_record.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_for_vendor_legitimate_interests(
-    db,
-    provided_identity_and_consent_request,
-    privacy_experience_france_overlay,
-    fides_user_provided_identity,
-    served_notice_history_for_vendor_legitimate_interests,
-):
-    """Fixture that saves a privacy preference against a TCF vendor directly"""
-    preference_history_record = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "anonymized_ip_address": "92.158.1.0",
-            "email": "test@email.com",
-            "method": "button",
-            "vendor_legitimate_interests": "gvl.42",
-            "privacy_experience_config_history_id": None,
-            "privacy_experience_id": privacy_experience_france_overlay.id,
-            "preference": "opt_out",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "request_origin": "tcf_overlay",
-            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
-            "user_geography": "fr_idg",
-            "url_recorded": "example.com/",
-            "served_notice_history_id": served_notice_history_for_vendor_legitimate_interests.id,
-        },
-        check_name=False,
-    )
-    yield preference_history_record
-    preference_history_record.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_for_system(
-    db,
-    provided_identity_and_consent_request,
-    privacy_experience_france_overlay,
-    fides_user_provided_identity,
-    system,
-):
-    """Fixture that saves a privacy preference against a system fides key directly"""
-    preference_history_record = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "anonymized_ip_address": "92.158.1.0",
-            "email": "test@email.com",
-            "method": "button",
-            "system_consent": system.id,
-            "privacy_experience_config_history_id": None,
-            "privacy_experience_id": privacy_experience_france_overlay.id,
-            "preference": "opt_in",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "request_origin": "tcf_overlay",
-            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
-            "user_geography": "fr_idg",
-            "url_recorded": "example.com/",
-        },
-        check_name=False,
-    )
-    yield preference_history_record
-    preference_history_record.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_for_tcf_feature(
-    db,
-    provided_identity_and_consent_request,
-    privacy_experience_france_overlay,
-    fides_user_provided_identity,
-    served_notice_history_for_tcf_feature,
-):
-    """Fixture that saves a privacy preference against a TCF feature directly"""
-    preference_history_record = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "anonymized_ip_address": "92.158.1.0",
-            "email": "test@email.com",
-            "fides_user_device": "051b219f-20e4-45df-82f7-5eb68a00889f",
-            "method": "button",
-            "feature": 2,
-            "privacy_experience_config_history_id": None,
-            "privacy_experience_id": privacy_experience_france_overlay.id,
-            "preference": "opt_in",
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "request_origin": "tcf_overlay",
-            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
-            "user_geography": "fr_idg",
-            "url_recorded": "example.com/",
-            "served_notice_history_id": served_notice_history_for_tcf_feature.id,
-        },
-        check_name=False,
-    )
-    yield preference_history_record
-    preference_history_record.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_preference_history_for_tcf_special_purpose(
-    db,
-    provided_identity_and_consent_request,
-    privacy_experience_france_overlay,
-    fides_user_provided_identity,
-):
-    """Fixture that saves a privacy preference against a TCF special purpose directly"""
-    (
-        provided_identity,
-        _,
-    ) = provided_identity_and_consent_request
-
-    preference_history_record = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "anonymized_ip_address": "92.158.1.0",
-            "email": "test@email.com",
-            "method": "button",
-            "special_purpose": 1,
-            "privacy_experience_config_history_id": None,
-            "privacy_experience_id": privacy_experience_france_overlay.id,
-            "preference": "opt_in",
-            "provided_identity_id": provided_identity.id,
-            "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "request_origin": "tcf_overlay",
-            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
-            "user_geography": "fr_idg",
-            "url_recorded": "example.com/",
+            "served_notice_history_id": served_notice_history.served_notice_history_id,
         },
         check_name=False,
     )
@@ -2657,7 +2358,9 @@ def experience_config_overlay(db: Session) -> Generator:
         data={
             "accept_button_label": "Accept all",
             "acknowledge_button_label": "Confirm",
+            "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
+            "banner_title": "Manage Your Consent",
             "component": "overlay",
             "description": "On this page you can opt in and out of these data uses cases",
             "disabled": False,
@@ -2683,7 +2386,9 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
         data={
             "accept_button_label": "Accept all",
             "acknowledge_button_label": "Confirm",
+            "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
+            "banner_title": "Manage Your Consent",
             "component": "tcf_overlay",
             "description": "On this page you can opt in and out of these data uses cases",
             "disabled": False,
@@ -2766,6 +2471,38 @@ def allow_custom_privacy_request_field_collection_enabled():
 
 
 @pytest.fixture(scope="function")
+def allow_custom_privacy_request_field_collection_disabled():
+    original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
+    CONFIG.execution.allow_custom_privacy_request_field_collection = False
+    yield
+    CONFIG.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_fields_in_request_execution_enabled():
+    original_value = (
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution
+    )
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+    yield
+    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+        original_value
+    )
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_fields_in_request_execution_disabled():
+    original_value = (
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution
+    )
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = False
+    yield
+    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+        original_value
+    )
+
+
+@pytest.fixture(scope="function")
 def system_with_no_uses(db: Session) -> System:
     system = System.create(
         db=db,
@@ -2775,12 +2512,6 @@ def system_with_no_uses(db: Session) -> System:
             "description": "tcf_relevant_system",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
     return system
@@ -2797,12 +2528,6 @@ def tcf_system(db: Session) -> System:
             "description": "My TCF System Description",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
 
@@ -2813,7 +2538,6 @@ def tcf_system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "analytics.reporting.content_performance",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "legal_basis_for_processing": "Consent",
@@ -2830,7 +2554,6 @@ def tcf_system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user"],
             "data_use": "essential.fraud_detection",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "legal_basis_for_processing": "Legitimate interests",
@@ -3148,3 +2871,23 @@ def purpose_three_consent_publisher_override(db):
     )
     yield override
     override.delete(db)
+
+
+@pytest.fixture(scope="function")
+def served_notice_history(
+    db: Session, privacy_notice, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistory.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "overlay",
+            "privacy_notice_history_id": privacy_notice.histories[0].id,
+            "email": "test@example.com",
+            "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
+            "served_notice_history_id": "ser_12345",
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)

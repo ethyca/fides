@@ -49,13 +49,13 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
 import {
-  FidesCookie,
-  buildCookieConsentForExperiences,
   updateExperienceFromCookieConsentNotices,
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
+  CookieKeyConsent,
   FidesConfig,
+  FidesCookie,
   FidesOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
@@ -74,8 +74,8 @@ import {
 import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
-import { getConsentContext } from "./lib/consent-context";
 import { customGetConsentPreferences } from "./services/external/preferences";
+import { debugLog } from "./lib/consent-utils";
 
 declare global {
   interface Window {
@@ -88,35 +88,26 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateCookie = async (
-  oldCookie: FidesCookie,
+const updateExperience = (
+  cookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
-): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
+): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
-    oldCookie.consent
+    cookie.consent
   );
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
-    // if the name matches
+    // if the name matches. This is used for client-side UI.
     updatedExperience = updateExperienceFromCookieConsentNotices({
       experience,
-      cookie: oldCookie,
+      cookie,
       debug,
     });
   }
-  // Even if we update experience from cookie consent, we must still generate cookie consent based on experience.
-  // It's possible that some notices on the experience were not present on the cookie, e.g. if the cookie
-  // held legacy consent values.
-  const context = getConsentContext();
-  const consent = buildCookieConsentForExperiences(
-    updatedExperience,
-    context,
-    !!debug
-  );
-  return { cookie: { ...oldCookie, consent }, experience: updatedExperience };
+  return updatedExperience;
 };
 
 /**
@@ -138,9 +129,17 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
+
+  // Keep a copy of saved consent from the cookie, since we update the "cookie"
+  // value during initialization based on overrides, experience, etc.
+  const savedConsent: CookieKeyConsent = {
+    ...cookie.consent,
+  };
+
   const initialFides = getInitialFides({
     ...config,
     cookie,
+    savedConsent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
@@ -151,15 +150,16 @@ const init = async (config: FidesConfig) => {
   const updatedFides = await initialize({
     ...config,
     cookie,
+    savedConsent,
     experience,
     renderOverlay,
-    updateCookieAndExperience: ({
+    updateExperience: ({
       cookie: oldCookie,
       experience: effectiveExperience,
       debug,
       isExperienceClientSideFetched,
     }) =>
-      updateCookie(
+      updateExperience(
         oldCookie,
         effectiveExperience,
         debug,
@@ -170,6 +170,13 @@ const init = async (config: FidesConfig) => {
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+};
+
+export const defaultShowModal = () => {
+  debugLog(
+    window.Fides.options.debug,
+    "The current experience does not support displaying a modal."
+  );
 };
 
 // The global Fides object; this is bound to window.Fides if available
@@ -189,25 +196,28 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: false,
-    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
     fidesTcfGdprApplies: false,
-    gppExtensionPath: "",
+    fidesJsBaseUrl: "",
     customOptionsPath: null,
     preventDismissal: false,
+    allowHTMLDescription: null,
+    base64Cookie: false,
   },
   fides_meta: {},
   identity: {},
   tcf_consent: {},
+  saved_consent: {},
   gtm,
   init,
   initialized: false,
   meta,
   shopify,
+  showModal: defaultShowModal,
 };
 
 if (typeof window !== "undefined") {
@@ -222,6 +232,7 @@ export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
+export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";

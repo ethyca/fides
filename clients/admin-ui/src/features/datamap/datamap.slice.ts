@@ -8,9 +8,9 @@ import {
   SYSTEM_DESCRIPTION,
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
-  SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
+import { DATAMAP_GROUPING, Page_DatamapReport_ } from "~/types/api";
 
 export interface DataCategoryNode {
   value: string;
@@ -49,7 +49,6 @@ type View = "map" | "table";
 const DEFAULT_ACTIVE_COLUMNS = [
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-  SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   DATA_CATEGORY_COLUMN_ID,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
   SYSTEM_DESCRIPTION,
@@ -58,16 +57,52 @@ const DEFAULT_ACTIVE_COLUMNS = [
 const DEPRECATED_COLUMNS = [
   "third_country_combined",
   "system.third_country_safeguards",
-  "system.data_protection_impact_assessment.is_required",
-  "system.data_protection_impact_assessment.progress",
   "dataset.fides_key",
   "system.link_to_processor_contract",
-  "system.privacy_declaration.data_use.legitimate_interest",
 ];
 
 // API endpoints
 const datamapApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getMinimalDatamapReport: build.query<
+      Page_DatamapReport_,
+      {
+        groupBy: DATAMAP_GROUPING;
+        pageIndex: number;
+        pageSize: number;
+        search: string;
+        dataUses?: string;
+        dataCategories?: string;
+        dataSubjects?: string;
+      }
+    >({
+      query: ({
+        groupBy,
+        pageIndex,
+        pageSize,
+        search,
+        dataUses,
+        dataCategories,
+        dataSubjects,
+      }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
+        if (dataUses) {
+          queryString += `&${dataUses}`;
+        }
+        if (dataCategories) {
+          queryString += `&${dataCategories}`;
+        }
+        if (dataSubjects) {
+          queryString += `&${dataSubjects}`;
+        }
+        if (search) {
+          queryString += `&search=${search}`;
+        }
+        return {
+          url: `plus/datamap/minimal?${queryString}`,
+        };
+      },
+    }),
     getDatamap: build.query<DatamapTableData, { organizationName: string }>({
       query: ({ organizationName }) => ({
         url: `plus/datamap/${organizationName}`,
@@ -116,7 +151,11 @@ const datamapApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetDatamapQuery, useLazyGetDatamapQuery } = datamapApi;
+export const {
+  useGetDatamapQuery,
+  useLazyGetDatamapQuery,
+  useGetMinimalDatamapReportQuery,
+} = datamapApi;
 
 export interface SettingsState {
   columns?: DatamapColumn[];

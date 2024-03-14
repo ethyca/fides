@@ -13,6 +13,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
@@ -28,12 +29,17 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference import (
-    CurrentPrivacyPreference,
-    LastServedNotice,
+    DeprecatedCurrentPrivacyPreference,
+    DeprecatedLastServedNotice,
+)
+from fides.api.models.privacy_preference_v2 import (
+    CurrentPrivacyPreferenceV2,
+    LastServedNoticeV2,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.property import Property
 from fides.api.models.registration import UserRegistration
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
