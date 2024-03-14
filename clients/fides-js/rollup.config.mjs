@@ -86,8 +86,8 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
     ],
   }),
   visualizer({
-    filename: `bundle-size-stats/${name}-stats.html`
-  })
+    filename: `bundle-size-stats/${name}-stats.html`,
+  }),
 ];
 
 const SCRIPTS = [
@@ -128,7 +128,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
-        sourcemap: true //IS_DEV,
+        sourcemap: true, //IS_DEV,
       },
     ],
   };
