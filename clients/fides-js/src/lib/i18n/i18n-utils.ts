@@ -159,6 +159,14 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 }
 
 /**
+ * Load the TCF-specific statically-compiled messages from source into the message catalog.
+ */
+export function loadTcfMessagesFromFiles(i18n: I18n): Locale[] {
+  // TODO: dynamically import here, for tree-shaking
+  return [];
+}
+
+/**
  * Parse the provided PrivacyExperience object and load all translated strings
  * into the message catalog. Extracts translations from two sources:
  * 1) experience.experience_config
