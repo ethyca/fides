@@ -166,6 +166,16 @@ const Preview = ({
     );
   }
 
+  if (values.component === ComponentType.PRIVACY_CENTER) {
+    return (
+      <NoPreviewNotice
+        title="Privacy center preview not available"
+        description="There is no preview available for privacy center. You can edit the available settings
+      and languages to the left."
+      />
+    );
+  }
+
   if (!values.privacy_notice_ids?.length) {
     return (
       <NoPreviewNotice
@@ -217,17 +227,16 @@ const Preview = ({
         }
       `}</style>
       {values.component === ComponentType.BANNER_AND_MODAL ||
-      values.component === ComponentType.MODAL ? (
+        values.component === ComponentType.MODAL ? (
         <style>
           {`div#fides-modal {
           display: flex !important;
           justify-content: center;
           background-color: unset;
-          ${
-            values.component === ComponentType.BANNER_AND_MODAL
+          ${values.component === ComponentType.BANNER_AND_MODAL
               ? "padding-top: 3rem; padding-bottom: 3rem;"
               : ""
-          }
+            }
         }`}
         </style>
       ) : null}
