@@ -5,6 +5,7 @@ import {
   PrivacyNoticeWithPreference,
 } from "~/fides";
 import {
+  DEFAULT_LOCALE,
   LOCALE_REGEX,
   detectUserLocale,
   extractDefaultLocaleFromExperience,
@@ -31,6 +32,7 @@ import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.js
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
+  let mockDefaultLocale = DEFAULT_LOCALE; // TODO (PROD-1831): actually code this
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     activate: jest.fn((locale: Locale): void => {
@@ -572,9 +574,16 @@ describe("i18n-utils", () => {
 
     it("falls back to the default locale if an exact match isn't available", () => {
       mockCurrentLocale = "zh";
+      mockDefaultLocale = "en";
       expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
         "language",
         "en"
+      );
+
+      mockDefaultLocale = "es";
+      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
+        "language",
+        "es"
       );
     });
 
@@ -587,6 +596,7 @@ describe("i18n-utils", () => {
         "es",
       ]);
       mockCurrentLocale = "zh";
+      mockDefaultLocale = "en";
       expect(
         selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish)
       ).toHaveProperty("language", "es");
@@ -628,9 +638,15 @@ describe("i18n-utils", () => {
 
     it("falls back to the default locale if an exact match isn't available", () => {
       mockCurrentLocale = "zh";
+      mockDefaultLocale = "en";
       expect(
         selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
       ).toHaveProperty("language", "en");
+
+      mockDefaultLocale = "es";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+      ).toHaveProperty("language", "es");
     });
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
@@ -920,6 +936,26 @@ describe("i18n module", () => {
         expect(testI18n.locale).toEqual("en");
         testI18n.activate("zz");
         expect(testI18n.locale).toEqual("zz");
+      });
+    });
+
+    describe("defaultLocale", () => {
+      /**
+       * NOTE: Modifying the default locale is *not* supported by LinguiJS, so
+       * this would need to be re-implemented carefully! This default locale
+       * should typically not be needed for i18n purposes - instead, the current
+       * locale should be used! However, in our application we need to provide
+       * fallback behavior in some scenarios when the current locale cannot be
+       * used, and in those cases we want the default locale to (sometimes!) not
+       * just be English.
+       * 
+       * For example, see selectBestNoticeTranslation() that needs a fallback to
+       * a default locale in some scenarios.
+       */
+      it("allows getting & setting the default locale", () => {
+        expect(testI18n.defaultLocale).toEqual(DEFAULT_LOCALE);
+        testI18n.defaultLocale = "es";
+        expect(testI18n.defaultLocale).toEqual("es");
       });
     });
   });
