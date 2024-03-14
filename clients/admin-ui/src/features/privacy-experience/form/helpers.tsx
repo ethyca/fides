@@ -129,7 +129,7 @@ export const getTranslationFormFields = (
       accept_button_label: { included: true, required: true },
       reject_button_label: { included: true, required: true },
       save_button_label: { included: true, required: true },
-      acknowledge_button_label: { included: true },
+      acknowledge_button_label: { included: true, required: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
       privacy_preferences_link_label: { included: true },
@@ -145,19 +145,20 @@ export const getTranslationFormFields = (
       accept_button_label: { included: true, required: true },
       reject_button_label: { included: true, required: true },
       save_button_label: { included: true, required: true },
-      acknowledge_button_label: { included: true },
+      acknowledge_button_label: { included: true, required: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
       privacy_preferences_link_label: { included: true, required: true },
     };
   }
+  // For TCF overlay / default
   return {
     title: { included: true, required: true },
     description: { included: true, required: true },
     accept_button_label: { included: true, required: true },
     reject_button_label: { included: true, required: true },
-    save_button_label: { included: true },
-    acknowledge_button_label: { included: true },
+    save_button_label: { included: true, required: true },
+    acknowledge_button_label: { included: true, required: true },
     privacy_policy_link_label: { included: true },
     privacy_policy_url: { included: true },
     privacy_preferences_link_label: { included: true, required: true },
