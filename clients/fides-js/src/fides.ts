@@ -201,7 +201,6 @@ _Fides = {
     allowHTMLDescription: null,
     base64Cookie: false,
     fidesPreviewMode: false,
-    fidesPreviewComponent: null,
   },
   fides_meta: {},
   identity: {},

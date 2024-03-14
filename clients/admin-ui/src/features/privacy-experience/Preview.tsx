@@ -14,7 +14,6 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
-  FidesPreviewComponent,
   translationOrDefault,
 } from "~/features/privacy-experience/preview/helpers";
 import { useLazyGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
@@ -129,7 +128,7 @@ const Preview = ({
   useEffect(() => {
     // if current component is a modal, we want to force fides.js to show a modal, not a banner component
     if (values.component === ComponentType.MODAL) {
-      baseConfig.options.fidesPreviewComponent = FidesPreviewComponent.MODAL;
+      baseConfig.experience.experience_config.component = ComponentType.MODAL;
     }
     // if we're editing a translation, we want to preview the banner/modal with that language,
     // otherwise we show first translation if exists, else keep default
@@ -146,7 +145,12 @@ const Preview = ({
       baseConfig.options.fidesLocale = values.translations[0].language;
     }
     baseConfig.options.preventDismissal = !values.dismissable;
-    if (window.Fides && values.privacy_notice_ids?.length) {
+    if (
+      window.Fides &&
+      values.privacy_notice_ids?.length &&
+      values.component !== ComponentType.PRIVACY_CENTER &&
+      values.component !== ComponentType.TCF_OVERLAY
+    ) {
       window.Fides.init(baseConfig);
     }
   }, [values, translation, baseConfig, allPrivacyNotices]);
@@ -265,7 +269,12 @@ const Preview = ({
         id="fides-js-base"
         src={fidesJsScript}
         onReady={() => {
-          window.Fides?.init(baseConfig);
+          if (
+            values.component !== ComponentType.TCF_OVERLAY &&
+            values.component !== ComponentType.PRIVACY_CENTER
+          ) {
+            window.Fides?.init(baseConfig);
+          }
         }}
       />
       <div id="preview-container" />
