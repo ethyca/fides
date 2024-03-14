@@ -17,7 +17,7 @@ def iterable_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "iterable.domain")
         or secrets["domain"],
-        "Api-Key": pydash.get(saas_config, "iterable.Api-Key") or  secrets["Api-Key"],
+        "api_key": pydash.get(saas_config, "iterable.api_key") or  secrets["api_key"],
         "email": pydash.get(saas_config, "iterable.email") or  secrets["email"],
         # add the rest of your secrets here
     }
@@ -36,36 +36,14 @@ def iterable_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def iterable_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def iterable_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def iterable_erasure_data(
-    iterable_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
-
-
-@pytest.fixture
 def iterable_runner(
     db,
     cache,
     iterable_secrets,
-    iterable_external_references,
-    iterable_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "iterable",
         iterable_secrets,
-        external_references=iterable_external_references,
-        erasure_external_references=iterable_erasure_external_references,
     )

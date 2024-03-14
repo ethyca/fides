@@ -11,8 +11,9 @@ saas_config:
       label: Domain
       default_value: api.iterable.com
       description: The Iterable API URL
-    - name: Api-Key
-      description: The Server Side Api-Key
+    - name: api_key
+      label: API key
+      description: The server side API key
       sensitive: True
 
   client_config:
@@ -23,7 +24,7 @@ saas_config:
       configuration:
         headers:
           - name: Api-Key
-            value: <Api-Key>
+            value: <api_key>
 
   test_request:
     method: GET
@@ -32,9 +33,6 @@ saas_config:
   endpoints:
     - name: user
       requests:
-        read:
-          method: GET
-          path: /api/users/<email>
         delete:
           method: POST
           path: /api/users/forget
