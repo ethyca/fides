@@ -3,7 +3,7 @@
  * that Rollup can easily remove this code from the base fides.js bundle without
  * having to do any particularly difficult tree-shaking!
  */
-import type { I18n, Locale, Messages, MessageDescriptor } from "../../i18n";
+import type { I18n, Locale } from "../../i18n";
 import { STATIC_MESSAGES_TCF } from "./locales";
 
 /**

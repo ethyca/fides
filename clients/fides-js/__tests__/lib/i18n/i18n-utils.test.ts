@@ -109,8 +109,10 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
 
       // Sanity-check a few of the loaded messages match our expected static strings
-      const [, loadedMessagesEn] = mockI18n.load.mock.calls.find(([locale]) => locale === "en") || [];
-      const [, loadedMessagesEs] = mockI18n.load.mock.calls.find(([locale]) => locale === "es") || [];
+      const [, loadedMessagesEn] =
+        mockI18n.load.mock.calls.find(([locale]) => locale === "en") || [];
+      const [, loadedMessagesEs] =
+        mockI18n.load.mock.calls.find(([locale]) => locale === "es") || [];
       expect(loadedMessagesEn).toMatchObject({
         "static.gpc": "Global Privacy Control",
         "static.gpc.status.applied": "Applied",
@@ -141,8 +143,10 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesTcfEs);
 
       // Sanity-check a few of the loaded messages match our expected static strings
-      const [, loadedMessagesEn] = mockI18n.load.mock.calls.find(([locale]) => locale === "en") || [];
-      const [, loadedMessagesEs] = mockI18n.load.mock.calls.find(([locale]) => locale === "es") || [];
+      const [, loadedMessagesEn] =
+        mockI18n.load.mock.calls.find(([locale]) => locale === "en") || [];
+      const [, loadedMessagesEs] =
+        mockI18n.load.mock.calls.find(([locale]) => locale === "es") || [];
       expect(loadedMessagesEn).toMatchObject({
         "static.tcf.consent": "Consent",
         "static.tcf.features": "Features",
@@ -155,7 +159,6 @@ describe("i18n-utils", () => {
       // Check that regular static strings are not loaded
       expect(loadedMessagesEn).not.toHaveProperty(["static.gpc"]);
       expect(loadedMessagesEs).not.toHaveProperty(["static.gpc"]);
-
     });
   });
 
