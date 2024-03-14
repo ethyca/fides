@@ -7,6 +7,7 @@ import {
 import {
   LOCALE_REGEX,
   detectUserLocale,
+  extractDefaultLocaleFromExperienceConfig,
   getCurrentLocale,
   initializeI18n,
   loadMessagesFromExperience,
@@ -418,6 +419,44 @@ describe("i18n-utils", () => {
       });
     });
   });
+
+  describe("extractDefaultLocaleFromExperienceConfig", () => {
+    it("returns the locale of the first 'is_default' translation from experience_config", () => {
+      expect(extractDefaultLocaleFromExperienceConfig(
+        mockExperience.experience_config as ExperienceConfig
+      )).toEqual("en");
+
+      expect(extractDefaultLocaleFromExperienceConfig({
+        translations: [
+          { language: "en", is_default: false },
+          { language: "es", is_default: false },
+          { language: "fr", is_default: true },
+          { language: "zh", is_default: false },
+        ]
+      } as ExperienceConfig)).toEqual("fr");
+
+      // Check for multiple 'is_default' translations
+      expect(extractDefaultLocaleFromExperienceConfig({
+        translations: [
+          { language: "en", is_default: false },
+          { language: "es", is_default: true },
+          { language: "fr", is_default: true },
+          { language: "zh", is_default: false },
+        ]
+      } as ExperienceConfig)).toEqual("es");
+    });
+
+    it("returns undefined if no 'is_default' translations exist in experience_config", () => {
+      expect(extractDefaultLocaleFromExperienceConfig({
+        translations: [
+          { language: "en", is_default: false },
+          { language: "es", is_default: false },
+          { language: "fr", is_default: false },
+          { language: "zh", is_default: false },
+        ]
+      } as ExperienceConfig)).toBeUndefined();
+    });
+  }) 
 
   describe("detectUserLocale", () => {
     const mockNavigator: Partial<Navigator> = {

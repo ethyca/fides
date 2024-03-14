@@ -80,6 +80,19 @@ function extractMessagesFromExperienceConfig(
 }
 
 /**
+ * Helper function to extract the default locale from an ExperienceConfig API
+ * response. Returns the first matching translation where is_default == true.
+ */
+export function extractDefaultLocaleFromExperienceConfig(
+  experienceConfig: ExperienceConfig
+): Locale | undefined {
+  if (experienceConfig.translations) {
+    const defaultTranslation = experienceConfig.translations.find((translation) => translation.is_default);
+    return defaultTranslation?.language;
+  }
+}
+
+/**
  * Helper function to extract all the translated messages from the "gvl_translations"
  * API response. Returns an object that maps locales -> messages, e.g.
  * {
@@ -164,7 +177,7 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
  * 1) experience.experience_config
  * 2) experience.gvl_translations
  *
- * Returns a list of locales that exist in *both* these sources, discarding any
+ * Returns an object containing  list of locales that exist in *both* these sources, discarding any
  * locales that exist in one but not the other. This is done to encourage only
  * using locales with "full" translation catalogs.
  *
