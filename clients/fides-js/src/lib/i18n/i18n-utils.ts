@@ -64,7 +64,7 @@ function extractMessagesFromExperienceConfig(
   } else {
     // For backwards-compatibility, when "translations" doesn't exist, look for
     // the fields on the ExperienceConfig itself
-    const locale = DEFAULT_LOCALE;
+    const locale = experienceConfig.language || DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
       const message = experienceConfig[key];
@@ -437,11 +437,11 @@ export function initializeI18n(
   );
 
   // Extract the default locale from the experience API, or fallback to DEFAULT_LOCALE
-  // TODO
-  // const defaultLocale: Locale = ...
+  const defaultLocale: Locale = extractDefaultLocaleFromExperience(experience) || DEFAULT_LOCALE;
+  debugLog(options?.debug, `Setting Fides i18n default locale = ${defaultLocale}`);
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
-  let userLocale = DEFAULT_LOCALE;
+  let userLocale = defaultLocale;
   if (experience.experience_config?.auto_detect_language === false) {
     debugLog(
       options?.debug,
@@ -453,11 +453,11 @@ export function initializeI18n(
   }
 
   // Match the user locale to the "best" available locale from the experience API and activate it!
-  const bestLocale = matchAvailableLocales(userLocale, availableLocales);
+  const bestLocale = matchAvailableLocales(userLocale, availableLocales, defaultLocale);
   i18n.activate(bestLocale);
   debugLog(
     options?.debug,
-    `Initialized fides-js i18n with best locale = ${bestLocale}`
+    `Initialized Fides i18n with best locale match = ${bestLocale}`
   );
 }
 
