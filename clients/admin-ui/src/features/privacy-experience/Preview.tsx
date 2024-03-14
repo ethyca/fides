@@ -145,7 +145,12 @@ const Preview = ({
       baseConfig.options.fidesLocale = values.translations[0].language;
     }
     baseConfig.options.preventDismissal = !values.dismissable;
-    if (window.Fides && values.privacy_notice_ids?.length) {
+    if (
+      window.Fides &&
+      values.privacy_notice_ids?.length &&
+      values.component !== ComponentType.PRIVACY_CENTER &&
+      values.component !== ComponentType.TCF_OVERLAY
+    ) {
       window.Fides.init(baseConfig);
     }
   }, [values, translation, baseConfig, allPrivacyNotices]);
@@ -264,7 +269,12 @@ const Preview = ({
         id="fides-js-base"
         src={fidesJsScript}
         onReady={() => {
-          window.Fides?.init(baseConfig);
+          if (
+            values.component !== ComponentType.TCF_OVERLAY &&
+            values.component !== ComponentType.PRIVACY_CENTER
+          ) {
+            window.Fides?.init(baseConfig);
+          }
         }}
       />
       <div id="preview-container" />
