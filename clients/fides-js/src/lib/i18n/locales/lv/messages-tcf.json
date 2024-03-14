@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Globālā privātuma kontrole",
-  "static.gpc.description": "Mēs esam izpildījuši jūsu prasību kontrolēt globālo privātumu. Pēc noklusējuma esat noņemts no datu lietojuma pieteikumiem, kas atbilst globālajai privātuma kontrolei.",
-  "static.gpc.status.applied": "Pielietots",
-  "static.gpc.status.overridden": "Ignorēts",
-  "static.gpc.title": "Konstatēta globālā privātuma kontrole",
   "static.tcf.consent": "Piekrišana",
   "static.tcf.cookie_disclosure.also_non_cookie": "Turklāt šis pārdevējs/pakalpojumu sniedzējs saglabā un izgūst datus no jūsu ierīces, izmantojot papildu metodes, piemēram, \"vietējo krātuvi\".",
   "static.tcf.cookie_disclosure.intro": "saglabā sīkdatnes, kuru maksimālais dienu ilgums ir aptuveni:",

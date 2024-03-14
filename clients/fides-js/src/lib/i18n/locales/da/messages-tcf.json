@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Global fortrolighedskontrol",
-  "static.gpc.description": "Din præference i forbindelse med global fortrolighedskontrol er blevet efterkommet. Du er automatisk blevet frameldt tilfælde af databrug, der overholder global fortrolighedskontrol.",
-  "static.gpc.status.applied": "Anvendt",
-  "static.gpc.status.overridden": "Tilsidesat",
-  "static.gpc.title": "Der blev påvist global fortrolighedskontrol",
   "static.tcf.consent": "Samtykke",
   "static.tcf.cookie_disclosure.also_non_cookie": "Denne forhandler anvender også andre metoder som f.eks. \"lokalt lager\" til at gemme og tage sig adgang til oplysninger på din enhed.",
   "static.tcf.cookie_disclosure.intro": "gemmer cookies med en maksimal varighed på ca. så mange dage:",

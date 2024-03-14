@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Control de privadesa global",
-  "static.gpc.description": "S’ha respectat la vostra preferència pel que fa al control de privadesa global. Se us ha exclòs automàticament dels casos d’ús de dades que s’adhereixen al control de privadesa global.",
-  "static.gpc.status.applied": "Aplicat",
-  "static.gpc.status.overridden": "Anul·lat",
-  "static.gpc.title": "Control de privadesa global detectat",
   "static.tcf.consent": "Consentiment",
   "static.tcf.cookie_disclosure.also_non_cookie": "Aquest proveïdor també utilitza altres mètodes, com ara l’ “emmagatzematge local”, per emmagatzemar i accedir a la informació del vostre dispositiu.",
   "static.tcf.cookie_disclosure.intro": "emmagatzema galetes amb una durada màxima d’aproximadament aquest nombre de dies:",

@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Global Gizlilik Kontrolü",
-  "static.gpc.description": "Global gizlilik kontrolü tercihiniz yerine getirildi. Global gizlilik kontrolüne uygun veri kullanım durumlarından otomatik olarak çıkarıldınız.",
-  "static.gpc.status.applied": "Uygulandı",
-  "static.gpc.status.overridden": "Geçersiz kılındı",
-  "static.gpc.title": "Global Gizlilik Kontrolü tespit edildi",
   "static.tcf.consent": "İzin",
   "static.tcf.cookie_disclosure.also_non_cookie": "Bu satıcı ayrıca cihazınızdaki bilgileri depolamak ve bilgilere erişmek için \"yerel depolama\" gibi başka yöntemler de kullanır.",
   "static.tcf.cookie_disclosure.intro": "çerezleri en fazla yaklaşık şu kadar gün saklar:",

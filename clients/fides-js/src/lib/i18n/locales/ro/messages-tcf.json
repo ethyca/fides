@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Control global al confidențialității",
-  "static.gpc.description": "Preferința dvs. de control global al confidențialității a fost onorată. Ați fost exclus(ă) automat de la cazurile de utilizare a datelor care respectă controlul global al confidențialității.",
-  "static.gpc.status.applied": "Aplicat",
-  "static.gpc.status.overridden": "Suprascris",
-  "static.gpc.title": "A fost detectat un control global al confidențialității",
   "static.tcf.consent": "Consimțământ",
   "static.tcf.cookie_disclosure.also_non_cookie": "Acest furnizor folosește și alte metode, cum ar fi „stocarea locală” și accesul la informațiile de pe dispozitivul dvs.",
   "static.tcf.cookie_disclosure.intro": "stochează modulele cookie cu o durată maximă de aproximativ atatea zile:",

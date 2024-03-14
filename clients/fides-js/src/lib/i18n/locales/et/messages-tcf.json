@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Üldine andmekaitsekontroll",
-  "static.gpc.description": "Teie üldist andmekaitse-eelistust on arvestatud. Teid on automaatselt välja arvatud andmete kasutamise juhtudest, mis järgivad üldist andmekaitsekontrolli.",
-  "static.gpc.status.applied": "Rakendatud",
-  "static.gpc.status.overridden": "Tühistatud",
-  "static.gpc.title": "Tuvastatud üldine andmekaitsekontroll",
   "static.tcf.consent": "Nõusolek",
   "static.tcf.cookie_disclosure.also_non_cookie": "See kaupmees kasutab ka muid meetodeid, nt „kohalik salvestusruum“, et hoida ja kasutada teavet teie seadmes.",
   "static.tcf.cookie_disclosure.intro": "salvestab küpsiseid, mille maksimaalne kestvus on umbes nii mitu päeva:",

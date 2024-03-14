@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Globale personverninnstillinger",
-  "static.gpc.description": "Preferansene dine vedrørende de globale personverninnstilingene dine er godtatt. Du har automatisk takket nei til databruksaker som følger globale personverninnstillinger.",
-  "static.gpc.status.applied": "Anvendt",
-  "static.gpc.status.overridden": "Overstyrt",
-  "static.gpc.title": "Globale personverninnstillinger er oppdaget",
   "static.tcf.consent": "Samtykke",
   "static.tcf.cookie_disclosure.also_non_cookie": "Denne leverandøren bruker også metoder som «lokal lagring» til å lagre og få tilgang til informasjon på enheten din.",
   "static.tcf.cookie_disclosure.intro": "lagrer informasjonskapsler med en maksimal varighet på ca. følgende antall dager:",

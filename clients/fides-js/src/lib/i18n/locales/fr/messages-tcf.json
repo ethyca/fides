@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Global Privacy Control",
-  "static.gpc.description": "Votre préférence en matière de contrôle global de la confidentialité (GPC) a été respectée. Vous avez automatiquement été retiré des cas d’usage des données qui adhèrent au GPC.",
-  "static.gpc.status.applied": "Appliqué",
-  "static.gpc.status.overridden": "Ignoré",
-  "static.gpc.title": "Global Privacy Control (GPC) détecté",
   "static.tcf.consent": "Consentement",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ce fournisseur utilise également d’autres méthodes de « stockage local » pour stocker les informations présentes sur votre appareil et y accéder.",
   "static.tcf.cookie_disclosure.intro": "stocke les cookies pour une durée maximale approximative du nombre de jours suivants :",

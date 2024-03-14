@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Globalna kontrola privatnosti",
-  "static.gpc.description": "Vaša globalna postavka kontrole privatnosti se poštuje. Automatski ste isključeni iz slučajeva korišćenja podataka koji podležu globalnoj kontroli privatnosti.",
-  "static.gpc.status.applied": "Primenjeno",
-  "static.gpc.status.overridden": "Zaobiđeno",
-  "static.gpc.title": "Otkrivena je globalna kontrola privatnosti",
   "static.tcf.consent": "Saglasnost",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ovaj dobavljač koristi i druge metode, kao što je „lokalno skladište“ za skladištenje i pristup informacijama na vašem uređaju.",
   "static.tcf.cookie_disclosure.intro": "čuva kolačiće sa maksimalnim trajanjem od oko ovoliko dana:",

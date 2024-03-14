@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Global Privacy Control",
-  "static.gpc.description": "Vaša nastavitev globalnega nadzora zasebnosti je bila upoštevana. Samodejno je bilo preklicano vaše soglasje za tiste primere uporabe podatkov, ki se ravnajo po globalnem nadzoru zasebnosti.",
-  "static.gpc.status.applied": "Uporabljeno",
-  "static.gpc.status.overridden": "Preglašeno",
-  "static.gpc.title": "Zaznan globalni nadzor zasebnosti »Global Privacy Control«",
   "static.tcf.consent": "Privolitev",
   "static.tcf.cookie_disclosure.also_non_cookie": "Ta partner za shranjevanje in dostop do informacij v vaši napravi uporablja tudi druge metode, kot je »lokalna shramba«.",
   "static.tcf.cookie_disclosure.intro": "shranjuje piškotke z najdaljšim trajanjem približno toliko dni:",

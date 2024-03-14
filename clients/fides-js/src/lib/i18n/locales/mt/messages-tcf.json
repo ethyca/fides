@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Kontroll Globali tal-Privatezza",
-  "static.gpc.description": "Il-preferenza globali tiegħek għall-kontroll tal-privatezza ġiet onorata. Inti awtomatikament għażilt li ma tibqax tuża d-dejta f'każijiet li jirrispettaw il-kontroll globali tal-privatezza.",
-  "static.gpc.status.applied": "Applikat",
-  "static.gpc.status.overridden": "Maqbuża",
-  "static.gpc.title": "Instab il-Kontroll Globali tal-Privatezza",
   "static.tcf.consent": "Kunsens",
   "static.tcf.cookie_disclosure.also_non_cookie": "Dan il-bejjiegħ juża wkoll metodi oħra bħal \"ħażna lokali\" biex jaħżen u jaċċessa informazzjoni fuq l-apparat tiegħek.",
   "static.tcf.cookie_disclosure.intro": "jaħżen cookies b'tul ta' żmien massimu ta' madwar dil-ġranet:",

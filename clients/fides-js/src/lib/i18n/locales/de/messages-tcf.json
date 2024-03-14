@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Globale Datenschutzeinstellungen",
-  "static.gpc.description": "Ihre globale Datenschutzeinstellungen werden berücksichtigt. Sie wurden automatisch von Anwendungsfällen ausgenommen, die nicht Ihren globalen Datenschutzeinstellungen unterliegen.",
-  "static.gpc.status.applied": "Angewendet",
-  "static.gpc.status.overridden": "Überschrieben",
-  "static.gpc.title": "Globale Datenschutzeinstellungen entdeckt",
   "static.tcf.consent": "Einwilligung",
   "static.tcf.cookie_disclosure.also_non_cookie": "Dieser Anbieter verwendet auch andere Methoden wie den „lokalen Speicher“, um Informationen auf Ihrem Gerät zu speichern und darauf zuzugreifen.",
   "static.tcf.cookie_disclosure.intro": "speichert Cookies mit einer maximalen Speicherdauer von etwa so vielen Tagen:",

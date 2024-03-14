@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Control de privacidade global",
-  "static.gpc.description": "Respetouse a súa preferencia de control de privacidade global. Foi automaticamente excluído dos casos de uso de datos que cumpren o control de privacidade global.",
-  "static.gpc.status.applied": "Aplicado",
-  "static.gpc.status.overridden": "Anulado",
-  "static.gpc.title": "Control de privacidade global detectado",
   "static.tcf.consent": "Consentimento",
   "static.tcf.cookie_disclosure.also_non_cookie": "Este subministrador tamén emprega outros métodos, como \"almacenamento local\" para gardar e acceder a información do seu dispositivo.",
   "static.tcf.cookie_disclosure.intro": "almacena cookies cunha duración máxima aproximada destes días:",

@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Globální kontrola ochrany osobních údajů",
-  "static.gpc.description": "Byly dodrženy vaše globální preference ochrany osobních údajů. Automaticky jste byli vyřazeni z používání údajů v případech, na které se vztahuje globální ochrana osobních údajů.",
-  "static.gpc.status.applied": "Aplikováno",
-  "static.gpc.status.overridden": "Přepsáno",
-  "static.gpc.title": "Bylo zjištěna globální kontrola ochrany osobních údajů",
   "static.tcf.consent": "Souhlas",
   "static.tcf.cookie_disclosure.also_non_cookie": "Tento dodavatel také používá jiné metody jako „místní úložiště“ k ukládání a přístupu k informacím na vašem zařízení.",
   "static.tcf.cookie_disclosure.intro": "ukládá soubory cookie maximálně přibližně na následující počet dnů:",

@@ -1,9 +1,4 @@
 {
-  "static.gpc": "Maailmanlaajunen tietosuojavalvonta",
-  "static.gpc.description": "Maailmanlaajuinen tietosuojavalvontanne on vahvistettu. Teidät on automaattisesti poistettu tietojen käyttötapauksista, jotka noudattavat maailmanlaajuista tietosuojavalvontaa.",
-  "static.gpc.status.applied": "Käytössä",
-  "static.gpc.status.overridden": "Ohitettu",
-  "static.gpc.title": "Maailmanlaajuinen tietosuojavalvonta havaittu",
   "static.tcf.consent": "Suostumus",
   "static.tcf.cookie_disclosure.also_non_cookie": "Tämä toimittaja käyttää myös muita menetelmiä, kuten ”paikallista tallennusta” tietojen tallentamiseen ja käyttämiseen laitteella.",
   "static.tcf.cookie_disclosure.intro": "tallentaa evästeitä, joiden enimmäiskesto on päivissä noin:",
