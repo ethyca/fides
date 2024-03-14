@@ -7,7 +7,7 @@ import {
 import {
   LOCALE_REGEX,
   detectUserLocale,
-  extractDefaultLocaleFromExperienceConfig,
+  extractDefaultLocaleFromExperience,
   getCurrentLocale,
   initializeI18n,
   loadMessagesFromExperience,
@@ -92,6 +92,23 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.activate).toHaveBeenCalledWith("en");
+    });
+
+    it("activates the first is_default locale in the experience when no better match exists", () => {
+      // Make a deep copy of the mock experience using a dirty JSON serialization trick
+      // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
+      const mockExpDifferentDefault = JSON.parse(JSON.stringify(mockExperience));
+      mockExpDifferentDefault.experience_config.translations[0].is_default = false;
+      mockExpDifferentDefault.experience_config.translations[1].is_default = true; // sets "es" to default
+
+      const mockNavigator: Partial<Navigator> = {
+        language: "fr-CA", // not a match for either en or es
+      };
+
+      initializeI18n(mockI18n, mockNavigator, mockExpDifferentDefault);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
+      expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
   });
 
@@ -420,43 +437,53 @@ describe("i18n-utils", () => {
     });
   });
 
-  describe("extractDefaultLocaleFromExperienceConfig", () => {
+  describe("extractDefaultLocaleFromExperience", () => {
     it("returns the locale of the first 'is_default' translation from experience_config", () => {
-      expect(extractDefaultLocaleFromExperienceConfig(
-        mockExperience.experience_config as ExperienceConfig
-      )).toEqual("en");
+      expect(extractDefaultLocaleFromExperience(mockExperience)).toEqual("en");
 
-      expect(extractDefaultLocaleFromExperienceConfig({
-        translations: [
-          { language: "en", is_default: false },
-          { language: "es", is_default: false },
-          { language: "fr", is_default: true },
-          { language: "zh", is_default: false },
-        ]
-      } as ExperienceConfig)).toEqual("fr");
+      expect(
+        extractDefaultLocaleFromExperience({
+          experience_config: {
+            translations: [
+              { language: "en", is_default: false },
+              { language: "es", is_default: false },
+              { language: "fr", is_default: true },
+              { language: "zh", is_default: false },
+            ],
+          },
+        } as Partial<PrivacyExperience>)
+      ).toEqual("fr");
 
       // Check for multiple 'is_default' translations
-      expect(extractDefaultLocaleFromExperienceConfig({
-        translations: [
-          { language: "en", is_default: false },
-          { language: "es", is_default: true },
-          { language: "fr", is_default: true },
-          { language: "zh", is_default: false },
-        ]
-      } as ExperienceConfig)).toEqual("es");
+      expect(
+        extractDefaultLocaleFromExperience({
+          experience_config: {
+            translations: [
+              { language: "en", is_default: false },
+              { language: "es", is_default: true },
+              { language: "fr", is_default: true },
+              { language: "zh", is_default: false },
+            ],
+          },
+        } as Partial<PrivacyExperience>)
+      ).toEqual("es");
     });
 
     it("returns undefined if no 'is_default' translations exist in experience_config", () => {
-      expect(extractDefaultLocaleFromExperienceConfig({
-        translations: [
-          { language: "en", is_default: false },
-          { language: "es", is_default: false },
-          { language: "fr", is_default: false },
-          { language: "zh", is_default: false },
-        ]
-      } as ExperienceConfig)).toBeUndefined();
+      expect(
+        extractDefaultLocaleFromExperience({
+          experience_config: {
+            translations: [
+              { language: "en", is_default: false },
+              { language: "es", is_default: false },
+              { language: "fr", is_default: false },
+              { language: "zh", is_default: false },
+            ],
+          },
+        } as Partial<PrivacyExperience>)
+      ).toBeUndefined();
     });
-  }) 
+  });
 
   describe("detectUserLocale", () => {
     const mockNavigator: Partial<Navigator> = {
@@ -503,8 +530,12 @@ describe("i18n-utils", () => {
     it("falls back to a user-specified default language when no match is found", () => {
       const userDefaultLocale = "fr";
       const availableLocales = ["en", "es", "fr"];
-      expect(matchAvailableLocales("zh", availableLocales, userDefaultLocale)).toEqual("fr");
-      expect(matchAvailableLocales("foo", availableLocales, userDefaultLocale)).toEqual("fr");
+      expect(
+        matchAvailableLocales("zh", availableLocales, userDefaultLocale)
+      ).toEqual("fr");
+      expect(
+        matchAvailableLocales("foo", availableLocales, userDefaultLocale)
+      ).toEqual("fr");
     });
 
     it("performs a case-insensitive lookup", () => {

@@ -80,14 +80,18 @@ function extractMessagesFromExperienceConfig(
 }
 
 /**
- * Helper function to extract the default locale from an ExperienceConfig API
- * response. Returns the first matching translation where is_default == true.
+ * Helper function to extract the default locale from a PrivacyExperience API
+ * response. Returns the first experience_config.translations' locale where the
+ * translation has is_default === true.
  */
-export function extractDefaultLocaleFromExperienceConfig(
-  experienceConfig: ExperienceConfig
+export function extractDefaultLocaleFromExperience(
+  experience: Partial<PrivacyExperience>
 ): Locale | undefined {
-  if (experienceConfig.translations) {
-    const defaultTranslation = experienceConfig.translations.find((translation) => translation.is_default);
+  if (experience?.experience_config?.translations) {
+    const translations = experience.experience_config.translations;
+    const defaultTranslation = translations.find(
+      (translation) => translation.is_default
+    );
     return defaultTranslation?.language;
   }
 }
@@ -281,7 +285,7 @@ export function detectUserLocale(
 export function matchAvailableLocales(
   requestedLocale: Locale,
   availableLocales: Locale[],
-  defaultLocale: Locale = DEFAULT_LOCALE,
+  defaultLocale: Locale = DEFAULT_LOCALE
 ): Locale {
   // 1) Parse the requested locale string using our regex
   const match = requestedLocale.match(LOCALE_REGEX);
@@ -431,6 +435,10 @@ export function initializeI18n(
     options?.debug,
     `Loaded Fides i18n with available locales = ${availableLocales}`
   );
+
+  // Extract the default locale from the experience API, or fallback to DEFAULT_LOCALE
+  // TODO
+  // const defaultLocale: Locale = ...
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
   let userLocale = DEFAULT_LOCALE;
