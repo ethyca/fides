@@ -47,6 +47,7 @@ The types of changes are:
 
 ### Fixed
 - Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
+- Optimize FidesJS bundle size by only loading TCF static stings when needed [#4711](https://github.com/ethyca/fides/pull/4711)
 
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
 
