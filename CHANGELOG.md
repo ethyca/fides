@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.31.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.32.0...main)
+
+## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
 ### Added
 - Updated configuration pages for Experiences with live Preview of FidesJS banner & modal components [#4576](https://github.com/ethyca/fides/pull/4576)
