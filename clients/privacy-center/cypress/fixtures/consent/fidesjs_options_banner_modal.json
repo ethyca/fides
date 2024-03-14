@@ -40,7 +40,7 @@
           "banner_description": "[banner] Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
           "banner_title": "[banner] Administrar sus preferencias de consentimiento",
           "description": "Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
-          "is_default": true,
+          "is_default": false,
           "privacy_policy_link_label": "Política de privacidad",
           "privacy_policy_url": "https://privacy.example.com/",
           "privacy_preferences_link_label": "Administrar preferencias",
