@@ -104,6 +104,7 @@ const PrivacyExperienceTranslationForm = ({
     }));
     // move the new default to first in the array
     newTranslations.unshift(newTranslations.splice(newDefaultIndex, 1)[0]);
+    setFieldValue("translations", newTranslations);
     onReturnToMainForm();
   };
 
@@ -168,7 +169,7 @@ const PrivacyExperienceTranslationForm = ({
         name={`translations.${translationIndex}.is_default`}
         id={`translations.${translationIndex}.is_default`}
         label="Default language"
-        disabled={initialTranslation.is_default}
+        isDisabled={initialTranslation.is_default}
         variant="stacked"
       />
       <CustomTextInput
