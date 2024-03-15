@@ -87,6 +87,8 @@ def retry(
             method_name = func.__name__
             self = args[0]
 
+            scoped_session = self.resources.session_function()
+
             raised_ex: Optional[Union[BaseException, Exception]] = None
             for attempt in range(CONFIG.execution.task_retry_count + 1):
                 try:
@@ -140,7 +142,7 @@ def retry(
                     for pref in self.resources.request.privacy_preferences:
                         # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
                         pref.cache_system_status(
-                            self.resources.session,
+                            scoped_session,
                             self.connector.configuration.system_key,
                             ExecutionLogStatus.skipped,
                         )
@@ -161,7 +163,7 @@ def retry(
                 step=action_type, collection=self.traversal_node.address
             )
             add_errored_system_status_for_consent_reporting(
-                self.resources.session,
+                scoped_session,
                 self.resources.request,
                 self.connector.configuration,
             )
@@ -734,11 +736,12 @@ async def run_access_request(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
+    scoped_session_function: Callable
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(
-        privacy_request, policy, connection_configs, session
+        privacy_request, policy, connection_configs, session, scoped_session_function
     ) as resources:
 
         def collect_tasks_fn(
@@ -782,8 +785,9 @@ async def run_access_request(
         # but we don't want those changes in our data use map.
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
-        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = delayed(get(dsk, TERMINATOR_ADDRESS))
         access_results = v.compute()
+        logger.info(f"ACCESS RESULTS {access_results}")
         filtered_access_results = filter_by_enabled_actions(
             access_results, connection_configs
         )

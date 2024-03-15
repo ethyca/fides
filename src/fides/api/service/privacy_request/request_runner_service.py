@@ -399,6 +399,7 @@ async def run_privacy_request(
                     connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
+                    scoped_session_function=self.get_scoped_session
                 )
                 access_result_urls = upload_access_results(
                     session,
@@ -508,6 +509,7 @@ async def run_privacy_request(
                 _log_exception(e, CONFIG.dev_mode)
                 return
         privacy_request.finished_processing_at = datetime.utcnow()
+        logger.info(f"MARKING PRIVACY REQUEST {privacy_request.id} as FINISHED")
         AuditLog.create(
             db=session,
             data={
