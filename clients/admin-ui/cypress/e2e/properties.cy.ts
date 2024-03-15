@@ -72,7 +72,7 @@ describe("Properties page", () => {
       });
     });
 
-    it.only("Should trigger a delete after confirming the delete modal", () => {
+    it("Should trigger a delete after confirming the delete modal", () => {
       cy.intercept("DELETE", "/api/v1/plus/property/*", { statusCode: 200 }).as(
         "deleteProperty"
       );
