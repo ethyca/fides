@@ -51,7 +51,7 @@
         "banner_description": "Descripción del Banner de Prueba",
         "banner_title": "Título del Banner de Prueba",
         "description": "Descripción de la Prueba",
-        "is_default": true,
+        "is_default": false,
         "privacy_policy_link_label": "Política de Privacidad de Prueba",
         "privacy_policy_url": "https://privacy.example.com/es",
         "privacy_preferences_link_label": "Administrar Preferencias de Prueba",

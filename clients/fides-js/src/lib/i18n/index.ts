@@ -57,6 +57,28 @@ interface I18n {
   activate(locale: Locale): void;
 
   /**
+   * Get the current default locale for this session.
+   *
+   * WARN: LinguiJS does not support getting/setting the default locale, so
+   * use this sparingly!
+   */
+  getDefaultLocale(): Locale;
+
+  /**
+   * Set the current default locale for this session.
+   *
+   * WARN: This does not affect the behaviour of t(), load(), or activate()!
+   * To change the active locale and get different translations, use
+   * activate(). This method should only be used to determine what a
+   * "fallback" locale should be for the current user's session if the active
+   * locale cannot be used.
+   *
+   * WARN: LinguiJS does not support getting/setting the default locale, so
+   * use this sparingly!
+   */
+  setDefaultLocale(locale: Locale): void;
+
+  /**
    * Get the currently active locale.
    */
   get locale(): Locale;
