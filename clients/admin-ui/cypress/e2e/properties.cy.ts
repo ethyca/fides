@@ -24,6 +24,7 @@ describe("Properties page", () => {
         body: { items: [], page: 1, size: 10, total: 0 },
       }).as("getProperties");
       cy.getByTestId("fidesTable").should("be.visible");
+      cy.getByTestId("no-results-notice").should("be.visible");
     });
   });
 
@@ -37,9 +38,9 @@ describe("Properties page", () => {
         }).as("getProperty");
         cy.visit(PROPERTIES_ROUTE);
 
-        cy.getByTestId("add-property-button").should("exist");
-        cy.getByTestId("edit-property-button").should("exist");
-        cy.getByTestId("delete-property-button").should("exist");
+        cy.getByTestId("add-property-button").should("be.visible");
+        cy.getByTestId("edit-property-button").should("be.visible");
+        cy.getByTestId("delete-property-button").should("be.visible");
 
         cy.get("table").contains("tr", "Property A").click();
         cy.wait("@getProperty");
@@ -47,17 +48,19 @@ describe("Properties page", () => {
       });
     });
     it("Viewer and approver have view-only permissions", () => {
-      [RoleRegistryEnum.VIEWER_AND_APPROVER].forEach((role) => {
-        cy.assumeRole(role);
-        cy.visit(PROPERTIES_ROUTE);
+      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
+        (role) => {
+          cy.assumeRole(role);
+          cy.visit(PROPERTIES_ROUTE);
 
-        cy.getByTestId("add-property-button").should("not.exist");
-        cy.getByTestId("edit-property-button").should("not.exist");
-        cy.getByTestId("delete-property-button").should("not.exist");
+          cy.getByTestId("add-property-button").should("not.exist");
+          cy.getByTestId("edit-property-button").should("not.exist");
+          cy.getByTestId("delete-property-button").should("not.exist");
 
-        cy.get("table").contains("tr", "Property A").click();
-        cy.url().should("not.contain", "/property/FDS-");
-      });
+          cy.get("table").contains("tr", "Property A").click();
+          cy.url().should("not.contain", "/property/FDS-");
+        }
+      );
     });
   });
 
