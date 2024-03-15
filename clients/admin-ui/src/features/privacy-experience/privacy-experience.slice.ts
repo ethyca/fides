@@ -8,6 +8,7 @@ import {
   ExperienceConfigListViewResponse,
   ExperienceConfigResponse,
   ExperienceConfigUpdate,
+  ExperienceTranslation,
   Page_ExperienceConfigListViewResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
@@ -105,6 +106,15 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
         { type: "Privacy Experience Configs", id: arg },
       ],
     }),
+    getAvailableConfigTranslations: build.query<
+      Array<ExperienceTranslation>,
+      string
+    >({
+      query: (id) => ({
+        url: `experience-config/${id}/available_translations`,
+      }),
+      providesTags: () => ["Experience Config Translations"],
+    }),
     postExperienceConfig: build.mutation<
       ExperienceConfigResponse,
       ExperienceConfigCreate
@@ -124,6 +134,7 @@ export const {
   usePatchExperienceConfigMutation,
   useLimitedPatchExperienceConfigMutation,
   useGetExperienceConfigByIdQuery,
+  useGetAvailableConfigTranslationsQuery,
   usePostExperienceConfigMutation,
 } = privacyExperienceConfigApi;
 
