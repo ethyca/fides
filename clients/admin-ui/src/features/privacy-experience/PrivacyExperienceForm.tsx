@@ -70,7 +70,7 @@ export const PrivacyExperienceConfigColumnLayout = ({
   children: React.ReactNode;
 }) => (
   <Flex direction="column" minH="full" w="25%" borderRight="1px solid #DEE5EE">
-    <Flex direction="column" h="full" overflowY="scroll" px={4}>
+    <Flex direction="column" h="full" overflowY="auto" px={4}>
       <Flex direction="column" gap={4} w="full" pb={4}>
         {children}
       </Flex>
