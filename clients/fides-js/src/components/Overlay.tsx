@@ -6,22 +6,27 @@ import {
   useMemo,
   useRef,
 } from "preact/hooks";
+
+import { useA11yDialog } from "../lib/a11y-dialog";
 import {
+  ComponentType,
   CookieKeyConsent,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
-
-import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
-
-import "./fides.css";
-import { useA11yDialog } from "../lib/a11y-dialog";
-import ConsentModal from "./ConsentModal";
-import { useHasMounted } from "../lib/hooks";
+import {
+  debugLog,
+  defaultShowModal,
+  shouldResurfaceConsent,
+} from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
+import { useHasMounted } from "../lib/hooks";
+import type { I18n } from "../lib/i18n";
+
+import ConsentModal from "./ConsentModal";
 import ConsentContent from "./ConsentContent";
-import { defaultShowModal } from "../fides";
+import "./fides.css";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -37,6 +42,7 @@ interface RenderModalFooter {
 interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
+  i18n: I18n;
   cookie: FidesCookie;
   savedConsent: CookieKeyConsent;
   onOpen: () => void;
@@ -48,8 +54,9 @@ interface Props {
 }
 
 const Overlay: FunctionComponent<Props> = ({
-  experience,
   options,
+  experience,
+  i18n,
   cookie,
   savedConsent,
   onOpen,
@@ -78,7 +85,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    title: experience?.experience_config?.title || "",
+    title: i18n.t("exp.title"),
     onClose: () => {
       dispatchCloseEvent({ saved: false });
     },
@@ -105,12 +112,23 @@ const Overlay: FunctionComponent<Props> = ({
     }
   }, [options, onOpen]);
 
+  const showBanner = useMemo(
+    () =>
+      !options.fidesDisableBanner &&
+      experience.experience_config?.component !== ComponentType.MODAL &&
+      shouldResurfaceConsent(experience, cookie, savedConsent) &&
+      !options.fidesEmbed,
+    [cookie, savedConsent, experience, options]
+  );
+
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      setBannerIsOpen(true);
+      if (showBanner) {
+        setBannerIsOpen(true);
+      }
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [setBannerIsOpen]);
+  }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
     window.Fides.showModal = handleOpenModal;
@@ -142,16 +160,7 @@ const Overlay: FunctionComponent<Props> = ({
       }
       window.Fides.showModal = defaultShowModal;
     };
-  }, [options.modalLinkId, options.debug, handleOpenModal]);
-
-  const showBanner = useMemo(
-    () =>
-      !options.fidesDisableBanner &&
-      experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie, savedConsent) &&
-      !options.fidesEmbed,
-    [cookie, savedConsent, experience, options]
-  );
+  }, [options.modalLinkId, options.debug, handleOpenModal, experience]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
@@ -185,9 +194,9 @@ const Overlay: FunctionComponent<Props> = ({
         : null}
       {options.fidesEmbed ? (
         <ConsentContent
-          title={attributes.title}
+          titleProps={attributes.title}
           className="fides-embed"
-          experience={experience.experience_config}
+          i18n={i18n}
           renderModalFooter={() =>
             renderModalFooter({
               onClose: handleCloseModalAfterSave,
@@ -200,7 +209,8 @@ const Overlay: FunctionComponent<Props> = ({
       ) : (
         <ConsentModal
           attributes={attributes}
-          experience={experience.experience_config}
+          dismissable={experience.experience_config.dismissable}
+          i18n={i18n}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>
             renderModalFooter({

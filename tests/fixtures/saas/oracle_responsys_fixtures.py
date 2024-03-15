@@ -1,9 +1,9 @@
-from requests import post
 from typing import Any, Dict, Generator
 
 import pydash
-import requests
 import pytest
+import requests
+from requests import post
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -25,14 +25,15 @@ def oracle_responsys_secrets(saas_config) -> Dict[str, Any]:
         "password": pydash.get(saas_config, "oracle_responsys.password")
         or secrets["password"],
         "test_list": pydash.get(saas_config, "oracle_responsys.test_list")
-        or secrets["test_list"]
+        or secrets["test_list"],
     }
 
 
 @pytest.fixture(scope="session")
 def oracle_responsys_identity_email(saas_config) -> str:
     return (
-        pydash.get(saas_config, "oracle_responsys.identity_email") or secrets["identity_email"]
+        pydash.get(saas_config, "oracle_responsys.identity_email")
+        or secrets["identity_email"]
     )
 
 
@@ -60,16 +61,21 @@ def oracle_responsys_token(oracle_responsys_secrets) -> Generator:
     response = post(
         url=f"https://{secrets['domain']}/rest/api/v1.3/auth/token",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
-        data={"user_name": secrets['username'], "password": secrets['password'], "auth_type": "password"},
+        data={
+            "user_name": secrets["username"],
+            "password": secrets["password"],
+            "auth_type": "password",
+        },
     )
     yield response.json()["authToken"]
+
 
 @pytest.fixture
 def oracle_responsys_erasure_data(
     oracle_responsys_erasure_identity_email: str,
     oracle_responsys_erasure_identity_phone_number: str,
     oracle_responsys_token: str,
-    oracle_responsys_secrets
+    oracle_responsys_secrets,
 ) -> Generator:
     """
     Creates a dynamic test data record for erasure tests.
@@ -81,11 +87,14 @@ def oracle_responsys_erasure_data(
     }
     member_body = {
         "recordData": {
-            "fieldNames": ["email_address_","mobile_number_"],
+            "fieldNames": ["email_address_", "mobile_number_"],
             "records": [
-                [oracle_responsys_erasure_identity_email, oracle_responsys_erasure_identity_phone_number]
+                [
+                    oracle_responsys_erasure_identity_email,
+                    oracle_responsys_erasure_identity_phone_number,
+                ]
             ],
-            "mapTemplateName": None
+            "mapTemplateName": None,
         },
         "mergeRule": {
             "htmlValue": "H",
@@ -94,15 +103,17 @@ def oracle_responsys_erasure_data(
             "insertOnNoMatch": True,
             "matchColumnName1": "email_address_",
             "updateOnMatch": "UPDATE",
-            "defaultPermissionStatus": "OPTIN"
-        }
+            "defaultPermissionStatus": "OPTIN",
+        },
     }
 
     create_member_response = requests.post(
-        url=f"{base_url}/rest/api/v1.3/lists/{oracle_responsys_secrets['test_list']}/members", json=member_body, headers=headers
+        url=f"{base_url}/rest/api/v1.3/lists/{oracle_responsys_secrets['test_list']}/members",
+        json=member_body,
+        headers=headers,
     )
     assert create_member_response.ok
-    member_riid = create_member_response.json()['recordData']['records'][0]
+    member_riid = create_member_response.json()["recordData"]["records"][0]
 
     yield member_riid
 

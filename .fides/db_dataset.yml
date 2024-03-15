@@ -1082,58 +1082,41 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
   - name: privacyexperienceconfig
-    description: 'ExperienceConfig holds experience copy to be shared between multiple regions'
+    description: 'ExperienceConfig holds shared Experience Configuration to be shared between multiple regions'
     data_categories: []
     fields:
-    - name: accept_button_label
-      data_categories: [ system.operations ]
-    - name: acknowledge_button_label
-      data_categories: [system.operations]
-    - name: banner_description
-      data_categories: [system.operations]
-    - name: banner_enabled
-      data_categories: [system.operations]
-    - name: banner_title
+    - name: allow_language_selection
       data_categories: [system.operations]
     - name: component
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
-    - name: description
-      data_categories: [system.operations]
     - name: disabled
+      data_categories: [ system.operations ]
+    - name: dismissable
       data_categories: [system.operations]
+    - name: auto_detect_language
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
-    - name: is_default
+    - name: name
       data_categories: [system.operations]
-    - name: privacy_policy_link_label
-      data_categories: [system.operations]
-    - name: privacy_policy_url
-      data_categories: [system.operations]
-    - name: privacy_preferences_link_label
-      data_categories: [system.operations]
-    - name: reject_button_label
-      data_categories: [system.operations]
-    - name: save_button_label
-      data_categories: [ system.operations ]
-    - name: title
+    - name: origin
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-    - name: version
-      data_categories: [system.operations]
   - name: privacyexperienceconfighistory
-    description: 'Historical table to store config history for record keeping'
-    data_categories: []
+    description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
+    - name: banner_enabled
+      data_categories: [ system.operations ]
     - name: accept_button_label
       data_categories: [ system.operations ]
     - name: acknowledge_button_label
+      data_categories: [ system.operations ]
+    - name: allow_language_selection
       data_categories: [system.operations]
     - name: banner_description
-      data_categories: [system.operations]
-    - name: banner_enabled
       data_categories: [system.operations]
     - name: banner_title
       data_categories: [system.operations]
@@ -1145,23 +1128,33 @@ dataset:
       data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
-    - name: experience_config_id
+    - name: dismissable
       data_categories: [system.operations]
+    - name: auto_detect_language
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: is_default
       data_categories: [system.operations]
+    - name: language
+      data_categories: [ system.operations ]
+    - name: name
+      data_categories: [system.operations]
+    - name: origin
+      data_categories: [system.operations]
     - name: privacy_policy_link_label
-      data_categories: [system.operations]
+      data_categories: [ system.operations ]
     - name: privacy_policy_url
-      data_categories: [system.operations]
+      data_categories: [ system.operations ]
     - name: privacy_preferences_link_label
-      data_categories: [system.operations]
+      data_categories: [ system.operations ]
     - name: reject_button_label
-      data_categories: [system.operations]
+      data_categories: [ system.operations ]
     - name: save_button_label
       data_categories: [ system.operations ]
     - name: title
+      data_categories: [ system.operations ]
+    - name: translation_id
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
@@ -1170,129 +1163,113 @@ dataset:
   - name: privacynoticetemplate
     data_categories: []
     fields:
+    - name: consent_mechanism
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: data_uses
+      data_categories: [system.operations]
+    - name: disabled
+      data_categories: [ system.operations ]
+    - name: enforcement_level
+      data_categories: [system.operations]
+    - name: framework
+      data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: has_gpc_flag
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: internal_description
+      data_categories: [ system.operations ]
     - name: name
       data_categories: [system.operations]
     - name: notice_key
       data_categories: [ system.operations ]
-    - name: description
-      data_categories: [system.operations]
-    - name: internal_description
+    - name: translations
       data_categories: [ system.operations ]
-    - name: regions
-      data_categories: [system.operations]
-    - name: consent_mechanism
-      data_categories: [system.operations]
-    - name: data_uses
-      data_categories: [system.operations]
-    - name: enforcement_level
-      data_categories: [system.operations]
-    - name: disabled
-      data_categories: [system.operations]
-    - name: has_gpc_flag
-      data_categories: [system.operations]
-    - name: displayed_in_privacy_center
-      data_categories: [system.operations]
-    - name: displayed_in_overlay
-      data_categories: [system.operations]
-    - name: displayed_in_api
-      data_categories: [system.operations]
-    - name: gpp_field_mapping
-      data_categories: [system.operations]
-    - name: framework
-      data_categories: [system.operations]
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
   - name: privacynotice
     data_categories: []
     fields:
-    - name: name
-      data_categories: [system.operations]
-    - name: notice_key
-      data_categories: [ system.operations ]
-    - name: description
-      data_categories: [system.operations]
-    - name: internal_description
-      data_categories: [ system.operations ]
-    - name: origin
-      data_categories: [system.operations]
-    - name: regions
-      data_categories: [system.operations]
     - name: consent_mechanism
+      data_categories: [system.operations]
+    - name: created_at
       data_categories: [system.operations]
     - name: data_uses
       data_categories: [system.operations]
-    - name: enforcement_level
-      data_categories: [system.operations]
-    - name: version
-      data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
-    - name: has_gpc_flag
-      data_categories: [system.operations]
-    - name: displayed_in_privacy_center
-      data_categories: [system.operations]
-    - name: displayed_in_overlay
-      data_categories: [system.operations]
-    - name: displayed_in_api
-      data_categories: [system.operations]
-    - name: gpp_field_mapping
+    - name: enforcement_level
       data_categories: [system.operations]
     - name: framework
       data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: has_gpc_flag
+      data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
-    - name: created_at
+    - name: internal_description
+      data_categories: [ system.operations ]
+    - name: name
+      data_categories: [ system.operations ]
+    - name: notice_key
+      data_categories: [ system.operations ]
+    - name: origin
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
   - name: privacynoticehistory
-    data_categories: []
+    description: For auditing purposes, a record of how a privacy notice and a translation has changed
     fields:
+    - name: displayed_in_api
+      data_categories: [ system.operations ]
+    - name: displayed_in_overlay
+      data_categories: [ system.operations ]
+    - name: displayed_in_privacy_center
+      data_categories: [ system.operations ]
+    - name: regions
+      data_categories: [ system.operations ]
+    - name: consent_mechanism
+      data_categories: [ system.operations ]
+    - name: created_at
+      data_categories: [ system.operations ]
+    - name: data_uses
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: disabled
+      data_categories: [system.operations]
+    - name: enforcement_level
+      data_categories: [system.operations]
+    - name: framework
+      data_categories: [system.operations]
+    - name: gpp_field_mapping
+      data_categories: [system.operations]
+    - name: has_gpc_flag
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: internal_description
+      data_categories: [ system.operations ]
+    - name: language
+      data_categories: [ system.operations ]
     - name: name
       data_categories: [system.operations]
     - name: notice_key
       data_categories: [ system.operations ]
-    - name: description
-      data_categories: [system.operations]
-    - name: internal_description
-      data_categories: [ system.operations ]
     - name: origin
       data_categories: [system.operations]
-    - name: regions
-      data_categories: [system.operations]
-    - name: consent_mechanism
-      data_categories: [system.operations]
-    - name: data_uses
-      data_categories: [system.operations]
-    - name: enforcement_level
-      data_categories: [system.operations]
-    - name: version
-      data_categories: [system.operations]
-    - name: disabled
-      data_categories: [system.operations]
-    - name: has_gpc_flag
-      data_categories: [system.operations]
-    - name: displayed_in_privacy_center
-      data_categories: [system.operations]
-    - name: displayed_in_overlay
-      data_categories: [system.operations]
-    - name: displayed_in_api
-      data_categories: [system.operations]
-    - name: gpp_field_mapping
-      data_categories: [system.operations]
-    - name: framework
-      data_categories: [system.operations]
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
+    - name: title
+      data_categories: [ system.operations ]
+    - name: translation_id
+      data_categories: [ system.operations ]
     - name: updated_at
       data_categories: [system.operations]
-    - name: privacy_notice_id
+    - name: version
       data_categories: [system.operations]
   - name: privacyrequest
     data_categories: []
@@ -1784,118 +1761,87 @@ dataset:
     description: 'Fides Generated Description for Table: privacypreferencehistoryv2'
     data_categories: [system.operations]
     fields:
+    - name: language
+      data_categories: [ system.operations ]
     - name: affected_system_status
-      description: 'Fides Generated Description for Column: affected_system_status'
       data_categories: [system.operations]
     - name: anonymized_ip_address
-      description: 'Fides Generated Description for Column: anonymized_ip_address'
       data_categories: [system.operations]
     - name: created_at
-      description: 'Fides Generated Description for Column: created_at'
       data_categories: [system.operations]
     - name: email
-      description: 'Fides Generated Description for Column: email'
       data_categories: [user]
     - name: fides_string
-      description: 'Fides Generated Description for Column: fides_string'
       data_categories: [system.operations]
     - name: fides_user_device
-      description: 'Fides Generated Description for Column: fides_user_device'
       data_categories: [user]
     - name: hashed_email
-      description: 'Fides Generated Description for Column: hashed_email'
       data_categories: [system.operations]
     - name: hashed_fides_user_device
-      description: 'Fides Generated Description for Column: hashed_fides_user_device'
       data_categories: [system.operations]
     - name: hashed_phone_number
-      description: 'Fides Generated Description for Column: hashed_phone_number'
       data_categories: [system.operations]
     - name: id
-      description: 'Fides Generated Description for Column: id'
       data_categories: [system.operations]
     - name: method
-      description: 'Fides Generated Description for Column: method'
       data_categories: [system.operations]
     - name: notice_name
-      description: 'Fides Generated Description for Column: notice_name'
       data_categories: [system.operations]
     - name: notice_key
       data_categories: [system.operations]
     - name: notice_mechanism
       data_categories: [system.operations]
     - name: phone_number
-      description: 'Fides Generated Description for Column: phone_number'
       data_categories: [system.operations]
     - name: preference
-      description: 'Fides Generated Description for Column: preference'
       data_categories: [system.operations]
     - name: privacy_experience_config_history_id
-      description: 'Fides Generated Description for Column: privacy_experience_config_history_id'
       data_categories: [system.operations]
     - name: privacy_experience_id
-      description: 'Fides Generated Description for Column: privacy_experience_id'
       data_categories: [system.operations]
     - name: privacy_notice_history_id
-      description: 'Fides Generated Description for Column: privacy_notice_history_id'
       data_categories: [system.operations]
     - name: privacy_request_id
-      description: 'Fides Generated Description for Column: privacy_request_id'
       data_categories: [system.operations]
     - name: request_origin
-      description: 'Fides Generated Description for Column: request_origin'
       data_categories: [system.operations]
     - name: secondary_user_ids
-      description: 'Fides Generated Description for Column: secondary_user_ids'
       data_categories: [user]
     - name: served_notice_history_id
-      description: 'Fides Generated Description for Column: served_notice_history_id'
       data_categories: [system.operations]
     - name: tcf_preferences
-      description: 'Fides Generated Description for Column: tcf_preferences'
       data_categories: [system.operations]
     - name: updated_at
-      description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
     - name: url_recorded
-      description: 'Fides Generated Description for Column: url_recorded'
       data_categories: [system.operations]
     - name: user_agent
-      description: 'Fides Generated Description for Column: user_agent'
       data_categories: [user]
     - name: user_geography
-      description: 'Fides Generated Description for Column: user_geography'
       data_categories: [user]
   - name: servednoticehistory
-    description: 'Fides Generated Description for Table: servednoticehistoryv2'
+    description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
     fields:
+    - name: language
+      data_categories: [ system.operations ]
     - name: acknowledge_mode
-      description: 'Fides Generated Description for Column: acknowledge_mode'
       data_categories: [system.operations]
     - name: anonymized_ip_address
-      description: 'Fides Generated Description for Column: anonymized_ip_address'
       data_categories: [system.operations]
     - name: created_at
-      description: 'Fides Generated Description for Column: created_at'
       data_categories: [system.operations]
     - name: email
-      description: 'Fides Generated Description for Column: email'
-      data_categories: [system.operations]
+      data_categories: [user]
     - name: fides_user_device
-      description: 'Fides Generated Description for Column: fides_user_device'
-      data_categories: [system.operations]
+      data_categories: [user]
     - name: hashed_email
-      description: 'Fides Generated Description for Column: hashed_email'
       data_categories: [system.operations]
     - name: hashed_fides_user_device
-      description: 'Fides Generated Description for Column: hashed_fides_user_device'
       data_categories: [system.operations]
     - name: hashed_phone_number
-      description: 'Fides Generated Description for Column: hashed_phone_number'
       data_categories: [system.operations]
     - name: id
-      description: 'Fides Generated Description for Column: id'
       data_categories: [system.operations]
     - name: notice_name
       data_categories: [system.operations]
@@ -1904,111 +1850,78 @@ dataset:
     - name: notice_mechanism
       data_categories: [system.operations]
     - name: phone_number
-      description: 'Fides Generated Description for Column: phone_number'
       data_categories: [user]
     - name: privacy_experience_config_history_id
-      description: 'Fides Generated Description for Column: privacy_experience_config_history_id'
       data_categories: [system.operations]
     - name: privacy_experience_id
-      description: 'Fides Generated Description for Column: privacy_experience_id'
       data_categories: [system.operations]
     - name: privacy_notice_history_id
-      description: 'Fides Generated Description for Column: privacy_notice_history_id'
       data_categories: [system.operations]
     - name: request_origin
-      description: 'Fides Generated Description for Column: request_origin'
       data_categories: [system.operations]
     - name: served_notice_history_id
-      description: 'Fides Generated Description for Column: served_notice_history_id'
       data_categories: [system.operations]
     - name: serving_component
-      description: 'Fides Generated Description for Column: serving_component'
       data_categories: [system.operations]
     - name: tcf_served
-      description: 'Fides Generated Description for Column: tcf_served'
       data_categories: [system.operations]
     - name: updated_at
-      description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
     - name: url_recorded
-      description: 'Fides Generated Description for Column: url_recorded'
       data_categories: [system.operations]
     - name: user_agent
-      description: 'Fides Generated Description for Column: user_agent'
       data_categories: [user]
     - name: user_geography
-      description: 'Fides Generated Description for Column: user_geography'
       data_categories: [user]
   - name: currentprivacypreferencev2
-    description: 'Fides Generated Description for Table: currentprivacypreferencev2'
+    description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
     fields:
     - name: created_at
-      description: 'Fides Generated Description for Column: created_at'
       data_categories: [system.operations]
     - name: email
-      description: 'Fides Generated Description for Column: email'
       data_categories: [user]
     - name: fides_string
-      description: 'Fides Generated Description for Column: fides_string'
       data_categories: [system.operations]
     - name: fides_user_device
-      description: 'Fides Generated Description for Column: fides_user_device'
       data_categories: [user]
     - name: hashed_email
-      description: 'Fides Generated Description for Column: hashed_email'
       data_categories: [system.operations]
     - name: hashed_fides_user_device
-      description: 'Fides Generated Description for Column: hashed_fides_user_device'
       data_categories: [system.operations]
     - name: hashed_phone_number
-      description: 'Fides Generated Description for Column: hashed_phone_number'
       data_categories: [system.operations]
     - name: id
-      description: 'Fides Generated Description for Column: id'
       data_categories: [system.operations]
     - name: phone_number
-      description: 'Fides Generated Description for Column: phone_number'
       data_categories: [user]
     - name: preferences
-      description: 'Fides Generated Description for Column: preferences'
       data_categories: [system.operations]
     - name: updated_at
-      description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
   - name: lastservednoticev2
-    description: 'Fides Generated Description for Table: lastservednoticev2'
+    description: 'Stores the last notices that were served to a user'
     data_categories: [system.operations]
     fields:
     - name: created_at
-      description: 'Fides Generated Description for Column: created_at'
       data_categories: [system.operations]
     - name: email
-      description: 'Fides Generated Description for Column: email'
       data_categories: [user]
     - name: fides_user_device
-      description: 'Fides Generated Description for Column: fides_user_device'
       data_categories: [user]
     - name: hashed_email
-      description: 'Fides Generated Description for Column: hashed_email'
       data_categories: [system.operations]
     - name: hashed_fides_user_device
-      description: 'Fides Generated Description for Column: hashed_fides_user_device'
       data_categories: [system.operations]
     - name: hashed_phone_number
-      description: 'Fides Generated Description for Column: hashed_phone_number'
       data_categories: [system.operations]
     - name: id
-      description: 'Fides Generated Description for Column: id'
       data_categories: [system.operations]
     - name: phone_number
-      description: 'Fides Generated Description for Column: phone_number'
       data_categories: [user]
     - name: served
-      description: 'Fides Generated Description for Column: served'
       data_categories: [system.operations]
     - name: updated_at
-      description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
   - name: location_regulation_selections
     fields:
@@ -2018,9 +1931,105 @@ dataset:
       data_categories: [system.operations]
     - name: selected_locations
       data_categories: [system.operations]
+    - name: selected_location_groups
+      data_categories: [ system.operations ]
     - name: selected_regulations
       data_categories: [system.operations]
     - name: single_row
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: experiencetranslation
+    description: 'The table that stores translations for an Experience Config'
+    fields:
+    - name: accept_button_label
+      data_categories: [system.operations]
+    - name: acknowledge_button_label
+      data_categories: [system.operations]
+    - name: banner_description
+      data_categories: [system.operations]
+    - name: banner_title
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: experience_config_id
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: is_default
+      data_categories: [system.operations]
+    - name: language
+      data_categories: [system.operations]
+    - name: privacy_policy_link_label
+      data_categories: [system.operations]
+    - name: privacy_policy_url
+      data_categories: [system.operations]
+    - name: privacy_preferences_link_label
+      data_categories: [system.operations]
+    - name: reject_button_label
+      data_categories: [system.operations]
+    - name: save_button_label
+      data_categories: [system.operations]
+    - name: title
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: noticetranslation
+    description: 'The table that stores translations for a Privacy Notice'
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: description
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: language
+        data_categories: [system.operations]
+      - name: privacy_notice_id
+        data_categories: [system.operations]
+      - name: title
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: experienceconfigtemplate
+    description: 'The table that stores out of the box Experience Templates'
+    fields:
+    - name: allow_language_selection
+      data_categories: [system.operations]
+    - name: component
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: disabled
+      data_categories: [system.operations]
+    - name: dismissable
+      data_categories: [system.operations]
+    - name: auto_detect_language
+      data_categories: [ system.operations ]
+    - name: id
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: privacy_notice_keys
+      data_categories: [system.operations]
+    - name: regions
+      data_categories: [system.operations]
+    - name: translations
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: experiencenotices
+    description: 'The table that links Privacy Notices to Experience Configs (many-to-many)'
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: experience_config_id
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: notice_id
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
@@ -2038,3 +2047,15 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]  
+  - name: plus_privacy_experience_config_property
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: privacy_experience_config_id
+      data_categories: [system.operations] 
+    - name: property_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations] 

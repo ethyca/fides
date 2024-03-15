@@ -950,6 +950,7 @@ div#fides-banner-inner .fides-privacy-policy {
 @media screen and (max-width: 768px) {
   div#fides-banner {
     padding: 24px;
+    width: 100%;
   }
 
   div#fides-banner-description {

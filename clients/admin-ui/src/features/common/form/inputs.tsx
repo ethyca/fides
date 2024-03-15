@@ -35,6 +35,7 @@ import {
 } from "@fidesui/react";
 import {
   chakraComponents,
+  ChakraStylesConfig,
   CreatableSelect,
   GroupBase,
   MenuPosition,
@@ -219,6 +220,28 @@ export interface SelectProps {
   textColor?: string;
 }
 
+export const SELECT_STYLES: ChakraStylesConfig<
+  Option,
+  boolean,
+  GroupBase<Option>
+> = {
+  container: (provided) => ({
+    ...provided,
+    flexGrow: 1,
+    backgroundColor: "white",
+  }),
+  dropdownIndicator: (provided) => ({
+    ...provided,
+    bg: "transparent",
+    px: 2,
+    cursor: "inherit",
+  }),
+  indicatorSeparator: (provided) => ({
+    ...provided,
+    display: "none",
+  }),
+};
+
 export const SelectInput = ({
   options,
   fieldName,
@@ -308,26 +331,7 @@ export const SelectInput = ({
       placeholder={placeholder}
       focusBorderColor="primary.600"
       chakraStyles={{
-        container: (provided) => ({
-          ...provided,
-          flexGrow: 1,
-          backgroundColor: "white",
-        }),
-        option: (provided, state) => ({
-          ...provided,
-          background: state.isSelected || state.isFocused ? "gray.50" : "unset",
-          color: textColor ?? "gray.600",
-        }),
-        dropdownIndicator: (provided) => ({
-          ...provided,
-          bg: "transparent",
-          px: 2,
-          cursor: "inherit",
-        }),
-        indicatorSeparator: (provided) => ({
-          ...provided,
-          display: "none",
-        }),
+        ...SELECT_STYLES,
         multiValueLabel: (provided) => ({
           ...provided,
           display: "flex",
