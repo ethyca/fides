@@ -16,7 +16,7 @@ fastapi-pagination[sqlalchemy]==0.11.4
 fideslang==3.0.0
 fideslog==1.2.10
 firebase-admin==5.3.0
-GitPython==3.1.35
+GitPython==3.1.41
 httpx==0.23.1
 hvac==0.11.2
 iab-tcf==0.2.2
