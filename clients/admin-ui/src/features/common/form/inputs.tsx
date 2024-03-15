@@ -375,6 +375,7 @@ export const SelectInput = ({
       isMulti={isMulti}
       isDisabled={isDisabled}
       menuPosition={menuPosition}
+      menuPlacement="auto"
     />
   );
 };
