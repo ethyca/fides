@@ -43,6 +43,21 @@
             "save_button_label": "Guardar",
             "title": "Administrar sus preferencias de consentimiento",
             "privacy_experience_config_history_id": "pri_exp-history-tcf-overlay-es-00"
+          },
+          {
+            "language": "fr-CA",
+            "accept_button_label": "Tout activer",
+            "acknowledge_button_label": "OK",
+            "banner_description": "[banner] Nous utilisons des témoins et des méthodes similaires pour reconnaitre les visiteurs et se souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité des campagnes de publicité, cibler les annonces et analyser le trafic du site. Selon votre emplacement, vous pouvez activer ou désactiver l’utilisation de ces technologies.",
+            "banner_title": "[banner] Gestion de vos préférences de consentement",
+            "description": "Nous utilisons des témoins et des méthodes similaires pour reconnaitre les visiteurs et se souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité des campagnes de publicité, cibler les annonces et analyser le trafic du site. Selon votre emplacement, vous pouvez activer ou désactiver l’utilisation de ces technologies.",
+            "is_default": false,
+            "privacy_policy_link_label": "Politique de confidentialité",
+            "privacy_preferences_link_label": "Gestion des préférences",
+            "reject_button_label": "Tout désactiver",
+            "save_button_label": "Sauvegarder",
+            "title": "Gestion de vos préférences de consentement",
+            "privacy_experience_config_history_id": "pri_exp-history-banner-modal-fr-ca-000"
           }
         ],
         "language": "en",
