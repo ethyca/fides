@@ -27,6 +27,7 @@ const PropertyActions = ({ property }: Props) => {
       <Restrict scopes={[ScopeRegistryEnum.PROPERTY_UPDATE]}>
         <IconButton
           aria-label="Edit property"
+          data-testid="edit-property-button"
           variant="outline"
           size="xs"
           marginRight="10px"
@@ -41,7 +42,8 @@ const PropertyActions = ({ property }: Props) => {
         property={property}
         displayComponent={
           <IconButton
-            aria-label="Edit property"
+            aria-label="Delete property"
+            data-testid="delete-property-button"
             variant="outline"
             size="xs"
             marginRight="10px"

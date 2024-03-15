@@ -132,7 +132,13 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
               <DeletePropertyModalTrigger
                 property={property}
                 displayComponent={
-                  <Button size="sm" variant="outline" isLoading={false} mr={3}>
+                  <Button
+                    data-testid="delete-property-button"
+                    size="sm"
+                    variant="outline"
+                    isLoading={false}
+                    mr={3}
+                  >
                     Delete
                   </Button>
                 }
