@@ -108,7 +108,7 @@ describe("i18n-utils", () => {
       expect(mockI18n.activate).toHaveBeenCalledWith("en");
     });
 
-    it("activates the first is_default locale in the experience when no better match exists", () => {
+    it("changes the fallback default locale based on the first is_default translation in the experience", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
       const mockExpDifferentDefault = JSON.parse(
@@ -126,6 +126,7 @@ describe("i18n-utils", () => {
       initializeI18n(mockI18n, mockNavigator, mockExpDifferentDefault);
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
+      expect(mockI18n.setDefaultLocale).toHaveBeenCalledWith("es");
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
   });

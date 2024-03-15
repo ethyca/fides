@@ -431,8 +431,13 @@ export function selectBestExperienceConfigTranslation(
 /**
  * Initialize the given i18n singleton by:
  * 1) Loading all static messages from locale files
- * 2) Detecting the user's locale
- * 3) Activating the best match for the user's locale
+ * 2) Loading all dynamic messages from experience API
+ * 3) Setting the default locale based on the experience API
+ * 4) Detecting the user's browser locale
+ * 5) Activating the best match for the user's locale based on:
+ *   a) user's browser locale
+ *   b) available locales from the experience API
+ *   c) default locale from the experience API
  */
 export function initializeI18n(
   i18n: I18n,
@@ -451,13 +456,14 @@ export function initializeI18n(
   // Extract the default locale from the experience API, or fallback to DEFAULT_LOCALE
   const defaultLocale: Locale =
     extractDefaultLocaleFromExperience(experience) || DEFAULT_LOCALE;
+  i18n.setDefaultLocale(defaultLocale);
   debugLog(
     options?.debug,
-    `Setting Fides i18n default locale = ${defaultLocale}`
+    `Setting Fides i18n default locale = ${i18n.getDefaultLocale()}`
   );
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
-  let userLocale = defaultLocale;
+  let userLocale = i18n.getDefaultLocale();
   if (experience.experience_config?.auto_detect_language === false) {
     debugLog(
       options?.debug,
@@ -472,7 +478,7 @@ export function initializeI18n(
   const bestLocale = matchAvailableLocales(
     userLocale,
     availableLocales,
-    defaultLocale
+    i18n.getDefaultLocale()
   );
   i18n.activate(bestLocale);
   debugLog(
