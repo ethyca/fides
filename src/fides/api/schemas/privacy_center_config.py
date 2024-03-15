@@ -1,12 +1,16 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
+
+from pydantic import root_validator
 
 from fides.api.schemas.base_class import FidesSchema
 
+RequiredType = Literal["optional", "required"]
+
 
 class IdentityInputs(FidesSchema):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    name: Optional[RequiredType] = None
+    email: Optional[RequiredType] = None
+    phone: Optional[RequiredType] = None
 
 
 class CustomPrivacyRequestField(FidesSchema):
@@ -14,6 +18,12 @@ class CustomPrivacyRequestField(FidesSchema):
     required: Optional[bool] = False
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
+
+    @root_validator
+    def validate_default_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if values.get("hidden") and values.get("default_value") is None:
+            raise ValueError("default_value is required when hidden is True")
+        return values
 
 
 class PrivacyRequestOption(FidesSchema):
@@ -23,24 +33,11 @@ class PrivacyRequestOption(FidesSchema):
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
 
     class Config:
-        extra = "allow"
+        extra = "ignore"
 
 
 class PrivacyCenterConfig(FidesSchema):
     actions: List[PrivacyRequestOption]
-
-    class Config:
-        extra = "allow"
-
-
-class SupportedPrivacyRequestOption(PrivacyRequestOption):
-
-    class Config:
-        extra = "ignore"
-
-
-class SupportedPrivacyCenterConfig(PrivacyCenterConfig):
-    actions: List[SupportedPrivacyRequestOption]
 
     class Config:
         extra = "ignore"
