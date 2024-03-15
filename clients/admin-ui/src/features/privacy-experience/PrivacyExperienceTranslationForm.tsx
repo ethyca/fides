@@ -99,7 +99,7 @@ const PrivacyExperienceTranslationForm = ({
   };
 
   const handleLeaveForm = () => {
-    if (translationIsTouched) {
+    if (translationIsTouched || isOOB) {
       onOpenUnsavedChanges();
     } else {
       onReturnToMainForm();
@@ -152,7 +152,9 @@ const PrivacyExperienceTranslationForm = ({
         title="Translation not saved"
         message={
           <Text>
-            You have unsaved changes to this translation. Discard changes?
+            {isEditing
+              ? "You have unsaved changes to this translation. Discard changes?"
+              : "This translation has not been added to your experience.  Discard translation?"}
           </Text>
         }
         confirmButtonText="Discard"
