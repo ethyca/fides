@@ -31,6 +31,9 @@ The types of changes are:
 - Added Locations & Regulations pages to allow a wider selection of locations for consent [#4660](https://github.com/ethyca/fides/pull/4660)
 - Erasure support for Simon Data [#4552](https://github.com/ethyca/fides/pull/4552)
 - Added notice there will be no preview for Privacy Center types in the Experience preview [#4709](https://github.com/ethyca/fides/pull/4709)
+- Removed properties beta flag [#4710](https://github.com/ethyca/fides/pull/4710)
+- Add acknowledge button label to default Experience English form [#4714](https://github.com/ethyca/fides/pull/4714)
+
 
 ### Changed
 - Moved location-targeting from Notices to Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
@@ -49,6 +52,8 @@ The types of changes are:
 ### Fixed
 - Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
 - Various FE fixes for Admin-UI experience config form [#4707](https://github.com/ethyca/fides/pull/4707)
+- Fix modal preview in Admin-UI experience config form [#4712](https://github.com/ethyca/fides/pull/4712)
+- Optimize FidesJS bundle size by only loading TCF static stings when needed [#4711](https://github.com/ethyca/fides/pull/4711)
 
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
 

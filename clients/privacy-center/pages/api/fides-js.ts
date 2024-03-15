@@ -165,7 +165,6 @@ export default async function handler(
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       fidesString,
       fidesPreviewMode: environment.settings.FIDES_PREVIEW_MODE,
-      fidesPreviewComponent: environment.settings.FIDES_PREVIEW_COMPONENT,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
       fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
