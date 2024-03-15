@@ -113,7 +113,7 @@ describe("Consent settings", () => {
             const cookie = JSON.parse(
               decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(
+            expect(body.identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
           });
@@ -136,7 +136,7 @@ describe("Consent settings", () => {
         });
         cy.wait("@postConsentRequest").then((interception) => {
           const { body } = interception.request;
-          expect(body.fides_user_device_id).to.eql(uuid);
+          expect(body.identity.fides_user_device_id).to.eql(uuid);
         });
       });
 
@@ -166,7 +166,7 @@ describe("Consent settings", () => {
             const cookie = JSON.parse(
               decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(
+            expect(body.identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
             expect(cookie.consent).to.eql(previousCookie);
@@ -255,14 +255,14 @@ describe("Consent settings", () => {
 
         // there should be no browser identity
         expect(body.browser_identity).to.eql(undefined);
-      });
 
-      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
-      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-        const cookie = JSON.parse(
-          decodeURIComponent(cookieJson!.value)
-        ) as FidesCookie;
-        expect(cookie.consent.data_sales).to.eql(true);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+          const cookie = JSON.parse(
+            decodeURIComponent(cookieJson!.value)
+          ) as FidesCookie;
+          expect(cookie.consent.data_sales).to.eql(true);
+        });
       });
     });
 
@@ -283,6 +283,13 @@ describe("Consent settings", () => {
       });
     });
 
+    /**
+     * TODO (PROD-1748): update this test to *override* the config to not rely
+     * on any local ENV settings for the running Privacy Center... right now
+     * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
+     * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
+     * doesn't obey the overrideSettings above.
+     */
     it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.getByTestId(`consent-item-advertising`).within(() => {
@@ -387,6 +394,13 @@ describe("Consent settings", () => {
     });
   });
 
+  /**
+   * TODO (PROD-1748): update this test to *override* the config to not rely
+   * on any local ENV settings for the running Privacy Center... right now
+   * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
+   * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
+   * doesn't obey the overrideSettings above.
+   */
   describe("when the user hasn't modified their consent", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html");
@@ -426,6 +440,13 @@ describe("Consent settings", () => {
       });
     });
 
+    /**
+     * TODO (PROD-1748): update this test to *override* the config to not rely
+     * on any local ENV settings for the running Privacy Center... right now
+     * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
+     * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
+     * doesn't obey the overrideSettings above.
+     */
     describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
         cy.visit("/fides-js-demo.html?globalPrivacyControl=true");

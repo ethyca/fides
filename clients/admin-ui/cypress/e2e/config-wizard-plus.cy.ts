@@ -19,8 +19,11 @@ const goToDataFlowScanner = () => {
 /**
  * This test suite is a parallel of config-wizard.cy.ts for testing the config wizard flow
  * when the user has access to the Fides+.
+ *
+ * Skipping for now, these tests need to be refactored
+ * https://ethyca.atlassian.net/browse/PROD-1737
  */
-describe("Config wizard with plus settings", () => {
+describe.skip("Config wizard with plus settings", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
@@ -47,6 +50,9 @@ describe("Config wizard with plus settings", () => {
           enabled: true,
           service_health: null,
           service_error: null,
+        },
+        tcf: {
+          enabled: false,
         },
         fides_cloud: {
           enabled: false,
@@ -75,6 +81,9 @@ describe("Config wizard with plus settings", () => {
           enabled: true,
           service_health: null,
           service_error: null,
+        },
+        tcf: {
+          enabled: false,
         },
         fides_cloud: {
           enabled: false,

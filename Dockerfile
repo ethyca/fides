@@ -1,9 +1,10 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
-ARG PYTHON_VERSION="3.10.12"
+ARG PYTHON_VERSION="3.10.13"
 #########################
 ## Compile Python Deps ##
 #########################
-FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
+FROM python:${PYTHON_VERSION}-slim-bookworm as compile_image
+
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -27,11 +28,12 @@ RUN apt-get update && \
     unixodbc-dev \
     freetds-dev \
     freetds-bin \
-    python-dev \
+    python-dev-is-python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python Dependencies
+
 COPY dev-requirements.txt .
 RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
 
@@ -43,8 +45,9 @@ ENV PATH="/opt/fides/bin:${PATH}"
 RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
 
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir install -r requirements.txt
+COPY optional-requirements.txt .
+RUN pip install --no-cache-dir install -r optional-requirements.txt
 
 COPY dev-requirements.txt .
 RUN pip install --no-cache-dir install -r dev-requirements.txt
@@ -52,7 +55,12 @@ RUN pip install --no-cache-dir install -r dev-requirements.txt
 ##################
 ## Backend Base ##
 ##################
-FROM python:${PYTHON_VERSION}-slim-bullseye as backend
+FROM python:${PYTHON_VERSION}-slim-bookworm as backend
+
+# Add the fidesuser user but don't switch to it yet
+RUN addgroup --system --gid 1001 fidesgroup
+RUN adduser --system --uid 1001 --home /home/fidesuser fidesuser
+
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -60,7 +68,7 @@ RUN apt-get update && \
     git \
     freetds-dev \
     freetds-bin \
-    python-dev \
+    python-dev-is-python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -69,7 +77,8 @@ COPY --from=compile_image /opt/fides /opt/fides
 ENV PATH=/opt/fides/bin:$PATH
 
 # General Application Setup ##
-COPY . /fides
+USER fidesuser
+COPY --chown=fidesuser:fidesgroup . /fides
 WORKDIR /fides
 
 # Immediately flush to stdout, globally
@@ -92,7 +101,11 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
+USER root
+
 RUN pip install -e . --no-deps
+
+USER fidesuser
 
 ###################
 ## Frontend Base ##
@@ -152,7 +165,10 @@ COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-buil
 
 # Install without a symlink
 RUN python setup.py sdist
+
+USER root
 RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build
+USER fidesuser

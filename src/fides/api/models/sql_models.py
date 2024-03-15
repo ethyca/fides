@@ -1,5 +1,5 @@
 # type: ignore
-
+# pylint: disable=comparison-with-callable
 """
 Contains all of the SqlAlchemy models for the Fides resources.
 """
@@ -9,6 +9,8 @@ from __future__ import annotations
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
+from fideslang import MAPPED_PURPOSES_BY_DATA_USE
+from fideslang.gvl import MAPPED_PURPOSES, MappedPurpose
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
@@ -22,13 +24,18 @@ from sqlalchemy import (
     Text,
     TypeDecorator,
     UniqueConstraint,
+    case,
     cast,
+    select,
     type_coerce,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Session, relationship
-from sqlalchemy.sql import func
+from sqlalchemy.sql import Select, func
+from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.sqltypes import DateTime
 from typing_extensions import Protocol, runtime_checkable
 
@@ -38,9 +45,17 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.config import get_config
 
 CONFIG = get_config()
+
+# Mapping of data uses to *Purposes* not Special Purposes
+MAPPED_PURPOSES_ONLY_BY_DATA_USE: Dict[str, MappedPurpose] = {
+    data_use: purpose
+    for data_use, purpose in MAPPED_PURPOSES_BY_DATA_USE.items()
+    if purpose in MAPPED_PURPOSES.values()
+}
 
 
 class FidesBase(FideslibBase):
@@ -177,23 +192,6 @@ class DataCategory(Base, FidesBase):
         )
 
 
-class DataQualifier(Base, FidesBase):
-    """
-    The SQL model for the DataQualifier resource.
-    """
-
-    __tablename__ = "ctl_data_qualifiers"
-
-    parent_key = Column(Text)
-    active = Column(BOOLEAN, default=True, nullable=False)
-
-    # Default Fields
-    is_default = Column(BOOLEAN, default=False)
-    version_added = Column(Text)
-    version_deprecated = Column(Text)
-    replaced_by = Column(Text)
-
-
 class DataSubject(Base, FidesBase):
     """
     The SQL model for the DataSubject resource.
@@ -219,19 +217,6 @@ class DataUse(Base, FidesBase):
     __tablename__ = "ctl_data_uses"
 
     parent_key = Column(Text)
-    legal_basis = Column(
-        Text
-    )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
-    special_category = Column(
-        Text
-    )  # Deprecated in favor of PrivacyDeclaration.special_category_legal_basis
-    recipients = Column(
-        ARRAY(String)
-    )  # Deprecated in favor of PrivacyDeclaration.third_parties
-    legitimate_interest = Column(BOOLEAN, nullable=True)  # Deprecated
-    legitimate_interest_impact_assessment = Column(
-        String, nullable=True
-    )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -271,18 +256,8 @@ class Dataset(Base, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Deprecated
     collections = Column(JSON)
     fides_meta = Column(JSON)
-    joint_controller = Column(
-        PGEncryptedString, nullable=True
-    )  # Deprecated in favor of Systems.joint_controller_info
-    retention = Column(
-        String
-    )  # Deprecated in favor of PrivacyDeclaration.retention_period
-    third_country_transfers = Column(
-        ARRAY(String)
-    )  # Deprecated in favor of Systems.does_international_transfers
 
     @classmethod
     def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
@@ -337,15 +312,6 @@ class PolicyCtl(Base, FidesBase):
     rules = Column(JSON)
 
 
-# Registry
-class Registry(Base, FidesBase):
-    """
-    The SQL model for the Registry resource.
-    """
-
-    __tablename__ = "ctl_registries"
-
-
 # System
 class System(Base, FidesBase):
     """
@@ -354,27 +320,15 @@ class System(Base, FidesBase):
 
     __tablename__ = "ctl_systems"
 
-    registry_id = Column(String)
     meta = Column(JSON)
     fidesctl_meta = Column(JSON)
     system_type = Column(String)
-    joint_controller = Column(
-        PGEncryptedString, nullable=True
-    )  # Deprecated in favor of System.joint_controller_info
-    data_responsibility_title = Column(
-        String
-    )  # Deprecated in favor of System.responsibility
-    third_country_transfers = Column(
-        ARRAY(String)
-    )  # Deprecated in favor of System.does_international_transfers
     administrating_department = Column(String)
-    data_protection_impact_assessment = Column(
-        JSON
-    )  # Deprecated in favor of System.requires_data_protection_assessments, System.dpa_location, and System.dpa_progress
     egress = Column(JSON)
     ingress = Column(JSON)
 
     vendor_id = Column(String)
+    previous_vendor_id = Column(String)
     dataset_references = Column(ARRAY(String), server_default="{}", nullable=False)
     processes_personal_data = Column(BOOLEAN(), server_default="t", nullable=False)
     exempt_from_privacy_regulations = Column(
@@ -397,7 +351,7 @@ class System(Base, FidesBase):
     dpo = Column(String)
     joint_controller_info = Column(String)
     data_security_practices = Column(String)
-    cookie_max_age_seconds = Column(Integer)
+    cookie_max_age_seconds = Column(BIGINT)
     uses_cookies = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
     cookie_refresh = Column(
         BOOLEAN(), default=False, server_default="f", nullable=False
@@ -468,13 +422,14 @@ class PrivacyDeclaration(Base):
     ### references to other tables, but kept as 'soft reference' strings for now
     data_use = Column(String, index=True, nullable=False)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Deprecated
     data_subjects = Column(ARRAY(String))
     dataset_references = Column(ARRAY(String))
 
     features = Column(ARRAY(String), server_default="{}", nullable=False)
     legal_basis_for_processing = Column(String)
-    flexible_legal_basis_for_processing = Column(BOOLEAN())
+    flexible_legal_basis_for_processing = Column(
+        BOOLEAN(), server_default="t", nullable=False
+    )
     impact_assessment_location = Column(String)
     retention_period = Column(String)
     processes_special_category_data = Column(
@@ -511,19 +466,86 @@ class PrivacyDeclaration(Base):
         """Overrides base create to avoid unique check on `name` column"""
         return super().create(db=db, data=data, check_name=check_name)
 
+    @hybrid_property
+    def purpose(self) -> Optional[int]:
+        """Returns the instance-level TCF Purpose if applicable.
+
+        For example, if the data use on this Privacy Declaration is "marketing.advertising.profiling",
+        that corresponds to GVL Purpose 3, which would be returned here.
+        """
+        mapped_purpose: Optional[MappedPurpose] = MAPPED_PURPOSES_ONLY_BY_DATA_USE.get(
+            self.data_use
+        )
+        return mapped_purpose.id if mapped_purpose else None
+
+    @purpose.expression
+    def purpose(cls) -> Case:
+        """Returns the class-level TCF Purpose for use in a SQLAlchemy query
+
+        Since Purposes aren't stored directly on the Privacy Declaration, this comes in handy when
+        creating a query that joins on Purpose
+        """
+        return case(
+            [
+                (cls.data_use == data_use, purpose.id)
+                for data_use, purpose in MAPPED_PURPOSES_ONLY_BY_DATA_USE.items()
+            ],
+            else_=None,
+        )
+
+    async def get_purpose_legal_basis_override(self) -> Optional[str]:
+        """
+        Returns the legal basis for processing that factors in global purpose overrides if applicable.
+
+        Original legal basis for processing is returned where:
+        - feature is disabled
+        - declaration's legal basis is not flexible
+        - no legal basis override specified
+
+        Null is returned where:
+        - Purpose is excluded (this mimics what we do in the TCF Experience, which causes the purpose to be removed entirely)
+
+        Otherwise, we return the override!
+        """
+        if not CONFIG.consent.override_vendor_purposes:
+            return self.legal_basis_for_processing
+
+        query: Select = select(
+            [
+                TCFPurposeOverride.is_included,
+                TCFPurposeOverride.required_legal_basis,
+            ]
+        ).where(TCFPurposeOverride.purpose == self.purpose)
+
+        async_session: AsyncSession = async_object_session(self)
+
+        async with async_session.begin():
+            result = await async_session.execute(query)
+            result = result.first()
+
+        if not result:
+            return self.legal_basis_for_processing
+
+        is_included: Optional[bool] = result.is_included
+        required_legal_basis: Optional[str] = result.required_legal_basis
+
+        if is_included is False:
+            return None
+
+        return (
+            required_legal_basis
+            if required_legal_basis and self.flexible_legal_basis_for_processing
+            else self.legal_basis_for_processing
+        )
+
 
 class SystemModel(BaseModel):
     fides_key: str
-    registry_id: str
     meta: Optional[Dict[str, Any]]
     fidesctl_meta: Optional[Dict[str, Any]]
     system_type: str
-    data_responsibility_title: Optional[str]
-    joint_controller: Optional[str]
-    third_country_transfers: Optional[List[str]]
     privacy_declarations: Optional[Dict[str, Any]]
     administrating_department: Optional[str]
-    data_protection_impact_assessment: Optional[Dict[str, Any]]
     egress: Optional[Dict[str, Any]]
     ingress: Optional[Dict[str, Any]]
     value: Optional[List[Any]]
@@ -549,7 +571,6 @@ class SystemScans(Base):
 sql_model_map: Dict = {
     "client_detail": ClientDetail,
     "data_category": DataCategory,
-    "data_qualifier": DataQualifier,
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,
@@ -557,7 +578,6 @@ sql_model_map: Dict = {
     "fides_user_permissions": FidesUserPermissions,
     "organization": Organization,
     "policy": PolicyCtl,
-    "registry": Registry,
     "system": System,
     "evaluation": Evaluation,
 }
@@ -720,9 +740,9 @@ class Cookies(Base):
 
     privacy_declaration_id = Column(
         String,
-        ForeignKey(PrivacyDeclaration.id_field_path, ondelete="SET NULL"),
+        ForeignKey(PrivacyDeclaration.id_field_path, ondelete="CASCADE"),
         index=True,
-    )  # If privacy declaration is deleted, just set to null and still keep this connected to the system.
+    )  # If privacy declaration is deleted, remove the associated cookies.
 
     system = relationship(
         "System",
@@ -735,6 +755,7 @@ class Cookies(Base):
     privacy_declaration = relationship(
         "PrivacyDeclaration",
         back_populates="cookies",
+        cascade="all,delete",
         uselist=False,
         lazy="joined",  # Joined is intentional, instead of selectin
     )
@@ -743,4 +764,5 @@ class Cookies(Base):
         UniqueConstraint(
             "name", "privacy_declaration_id", name="_cookie_name_privacy_declaration_uc"
         ),
+        UniqueConstraint("name", "system_id", name="_cookie_name_system_uc"),
     )

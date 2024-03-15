@@ -2,12 +2,12 @@ import { useEffect, useState, useCallback } from "preact/hooks";
 import { FidesEvent } from "./events";
 import {
   FidesOptions,
-  LastServedConsentSchema,
+  PrivacyExperience,
   RecordConsentServedRequest,
-  PrivacyNotice,
   ServingComponent,
+  RecordsServedResponse,
 } from "./consent-types";
-import { patchNoticesServed } from "../services/fides/api";
+import { patchNoticesServed } from "../services/api";
 
 /**
  * Hook which tracks if the app has mounted yet.
@@ -64,53 +64,97 @@ export const useDisclosure = ({ id }: { id: string }) => {
   };
 };
 
+/**
+ * Extracts the id value of each object in the list and returns a list
+ * of IDs, either strings or numbers based on the IDs' type.
+ */
+const extractIds = <T extends { id: string | number }[]>(
+  modelList?: T
+): any[] => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((model) => model.id);
+};
+
 export const useConsentServed = ({
-  notices,
   options,
+  privacyExperience,
+  privacyExperienceConfigHistoryId,
+  privacyNoticeHistoryIds,
   userGeography,
-  privacyExperienceId,
   acknowledgeMode,
 }: {
-  notices: PrivacyNotice[];
   options: FidesOptions;
+  privacyExperience: PrivacyExperience;
+  privacyExperienceConfigHistoryId?: string;
+  privacyNoticeHistoryIds?: string[];
   userGeography?: string;
-  privacyExperienceId?: string;
   acknowledgeMode?: boolean;
 }) => {
-  const [servedNotices, setServedNotices] = useState<
-    LastServedConsentSchema[] | undefined
-  >(undefined);
+  const [servedNotice, setServedNotice] =
+    useState<RecordsServedResponse | null>(null);
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
-      // Only send notices-served request when we show via the modal since that
-      // is the only time we show all notices
+      // The only time a notices served API call isn't triggered is when
+      // the BANNER is shown or preview mode is enabled. Calls can be triggered for
+      // TCF_BANNER, TCF_OVERLAY, and OVERLAY
+      if (options.fidesPreviewMode) {
+        return;
+      }
       if (
         !event.detail.extraDetails ||
-        event.detail.extraDetails.servingComponent !== ServingComponent.OVERLAY
+        event.detail.extraDetails.servingComponent === ServingComponent.BANNER
       ) {
         return;
       }
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_id: privacyExperienceId,
+        privacy_experience_config_history_id:
+          privacyExperienceConfigHistoryId || "",
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
-        privacy_notice_history_ids: notices.map(
-          (n) => n.privacy_notice_history_id
+        privacy_notice_history_ids: privacyNoticeHistoryIds || [],
+        tcf_purpose_consents: extractIds(
+          privacyExperience?.tcf_purpose_consents
         ),
-        serving_component: event.detail.extraDetails.servingComponent,
+        tcf_purpose_legitimate_interests: extractIds(
+          privacyExperience.tcf_purpose_legitimate_interests
+        ),
+        tcf_special_purposes: extractIds(
+          privacyExperience?.tcf_special_purposes
+        ),
+        tcf_vendor_consents: extractIds(privacyExperience?.tcf_vendor_consents),
+        tcf_vendor_legitimate_interests: extractIds(
+          privacyExperience.tcf_vendor_legitimate_interests
+        ),
+        tcf_features: extractIds(privacyExperience?.tcf_features),
+        tcf_special_features: extractIds(
+          privacyExperience?.tcf_special_features
+        ),
+        tcf_system_consents: extractIds(privacyExperience?.tcf_system_consents),
+        tcf_system_legitimate_interests: extractIds(
+          privacyExperience?.tcf_system_legitimate_interests
+        ),
+        serving_component: String(event.detail.extraDetails.servingComponent),
       };
       const result = await patchNoticesServed({
         request,
-        fidesApiUrl: options.fidesApiUrl,
-        debug: options.debug,
+        options,
       });
       if (result) {
-        setServedNotices(result);
+        setServedNotice(result);
       }
     },
-    [notices, options, acknowledgeMode, privacyExperienceId, userGeography]
+    [
+      privacyExperienceConfigHistoryId,
+      privacyNoticeHistoryIds,
+      options,
+      acknowledgeMode,
+      privacyExperience,
+      userGeography,
+    ]
   );
 
   useEffect(() => {
@@ -120,5 +164,5 @@ export const useConsentServed = ({
     };
   }, [handleUIEvent]);
 
-  return { servedNotices };
+  return { servedNotice };
 };

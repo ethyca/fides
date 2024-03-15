@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Globalna kontrola privatnosti",
+  "static.gpc.description": "Vaša globalna postavka kontrole privatnosti se poštuje. Automatski ste isključeni iz slučajeva korišćenja podataka koji podležu globalnoj kontroli privatnosti.",
+  "static.gpc.status.applied": "Primenjeno",
+  "static.gpc.status.overridden": "Zaobiđeno",
+  "static.gpc.title": "Otkrivena je globalna kontrola privatnosti"
+}

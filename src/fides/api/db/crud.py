@@ -5,15 +5,18 @@ generated programmatically for each resource.
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
+from fastapi import HTTPException
 from loguru import logger as log
 from sqlalchemy import and_, column
 from sqlalchemy import delete as _delete
 from sqlalchemy import or_
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.sql import Select
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
@@ -81,6 +84,7 @@ async def get_custom_fields_filtered(
                     CustomField.value,
                     CustomFieldDefinition.resource_type,
                     CustomFieldDefinition.name,
+                    CustomFieldDefinition.field_type,
                 ).join(
                     CustomFieldDefinition,
                     CustomFieldDefinition.id == CustomField.custom_field_definition_id,
@@ -198,11 +202,22 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
 
     Returns a list of SQLAlchemy models of that resource type.
     """
+    query = select(sql_model)
+    return await list_resource_query(async_session, query, sql_model)
+
+
+async def list_resource_query(
+    async_session: AsyncSession, query: Select, sql_model: Base = Base
+) -> List[Base]:
+    """
+    Utility function to wrap a select query in generic "list_resource" execution handling.
+    Wrapping includes execution against the DB session, logging and error handling.
+    """
+
     with log.contextualize(sql_model=sql_model.__name__):
         async with async_session.begin():
             try:
                 log.debug("Fetching resources")
-                query = select(sql_model)
                 result = await async_session.execute(query)
                 sql_resources = result.scalars().all()
             except SQLAlchemyError:
@@ -308,6 +323,7 @@ async def delete_resource(
 
         async with async_session.begin():
             try:
+                # Automatically delete related resources if they are CTL objects
                 if hasattr(sql_model, "parent_key"):
                     log.debug("Deleting resource and its children")
                     query = (
@@ -324,6 +340,19 @@ async def delete_resource(
                     log.debug("Deleting resource")
                     query = _delete(sql_model).where(sql_model.fides_key == fides_key)
                 await async_session.execute(query)
+            except IntegrityError as err:
+                raw_error_text: str = err.orig.args[0]
+
+                if "violates foreign key constraint" in raw_error_text:
+                    error_message = "Failed to delete resource! Foreign key constraint found, try deleting related resources first."
+                else:
+                    error_message = "Failed to delete resource!"
+
+                log.bind(error="SQL Query integrity error!").error(raw_error_text)
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=error_message,
+                )
             except SQLAlchemyError:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).info(  # type: ignore[index]

@@ -8,6 +8,13 @@ const theme = extendTheme({
       body: {
         bg: "white",
         minWidth: "container.lg",
+        height: "100%",
+      },
+      html: {
+        height: "100%",
+      },
+      "#__next": {
+        height: "100%",
       },
     },
   },
@@ -35,6 +42,16 @@ const theme = extendTheme({
       },
       defaultProps: {
         size: "xl",
+      },
+    },
+    Switch: {
+      baseStyle: {
+        track: {
+          _focus: {
+            boxShadow: "none",
+            outline: "2px solid #272B53",
+          },
+        },
       },
     },
   },

@@ -1,20 +1,20 @@
-import { FidesCookie } from "./cookie";
 import { debugLog } from "./consent-utils";
+import { FidesCookie } from "./consent-types";
 
 /**
  * Defines the available event names:
  * - FidesInitialized: dispatched when initialization is complete, from Fides.init()
- * - FidesUpdated: dispatched when preferences are updated, from updateConsentPreferences() or Fides.init()
+ * - FidesUpdated: dispatched when preferences are updated from updateConsentPreferences()
  * - FidesUIShown: dispatched when either the banner or modal is shown to the user
+ * - FidesUIChanged: dispatched when preferences are changed but not saved, i.e. "dirty".
  * - FidesModalClosed: dispatched when the modal is closed
- * - FidesPreferenceToggled: dispatched when preferences are toggled but not saved, i.e. "dirty".
  */
 export type FidesEventType =
   | "FidesInitialized"
   | "FidesUpdated"
   | "FidesUIShown"
-  | "FidesModalClosed"
-  | "FidesPreferenceToggled";
+  | "FidesUIChanged"
+  | "FidesModalClosed";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -22,10 +22,17 @@ declare global {
     FidesInitialized: FidesEvent;
     FidesUpdated: FidesEvent;
     FidesUIShown: FidesEvent;
+    FidesUIChanged: FidesEvent;
     FidesModalClosed: FidesEvent;
-    FidesPreferenceToggled: FidesEvent;
   }
 }
+
+/**
+ * Defines the type of "extra" details that can be optionally added to certain
+ * events. This is intentionally vague, but constrained to be basic (primitive)
+ * values for simplicity.
+ */
+export type FidesEventExtraDetails = Record<string, string | number | boolean>;
 
 /**
  * Defines the properties available on event.detail. Currently the FidesCookie
@@ -34,7 +41,7 @@ declare global {
  */
 export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
-  extraDetails?: Record<string, string>;
+  extraDetails?: FidesEventExtraDetails;
 };
 
 export type FidesEvent = CustomEvent<FidesEventDetail>;
@@ -45,11 +52,13 @@ export type FidesEvent = CustomEvent<FidesEventDetail>;
  *
  * Example usage:
  * ```
+ * window.addEventListener("FidesInitialized", (evt) => console.log("Fides.consent initialized:", evt.detail.consent));
  * window.addEventListener("FidesUpdated", (evt) => console.log("Fides.consent updated:", evt.detail.consent));
  * ```
  *
- * The snippet above will print a console log whenever consent preferences are initialized/updated, like:
+ * The snippet above will print a console log whenever consent preferences are updated, like:
  * ```
+ * Fides.consent initialized: { data_sales_and_sharing: false }
  * Fides.consent updated: { data_sales_and_sharing: true }
  * ```
  */
@@ -57,7 +66,7 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie,
   debug: boolean,
-  extraDetails?: Record<string, string>
+  extraDetails?: FidesEventExtraDetails
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     const event = new CustomEvent(type, {
@@ -65,7 +74,15 @@ export const dispatchFidesEvent = (
     });
     debugLog(
       debug,
-      `Dispatching event type ${type} with cookie ${JSON.stringify(cookie)}`
+      `Dispatching event type ${type} ${
+        extraDetails?.servingComponent
+          ? `from ${extraDetails.servingComponent} `
+          : ""
+      }with cookie ${JSON.stringify(cookie)} ${
+        extraDetails?.consentMethod
+          ? `using consent method ${extraDetails.consentMethod} `
+          : ""
+      }`
     );
     window.dispatchEvent(event);
   }

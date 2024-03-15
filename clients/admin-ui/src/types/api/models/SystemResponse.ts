@@ -3,10 +3,8 @@
 /* eslint-disable */
 
 import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
-import type { ContactDetails } from "./ContactDetails";
 import type { Cookies } from "./Cookies";
 import type { DataFlow } from "./DataFlow";
-import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
 import type { PrivacyDeclarationResponse } from "./PrivacyDeclarationResponse";
@@ -39,10 +37,6 @@ export type SystemResponse = {
    */
   description?: string;
   /**
-   * The id of the system registry, if used.
-   */
-  registry_id?: number;
-  /**
    * An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects.
    */
   meta?: any;
@@ -59,10 +53,6 @@ export type SystemResponse = {
    */
   system_type: string;
   /**
-   * Deprecated. The responsibility or role over the system that processes personal data
-   */
-  data_responsibility_title?: DataResponsibilityTitle;
-  /**
    * The resources to which the system sends data.
    */
   egress?: Array<DataFlow>;
@@ -75,42 +65,17 @@ export type SystemResponse = {
    */
   privacy_declarations: Array<PrivacyDeclarationResponse>;
   /**
-   * Deprecated.
-   * The contact details information model.
-   *
-   * Used to capture contact information for controllers, used
-   * as part of exporting a data map / ROPA.
-   *
-   * This model is nested under an Organization and
-   * potentially under a system/dataset.
-   *
-   */
-  joint_controller?: ContactDetails;
-  /**
-   * Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1.
-   */
-  third_country_transfers?: Array<string>;
-  /**
    * An optional value to identify the owning department or group of the system within your organization
    */
   administrating_department?: string;
   /**
-   * Deprecated.
-   * The DataProtectionImpactAssessment (DPIA) resource model.
-   *
-   * Contains information in regard to the data protection
-   * impact assessment exported on a data map or Record of
-   * Processing Activities (RoPA).
-   *
-   * A legal requirement under GDPR for any project that
-   * introduces a high risk to personal information.
-   *
-   */
-  data_protection_impact_assessment?: DataProtectionImpactAssessment;
-  /**
    * The unique identifier for the vendor that's associated with this system.
    */
   vendor_id?: string;
+  /**
+   * If specified, the unique identifier for the vendor that was previously associated with this system.
+   */
+  previous_vendor_id?: string;
   /**
    * Referenced Dataset fides keys used by the system.
    */
@@ -209,6 +174,10 @@ export type SystemResponse = {
    * A URL that points to the system's publicly accessible legitimate interest disclosure.
    */
   legitimate_interest_disclosure_url?: string;
+  /**
+   * System-level cookies unassociated with a data use to deliver services and functionality
+   */
+  cookies?: Array<Cookies>;
   created_at: string;
   /**
    *
@@ -220,5 +189,4 @@ export type SystemResponse = {
    * System managers of the current system
    */
   data_stewards?: Array<UserResponse>;
-  cookies?: Array<Cookies>;
 };

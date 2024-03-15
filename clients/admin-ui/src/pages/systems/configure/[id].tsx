@@ -1,19 +1,13 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  Heading,
-  Spinner,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { Heading, Spinner, Text, useToast } from "@fidesui/react";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features";
+import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
@@ -21,7 +15,12 @@ import {
   setActiveSystem,
   useGetSystemByFidesKeyQuery,
 } from "~/features/system";
+import {
+  selectLockedForGVL,
+  setLockedForGVL,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
 import EditSystemFlow from "~/features/system/EditSystemFlow";
+import GVLNotice from "~/features/system/GVLNotice";
 
 const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
 
@@ -41,10 +40,22 @@ const ConfigureSystem: NextPage = () => {
     skip: !systemId,
   });
   const { isLoading: isDictionaryLoading } = useGetAllDictionaryEntriesQuery();
+  const { tcf: isTCFEnabled } = useFeatures();
+
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   useEffect(() => {
     dispatch(setActiveSystem(system));
-  }, [system, dispatch]);
+    if (system) {
+      const locked =
+        isTCFEnabled &&
+        !!system.vendor_id &&
+        extractVendorSource(system.vendor_id) === VendorSources.GVL;
+      dispatch(setLockedForGVL(locked));
+    } else {
+      setLockedForGVL(false);
+    }
+  }, [system, dispatch, isTCFEnabled]);
 
   useEffect(() => {
     const { status } = router.query;
@@ -80,19 +91,11 @@ const ConfigureSystem: NextPage = () => {
 
   return (
     <Layout title="Systems">
+      <BackButton backPath={SYSTEM_ROUTE} />
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">
         Configure your system
       </Heading>
-      <Box mb={8}>
-        <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
-          <BreadcrumbItem>
-            <NextLink href={SYSTEM_ROUTE}>System Integrations</NextLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <NextLink href="#">Configure your integration</NextLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
+      {lockedForGVL ? <GVLNotice /> : null}
       {!system && !isLoading && !isDictionaryLoading ? (
         <Text data-testid="system-not-found">
           Could not find a system with id {systemId}

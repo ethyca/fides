@@ -1,5 +1,12 @@
-import { TCModel } from "@iabtechlabtcf/core";
-import { EnabledIds, TcfExperienceRecords, TcfModelType } from "./types";
+import {
+  EnabledIds,
+  LegalBasisEnum,
+  TcfExperienceRecords,
+  TcfModelType,
+} from "./types";
+
+/** CMP ID assigned to us by the IAB */
+export const ETHYCA_CMP_ID = 407;
 
 /**
  * We store all of our preference strings (TC, AC, etc.) together as one string so that
@@ -10,41 +17,48 @@ import { EnabledIds, TcfExperienceRecords, TcfModelType } from "./types";
 export const FIDES_SEPARATOR = ",";
 
 export const TCF_KEY_MAP: {
-  cookieKey: TcfModelType;
   experienceKey: keyof TcfExperienceRecords;
-  tcfModelKey?: keyof TCModel;
-  enabledIdsKey?: keyof EnabledIds;
+  tcfModelKey:
+    | "purposeConsents"
+    | "purposeLegitimateInterests"
+    | "specialFeatureOptins"
+    | "vendorConsents"
+    | "vendorLegitimateInterests";
+  enabledIdsKey: keyof EnabledIds;
 }[] = [
   {
-    cookieKey: "purpose_consent_preferences",
     experienceKey: "tcf_purpose_consents",
     tcfModelKey: "purposeConsents",
     enabledIdsKey: "purposesConsent",
   },
   {
-    cookieKey: "purpose_legitimate_interests_preferences",
     experienceKey: "tcf_purpose_legitimate_interests",
     tcfModelKey: "purposeLegitimateInterests",
     enabledIdsKey: "purposesLegint",
   },
   {
-    cookieKey: "special_feature_preferences",
     experienceKey: "tcf_special_features",
     tcfModelKey: "specialFeatureOptins",
     enabledIdsKey: "specialFeatures",
   },
   {
-    cookieKey: "vendor_consent_preferences",
     experienceKey: "tcf_vendor_consents",
     tcfModelKey: "vendorConsents",
     enabledIdsKey: "vendorsConsent",
   },
   {
-    cookieKey: "vendor_legitimate_interests_preferences",
     experienceKey: "tcf_vendor_legitimate_interests",
     tcfModelKey: "vendorLegitimateInterests",
     enabledIdsKey: "vendorsLegint",
   },
+];
+
+// These preferences are stored in the cooke on `tcf_consent` instead of `fides_string` because they
+// pertain to Fides Systems instead of vendors on the FidesString.
+export const FIDES_SYSTEM_COOKIE_KEY_MAP: {
+  cookieKey: TcfModelType;
+  experienceKey: keyof TcfExperienceRecords;
+}[] = [
   {
     cookieKey: "system_consent_preferences",
     experienceKey: "tcf_system_consents",
@@ -60,3 +74,21 @@ export const EXPERIENCE_KEYS_WITH_PREFERENCES = TCF_KEY_MAP.filter(
   ({ experienceKey }) =>
     experienceKey !== "tcf_features" && experienceKey !== "tcf_special_purposes"
 ).map((key) => key.experienceKey);
+
+/**
+ * Define the legal basis "options" that should be available in our RadioGroup buttons in the UI
+ *
+ * NOTE: In Typescript 4.9.5 you can't implicitly coerce string enums like
+ * LegalBasisEnum to a string value, so we do an explicit conversion toString()
+ * here. This could be removed in a new version of Typescript.
+ */
+export const LEGAL_BASIS_OPTIONS = [
+  {
+    i18nMessageID: "static.tcf.consent",
+    value: LegalBasisEnum.CONSENT.toString(),
+  },
+  {
+    i18nMessageID: "static.tcf.legint",
+    value: LegalBasisEnum.LEGITIMATE_INTERESTS.toString(),
+  },
+];

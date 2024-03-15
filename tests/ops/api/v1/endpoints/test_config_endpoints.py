@@ -4,32 +4,41 @@ from typing import Any, Generator
 
 import pytest
 from sqlalchemy.orm import Session
-from starlette.middleware.cors import CORSMiddleware
 from starlette.testclient import TestClient
 
 from fides.api.main import app
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
 from fides.api.schemas.storage.storage import StorageType
+from fides.api.util.cors_middleware_utils import (
+    find_cors_middleware,
+    update_cors_middleware,
+)
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 
 
 @pytest.fixture(scope="function")
-def cors_middleware() -> Generator:
-    cors_middleware = None
+def original_cors_middleware_origins() -> Generator:
+    """
+    Fixture to be run on any test that updates cors origins.
+    Fixture teardown ensure cors origin middleware is reset to its original state.
 
-    for mw in app.user_middleware:
-        if mw.cls is CORSMiddleware:
-            cors_middleware = mw
+    The fixture also yields the cors middleware original allow_origins values.
+    """
 
-    assert cors_middleware is not None
+    original_cors_middleware = find_cors_middleware(app)
 
-    initial_cors_domains = [*cors_middleware.options["allow_origins"]]
+    assert original_cors_middleware is not None
 
-    yield cors_middleware, initial_cors_domains
+    yield original_cors_middleware.options["allow_origins"]
 
-    cors_middleware.options["allow_origins"] = initial_cors_domains
+    # on teardown - find the new cors middleware, remove it, and add back in the original
+    update_cors_middleware(
+        app,
+        original_cors_middleware.options["allow_origins"],
+        original_cors_middleware.options["allow_origin_regex"],
+    )
 
 
 class TestPatchApplicationConfig:
@@ -85,7 +94,7 @@ class TestPatchApplicationConfig:
     ):
         auth_header = generate_role_header(roles=[CONTRIBUTOR])
         response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
+        assert 200 == response.status_code
 
     def test_patch_application_config_admin_role(
         self, api_client: TestClient, payload, url, generate_role_header
@@ -304,9 +313,9 @@ class TestPatchApplicationConfig:
         self,
         api_client: TestClient,
         generate_auth_header,
+        original_cors_middleware_origins,
         url,
         payload,
-        cors_middleware,
         db: Session,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
@@ -317,9 +326,85 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 200
 
-        assert set(cors_middleware[0].options["allow_origins"]) == set(
+        current_cors_middleware = find_cors_middleware(api_client.app)
+
+        assert set(current_cors_middleware.options["allow_origins"]) == set(
             payload["security"]["cors_origins"]
+        ).union(set(original_cors_middleware_origins))
+
+        # now ensure that the middleware update was effective by trying
+        # some sample requests with different origins
+
+        # first, try with an original allowed origin, which should still be accepted
+        assert len(original_cors_middleware_origins)
+        headers = {
+            **auth_header,
+            "Origin": original_cors_middleware_origins[0],
+            "Access-Control-Request-Method": "PATCH",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 200
+
+        # now try with a new allowed origin, which should also be accepted
+        headers = {
+            **auth_header,
+            "Origin": payload["security"]["cors_origins"][0],
+            "Access-Control-Request-Method": "PATCH",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 200
+
+    def test_patch_application_config_updates_cors_domains_rejects_invalid_urls(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """
+        Ensure invalid URL values for cors origin domains are rejected by API.
+        """
+
+        payload = {"security": {"cors_origins": ["*"]}}
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
         )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["test.com"]}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["test"]}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["http://test.com/"]}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
+        payload = {"security": {"cors_origins": ["http://test.com/123/456"]}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
 
     def test_patch_application_config_invalid_notification_type(
         self,
@@ -394,7 +479,7 @@ class TestPutApplicationConfig:
     ):
         auth_header = generate_role_header(roles=[CONTRIBUTOR])
         response = api_client.put(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
+        assert 200 == response.status_code
 
     def test_put_application_config_admin_role(
         self, api_client: TestClient, payload, url, generate_role_header
@@ -591,12 +676,24 @@ class TestPutApplicationConfig:
         generate_auth_header,
         url,
         payload,
-        cors_middleware,
+        original_cors_middleware_origins,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        new_cors_origins = payload["security"]["cors_origins"]
+
+        # try with a new allowed origin, which should not be accepted yet
+        # since we have not made the config update yet
+        headers = {
+            **auth_header,
+            "Origin": new_cors_origins[0],
+            "Access-Control-Request-Method": "PUT",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 400
+        assert response.text == "Disallowed CORS origin"
 
         # if we set cors origins values via API, ensure that those are the
-        # `allow_origins` values actually effective on the middleware
+        # `allow_origins` values on the active cors middleware
         response = api_client.put(
             url,
             headers=auth_header,
@@ -604,9 +701,43 @@ class TestPutApplicationConfig:
         )
         assert response.status_code == 200
 
-        assert set(cors_middleware[0].options["allow_origins"]) == set(
-            payload["security"]["cors_origins"]
-        )
+        current_cors_middleware = find_cors_middleware(api_client.app)
+
+        assert set(current_cors_middleware.options["allow_origins"]) == set(
+            new_cors_origins
+        ).union(set(original_cors_middleware_origins))
+
+        # now ensure that the middleware update was effective by trying
+        # some sample requests with different origins
+
+        # first, try with an original allowed origin, which should still be accepted
+        assert len(original_cors_middleware_origins)
+        headers = {
+            **auth_header,
+            "Origin": original_cors_middleware_origins[0],
+            "Access-Control-Request-Method": "PUT",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 200
+
+        # now try with a new allowed origin, which should also be accepted
+        headers = {
+            **auth_header,
+            "Origin": new_cors_origins[0],
+            "Access-Control-Request-Method": "PUT",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 200
+
+        # but ensure that an unrelated origin is still not allowed
+        headers = {
+            **auth_header,
+            "Origin": "https://fakesite.com",
+            "Access-Control-Request-Method": "PUT",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 400
+        assert response.text == "Disallowed CORS origin"
 
         # but then ensure that we can revert back to the original values
         # by PUTing a config that does not have cors origins specified
@@ -617,9 +748,34 @@ class TestPutApplicationConfig:
             json=payload,
         )
         assert response.status_code == 200
-        assert set(cors_middleware[0].options["allow_origins"]) == set(
-            cors_middleware[1]
+
+        current_cors_middleware = find_cors_middleware(api_client.app)
+        assert set(current_cors_middleware.options["allow_origins"]) == set(
+            original_cors_middleware_origins
         )  # assert our cors middleware has been reset to original values
+
+        # now ensure that the middleware update was effective by trying
+        # some sample requests with different origins
+
+        # first, try with an original allowed origin, which should still be accepted
+        assert len(original_cors_middleware_origins)
+        headers = {
+            **auth_header,
+            "Origin": original_cors_middleware_origins[0],
+            "Access-Control-Request-Method": "PUT",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 200
+
+        # now try with a "new" allowed origin, which should no longer be accepted
+        headers = {
+            **auth_header,
+            "Origin": new_cors_origins[0],
+            "Access-Control-Request-Method": "PUT",
+        }
+        response = api_client.options(url, headers=headers)
+        assert response.status_code == 400
+        assert response.text == "Disallowed CORS origin"
 
 
 class TestGetApplicationConfigApiSet:
@@ -894,7 +1050,6 @@ class TestDeleteApplicationConfig:
         generate_auth_header,
         url,
         db: Session,
-        cors_middleware,
         payload,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
@@ -920,7 +1075,7 @@ class TestDeleteApplicationConfig:
         assert ApplicationConfig.get_api_set(db) == {}
 
 
-class TestGetConnections:
+class TestGetConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return urls.V1_URL_PREFIX + urls.CONFIG
@@ -936,11 +1091,30 @@ class TestGetConnections:
         assert resp.status_code == 200
 
         config = resp.json()
-        assert "database" in config
-        assert "password" not in config["database"]
-        assert "redis" in config
-        assert "password" not in config["redis"]
+
+        # effectively hardcode our allow list here in our tests to flag any additions to the allowlist!
+        # allowlist additions should be made with care, and _need_ to be reviewed by the
+        # Ethyca security team
+        allowed_top_level_config_keys = {
+            "user",
+            "logging",
+            "notifications",
+            "security",
+            "execution",
+            "storage",
+            "consent",
+        }
+
+        for key in config.keys():
+            assert (
+                key in allowed_top_level_config_keys
+            ), "Unexpected config API change, please review with Ethyca security team"
+
         assert "security" in config
+        assert "user" in config
+        assert "logging" in config
+        assert "notifications" in config
+
         security_keys = set(config["security"].keys())
         assert (
             len(
@@ -951,9 +1125,93 @@ class TestGetConnections:
                             "encoding",
                             "oauth_access_token_expire_minutes",
                             "subject_request_download_link_ttl_seconds",
+                            "cors_origin_regex",
                         ]
                     )
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        user_keys = set(config["user"].keys())
+        assert (
+            len(
+                user_keys.difference(
+                    set(
+                        [
+                            "analytics_opt_out",
+                        ]
+                    )
+                )
+            )
+            == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        logging_keys = set(config["logging"].keys())
+        assert (
+            len(
+                logging_keys.difference(
+                    set(
+                        [
+                            "level",
+                        ]
+                    )
+                )
+            )
+            == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        notifications_keys = set(config["notifications"].keys())
+        assert (
+            len(
+                notifications_keys.difference(
+                    set(
+                        [
+                            "send_request_completion_notification",
+                            "send_request_receipt_notification",
+                            "send_request_review_notification",
+                            "notification_service_type",
+                        ]
+                    )
+                )
+            )
+            == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        execution_keys = set(config["execution"].keys())
+        assert (
+            len(
+                execution_keys.difference(
+                    set(
+                        [
+                            "task_retry_count",
+                            "task_retry_delay",
+                            "task_retry_backoff",
+                            "require_manual_request_approval",
+                            "subject_identity_verification_required",
+                        ]
+                    )
+                )
+            )
+            == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        if "storage" in config:  # storage not necessarily in config in test runtime
+            storage_keys = set(config["storage"].keys())
+            assert (
+                len(
+                    storage_keys.difference(
+                        set(
+                            [
+                                "active_default_storage_type",
+                            ]
+                        )
+                    )
+                )
+                == 0
+            ), "Unexpected config API change, please review with Ethyca security team"
+
+        consent_keys = set(config["consent"].keys())
+        assert (
+            len(consent_keys.difference(set(["override_vendor_purposes"]))) == 0
+        ), "Unexpected config API change, please review with Ethyca security team"

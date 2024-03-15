@@ -1,15 +1,18 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { VNode, h } from "preact";
 
-import { PrivacyExperience } from "../../lib/consent-types";
+import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
 import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
+import { I18n } from "../../lib/i18n";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;
+  i18n: I18n;
   onManagePreferencesClick?: () => void;
-  onSave: (keys: EnabledIds) => void;
+  onSave: (consentMethod: ConsentMethod, keys: EnabledIds) => void;
   firstButton?: VNode;
-  children?: ComponentChildren;
+  isMobile: boolean;
+  includePrivacyPolicy?: boolean;
 }
 
 const getAllIds = (modelList: TcfModels) => {
@@ -21,10 +24,12 @@ const getAllIds = (modelList: TcfModels) => {
 
 export const TcfConsentButtons = ({
   experience,
+  i18n,
   onManagePreferencesClick,
   onSave,
   firstButton,
-  children,
+  isMobile,
+  includePrivacyPolicy,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
@@ -46,7 +51,7 @@ export const TcfConsentButtons = ({
         ...(experience.tcf_system_legitimate_interests || []),
       ]),
     };
-    onSave(allIds);
+    onSave(ConsentMethod.ACCEPT, allIds);
   };
   const handleRejectAll = () => {
     const emptyIds: EnabledIds = {
@@ -58,18 +63,18 @@ export const TcfConsentButtons = ({
       vendorsConsent: [],
       vendorsLegint: [],
     };
-    onSave(emptyIds);
+    onSave(ConsentMethod.REJECT, emptyIds);
   };
 
   return (
     <ConsentButtons
-      experienceConfig={experience.experience_config}
+      i18n={i18n}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
-    >
-      {children}
-    </ConsentButtons>
+      isMobile={isMobile}
+      includePrivacyPolicy={includePrivacyPolicy}
+    />
   );
 };

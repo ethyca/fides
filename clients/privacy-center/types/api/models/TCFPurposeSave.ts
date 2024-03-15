@@ -10,5 +10,4 @@ import type { UserConsentPreference } from "./UserConsentPreference";
 export type TCFPurposeSave = {
   id: number;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };

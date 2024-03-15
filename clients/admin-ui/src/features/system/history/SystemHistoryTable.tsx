@@ -23,7 +23,9 @@ import { SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import {
+  alignPrivacyDeclarationCustomFields,
   alignPrivacyDeclarations,
+  alignSystemCustomFields,
   assignSystemNames,
   assignVendorLabels,
   describeSystemChange,
@@ -59,6 +61,9 @@ const SystemHistoryTable = ({ system }: Props) => {
     history = assignVendorLabels(history, dictionaryOptions);
     // Look up the system names for the source and destination fides_keys
     history = assignSystemNames(history, systems);
+    // Align custom fields
+    history = alignSystemCustomFields(history);
+    history = alignPrivacyDeclarationCustomFields(history);
 
     setSelectedHistory(history);
     setModalOpen(true);
@@ -103,24 +108,27 @@ const SystemHistoryTable = ({ system }: Props) => {
         <Tbody>
           {systemHistories.map((history, index) => {
             const description = describeSystemChange(history);
-            return (
-              <Tr
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                onClick={() => openModal(history)}
-                style={{ cursor: "pointer" }}
-              >
-                <Td
-                  pt="10px"
-                  pb="10px"
-                  pl="16px"
-                  fontSize="12px"
-                  border="1px solid #E2E8F0"
+            if (description) {
+              return (
+                <Tr
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={index}
+                  onClick={() => openModal(history)}
+                  style={{ cursor: "pointer" }}
                 >
-                  {description}
-                </Td>
-              </Tr>
-            );
+                  <Td
+                    pt="10px"
+                    pb="10px"
+                    pl="16px"
+                    fontSize="12px"
+                    border="1px solid #E2E8F0"
+                  >
+                    {description}
+                  </Td>
+                </Tr>
+              );
+            }
+            return null;
           })}
         </Tbody>
       </Table>

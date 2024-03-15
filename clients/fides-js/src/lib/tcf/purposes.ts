@@ -1,7 +1,9 @@
 import {
+  LegalBasisEnum,
   PurposeRecord,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
+  TCFSpecialPurposeRecord,
 } from "./types";
 
 export const getUniquePurposeRecords = ({
@@ -35,4 +37,20 @@ export const getUniquePurposeRecords = ({
   });
 
   return { uniquePurposeIds: uniqueIds, uniquePurposes: purposes };
+};
+
+/**
+ * Returns whether or not a special purpose has a specificed LegalBasisEnum
+ */
+export const hasLegalBasis = (
+  specialPurpose: TCFSpecialPurposeRecord,
+  legalBasis: LegalBasisEnum
+) => {
+  const { legal_bases: legalBases } = specialPurpose;
+  if (!legalBases) {
+    return false;
+  }
+  // NOTE: In Typescript 4.9.5 you can't implicitly coerce string enums like
+  // LegalBasisEnum to a string value, so we do an explicit conversion here
+  return !!legalBases.find((basis) => basis === legalBasis.toString());
 };

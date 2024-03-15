@@ -58,7 +58,11 @@ Cypress.Commands.add("overrideSettings", (settings) => {
 
 Cypress.Commands.add(
   "visitConsentDemo",
-  (options?: FidesConfig, queryParams?: any, windowParams?: any) => {
+  (
+    options?: FidesConfig,
+    queryParams?: Cypress.VisitOptions["qs"],
+    windowParams?: any
+  ) => {
     const visitOptions: Partial<VisitOptions> = {
       onBeforeLoad: (win) => {
         // eslint-disable-next-line no-param-reassign
@@ -67,9 +71,18 @@ Cypress.Commands.add(
         if (windowParams) {
           // @ts-ignore
           // eslint-disable-next-line no-param-reassign
-          win.config = {
-            fides: windowParams,
-          };
+          if (options?.options.customOptionsPath) {
+            // hard-code path for now, as dynamically assigning to win obj is challenging in Cypress
+            // @ts-ignore
+            // eslint-disable-next-line no-param-reassign
+            win.config = {
+              tc_info: undefined,
+              overrides: windowParams,
+            };
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            win.fides_overrides = windowParams;
+          }
         }
 
         // Add event listeners for Fides.js events
@@ -79,10 +92,7 @@ Cypress.Commands.add(
         );
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
-        win.addEventListener(
-          "FidesPreferenceToggled",
-          cy.stub().as("FidesPreferenceToggled")
-        );
+        win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
 
         // Add GTM stub
         // eslint-disable-next-line no-param-reassign
@@ -181,7 +191,7 @@ declare global {
        */
       visitConsentDemo(
         options?: FidesConfig,
-        queryParams?: any,
+        queryParams?: Cypress.VisitOptions["qs"],
         windowParams?: any
       ): Chainable<any>;
       /**
@@ -211,6 +221,11 @@ declare global {
       // DEFER: tcData should be type TCData from the IAB's TCF library.
       // Once we are importing that library, replace this `any` type.
       callback: (tcData: any, success: boolean) => void,
+      parameter?: number | string
+    ) => void;
+    __gpp: (
+      command: string,
+      callback: (data: any, success: boolean) => void,
       parameter?: number | string
     ) => void;
   }

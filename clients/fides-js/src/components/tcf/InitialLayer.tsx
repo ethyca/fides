@@ -1,16 +1,23 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
-import { PrivacyExperience } from "../../lib/consent-types";
 
+import { PrivacyExperience } from "../../lib/consent-types";
+import type { I18n } from "../../lib/i18n";
+import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
 import {
   createStacks,
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
+
 import InitialLayerAccordion from "./InitialLayerAccordion";
 
-import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
-
-const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
+const InitialLayer = ({
+  experience,
+  i18n,
+}: {
+  experience: PrivacyExperience;
+  i18n: I18n;
+}) => {
   const {
     tcf_purpose_consents: consentPurposes = [],
     tcf_purpose_legitimate_interests: legintPurposes = [],
@@ -28,7 +35,7 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   );
 
   const stacks = useMemo(() => {
-    if (!experience.gvl) {
+    if (!experience.gvl || !experience.gvl.stacks) {
       return [];
     }
     return createStacks({
@@ -63,7 +70,7 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   }, [stacks, specialFeatureIds, experience.tcf_special_features]);
 
   return (
-    <div>
+    <div className="fides-tcf-stacks-container">
       <div>
         {stacks.map((s) => {
           const stackPurposes = uniquePurposes.filter(
@@ -72,8 +79,9 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
           return (
             <InitialLayerAccordion
               key={s.id}
-              title={s.name}
-              description={s.description}
+              i18n={i18n}
+              title={i18n.t(`exp.tcf.stacks.${s.id}.name`)}
+              description={i18n.t(`exp.tcf.stacks.${s.id}.description`)}
               purposes={stackPurposes}
             />
           );
@@ -83,8 +91,9 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
         {purposes.map((p) => (
           <InitialLayerAccordion
             key={p.id}
-            title={p.name}
-            description={p.description}
+            i18n={i18n}
+            title={i18n.t(`exp.tcf.purposes.${p.id}.name`)}
+            description={i18n.t(`exp.tcf.purposes.${p.id}.description`)}
           />
         ))}
       </div>
@@ -92,8 +101,9 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
         {specialFeatures.map((sf) => (
           <InitialLayerAccordion
             key={sf.id}
-            title={sf.name}
-            description={sf.description}
+            i18n={i18n}
+            title={i18n.t(`exp.tcf.specialFeatures.${sf.id}.name`)}
+            description={i18n.t(`exp.tcf.specialFeatures.${sf.id}.description`)}
           />
         ))}
       </div>

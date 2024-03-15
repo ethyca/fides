@@ -16,9 +16,7 @@ from loguru import logger
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from toml import load as load_toml
 
-from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -40,7 +38,6 @@ from fides.api.oauth.roles import (
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.cache import get_cache
-from fides.api.util.consent_util import load_default_experience_configs_on_startup
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
@@ -177,9 +174,48 @@ def enable_tcf(config):
     config.consent.tcf_enabled = False
 
 
+@pytest.fixture(scope="function")
+def enable_ac(config):
+    assert config.test_mode
+    config.consent.ac_enabled = True
+    yield config
+    config.consent.ac_enabled = False
+
+
+@pytest.fixture(scope="function")
+def enable_override_vendor_purposes(config, db):
+    assert config.test_mode
+    config.consent.override_vendor_purposes = True
+    ApplicationConfig.create_or_update(
+        db,
+        data={"config_set": {"consent": {"override_vendor_purposes": True}}},
+    )
+    yield config
+    config.consent.override_vendor_purposes = False
+    ApplicationConfig.create_or_update(
+        db,
+        data={"config_set": {"consent": {"override_vendor_purposes": False}}},
+    )
+
+
+@pytest.fixture(scope="function")
+def enable_override_vendor_purposes_api_set(db):
+    """Enable override vendor purposes via api_set setting, not via traditional app config"""
+    ApplicationConfig.create_or_update(
+        db,
+        data={"api_set": {"consent": {"override_vendor_purposes": True}}},
+    )
+    yield
+    # reset back to false on teardown
+    ApplicationConfig.create_or_update(
+        db,
+        data={"api_set": {"consent": {"override_vendor_purposes": False}}},
+    )
+
+
 @pytest.fixture
 def loguru_caplog(caplog):
-    handler_id = logger.add(caplog.handler, format="{message}")
+    handler_id = logger.add(caplog.handler, format="{message} | {extra}")
     yield caplog
     logger.remove(handler_id)
 
@@ -332,12 +368,6 @@ def resources_dict():
             name="Custom Data Category",
             description="Custom Data Category",
         ),
-        "data_qualifier": models.DataQualifier(
-            organization_fides_key=1,
-            fides_key="custom_data_qualifier",
-            name="Custom Data Qualifier",
-            description="Custom Data Qualifier",
-        ),
         "dataset": models.Dataset(
             organization_fides_key=1,
             fides_key="test_sample_db_dataset",
@@ -357,14 +387,12 @@ def resources_dict():
                             description="A First Name Field",
                             path="another.path",
                             data_categories=["user.name"],
-                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                         models.DatasetField(
                             name="Email",
                             description="User's Email",
                             path="another.another.path",
                             data_categories=["user.contact.email"],
-                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                     ],
                 )
@@ -403,18 +431,9 @@ def resources_dict():
             data_categories=models.PrivacyRule(matches="NONE", values=[]),
             data_uses=models.PrivacyRule(matches="NONE", values=["essential.service"]),
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
-            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
-        ),
-        "registry": models.Registry(
-            organization_fides_key=1,
-            fides_key="test_registry",
-            name="Test Registry",
-            description="Test Regsitry",
-            systems=[],
         ),
         "system": models.System(
             organization_fides_key=1,
-            registryId=1,
             fides_key="test_system",
             system_type="SYSTEM",
             name="Test System",
@@ -426,7 +445,6 @@ def resources_dict():
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     cookies=[],
                 )
@@ -1019,12 +1037,6 @@ def system(db: Session) -> System:
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
 
@@ -1035,7 +1047,6 @@ def system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "marketing.advertising",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1071,7 +1082,6 @@ def system_multiple_decs(db: Session, system: System) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "third_party_sharing",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1093,12 +1103,6 @@ def system_third_party_sharing(db: Session) -> System:
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
 
@@ -1109,7 +1113,6 @@ def system_third_party_sharing(db: Session) -> System:
             "system_id": system_third_party_sharing.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "third_party_sharing",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1130,12 +1133,6 @@ def system_provide_service(db: Session) -> System:
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
 
@@ -1146,7 +1143,6 @@ def system_provide_service(db: Session) -> System:
             "system_id": system_provide_service.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "essential.service",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1167,12 +1163,6 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
 
@@ -1183,7 +1173,6 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "system_id": system_provide_service_operations_support_optimization.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "essential.service.operations.improve",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1217,14 +1206,3 @@ def load_default_data_uses(db):
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.dict())
-
-
-@pytest.fixture(scope="function", autouse=True)
-def load_default_privacy_experience_configs(db):
-    """Ops tests drop db data, so for now, load these back in if they don't exist"""
-    if not PrivacyExperienceConfig.get_default_config(
-        db, ComponentType.overlay
-    ) or not PrivacyExperienceConfig.get_default_config(
-        db, ComponentType.privacy_center
-    ):
-        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)

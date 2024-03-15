@@ -49,7 +49,15 @@ export interface PrivacyCenterSettings {
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
+  FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
+  FIDES_TCF_GDPR_APPLIES: boolean; // (optional) The default for the TCF GDPR applies value (default true)
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
+  IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
+  FIDES_JS_BASE_URL: string; // A base URL to a directory of fides.js scripts
+  PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
+  ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
+  BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
+  FIDES_PREVIEW_MODE: boolean | false; // (optional) sets fides to preview mode, save prefs to cookie, disabling buttons, etc
 }
 
 /**
@@ -71,7 +79,15 @@ export type PrivacyCenterClientSettings = Pick<
   | "PRIVACY_CENTER_URL"
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
+  | "FIDES_DISABLE_BANNER"
+  | "FIDES_TCF_GDPR_APPLIES"
   | "FIDES_STRING"
+  | "IS_FORCED_TCF"
+  | "FIDES_JS_BASE_URL"
+  | "PREVENT_DISMISSAL"
+  | "ALLOW_HTML_DESCRIPTION"
+  | "BASE_64_COOKIE"
+  | "FIDES_PREVIEW_MODE"
 >;
 
 export type Styles = string;
@@ -176,6 +192,32 @@ export const validateConfig = (
       };
     }
   }
+
+  const invalidFieldMessages = config.actions.flatMap((action) => {
+    const invalidFields = Object.entries(
+      action.custom_privacy_request_fields || {}
+    )
+      .filter(([, field]) => field.hidden && field.default_value === undefined)
+      .map(([key]) => `'${key}'`);
+
+    return invalidFields.length > 0
+      ? [
+          `${invalidFields.join(", ")} in the action with policy_key '${
+            action.policy_key
+          }'`,
+        ]
+      : [];
+  });
+
+  if (invalidFieldMessages.length > 0) {
+    return {
+      isValid: false,
+      message: `A default_value is required for hidden field(s) ${invalidFieldMessages.join(
+        ", "
+      )}`,
+    };
+  }
+
   return { isValid: true, message: "Config is valid" };
 };
 
@@ -296,7 +338,33 @@ export const loadPrivacyCenterEnvironment =
         .FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API === "true"
         : false,
+      FIDES_DISABLE_BANNER: process.env
+        .FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER
+        ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER === "true"
+        : false,
+      FIDES_TCF_GDPR_APPLIES: !(
+        process.env.FIDES_PRIVACY_CENTER__FIDES_TCF_GDPR_APPLIES === "false"
+      ),
       FIDES_STRING: process.env.FIDES_PRIVACY_CENTER__FIDES_STRING || null,
+      IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
+        ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
+        : false,
+      FIDES_JS_BASE_URL:
+        process.env.FIDES_PRIVACY_CENTER__FIDES_JS_BASE_URL ||
+        "http://localhost:3000",
+      PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
+        ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
+        : false,
+      ALLOW_HTML_DESCRIPTION: process.env
+        .FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION
+        ? process.env.FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION === "true"
+        : null,
+      BASE_64_COOKIE: process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE
+        ? process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE === "true"
+        : false,
+      FIDES_PREVIEW_MODE: process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE
+        ? process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE === "true"
+        : false,
     };
 
     // Load configuration file (if it exists)
@@ -320,7 +388,15 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
       FIDES_EMBED: settings.FIDES_EMBED,
       FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
+      FIDES_DISABLE_BANNER: settings.FIDES_DISABLE_BANNER,
+      FIDES_TCF_GDPR_APPLIES: settings.FIDES_TCF_GDPR_APPLIES,
       FIDES_STRING: settings.FIDES_STRING,
+      IS_FORCED_TCF: settings.IS_FORCED_TCF,
+      FIDES_JS_BASE_URL: settings.FIDES_JS_BASE_URL,
+      PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
+      ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
+      BASE_64_COOKIE: settings.BASE_64_COOKIE,
+      FIDES_PREVIEW_MODE: settings.FIDES_PREVIEW_MODE,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

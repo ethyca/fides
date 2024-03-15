@@ -1,94 +1,41 @@
 import { h } from "preact";
 
-import { TCFFeatureRecord } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
+import { I18n } from "../../lib/i18n";
+import { TCFFeatureRecord, TCFSpecialFeatureRecord } from "../../lib/tcf/types";
 import type { UpdateEnabledIds } from "./TcfOverlay";
-import DataUseToggle from "../DataUseToggle";
+import RecordsList, { RecordListType } from "./RecordsList";
+import EmbeddedVendorList from "./EmbeddedVendorList";
 
-const FeatureBlock = ({
-  label,
-  allFeatures,
-  enabledIds,
-  onChange,
-  hideToggles,
+const FeatureChildren = ({
+  i18n,
+  type,
+  feature,
 }: {
-  label: string;
-  allFeatures: TCFFeatureRecord[] | undefined;
-  enabledIds: string[];
-  onChange: (newIds: string[]) => void;
-  hideToggles?: boolean;
+  i18n: I18n;
+  type: RecordListType;
+  feature: TCFFeatureRecord;
 }) => {
-  if (!allFeatures || allFeatures.length === 0) {
-    return null;
-  }
-
-  const allChecked = allFeatures.length === enabledIds.length;
-  const handleToggle = (feature: TCFFeatureRecord) => {
-    const featureId = `${feature.id}`;
-    if (enabledIds.indexOf(featureId) !== -1) {
-      onChange(enabledIds.filter((e) => e !== featureId));
-    } else {
-      onChange([...enabledIds, featureId]);
-    }
-  };
-  const handleToggleAll = () => {
-    if (allChecked) {
-      onChange([]);
-    } else {
-      onChange(allFeatures.map((f) => `${f.id}`));
-    }
-  };
-
+  const vendors = [...(feature.vendors || []), ...(feature.systems || [])];
   return (
     <div>
-      <DataUseToggle
-        dataUse={{ key: label, name: label }}
-        onToggle={handleToggleAll}
-        checked={allChecked}
-        isHeader
-        includeToggle={!hideToggles}
-      />
-      {allFeatures.map((f) => {
-        const vendors = [...(f.vendors || []), ...(f.systems || [])];
-        return (
-          <DataUseToggle
-            dataUse={{ key: `${f.id}`, name: f.name }}
-            onToggle={() => {
-              handleToggle(f);
-            }}
-            checked={enabledIds.indexOf(`${f.id}`) !== -1}
-            includeToggle={!hideToggles}
-          >
-            <div>
-              <p className="fides-tcf-toggle-content">{f.description}</p>
-              {vendors.length ? (
-                <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
-                  <span className="fides-tcf-purpose-vendor-title">
-                    Vendors we use for this feature
-                    <span>{vendors.length} vendor(s)</span>
-                  </span>
-                  <ul className="fides-tcf-purpose-vendor-list">
-                    {vendors.map((v) => (
-                      <li>{v.name}</li>
-                    ))}
-                  </ul>
-                </p>
-              ) : null}
-            </div>
-          </DataUseToggle>
-        );
-      })}
+      <p className="fides-tcf-toggle-content">
+        {i18n.t(`exp.tcf.${type}.${feature.id}.description`)}
+      </p>
+      <EmbeddedVendorList i18n={i18n} vendors={vendors} />
     </div>
   );
 };
 
 const TcfFeatures = ({
+  i18n,
   allFeatures,
   allSpecialFeatures,
   enabledFeatureIds,
   enabledSpecialFeatureIds,
   onChange,
 }: {
+  i18n: I18n;
   allFeatures: PrivacyExperience["tcf_features"];
   allSpecialFeatures: PrivacyExperience["tcf_special_features"];
   enabledFeatureIds: string[];
@@ -96,22 +43,32 @@ const TcfFeatures = ({
   onChange: (payload: UpdateEnabledIds) => void;
 }) => (
   <div>
-    <FeatureBlock
-      label="Features"
-      allFeatures={allFeatures}
+    <RecordsList<TCFFeatureRecord>
+      i18n={i18n}
+      type="features"
+      title={i18n.t("static.tcf.features")}
+      items={allFeatures ?? []}
       enabledIds={enabledFeatureIds}
-      onChange={(newEnabledIds) =>
+      onToggle={(newEnabledIds) =>
         onChange({ newEnabledIds, modelType: "features" })
       }
+      renderToggleChild={(f) => (
+        <FeatureChildren i18n={i18n} type="features" feature={f} />
+      )}
       hideToggles
     />
-    <FeatureBlock
-      label="Special features"
-      allFeatures={allSpecialFeatures}
+    <RecordsList<TCFSpecialFeatureRecord>
+      i18n={i18n}
+      type="specialFeatures"
+      title={i18n.t("static.tcf.special_features")}
+      items={allSpecialFeatures ?? []}
       enabledIds={enabledSpecialFeatureIds}
-      onChange={(newEnabledIds) =>
+      onToggle={(newEnabledIds) =>
         onChange({ newEnabledIds, modelType: "specialFeatures" })
       }
+      renderToggleChild={(f) => (
+        <FeatureChildren i18n={i18n} type="specialFeatures" feature={f} />
+      )}
     />
   </div>
 );

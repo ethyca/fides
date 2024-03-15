@@ -26,9 +26,11 @@
     "directory": "clients/fides-js"
   },
   "dependencies": {
+    "@iabgpp/cmpapi": "^3.1.0",
     "@iabtechlabtcf/cmpapi": "^1.5.8",
     "@iabtechlabtcf/core": "^1.5.7",
     "a11y-dialog": "^7.5.2",
+    "base-64": "^1.0.0",
     "preact": "^10.13.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -37,8 +39,10 @@
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
+    "@types/base-64": "^1.0.2",
     "@types/node": "^18.16.3",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
@@ -60,6 +64,7 @@
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-filesize": "^10.0.0",
     "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-visualizer": "^5.12.0",
     "ts-jest": "^29.1.0",
     "typescript": "^4.9.5",
     "typescript-plugin-css-modules": "^5.0.1"

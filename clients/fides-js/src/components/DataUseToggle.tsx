@@ -2,42 +2,39 @@ import { ComponentChildren, VNode, h } from "preact";
 import { useDisclosure } from "../lib/hooks";
 import Toggle from "./Toggle";
 
-interface DataUse {
-  key: string;
-  name?: string;
-}
-
 const DataUseToggle = ({
-  dataUse,
+  noticeKey,
+  title,
   checked,
   onToggle,
   children,
   badge,
   gpcBadge,
   disabled,
+  onLabel,
+  offLabel,
   isHeader,
   includeToggle = true,
-  secondToggle,
 }: {
-  dataUse: DataUse;
+  noticeKey: string;
+  title?: string;
   checked: boolean;
-  onToggle: (noticeKey: DataUse["key"]) => void;
+  onToggle: (noticeKey: string) => void;
   children?: ComponentChildren;
   badge?: string;
   gpcBadge?: VNode;
   disabled?: boolean;
+  onLabel?: string;
+  offLabel?: string;
   isHeader?: boolean;
   includeToggle?: boolean;
-  secondToggle?: ComponentChildren;
 }) => {
   const {
     isOpen,
     getButtonProps,
     getDisclosureProps,
     onToggle: toggleDescription,
-  } = useDisclosure({
-    id: dataUse.key,
-  });
+  } = useDisclosure({ id: noticeKey });
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.code === "Space" || event.code === "Enter") {
@@ -56,7 +53,7 @@ const DataUseToggle = ({
           : "fides-notice-toggle"
       }
     >
-      <div key={dataUse.key} className="fides-notice-toggle-title">
+      <div key={noticeKey} className="fides-notice-toggle-title">
         <span
           role="button"
           tabIndex={0}
@@ -68,22 +65,23 @@ const DataUseToggle = ({
               : "fides-notice-toggle-trigger"
           }
         >
-          <span className="fides-flex-center">
-            {dataUse.name}
+          <span className="fides-flex-center fides-justify-space-between">
+            {title}
             {badge ? <span className="fides-notice-badge">{badge}</span> : null}
           </span>
           {gpcBadge}
         </span>
         {includeToggle ? (
           <Toggle
-            name={dataUse.name || ""}
-            id={dataUse.key}
+            name={title || ""}
+            id={noticeKey}
             checked={checked}
             onChange={onToggle}
             disabled={disabled}
+            onLabel={onLabel}
+            offLabel={offLabel}
           />
         ) : null}
-        {secondToggle || null}
       </div>
       {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>

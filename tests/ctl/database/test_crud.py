@@ -3,6 +3,7 @@ from typing import Generator, List
 from uuid import uuid4
 
 import pytest
+from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,7 +32,6 @@ def fixture_created_resources(
     created_keys = []
     resource_type = request.param
     to_create = ["foo", "foo.bar", "foo.bar.baz", "foo.boo"]
-
     for key in to_create:
         parent_key = ".".join(key.split(".")[:-1]) if "." in key else None
 
@@ -58,7 +58,7 @@ def fixture_created_resources(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "created_resources",
-    ["data_category", "data_use", "data_qualifier"],
+    ["data_category", "data_use"],
     indirect=["created_resources"],
 )
 async def test_cascade_delete_taxonomy_children(
@@ -71,6 +71,20 @@ async def test_cascade_delete_taxonomy_children(
     resources = await list_resource(sql_model, async_session)
     remaining_keys = {resource.fides_key for resource in resources}
     assert len(set(keys).intersection(remaining_keys)) == 0
+
+
+@pytest.mark.integration
+async def test_delete_fails_linked_resources(
+    linked_dataset,
+    async_session: AsyncSession,
+) -> None:
+    """Deleting a resource should fail if a linked resource (without cascade delete relationship) still exists."""
+    with pytest.raises(HTTPException) as e:
+        await delete_resource(
+            sql_models.Dataset, linked_dataset.fides_key, async_session
+        )
+
+    assert "try deleting related resources first" in str(e)
 
 
 @pytest.fixture(scope="function")
@@ -264,6 +278,7 @@ async def test_get_custom_fields_filtered(
                         field.resource_id == f["resource_id"]
                         and field.value == f["value"]
                         and cfd.name == f["name"]
+                        and cfd.field_type == f["field_type"]
                     )
                     for f in filtered_fields
                 ]
@@ -275,6 +290,7 @@ async def test_get_custom_fields_filtered(
                         field.resource_id == f["resource_id"]
                         and field.value == f["value"]
                         and cfd.name == f["name"]
+                        and cfd.field_type == f["field_type"]
                     )
                     for f in filtered_fields
                 ]
@@ -290,6 +306,7 @@ async def test_get_custom_fields_filtered(
                     field.resource_id == f["resource_id"]
                     and field.value == f["value"]
                     and cfd.name == f["name"]
+                    and cfd.field_type == f["field_type"]
                 )
                 for f in filtered_fields
             ]
@@ -322,6 +339,7 @@ async def test_get_custom_fields_filtered(
                     field.resource_id == f["resource_id"]
                     and field.value == f["value"]
                     and cfd.name == f["name"]
+                    and cfd.field_type == f["field_type"]
                 )
                 for f in filtered_fields
             ]
@@ -346,6 +364,7 @@ async def test_get_custom_fields_filtered(
         (
             custom_fields_system[3].resource_id == f["resource_id"]
             and custom_fields_system[3].value == f["value"]
+            and cfd.field_type == f["field_type"]
         )
         for f in filtered_fields
     )
@@ -362,7 +381,6 @@ async def test_get_custom_fields_filtered(
 async def test_get_resource_with_custom_field(db, async_session_temp):
     system_data = {
         "name": "my system",
-        "registry_id": "1",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }
@@ -413,7 +431,6 @@ async def test_get_resource_with_custom_field(db, async_session_temp):
 async def test_get_resource_with_custom_field_no_custom_field(async_session_temp):
     system_data = {
         "name": "my system",
-        "registry_id": "1",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }

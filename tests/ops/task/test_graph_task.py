@@ -35,6 +35,7 @@ from fides.api.task.graph_task import (
     _format_data_use_map_for_caching,
     build_affected_field_logs,
     collect_queries,
+    filter_by_enabled_actions,
     start_function,
     update_erasure_mapping_from_cache,
 )
@@ -1007,3 +1008,93 @@ class TestGraphTaskAffectedConsentSystems:
             .order_by(ExecutionLog.created_at.desc())
         )
         assert logs.first().status == ExecutionLogStatus.error
+
+
+class TestFilterByEnabledActions:
+    def test_filter_by_enabled_actions_enabled_actions_none(self):
+        access_results = {
+            "dataset1:collection": "data",
+            "dataset2:collection": "data",
+        }
+        connection_configs = [
+            ConnectionConfig(
+                datasets=[
+                    DatasetConfig(fides_key="dataset1"),
+                ],
+                enabled_actions=None,
+            ),
+            ConnectionConfig(
+                datasets=[DatasetConfig(fides_key="dataset2")],
+                enabled_actions=None,
+            ),
+        ]
+
+        assert filter_by_enabled_actions(access_results, connection_configs) == {
+            "dataset1:collection": "data",
+            "dataset2:collection": "data",
+        }
+
+    def test_filter_by_enabled_actions_access_enabled(self):
+        access_results = {
+            "dataset1:collection": "data",
+            "dataset2:collection": "data",
+        }
+        connection_configs = [
+            ConnectionConfig(
+                datasets=[
+                    DatasetConfig(fides_key="dataset1"),
+                ],
+                enabled_actions=[ActionType.access],
+            ),
+            ConnectionConfig(
+                datasets=[DatasetConfig(fides_key="dataset2")],
+                enabled_actions=[ActionType.access],
+            ),
+        ]
+
+        assert filter_by_enabled_actions(access_results, connection_configs) == {
+            "dataset1:collection": "data",
+            "dataset2:collection": "data",
+        }
+
+    def test_filter_by_enabled_actions_only_erasure(self):
+        access_results = {
+            "dataset1:collection": "data",
+            "dataset2:collection": "data",
+        }
+        connection_configs = [
+            ConnectionConfig(
+                datasets=[
+                    DatasetConfig(fides_key="dataset1"),
+                ],
+                enabled_actions=[ActionType.erasure],
+            ),
+            ConnectionConfig(
+                datasets=[DatasetConfig(fides_key="dataset2")],
+                enabled_actions=[ActionType.erasure],
+            ),
+        ]
+
+        assert filter_by_enabled_actions(access_results, connection_configs) == {}
+
+    def test_filter_by_enabled_actions_mixed_actions(self):
+        access_results = {
+            "dataset1:collection": "data",
+            "dataset2:collection": "data",
+        }
+        connection_configs = [
+            ConnectionConfig(
+                datasets=[
+                    DatasetConfig(fides_key="dataset1"),
+                ],
+                enabled_actions=[ActionType.access],
+            ),
+            ConnectionConfig(
+                datasets=[DatasetConfig(fides_key="dataset2")],
+                enabled_actions=[ActionType.erasure],
+            ),
+        ]
+
+        assert filter_by_enabled_actions(access_results, connection_configs) == {
+            "dataset1:collection": "data",
+        }

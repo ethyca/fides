@@ -1,0 +1,168 @@
+{
+  "locations": [
+    {
+      "id": "er",
+      "selected": false,
+      "name": "Eritrea",
+      "continent": "Africa",
+      "belongs_to": [],
+      "regulation": []
+    },
+    {
+      "id": "fr",
+      "selected": true,
+      "name": "France",
+      "continent": "Europe",
+      "belongs_to": ["eea"],
+      "regulation": ["gdpr"]
+    },
+    {
+      "id": "it",
+      "selected": false,
+      "name": "Italy",
+      "continent": "Europe",
+      "belongs_to": ["eea"],
+      "regulation": ["gdpr"]
+    },
+    {
+      "id": "us_ca",
+      "selected": true,
+      "name": "California",
+      "continent": "North America",
+      "belongs_to": ["us"],
+      "regulation": ["ccpa"]
+    },
+    {
+      "id": "us_co",
+      "selected": false,
+      "name": "Colorado",
+      "continent": "North America",
+      "belongs_to": ["us"],
+      "regulation": ["cpa"]
+    },
+    {
+      "id": "us_ct",
+      "selected": false,
+      "name": "Connecticut",
+      "continent": "North America",
+      "belongs_to": ["us"],
+      "regulation": ["ctdpa"]
+    },
+    {
+      "id": "us_va",
+      "selected": false,
+      "name": "Virginia",
+      "continent": "North America",
+      "belongs_to": ["us"],
+      "regulation": ["vcdpa"]
+    },
+    {
+      "id": "us_ut",
+      "selected": false,
+      "name": "Utah",
+      "continent": "North America",
+      "belongs_to": ["us"],
+      "regulation": ["ucpa"]
+    },
+    {
+      "id": "ca_qc",
+      "selected": false,
+      "name": "Quebec",
+      "continent": "North America",
+      "belongs_to": ["ca"],
+      "regulation": ["pipeda", "law_25_quebec"]
+    },
+    {
+      "id": "br",
+      "selected": true,
+      "name": "Brazil",
+      "continent": "South America",
+      "belongs_to": [],
+      "regulation": ["lgpd"]
+    },
+    {
+      "id": "ve",
+      "selected": false,
+      "name": "Venezuela",
+      "continent": "South America",
+      "belongs_to": [],
+      "regulation": []
+    }
+  ],
+  "location_groups": [
+    {
+      "id": "ca",
+      "name": "Canada",
+      "continent": "North America",
+      "belongs_to": []
+    },
+    {
+      "id": "us",
+      "name": "United States",
+      "continent": "North America",
+      "belongs_to": []
+    },
+    {
+      "id": "eea",
+      "name": "European Economic Area (EEA)",
+      "continent": "Europe",
+      "belongs_to": []
+    }
+  ],
+  "regulations": [
+    {
+      "id": "gdpr",
+      "selected": true,
+      "name": "GDPR (European Union)",
+      "continent": "Europe"
+    },
+    {
+      "id": "ccpa",
+      "selected": true,
+      "name": "CCPA (California)",
+      "continent": "North America"
+    },
+    {
+      "id": "cpa",
+      "selected": false,
+      "name": "CPA (Colorado)",
+      "continent": "North America"
+    },
+    {
+      "id": "vcdpa",
+      "selected": false,
+      "name": "VCDPA (Virginia)",
+      "continent": "North America"
+    },
+    {
+      "id": "ctdpa",
+      "selected": false,
+      "name": "CTDPA (Connecticut)",
+      "continent": "North America"
+    },
+    {
+      "id": "ucpa",
+      "selected": false,
+      "name": "UCPA (Utah)",
+      "continent": "North America"
+    },
+    {
+      "id": "pipeda",
+      "selected": false,
+      "name": "PIPEDA (Canada)",
+      "continent": "North America"
+    },
+    {
+      "id": "law_25_quebec",
+      "selected": false,
+      "name": "Law 25 (Quebec)",
+      "continent": "North America"
+    },
+    {
+      "id": "lgpd",
+      "selected": true,
+      "name": "LGPD (Brazil)",
+      "continent": "South America"
+    }
+  ]
+}

@@ -1,21 +1,29 @@
 {
-  "accept_button_label": "sounds good",
-  "acknowledge_button_label": "ok",
-  "banner_enabled": "always_disabled",
-  "description": "Do it now!",
+  "name": "Experience title",
   "disabled": false,
-  "is_default": true,
-  "privacy_policy_link_label": "Privacy policy",
-  "privacy_policy_url": "example.com/privacy",
-  "privacy_preferences_link_label": "Manage preferences",
-  "reject_button_label": "nah",
-  "save_button_label": "Save",
-  "title": "I am a banner",
+  "dismissable": false,
+  "allow_language_selection": false,
+  "regions": ["us_ca"],
   "id": "pri_0338d055-f91b-4a17-ad4e-600c61551199",
-  "component": "overlay",
-  "experience_config_history_id": "pri_50a8563a-c3fe-4861-9320-9c0f014276a0",
-  "version": 3.0,
   "created_at": "2023-05-30T23:42:10.300484+00:00",
   "updated_at": "2023-05-31T00:28:24.694384+00:00",
-  "regions": ["us_ca"]
+  "origin": "???",
+  "component": "modal",
+  "privacy_notices": [],
+  "translations": [
+    {
+      "language": "en",
+      "is_default": true,
+      "title": "Translation title",
+      "accept_button_label": "Accept",
+      "reject_button_label": "Reject",
+      "acknowledge_button_label": "OK",
+      "save_button_label": "Save",
+      "description": "Translation description",
+      "privacy_policy_link_label": "Privacy policy",
+      "privacy_policy_url": "http://ethyca.com",
+      "privacy_preferences_link_label": "Privacy preferences",
+      "experience_config_history_id": "pri_50a8563a-c3fe-4861-9320-9c0f014276a0"
+    }
+  ]
 }

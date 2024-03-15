@@ -1,4 +1,4 @@
-import random
+import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -109,7 +109,7 @@ def get_manual_webhook_access_inputs(
         return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
     try:
-        for manual_webhook in AccessManualWebhook.get_enabled(db):
+        for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
             manual_inputs[manual_webhook.connection_config.key] = [
                 privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
             ]
@@ -135,7 +135,7 @@ def get_manual_webhook_erasure_inputs(
         # Don't fetch manual inputs unless this policy has an access rule
         return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
     try:
-        for manual_webhook in AccessManualWebhook().get_enabled(db):
+        for manual_webhook in AccessManualWebhook().get_enabled(db, ActionType.erasure):
             manual_inputs[manual_webhook.connection_config.key] = [
                 privacy_request.get_manual_webhook_erasure_input_strict(manual_webhook)
             ]
@@ -490,7 +490,11 @@ async def run_privacy_request(
             if not proceed:
                 return
 
-        if ConfigProxy(session).notifications.send_request_completion_notification:
+        if ConfigProxy(
+            session
+        ).notifications.send_request_completion_notification and not policy.get_rules_for_action(
+            action_type=ActionType.consent
+        ):
             try:
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
@@ -627,7 +631,7 @@ def generate_id_verification_code() -> str:
     """
     Generate one-time identity verification code
     """
-    return str(random.choice(range(100000, 999999)))
+    return str(secrets.choice(range(100000, 999999)))
 
 
 def _retrieve_child_results(  # pylint: disable=R0911

@@ -11,6 +11,9 @@ describe("System integrations", () => {
     cy.intercept("GET", "/api/v1/connection_type*", {
       fixture: "connectors/connection_types.json",
     }).as("getConnectionTypes");
+    cy.intercept("GET", "/api/v1/connection_type/postgres/secret", {
+      fixture: "connectors/postgres_secret.json",
+    }).as("getPostgresConnectorSecret");
     stubPlus(false);
     stubSystemCrud();
     cy.visit(SYSTEM_ROUTE);
@@ -47,6 +50,26 @@ describe("System integrations", () => {
       cy.getByTestId("select-dropdown-list")
         .find('[role="menuitem"] p')
         .should("contain.text", "Shopify");
+    });
+  });
+
+  describe("Integration form contents", () => {
+    beforeEach(() => {
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+      cy.getByTestId("tab-Integrations").click();
+      cy.getByTestId("select-dropdown-btn").click();
+
+      cy.getByTestId("input-search-integrations").type("PostgreSQL");
+      cy.getByTestId("select-dropdown-list")
+        .contains('[role="menuitem"]', "PostgreSQL")
+        .click();
+    });
+
+    it("should not Request types (enabled-actions) field", () => {
+      cy.getByTestId("enabled-actions").should("not.exist");
     });
   });
 });

@@ -1,5 +1,7 @@
 // Typescript adaptation of https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/stub
 
+import { TCF_FRAME_NAME, addFrame, locateFrame } from "../cmp-stubs";
+
 /* eslint-disable no-underscore-dangle */
 
 interface MessageData {
@@ -14,32 +16,17 @@ interface MessageData {
 const isMessageData = (data: unknown): data is MessageData =>
   typeof data === "object" && data != null && "__tcfapiCall" in data;
 
-export const makeStub = () => {
-  const TCF_LOCATOR_NAME = "__tcfapiLocator";
+export const makeStub = ({
+  gdprAppliesDefault = false,
+}: {
+  gdprAppliesDefault?: boolean;
+}) => {
   const queue: any[] = [];
   const currentWindow = window;
-  let frameLocator = currentWindow;
-  let cmpFrame;
-  let gdprApplies: boolean;
-
-  function addFrame() {
-    const doc = currentWindow.document;
-    const otherCMP = !!currentWindow.frames[TCF_LOCATOR_NAME];
-
-    if (!otherCMP) {
-      if (doc.body) {
-        const iframe = doc.createElement("iframe");
-
-        iframe.style.cssText = "display:none";
-        iframe.name = TCF_LOCATOR_NAME;
-        doc.body.appendChild(iframe);
-      } else {
-        setTimeout(addFrame, 5);
-      }
-    }
-
-    return !otherCMP;
-  }
+  /**
+   * Fides modification (PROD#1433): gdprApplies can be overridden
+   */
+  let gdprApplies: boolean = gdprAppliesDefault;
 
   function tcfAPIHandler(...args: any[]) {
     if (!args.length) {
@@ -150,29 +137,11 @@ export const makeStub = () => {
    * "__tcfapilLocator" frame on every level. If one exists already then we are
    * not the master CMP and will not queue commands.
    */
-  while (frameLocator) {
-    try {
-      if (frameLocator.frames[TCF_LOCATOR_NAME]) {
-        cmpFrame = frameLocator;
-        break;
-      }
-    } catch (ignore) {
-      /* empty */
-    }
-
-    // if we're at the top and no cmpFrame
-    if (frameLocator === currentWindow.top) {
-      break;
-    }
-
-    // Move up
-    // @ts-ignore
-    frameLocator = frameLocator.parent;
-  }
+  const cmpFrame = locateFrame(TCF_FRAME_NAME);
 
   if (!cmpFrame) {
     // we have recur'd up the windows and have found no __tcfapiLocator frame
-    addFrame();
+    addFrame(TCF_FRAME_NAME);
     currentWindow.__tcfapi = tcfAPIHandler;
     currentWindow.addEventListener("message", postMessageEventHandler, false);
   }

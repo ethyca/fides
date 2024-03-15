@@ -14,6 +14,7 @@
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
   --fides-overlay-background-dark-color: #e2e8f0;
+  --fides-overlay-width: 680px;
   /* Buttons */
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
@@ -52,18 +53,21 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --fides-overlay-font-size-body-small: 0.875em;
-  --fides-overlay-font-size-body: 0.95em;
-  --fides-overlay-font-size-title: 1em;
-  --fides-overlay-font-size-buttons: 1.05em;
-  --fides-overlay-padding: 1.5em;
+  --12px: 0.75rem;
+  --14px: 0.875rem;
+  --15px: 0.9375rem;
+  --16px: 1rem;
+  --fides-overlay-font-size-body-small: var(--12px);
+  --fides-overlay-font-size-body: var(--14px);
+  --fides-overlay-font-size-title: var(--16px);
+  --fides-overlay-font-size-buttons: var(--14px);
+  --fides-overlay-padding: 24px;
   --fides-overlay-button-border-radius: 6px;
-  --fides-overlay-button-padding: 0.5em 1em;
+  --fides-overlay-button-padding: 8px 16px;
   --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
-  --fides-banner-font-size-title: 1em;
-  --fides-banner-button-font-size: 1em;
+  --fides-banner-font-size-title: var(--16px);
 }
 
 div#fides-overlay {
@@ -99,11 +103,11 @@ div#fides-banner-container {
 }
 
 div#fides-banner {
-  font-size: var(--fides-overlay-font-size-body-small);
+  font-size: var(--fides-overlay-font-size-body);
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
-  padding: 24px 40px 40px 40px;
+  padding: 24px;
   overflow-y: hidden;
 
   display: flex;
@@ -112,6 +116,7 @@ div#fides-banner {
   justify-content: space-between;
   align-items: center;
   position: relative;
+  border-top: 1px solid var(--fides-overlay-primary-color);
 }
 
 div#fides-banner-inner {
@@ -166,33 +171,21 @@ div#fides-tcf-banner-inner {
   grid-row: 1 / 3;
   height: 0;
   min-height: 100%;
-  margin-top: 3em;
+  margin-top: 40px;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
 
-/* Responsive banner */
-@media screen and (min-width: 48em) {
-  div#fides-banner {
-    width: 100%;
-    border-top: 1px solid var(--fides-overlay-primary-color);
-  }
-
-  div#fides-banner-container.fides-banner-top {
-    top: var(--fides-overlay-banner-offset);
-  }
-}
-
 div#fides-banner-heading {
   display: flex;
-  margin-right: 0.8em;
+  margin-right: 13px;
   align-items: center;
 }
 
 div#fides-banner-title {
   font-size: var(--fides-banner-font-size-title);
   font-weight: 600;
-  margin-top: 0.2em;
+  line-height: 1.5em;
   min-width: 33%;
   flex: 1;
   color: var(--fides-overlay-title-font-color);
@@ -201,22 +194,25 @@ div#fides-banner-title {
 div#fides-banner-description {
   margin-top: 16px;
   margin-bottom: 24px;
-  line-height: 1.2em;
+  font-size: var(--fides-overlay-font-size-body);
   flex: 1;
 }
 
+div.fides-html-description {
+  white-space: normal;
+}
+
 div#fides-button-group {
-  margin-top: 0.5em;
+  margin-top: 8px;
   margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: space-between;
-
-  padding-top: 10px;
   background-color: var(--fides-overlay-background-color);
   z-index: 5;
 }
 
 div.fides-acknowledge-button-container {
+  margin-inline: var(--fides-overlay-padding);
   margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: end;
@@ -227,22 +223,20 @@ div.fides-banner-acknowledge .fides-banner-button {
 }
 
 button.fides-banner-button {
-  font-size: var(--fides-banner-button-font-size);
+  font-size: var(--fides-overlay-font-size-buttons);
   display: inline-block;
   flex: auto;
   cursor: pointer;
   text-align: center;
   margin: 0;
-  margin-top: 0.25em;
-  margin-right: 0.5em;
+  margin-top: 4px;
   padding: var(--fides-overlay-button-padding);
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
   border: 1px solid;
   border-radius: var(--fides-overlay-button-border-radius);
 
-  font-family: inherit;
-  line-height: 1.15;
+  font-family: var(--fides-overlay-font-family);
   text-decoration: none;
   font-weight: 600;
 }
@@ -280,7 +274,7 @@ button.fides-banner-button.fides-banner-button-tertiary {
   cursor: pointer;
   font-weight: 500;
   font-size: var(--fides-overlay-font-size-body);
-  line-height: 20px;
+  line-height: 1.25em;
 }
 
 /** Modal */
@@ -294,8 +288,7 @@ div.fides-modal-content {
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
   max-height: 680px;
-  width: 680px;
-  overflow-y: auto;
+  width: var(--fides-overlay-width);
 
   z-index: 2;
   position: fixed;
@@ -305,7 +298,8 @@ div.fides-modal-content {
 
   display: flex;
   flex-direction: column;
-  padding-bottom: 0px;
+  padding: 0px;
+  overflow: hidden;
 }
 
 .fides-modal-container,
@@ -320,31 +314,38 @@ div.fides-modal-content {
 
 /*Fides Embed*/
 
-div#fides-embed-container:focus-visible,
-div#fides-embed-container div#fides-modal:focus-visible {
-  outline: none;
-}
-
 /* Disable "sticky" footer when embedded */
-div#fides-embed-container div#fides-modal .fides-modal-footer {
+div#fides-embed-container div#fides-consent-content .fides-modal-footer {
   position: inherit;
 }
 
-div#fides-embed-container .fides-modal-container,
-div#fides-embed-container .fides-modal-overlay {
-  position: initial;
-  background-color: var(--fides-overlay-embed-background-color);
+div#fides-embed-container .fides-modal-body {
+  padding-top: 16px;
 }
 
-div#fides-embed-container .fides-modal-content {
+div#fides-embed-container div#fides-consent-content {
   position: initial;
   transform: none;
   border: none;
   max-height: none;
-}
+  display: flex;
 
-div#fides-embed-container .fides-close-button {
-  display: none;
+  font-family: var(--fides-overlay-font-family);
+  font-size: var(--fides-overlay-font-size-body);
+  color: var(--fides-overlay-body-font-color);
+  box-sizing: border-box;
+  background-color: var(--fides-overlay-background-color);
+  border-radius: var(--fides-overlay-container-border-radius);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  width: var(--fides-overlay-width);
+
+  top: 50%;
+  left: 50%;
+
+  flex-direction: column;
+  padding: 0px;
+  overflow: hidden;
 }
 
 .fides-modal-container {
@@ -357,54 +358,98 @@ div#fides-embed-container .fides-close-button {
 }
 
 div#fides-modal .fides-modal-header {
+  display: flex;
+  justify-content: end;
+}
+
+div#fides-consent-content {
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+div#fides-consent-content .fides-modal-title {
   text-align: center;
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
+  margin: 0;
   font-weight: 600;
   font-size: var(--fides-overlay-font-size-title);
   color: var(--fides-overlay-title-font-color);
 }
 
-div#fides-modal .fides-modal-footer {
+div#fides-consent-content .fides-modal-body {
+  overflow-y: auto;
+  padding-inline: var(--fides-overlay-padding);
+  height: 100%;
+}
+
+.fides-modal-footer {
   display: flex;
   flex-direction: column;
-  position: sticky;
-  bottom: 0px;
   z-index: 5;
   background-color: var(--fides-overlay-background-color);
+  bottom: 0px;
+  width: var(--fides-overlay-width);
+  border-bottom-left-radius: var(--fides-overlay-component-border-radius);
+  border-bottom-right-radius: var(--fides-overlay-component-border-radius);
 }
 
-div#fides-modal .fides-modal-description {
-  margin: 1em 0 1em 0;
+div#fides-consent-content .fides-modal-description {
+  margin: 8px 0 24px 0;
 }
 
-div#fides-modal .fides-modal-button-group {
+.fides-banner-button-group {
+  display: flex;
+  gap: 12px;
+}
+
+.fides-modal-button-group {
   display: flex;
   width: 100%;
   flex-direction: row;
+  gap: 12px;
+  margin-inline: var(--fides-overlay-padding);
+}
+
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group {
+  gap: 12px;
 }
 
 /* Responsive overlay */
 @media (max-width: 48em) {
-  div#fides-modal .fides-modal-button-group {
+  div.fides-modal-content,
+  div#fides-consent-content {
+    width: 100% !important;
+  }
+
+  .fides-modal-button-group {
     flex-direction: column;
   }
 
   button.fides-banner-button {
     margin: 0;
-    margin-right: 0.5em;
-    margin-bottom: 0.75em;
+    margin-right: 8px;
+    margin-bottom: 12px;
   }
 }
 
-.fides-close-button {
+div#fides-banner .fides-close-button {
   position: absolute;
-  top: 0.5em;
-  right: 0.2em;
+  top: 8px;
+  right: 3px;
   cursor: pointer;
   background: none;
   border: none;
   display: flex;
+}
+
+.fides-modal-header .fides-close-button {
+  padding-top: 8px;
+  padding-right: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
 }
 
 .fides-close-button:hover {
@@ -412,7 +457,7 @@ div#fides-modal .fides-modal-button-group {
 }
 
 .fides-modal-notices {
-  margin-bottom: 1em;
+  margin-bottom: 16px;
 }
 
 div#fides-banner-inner .fides-privacy-policy {
@@ -422,11 +467,12 @@ div#fides-banner-inner .fides-privacy-policy {
   color: var(--fides-overlay-primary-color);
 }
 
-.fides-modal-content .fides-privacy-policy {
+.fides-privacy-policy {
   display: block;
   text-align: center;
   margin-bottom: var(--fides-overlay-padding);
   color: var(--fides-overlay-primary-color);
+  font-family: var(--fides-overlay-font-family);
 }
 
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
@@ -471,8 +517,11 @@ div#fides-banner-inner .fides-privacy-policy {
   color: var(--fides-overlay-inactive-font-color);
   transition: 250ms;
 
-  width: 95px;
+  /* total width 50 (34 + 2x8) */
+  padding-inline: 8px;
+  width: 34px;
   height: 24px;
+  justify-content: end;
 }
 
 .fides-toggle .fides-toggle-display::before {
@@ -500,9 +549,10 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display {
   background-color: var(--fides-overlay-primary-active-color);
   color: var(--fides-overlay-primary-button-text-color);
+  justify-content: start;
 }
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display::before {
-  transform: translate(70px, -50%);
+  transform: translate(26px, -50%);
 }
 
 /* Disabled state */
@@ -559,9 +609,12 @@ div#fides-banner-inner .fides-privacy-policy {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  margin-right: 0.5em;
   min-height: 40px;
   align-items: center;
+}
+
+.fides-notice-toggle .fides-notice-toggle-trigger svg {
+  flex-shrink: 0;
 }
 
 .fides-notice-toggle .fides-notice-toggle-title:hover {
@@ -569,20 +622,32 @@ div#fides-banner-inner .fides-privacy-policy {
   background-color: var(--fides-overlay-row-hover-color);
 }
 
+#fides-tcf-banner-inner .fides-disclosure-visible {
+  padding: 12px 12px;
+}
+
 .fides-notice-toggle .fides-disclosure-visible {
-  padding: 12px 12px 0px 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
   overflow: auto; /* prevent margin collapse */
 }
 
 .fides-notice-toggle p {
   margin: 0;
-  margin-bottom: 1.1em;
+  margin-bottom: 18px;
+}
+
+.fides-notice-toggle p:last-child {
+  margin: 0;
 }
 
 .fides-notice-toggle-title .fides-flex-center {
   align-items: center;
   display: flex;
   width: 100%;
+  white-space: wrap;
 }
 
 .fides-notice-toggle-expanded {
@@ -593,13 +658,19 @@ div#fides-banner-inner .fides-privacy-policy {
   font-weight: 600;
 }
 
+.fides-record-header {
+  font-weight: 600;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
 /* GPC */
 .fides-gpc-banner {
   border: 1px solid var(--fides-overlay-primary-color);
   border-radius: var(--fides-overlay-component-border-radius);
   display: flex;
-  padding: 1.1em;
-  margin-bottom: 1em;
+  padding: 18px;
+  margin-bottom: 16px;
 }
 
 .fides-gpc-banner p {
@@ -608,7 +679,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-gpc-warning {
   color: var(--fides-overlay-primary-color);
-  margin-right: 0.5em;
+  margin-right: 8px;
 }
 
 .fides-gpc-header {
@@ -617,8 +688,9 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-gpc-label {
   font-weight: 600;
-  font-size: 0.9em;
-  text-wrap: nowrap;
+  font-size: var(--fides-overlay-font-size-body);
+  white-space: nowrap;
+  padding: 0 8px;
 }
 
 .fides-gpc-badge {
@@ -657,7 +729,7 @@ div#fides-banner-inner .fides-privacy-policy {
   border-bottom: 1px solid var(--fides-overlay-row-divider-color);
   color: var(--fides-overlay-body-font-color);
   font-weight: 500;
-  padding: 0.6em 1.2em;
+  padding: 10px 20px;
   cursor: pointer;
   width: 100%;
 }
@@ -683,41 +755,42 @@ div#fides-banner-inner .fides-privacy-policy {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  margin-left: 0.6em;
+  margin-right: 8px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
   border-radius: var(--fides-overlay-badge-border-radius);
   background: var(--fides-overlay-badge-background-color);
   color: white;
-  font-size: 0.7em;
+  font-size: var(--fides-overlay-font-size-body-small);
 }
 .fides-background-dark {
   background-color: var(--fides-overlay-background-dark-color);
 }
 
-/* Filter button */
+/* Radio button group */
 
-.fides-filter-button-group {
+.fides-radio-button-group {
   background-color: var(
     --fides-overlay-secondary-button-background-hover-color
   );
-  border-radius: var(--fides-overlay-button-border-radius);
-  width: fit-content;
-  padding: 0.3em;
+  display: flex;
+  border: 1px solid var(--fides-overlay-row-divider-color);
+  padding: 4px;
+  margin-bottom: 22px;
 }
 
-.fides-filter-button {
+.fides-radio-button {
   background-color: transparent;
   border: none;
-  padding: 0.3em 1em;
+  padding: 5px 16px;
   cursor: pointer;
+  flex: 1;
 }
 
-.fides-filter-button[aria-checked="true"] {
+.fides-radio-button[aria-checked="true"] {
   background-color: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
-  border-radius: var(--fides-overlay-button-border-radius);
 }
 
 /* General classes */
@@ -727,13 +800,17 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-margin-right {
-  margin-right: 0.2em;
+  margin-right: 3px;
+}
+
+.fides-justify-space-between {
+  justify-content: space-between;
 }
 
 /* TCF toggles */
 .fides-tcf-toggle-content {
   margin-right: 60px;
-  font-size: 0.9em;
+  font-size: var(--fides-overlay-font-size-body-small);
   font-weight: 400;
 }
 
@@ -744,14 +821,14 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-tcf-illustration {
-  font-size: 0.9em;
-  padding: 0.8em;
+  font-size: var(--fides-overlay-font-size-body-small);
+  padding: 13px;
   padding-right: 60px;
   border-radius: var(--fides-overlay-component-border-radius);
 }
 
 .fides-tcf-purpose-vendor {
-  padding: 0.8em;
+  padding: 13px;
   border-radius: var(--fides-overlay-component-border-radius);
 }
 
@@ -767,34 +844,15 @@ div#fides-banner-inner .fides-privacy-policy {
   display: flex;
 }
 
-.fides-legal-basis-labels {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  font-size: 12px;
-  font-weight: 600;
-  margin-right: 12px;
-}
-
-.fides-legal-basis-labels span {
-  display: inline-flex;
-  width: 95px;
-  margin-left: 16px;
-  line-height: 16px;
-  text-align: center;
-  justify-content: center;
-}
-
 /* Vendor purpose table */
 .fides-vendor-details-table {
   width: 100%;
-  margin-bottom: 1em;
 }
 
 .fides-vendor-details-table th,
 .fides-vendor-details-table td {
   text-align: left;
-  font-size: 0.9em;
+  font-size: var(--fides-overlay-font-size-body-small);
 }
 
 .fides-vendor-details-table td {
@@ -819,35 +877,35 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-external-link {
   color: var(--fides-overlay-primary-color);
   font-weight: 500;
-  font-size: 0.9em;
-  margin-right: 1em;
+  font-size: var(--fides-overlay-font-size-body-small);
+  margin-right: 16px;
 }
 
 /* Vendor info (initial layer) */
-.fides-vendor-info div {
-  margin-right: 2em;
-}
-
-.fides-vendor-info {
+.fides-vendor-info-banner {
   display: flex;
-  padding: 1.1em;
+  flex-direction: row;
+  padding: 16px 12px;
   border-radius: var(--fides-overlay-component-border-radius);
   justify-content: space-around;
   position: sticky;
   top: 0;
+  gap: 30px;
+  margin-bottom: 16px;
 }
 
 .fides-vendor-info-label {
   font-weight: 600;
-  font-size: 1em;
+  font-size: var(--fides-overlay-font-size-body-small);
+  margin-right: 4px;
 }
 
 /* Info box */
 .fides-info-box {
-  background-color: var(--fides-overlay-background-dark-color);
+  background-color: var(--fides-overlay-hover-color);
   border-radius: var(--fides-overlay-component-border-radius);
-  padding: 1.1em;
-  margin: 1em 0;
+  padding: 16px;
+  margin: 10px 0;
 }
 
 .fides-info-box p {
@@ -862,13 +920,126 @@ div#fides-banner-inner .fides-privacy-policy {
   display: none;
 }
 
-/* All on off buttons */
-.fides-all-on-off-buttons {
-  display: flex;
-  justify-content: end;
-  margin-bottom: 8px;
-
-  > button {
-    margin-right: 18px;
+/* Responsive banner */
+@media screen and (min-width: 768px) {
+  div#fides-banner {
+    width: 75%;
+    border-radius: var(--fides-overlay-component-border-radius);
+    border: 1px solid var(--fides-overlay-primary-color);
   }
+
+  div#fides-banner-container.fides-banner-bottom {
+    bottom: var(--fides-overlay-banner-offset);
+  }
+}
+
+@media only screen and (min-width: 1280px) {
+  div#fides-banner {
+    width: 60%;
+    border: 1px solid var(--fides-overlay-primary-color);
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .fides-vendor-info-banner {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  div#fides-banner {
+    padding: 24px;
+  }
+
+  div#fides-banner-description {
+    margin-bottom: 0px;
+  }
+
+  div#fides-banner-inner div#fides-button-group {
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 24px;
+  }
+
+  .fides-banner-button-group {
+    flex-direction: column;
+  }
+
+  button.fides-banner-button {
+    margin: 0px;
+  }
+
+  div#fides-tcf-banner-inner {
+    margin-top: 24px;
+    overflow-y: revert;
+    min-height: revert;
+  }
+
+  div#fides-banner-inner-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 50vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+
+  div#fides-privacy-policy-link {
+    order: 1;
+    width: 100%;
+  }
+  .fides-modal-footer {
+    width: 100%;
+  }
+  .fides-tcf-banner-container
+    div#fides-banner
+    div#fides-banner-inner
+    div#fides-button-group
+    .fides-banner-button-group {
+    padding-left: 0;
+  }
+}
+/* TCF should always be full width and not floating */
+.fides-tcf-banner-container {
+  bottom: 0 !important;
+}
+.fides-tcf-banner-container #fides-banner {
+  width: 100%;
+  border-radius: 0;
+  border-width: 1px 0 0 0;
+  padding: 24px 40px 40px 40px;
+}
+.fides-tcf-banner-container #fides-privacy-policy-link {
+  margin: auto;
+}
+
+/* Paging */
+
+.fides-paging-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.fides-paging-info {
+  color: var(--fides-overlay-font-color-dark);
+  font-size: var(--fides-overlay-font-size-body-small);
+  font-weight: 600;
+  padding: 8px;
+}
+
+.fides-paging-previous-button {
+  margin-right: 8px;
+}
+
+.fides-paging-previous-button,
+.fides-paging-next-button {
+  cursor: pointer;
+  padding: 6px;
+  border: none;
+  background-color: transparent;
+}
+
+.fides-paging-previous-button:disabled,
+.fides-paging-next-button:disabled {
+  cursor: default;
 }

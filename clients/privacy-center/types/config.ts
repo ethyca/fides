@@ -10,7 +10,9 @@ export type CustomPrivacyRequestFields = Record<
   string,
   {
     label: string;
-    required: boolean;
+    required?: boolean;
+    default_value?: string;
+    hidden?: boolean;
   }
 >;
 
@@ -61,6 +63,7 @@ export type ConsentConfig = {
     cancelButtonText?: string;
     icon_path: string;
     identity_inputs?: IdentityInputs;
+    custom_privacy_request_fields?: CustomPrivacyRequestFields;
     title: string;
     modalTitle?: string;
   };

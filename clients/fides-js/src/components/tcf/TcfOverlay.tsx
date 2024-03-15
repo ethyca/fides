@@ -1,14 +1,9 @@
-import { h, FunctionComponent, Fragment } from "preact";
-import { useState, useCallback, useMemo } from "preact/hooks";
+import { Fragment, FunctionComponent, h } from "preact";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import ConsentBanner from "../ConsentBanner";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
-import {
-  debugLog,
-  hasActionNeededNotices,
-  transformConsentToFidesUserPreference,
-  transformUserPreferenceToBoolean,
-} from "../../lib/consent-utils";
+import { debugLog } from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
@@ -19,34 +14,39 @@ import type {
   EnabledIds,
   TCFFeatureRecord,
   TCFFeatureSave,
+  TcfModels,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
+  TcfSavePreferences,
   TCFSpecialFeatureSave,
   TCFSpecialPurposeSave,
-  TCFVendorSave,
-  TcfSavePreferences,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,
-  TcfModels,
+  TCFVendorSave,
 } from "../../lib/tcf/types";
 
 import { updateConsentPreferences } from "../../lib/preferences";
 import {
   ButtonType,
   ConsentMethod,
+  FidesCookie,
   PrivacyExperience,
+  ServingComponent,
 } from "../../lib/consent-types";
 import { generateFidesString } from "../../lib/tcf";
-import {
-  FidesCookie,
-  transformTcfPreferencesToCookieKeys,
-} from "../../lib/cookie";
+import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
+import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
+import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
+import {
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "../../lib/shared-consent-utils";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -195,14 +195,17 @@ const updateCookie = async (
     ...oldCookie,
     fides_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
+    tcf_version_hash: experience.meta?.version_hash,
   };
 };
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
-  fidesRegionString,
-  experience,
   options,
+  experience,
+  i18n,
+  fidesRegionString,
   cookie,
+  savedConsent,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
@@ -231,118 +234,173 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
-  const showBanner = useMemo(
-    () => experience.show_banner && hasActionNeededNotices(experience),
-    [experience]
-  );
+  // Determine which ExperienceConfig history ID should be used for the
+  // reporting APIs, based on the selected locale
+  const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
+    if (experience.experience_config) {
+      const bestTranslation = selectBestExperienceConfigTranslation(
+        i18n,
+        experience.experience_config
+      );
+      return bestTranslation?.privacy_experience_config_history_id;
+    }
+    return undefined;
+  }, [experience, i18n]);
+
+  const { servedNotice } = useConsentServed({
+    privacyExperienceConfigHistoryId,
+    privacyNoticeHistoryIds: [],
+    options,
+    userGeography: fidesRegionString,
+    acknowledgeMode: false,
+    privacyExperience: experience,
+  });
 
   const handleUpdateAllPreferences = useCallback(
-    (enabledIds: EnabledIds) => {
-      const tcf = createTcfSavePayload({ experience, enabledIds });
+    (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
+      const tcf = createTcfSavePayload({
+        experience,
+        enabledIds,
+      });
       updateConsentPreferences({
         consentPreferencesToSave: [],
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
-        consentMethod: ConsentMethod.button,
-        fidesDisableSaveApi: options.fidesDisableSaveApi,
+        privacyExperienceConfigHistoryId,
+        experience,
+        consentMethod,
+        options,
         userLocationString: fidesRegionString,
         cookie,
         debug: options.debug,
-        servedNotices: null, // TODO: served notices
         tcf,
+        servedNoticeHistoryId: servedNotice?.served_notice_history_id,
         updateCookie: (oldCookie) =>
           updateCookie(oldCookie, tcf, enabledIds, experience),
       });
       setDraftIds(enabledIds);
     },
-    [cookie, experience, fidesRegionString, options]
+    [
+      cookie,
+      experience,
+      fidesRegionString,
+      options,
+      privacyExperienceConfigHistoryId,
+      servedNotice,
+    ]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
-  if (!experience.experience_config) {
+  const dispatchOpenBannerEvent = useCallback(() => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.TCF_BANNER,
+    });
+  }, [cookie, options.debug]);
+
+  const dispatchOpenOverlayEvent = useCallback(() => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.TCF_OVERLAY,
+    });
+  }, [cookie, options.debug]);
+
+  const handleDismiss = useCallback(() => {
+    handleUpdateAllPreferences(ConsentMethod.DISMISS, initialEnabledIds);
+  }, [handleUpdateAllPreferences, initialEnabledIds]);
+
+  const experienceConfig = experience.experience_config;
+  if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
-  const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
       options={options}
       experience={experience}
+      i18n={i18n}
       cookie={cookie}
+      savedConsent={savedConsent}
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}
+      onOpen={dispatchOpenOverlayEvent}
+      onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
         const goToVendorTab = () => {
           onManagePreferencesClick();
           setActiveTabIndex(2);
         };
-        return showBanner ? (
+        return (
           <ConsentBanner
+            i18n={i18n}
+            dismissable={experience.experience_config?.dismissable}
             bannerIsOpen={isOpen}
-            onClose={onClose}
-            experience={experienceConfig}
+            onOpen={dispatchOpenBannerEvent}
+            onClose={() => {
+              onClose();
+              handleDismiss();
+            }}
             onVendorPageClick={goToVendorTab}
-            buttonGroup={
+            renderButtonGroup={({ isMobile }) => (
               <TcfConsentButtons
                 experience={experience}
+                i18n={i18n}
                 onManagePreferencesClick={onManagePreferencesClick}
-                onSave={(keys) => {
-                  handleUpdateAllPreferences(keys);
+                onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
+                  handleUpdateAllPreferences(consentMethod, keys);
                   onSave();
                 }}
-              >
-                <PrivacyPolicyLink experience={experienceConfig} />
-              </TcfConsentButtons>
-            }
+                isMobile={isMobile}
+                includePrivacyPolicy
+              />
+            )}
+            className="fides-tcf-banner-container"
           >
             <div id="fides-tcf-banner-inner">
               <VendorInfoBanner
                 experience={experience}
+                i18n={i18n}
                 goToVendorTab={goToVendorTab}
               />
-              <InitialLayer experience={experience} />
+              <InitialLayer experience={experience} i18n={i18n} />
             </div>
           </ConsentBanner>
-        ) : null;
+        );
       }}
-      renderModalContent={({ onClose }) => {
-        const onSave = (keys: EnabledIds) => {
-          handleUpdateAllPreferences(keys);
+      renderModalContent={() => (
+        <TcfTabs
+          i18n={i18n}
+          experience={experience}
+          enabledIds={draftIds}
+          onChange={(updatedIds) => {
+            setDraftIds(updatedIds);
+            dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+          }}
+          activeTabIndex={activeTabIndex}
+          onTabChange={setActiveTabIndex}
+        />
+      )}
+      renderModalFooter={({ onClose, isMobile }) => {
+        const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
+          handleUpdateAllPreferences(consentMethod, keys);
           onClose();
         };
         return (
           <Fragment>
-            <TcfTabs
+            <TcfConsentButtons
               experience={experience}
-              enabledIds={draftIds}
-              onChange={(updatedIds) => {
-                setDraftIds(updatedIds);
-                dispatchFidesEvent(
-                  "FidesPreferenceToggled",
-                  cookie,
-                  options.debug
-                );
-              }}
-              activeTabIndex={activeTabIndex}
-              onTabChange={setActiveTabIndex}
+              i18n={i18n}
+              onSave={onSave}
+              firstButton={
+                <Button
+                  buttonType={ButtonType.SECONDARY}
+                  label={i18n.t("exp.save_button_label")}
+                  onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
+                  className="fides-save-button"
+                />
+              }
+              isMobile={isMobile}
             />
-            <div className="fides-modal-footer">
-              <TcfConsentButtons
-                experience={experience}
-                onSave={onSave}
-                firstButton={
-                  <Button
-                    buttonType={ButtonType.SECONDARY}
-                    label={experience.experience_config?.save_button_label}
-                    onClick={() => onSave(draftIds)}
-                  />
-                }
-              />
-              <PrivacyPolicyLink experience={experience.experience_config} />
-            </div>
+            <PrivacyPolicyLink i18n={i18n} />
           </Fragment>
         );
       }}

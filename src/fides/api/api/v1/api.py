@@ -13,14 +13,9 @@ from fides.api.api.v1.endpoints import (
     oauth_endpoints,
     policy_endpoints,
     policy_webhook_endpoints,
-    privacy_experience_config_endpoints,
-    privacy_experience_endpoints,
-    privacy_notice_endpoints,
-    privacy_preference_endpoints,
     privacy_request_endpoints,
     registration_endpoints,
     saas_config_endpoints,
-    served_notice_endpoints,
     storage_endpoints,
     user_endpoints,
     user_permission_endpoints,
@@ -39,10 +34,6 @@ api_router.include_router(masking_endpoints.router)
 api_router.include_router(oauth_endpoints.router)
 api_router.include_router(policy_endpoints.router)
 api_router.include_router(policy_webhook_endpoints.router)
-api_router.include_router(privacy_experience_endpoints.router)
-api_router.include_router(privacy_experience_config_endpoints.router)
-api_router.include_router(privacy_notice_endpoints.router)
-api_router.include_router(privacy_preference_endpoints.router)
 api_router.include_router(privacy_request_endpoints.router)
 api_router.include_router(identity_verification_endpoints.router)
 api_router.include_router(storage_endpoints.router)
@@ -52,4 +43,3 @@ api_router.include_router(user_endpoints.router)
 api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
 api_router.include_router(registration_endpoints.router)
-api_router.include_router(served_notice_endpoints.router)

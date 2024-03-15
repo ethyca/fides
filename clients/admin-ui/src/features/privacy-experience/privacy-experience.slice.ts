@@ -4,10 +4,11 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   ExperienceConfigCreate,
-  ExperienceConfigCreateOrUpdateResponse,
+  ExperienceConfigDisabledUpdate,
+  ExperienceConfigListViewResponse,
   ExperienceConfigResponse,
   ExperienceConfigUpdate,
-  Page_ExperienceConfigResponse_,
+  Page_ExperienceConfigListViewResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
 
@@ -28,10 +29,41 @@ interface ExperienceConfigParams {
   size?: number;
 }
 
+// Construct custom types that allows the optional fields on
+// PrivacyExperienceConfig API requests to be *truly* nullable
+// (see // https://github.com/ethyca/fides/issues/1169)
+type ExperienceConfigOptionalFields =
+  | "banner_title"
+  | "banner_description"
+  | "privacy_policy_link_label"
+  | "privacy_policy_url";
+export type ExperienceConfigUpdateParams = Omit<
+  Partial<ExperienceConfigUpdate>,
+  ExperienceConfigOptionalFields
+> & {
+  id: string;
+  banner_title?: string | null;
+  banner_description?: string | null;
+  privacy_policy_link_label?: string | null;
+  privacy_policy_url?: string | null;
+};
+type ExperienceConfigEnableDisableParams = ExperienceConfigDisabledUpdate & {
+  id: string;
+};
+export type ExperienceConfigCreateParams = Omit<
+  Partial<ExperienceConfigCreate>,
+  ExperienceConfigOptionalFields
+> & {
+  banner_title?: string | null;
+  banner_description?: string | null;
+  privacy_policy_link_label?: string | null;
+  privacy_policy_url?: string | null;
+};
+
 const privacyExperienceConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllExperienceConfigs: build.query<
-      Page_ExperienceConfigResponse_,
+      Page_ExperienceConfigListViewResponse_,
       ExperienceConfigParams
     >({
       query: (params) => ({
@@ -41,8 +73,8 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       providesTags: () => ["Privacy Experience Configs"],
     }),
     patchExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
-      Partial<ExperienceConfigUpdate> & Pick<ExperienceConfigResponse, "id">
+      ExperienceConfigResponse,
+      ExperienceConfigUpdateParams
     >({
       query: (payload) => {
         const { id, ...body } = payload;
@@ -52,6 +84,17 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
           body,
         };
       },
+      invalidatesTags: () => ["Privacy Experience Configs", "Property"],
+    }),
+    limitedPatchExperienceConfig: build.mutation<
+      ExperienceConfigResponse,
+      ExperienceConfigEnableDisableParams
+    >({
+      query: ({ id, disabled }) => ({
+        method: "PATCH",
+        url: `experience-config/${id}/limited_update`,
+        body: { disabled },
+      }),
       invalidatesTags: () => ["Privacy Experience Configs"],
     }),
     getExperienceConfigById: build.query<ExperienceConfigResponse, string>({
@@ -63,7 +106,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       ],
     }),
     postExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
+      ExperienceConfigResponse,
       ExperienceConfigCreate
     >({
       query: (payload) => ({
@@ -71,7 +114,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
         url: `experience-config/`,
         body: payload,
       }),
-      invalidatesTags: () => ["Privacy Experience Configs"],
+      invalidatesTags: () => ["Privacy Experience Configs", "Property"],
     }),
   }),
 });
@@ -79,6 +122,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
 export const {
   useGetAllExperienceConfigsQuery,
   usePatchExperienceConfigMutation,
+  useLimitedPatchExperienceConfigMutation,
   useGetExperienceConfigByIdQuery,
   usePostExperienceConfigMutation,
 } = privacyExperienceConfigApi;
@@ -93,6 +137,7 @@ export const { reducer } = privacyExperienceConfigSlice;
 
 const selectPrivacyExperienceConfig = (state: RootState) =>
   state.privacyExperienceConfig;
+
 export const selectPage = createSelector(
   selectPrivacyExperienceConfig,
   (state) => state.page
@@ -103,7 +148,7 @@ export const selectPageSize = createSelector(
   (state) => state.pageSize
 );
 
-const emptyExperienceConfigs: ExperienceConfigResponse[] = [];
+const emptyExperienceConfigs: ExperienceConfigListViewResponse[] = [];
 export const selectAllExperienceConfigs = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {

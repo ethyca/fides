@@ -1,8 +1,8 @@
-import { Box, Button, Text, useToast } from "@fidesui/react";
+import { Box, Text, useToast } from "@fidesui/react";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
@@ -14,9 +14,14 @@ import {
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
+import {
+  setLockedForGVL,
+  setSuggestions,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import { System, SystemResponse } from "~/types/api";
+import { SystemResponse } from "~/types/api";
 
+import ToastLink from "../common/ToastLink";
 import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
@@ -33,45 +38,20 @@ const ToastMessage = ({
 }: {
   onViewDatamap: () => void;
   onAddPrivacyDeclaration: () => void;
-}) => {
-  const linkButtonProps = {
-    variant: "link",
-    textDecor: "underline",
-    textColor: "gray.700",
-    fontWeight: "medium",
-    // allow lines to wrap
-    display: "initial",
-    cursor: "pointer",
-  };
-  return (
-    <Box>
-      <Text fontWeight="700">System has been saved successfully</Text>
-      <Text textColor="gray.700" whiteSpace="inherit">
-        Your system has been added to your data map. You can{" "}
-        <Button
-          as="a"
-          onClick={onViewDatamap}
-          {...linkButtonProps}
-          // typescript doesn't like passing whiteSpace via linkButtonProps
-          whiteSpace="inherit"
-        >
-          view it now
-        </Button>{" "}
-        and come back to finish this setup when you’re ready. Or you can
-        progress to{" "}
-        <Button
-          as="a"
-          onClick={onAddPrivacyDeclaration}
-          {...linkButtonProps}
-          whiteSpace="inherit"
-        >
-          adding your privacy declarations in the next tab
-        </Button>
-        .
-      </Text>
-    </Box>
-  );
-};
+}) => (
+  <Box>
+    <Text fontWeight="700">System has been saved successfully</Text>
+    <Text textColor="gray.700" whiteSpace="inherit">
+      Your system has been added to your data map. You can{" "}
+      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> and come back
+      to finish this setup when you’re ready. Or you can progress to{" "}
+      <ToastLink onClick={onAddPrivacyDeclaration}>
+        adding your privacy declarations in the next tab
+      </ToastLink>
+      .
+    </Text>
+  </Box>
+);
 
 const SystemFormTabs = ({
   initialTabIndex = 0,
@@ -109,30 +89,33 @@ const SystemFormTabs = ({
     }
   }, [activeSystem]);
 
-  const handleSuccess = (system: System) => {
-    // show a save message if this is the first time the system was saved
-    if (activeSystem === undefined) {
-      setShowSaveMessage(true);
-    }
-    dispatch(setActiveSystem(system));
-    const toastParams = {
-      ...DEFAULT_TOAST_PARAMS,
-      description: (
-        <ToastMessage
-          onViewDatamap={() => {
-            router.push(systemOrDatamapRoute).then(() => {
+  const handleSuccess = useCallback(
+    (system: SystemResponse) => {
+      // show a save message if this is the first time the system was saved
+      if (activeSystem === undefined) {
+        setShowSaveMessage(true);
+      }
+      dispatch(setActiveSystem(system));
+      const toastParams = {
+        ...DEFAULT_TOAST_PARAMS,
+        description: (
+          <ToastMessage
+            onViewDatamap={() => {
+              router.push(systemOrDatamapRoute).then(() => {
+                toast.closeAll();
+              });
+            }}
+            onAddPrivacyDeclaration={() => {
+              setTabIndex(1);
               toast.closeAll();
-            });
-          }}
-          onAddPrivacyDeclaration={() => {
-            setTabIndex(1);
-            toast.closeAll();
-          }}
-        />
-      ),
-    };
-    toast({ ...toastParams });
-  };
+            }}
+          />
+        ),
+      };
+      toast({ ...toastParams });
+    },
+    [activeSystem, dispatch, router, systemOrDatamapRoute, toast]
+  );
 
   useEffect(() => {
     /**
@@ -142,6 +125,8 @@ const SystemFormTabs = ({
      */
     if (isCreate) {
       dispatch(setActiveSystem(undefined));
+      dispatch(setSuggestions("initial"));
+      dispatch(setLockedForGVL(false));
     }
     return () => {
       // on unmount, unset the active system
@@ -151,13 +136,16 @@ const SystemFormTabs = ({
 
   const { attemptAction } = useIsAnyFormDirty();
 
-  const onTabChange = (index: number) => {
-    attemptAction().then((modalConfirmed: boolean) => {
-      if (modalConfirmed) {
-        setTabIndex(index);
-      }
-    });
-  };
+  const onTabChange = useCallback(
+    (index: number) => {
+      attemptAction().then((modalConfirmed: boolean) => {
+        if (modalConfirmed) {
+          setTabIndex(index);
+        }
+      });
+    },
+    [attemptAction]
+  );
 
   const tabData: TabData[] = [
     {

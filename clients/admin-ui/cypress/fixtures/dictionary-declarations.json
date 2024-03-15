@@ -20,7 +20,6 @@
         "user.location.imprecise"
       ],
       "data_use": "marketing.advertising.profiling",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -113,7 +112,6 @@
         "user.location.imprecise"
       ],
       "data_use": "analytics.reporting.campaign_insights",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -157,7 +155,6 @@
         "user.location.imprecise"
       ],
       "data_use": "analytics.reporting.ad_performance",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -250,7 +247,6 @@
         "user.location.imprecise"
       ],
       "data_use": "marketing.advertising.first_party.targeted",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -343,7 +339,6 @@
         "user.location.imprecise"
       ],
       "data_use": "marketing.advertising.third_party.targeted",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -436,7 +431,6 @@
         "user.location.imprecise"
       ],
       "data_use": "functional.storage",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -529,7 +523,6 @@
         "user.location.imprecise"
       ],
       "data_use": "essential.fraud_detection",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -573,7 +566,6 @@
         "user.location.imprecise"
       ],
       "data_use": "marketing.advertising.negative_targeting",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -666,7 +658,6 @@
         "user.location.imprecise"
       ],
       "data_use": "marketing.advertising.frequency_capping",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -759,7 +750,6 @@
         "user.location.imprecise"
       ],
       "data_use": "analytics.reporting.content_performance",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -803,7 +793,6 @@
         "user.location.imprecise"
       ],
       "data_use": "marketing.advertising.first_party.contextual",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -896,7 +885,6 @@
         "user.location.imprecise"
       ],
       "data_use": "functional.service.improve",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -940,7 +928,6 @@
         "user.location.imprecise"
       ],
       "data_use": "personalize.content.limited",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,
@@ -984,7 +971,6 @@
         "user.location.imprecise"
       ],
       "data_use": "essential.service.security",
-      "data_qualifier": null,
       "data_subjects": [],
       "dataset_references": null,
       "egress": null,

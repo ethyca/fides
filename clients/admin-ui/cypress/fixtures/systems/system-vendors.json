@@ -1,0 +1,282 @@
+[
+  {
+    "linked_system": false,
+    "name": "Sitewit, Corp",
+    "vendor_id": "gvl.1172"
+  },
+  {
+    "linked_system": true,
+    "name": "Rockerbox, Inc",
+    "vendor_id": "gvl.232"
+  },
+  {
+    "linked_system": true,
+    "name": "Fifty Technology Limited",
+    "vendor_id": "gvl.100"
+  },
+  {
+    "linked_system": true,
+    "name": "E.ON Energie Deutschland GmbH",
+    "vendor_id": "gacp.3073"
+  },
+  {
+    "linked_system": false,
+    "name": "Taptica",
+    "vendor_id": "gacp.1579"
+  },
+  {
+    "linked_system": true,
+    "name": "VGI CTV, Inc",
+    "vendor_id": "gvl.237"
+  },
+  {
+    "linked_system": true,
+    "name": "Happyfication inc",
+    "vendor_id": "gacp.2166"
+  },
+  {
+    "linked_system": true,
+    "name": "NEURAL.ONE",
+    "vendor_id": "gvl.37"
+  },
+  {
+    "linked_system": true,
+    "name": "MPX GmbH",
+    "vendor_id": "gvl.846"
+  },
+  {
+    "linked_system": true,
+    "name": "Adzymic Pte Ltd",
+    "vendor_id": "gvl.723"
+  },
+  {
+    "linked_system": true,
+    "name": "Quantcast",
+    "vendor_id": "gvl.11"
+  },
+  {
+    "linked_system": true,
+    "name": "Blockthrough, Inc.",
+    "vendor_id": "gvl.815"
+  },
+  {
+    "linked_system": true,
+    "name": "DIGITAL SQUAD",
+    "vendor_id": "gvl.936"
+  },
+  {
+    "linked_system": false,
+    "name": "DMA Institute",
+    "vendor_id": "gacp.317"
+  },
+  {
+    "linked_system": true,
+    "name": "twiago GmbH",
+    "vendor_id": "gvl.242"
+  },
+  {
+    "linked_system": false,
+    "name": "Audience Network",
+    "vendor_id": "gvl.717"
+  },
+  {
+    "linked_system": false,
+    "name": "Alphonso Inc. ",
+    "vendor_id": "gvl.1154"
+  },
+  {
+    "linked_system": true,
+    "name": "Disqus",
+    "vendor_id": "gvl.833"
+  },
+  {
+    "linked_system": true,
+    "name": "Sellpoints",
+    "vendor_id": "gacp.2216"
+  },
+  {
+    "linked_system": true,
+    "name": "PulsePoint, Inc.",
+    "vendor_id": "gvl.81"
+  },
+  {
+    "linked_system": false,
+    "name": "AdTile",
+    "vendor_id": "gacp.2124"
+  },
+  {
+    "linked_system": true,
+    "name": "UniCredit S.p.A.",
+    "vendor_id": "gvl.1040"
+  },
+  {
+    "linked_system": false,
+    "name": "AdGibbon BV",
+    "vendor_id": "gacp.1284"
+  },
+  {
+    "linked_system": true,
+    "name": "Smartzer",
+    "vendor_id": "gacp.14237"
+  },
+  {
+    "linked_system": true,
+    "name": "Onesoon Limited t/a Adalyser",
+    "vendor_id": "gvl.1006"
+  },
+  {
+    "linked_system": true,
+    "name": "Yieldlab (Virtual Minds GmbH)",
+    "vendor_id": "gvl.70"
+  },
+  {
+    "linked_system": true,
+    "name": "TreSensa Technologies, Inc.",
+    "vendor_id": "gvl.88"
+  },
+  {
+    "linked_system": true,
+    "name": "Kertil Iberia S.L.",
+    "vendor_id": "gvl.1052"
+  },
+  {
+    "linked_system": true,
+    "name": "ProgSol.cz",
+    "vendor_id": "gacp.2407"
+  },
+  {
+    "linked_system": true,
+    "name": "Newsroom AI Ltd",
+    "vendor_id": "gvl.519"
+  },
+  {
+    "linked_system": false,
+    "name": "Admo.tv (Clickon)",
+    "vendor_id": "gvl.889"
+  },
+  {
+    "linked_system": true,
+    "name": "VIZNET",
+    "vendor_id": "gvl.1047"
+  },
+  {
+    "linked_system": true,
+    "name": "NextRoll, Inc.",
+    "vendor_id": "gvl.130"
+  },
+  {
+    "linked_system": true,
+    "name": "Mobkoi Ltd",
+    "vendor_id": "gvl.898"
+  },
+  {
+    "linked_system": true,
+    "name": "hyScore.io GmbH",
+    "vendor_id": "gvl.1201"
+  },
+  {
+    "linked_system": true,
+    "name": "ADLOOP",
+    "vendor_id": "gacp.2997"
+  },
+  {
+    "linked_system": true,
+    "name": "KeyCDN",
+    "vendor_id": "gacp.2186"
+  },
+  {
+    "linked_system": true,
+    "name": "EASY Marketing GmbH",
+    "vendor_id": "gvl.796"
+  },
+  {
+    "linked_system": true,
+    "name": "ANINPRO-CREATIVE, S.L.",
+    "vendor_id": "gvl.891"
+  },
+  {
+    "linked_system": true,
+    "name": "Mediahead",
+    "vendor_id": "gacp.436"
+  },
+  {
+    "linked_system": true,
+    "name": "Magnite, Inc. ",
+    "vendor_id": "gvl.52"
+  },
+  {
+    "linked_system": true,
+    "name": "SPACE TECNOLOGIA E INTELIGÊNCIA LTDA",
+    "vendor_id": "gvl.1166"
+  },
+  {
+    "linked_system": true,
+    "name": "PIXIMEDIA",
+    "vendor_id": "gvl.127"
+  },
+  {
+    "linked_system": true,
+    "name": "Advertserve",
+    "vendor_id": "gacp.2629"
+  },
+  {
+    "linked_system": true,
+    "name": "AiCreo S.r.l.",
+    "vendor_id": "gvl.1143"
+  },
+  {
+    "linked_system": true,
+    "name": "YouAppi",
+    "vendor_id": "gacp.3048"
+  },
+  {
+    "linked_system": true,
+    "name": "giosg.com Oy",
+    "vendor_id": "gvl.1017"
+  },
+  {
+    "linked_system": true,
+    "name": "Bluesummit",
+    "vendor_id": "gacp.2862"
+  },
+  {
+    "linked_system": true,
+    "name": "hyScore.io GmbH",
+    "vendor_id": "gacp.3245"
+  },
+  {
+    "linked_system": true,
+    "name": "ADTARGET.ME UAB",
+    "vendor_id": "gvl.1200"
+  },
+  {
+    "linked_system": true,
+    "name": "Nubo LTD",
+    "vendor_id": "gvl.784"
+  },
+  {
+    "linked_system": true,
+    "name": "Conversion Logic",
+    "vendor_id": "gacp.2334"
+  },
+  {
+    "linked_system": true,
+    "name": "Zemanta Inc.",
+    "vendor_id": "gvl.210"
+  },
+  {
+    "linked_system": true,
+    "name": "Umeng Plus Beijing Technology Limited Company",
+    "vendor_id": "gacp.2220"
+  },
+  {
+    "linked_system": true,
+    "name": "Cedato Technologies Ltd",
+    "vendor_id": "gvl.672"
+  },
+  {
+    "linked_system": true,
+    "name": "VIVALU",
+    "vendor_id": "gacp.1800"
+  }
+]

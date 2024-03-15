@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Literal, Optional, TypeVar
+from uuid import uuid4
 
 import pydash
 from fideslang.models import FidesDatasetReference
@@ -21,8 +23,10 @@ from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
+    ISO_8601_DATETIME,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
+    UUID,
     get_identity,
     unflatten_dict,
 )
@@ -101,11 +105,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.endpoints[collection_name].requests, action
         )
         if request:
-            logger.info(
+            logger.debug(
                 "Found matching endpoint to {} '{}' collection", action, collection_name
             )
         else:
-            logger.info(
+            logger.debug(
                 "Unable to find matching endpoint to {} '{}' collection",
                 action,
                 collection_name,
@@ -142,7 +146,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             # store action name for logging purposes
             self.action = action_type
 
-            logger.info(
+            logger.debug(
                 "Selecting '{}' action to perform masking request for '{}' collection.",
                 action_type,
                 self.collection_name,
@@ -307,12 +311,15 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 0
             ]
 
+        param_values[UUID] = str(uuid4())
+        param_values[ISO_8601_DATETIME] = datetime.now().date().isoformat()
+
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
             self.action, self.collection_name, self.current_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", self.current_request.path)
+        logger.debug("Populated request params for {}", self.current_request.path)
 
         return saas_request_params
 
@@ -403,6 +410,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
+        param_values[UUID] = str(uuid4())
+        param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
@@ -441,7 +450,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, update_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", update_request.path)
+        logger.debug("Populated request params for {}", update_request.path)
         return saas_request_params
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:

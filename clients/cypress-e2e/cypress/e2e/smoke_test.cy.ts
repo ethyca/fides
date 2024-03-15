@@ -12,6 +12,7 @@ describe("Smoke test", () => {
       "patchRequest"
     );
     cy.intercept("GET", `${API_URL}/privacy-request*`).as("getRequests");
+    cy.intercept("POST", `${API_URL}/privacy-request`).as("postPrivacyRequest");
 
     // Submit the access request from the privacy center
     cy.visit(PRIVACY_CENTER_URL);
@@ -19,7 +20,39 @@ describe("Smoke test", () => {
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
       cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
+    });
+
+    // Verify the privacy request payload
+    cy.wait("@postPrivacyRequest").then((interception) => {
+      expect(interception.request.body).to.deep.equal([
+        {
+          identity: {
+            email: "jenny@example.com",
+            phone_number: "",
+          },
+          custom_privacy_request_fields: {
+            first_name: {
+              label: "First name",
+              value: "Jenny",
+            },
+            last_name: {
+              label: "Last name",
+              value: "",
+            },
+            color: {
+              label: "Color",
+              value: "blue",
+            },
+            tenant_id: {
+              label: "Tenant ID",
+              value: "123",
+            },
+          },
+          policy_key: "default_access_policy",
+        },
+      ]);
     });
 
     // Approve the request in the admin UI
@@ -66,13 +99,13 @@ describe("Smoke test", () => {
     cy.login();
 
     // Postgres
-    cy.get("a").contains("Data map").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_postgresql_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
 
     // Mongo
-    cy.get("a").contains("Data map").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_customer_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
@@ -84,6 +117,8 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
 
@@ -122,6 +157,8 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {

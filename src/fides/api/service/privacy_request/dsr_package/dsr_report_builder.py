@@ -45,7 +45,9 @@ class DsrReportBuilder:
             return json.dumps(value, indent=indent, default=storage_json_encoder)
 
         jinja2.filters.FILTERS["pretty_print"] = pretty_print
-        self.template_loader = Environment(loader=FileSystemLoader(DSR_DIRECTORY))
+        self.template_loader = Environment(
+            loader=FileSystemLoader(DSR_DIRECTORY), autoescape=True
+        )
 
         # to pass in custom colors in the future
         self.template_data: Dict[str, Any] = {
@@ -75,7 +77,8 @@ class DsrReportBuilder:
         }
         report_data.update(self.template_data)
         template = self.template_loader.get_template(template_path)
-        return template.render(report_data)
+        rendered_template = template.render(report_data)
+        return rendered_template
 
     def _add_file(self, filename: str, contents: str) -> None:
         """Helper to add a file to the zip archive"""
@@ -96,7 +99,7 @@ class DsrReportBuilder:
 
         # generate dataset index page
         self._add_file(
-            f"/data/{dataset_name}/index.html",
+            f"data/{dataset_name}/index.html",
             self._populate_template(
                 "templates/dataset_index.html",
                 dataset_name,
@@ -113,7 +116,7 @@ class DsrReportBuilder:
         for index, item in enumerate(rows, 1):
             detail_url = f"{index}.html"
             self._add_file(
-                f"/data/{dataset_name}/{collection_name}/{index}.html",
+                f"data/{dataset_name}/{collection_name}/{index}.html",
                 self._populate_template(
                     "templates/item.html",
                     f"{collection_name} (item #{index})",
@@ -125,7 +128,7 @@ class DsrReportBuilder:
 
         # generate detail index page
         self._add_file(
-            f"/data/{dataset_name}/{collection_name}/index.html",
+            f"data/{dataset_name}/{collection_name}/index.html",
             self._populate_template(
                 "templates/collection_index.html",
                 collection_name,
@@ -142,11 +145,11 @@ class DsrReportBuilder:
         try:
             # all the css for the pages is in main.css
             self._add_file(
-                "/data/main.css",
+                "data/main.css",
                 self._populate_template("templates/main.css"),
             )
             self._add_file(
-                "/data/back.svg",
+                "data/back.svg",
                 Path(os.path.join(DSR_DIRECTORY, "assets/back.svg")).read_text(
                     encoding="utf-8"
                 ),
@@ -167,7 +170,7 @@ class DsrReportBuilder:
 
             # create the main index once all the datasets have been added
             self._add_file(
-                "/welcome.html",
+                "welcome.html",
                 self._populate_template(
                     "templates/welcome.html", "DSR Report", None, self.main_links
                 ),

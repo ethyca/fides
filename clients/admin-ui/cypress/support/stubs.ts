@@ -5,15 +5,18 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
     fixture: "taxonomy/data_categories.json",
   }).as("getDataCategories");
-  cy.intercept("GET", "/api/v1/data_qualifier", {
-    fixture: "taxonomy/data_qualifiers.json",
-  }).as("getDataQualifiers");
   cy.intercept("GET", "/api/v1/data_subject", {
     fixture: "taxonomy/data_subjects.json",
   }).as("getDataSubjects");
   cy.intercept("GET", "/api/v1/data_use", {
     fixture: "taxonomy/data_uses.json",
   }).as("getDataUses");
+};
+
+export const stubLanguages = () => {
+  cy.intercept("GET", "/api/v1/plus/languages*", {
+    fixture: "languages.json",
+  }).as("getLanguages");
 };
 
 export const stubSystemCrud = () => {
@@ -133,9 +136,6 @@ export const stubPrivacyNoticesCrud = () => {
   cy.intercept("POST", "/api/v1/privacy-notice", {
     fixture: "privacy-notices/list.json",
   }).as("postNotices");
-  cy.intercept("PATCH", "/api/v1/privacy-notice", {
-    fixture: "privacy-notices/list.json",
-  }).as("patchNotices");
 };
 
 export const CONNECTION_STRING =
@@ -240,4 +240,10 @@ export const stubDatamap = () => {
   cy.intercept("GET", "/api/v1/system", { fixture: "systems/systems.json" }).as(
     "getSystems"
   );
+};
+
+export const stubSystemVendors = () => {
+  cy.intercept("GET", "/api/v1/plus/dictionary/system-vendors", {
+    fixture: "systems/system-vendors.json",
+  }).as("getSystemVendors");
 };

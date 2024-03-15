@@ -19,12 +19,20 @@
       },
       "custom_privacy_request_fields": {
         "first_name": {
-          "label": "First name",
-          "required": true
+          "label": "First name"
         },
         "last_name": {
           "label": "Last name",
           "required": false
+        },
+        "color": {
+          "label": "Color",
+          "default_value": "red"
+        },
+        "tenant_id": {
+          "label": "Tenant ID",
+          "default_value": "123",
+          "hidden": true
         }
       }
     },
@@ -49,6 +57,24 @@
       "icon_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/consent.svg",
       "identity_inputs": {
         "email": "optional"
+      },
+      "custom_privacy_request_fields": {
+        "first_name": {
+          "label": "First name"
+        },
+        "last_name": {
+          "label": "Last name",
+          "required": false
+        },
+        "color": {
+          "label": "Color",
+          "default_value": "red"
+        },
+        "tenant_id": {
+          "label": "Tenant ID",
+          "default_value": "123",
+          "hidden": true
+        }
       },
       "title": "Manage your consent"
     },

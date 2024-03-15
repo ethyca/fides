@@ -11,6 +11,7 @@ import {
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
+import { safeLookupPropertyId } from "~/common/property-id";
 
 // one hour, how long the client should cache fides.js for
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
@@ -38,6 +39,12 @@ let autoRefresh: boolean = true;
  *         schema:
  *           type: string
  *         example: US-CA
+ *       - in: query
+ *         name: property_id
+ *         required: false
+ *         description: Optional identifier used to filter for experiences associated with the given property. If omitted, returns all experiences not associated with any properties.
+ *         schema:
+ *           type: string
  *       - in: query
  *         name: refresh
  *         required: false
@@ -91,6 +98,13 @@ export default async function handler(
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
+  const propertyId = safeLookupPropertyId(
+    req,
+    geolocation,
+    environment,
+    fidesString
+  );
+
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
@@ -113,7 +127,8 @@ export default async function handler(
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
         environment.settings.DEBUG,
-        null
+        null,
+        propertyId
       );
     }
   }
@@ -122,8 +137,8 @@ export default async function handler(
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
   // be able to prefetch the experience.
   const tcfEnabled = experience
-    ? experience.component === ComponentType.TCF_OVERLAY
-    : false;
+    ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
+    : environment.settings.IS_FORCED_TCF;
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
@@ -146,7 +161,17 @@ export default async function handler(
         environment.settings.FIDES_API_URL,
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
+      fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
+      fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       fidesString,
+      fidesPreviewMode: environment.settings.FIDES_PREVIEW_MODE,
+      // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
+      apiOptions: null,
+      fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
+      customOptionsPath: null,
+      preventDismissal: environment.settings.PREVENT_DISMISSAL,
+      allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
+      base64Cookie: environment.settings.BASE_64_COOKIE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -207,6 +232,8 @@ export default async function handler(
   res
     .status(200)
     .setHeader("Content-Type", "application/javascript")
+    // Allow CORS since this is a static file we do not need to lock down
+    .setHeader("Access-Control-Allow-Origin", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
     .setHeader("Vary", LOCATION_HEADERS)
     .send(script);
@@ -237,6 +264,7 @@ async function fetchCustomFidesCss(
       const data = await response.text();
 
       if (!response.ok) {
+        // eslint-disable-next-line no-console
         console.error(
           "Error fetching custom-fides.css:",
           response.status,
@@ -250,6 +278,7 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
+      // eslint-disable-next-line no-console
       console.log("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
@@ -257,8 +286,10 @@ async function fetchCustomFidesCss(
     } catch (error) {
       autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
       if (error instanceof Error) {
+        // eslint-disable-next-line no-console
         console.error("Error during fetch operation:", error.message);
       } else {
+        // eslint-disable-next-line no-console
         console.error("Unknown error occurred:", error);
       }
     }
