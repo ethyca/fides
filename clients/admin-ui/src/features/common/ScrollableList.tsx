@@ -118,6 +118,7 @@ const ScrollableListAdd = ({
         options={options}
         onChange={(e: any) => handleElementSelected(e)}
         autoFocus
+        menuPosition="fixed"
         menuPlacement="auto"
       />
     </Box>
@@ -221,7 +222,7 @@ const ScrollableList = <T extends unknown>({
     borderColor: "gray.200",
     borderRadius: "md",
     w: "full",
-    overflowY: "scroll",
+    overflowY: "hidden",
   } as ChakraProps;
 
   const innerList = draggable ? (
