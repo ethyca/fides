@@ -5,8 +5,10 @@ import {
   PrivacyNoticeWithPreference,
 } from "~/fides";
 import {
+  DEFAULT_LOCALE,
   LOCALE_REGEX,
   detectUserLocale,
+  extractDefaultLocaleFromExperience,
   getCurrentLocale,
   initializeI18n,
   loadMessagesFromExperience,
@@ -16,6 +18,7 @@ import {
   messageExists,
   setupI18n,
   selectBestExperienceConfigTranslation,
+  areLocalesEqual,
 } from "~/lib/i18n";
 import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
@@ -30,20 +33,30 @@ import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.js
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
+  let mockDefaultLocale = DEFAULT_LOCALE;
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     activate: jest.fn((locale: Locale): void => {
       mockCurrentLocale = locale;
     }),
+
+    getDefaultLocale: jest.fn((): Locale => mockDefaultLocale),
+
+    setDefaultLocale: jest.fn((locale: Locale): void => {
+      mockDefaultLocale = locale;
+    }),
+
+    get locale(): Locale {
+      return mockCurrentLocale;
+    },
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
+
     t: jest.fn(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
     ),
-    get locale(): Locale {
-      return mockCurrentLocale;
-    },
   };
 
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
@@ -52,6 +65,8 @@ describe("i18n-utils", () => {
     mockI18n.activate.mockClear();
     mockI18n.load.mockClear();
     mockI18n.t.mockClear();
+    mockCurrentLocale = "";
+    mockDefaultLocale = DEFAULT_LOCALE;
   });
 
   describe("initializeI18n", () => {
@@ -91,6 +106,28 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.activate).toHaveBeenCalledWith("en");
+    });
+
+    it("changes the fallback default locale based on the first is_default translation in the experience", () => {
+      // Make a deep copy of the mock experience using a dirty JSON serialization trick
+      // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
+      const mockExpDifferentDefault = JSON.parse(
+        JSON.stringify(mockExperience)
+      );
+      mockExpDifferentDefault.experience_config.translations[0].is_default =
+        false;
+      mockExpDifferentDefault.experience_config.translations[1].is_default =
+        true; // sets "es" to default
+
+      const mockNavigator: Partial<Navigator> = {
+        language: "fr-CA", // not a match for either en or es
+      };
+
+      initializeI18n(mockI18n, mockNavigator, mockExpDifferentDefault);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
+      expect(mockI18n.setDefaultLocale).toHaveBeenCalledWith("es");
+      expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
   });
 
@@ -419,6 +456,54 @@ describe("i18n-utils", () => {
     });
   });
 
+  describe("extractDefaultLocaleFromExperience", () => {
+    it("returns the locale of the first 'is_default' translation from experience_config", () => {
+      expect(extractDefaultLocaleFromExperience(mockExperience)).toEqual("en");
+
+      expect(
+        extractDefaultLocaleFromExperience({
+          experience_config: {
+            translations: [
+              { language: "en", is_default: false },
+              { language: "es", is_default: false },
+              { language: "fr", is_default: true },
+              { language: "zh", is_default: false },
+            ],
+          },
+        } as Partial<PrivacyExperience>)
+      ).toEqual("fr");
+
+      // Check for multiple 'is_default' translations
+      expect(
+        extractDefaultLocaleFromExperience({
+          experience_config: {
+            translations: [
+              { language: "en", is_default: false },
+              { language: "es", is_default: true },
+              { language: "fr", is_default: true },
+              { language: "zh", is_default: false },
+            ],
+          },
+        } as Partial<PrivacyExperience>)
+      ).toEqual("es");
+    });
+
+    it("returns undefined if no 'is_default' translations exist in experience_config", () => {
+      expect(
+        extractDefaultLocaleFromExperience({
+          experience_config: {
+            translations: [
+              { language: "en", is_default: false },
+              { language: "es", is_default: false },
+              { language: "fr", is_default: false },
+              { language: "zh", is_default: false },
+            ],
+          },
+        } as Partial<PrivacyExperience>)
+      ).toBeUndefined();
+    });
+  });
+
   describe("detectUserLocale", () => {
     const mockNavigator: Partial<Navigator> = {
       language: "es",
@@ -442,6 +527,20 @@ describe("i18n-utils", () => {
     });
   });
 
+  describe("areLocalesEqual", () => {
+    it("performs a case-insensitive match and treats underscore- & dash-separated locales as equal", () => {
+      expect(areLocalesEqual("en", "en")).toEqual(true);
+      expect(areLocalesEqual("en", "EN")).toEqual(true);
+      expect(areLocalesEqual("en-US", "en-US")).toEqual(true);
+      expect(areLocalesEqual("en-US", "EN-us")).toEqual(true);
+      expect(areLocalesEqual("en-US", "en_US")).toEqual(true);
+      expect(areLocalesEqual("en-US", "en_us")).toEqual(true);
+      expect(areLocalesEqual("en", "fr")).toEqual(false);
+      expect(areLocalesEqual("en", "en-US")).toEqual(false);
+      expect(areLocalesEqual("fr-CA", "fr-CA-Foo")).toEqual(false);
+    });
+  });
+
   describe("matchAvailableLocales", () => {
     it("returns an exact match when able", () => {
       const availableLocales = ["en", "es", "fr-CA"];
@@ -459,6 +558,17 @@ describe("i18n-utils", () => {
       const availableLocales = ["en", "es", "fr"];
       expect(matchAvailableLocales("zh", availableLocales)).toEqual("en");
       expect(matchAvailableLocales("foo", availableLocales)).toEqual("en");
+    });
+
+    it("falls back to a user-specified default language when no match is found", () => {
+      const userDefaultLocale = "fr";
+      const availableLocales = ["en", "es", "fr"];
+      expect(
+        matchAvailableLocales("zh", availableLocales, userDefaultLocale)
+      ).toEqual("fr");
+      expect(
+        matchAvailableLocales("foo", availableLocales, userDefaultLocale)
+      ).toEqual("fr");
     });
 
     it("performs a case-insensitive lookup", () => {
@@ -495,9 +605,16 @@ describe("i18n-utils", () => {
 
     it("falls back to the default locale if an exact match isn't available", () => {
       mockCurrentLocale = "zh";
+      mockDefaultLocale = "en";
       expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
         "language",
         "en"
+      );
+
+      mockDefaultLocale = "es";
+      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
+        "language",
+        "es"
       );
     });
 
@@ -510,6 +627,7 @@ describe("i18n-utils", () => {
         "es",
       ]);
       mockCurrentLocale = "zh";
+      mockDefaultLocale = "en";
       expect(
         selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish)
       ).toHaveProperty("language", "es");
@@ -551,9 +669,15 @@ describe("i18n-utils", () => {
 
     it("falls back to the default locale if an exact match isn't available", () => {
       mockCurrentLocale = "zh";
+      mockDefaultLocale = "en";
       expect(
         selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
       ).toHaveProperty("language", "en");
+
+      mockDefaultLocale = "es";
+      expect(
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+      ).toHaveProperty("language", "es");
     });
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
@@ -837,12 +961,38 @@ describe("i18n module", () => {
     });
 
     describe("locale getter", () => {
-      it("returns the currently active locale", () => {
+      it("allows getting but not setting the currently active locale", () => {
         expect(testI18n.locale).toEqual("en");
+        expect(testI18n.locale).toEqual("en");
+        // eslint-disable-next-line no-return-assign
+        expect(() => ((testI18n as any).locale = "zz")).toThrow(TypeError);
+        expect(testI18n.locale).toEqual("en");
+
+        // Change the actual locale using load & activate
         testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
         expect(testI18n.locale).toEqual("en");
         testI18n.activate("zz");
         expect(testI18n.locale).toEqual("zz");
+      });
+    });
+
+    describe("getDefaultLocale & setDefaultLocale methods", () => {
+      /**
+       * NOTE: Modifying the default locale is *not* supported by LinguiJS, so
+       * this would need to be re-implemented carefully! This default locale
+       * should typically not be needed for i18n purposes - instead, the current
+       * locale should be used! However, in our application we need to provide
+       * fallback behavior in some scenarios when the current locale cannot be
+       * used, and in those cases we want the default locale to (sometimes!) not
+       * just be English.
+       *
+       * For example, see selectBestNoticeTranslation() that needs a fallback to
+       * a default locale in some scenarios.
+       */
+      it("allows getting & setting the default locale", () => {
+        expect(testI18n.getDefaultLocale()).toEqual("en");
+        expect(testI18n.setDefaultLocale("es")).toBeUndefined();
+        expect(testI18n.getDefaultLocale()).toEqual("es");
       });
     });
   });
