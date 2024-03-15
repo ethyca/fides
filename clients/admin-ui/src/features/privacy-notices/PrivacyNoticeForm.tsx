@@ -32,6 +32,7 @@ import {
 } from "~/features/data-use/data-use.slice";
 import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
 import {
+  NoticeTranslation,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponseWithRegions,
@@ -98,8 +99,10 @@ const PrivacyNoticeLocationDisplay = ({
 
 const PrivacyNoticeForm = ({
   privacyNotice: passedInPrivacyNotice,
+  availableTranslations,
 }: {
   privacyNotice?: PrivacyNoticeResponseWithRegions;
+  availableTranslations?: NoticeTranslation[];
 }) => {
   const router = useRouter();
   const toast = useToast();
@@ -191,7 +194,9 @@ const PrivacyNoticeForm = ({
                   variant="stacked"
                 />
               </FormSection>
-              <PrivacyNoticeTranslationForm />
+              <PrivacyNoticeTranslationForm
+                availableTranslations={availableTranslations}
+              />
             </Stack>
             <ButtonGroup size="sm" spacing={2}>
               <Button
