@@ -138,7 +138,7 @@ const ConfigurePrivacyExperience = ({
     TranslationWithLanguageName | undefined
   >(undefined);
 
-  const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
+  const [usingOOBValues, setUsingOOBValues] = useState<boolean>(false);
 
   const handleTranslationSelected = (translation: ExperienceTranslation) => {
     setTranslationToEdit({
@@ -152,7 +152,7 @@ const ConfigurePrivacyExperience = ({
       (t) => t.language === language
     );
     if (availableTranslation) {
-      setTranslationIsOOB(true);
+      setUsingOOBValues(true);
     }
     return (
       availableTranslation ?? {
@@ -164,7 +164,7 @@ const ConfigurePrivacyExperience = ({
 
   const handleExitTranslationForm = () => {
     setTranslationToEdit(undefined);
-    setTranslationIsOOB(false);
+    setUsingOOBValues(false);
   };
 
   return (
@@ -184,7 +184,7 @@ const ConfigurePrivacyExperience = ({
           {translationToEdit ? (
             <PrivacyExperienceTranslationForm
               translation={translationToEdit}
-              isOOB={translationIsOOB}
+              isOOB={usingOOBValues}
               onReturnToMainForm={handleExitTranslationForm}
             />
           ) : (
