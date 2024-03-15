@@ -14,6 +14,23 @@ import { STATIC_MESSAGES } from "./locales";
 import { GVLTranslations } from "../tcf/types";
 
 /**
+ * Performs an equality comparison between two locales.
+ *
+ * Returns true if the two locale strings are:
+ * 1) an exact string match: areLocalesEqual("en-US", "en-US") === true
+ * 2) string match, different case: areLocalesEqual("en-US", "EN-us") === true
+ * 3) string match, either '_' or '-' separator: areLocalesEqual("en-US", "EN_us") === true
+ *
+ * Returns false otherwise.
+ */
+export function areLocalesEqual(a: Locale, b: Locale): boolean {
+  return (
+    a.toLowerCase().replaceAll("_", "-") ===
+    b.toLowerCase().replaceAll("_", "-")
+  );
+}
+
+/**
  * Helper function to extract all the translated messages from an
  * ExperienceConfig API response. Returns an object that maps locales -> messages, e.g.
  * {
@@ -84,11 +101,12 @@ function extractMessagesFromExperienceConfig(
  * response. Returns the first experience_config.translations' locale where the
  * translation has is_default === true.
  */
+// eslint-disable-next-line consistent-return
 export function extractDefaultLocaleFromExperience(
   experience: Partial<PrivacyExperience>
 ): Locale | undefined {
   if (experience?.experience_config?.translations) {
-    const translations = experience.experience_config.translations;
+    const { translations } = experience.experience_config;
     const defaultTranslation = translations.find(
       (translation) => translation.is_default
     );
@@ -126,10 +144,8 @@ function extractMessagesFromGVLTranslations(
   const extracted: Record<Locale, Messages> = {};
   locales.forEach((locale) => {
     // Lookup the locale in the GVL using a case-insensitive match
-    const gvlLocaleMatch = Object.keys(gvl_translations).find(
-      (gvlLocale) =>
-        gvlLocale.toLowerCase().replaceAll("_", "-") ===
-        locale.toLowerCase().replaceAll("_", "-")
+    const gvlLocaleMatch = Object.keys(gvl_translations).find((gvlLocale) =>
+      areLocalesEqual(gvlLocale, locale)
     );
     if (gvlLocaleMatch) {
       const gvlTranslation = gvl_translations[gvlLocaleMatch] as any;
@@ -293,20 +309,16 @@ export function matchAvailableLocales(
     const [locale, language] = match;
 
     // 2) Look for an exact match of the requested locale
-    const exactMatch = availableLocales.find(
-      (elem) =>
-        elem.toLowerCase().replaceAll("_", "-") ===
-        locale.toLowerCase().replaceAll("_", "-")
+    const exactMatch = availableLocales.find((elem) =>
+      areLocalesEqual(elem, locale)
     );
     if (exactMatch) {
       return exactMatch;
     }
 
     // 3) Fallback to the {language} of the requested locale
-    const languageMatch = availableLocales.find(
-      (elem) =>
-        elem.toLowerCase().replaceAll("_", "-") ===
-        language.toLowerCase().replaceAll("_", "-")
+    const languageMatch = availableLocales.find((elem) =>
+      areLocalesEqual(elem, language)
     );
     if (languageMatch) {
       return languageMatch;
@@ -356,16 +368,16 @@ export function selectBestNoticeTranslation(
 
   // 1) Look for an exact match for the current locale
   const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = notice.translations.find(
-    (e) => e.language === currentLocale
+  const matchTranslation = notice.translations.find((e) =>
+    areLocalesEqual(e.language, currentLocale)
   );
   if (matchTranslation) {
     return matchTranslation;
   }
 
   // 2) Fallback to default locale, if an exact match isn't found
-  const defaultTranslation = notice.translations.find(
-    (e) => e.language === i18n.getDefaultLocale()
+  const defaultTranslation = notice.translations.find((e) =>
+    areLocalesEqual(e.language, i18n.getDefaultLocale())
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -397,16 +409,16 @@ export function selectBestExperienceConfigTranslation(
 
   // 1) Look for an exact match for the current locale
   const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = experience.translations.find(
-    (e) => e.language === currentLocale
+  const matchTranslation = experience.translations.find((e) =>
+    areLocalesEqual(e.language, currentLocale)
   );
   if (matchTranslation) {
     return matchTranslation;
   }
 
   // 2) Fallback to default locale, if an exact match isn't found
-  const defaultTranslation = experience.translations.find(
-    (e) => e.language === i18n.getDefaultLocale()
+  const defaultTranslation = experience.translations.find((e) =>
+    areLocalesEqual(e.language, i18n.getDefaultLocale())
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -493,9 +505,7 @@ export function setupI18n(): I18n {
       currentLocale = locale;
     },
 
-    getDefaultLocale: (): Locale => {
-      return defaultLocale;
-    },
+    getDefaultLocale: (): Locale => defaultLocale,
 
     setDefaultLocale: (locale: Locale): void => {
       defaultLocale = locale;

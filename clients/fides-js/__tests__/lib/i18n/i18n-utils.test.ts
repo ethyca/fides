@@ -18,6 +18,7 @@ import {
   messageExists,
   setupI18n,
   selectBestExperienceConfigTranslation,
+  areLocalesEqual,
 } from "~/lib/i18n";
 import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
@@ -38,21 +39,24 @@ describe("i18n-utils", () => {
     activate: jest.fn((locale: Locale): void => {
       mockCurrentLocale = locale;
     }),
-    getDefaultLocale: jest.fn((): Locale => {
-      return mockDefaultLocale;
-    }),
+
+    getDefaultLocale: jest.fn((): Locale => mockDefaultLocale),
+
     setDefaultLocale: jest.fn((locale: Locale): void => {
       mockDefaultLocale = locale;
     }),
+
+    get locale(): Locale {
+      return mockCurrentLocale;
+    },
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
+
     t: jest.fn(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
     ),
-    get locale(): Locale {
-      return mockCurrentLocale;
-    },
   };
 
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
@@ -522,6 +526,20 @@ describe("i18n-utils", () => {
     });
   });
 
+  describe("areLocalesEqual", () => {
+    it("performs a case-insensitive match and treats underscore- & dash-separated locales as equal", () => {
+      expect(areLocalesEqual("en", "en")).toEqual(true);
+      expect(areLocalesEqual("en", "EN")).toEqual(true);
+      expect(areLocalesEqual("en-US", "en-US")).toEqual(true);
+      expect(areLocalesEqual("en-US", "EN-us")).toEqual(true);
+      expect(areLocalesEqual("en-US", "en_US")).toEqual(true);
+      expect(areLocalesEqual("en-US", "en_us")).toEqual(true);
+      expect(areLocalesEqual("en", "fr")).toEqual(false);
+      expect(areLocalesEqual("en", "en-US")).toEqual(false);
+      expect(areLocalesEqual("fr-CA", "fr-CA-Foo")).toEqual(false);
+    });
+  });
+
   describe("matchAvailableLocales", () => {
     it("returns an exact match when able", () => {
       const availableLocales = ["en", "es", "fr-CA"];
@@ -945,6 +963,7 @@ describe("i18n module", () => {
       it("allows getting but not setting the currently active locale", () => {
         expect(testI18n.locale).toEqual("en");
         expect(testI18n.locale).toEqual("en");
+        // eslint-disable-next-line no-return-assign
         expect(() => ((testI18n as any).locale = "zz")).toThrow(TypeError);
         expect(testI18n.locale).toEqual("en");
 
