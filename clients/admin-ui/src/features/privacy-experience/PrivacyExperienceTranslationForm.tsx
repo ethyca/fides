@@ -28,7 +28,11 @@ import {
   ExperienceTranslation,
 } from "~/types/api";
 
-const OOBTranslationNotice = ({ languageName }: { languageName: string }) => (
+export const OOBTranslationNotice = ({
+  languageName,
+}: {
+  languageName: string;
+}) => (
   <InfoBox
     text={`This is a default translation provided by Fides that may not match your English text. Verify with a native ${languageName} speaker before using.`}
   />
