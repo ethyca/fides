@@ -110,7 +110,7 @@ USER fidesuser
 ###################
 ## Frontend Base ##
 ###################
-FROM node:16-alpine as frontend
+FROM node:20-alpine as frontend
 
 RUN apk add --no-cache libc6-compat
 # Build the frontend clients
@@ -137,7 +137,7 @@ RUN npm run build-privacy-center
 ###############################
 ## Production Privacy Center ##
 ###############################
-FROM node:16-alpine as prod_pc
+FROM node:20-alpine as prod_pc
 
 WORKDIR /fides/clients
 
