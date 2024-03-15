@@ -365,7 +365,7 @@ export function selectBestNoticeTranslation(
 
   // 2) Fallback to default locale, if an exact match isn't found
   const defaultTranslation = notice.translations.find(
-    (e) => e.language === DEFAULT_LOCALE
+    (e) => e.language === i18n.getDefaultLocale()
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -406,7 +406,7 @@ export function selectBestExperienceConfigTranslation(
 
   // 2) Fallback to default locale, if an exact match isn't found
   const defaultTranslation = experience.translations.find(
-    (e) => e.language === DEFAULT_LOCALE
+    (e) => e.language === i18n.getDefaultLocale()
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -437,8 +437,12 @@ export function initializeI18n(
   );
 
   // Extract the default locale from the experience API, or fallback to DEFAULT_LOCALE
-  const defaultLocale: Locale = extractDefaultLocaleFromExperience(experience) || DEFAULT_LOCALE;
-  debugLog(options?.debug, `Setting Fides i18n default locale = ${defaultLocale}`);
+  const defaultLocale: Locale =
+    extractDefaultLocaleFromExperience(experience) || DEFAULT_LOCALE;
+  debugLog(
+    options?.debug,
+    `Setting Fides i18n default locale = ${defaultLocale}`
+  );
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
   let userLocale = defaultLocale;
@@ -453,7 +457,11 @@ export function initializeI18n(
   }
 
   // Match the user locale to the "best" available locale from the experience API and activate it!
-  const bestLocale = matchAvailableLocales(userLocale, availableLocales, defaultLocale);
+  const bestLocale = matchAvailableLocales(
+    userLocale,
+    availableLocales,
+    defaultLocale
+  );
   i18n.activate(bestLocale);
   debugLog(
     options?.debug,

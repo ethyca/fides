@@ -38,10 +38,10 @@ describe("i18n-utils", () => {
     activate: jest.fn((locale: Locale): void => {
       mockCurrentLocale = locale;
     }),
-    getDefaultLocale: jest.fn((): Locale  => {
+    getDefaultLocale: jest.fn((): Locale => {
       return mockDefaultLocale;
     }),
-    setDefaultLocale: jest.fn((locale: Locale): void  => {
+    setDefaultLocale: jest.fn((locale: Locale): void => {
       mockDefaultLocale = locale;
     }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -107,9 +107,13 @@ describe("i18n-utils", () => {
     it("activates the first is_default locale in the experience when no better match exists", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
-      const mockExpDifferentDefault = JSON.parse(JSON.stringify(mockExperience));
-      mockExpDifferentDefault.experience_config.translations[0].is_default = false;
-      mockExpDifferentDefault.experience_config.translations[1].is_default = true; // sets "es" to default
+      const mockExpDifferentDefault = JSON.parse(
+        JSON.stringify(mockExperience)
+      );
+      mockExpDifferentDefault.experience_config.translations[0].is_default =
+        false;
+      mockExpDifferentDefault.experience_config.translations[1].is_default =
+        true; // sets "es" to default
 
       const mockNavigator: Partial<Navigator> = {
         language: "fr-CA", // not a match for either en or es
@@ -941,9 +945,9 @@ describe("i18n module", () => {
       it("allows getting but not setting the currently active locale", () => {
         expect(testI18n.locale).toEqual("en");
         expect(testI18n.locale).toEqual("en");
-        expect(() => (testI18n as any).locale = "zz").toThrow(TypeError);
+        expect(() => ((testI18n as any).locale = "zz")).toThrow(TypeError);
         expect(testI18n.locale).toEqual("en");
-        
+
         // Change the actual locale using load & activate
         testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
         expect(testI18n.locale).toEqual("en");
@@ -961,7 +965,7 @@ describe("i18n module", () => {
        * fallback behavior in some scenarios when the current locale cannot be
        * used, and in those cases we want the default locale to (sometimes!) not
        * just be English.
-       * 
+       *
        * For example, see selectBestNoticeTranslation() that needs a fallback to
        * a default locale in some scenarios.
        */

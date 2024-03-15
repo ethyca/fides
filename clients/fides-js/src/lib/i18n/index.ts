@@ -66,7 +66,7 @@ interface I18n {
 
   /**
    * Set the current default locale for this session.
-   * 
+   *
    * WARN: This does not affect the behaviour of t(), load(), or activate()!
    * To change the active locale and get different translations, use
    * activate(). This method should only be used to determine what a
