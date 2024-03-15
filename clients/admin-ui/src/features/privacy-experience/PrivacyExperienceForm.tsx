@@ -82,9 +82,11 @@ export const PrivacyExperienceConfigColumnLayout = ({
 export const PrivacyExperienceForm = ({
   allPrivacyNotices,
   onSelectTranslation,
+  onCreateTranslation,
 }: {
   allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[];
   onSelectTranslation: (t: ExperienceTranslation) => void;
+  onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
 }) => {
   const router = useRouter();
 
@@ -254,10 +256,9 @@ export const PrivacyExperienceForm = ({
             is_default: false,
           }))}
         getItemLabel={getTranslationDisplayName}
-        createNewValue={(opt) => ({
-          language: opt.value as SupportedLanguage,
-          is_default: false,
-        })}
+        createNewValue={(opt) =>
+          onCreateTranslation(opt.value as SupportedLanguage)
+        }
         onRowClick={onSelectTranslation}
         selectOnAdd
         draggable

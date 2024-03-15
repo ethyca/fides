@@ -31,6 +31,7 @@ export const defaultTranslations: ExperienceTranslationCreate[] = [
     accept_button_label: "Accept",
     reject_button_label: "Reject",
     save_button_label: "Save",
+    acknowledge_button_label: "OK",
     privacy_preferences_link_label: "Privacy Preferences",
   },
 ];

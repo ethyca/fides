@@ -42,6 +42,7 @@ import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
+  SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -65,7 +66,6 @@ const translationSchema = (requirePreferencesLink: boolean) =>
 const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Experience name"),
   component: Yup.string().required().label("Experience type"),
-  // translations: Yup.array().of(translationSchema),
   translations: Yup.array().when("component", {
     is: (value: ComponentType) =>
       value === ComponentType.BANNER_AND_MODAL ||
@@ -77,8 +77,10 @@ const validationSchema = Yup.object().shape({
 
 const ConfigurePrivacyExperience = ({
   passedInExperience,
+  passedInTranslations,
 }: {
   passedInExperience?: ExperienceConfigResponse;
+  passedInTranslations?: ExperienceTranslation[];
 }) => {
   const [postExperienceConfigMutation] = usePostExperienceConfigMutation();
   const [patchExperienceConfigMutation] = usePatchExperienceConfigMutation();
@@ -136,11 +138,34 @@ const ConfigurePrivacyExperience = ({
     TranslationWithLanguageName | undefined
   >(undefined);
 
-  const handleNewTranslationSelected = (translation: ExperienceTranslation) => {
+  const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
+
+  const getOOBTranslation = (language: SupportedLanguage) => {
+    const translation = passedInTranslations?.find(
+      (t) => t.language === language
+    );
+    if (translation) {
+      setTranslationIsOOB(true);
+    }
+    return translation;
+  };
+
+  const handleTranslationSelected = (translation: ExperienceTranslation) => {
     setTranslationToEdit({
       ...translation,
       name: findLanguageDisplayName(translation, allLanguages),
     });
+  };
+
+  const handleCreateNewTranslation = (language: SupportedLanguage) =>
+    getOOBTranslation(language) ?? {
+      language,
+      is_default: false,
+    };
+
+  const handleExitTranslationForm = () => {
+    setTranslationToEdit(undefined);
+    setTranslationIsOOB(false);
   };
 
   return (
@@ -160,12 +185,14 @@ const ConfigurePrivacyExperience = ({
           {translationToEdit ? (
             <PrivacyExperienceTranslationForm
               translation={translationToEdit}
-              onReturnToMainForm={() => setTranslationToEdit(undefined)}
+              isOOB={translationIsOOB}
+              onReturnToMainForm={handleExitTranslationForm}
             />
           ) : (
             <PrivacyExperienceForm
               allPrivacyNotices={allPrivacyNotices}
-              onSelectTranslation={handleNewTranslationSelected}
+              onSelectTranslation={handleTranslationSelected}
+              onCreateTranslation={handleCreateNewTranslation}
             />
           )}
           <Flex direction="column" w="75%" bgColor="gray.50" overflowY="hidden">
