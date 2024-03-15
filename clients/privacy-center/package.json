@@ -36,7 +36,7 @@
     "framer-motion": "^5",
     "headers-polyfill": "^3.1.2",
     "immer": "^9.0.21",
-    "next": "12.2.5",
+    "next": "13.5.1",
     "next-swagger-doc": "^0.3.6",
     "next-transpile-modules": "^10.0.0",
     "react": "^17.0.2",
