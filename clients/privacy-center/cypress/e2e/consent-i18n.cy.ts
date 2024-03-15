@@ -728,7 +728,7 @@ describe("Consent i18n", () => {
     /**
      * Special-case tests for mismatching translations between notices & experiences
      */
-    describe.only(`when notices and experience have mismatched translations`, () => {
+    describe(`when notices and experience have mismatched translations`, () => {
       describe(`when notices are missing translations that are available in the experience for the browser locale (${SPANISH_LOCALE})`, () => {
         beforeEach(() => {
           // Visit the demo in Spanish, but remove the Spanish translations from the Advertising notice
@@ -875,20 +875,26 @@ describe("Consent i18n", () => {
 
           it(`falls back to showing notices in the alternate default locale (${SPANISH_LOCALE}) and the experience in the correct locale (${FRENCH_LOCALE})`, () => {
             // Do some _lightweight_ checks for the French localization 🇫🇷
-            cy.get("#fides-banner .fides-banner-title").contains("[banner] Gestion de vos préférences de consentement");
+            cy.get("#fides-banner .fides-banner-title").contains(
+              "[banner] Gestion de vos préférences de consentement"
+            );
             cy.get("#fides-banner .fides-manage-preferences-button").click();
-            cy.get("#fides-modal .fides-modal-title").contains("Gestion de vos préférences de consentement");
+            cy.get("#fides-modal .fides-modal-title").contains(
+              "Gestion de vos préférences de consentement"
+            );
 
             // Test the notices are what we expect
             testModalNoticesLocalization([
               SPANISH_NOTICES[0], // fallback to Spani🇫🇷sh translation for first (Advertising) notice
               {
                 title: "Analytique",
-                description: "Ce site Web utilise des témoins et des services analytiques",
+                description:
+                  "Ce site Web utilise des témoins et des services analytiques",
               },
               {
                 title: "Essentiel",
-                description: "Ce site Web utilise des témoins et des services essentiels",
+                description:
+                  "Ce site Web utilise des témoins et des services essentiels",
               },
             ]);
           });
