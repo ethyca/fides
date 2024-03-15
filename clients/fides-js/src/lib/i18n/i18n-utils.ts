@@ -470,6 +470,9 @@ export function initializeI18n(
  * LinguiJS once we're ready to upgrade to the real thing!
  */
 export function setupI18n(): I18n {
+  // Default locale; default this to English
+  let defaultLocale: Locale = DEFAULT_LOCALE;
+
   // Currently active locale; default this to English
   let currentLocale: Locale = DEFAULT_LOCALE;
 
@@ -480,6 +483,14 @@ export function setupI18n(): I18n {
   return {
     activate: (locale: Locale): void => {
       currentLocale = locale;
+    },
+
+    getDefaultLocale: (): Locale => {
+      return defaultLocale;
+    },
+
+    setDefaultLocale: (locale: Locale): void => {
+      defaultLocale = locale;
     },
 
     get locale() {

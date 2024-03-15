@@ -32,11 +32,17 @@ import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.js
 describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
-  let mockDefaultLocale = DEFAULT_LOCALE; // TODO (PROD-1831): actually code this
+  let mockDefaultLocale = DEFAULT_LOCALE;
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     activate: jest.fn((locale: Locale): void => {
       mockCurrentLocale = locale;
+    }),
+    getDefaultLocale: jest.fn((): Locale  => {
+      return mockDefaultLocale;
+    }),
+    setDefaultLocale: jest.fn((locale: Locale): void  => {
+      mockDefaultLocale = locale;
     }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
@@ -55,6 +61,8 @@ describe("i18n-utils", () => {
     mockI18n.activate.mockClear();
     mockI18n.load.mockClear();
     mockI18n.t.mockClear();
+    mockCurrentLocale = "";
+    mockDefaultLocale = DEFAULT_LOCALE;
   });
 
   describe("initializeI18n", () => {
@@ -930,8 +938,13 @@ describe("i18n module", () => {
     });
 
     describe("locale getter", () => {
-      it("returns the currently active locale", () => {
+      it("allows getting but not setting the currently active locale", () => {
         expect(testI18n.locale).toEqual("en");
+        expect(testI18n.locale).toEqual("en");
+        expect(() => (testI18n as any).locale = "zz").toThrow(TypeError);
+        expect(testI18n.locale).toEqual("en");
+        
+        // Change the actual locale using load & activate
         testI18n.load("zz", { "test.greeting": "Zalloz, Jest!" });
         expect(testI18n.locale).toEqual("en");
         testI18n.activate("zz");
@@ -939,7 +952,7 @@ describe("i18n module", () => {
       });
     });
 
-    describe("defaultLocale", () => {
+    describe("getDefaultLocale & setDefaultLocale methods", () => {
       /**
        * NOTE: Modifying the default locale is *not* supported by LinguiJS, so
        * this would need to be re-implemented carefully! This default locale
@@ -953,9 +966,9 @@ describe("i18n module", () => {
        * a default locale in some scenarios.
        */
       it("allows getting & setting the default locale", () => {
-        expect(testI18n.defaultLocale).toEqual(DEFAULT_LOCALE);
-        testI18n.defaultLocale = "es";
-        expect(testI18n.defaultLocale).toEqual("es");
+        expect(testI18n.getDefaultLocale()).toEqual("en");
+        expect(testI18n.setDefaultLocale("es")).toBeUndefined();
+        expect(testI18n.getDefaultLocale()).toEqual("es");
       });
     });
   });
