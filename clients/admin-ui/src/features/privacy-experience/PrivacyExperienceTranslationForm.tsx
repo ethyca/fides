@@ -34,7 +34,7 @@ export const OOBTranslationNotice = ({
   languageName: string;
 }) => (
   <InfoBox
-    text={`This is a default translation provided by Fides that may not match your English text. Verify with a native ${languageName} speaker before using.`}
+    text={`This is a default translation provided by Fides. If you've modified the default English language text, these translations will not match, so verify any changes with a native ${languageName} speaker before using.`}
   />
 );
 

@@ -140,16 +140,6 @@ const ConfigurePrivacyExperience = ({
 
   const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
 
-  const getOOBTranslation = (language: SupportedLanguage) => {
-    const translation = passedInTranslations?.find(
-      (t) => t.language === language
-    );
-    if (translation) {
-      setTranslationIsOOB(true);
-    }
-    return translation;
-  };
-
   const handleTranslationSelected = (translation: ExperienceTranslation) => {
     setTranslationToEdit({
       ...translation,
@@ -157,11 +147,20 @@ const ConfigurePrivacyExperience = ({
     });
   };
 
-  const handleCreateNewTranslation = (language: SupportedLanguage) =>
-    getOOBTranslation(language) ?? {
-      language,
-      is_default: false,
-    };
+  const handleCreateNewTranslation = (language: SupportedLanguage) => {
+    const availableTranslation = passedInTranslations?.find(
+      (t) => t.language === language
+    );
+    if (availableTranslation) {
+      setTranslationIsOOB(true);
+    }
+    return (
+      availableTranslation ?? {
+        language,
+        is_default: false,
+      }
+    );
+  };
 
   const handleExitTranslationForm = () => {
     setTranslationToEdit(undefined);
