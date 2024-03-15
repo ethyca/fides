@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Globális adatvédelmi szabályozás",
+  "static.gpc.description": "A globális adatvédelmi szabályozással kapcsolatos beállításai el lettek fogadva. Automatikusan kikerült azokból az adatfelhasználási esetekből, amelyek a globális adatvédelmi szabályozáshoz tartoznak.",
+  "static.gpc.status.applied": "Alkalmazva",
+  "static.gpc.status.overridden": "Felülírva",
+  "static.gpc.title": "Globális adatvédelmi szabályozás észlelve"
+}

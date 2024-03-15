@@ -1,6 +1,7 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
+import type { I18n } from "../../lib/i18n";
 
 const VendorInfo = ({
   label,
@@ -29,9 +30,11 @@ const VendorInfo = ({
 
 const VendorInfoBanner = ({
   experience,
+  i18n,
   goToVendorTab,
 }: {
   experience: PrivacyExperience;
+  i18n: I18n;
   goToVendorTab: () => void;
 }) => {
   const counts = useMemo(() => {
@@ -56,13 +59,16 @@ const VendorInfoBanner = ({
   return (
     <div className="fides-background-dark fides-vendor-info-banner">
       <VendorInfo
-        label="Vendors"
+        label={i18n.t("static.tcf.vendors")}
         count={counts.total}
         onClick={goToVendorTab}
       />
-      <VendorInfo label="Vendors using consent" count={counts.consent} />
       <VendorInfo
-        label="Vendors using legitimate interest"
+        label={i18n.t("static.tcf.vendors_using_consent")}
+        count={counts.consent}
+      />
+      <VendorInfo
+        label={i18n.t("static.tcf.vendors_using_legint")}
         count={counts.legint}
       />
     </div>

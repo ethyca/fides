@@ -3,10 +3,13 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
-  Page_PrivacyNoticeResponse_,
+  LimitedPrivacyNoticeResponseSchema,
+  Page_LimitedPrivacyNoticeResponseSchema_,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
+  PrivacyNoticeResponseWithRegions,
+  PrivacyNoticeUpdate,
 } from "~/types/api";
 
 export interface State {
@@ -24,14 +27,21 @@ interface PrivacyNoticesParams {
   show_disabled?: boolean;
   region?: PrivacyNoticeRegion;
   systems_applicable?: boolean;
+  filter_by_framework?: boolean;
   page?: number;
   size?: number;
 }
 
+type PrivacyNoticeUpdateParams = PrivacyNoticeUpdate & { id: string };
+type PrivacyNoticeEnableDisableParams = Pick<
+  PrivacyNoticeUpdate,
+  "disabled"
+> & { id: string };
+
 const privacyNoticesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllPrivacyNotices: build.query<
-      Page_PrivacyNoticeResponse_,
+      Page_LimitedPrivacyNoticeResponseSchema_,
       PrivacyNoticesParams
     >({
       query: (params) => ({
@@ -42,26 +52,44 @@ const privacyNoticesApi = baseApi.injectEndpoints({
     }),
     patchPrivacyNotices: build.mutation<
       PrivacyNoticeResponse[],
-      Partial<PrivacyNoticeResponse>[]
+      PrivacyNoticeUpdateParams
     >({
-      query: (payload) => ({
+      query: (payload) => {
+        const { id, ...body } = payload;
+        return {
+          method: "PATCH",
+          url: `privacy-notice/${id}`,
+          params: { id },
+          body,
+        };
+      },
+      invalidatesTags: () => ["Privacy Notices"],
+    }),
+    limitedPatchPrivacyNotices: build.mutation<
+      PrivacyNoticeResponse[],
+      PrivacyNoticeEnableDisableParams
+    >({
+      query: ({ id, disabled }) => ({
         method: "PATCH",
-        url: `privacy-notice/`,
-        body: payload,
+        url: `privacy-notice/${id}/limited_update`,
+        params: { id },
+        body: { disabled },
       }),
       invalidatesTags: () => ["Privacy Notices"],
     }),
-    getPrivacyNoticeById: build.query<PrivacyNoticeResponse, string>({
-      query: (id) => ({
-        url: `privacy-notice/${id}`,
-      }),
-      providesTags: (result, error, arg) => [
-        { type: "Privacy Notices", id: arg },
-      ],
-    }),
+    getPrivacyNoticeById: build.query<PrivacyNoticeResponseWithRegions, string>(
+      {
+        query: (id) => ({
+          url: `privacy-notice/${id}`,
+        }),
+        providesTags: (result, error, arg) => [
+          { type: "Privacy Notices", id: arg },
+        ],
+      }
+    ),
     postPrivacyNotice: build.mutation<
       PrivacyNoticeResponse[],
-      PrivacyNoticeCreation[]
+      PrivacyNoticeCreation
     >({
       query: (payload) => ({
         method: "POST",
@@ -76,7 +104,9 @@ const privacyNoticesApi = baseApi.injectEndpoints({
 export const {
   useGetAllPrivacyNoticesQuery,
   usePatchPrivacyNoticesMutation,
+  useLimitedPatchPrivacyNoticesMutation,
   useGetPrivacyNoticeByIdQuery,
+  useLazyGetPrivacyNoticeByIdQuery,
   usePostPrivacyNoticeMutation,
 } = privacyNoticesApi;
 
@@ -108,7 +138,7 @@ export const selectPageSize = createSelector(
   (state) => state.pageSize
 );
 
-const emptyPrivacyNotices: PrivacyNoticeResponse[] = [];
+const emptyPrivacyNotices: LimitedPrivacyNoticeResponseSchema[] = [];
 export const selectAllPrivacyNotices = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {

@@ -22,6 +22,7 @@ export type RecordConsentServedRequest = {
   browser_identity: Identity;
   code?: string;
   privacy_experience_id?: string;
+  privacy_experience_config_history_id?: string;
   user_geography?: string;
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
