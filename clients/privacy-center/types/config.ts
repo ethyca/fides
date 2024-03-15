@@ -1,11 +1,9 @@
 import { ConsentValue } from "fides-js";
 
-type RequiredType = "optional" | "required";
-
 export type IdentityInputs = {
-  name?: RequiredType;
-  email?: RequiredType;
-  phone?: RequiredType;
+  name?: string;
+  email?: string;
+  phone?: string;
 };
 
 export type CustomPrivacyRequestFields = Record<
