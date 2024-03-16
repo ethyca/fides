@@ -12,6 +12,7 @@ from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
 from sqlalchemy.orm import Session
+from dask.distributed import Client, LocalCluster
 
 from fides.api.common_exceptions import (
     ActionDisabled,
@@ -65,6 +66,9 @@ dask.config.set(scheduler="threads")
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 
 EMPTY_REQUEST = PrivacyRequest()
+
+cluster = LocalCluster(dashboard_address=':8787')
+client = Client(cluster)
 
 
 def retry(
@@ -785,8 +789,15 @@ async def run_access_request(
         # but we don't want those changes in our data use map.
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
+
         v = delayed(get(dsk, TERMINATOR_ADDRESS))
-        access_results = v.compute()
+
+        # Dask Distributed Example
+        result = client.compute(v)
+        access_results = client.gather(result)
+
+        # Dask delayed example
+        # access_results = v.compute()
         logger.info(f"ACCESS RESULTS {access_results}")
         filtered_access_results = filter_by_enabled_actions(
             access_results, connection_configs
