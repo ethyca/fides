@@ -33,7 +33,8 @@ The types of changes are:
 - Added notice there will be no preview for Privacy Center types in the Experience preview [#4709](https://github.com/ethyca/fides/pull/4709)
 - Removed properties beta flag [#4710](https://github.com/ethyca/fides/pull/4710)
 - Add acknowledge button label to default Experience English form [#4714](https://github.com/ethyca/fides/pull/4714)
-
+- Update FidesJS to support localizing CMP UI with configurable, non-English default locales [#4720](https://github.com/ethyca/fides/pull/4720)
+- Add loading of template translations for notices and experiences [#4718](https://github.com/ethyca/fides/pull/4718)
 
 ### Changed
 - Moved location-targeting from Notices to Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
