@@ -4,10 +4,12 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   ExperienceConfigCreate,
-  ExperienceConfigCreateOrUpdateResponse,
+  ExperienceConfigDisabledUpdate,
+  ExperienceConfigListViewResponse,
   ExperienceConfigResponse,
   ExperienceConfigUpdate,
-  Page_ExperienceConfigResponse_,
+  ExperienceTranslation,
+  Page_ExperienceConfigListViewResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
 
@@ -46,6 +48,9 @@ export type ExperienceConfigUpdateParams = Omit<
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
 };
+type ExperienceConfigEnableDisableParams = ExperienceConfigDisabledUpdate & {
+  id: string;
+};
 export type ExperienceConfigCreateParams = Omit<
   Partial<ExperienceConfigCreate>,
   ExperienceConfigOptionalFields
@@ -59,7 +64,7 @@ export type ExperienceConfigCreateParams = Omit<
 const privacyExperienceConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllExperienceConfigs: build.query<
-      Page_ExperienceConfigResponse_,
+      Page_ExperienceConfigListViewResponse_,
       ExperienceConfigParams
     >({
       query: (params) => ({
@@ -69,7 +74,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       providesTags: () => ["Privacy Experience Configs"],
     }),
     patchExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
+      ExperienceConfigResponse,
       ExperienceConfigUpdateParams
     >({
       query: (payload) => {
@@ -80,6 +85,17 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
           body,
         };
       },
+      invalidatesTags: () => ["Privacy Experience Configs", "Property"],
+    }),
+    limitedPatchExperienceConfig: build.mutation<
+      ExperienceConfigResponse,
+      ExperienceConfigEnableDisableParams
+    >({
+      query: ({ id, disabled }) => ({
+        method: "PATCH",
+        url: `experience-config/${id}/limited_update`,
+        body: { disabled },
+      }),
       invalidatesTags: () => ["Privacy Experience Configs"],
     }),
     getExperienceConfigById: build.query<ExperienceConfigResponse, string>({
@@ -90,16 +106,25 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
         { type: "Privacy Experience Configs", id: arg },
       ],
     }),
+    getAvailableConfigTranslations: build.query<
+      Array<ExperienceTranslation>,
+      string
+    >({
+      query: (id) => ({
+        url: `experience-config/${id}/available_translations`,
+      }),
+      providesTags: () => ["Experience Config Translations"],
+    }),
     postExperienceConfig: build.mutation<
-      ExperienceConfigCreateOrUpdateResponse,
-      ExperienceConfigCreateParams
+      ExperienceConfigResponse,
+      ExperienceConfigCreate
     >({
       query: (payload) => ({
         method: "POST",
         url: `experience-config/`,
         body: payload,
       }),
-      invalidatesTags: () => ["Privacy Experience Configs"],
+      invalidatesTags: () => ["Privacy Experience Configs", "Property"],
     }),
   }),
 });
@@ -107,7 +132,9 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
 export const {
   useGetAllExperienceConfigsQuery,
   usePatchExperienceConfigMutation,
+  useLimitedPatchExperienceConfigMutation,
   useGetExperienceConfigByIdQuery,
+  useGetAvailableConfigTranslationsQuery,
   usePostExperienceConfigMutation,
 } = privacyExperienceConfigApi;
 
@@ -121,6 +148,7 @@ export const { reducer } = privacyExperienceConfigSlice;
 
 const selectPrivacyExperienceConfig = (state: RootState) =>
   state.privacyExperienceConfig;
+
 export const selectPage = createSelector(
   selectPrivacyExperienceConfig,
   (state) => state.page
@@ -131,7 +159,7 @@ export const selectPageSize = createSelector(
   (state) => state.pageSize
 );
 
-const emptyExperienceConfigs: ExperienceConfigResponse[] = [];
+const emptyExperienceConfigs: ExperienceConfigListViewResponse[] = [];
 export const selectAllExperienceConfigs = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {

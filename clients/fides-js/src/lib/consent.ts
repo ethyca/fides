@@ -14,11 +14,12 @@ const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
  * (see the type definition of FidesOptions for what options are available)
  */
 export const initOverlay = async ({
+  options,
   experience,
+  i18n,
   fidesRegionString,
   cookie,
   savedConsent,
-  options,
   renderOverlay,
 }: OverlayProps & {
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
@@ -59,16 +60,19 @@ export const initOverlay = async ({
       }
 
       if (
-        experience.component === ComponentType.OVERLAY ||
-        experience.component === ComponentType.TCF_OVERLAY
+        experience.experience_config?.component === ComponentType.MODAL ||
+        experience.experience_config?.component ===
+          ComponentType.BANNER_AND_MODAL ||
+        experience.experience_config?.component === ComponentType.TCF_OVERLAY
       ) {
         // Render the Overlay to the DOM!
         renderOverlay(
           {
+            options,
             experience,
+            i18n,
             fidesRegionString,
             cookie,
-            options,
             savedConsent,
           },
           parentElem

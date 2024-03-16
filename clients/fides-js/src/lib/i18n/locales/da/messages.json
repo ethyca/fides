@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Global fortrolighedskontrol",
+  "static.gpc.description": "Din præference i forbindelse med global fortrolighedskontrol er blevet efterkommet. Du er automatisk blevet frameldt tilfælde af databrug, der overholder global fortrolighedskontrol.",
+  "static.gpc.status.applied": "Anvendt",
+  "static.gpc.status.overridden": "Tilsidesat",
+  "static.gpc.title": "Der blev påvist global fortrolighedskontrol"
+}

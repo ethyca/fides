@@ -93,7 +93,7 @@ jobs:
       # Upload to TestPyPI if it is not a release (prod), rc or beta tag
       - name: Upload to test pypi
         if: steps.check-prod-tag.outputs.match == 'false' && steps.check-rc-tag.outputs.match == 'false' && steps.check-beta-tag.outputs.match == 'false'
-        run: twine upload --repository testpypi dist/*
+        run: twine upload --verbose --repository testpypi dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
@@ -101,7 +101,7 @@ jobs:
       # If the tag matches either a release, rc or a beta tag, allow publishing to PyPi:
       - name: Upload to pypi
         if: steps.check-prod-tag.outputs.match == 'true' || steps.check-rc-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
-        run: twine upload dist/*
+        run: twine upload --verbose dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}

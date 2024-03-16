@@ -4,7 +4,10 @@ import { useRouter } from "next/router";
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import { useGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
+import {
+  useGetAvailableNoticeTranslationsQuery,
+  useGetPrivacyNoticeByIdQuery,
+} from "~/features/privacy-notices/privacy-notices.slice";
 import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
 
 const PrivacyNoticeDetailPage = () => {
@@ -18,6 +21,8 @@ const PrivacyNoticeDetailPage = () => {
   }
 
   const { data, isLoading } = useGetPrivacyNoticeByIdQuery(noticeId);
+  const { data: availableTranslations } =
+    useGetAvailableNoticeTranslationsQuery(noticeId);
 
   if (isLoading) {
     return (
@@ -51,7 +56,10 @@ const PrivacyNoticeDetailPage = () => {
           users.
         </Text>
         <Box data-testid="privacy-notice-detail-page">
-          <PrivacyNoticeForm privacyNotice={data} />
+          <PrivacyNoticeForm
+            privacyNotice={data}
+            availableTranslations={availableTranslations}
+          />
         </Box>
       </Box>
     </Layout>

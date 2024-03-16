@@ -1,5 +1,11 @@
 # pylint: disable=R0401, C0302, W0143
+"""
+TODO SQLAlchemy models in this file DeprecatedCurrentPrivacyPreference and DeprecatedLastServedNotice
+need to be removed along with their corresponding tables in a cleanup migration.  Data has been migrated to tables
+in privacy_preference.py.
 
+Defined enums here should be moved to privacy_preference_v2.py.
+"""
 from __future__ import annotations
 
 from enum import Enum
@@ -20,10 +26,19 @@ from fides.api.models.privacy_request import ProvidedIdentity
 
 
 class RequestOrigin(Enum):
-    # Not at the db level due to being subject to change.
-    # Only add here, do not remove
+    """
+    We currently extract the RequestOrigin from the Privacy Experience
+    Config ComponentType when saving, so RequestOrigin needs to be a
+    superset of ComponentType.
+
+    Not at the db level due to being subject to change.
+    Only add here, do not remove
+    """
+
     privacy_center = "privacy_center"
-    overlay = "overlay"
+    overlay = "overlay"  # DEPRECATED. DO NOT REMOVE.
+    modal = "modal"
+    banner_and_modal = "banner_and_modal"
     api = "api"
     tcf_overlay = "tcf_overlay"
 
@@ -41,12 +56,19 @@ class ConsentMethod(Enum):
 
 
 class ServingComponent(Enum):
-    # Not at the db level due to being subject to change.
-    # Only add here, do not remove
-    overlay = "overlay"
+    """
+    This differs from component type because we want to record exactly
+    where consent was served.
+
+    Not at the db level due to being subject to change.
+    Only add here, do not remove
+    """
+
+    overlay = "overlay"  # DEPRECATED. DO NOT REMOVE.
     banner = "banner"
+    modal = "modal"
     privacy_center = "privacy_center"
-    tcf_overlay = "tcf_overlay"
+    tcf_overlay = "tcf_overlay"  # TCF modal in this case
     tcf_banner = "tcf_banner"
 
 

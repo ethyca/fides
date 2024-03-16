@@ -19,6 +19,8 @@ languages:
   name: English
 - id: es
   name: Spanish
+- id: es-MX
+  name: Spanish (Mexico)
 - id: et
   name: Estonian
 - id: eu

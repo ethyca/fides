@@ -19,9 +19,6 @@ describe("Fides-js GPP extension", () => {
    * used to immediately setup Fides for returning users. This means the tests
    * below for returning users all fail - to workaround this and get the test
    * passing for now, we add an ugly delay before we check for GPP in this function.
-   *
-   * TODO: Delete this function and get these tests to pass without requiring
-   * any workarounds!
    */
   const workaroundGppInitializationDelayBug = () => {
     /* eslint-disable-next-line cypress/no-unnecessary-waiting */
@@ -539,10 +536,7 @@ describe("Fides-js GPP extension", () => {
         // TODO(PROD-1439): remove this workaround
         workaroundGppInitializationDelayBug();
 
-        // TODO (PROD-1780): re-enable this check; the banner should *not* be
-        // shown to a returning user, but we've hardcoded
-        // shouldResurfaceConsent() = true while experimenting
-        // cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("@FidesUIShown").should("not.have.been.called");
 
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
