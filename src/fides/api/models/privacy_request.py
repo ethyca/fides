@@ -783,10 +783,10 @@ class PrivacyRequest(
         This is for use by the *manual* connector which is integrated with the graph.
         """
         cache: FidesopsRedis = get_cache()
-        cached_results: Optional[Dict[str, Optional[List[Row]]]] = (
-            cache.get_encoded_objects_by_prefix(
-                f"MANUAL_INPUT__{self.id}__{collection.value}"
-            )
+        cached_results: Optional[
+            Dict[str, Optional[List[Row]]]
+        ] = cache.get_encoded_objects_by_prefix(
+            f"MANUAL_INPUT__{self.id}__{collection.value}"
         )
         return list(cached_results.values())[0] if cached_results else None
 
@@ -824,9 +824,9 @@ class PrivacyRequest(
     def get_cached_access_graph(self) -> Optional[GraphRepr]:
         """Fetch the graph built for the access request"""
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[Dict[str, Optional[GraphRepr]]] = (
-            cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
-        )
+        value_dict: Optional[
+            Dict[str, Optional[GraphRepr]]
+        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
@@ -842,9 +842,9 @@ class PrivacyRequest(
         Fetch the collection -> data use map cached for this privacy request
         """
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[Dict[str, Optional[Dict[str, Set[str]]]]] = (
-            cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        )
+        value_dict: Optional[
+            Dict[str, Optional[Dict[str, Set[str]]]]
+        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(
@@ -992,10 +992,10 @@ def _get_manual_access_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -1008,10 +1008,10 @@ def _get_manual_erasure_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
     )
     if cached_results:
         return list(cached_results.values())[0]
