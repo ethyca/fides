@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 import copy
+import json
 import traceback
 from abc import ABC
 from functools import wraps
@@ -11,7 +12,12 @@ from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
+
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.wrappers import sync
 
 from fides.api.common_exceptions import (
     ActionDisabled,
@@ -21,6 +27,8 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
     SkippingConsentPropagation,
     TraversalError,
+    PrivacyRequestNotFound,
+    PrivacyRequestTaskNotFound
 )
 from fides.api.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -38,8 +46,9 @@ from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.graph.graph_differences import format_graph_for_caching
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.models.policy import Policy, CurrentStep
+from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest, PrivacyRequestTask, \
+    PrivacyRequestStatus, TaskStatus
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
@@ -171,6 +180,407 @@ def retry(
         return result
 
     return decorator
+
+
+class TaskNode:
+    def __init__(
+        self, dataset: str, collection: str, connection_key: str
+    ):
+        self.collection_address = CollectionAddress(dataset=dataset, collection=collection)
+        self.connection_key = connection_key
+
+
+class GraphTaskTwo(ABC):
+    def __init__(
+        self, session: Session, privacy_request: PrivacyRequest, privacy_request_task: PrivacyRequestTask
+    ):
+        connector: Optional[ConnectionConfig] = None
+        if privacy_request_task.connection_config_key:
+            connector = session.query(ConnectionConfig).filter(
+                ConnectionConfig.id == privacy_request_task.connection_config_key
+            ).first()
+
+        incoming_edges_by_collection: Dict[
+            CollectionAddress, List[Edge]
+        ] = {}
+        for coll_address, edges in privacy_request_task.incoming_edges:
+            incoming_edges_by_collection[CollectionAddress.from_string(coll_address)] = [
+                Edge(f1=FieldAddress.from_string(edge_list[0]), f2=FieldAddress.from_string(edge_list[1])) for edge_list
+                in edges]
+
+        self.incoming_edges_by_collection = incoming_edges_by_collection
+
+        self.resources: TaskResources = TaskResources(
+            request=privacy_request,
+            policy=privacy_request.policy,
+            connection_configs=[connector] if connector else [],
+            session=session
+        )
+        self.connector: BaseConnector = self.resources.get_connector(
+            privacy_request_task.connection_config_key  # ConnectionConfig.key
+        )
+        self.data_uses: Set[str] = (
+            System.get_data_uses(
+                [self.connector.configuration.system], include_parents=False
+            )
+            if self.connector.configuration.system
+            else {}
+        )
+
+        # the input keys this task will read from.These will build the dask graph
+        self.input_keys: List[CollectionAddress] = sorted(
+            self.incoming_edges_by_collection.keys()
+        )
+
+        self.key = CollectionAddress.from_string(privacy_request_task.collection_address)
+
+        self.execution_log_id = None
+        self.grouped_fields = privacy_request_task.grouped_fields
+        self.dependent_identity_fields: bool = privacy_request_task.dependent_identity_fields
+
+        self.task_node = TaskNode(dataset=privacy_request_task.dataset, collection=privacy_request_task.collection, connection_key=privacy_request_task.connection_config_key)
+
+    def build_incoming_field_path_maps(
+        self, group_dependent_fields: bool = False
+    ) -> Tuple[COLLECTION_FIELD_PATH_MAP, COLLECTION_FIELD_PATH_MAP]:
+        """
+        For each collection connected to the current collection, return a list of tuples
+        mapping the foreign field to the local field.  This is used to process data from incoming collections
+        into the current collection.
+
+        :param group_dependent_fields: Whether we should split the incoming fields into two groups: one whose
+        fields are completely independent of one another, and the other whose incoming data needs to stay linked together.
+        If False, all fields are returned in the first tuple, and the second tuple just maps collections to an empty list.
+
+        """
+
+        def field_map(keep: Callable) -> COLLECTION_FIELD_PATH_MAP:
+            return {
+                col_addr: [
+                    (edge.f1.field_path, edge.f2.field_path)
+                    for edge in edge_list
+                    if keep(edge.f2.field_path.string_path)
+                ]
+                for col_addr, edge_list in self.incoming_edges_by_collection.items()
+            }
+
+        if group_dependent_fields:
+            return field_map(
+                lambda string_path: string_path not in self.grouped_fields
+            ), field_map(lambda string_path: string_path in self.grouped_fields)
+
+        return field_map(lambda string_path: True), field_map(lambda string_path: False)
+
+
+    def can_write_data(self) -> bool:
+        """Checks if the relevant ConnectionConfig has been granted "write" access to its data"""
+        connection_config: ConnectionConfig = self.connector.configuration
+        return connection_config.access == AccessLevel.write
+
+    def _combine_seed_data(
+        self,
+        *data: List[Row],
+        grouped_data: Dict[str, Any],
+        dependent_field_mappings: COLLECTION_FIELD_PATH_MAP,
+    ) -> Dict[str, Any]:
+        """Combine the seed data with the other dependent inputs. This is used when the seed data in a collection requires
+        inputs from another collection to generate subsequent queries."""
+        # Get the identity values from the seeds that were passed into this collection.
+        seed_index = self.input_keys.index(ROOT_COLLECTION_ADDRESS)
+        seed_data = data[seed_index]
+
+        for foreign_field_path, local_field_path in dependent_field_mappings[
+            ROOT_COLLECTION_ADDRESS
+        ]:
+            dependent_values = consolidate_query_matches(
+                row=seed_data, target_path=foreign_field_path  # type: ignore
+            )
+            grouped_data[local_field_path.string_path] = dependent_values
+        return grouped_data
+
+    def pre_process_input_data(
+        self, *data: List[Row], group_dependent_fields: bool = False
+    ) -> NodeInput:
+        """
+        Consolidates the outputs of queries from potentially multiple collections whose
+        data is needed as input into the current collection.
+
+        Each dict in the input list represents the output of a dependent task.
+        These outputs should correspond to the input key order.  Any nested fields are
+        converted into dot-separated paths in the return.
+
+         table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}, "y": [4, 5]}]
+           where table1.x => self.id,
+           table1.y=> self.name,
+           table2.x=>self.id
+           table3.z.a => self.contact.address
+           table3.y => self.contact.email
+         becomes
+         {id:[1,2,3,4], name:["A","B"], contact.address:["C"], "contact.email": [4, 5]}
+
+         If there are dependent fields from one collection into another, they are separated out as follows:
+         {fidesops_grouped_inputs: [{"organization_id": 1, "project_id": "math}, {"organization_id": 5, "project_id": "science"}]
+        """
+        if not len(data) == len(self.input_keys):
+            logger.warning(
+                "{} expected {} input keys, received {}",
+                self,
+                len(self.input_keys),
+                len(data),
+            )
+
+        output: Dict[str, List[Any]] = {FIDESOPS_GROUPED_INPUTS: []}
+
+        (
+            independent_field_mappings,
+            dependent_field_mappings,
+        ) = self.build_incoming_field_path_maps(group_dependent_fields)
+
+        for i, rowset in enumerate(data):
+            collection_address = self.input_keys[i]
+
+            if (
+                group_dependent_fields
+                and self.dependent_identity_fields
+                and collection_address == ROOT_COLLECTION_ADDRESS
+            ):
+                # Skip building data for the root collection if the seed data needs to be combined with other inputs
+                continue
+
+            logger.info(
+                "Consolidating incoming data into {} from {}.",
+                self.task_node.collection_address,
+                collection_address,
+            )
+            for row in rowset:
+                # Consolidate lists of independent field inputs
+                for foreign_field_path, local_field_path in independent_field_mappings[
+                    collection_address
+                ]:
+                    new_values: List = consolidate_query_matches(
+                        row=row, target_path=foreign_field_path
+                    )
+                    if new_values:
+                        append(output, local_field_path.string_path, new_values)
+
+                # Separately group together dependent inputs if applicable
+                if dependent_field_mappings[collection_address]:
+                    grouped_data: Dict[str, Any] = {}
+                    for (
+                        foreign_field_path,
+                        local_field_path,
+                    ) in dependent_field_mappings[collection_address]:
+                        dependent_values: List = consolidate_query_matches(
+                            row=row, target_path=foreign_field_path
+                        )
+                        grouped_data[local_field_path.string_path] = dependent_values
+
+                    if self.dependent_identity_fields:
+                        grouped_data = self._combine_seed_data(
+                            *data,
+                            grouped_data=grouped_data,
+                            dependent_field_mappings=dependent_field_mappings,
+                        )
+
+                    output[FIDESOPS_GROUPED_INPUTS].append(grouped_data)
+        return output
+
+    def update_status(
+        self,
+        msg: str,
+        fields_affected: Any,
+        action_type: ActionType,
+        status: ExecutionLogStatus,
+    ) -> None:
+        """Update status activities"""
+        self.resources.write_execution_log(
+            self.task_node.connection_key,
+            self.task_node.address,
+            fields_affected,
+            action_type,
+            status,
+            msg,
+        )
+
+    def log_start(self, action_type: ActionType) -> None:
+        """Task start activities"""
+        logger.info(
+            "Starting {}, traversal_node {}", self.resources.request.id, self.key
+        )
+
+        self.update_status(
+            "starting", [], action_type, ExecutionLogStatus.in_processing
+        )
+
+    def log_retry(self, action_type: ActionType) -> None:
+        """Task retry activities"""
+        logger.info("Retrying {}, node {}", self.resources.request.id, self.key)
+
+        self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
+
+    def log_paused(self, action_type: ActionType, ex: Optional[BaseException]) -> None:
+        """On paused activities"""
+        logger.info("Pausing {}, node {}", self.resources.request.id, self.key)
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
+
+    def log_skipped(self, action_type: ActionType, ex: str) -> None:
+        """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
+        logger.info("Skipping {}, node {}", self.resources.request.id, self.key)
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
+
+    def log_end(
+        self,
+        action_type: ActionType,
+        ex: Optional[BaseException] = None,
+        success_override_msg: Optional[BaseException] = None,
+    ) -> None:
+        """On completion activities"""
+        if ex:
+            logger.warning(
+                "Ending {}, {} with failure {}",
+                self.resources.request.id,
+                self.key,
+                Pii(ex),
+            )
+            self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
+        else:
+            logger.info("Ending {}, {}", self.resources.request.id, self.key)
+            self.update_status(
+                str(success_override_msg) if success_override_msg else "success",
+                # TODO restore once we can build the representation of the node
+                # build_affected_field_logs(
+                #     self.traversal_node.node, self.resources.policy, action_type
+                # ),
+                action_type,
+                ExecutionLogStatus.complete,
+            )
+
+    @retry(action_type=ActionType.access, default_return=[])
+    def access_request(self, *inputs: List[Row]) -> List[Row]:
+        """Run an access request on a single node."""
+        formatted_input_data: NodeInput = self.pre_process_input_data(
+            *inputs, group_dependent_fields=True
+        )
+        output: List[Row] = self.connector.retrieve_data(
+            self.traversal_node,
+            self.resources.policy,
+            self.resources.request,
+            formatted_input_data,
+        )
+        filtered_output: List[Row] = self.access_results_post_processing(
+            self.pre_process_input_data(*inputs, group_dependent_fields=False), output
+        )
+        self.log_end(ActionType.access)
+        return filtered_output
+
+    def post_process_input_data(
+        self, pre_processed_inputs: NodeInput
+    ) -> FieldPathNodeInput:
+        """
+        For each entrypoint field, specify if we should return all data, or just data that matches the coerced
+        input values. Used for post-processing access request results for a given collection.
+
+        :param pre_processed_inputs: string paths mapped to values that were used to query the current collection
+        :return: FieldPaths mapped to type-coerced values that we need to match in
+        access request results, or FieldPaths mapped to None if we want to return everything.
+
+        :Example:
+        owner.phone field will not be filtered but we will process the owner.identifier results to return
+        values that match one of [1234, 5678, 9102]
+
+        {FieldPath("owner", "phone"): None, FieldPath("owner", "identifier"): [1234, 5678, 9102]}
+        """
+        out: FieldPathNodeInput = {}
+        for key, values in pre_processed_inputs.items():
+            path: FieldPath = FieldPath.parse(key)
+            field: Optional[Field] = self.traversal_node.node.collection.field(path)
+            if (
+                field
+                and path in self.traversal_node.query_field_paths
+                and isinstance(values, list)
+            ):
+                if field.return_all_elements:
+                    # All data will be returned
+                    out[path] = None
+                else:
+                    # Default behavior - we will filter values to match those in filtered
+                    cast_values = [
+                        field.cast(v) for v in values
+                    ]  # Cast values to expected type where possible
+                    filtered = list(filter(lambda x: x is not None, cast_values))
+                    if filtered:
+                        out[path] = filtered
+        return out
+
+    def access_results_post_processing(
+        self, formatted_input_data: NodeInput, output: List[Row]
+    ) -> List[Row]:
+        """
+        Completes post-processing filtering of access request results.
+
+        By default, if an array field was an entry point into the node, return only array elements that *match* the
+        condition.  Specifying return_all_elements = true on the field's config will instead return *all* array elements.
+
+        Caches the data in TWO separate formats: 1) erasure format, *replaces* unmatched array elements with placeholder
+        text, and 2) access request format, which *removes* unmatched array elements altogether.  If no data was filtered
+        out, both cached versions will be the same.
+        """
+        post_processed_node_input_data: FieldPathNodeInput = (
+            self.post_process_input_data(formatted_input_data)
+        )
+
+        # For erasures: cache results with non-matching array elements *replaced* with placeholder text
+        placeholder_output: List[Row] = copy.deepcopy(output)
+        for row in placeholder_output:
+            filter_element_match(
+                row, query_paths=post_processed_node_input_data, delete_elements=False
+            )
+        self.resources.cache_results_with_placeholders(
+            f"access_request__{self.key}", placeholder_output
+        )
+
+        # For access request results, cache results with non-matching array elements *removed*
+        for row in output:
+            logger.info(
+                "Filtering row in {} for matching array elements.",
+                self.traversal_node.node.address,
+            )
+            filter_element_match(row, post_processed_node_input_data)
+        self.resources.cache_object(f"access_request__{self.key}", output)
+
+        # Return filtered rows with non-matched array data removed.
+        return output
+
+    def skip_if_disabled(self) -> None:
+        """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
+        connection_config: ConnectionConfig = self.connector.configuration
+        if connection_config.disabled:
+            raise CollectionDisabled(
+                f"Skipping collection {self.traversal_node.node.address}. "
+                f"ConnectionConfig {connection_config.key} is disabled.",
+            )
+
+    def skip_if_action_disabled(self, action_type: ActionType) -> None:
+        """Skip execution for the given collection if it is attached to a ConnectionConfig that does not have the given action_type enabled."""
+
+        # the access action is never disabled since it provides data that is needed for erasure requests
+        if action_type == ActionType.access:
+            return
+
+        connection_config: ConnectionConfig = self.connector.configuration
+        if (
+            connection_config.enabled_actions is not None
+            and action_type not in connection_config.enabled_actions
+        ):
+            raise ActionDisabled(
+                f"Skipping collection {self.traversal_node.node.address}. "
+                f"The {action_type} action is disabled for connection config with key '{connection_config.key}'.",
+            )
+
+    def __repr__(self) -> str:
+        return f"{type(self)}:{self.key}"
 
 
 class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
@@ -727,15 +1137,16 @@ def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, An
     return g
 
 
-async def run_access_request(
+def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-) -> Dict[str, List[Row]]:
-    """Run the access request"""
+) -> None:
+    """Queue the access request nodes"""
+    logger.info(f"Running access request function")
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(
         privacy_request, policy, connection_configs, session
@@ -758,37 +1169,259 @@ async def run_access_request(
             return resources.get_all_cached_objects()
 
         env: Dict[CollectionAddress, Any] = {}
-        end_nodes = traversal.traverse(env, collect_tasks_fn)
-
+        # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
+        end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
         dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
             k: (t.access_request, *t.input_keys) for k, t in env.items()
         }
+
         dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        await fideslog_graph_rerun(
-            prepare_rerun_graph_analytics_event(
-                privacy_request, env, end_nodes, resources, ActionType.access
-            )
-        )
+        created_privacy_request_tasks = add_privacy_request_tasks(session, privacy_request, traversal, env, end_nodes, ActionType.access)
+        for task in created_privacy_request_tasks:
+            if task.upstream_tasks_complete(session):
+                logger.info(f"Queuing task {privacy_request.id} > {task.id}: {task.collection_address}")
+                run_node.delay(privacy_request.id, task.id)
+
+        return
+
+        # TODO REMOVE
+        # await fideslog_graph_rerun(
+        #     prepare_rerun_graph_analytics_event(
+        #         privacy_request, env, end_nodes, resources, ActionType.access
+        #     )
+        # )
 
         # cache access graph for use in logging/analytics event
-        privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
+        # privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
 
         # cache a map of collections -> data uses for the output package of access requests
         # this is cached here before request execution, since this is the state of the
         # graph used for request execution. the graph could change _during_ request execution,
         # but we don't want those changes in our data use map.
+        # TODO What is this for?
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
-        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-        access_results = v.compute()
-        filtered_access_results = filter_by_enabled_actions(
-            access_results, connection_configs
-        )
-        return filtered_access_results
+        # v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        # access_results = v.compute()
+        # filtered_access_results = filter_by_enabled_actions(
+        #     access_results, connection_configs
+        # )
+        # return filtered_access_results
 
+
+def add_privacy_request_tasks(session: Session, privacy_request: PrivacyRequest, traversal: Traversal, env: Dict[CollectionAddress, Any], end_nodes: List[CollectionAddress], action_type: ActionType):
+    """Add PrivacyRequestTasks to the database
+
+    There should only be one "completed" task for each node.
+    """
+
+    existing_tasks: Query = session.query(PrivacyRequestTask).filter(
+        PrivacyRequestTask.privacy_request_id == privacy_request.id,
+        PrivacyRequestTask.status == PrivacyRequestStatus.complete
+    )
+    created_tasks: List[PrivacyRequestTask] = []
+
+    def create_task(dataset_name, collection_name, upstream_tasks, downstream_tasks, status, data, action_type, connection_key, incoming_edges_dict=None, grouped_fields=None, dependent_identity_fields=False, collection={}):
+        for completed_task in existing_tasks:
+            if completed_task.dataset_name == dataset_name and completed_task.collection_name == collection_name:
+                return None
+
+        return PrivacyRequestTask.create(session, data={
+            "privacy_request_id": privacy_request.id,
+            "upstream_tasks": upstream_tasks,
+            "downstream_tasks": downstream_tasks,
+            "dataset_name": dataset_name,
+            "collection_name": collection_name,
+            "status": status,
+            "data": data,
+            "action_type": action_type,
+            "collection_address": f"{dataset_name}:{collection_name}",
+            "connection_config_key": connection_key,
+            "incoming_edges": incoming_edges_dict or {},
+            "grouped_fields": grouped_fields or [],
+            "dependent_identity_fields": dependent_identity_fields,
+            "collection": collection
+        })
+
+    # Adding root node with complete status and identity data
+    first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
+    created_root_task: Optional[PrivacyRequestTask] = create_task(
+        dataset_name=ROOT_COLLECTION_ADDRESS.dataset,
+        collection_name=ROOT_COLLECTION_ADDRESS.collection,
+        upstream_tasks=[],
+        downstream_tasks=list({f"{initial_node.dataset}:{initial_node.collection}" for initial_node in first_nodes}),
+        status=TaskStatus.complete,
+        data=[traversal.seed_data],
+        action_type=action_type,
+        connection_key=None
+    )
+
+    for collection_address, graph_task in env.items():
+        traversal_node: TraversalNode = graph_task.traversal_node
+        downstream_nodes: Dict[CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]] = traversal_node.children
+        if collection_address in end_nodes:
+            downstream_nodes = {TERMINATOR_ADDRESS: []}
+        upstream_nodes: Dict[CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]] = traversal_node.parents
+
+        incoming_edges_dict: Dict[str, List] = {}
+        for col_address, edges in graph_task.incoming_edges_by_collection.items():
+            incoming_edges_dict[col_address.value] = [[edge.f1.value, edge.f2.value] for edge in edges]
+
+        created_task: Optional[PrivacyRequestTask] = create_task(
+            dataset_name=collection_address.dataset,
+            collection_name=collection_address.collection,
+            upstream_tasks=[upstream_node.value for upstream_node in upstream_nodes],
+            downstream_tasks=[downstream_node.value for downstream_node in downstream_nodes],
+            status=TaskStatus.pending,
+            data=None,
+            action_type=action_type,
+            connection_key=traversal_node.node.dataset.connection_key,
+            incoming_edges_dict=incoming_edges_dict,
+            grouped_fields=graph_task.grouped_fields,
+            dependent_identity_fields=graph_task.dependent_identity_fields,
+            # TODO a lot more work to serialize this collection properly
+            # collection=traversal_node.node.collection.dict()
+        )
+        if created_task:
+            created_tasks.append(created_task)
+
+    # Adding terminator node with no downstream nodes
+    created_task: Optional[PrivacyRequestTask] = create_task(
+        dataset_name=TERMINATOR_ADDRESS.dataset,
+        collection_name=TERMINATOR_ADDRESS.collection,
+        upstream_tasks=[upstream_node.value for upstream_node in end_nodes],
+        downstream_tasks=[],
+        status=TaskStatus.pending,
+        data=None,
+        action_type=action_type,
+        connection_key=None
+    )
+    if created_task:
+        created_tasks.append(created_task)
+
+    return created_tasks
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def run_node(
+    self: DatabaseTask,
+    privacy_request_id: str,
+    privacy_request_task_id: str
+) -> None:
+    with self.get_new_session() as session:
+        privacy_request: PrivacyRequest = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+        request_task: PrivacyRequestTask = PrivacyRequestTask.get(db=session, object_id=privacy_request_task_id)
+
+        if not privacy_request:
+            raise PrivacyRequestNotFound(
+                f"Privacy request with id {privacy_request_id} not found"
+            )
+
+        if not request_task:
+            raise PrivacyRequestTaskNotFound(
+                f"Request Task with id {request_task} not found"
+            )
+
+        graph_task_key = CollectionAddress.from_string(request_task.collection_address)
+
+        if request_task.status == TaskStatus.pending:
+            upstream_results: Query = session.query(PrivacyRequestTask).filter(
+                PrivacyRequestTask.privacy_request_id == privacy_request_id,
+                PrivacyRequestTask.status == PrivacyRequestStatus.complete,
+                PrivacyRequestTask.collection_address.in_(request_task.upstream_tasks)
+            )
+
+            if not upstream_results.count() == len(request_task.upstream_tasks):
+                raise PrivacyRequestTaskNotFound(
+                    f"Cannot start Privacy Request Task {request_task.id} - status is {request_task.status}"
+                )
+
+            # TODO entering downstream nodes unordred
+            upstream_data = [upstream.data if upstream.data else [] for upstream in upstream_results]
+
+            if request_task.collection_name == "address":
+                logger.info(f"Upstream data for address {upstream_data}")
+
+            if request_task.action_type == ActionType.access:
+                logger.info(
+                    f"Running access request task {request_task.id}:{request_task.collection_address} for privacy request {privacy_request.id}")
+
+                datasets = DatasetConfig.all(db=session)
+                dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+                dataset_graph = DatasetGraph(*dataset_graphs)
+                traversal: Traversal = Traversal(dataset_graph, privacy_request.get_cached_identity_data())
+                task_resources = TaskResources(
+                    privacy_request, privacy_request.policy, session.query(ConnectionConfig).all(), session
+                )
+                def collect_tasks_fn(
+                        tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+                ) -> None:
+                    """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+                    if not tn.is_root_node():
+                        data[tn.address] = GraphTask(tn, task_resources)
+
+                def termination_fn(
+                        *dependent_values: List[Row],
+                ) -> Dict[str, Optional[List[Row]]]:
+                    """A termination function that just returns its inputs mapped to their source addresses.
+                    This needs to wait for all dependent keys because this is how dask is informed to wait for
+                    all terminating addresses before calling this."""
+
+                    return task_resources.get_all_cached_objects()
+
+                env: Dict[CollectionAddress, Any] = {}
+                # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
+                traversal.traverse(env, collect_tasks_fn)
+
+                if graph_task_key == TERMINATOR_ADDRESS:
+                    func = termination_fn
+                    intermediate_results: Dict = func(*upstream_data)
+                    for collection, rows in intermediate_results.items():
+                        for row in rows:
+                            for key, val in row.items():
+                                row[key] = storage_json_encoder(val)
+                    # TODO store final results elsewhere, not in the same column as the data
+                    results = [intermediate_results]
+                else:
+                    func = env[graph_task_key].access_request
+                    results: List[Row] = func(*upstream_data)
+                    logger.info(f"RESULTS FOR {graph_task_key} {results}")
+                    for row in results:
+                        for key, val in row.items():
+                            row[key] = storage_json_encoder(val)
+
+                request_task.data = results
+                request_task.status = TaskStatus.complete
+                request_task.save(session)
+
+        else:
+            logger.info(
+                f"Cannot start Privacy Request Task {request_task.id} {request_task.collection_address} - status is {request_task.status}"
+            )
+
+        pending_downstream_tasks: Query = request_task.pending_downstream_tasks(session)
+        logger.info(
+            f"DOWNSTREAM TASKS {[downstream_task.collection_address for downstream_task in pending_downstream_tasks]}")
+        for downstream_task in pending_downstream_tasks:
+            upstream_tasks: Query = session.query(PrivacyRequestTask).filter(
+                PrivacyRequestTask.privacy_request_id == privacy_request_id,
+                PrivacyRequestTask.collection_address.in_(downstream_task.upstream_tasks)
+            ).all()
+            logger.info(f"UPSTREAM TASKS of {downstream_task.collection_address}: {[(task.collection_address, task.status)for task in upstream_tasks]}")
+            if downstream_task.upstream_tasks_complete(session):
+                logger.info(f"QUEUING Node {downstream_task.collection_address} after completion of Node {graph_task_key}")
+                run_node.delay(privacy_request_id=privacy_request_id, privacy_request_task_id=downstream_task.id)
+
+        if graph_task_key == TERMINATOR_ADDRESS:
+            from fides.api.service.privacy_request.request_runner_service import queue_privacy_request
+
+            queue_privacy_request(
+                privacy_request_id=privacy_request.id,
+                from_step=CurrentStep.upload_access.value,
+            )
 
 def filter_by_enabled_actions(
     access_results: Dict[str, Any], connection_configs: List[ConnectionConfig]

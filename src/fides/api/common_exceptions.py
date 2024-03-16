@@ -147,6 +147,10 @@ class PrivacyRequestNotFound(BaseException):
     """Privacy Request Not Found"""
 
 
+class PrivacyRequestTaskNotFound(BaseException):
+    """Privacy Request Task Not Found"""
+
+
 class NoCachedManualWebhookEntry(BaseException):
     """No manual data exists for this webhook on the given privacy request."""
 

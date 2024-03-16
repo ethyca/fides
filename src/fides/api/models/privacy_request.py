@@ -17,12 +17,12 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    UniqueConstraint,
+    UniqueConstraint, ARRAY,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy.orm import Session, backref, relationship, Query
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -84,6 +84,7 @@ from fides.config import CONFIG
 EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,
     CurrentStep.access,
+    CurrentStep.upload_access,
     CurrentStep.erasure,
     CurrentStep.consent,
     CurrentStep.email_post_send,
@@ -1406,3 +1407,70 @@ def _parse_cache_to_checkpoint_action_required(
         collection=collection,
         action_needed=action_needed,
     )
+
+
+class TaskStatus(str, EnumType):
+    """Enum for task statuses, reflecting where they are in the Privacy Request Lifecycle"""
+
+    pending = "pending"
+    in_processing = "in_processing"
+    complete = "complete"
+    error = "error"
+
+
+class PrivacyRequestTask(Base):
+    """
+    TODO should we FK to upstream/downstream tasks or just reference by name?
+    Name is simpler
+    """
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path, ondelete="SET NULL"),
+        nullable=False,
+    )
+    upstream_tasks = Column(MutableList.as_mutable(JSONB), server_default="{}")
+    downstream_tasks = Column(MutableList.as_mutable(JSONB),  server_default="{}")
+    collection_name = Column(String, nullable=False)
+    dataset_name = Column(String, nullable=False)
+    collection_address = Column(String, nullable=False)  # Of the format dataset_name:collection_name for convenience
+    status = Column(
+        EnumColumn(TaskStatus),
+        index=True,
+        nullable=False,
+    )
+    action_type = Column(EnumColumn(ActionType), nullable=False)
+
+    # TODO ENCRYPT THIS -  it is a list of dicts, StringEncryptedType may not work here
+    data = Column(
+        MutableList.as_mutable(JSONB),
+        nullable=True,
+    )
+
+    connection_config_key = Column(String)
+    # {"collection_address": [["from_field_address", "to_field_address"]]}
+    incoming_edges = Column(MutableDict.as_mutable(JSONB))
+    grouped_fields = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
+    dependent_identity_fields = Column(Boolean, nullable=False)
+    collection = Column(MutableDict.as_mutable(JSONB))
+
+    privacy_request = relationship(
+        PrivacyRequest,
+        backref="request_tasks",
+    )
+
+    def pending_downstream_tasks(self, db: Session) -> Query:
+        return db.query(PrivacyRequestTask).filter(
+            PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
+            PrivacyRequestTask.status == TaskStatus.pending,
+            PrivacyRequestTask.collection_address.in_(self.downstream_tasks)
+        )
+
+    def upstream_tasks_complete(self, db) -> bool:
+        upstream_tasks: Query = db.query(PrivacyRequestTask).filter(
+            PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
+            PrivacyRequestTask.collection_address.in_(self.upstream_tasks)
+        ).all()
+        return all(upstream_task.status == TaskStatus.complete for upstream_task in upstream_tasks)
+
+
+

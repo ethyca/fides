@@ -215,6 +215,20 @@ class FieldAddress:
         """Return the collection prefix of this field address."""
         return CollectionAddress(self.dataset, self.collection)
 
+    @staticmethod
+    def from_string(field_address_string: str):
+        try:
+            split_string = field_address_string.split(":")
+            dataset = split_string[0]
+            collection = split_string[1]
+            fields = split_string[2]
+            split_fields = fields.split(".")
+            return FieldAddress(dataset, collection, *split_fields)
+        except Exception:
+            raise FidesopsException(
+                f"'{field_address_string}' is not a valid collection address"
+            )
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, FieldAddress):
             return False
@@ -420,6 +434,17 @@ class Collection(BaseModel):
     erase_after: Set[CollectionAddress] = set()
     # An optional set of dependent fields that need to be queried together
     grouped_inputs: Set[str] = set()
+
+    def dict(self, **kwargs):
+        model_dict = super().dict(**kwargs)
+        for collection_attribute, val in model_dict.items():
+            if isinstance(val, Set):
+                model_dict[collection_attribute] = list(val)
+
+        for field in model_dict["fields"]:
+            field["data_type_converter"] = field["data_type_converter"].name
+
+        return model_dict
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
