@@ -24,6 +24,34 @@ const ConsentMetadata: React.FC<Props> = ({ title, description }) => (
   </>
 );
 
+
+const ConfigureConsentPage = () => {
+  const { tcf: isTcfEnabled } = useFeatures();
+
+  if (isTcfEnabled) {
+    return (
+      <Layout title="Consent reporting">
+        <ConsentMetadata
+          includeAddVendors
+          title="Manage your vendors"
+          description="Use the table below to manage your vendors. Modify the legal basis for a vendor if permitted and view and group your views by applying different filters"
+        />
+        <ConsentManagementTable />
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout title="Consent reporting">
+      <ConsentMetadata
+        title="Consent reporting"
+        description="Your current cookies and tracking information."
+      />
+      <ConfigureConsent />
+    </Layout>
+  );
+};
+
 const ConfigureConsentPage = () => (
   <Layout title="Configure consent">
     <ConsentMetadata
