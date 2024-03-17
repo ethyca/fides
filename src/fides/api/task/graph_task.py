@@ -13,23 +13,18 @@ from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
-from sqlalchemy.orm import Session, Query
-
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.tasks import DatabaseTask, celery_app
-from fides.api.util.storage_util import storage_json_encoder
-from fides.api.util.wrappers import sync
+from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import (
     ActionDisabled,
     CollectionDisabled,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
+    PrivacyRequestNotFound,
     PrivacyRequestPaused,
+    PrivacyRequestTaskNotFound,
     SkippingConsentPropagation,
     TraversalError,
-    PrivacyRequestNotFound,
-    PrivacyRequestTaskNotFound,
 )
 from fides.api.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -46,12 +41,13 @@ from fides.api.graph.config import (
 from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
-from fides.api.models.policy import Policy, CurrentStep
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
-    PrivacyRequestTask,
     PrivacyRequestStatus,
+    PrivacyRequestTask,
     TaskStatus,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
@@ -61,6 +57,7 @@ from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
+from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
     NodeInput,
@@ -72,6 +69,8 @@ from fides.api.util.collection_util import (
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.wrappers import sync
 from fides.config import CONFIG
 
 dask.config.set(scheduler="threads")
@@ -205,9 +204,11 @@ def mark_current_and_downstream_nodes_as_failed(
     privacy_request_task.status = TaskStatus.error
     db.add(privacy_request_task)
     for descendant_addr in privacy_request_task.all_descendants:
-        descendant: Optional[
-            PrivacyRequestTask
-        ] = privacy_request_task.get_related_task(db, descendant_addr).filter(PrivacyRequestTask.status==TaskStatus.pending).first()
+        descendant: Optional[PrivacyRequestTask] = (
+            privacy_request_task.get_related_task(db, descendant_addr)
+            .filter(PrivacyRequestTask.status == TaskStatus.pending)
+            .first()
+        )
         if not descendant:
             continue
         descendant.status = TaskStatus.error
@@ -872,11 +873,15 @@ def create_or_update_privacy_request_task_objects(
     ready_tasks: List[PrivacyRequestTask] = []
 
     for node in graph.nodes():
-        existing_task = session.query(PrivacyRequestTask).filter(
-            PrivacyRequestTask.privacy_request_id == privacy_request.id,
-            PrivacyRequestTask.action_type == PrivacyRequestTask.action_type,
-            PrivacyRequestTask.collection_address == node.value
-        ).first()
+        existing_task = (
+            session.query(PrivacyRequestTask)
+            .filter(
+                PrivacyRequestTask.privacy_request_id == privacy_request.id,
+                PrivacyRequestTask.action_type == PrivacyRequestTask.action_type,
+                PrivacyRequestTask.collection_address == node.value,
+            )
+            .first()
+        )
 
         if existing_task:
             if existing_task.status == TaskStatus.error:
@@ -905,7 +910,8 @@ def create_or_update_privacy_request_task_objects(
                     "action_type": action_type,
                     "collection_address": node.value,
                     "all_descendants": [
-                        descend.value for descend in list(networkx.descendants(graph, node))
+                        descend.value
+                        for descend in list(networkx.descendants(graph, node))
                     ],
                 },
             )
@@ -989,16 +995,22 @@ def run_node(
                 traversal.traverse(env, collect_tasks_fn)
 
                 if graph_task_key == TERMINATOR_ADDRESS:
+                    # For the terminator node, collect all of the results
                     final_results: Dict = {}
-                    for task in privacy_request.access_tasks.filter(PrivacyRequestTask.status == PrivacyRequestStatus.complete, PrivacyRequestTask.collection_address.notin_([ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value])):
+                    for task in privacy_request.access_tasks.filter(
+                        PrivacyRequestTask.status == PrivacyRequestStatus.complete,
+                        PrivacyRequestTask.collection_address.notin_(
+                            [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+                        ),
+                    ):
                         final_results[task.collection_address] = task.data
 
                     request_task.terminator_data = final_results
                 else:
+                    # For regular nodes, store the data on the node
                     func = env[graph_task_key].access_request
                     env[graph_task_key].privacy_request_task = request_task
                     results: List[Row] = func(*upstream_data)
-                    logger.info(f"RESULTS FOR {graph_task_key} {results}")
                     for row in results:
                         for key, val in row.items():
                             row[key] = storage_json_encoder(val)
@@ -1012,6 +1024,7 @@ def run_node(
                 f"Cannot start Privacy Request Task {request_task.id} {request_task.collection_address} - status is {request_task.status}"
             )
 
+        # If there are other downstream tasks that are ready to go, queue those now
         pending_downstream_tasks: Query = request_task.pending_downstream_tasks(session)
         for downstream_task in pending_downstream_tasks:
             if downstream_task.upstream_tasks_complete(session):
@@ -1023,6 +1036,8 @@ def run_node(
             else:
                 logger.info(f"Upstream tasks not completed for {downstream_task.id}")
 
+        # If we've made it to the terminator node, requeue the entire Privacy request to continue where we left off,
+        # by uploading the current access results.
         if graph_task_key == TERMINATOR_ADDRESS:
             from fides.api.service.privacy_request.request_runner_service import (
                 queue_privacy_request,

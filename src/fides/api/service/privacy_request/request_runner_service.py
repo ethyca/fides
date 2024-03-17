@@ -22,7 +22,7 @@ from fides.api.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fides.api.graph.config import CollectionAddress, GraphDataset, TERMINATOR_ADDRESS
+from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress, GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import (
@@ -42,9 +42,9 @@ from fides.api.models.policy import (
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
+    PrivacyRequestTask,
     ProvidedIdentityType,
     can_run_checkpoint,
-    PrivacyRequestTask,
 )
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import (
@@ -65,11 +65,11 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import (
+    filter_by_enabled_actions,
     get_cached_data_for_erasures,
     run_access_request,
     run_consent_request,
     run_erasure,
-    filter_by_enabled_actions,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler

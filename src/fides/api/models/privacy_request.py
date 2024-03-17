@@ -11,6 +11,7 @@ from celery.result import AsyncResult
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import (
+    ARRAY,
     Boolean,
     Column,
     DateTime,
@@ -18,12 +19,11 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
-    ARRAY,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Session, backref, relationship, Query, RelationshipProperty
+from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
@@ -1498,13 +1498,10 @@ class PrivacyRequestTask(Base):
     def get_related_task(
         self, db: Session, collection_address_str: str
     ) -> Optional[PrivacyRequestTask]:
-        return (
-            db.query(PrivacyRequestTask)
-            .filter(
-                PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
-                PrivacyRequestTask.action_type == self.action_type,
-                PrivacyRequestTask.collection_address == collection_address_str,
-            )
+        return db.query(PrivacyRequestTask).filter(
+            PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
+            PrivacyRequestTask.action_type == self.action_type,
+            PrivacyRequestTask.collection_address == collection_address_str,
         )
 
     def pending_downstream_tasks(self, db: Session) -> Query:
