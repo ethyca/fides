@@ -63,7 +63,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
-    ProvidedIdentityType,
+    ProvidedIdentityType, PrivacyRequestTask,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
@@ -87,7 +87,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
     RowCountRequest,
-    VerificationCode,
+    VerificationCode, PrivacyRequestTaskSchema,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service._verification import send_verification_code_to_user
@@ -142,7 +142,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
-    V1_URL_PREFIX,
+    V1_URL_PREFIX, REQUEST_STATUS_TASKS,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -1918,3 +1918,22 @@ def _process_privacy_request_restart(
     )
 
     return privacy_request  # type: ignore[return-value]
+
+
+@router.get(
+    REQUEST_STATUS_TASKS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=List[PrivacyRequestTaskSchema],
+)
+def get_individual_privacy_request_tasks(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> List[PrivacyRequestTask]:
+    """Returns Privacy Request Tasks in order by creation
+
+    """
+    pr = get_privacy_request_or_error(db, privacy_request_id)
+
+    return pr.request_tasks.order_by(PrivacyRequestTask.created_at.asc()).all()
+

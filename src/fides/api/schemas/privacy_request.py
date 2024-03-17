@@ -10,7 +10,7 @@ from fides.api.models.audit_log import AuditLogAction
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
-    PrivacyRequestStatus,
+    PrivacyRequestStatus, TaskStatus,
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -134,6 +134,19 @@ class ExecutionLogResponse(FidesSchema):
 
         orm_mode = True
         use_enum_values = True
+
+
+class PrivacyRequestTaskSchema(FidesSchema):
+    """Schema for Privacy Request Tasks, which are individual nodes that are queued"""
+
+    id: str
+    collection_address: str
+    status: TaskStatus
+    created_at: datetime
+    updated_at: datetime
+    upstream_tasks: List[str]
+    downstream_tasks: List[str]
+    action_type: ActionType
 
 
 class ExecutionLogDetailResponse(ExecutionLogResponse):
