@@ -8,6 +8,7 @@ from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
+import networkx
 from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
@@ -1159,148 +1160,85 @@ def run_access_request(
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        def termination_fn(
-            *dependent_values: List[Row],
-        ) -> Dict[str, Optional[List[Row]]]:
-            """A termination function that just returns its inputs mapped to their source addresses.
-            This needs to wait for all dependent keys because this is how dask is informed to wait for
-            all terminating addresses before calling this."""
-
-            return resources.get_all_cached_objects()
-
         env: Dict[CollectionAddress, Any] = {}
         # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
         end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
-        dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
-            k: (t.access_request, *t.input_keys) for k, t in env.items()
-        }
 
-        dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-        update_mapping_from_cache(dsk, resources, start_function)
-
-        created_privacy_request_tasks = add_privacy_request_tasks(session, privacy_request, traversal, env, end_nodes, ActionType.access)
+        created_privacy_request_tasks = create_privacy_request_task_objects(session, privacy_request, traversal, env, end_nodes, ActionType.access)
         for task in created_privacy_request_tasks:
             if task.upstream_tasks_complete(session):
                 logger.info(f"Queuing task {privacy_request.id} > {task.id}: {task.collection_address}")
                 run_node.delay(privacy_request.id, task.id)
 
-        return
-
-        # TODO REMOVE
-        # await fideslog_graph_rerun(
-        #     prepare_rerun_graph_analytics_event(
-        #         privacy_request, env, end_nodes, resources, ActionType.access
-        #     )
-        # )
-
-        # cache access graph for use in logging/analytics event
-        # privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
-
+        # TODO What is this for?
         # cache a map of collections -> data uses for the output package of access requests
         # this is cached here before request execution, since this is the state of the
         # graph used for request execution. the graph could change _during_ request execution,
         # but we don't want those changes in our data use map.
-        # TODO What is this for?
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
-        # v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-        # access_results = v.compute()
-        # filtered_access_results = filter_by_enabled_actions(
-        #     access_results, connection_configs
-        # )
-        # return filtered_access_results
+        return
 
 
-def add_privacy_request_tasks(session: Session, privacy_request: PrivacyRequest, traversal: Traversal, env: Dict[CollectionAddress, Any], end_nodes: List[CollectionAddress], action_type: ActionType):
+def build_networkx_digraph(env: Dict[CollectionAddress, Any], end_nodes: List[CollectionAddress], traversal: Traversal) -> networkx.DiGraph:
+    """
+    Builds a networkx graph to get consistent formatting of upstream/downstream nodes, regardless of whether the node
+    is an actual node, or a "root"/"terminator" node.
+
+    Primarily though, we can utilize networkx's "descendants" method to pre-calculate every downstream node that
+    can be reached by each current node
+    """
+    first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
+
+    networkx_graph = networkx.DiGraph()
+    networkx_graph.add_nodes_from(env.keys())
+    networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
+
+    for node in [CollectionAddress(initial_node.dataset, initial_node.collection) for initial_node in first_nodes]:
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node)
+
+    for collection_address, graph_task in env.items():
+        traversal_node = graph_task.traversal_node
+        for child in traversal_node.children:
+            networkx_graph.add_edge(collection_address, child)
+
+    for node in end_nodes:
+        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+
+    return networkx_graph
+
+
+def create_privacy_request_task_objects(session: Session, privacy_request: PrivacyRequest, traversal: Traversal, env: Dict[CollectionAddress, Any], end_nodes: List[CollectionAddress], action_type: ActionType):
     """Add PrivacyRequestTasks to the database
 
     There should only be one "completed" task for each node.
     """
-
+    graph: networkx.DiGraph = build_networkx_digraph(env, end_nodes, traversal)
     existing_tasks: Query = session.query(PrivacyRequestTask).filter(
         PrivacyRequestTask.privacy_request_id == privacy_request.id,
-        PrivacyRequestTask.status == PrivacyRequestStatus.complete
+        PrivacyRequestTask.status == PrivacyRequestStatus.complete,
+        PrivacyRequestTask.action_type == PrivacyRequestTask.action_type
     )
     created_tasks: List[PrivacyRequestTask] = []
 
-    def create_task(dataset_name, collection_name, upstream_tasks, downstream_tasks, status, data, action_type, connection_key, incoming_edges_dict=None, grouped_fields=None, dependent_identity_fields=False, collection={}):
+    for node in graph.nodes():
         for completed_task in existing_tasks:
-            if completed_task.dataset_name == dataset_name and completed_task.collection_name == collection_name:
-                return None
+            if completed_task.dataset_name == node.dataset and completed_task.collection_name == node.collection:
+                continue
 
-        return PrivacyRequestTask.create(session, data={
+        task = PrivacyRequestTask.create(session, data={
             "privacy_request_id": privacy_request.id,
-            "upstream_tasks": upstream_tasks,
-            "downstream_tasks": downstream_tasks,
-            "dataset_name": dataset_name,
-            "collection_name": collection_name,
-            "status": status,
-            "data": data,
+            "upstream_tasks": [upstream.value for upstream in graph.predecessors(node)],
+            "downstream_tasks": [downstream.value for downstream in graph.successors(node)],
+            "dataset_name": node.dataset,
+            "collection_name": node.collection,
+            "status": TaskStatus.complete if node == ROOT_COLLECTION_ADDRESS else TaskStatus.pending,
+            "data": [traversal.seed_data] if node == ROOT_COLLECTION_ADDRESS else [],
             "action_type": action_type,
-            "collection_address": f"{dataset_name}:{collection_name}",
-            "connection_config_key": connection_key,
-            "incoming_edges": incoming_edges_dict or {},
-            "grouped_fields": grouped_fields or [],
-            "dependent_identity_fields": dependent_identity_fields,
-            "collection": collection
+            "collection_address": node.value,
+            "all_descendants": [descend.value for descend in list(networkx.descendants(graph, node))]
         })
-
-    # Adding root node with complete status and identity data
-    first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
-    created_root_task: Optional[PrivacyRequestTask] = create_task(
-        dataset_name=ROOT_COLLECTION_ADDRESS.dataset,
-        collection_name=ROOT_COLLECTION_ADDRESS.collection,
-        upstream_tasks=[],
-        downstream_tasks=list({f"{initial_node.dataset}:{initial_node.collection}" for initial_node in first_nodes}),
-        status=TaskStatus.complete,
-        data=[traversal.seed_data],
-        action_type=action_type,
-        connection_key=None
-    )
-
-    for collection_address, graph_task in env.items():
-        traversal_node: TraversalNode = graph_task.traversal_node
-        downstream_nodes: Dict[CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]] = traversal_node.children
-        if collection_address in end_nodes:
-            downstream_nodes = {TERMINATOR_ADDRESS: []}
-        upstream_nodes: Dict[CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]] = traversal_node.parents
-
-        incoming_edges_dict: Dict[str, List] = {}
-        for col_address, edges in graph_task.incoming_edges_by_collection.items():
-            incoming_edges_dict[col_address.value] = [[edge.f1.value, edge.f2.value] for edge in edges]
-
-        created_task: Optional[PrivacyRequestTask] = create_task(
-            dataset_name=collection_address.dataset,
-            collection_name=collection_address.collection,
-            upstream_tasks=[upstream_node.value for upstream_node in upstream_nodes],
-            downstream_tasks=[downstream_node.value for downstream_node in downstream_nodes],
-            status=TaskStatus.pending,
-            data=None,
-            action_type=action_type,
-            connection_key=traversal_node.node.dataset.connection_key,
-            incoming_edges_dict=incoming_edges_dict,
-            grouped_fields=graph_task.grouped_fields,
-            dependent_identity_fields=graph_task.dependent_identity_fields,
-            # TODO a lot more work to serialize this collection properly
-            # collection=traversal_node.node.collection.dict()
-        )
-        if created_task:
-            created_tasks.append(created_task)
-
-    # Adding terminator node with no downstream nodes
-    created_task: Optional[PrivacyRequestTask] = create_task(
-        dataset_name=TERMINATOR_ADDRESS.dataset,
-        collection_name=TERMINATOR_ADDRESS.collection,
-        upstream_tasks=[upstream_node.value for upstream_node in end_nodes],
-        downstream_tasks=[],
-        status=TaskStatus.pending,
-        data=None,
-        action_type=action_type,
-        connection_key=None
-    )
-    if created_task:
-        created_tasks.append(created_task)
+        created_tasks.append(task)
 
     return created_tasks
 
@@ -1331,6 +1269,7 @@ def run_node(
             upstream_results: Query = session.query(PrivacyRequestTask).filter(
                 PrivacyRequestTask.privacy_request_id == privacy_request_id,
                 PrivacyRequestTask.status == PrivacyRequestStatus.complete,
+                PrivacyRequestTask.action_type == request_task.action_type,
                 PrivacyRequestTask.collection_address.in_(request_task.upstream_tasks)
             )
 
@@ -1342,20 +1281,18 @@ def run_node(
             # TODO entering downstream nodes unordred
             upstream_data = [upstream.data if upstream.data else [] for upstream in upstream_results]
 
-            if request_task.collection_name == "address":
-                logger.info(f"Upstream data for address {upstream_data}")
+            datasets = DatasetConfig.all(db=session)
+            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+            dataset_graph = DatasetGraph(*dataset_graphs)
+            traversal: Traversal = Traversal(dataset_graph, privacy_request.get_cached_identity_data())
+            task_resources = TaskResources(
+                privacy_request, privacy_request.policy, session.query(ConnectionConfig).all(), session
+            )
 
             if request_task.action_type == ActionType.access:
                 logger.info(
                     f"Running access request task {request_task.id}:{request_task.collection_address} for privacy request {privacy_request.id}")
 
-                datasets = DatasetConfig.all(db=session)
-                dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-                dataset_graph = DatasetGraph(*dataset_graphs)
-                traversal: Traversal = Traversal(dataset_graph, privacy_request.get_cached_identity_data())
-                task_resources = TaskResources(
-                    privacy_request, privacy_request.policy, session.query(ConnectionConfig).all(), session
-                )
                 def collect_tasks_fn(
                         tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
                 ) -> None:
@@ -1383,8 +1320,7 @@ def run_node(
                         for row in rows:
                             for key, val in row.items():
                                 row[key] = storage_json_encoder(val)
-                    # TODO store final results elsewhere, not in the same column as the data
-                    results = [intermediate_results]
+                    request_task.terminator_data = intermediate_results
                 else:
                     func = env[graph_task_key].access_request
                     results: List[Row] = func(*upstream_data)
@@ -1392,8 +1328,8 @@ def run_node(
                     for row in results:
                         for key, val in row.items():
                             row[key] = storage_json_encoder(val)
+                    request_task.data = results
 
-                request_task.data = results
                 request_task.status = TaskStatus.complete
                 request_task.save(session)
 
@@ -1403,16 +1339,8 @@ def run_node(
             )
 
         pending_downstream_tasks: Query = request_task.pending_downstream_tasks(session)
-        logger.info(
-            f"DOWNSTREAM TASKS {[downstream_task.collection_address for downstream_task in pending_downstream_tasks]}")
         for downstream_task in pending_downstream_tasks:
-            upstream_tasks: Query = session.query(PrivacyRequestTask).filter(
-                PrivacyRequestTask.privacy_request_id == privacy_request_id,
-                PrivacyRequestTask.collection_address.in_(downstream_task.upstream_tasks)
-            ).all()
-            logger.info(f"UPSTREAM TASKS of {downstream_task.collection_address}: {[(task.collection_address, task.status)for task in upstream_tasks]}")
             if downstream_task.upstream_tasks_complete(session):
-                logger.info(f"QUEUING Node {downstream_task.collection_address} after completion of Node {graph_task_key}")
                 run_node.delay(privacy_request_id=privacy_request_id, privacy_request_task_id=downstream_task.id)
 
         if graph_task_key == TERMINATOR_ADDRESS:
@@ -1422,6 +1350,7 @@ def run_node(
                 privacy_request_id=privacy_request.id,
                 from_step=CurrentStep.upload_access.value,
             )
+
 
 def filter_by_enabled_actions(
     access_results: Dict[str, Any], connection_configs: List[ConnectionConfig]

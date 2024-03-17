@@ -135,6 +135,8 @@ class SQLConnector(BaseConnector[Engine]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
+        # if node.address.collection == "payment_card":
+        #     raise Exception()
         query_config = self.query_config(node)
         client = self.client()
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)

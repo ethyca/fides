@@ -43,7 +43,8 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentityType,
-    can_run_checkpoint, PrivacyRequestTask,
+    can_run_checkpoint,
+    PrivacyRequestTask,
 )
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import (
@@ -67,7 +68,8 @@ from fides.api.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
     run_consent_request,
-    run_erasure, filter_by_enabled_actions,
+    run_erasure,
+    filter_by_enabled_actions,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -405,14 +407,22 @@ def run_privacy_request(
                 policy.get_rules_for_action(action_type=ActionType.access)
                 or policy.get_rules_for_action(action_type=ActionType.erasure)
             ) and can_run_checkpoint(
-                request_checkpoint=CurrentStep.upload_access, from_checkpoint=resume_step
+                request_checkpoint=CurrentStep.upload_access,
+                from_checkpoint=resume_step,
             ):
                 # TODO Terminator task must exist and must be in state done
-                terminator_task = session.query(PrivacyRequestTask).filter(
-                    PrivacyRequestTask.privacy_request_id==privacy_request.id,
-                    PrivacyRequestTask.collection_address==TERMINATOR_ADDRESS.value
-                ).first()
-                access_results = terminator_task.data[0] if terminator_task.data else {}
+                terminator_task = (
+                    session.query(PrivacyRequestTask)
+                    .filter(
+                        PrivacyRequestTask.privacy_request_id == privacy_request.id,
+                        PrivacyRequestTask.collection_address
+                        == TERMINATOR_ADDRESS.value,
+                        PrivacyRequestTask.action_type == ActionType.access,
+                    )
+                    .first()
+                )
+                access_results = terminator_task.terminator_data or {}
+                logger.info(f"SUCCESSFUL ACCESS REQUEST: {access_results}")
 
                 filtered_access_results = filter_by_enabled_actions(
                     access_results, connection_configs

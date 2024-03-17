@@ -17,7 +17,8 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    UniqueConstraint, ARRAY,
+    UniqueConstraint,
+    ARRAY,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -1423,16 +1424,21 @@ class PrivacyRequestTask(Base):
     TODO should we FK to upstream/downstream tasks or just reference by name?
     Name is simpler
     """
+
     privacy_request_id = Column(
         String,
         ForeignKey(PrivacyRequest.id_field_path, ondelete="SET NULL"),
         nullable=False,
     )
     upstream_tasks = Column(MutableList.as_mutable(JSONB), server_default="{}")
-    downstream_tasks = Column(MutableList.as_mutable(JSONB),  server_default="{}")
+    downstream_tasks = Column(MutableList.as_mutable(JSONB), server_default="{}")
+    all_descendants = Column(MutableList.as_mutable(JSONB), server_default="{}")
+
     collection_name = Column(String, nullable=False)
     dataset_name = Column(String, nullable=False)
-    collection_address = Column(String, nullable=False)  # Of the format dataset_name:collection_name for convenience
+    collection_address = Column(
+        String, nullable=False
+    )  # Of the format dataset_name:collection_name for convenience
     status = Column(
         EnumColumn(TaskStatus),
         index=True,
@@ -1446,11 +1452,26 @@ class PrivacyRequestTask(Base):
         nullable=True,
     )
 
+    # The final data stored for a terminator node
+    terminator_data = Column(
+        MutableDict.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                CONFIG.security.app_encryption_key,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=True,
+    )  # Type bytea in the db
+
+    # Tentative fields - so we can store calculated fields upfront when the node
+    # is created without having to recalculate later - TODO
     connection_config_key = Column(String)
     # {"collection_address": [["from_field_address", "to_field_address"]]}
     incoming_edges = Column(MutableDict.as_mutable(JSONB))
-    grouped_fields = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
-    dependent_identity_fields = Column(Boolean, nullable=False)
+    grouped_fields = Column(ARRAY(String), server_default="{}", default=dict)
+    dependent_identity_fields = Column(Boolean)
     collection = Column(MutableDict.as_mutable(JSONB))
 
     privacy_request = relationship(
@@ -1459,18 +1480,26 @@ class PrivacyRequestTask(Base):
     )
 
     def pending_downstream_tasks(self, db: Session) -> Query:
+        """Returns the immediate downstream task objects that are still pending"""
         return db.query(PrivacyRequestTask).filter(
             PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
             PrivacyRequestTask.status == TaskStatus.pending,
-            PrivacyRequestTask.collection_address.in_(self.downstream_tasks)
+            PrivacyRequestTask.action_type == self.action_type,
+            PrivacyRequestTask.collection_address.in_(self.downstream_tasks),
         )
 
     def upstream_tasks_complete(self, db) -> bool:
-        upstream_tasks: Query = db.query(PrivacyRequestTask).filter(
-            PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
-            PrivacyRequestTask.collection_address.in_(self.upstream_tasks)
-        ).all()
-        return all(upstream_task.status == TaskStatus.complete for upstream_task in upstream_tasks)
-
-
-
+        """Determines if a given task is ready to run"""
+        upstream_tasks: Query = (
+            db.query(PrivacyRequestTask)
+            .filter(
+                PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
+                PrivacyRequestTask.collection_address.in_(self.upstream_tasks),
+                PrivacyRequestTask.action_type == self.action_type,
+            )
+            .all()
+        )
+        return all(
+            upstream_task.status == TaskStatus.complete
+            for upstream_task in upstream_tasks
+        )
