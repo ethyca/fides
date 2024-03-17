@@ -872,7 +872,7 @@ def create_privacy_request_task_objects(
 
     ready_tasks: List[PrivacyRequestTask] = []
 
-    for node in graph.nodes():
+    for node in list(networkx.topological_sort(graph)):
         existing_completed_task = (
             session.query(PrivacyRequestTask)
             .filter(
