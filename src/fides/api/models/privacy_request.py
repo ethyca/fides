@@ -41,7 +41,7 @@ from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_s
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
-from fides.api.graph.config import CollectionAddress
+from fides.api.graph.config import CollectionAddress, TERMINATOR_ADDRESS
 from fides.api.graph.graph_differences import GraphRepr
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
@@ -978,6 +978,20 @@ class PrivacyRequest(
         return self.request_tasks.filter(
             PrivacyRequestTask.action_type == ActionType.access
         )
+
+    def get_access_data(self, db: Session) -> Dict:
+        """Get data written by the access graph"""
+        terminator_task = db.query(PrivacyRequestTask).filter(
+            PrivacyRequestTask.privacy_request_id == self.id,
+            PrivacyRequestTask.collection_address
+            == TERMINATOR_ADDRESS.value,
+            PrivacyRequestTask.action_type == ActionType.access,
+            PrivacyRequestTask.status == TaskStatus.complete,
+        ).first()
+
+        if terminator_task:
+            return terminator_task.terminator_data or {}
+        return {}
 
 
 class PrivacyRequestError(Base):

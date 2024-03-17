@@ -412,18 +412,7 @@ def run_privacy_request(
                 from_checkpoint=resume_step,
             ):
                 # TODO Terminator task must exist and must be in state done
-                terminator_task = (
-                    session.query(PrivacyRequestTask)
-                    .filter(
-                        PrivacyRequestTask.privacy_request_id == privacy_request.id,
-                        PrivacyRequestTask.collection_address
-                        == TERMINATOR_ADDRESS.value,
-                        PrivacyRequestTask.action_type == ActionType.access,
-                        PrivacyRequestTask.status == TaskStatus.complete,
-                    )
-                    .first()
-                )
-                access_results = terminator_task.terminator_data or {}
+                access_results = privacy_request.get_access_data(session)
                 logger.info(f"SUCCESSFUL ACCESS REQUEST: {access_results}")
 
                 filtered_access_results = filter_by_enabled_actions(

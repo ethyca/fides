@@ -142,7 +142,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
-    V1_URL_PREFIX, REQUEST_STATUS_TASKS,
+    V1_URL_PREFIX, REQUEST_STATUS_TASKS, PRIVACY_REQUEST_DATA,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -1937,3 +1937,25 @@ def get_individual_privacy_request_tasks(
 
     return pr.request_tasks.order_by(PrivacyRequestTask.created_at.asc()).all()
 
+
+@router.get(
+    PRIVACY_REQUEST_DATA,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
+    response_model=Dict,
+)
+def get_task_data(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """Returns data collected from all the privacy request tasks
+
+    Note this is currently everything collected by the access request graph
+    - It should be further filtered by the policy
+    - Manually uploaded data is not included here
+    """
+    pr = get_privacy_request_or_error(db, privacy_request_id)
+    logger.info(f"Getting privacy request '{privacy_request_id}' data")
+    data = pr.get_access_data(db)
+    logger.info(f"Getting '{data}' data")
+    return data
