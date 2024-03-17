@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from asyncio import sleep
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
@@ -9,13 +9,20 @@ from loguru import logger
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.models.privacy_request import (
+    PrivacyRequest,
+    PrivacyRequestStatus,
+    PrivacyRequestTask,
+    TaskStatus,
+)
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
@@ -137,3 +144,38 @@ async def poll_server_for_completion(
     raise TimeoutError(
         f"Timeout of {timeout_seconds} seconds has been exceeded while waiting for privacy request {privacy_request_id}"
     )
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def poll_for_exited_privacy_request_tasks(self):
+    """Look for Privacy Requests whose Tasks are in a mixture of Error/Complete and mark as error.
+
+    Want to wait to do this until all tasks have had a chance to run
+    """
+    with self.get_new_session() as db:
+        logger.info("Polling for in-progress privacy requests")
+        in_progress_privacy_requests = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.status == PrivacyRequestStatus.in_processing)
+            .order_by(PrivacyRequest.created_at)
+        )
+
+        for pr in in_progress_privacy_requests.all():
+            if pr.erasure_tasks.count():
+                """These are not created until access tasks are created."""
+                # TODO handle erasure
+
+            elif pr.access_tasks.count():
+                if all(
+                    tsk.status in [TaskStatus.complete, TaskStatus.error]
+                    for tsk in pr.access_tasks
+                ):
+                    logger.info(f"Marking access step of {pr.id} as error")
+                    pr.status = PrivacyRequestStatus.error
+                    pr.save(db)
+
+        scheduler.add_job(
+            poll_for_exited_privacy_request_tasks,
+            trigger="date",
+            next_run_time=datetime.now() + timedelta(seconds=60),
+        )

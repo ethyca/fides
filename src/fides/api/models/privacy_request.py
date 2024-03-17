@@ -23,7 +23,8 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Session, backref, relationship, Query
+from sqlalchemy.orm import Session, backref, relationship, Query, RelationshipProperty
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -285,6 +286,13 @@ class PrivacyRequest(
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[property] = None
     resume_endpoint: Optional[str] = None
+
+    request_tasks: RelationshipProperty[AppenderQuery] = relationship(
+        "PrivacyRequestTask",
+        backref="privacy_request",
+        lazy="dynamic",
+        order_by="PrivacyRequestTask.created_at",
+    )
 
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
@@ -958,6 +966,18 @@ class PrivacyRequest(
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
         return {LoggerContextKeys.privacy_request_id: self.id}
 
+    @property
+    def erasure_tasks(self):
+        return self.request_tasks.filter(
+            PrivacyRequestTask.action_type == ActionType.erasure
+        )
+
+    @property
+    def access_tasks(self):
+        return self.request_tasks.filter(
+            PrivacyRequestTask.action_type == ActionType.access
+        )
+
 
 class PrivacyRequestError(Base):
     """The DB ORM model to track PrivacyRequests error message status."""
@@ -1417,6 +1437,7 @@ class TaskStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     error = "error"
+    skipped = "skipped"
 
 
 class PrivacyRequestTask(Base):
@@ -1474,10 +1495,18 @@ class PrivacyRequestTask(Base):
     dependent_identity_fields = Column(Boolean)
     collection = Column(MutableDict.as_mutable(JSONB))
 
-    privacy_request = relationship(
-        PrivacyRequest,
-        backref="request_tasks",
-    )
+    def get_related_task(
+        self, db: Session, collection_address_str: str
+    ) -> Optional[PrivacyRequestTask]:
+        return (
+            db.query(PrivacyRequestTask)
+            .filter(
+                PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
+                PrivacyRequestTask.action_type == self.action_type,
+                PrivacyRequestTask.collection_address == collection_address_str,
+            )
+            .first()
+        )
 
     def pending_downstream_tasks(self, db: Session) -> Query:
         """Returns the immediate downstream task objects that are still pending"""
