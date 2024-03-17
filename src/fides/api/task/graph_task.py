@@ -966,7 +966,7 @@ def run_node(
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
             dataset_graph = DatasetGraph(*dataset_graphs)
             traversal: Traversal = Traversal(
-                dataset_graph, privacy_request.get_cached_identity_data()
+                dataset_graph, privacy_request.get_persisted_identity().dict()
             )
             task_resources = TaskResources(
                 privacy_request,
