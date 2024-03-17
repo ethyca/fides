@@ -44,6 +44,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
     PrivacyRequestTask,
     ProvidedIdentityType,
+    TaskStatus,
     can_run_checkpoint,
 )
 from fides.api.schemas.base_class import FidesSchema
@@ -380,7 +381,7 @@ def run_privacy_request(
             datasets = DatasetConfig.all(db=session)
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
             dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = privacy_request.get_cached_identity_data()
+            identity_data = privacy_request.get_persisted_identity().dict()
             connection_configs = ConnectionConfig.all(db=session)
             fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
                 connection_configs
@@ -418,6 +419,7 @@ def run_privacy_request(
                         PrivacyRequestTask.collection_address
                         == TERMINATOR_ADDRESS.value,
                         PrivacyRequestTask.action_type == ActionType.access,
+                        PrivacyRequestTask.status == TaskStatus.complete,
                     )
                     .first()
                 )

@@ -19,6 +19,7 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -1516,15 +1517,18 @@ class PrivacyRequestTask(Base):
     def upstream_tasks_complete(self, db) -> bool:
         """Determines if a given task is ready to run"""
         upstream_tasks: Query = (
-            db.query(PrivacyRequestTask)
+            db.query(
+                PrivacyRequestTask.collection_address,
+                func.bool_or(PrivacyRequestTask.status == TaskStatus.complete).label(
+                    "one_complete_run"
+                ),
+            )
             .filter(
                 PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
                 PrivacyRequestTask.collection_address.in_(self.upstream_tasks),
                 PrivacyRequestTask.action_type == self.action_type,
             )
+            .group_by(PrivacyRequestTask.collection_address)
             .all()
         )
-        return all(
-            upstream_task.status == TaskStatus.complete
-            for upstream_task in upstream_tasks
-        )
+        return all(upstream_task.one_complete_run for upstream_task in upstream_tasks)

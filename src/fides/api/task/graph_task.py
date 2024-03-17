@@ -799,7 +799,7 @@ def run_access_request(
         # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
         end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
 
-        created_privacy_request_tasks = create_or_update_privacy_request_task_objects(
+        created_privacy_request_tasks = create_privacy_request_task_objects(
             session, privacy_request, traversal, env, end_nodes, ActionType.access
         )
         for task in created_privacy_request_tasks:
@@ -854,7 +854,7 @@ def build_networkx_digraph(
     return networkx_graph
 
 
-def create_or_update_privacy_request_task_objects(
+def create_privacy_request_task_objects(
     session: Session,
     privacy_request: PrivacyRequest,
     traversal: Traversal,
@@ -864,7 +864,7 @@ def create_or_update_privacy_request_task_objects(
 ):
     """Add PrivacyRequestTasks to the database or update existing Privacy Request tasks to a pending status
 
-    There should only be one task for each node of each action type.
+    There should only be one completed task for each node of each action type.
 
     This should only be called if a PrivacyRequest is in a pending or errored state.
     """
@@ -873,49 +873,46 @@ def create_or_update_privacy_request_task_objects(
     ready_tasks: List[PrivacyRequestTask] = []
 
     for node in graph.nodes():
-        existing_task = (
+        existing_completed_task = (
             session.query(PrivacyRequestTask)
             .filter(
                 PrivacyRequestTask.privacy_request_id == privacy_request.id,
                 PrivacyRequestTask.action_type == PrivacyRequestTask.action_type,
                 PrivacyRequestTask.collection_address == node.value,
+                PrivacyRequestTask.status == TaskStatus.complete,
             )
             .first()
         )
 
-        if existing_task:
-            if existing_task.status == TaskStatus.error:
-                existing_task.status = TaskStatus.pending
-                existing_task.save(session)
-                ready_tasks.append(existing_task)
-        else:
-            task = PrivacyRequestTask.create(
-                session,
-                data={
-                    "privacy_request_id": privacy_request.id,
-                    "upstream_tasks": [
-                        upstream.value for upstream in graph.predecessors(node)
-                    ],
-                    "downstream_tasks": [
-                        downstream.value for downstream in graph.successors(node)
-                    ],
-                    "dataset_name": node.dataset,
-                    "collection_name": node.collection,
-                    "status": TaskStatus.complete
-                    if node == ROOT_COLLECTION_ADDRESS
-                    else TaskStatus.pending,
-                    "data": [traversal.seed_data]
-                    if node == ROOT_COLLECTION_ADDRESS
-                    else [],
-                    "action_type": action_type,
-                    "collection_address": node.value,
-                    "all_descendants": [
-                        descend.value
-                        for descend in list(networkx.descendants(graph, node))
-                    ],
-                },
-            )
-            ready_tasks.append(task)
+        if existing_completed_task:
+            continue
+
+        task = PrivacyRequestTask.create(
+            session,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "upstream_tasks": [
+                    upstream.value for upstream in graph.predecessors(node)
+                ],
+                "downstream_tasks": [
+                    downstream.value for downstream in graph.successors(node)
+                ],
+                "dataset_name": node.dataset,
+                "collection_name": node.collection,
+                "status": TaskStatus.complete
+                if node == ROOT_COLLECTION_ADDRESS
+                else TaskStatus.pending,
+                "data": [traversal.seed_data]
+                if node == ROOT_COLLECTION_ADDRESS
+                else [],
+                "action_type": action_type,
+                "collection_address": node.value,
+                "all_descendants": [
+                    descend.value for descend in list(networkx.descendants(graph, node))
+                ],
+            },
+        )
+        ready_tasks.append(task)
 
     return ready_tasks
 
