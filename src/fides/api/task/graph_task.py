@@ -182,6 +182,7 @@ def retry(
                 self.resources.request,
                 self.connector.configuration,
             )
+            # TODO Remove re-raise now that this is happening for just an individual task
             # Re-raise to stop privacy request execution on failure.
             raise raised_ex  # type: ignore
 
@@ -199,12 +200,14 @@ def mark_current_and_downstream_nodes_as_failed(
     if not privacy_request_task:
         return
 
+    logger.info(f"Marking task {privacy_request_task.id} and descendants as errored")
+
     privacy_request_task.status = TaskStatus.error
     db.add(privacy_request_task)
     for descendant_addr in privacy_request_task.all_descendants:
         descendant: Optional[
             PrivacyRequestTask
-        ] = privacy_request_task.get_related_task(db, descendant_addr)
+        ] = privacy_request_task.get_related_task(db, descendant_addr).filter(PrivacyRequestTask.status==TaskStatus.pending).first()
         if not descendant:
             continue
         descendant.status = TaskStatus.error
@@ -795,7 +798,7 @@ def run_access_request(
         # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
         end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
 
-        created_privacy_request_tasks = create_privacy_request_task_objects(
+        created_privacy_request_tasks = create_or_update_privacy_request_task_objects(
             session, privacy_request, traversal, env, end_nodes, ActionType.access
         )
         for task in created_privacy_request_tasks:
@@ -850,7 +853,7 @@ def build_networkx_digraph(
     return networkx_graph
 
 
-def create_privacy_request_task_objects(
+def create_or_update_privacy_request_task_objects(
     session: Session,
     privacy_request: PrivacyRequest,
     traversal: Traversal,
@@ -858,54 +861,57 @@ def create_privacy_request_task_objects(
     end_nodes: List[CollectionAddress],
     action_type: ActionType,
 ):
-    """Add PrivacyRequestTasks to the database
+    """Add PrivacyRequestTasks to the database or update existing Privacy Request tasks to a pending status
 
-    There should only be one "completed" task for each node.
+    There should only be one task for each node of each action type.
+
+    This should only be called if a PrivacyRequest is in a pending or errored state.
     """
     graph: networkx.DiGraph = build_networkx_digraph(env, end_nodes, traversal)
-    existing_tasks: Query = session.query(PrivacyRequestTask).filter(
-        PrivacyRequestTask.privacy_request_id == privacy_request.id,
-        PrivacyRequestTask.status == PrivacyRequestStatus.complete,
-        PrivacyRequestTask.action_type == PrivacyRequestTask.action_type,
-    )
-    created_tasks: List[PrivacyRequestTask] = []
+
+    ready_tasks: List[PrivacyRequestTask] = []
 
     for node in graph.nodes():
-        for completed_task in existing_tasks:
-            if (
-                completed_task.dataset_name == node.dataset
-                and completed_task.collection_name == node.collection
-            ):
-                continue
+        existing_task = session.query(PrivacyRequestTask).filter(
+            PrivacyRequestTask.privacy_request_id == privacy_request.id,
+            PrivacyRequestTask.action_type == PrivacyRequestTask.action_type,
+            PrivacyRequestTask.collection_address == node.value
+        ).first()
 
-        task = PrivacyRequestTask.create(
-            session,
-            data={
-                "privacy_request_id": privacy_request.id,
-                "upstream_tasks": [
-                    upstream.value for upstream in graph.predecessors(node)
-                ],
-                "downstream_tasks": [
-                    downstream.value for downstream in graph.successors(node)
-                ],
-                "dataset_name": node.dataset,
-                "collection_name": node.collection,
-                "status": TaskStatus.complete
-                if node == ROOT_COLLECTION_ADDRESS
-                else TaskStatus.pending,
-                "data": [traversal.seed_data]
-                if node == ROOT_COLLECTION_ADDRESS
-                else [],
-                "action_type": action_type,
-                "collection_address": node.value,
-                "all_descendants": [
-                    descend.value for descend in list(networkx.descendants(graph, node))
-                ],
-            },
-        )
-        created_tasks.append(task)
+        if existing_task:
+            if existing_task.status == TaskStatus.error:
+                existing_task.status = TaskStatus.pending
+                existing_task.save(session)
+                ready_tasks.append(existing_task)
+        else:
+            task = PrivacyRequestTask.create(
+                session,
+                data={
+                    "privacy_request_id": privacy_request.id,
+                    "upstream_tasks": [
+                        upstream.value for upstream in graph.predecessors(node)
+                    ],
+                    "downstream_tasks": [
+                        downstream.value for downstream in graph.successors(node)
+                    ],
+                    "dataset_name": node.dataset,
+                    "collection_name": node.collection,
+                    "status": TaskStatus.complete
+                    if node == ROOT_COLLECTION_ADDRESS
+                    else TaskStatus.pending,
+                    "data": [traversal.seed_data]
+                    if node == ROOT_COLLECTION_ADDRESS
+                    else [],
+                    "action_type": action_type,
+                    "collection_address": node.value,
+                    "all_descendants": [
+                        descend.value for descend in list(networkx.descendants(graph, node))
+                    ],
+                },
+            )
+            ready_tasks.append(task)
 
-    return created_tasks
+    return ready_tasks
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -978,27 +984,16 @@ def run_node(
                     if not tn.is_root_node():
                         data[tn.address] = GraphTask(tn, task_resources)
 
-                def termination_fn(
-                    *dependent_values: List[Row],
-                ) -> Dict[str, Optional[List[Row]]]:
-                    """A termination function that just returns its inputs mapped to their source addresses.
-                    This needs to wait for all dependent keys because this is how dask is informed to wait for
-                    all terminating addresses before calling this."""
-
-                    return task_resources.get_all_cached_objects()
-
                 env: Dict[CollectionAddress, Any] = {}
                 # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
                 traversal.traverse(env, collect_tasks_fn)
 
                 if graph_task_key == TERMINATOR_ADDRESS:
-                    func = termination_fn
-                    intermediate_results: Dict = func(*upstream_data)
-                    for collection, rows in intermediate_results.items():
-                        for row in rows:
-                            for key, val in row.items():
-                                row[key] = storage_json_encoder(val)
-                    request_task.terminator_data = intermediate_results
+                    final_results: Dict = {}
+                    for task in privacy_request.access_tasks.filter(PrivacyRequestTask.status == PrivacyRequestStatus.complete, PrivacyRequestTask.collection_address.notin_([ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value])):
+                        final_results[task.collection_address] = task.data
+
+                    request_task.terminator_data = final_results
                 else:
                     func = env[graph_task_key].access_request
                     env[graph_task_key].privacy_request_task = request_task
@@ -1020,10 +1015,13 @@ def run_node(
         pending_downstream_tasks: Query = request_task.pending_downstream_tasks(session)
         for downstream_task in pending_downstream_tasks:
             if downstream_task.upstream_tasks_complete(session):
+                logger.info(f"Upstream tasks complete so queuing {downstream_task.id}")
                 run_node.delay(
                     privacy_request_id=privacy_request_id,
                     privacy_request_task_id=downstream_task.id,
                 )
+            else:
+                logger.info(f"Upstream tasks not completed for {downstream_task.id}")
 
         if graph_task_key == TERMINATOR_ADDRESS:
             from fides.api.service.privacy_request.request_runner_service import (

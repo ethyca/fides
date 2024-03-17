@@ -1505,7 +1505,6 @@ class PrivacyRequestTask(Base):
                 PrivacyRequestTask.action_type == self.action_type,
                 PrivacyRequestTask.collection_address == collection_address_str,
             )
-            .first()
         )
 
     def pending_downstream_tasks(self, db: Session) -> Query:
