@@ -10,6 +10,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -20,7 +21,6 @@ from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_experience import (
     ExperienceConfigTemplate,
-    ExperienceNotices,
     ExperienceTranslation,
     PrivacyExperience,
     PrivacyExperienceConfig,
