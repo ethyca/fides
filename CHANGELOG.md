@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.32.0...main)
 
+### Fixed
+- Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
+
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
 ### Added
