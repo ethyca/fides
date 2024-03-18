@@ -14,6 +14,7 @@ import {
   CustomTextArea,
   CustomTextInput,
 } from "~/features/common/form/inputs";
+import InfoBox from "~/features/common/InfoBox";
 import WarningModal from "~/features/common/modals/WarningModal";
 import { BackButtonNonLink } from "~/features/common/nav/v2/BackButton";
 import {
@@ -27,11 +28,23 @@ import {
   ExperienceTranslation,
 } from "~/types/api";
 
+export const OOBTranslationNotice = ({
+  languageName,
+}: {
+  languageName: string;
+}) => (
+  <InfoBox
+    text={`This is a default translation provided by Fides. If you've modified the default English language text, these translations will not match, so verify any changes with a native ${languageName} speaker before using.`}
+  />
+);
+
 const PrivacyExperienceTranslationForm = ({
   translation,
+  isOOB,
   onReturnToMainForm,
 }: {
   translation: TranslationWithLanguageName;
+  isOOB?: boolean;
   onReturnToMainForm: () => void;
 }) => {
   const { values, setFieldValue, errors, touched, setTouched } =
@@ -42,7 +55,7 @@ const PrivacyExperienceTranslationForm = ({
     const { name, ...rest } = translation;
     return rest as ExperienceTranslation;
   }, [translation]);
-  const isEditing = !!initialTranslation.title;
+  const isEditing = !!initialTranslation.title && !isOOB;
 
   const formConfig = getTranslationFormFields(values.component);
 
@@ -90,7 +103,7 @@ const PrivacyExperienceTranslationForm = ({
   };
 
   const handleLeaveForm = () => {
-    if (translationIsTouched || !initialTranslation.title) {
+    if (translationIsTouched || isOOB) {
       onOpenUnsavedChanges();
     } else {
       onReturnToMainForm();
@@ -126,7 +139,7 @@ const PrivacyExperienceTranslationForm = ({
       </Button>
       <Button
         colorScheme="primary"
-        isDisabled={!translationIsTouched || !!errors.translations}
+        isDisabled={(!translationIsTouched && !isOOB) || !!errors.translations}
         data-testid="save-btn"
         onClick={handleSaveTranslation}
       >
@@ -144,7 +157,9 @@ const PrivacyExperienceTranslationForm = ({
         title="Translation not saved"
         message={
           <Text>
-            You have unsaved changes to this translation. Discard changes?
+            {isEditing
+              ? "You have unsaved changes to this translation. Discard changes?"
+              : "This translation has not been added to your experience.  Discard translation?"}
           </Text>
         }
         confirmButtonText="Discard"
@@ -163,8 +178,9 @@ const PrivacyExperienceTranslationForm = ({
         handleConfirm={() => setNewDefaultTranslation(translationIndex)}
       />
       <Heading fontSize="md" fontWeight="semibold">
-        {translation.name}
+        Edit {translation.name} translation
       </Heading>
+      {isOOB ? <OOBTranslationNotice languageName={translation.name} /> : null}
       <CustomSwitch
         name={`translations.${translationIndex}.is_default`}
         id={`translations.${translationIndex}.is_default`}
