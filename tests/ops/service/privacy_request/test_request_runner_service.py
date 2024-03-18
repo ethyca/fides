@@ -300,6 +300,9 @@ def get_privacy_request_results(
             pass
     privacy_request = PrivacyRequest.create(db=db, data=kwargs)
     privacy_request.cache_identity(privacy_request_data["identity"])
+    privacy_request.cache_custom_privacy_request_fields(
+        privacy_request_data["custom_privacy_request_fields"]
+    )
     if "encryption_key" in privacy_request_data:
         privacy_request.cache_encryption(privacy_request_data["encryption_key"])
 

@@ -1,0 +1,52 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Custom Privacy Request Fields
+  type: custom_privacy_request_fields
+  description: A sample schema to test custom privacy request fields
+  version: 0.0.1
+
+  connector_params:
+    - name: <api_key>
+
+  client_config:
+    protocol: https
+    host: localhost
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <api_key>
+
+  test_request:
+    method: GET
+    path: /ping
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: POST
+          path: /v1/user-search
+          param_values:
+            - name: placeholder
+              identity: email
+          query_params:
+            - name: first_name
+              value: <custom_privacy_request_fields.first_name>
+          body: |
+            {
+              "last_name": "<custom_privacy_request_fields.last_name>",
+              "order_id": "<custom_privacy_request_fields.order_id?>",
+              "subscriber_ids": <custom_privacy_request_fields.subscriber_ids>,
+              "account_ids": <custom_privacy_request_fields.account_ids>
+            }
+          ignore_errors: True
+        update:
+          method: PUT
+          path: /v1/user
+          body: |
+            {
+              "user_info": {
+                <custom_privacy_request_fields>
+              }
+            }
+          ignore_errors: True
