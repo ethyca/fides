@@ -30,20 +30,8 @@
     "test": true,
     "production": false
   },
-  "locationRegulationConfiguration": {
-    "description": "Page to configure locations and regulations",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "datamapReportingPage": {
     "description": "Page to view datamap reports",
-    "development": true,
-    "test": true,
-    "production": false
-  },
-  "properties": {
-    "description": "Page to view properties",
     "development": true,
     "test": true,
     "production": false

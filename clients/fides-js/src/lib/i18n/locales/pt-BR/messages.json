@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Controle de Privacidade Global",
+  "static.gpc.description": "Sua preferência global de controle de privacidade foi respeitada. Você foi automaticamente removido dos casos de uso de dados que aderem ao controle de privacidade global.",
+  "static.gpc.status.applied": "Aplicado",
+  "static.gpc.status.overridden": "Anulado",
+  "static.gpc.title": "Controle de Privacidade Global detectado"
+}

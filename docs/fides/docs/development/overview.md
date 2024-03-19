@@ -39,7 +39,7 @@ brew install freetds openssl
 Add the following to your run commands (i.e. `.zshrc`), updating any path/versions to match yours
 
 ```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"`
+export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"
 export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
 ```
 

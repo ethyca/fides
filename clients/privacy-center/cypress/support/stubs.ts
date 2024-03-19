@@ -1,4 +1,6 @@
 import {
+  ExperienceConfigTranslation,
+  PrivacyNoticeTranslation,
   LegacyConsentConfig,
   PrivacyExperience,
   UserGeolocation,
@@ -40,6 +42,17 @@ interface FidesConfigTesting {
 }
 
 /**
+ * Helper function to override translations for Experience Configs / Notices
+ * @example overrideTranslation({language: "en", privacy_experience_config_history_id: "1342314"}, { description: "hello" })
+ */
+export const overrideTranslation = (
+  translation: ExperienceConfigTranslation | PrivacyNoticeTranslation,
+  override: Partial<ExperienceConfigTranslation | PrivacyNoticeTranslation>
+): ExperienceConfigTranslation | PrivacyNoticeTranslation => ({
+  ...translation,
+  ...override,
+});
+/**
  * Helper function to swap out config
  * @example stubExperience({experience: {component: ComponentType.PRIVACY_CENTER}})
  */
@@ -47,10 +60,10 @@ export const stubConfig = (
   { consent, experience, geolocation, options }: Partial<FidesConfigTesting>,
   mockGeolocationApiResp?: any,
   mockExperienceApiResp?: any,
-  demoPageQueryParams?: any,
+  demoPageQueryParams?: Cypress.VisitOptions["qs"],
   demoPageWindowParams?: any
 ) => {
-  cy.fixture("consent/test_banner_options.json").then((config) => {
+  cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
     const updatedConfig = {
       consent: setNewConfig(config.consent, consent),
       // this mocks the pre-fetched experience
@@ -87,7 +100,7 @@ export const stubConfig = (
     ) {
       // this mocks the client-side experience fetch
       const experienceMock = mockExperienceApiResp || {
-        fixture: "consent/overlay_experience.json",
+        fixture: "consent/experience_banner_modal.json",
       };
       const experienceResp =
         mockExperienceApiResp === OVERRIDE.UNDEFINED
@@ -111,6 +124,7 @@ export const stubConfig = (
       `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
       { fixture: "consent/notices_served.json" }
     ).as("patchNoticesServed");
+    cy.log("Visiting consent demo with config", updatedConfig);
     cy.visitConsentDemo(
       updatedConfig,
       demoPageQueryParams,

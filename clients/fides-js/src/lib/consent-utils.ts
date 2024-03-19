@@ -2,6 +2,7 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  CookieKeyConsent,
   EmptyExperience,
   FidesCookie,
   FidesOptions,
@@ -9,6 +10,7 @@ import {
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
+  PrivacyNoticeWithPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
@@ -22,7 +24,7 @@ import { noticeHasConsentInCookie } from "./shared-consent-utils";
  */
 type ConsoleLogParameters = Parameters<typeof console.log>;
 export const debugLog = (
-  enabled: boolean,
+  enabled: boolean = false,
   ...args: ConsoleLogParameters
 ): void => {
   if (enabled) {
@@ -57,6 +59,16 @@ export const isPrivacyExperience = (
   }
   return false;
 };
+
+export const allNoticesAreDefaultOptIn = (
+  notices: Array<PrivacyNoticeWithPreference> | undefined
+): boolean =>
+  Boolean(
+    notices &&
+      notices.every(
+        (notice) => notice.default_preference === UserConsentPreference.OPT_IN
+      )
+  );
 
 /**
  * Construct user location str to be ingested by Fides API
@@ -148,18 +160,29 @@ export const experienceIsValid = (
     );
     return false;
   }
-  if (
-    effectiveExperience.component !== ComponentType.OVERLAY &&
-    effectiveExperience.component !== ComponentType.TCF_OVERLAY
-  ) {
+  const expConfig = effectiveExperience.experience_config;
+  if (!expConfig) {
     debugLog(
       options.debug,
-      "No experience found with overlay component. Skipping overlay initialization."
+      "No experience config found for experience. Skipping overlay initialization."
     );
     return false;
   }
   if (
-    effectiveExperience.component === ComponentType.OVERLAY &&
+    !(
+      expConfig.component === ComponentType.MODAL ||
+      expConfig.component === ComponentType.BANNER_AND_MODAL ||
+      expConfig.component === ComponentType.TCF_OVERLAY
+    )
+  ) {
+    debugLog(
+      options.debug,
+      "No experience found with modal, banner_and_modal, or tcf_overlay component. Skipping overlay initialization."
+    );
+    return false;
+  }
+  if (
+    expConfig.component === ComponentType.BANNER_AND_MODAL &&
     !(
       effectiveExperience.privacy_notices &&
       effectiveExperience.privacy_notices.length > 0
@@ -168,14 +191,6 @@ export const experienceIsValid = (
     debugLog(
       options.debug,
       `Privacy experience has no notices. Skipping overlay initialization.`
-    );
-    return false;
-  }
-  // TODO: add condition for not rendering TCF
-  if (!effectiveExperience.experience_config) {
-    debugLog(
-      options.debug,
-      "No experience config found with for experience. Skipping overlay initialization."
     );
     return false;
   }
@@ -195,9 +210,10 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  */
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
-  cookie: FidesCookie
+  cookie: FidesCookie,
+  savedConsent: CookieKeyConsent
 ): boolean => {
-  if (experience.component === ComponentType.TCF_OVERLAY) {
+  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
@@ -211,10 +227,17 @@ export const shouldResurfaceConsent = (
   ) {
     return false;
   }
-  // If not every notice has previous user consent, we need to resurface consent
+  // Always resurface if there is no prior consent
+  if (!savedConsent) {
+    return true;
+  }
+  // Lastly, if we do have a prior consent state, resurface if we find *any*
+  // notices that don't have prior consent in that state
+  // TODO (PROD-1792): we should *also* resurface in the special case where the
+  // saved consent is only recorded with a consentMethod of "dismiss"
   return Boolean(
     !experience.privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, cookie)
+      noticeHasConsentInCookie(notice, savedConsent)
     )
   );
 };
@@ -282,4 +305,11 @@ export const getGpcStatusFromNotice = ({
   }
 
   return GpcStatus.OVERRIDDEN;
+};
+
+export const defaultShowModal = () => {
+  debugLog(
+    window.Fides.options.debug,
+    "The current experience does not support displaying a modal."
+  );
 };

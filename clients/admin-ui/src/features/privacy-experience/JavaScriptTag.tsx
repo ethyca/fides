@@ -50,7 +50,7 @@ const JavaScriptTag = () => {
       <Button
         onClick={modal.onOpen}
         variant="outline"
-        size="sm"
+        size="xs"
         rightIcon={<CopyIcon />}
         data-testid="js-tag-btn"
       >

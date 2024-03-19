@@ -2,60 +2,25 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { BannerEnabled } from "./BannerEnabled";
 import type { ComponentType } from "./ComponentType";
+import type { ExperienceTranslationCreate } from "./ExperienceTranslationCreate";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { Property } from "./Property";
 
 /**
- * An API representation to create ExperienceConfig.
- * This model doesn't include an `id` so that it can be used for creation.
- * It also establishes some fields _required_ for creation
+ * Schema for creating Experience Configs via the API
+ *
+ * Privacy notices are specified as a list of ids instead of keys like the template
  */
 export type ExperienceConfigCreate = {
-  accept_button_label: string;
-  /**
-   * Overlay 'Acknowledge button label for notice only banner'
-   */
-  acknowledge_button_label?: string;
-  /**
-   * Overlay 'Banner Description'
-   */
-  banner_description?: string;
-  /**
-   * Overlay 'Banner'
-   */
-  banner_enabled?: BannerEnabled;
-  /**
-   * Overlay 'Banner title'
-   */
-  banner_title?: string;
-  description: string;
-  /**
-   * Whether the given ExperienceConfig is disabled
-   */
+  name: string;
   disabled?: boolean;
-  /**
-   * Whether the given ExperienceConfig is a global default
-   */
-  is_default?: boolean;
-  /**
-   * Overlay and Privacy Center 'Privacy policy link label'
-   */
-  privacy_policy_link_label?: string;
-  /**
-   * Overlay and Privacy Center 'Privacy policy URL
-   */
-  privacy_policy_url?: string;
-  /**
-   * Overlay 'Privacy preferences link label'
-   */
-  privacy_preferences_link_label?: string;
-  /**
-   * Regions using this ExperienceConfig
-   */
+  dismissable?: boolean;
+  allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
   regions?: Array<PrivacyNoticeRegion>;
-  reject_button_label: string;
-  save_button_label: string;
-  title: string;
   component: ComponentType;
+  privacy_notice_ids?: Array<string>;
+  translations?: Array<ExperienceTranslationCreate>;
+  properties?: Array<Property>;
 };

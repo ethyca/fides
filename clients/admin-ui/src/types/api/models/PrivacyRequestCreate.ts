@@ -15,6 +15,7 @@ export type PrivacyRequestCreate = {
   finished_processing_at?: string;
   requested_at?: string;
   identity: Identity;
+  consent_request_id?: string;
   custom_privacy_request_fields?: Record<string, CustomPrivacyRequestField>;
   policy_key: string;
   encryption_key?: string;

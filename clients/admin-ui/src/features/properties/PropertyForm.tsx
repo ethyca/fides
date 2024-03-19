@@ -1,60 +1,90 @@
-import { Box, Button, Flex, useToast } from "@fidesui/react";
-import { Form, Formik } from "formik";
+import { Box, Button, Flex } from "@fidesui/react";
+import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
-import { Property, PropertyType } from "~/types/api";
-
 import {
   CustomClipboardCopy,
   CustomSelect,
   CustomTextInput,
-} from "../common/form/inputs";
+} from "~/features/common/form/inputs";
+import { enumToOptions } from "~/features/common/helpers";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import ScrollableList from "~/features/common/ScrollableList";
 import {
-  enumToOptions,
-  getErrorMessage,
-  isErrorResult,
-} from "../common/helpers";
-import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
-import { errorToastParams, successToastParams } from "../common/toast";
-import { useCreatePropertyMutation } from "./property.slice";
+  selectAllExperienceConfigs,
+  selectPage,
+  selectPageSize,
+  useGetAllExperienceConfigsQuery,
+} from "~/features/privacy-experience/privacy-experience.slice";
+import { MinimalPrivacyExperience, Property, PropertyType } from "~/types/api";
 
 interface Props {
   property?: Property;
+  handleSubmit: (values: FormValues) => Promise<void>;
 }
 
 export interface FormValues {
+  id?: string;
   name: string;
-  type: string;
+  type: PropertyType;
+  experiences: Array<MinimalPrivacyExperience>;
 }
 
-const PropertyForm = ({ property }: Props) => {
-  const toast = useToast();
+const ExperiencesFormSection = () => {
+  const page = useAppSelector(selectPage);
+  const pageSize = useAppSelector(selectPageSize);
+  useGetAllExperienceConfigsQuery({
+    page,
+    size: pageSize,
+  });
+  const experienceConfigs = useAppSelector(selectAllExperienceConfigs);
+  const { values, setFieldValue } = useFormikContext<FormValues>();
+
+  return (
+    <FormSection title="Experiences">
+      <ScrollableList
+        addButtonLabel="Add experience"
+        idField="id"
+        nameField="name"
+        allItems={experienceConfigs.map((exp) => ({
+          id: exp.id,
+          name: exp.name,
+        }))}
+        values={values.experiences ?? []}
+        setValues={(newValues) => setFieldValue("experiences", newValues)}
+        draggable
+      />
+    </FormSection>
+  );
+};
+
+const PropertyForm = ({ property, handleSubmit }: Props) => {
   const router = useRouter();
-  const [createProperty] = useCreatePropertyMutation();
+
+  const handleCancel = () => {
+    router.push(PROPERTIES_ROUTE);
+  };
 
   const initialValues = useMemo(
-    () => property || { name: "", type: "" },
+    () =>
+      property || {
+        name: "",
+        type: PropertyType.WEBSITE,
+        experiences: [],
+      },
     [property]
   );
 
-  const handleSubmit = async (values: FormValues) => {
-    const result = await createProperty(values);
-
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
-    }
-
-    const prop = result.data;
-    toast(successToastParams(`Property ${values.name} created successfully`));
-    router.push(`${PROPERTIES_ROUTE}/${prop.key}`);
-  };
-
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {() => (
+    <Formik
+      enableReinitialize
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+    >
+      {({ dirty, isValid, isSubmitting }) => (
         <Form
           style={{
             paddingTop: "12px",
@@ -79,12 +109,16 @@ const PropertyForm = ({ property }: Props) => {
               />
             </FormSection>
           </Box>
+          <Box py={3}>
+            <ExperiencesFormSection />
+          </Box>
           {property && (
             <Box py={3}>
               <FormSection title="Advanced settings">
                 <CustomClipboardCopy
-                  label="Property key"
-                  name="key"
+                  label="Property ID"
+                  name="id"
+                  tooltip="Automatically generated unique ID for this property, used for developer configurations"
                   variant="stacked"
                   readOnly
                 />
@@ -92,16 +126,25 @@ const PropertyForm = ({ property }: Props) => {
             </Box>
           )}
           <Flex justifyContent="right" width="100%" paddingTop={2}>
-            {!property && (
-              <Button
-                size="sm"
-                type="submit"
-                colorScheme="primary"
-                isLoading={false}
-              >
-                Save
-              </Button>
-            )}
+            <Button
+              size="sm"
+              type="submit"
+              variant="outline"
+              isLoading={false}
+              mr={3}
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              type="submit"
+              colorScheme="primary"
+              isDisabled={isSubmitting || !dirty || !isValid}
+              isLoading={isSubmitting}
+            >
+              Save
+            </Button>
           </Flex>
         </Form>
       )}

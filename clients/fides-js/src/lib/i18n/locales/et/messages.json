@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Üldine andmekaitsekontroll",
+  "static.gpc.description": "Teie üldist andmekaitse-eelistust on arvestatud. Teid on automaatselt välja arvatud andmete kasutamise juhtudest, mis järgivad üldist andmekaitsekontrolli.",
+  "static.gpc.status.applied": "Rakendatud",
+  "static.gpc.status.overridden": "Tühistatud",
+  "static.gpc.title": "Tuvastatud üldine andmekaitsekontroll"
+}
