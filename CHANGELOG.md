@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.32.0...main)
 
+### Added
+- Added models for Privacy Center configuration (for plus users) [#4716](https://github.com/ethyca/fides/pull/4716)
+
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
 ### Added

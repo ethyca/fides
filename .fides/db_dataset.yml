@@ -2069,3 +2069,5 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations] 
+    - name: single_row
+      data_categories: [system.operations] 
