@@ -6,7 +6,6 @@ import {
   Flex,
   Switch,
   Text,
-  theme,
   useDisclosure,
   useToast,
   WarningIcon,

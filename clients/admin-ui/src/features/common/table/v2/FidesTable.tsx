@@ -26,7 +26,8 @@ import React, { ReactNode, useMemo, useState } from "react";
 
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
-import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
+
+import { getTableTHandTDStyles } from "./util";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -60,7 +61,10 @@ const HeaderContent = <T,>({
     return (
       <Box
         data-testid={`${header.id}-header`}
-        style={{ ...getTableTHandTDStyles(header.column.id) }}
+        sx={{ ...getTableTHandTDStyles(header.column.id) }}
+        fontSize="xs"
+        lineHeight={9} // same as table header height
+        fontWeight="medium"
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
@@ -73,10 +77,15 @@ const HeaderContent = <T,>({
         as={Button}
         rightIcon={<ChevronDownIcon />}
         variant="ghost"
+        size="sm"
+        height={9} // same as table header height
         width="100%"
-        pr={1}
+        sx={{ ...getTableTHandTDStyles(header.column.id) }}
         textAlign="start"
         data-testid={`${header.id}-header-menu`}
+        _focus={{
+          backgroundColor: "gray.100",
+        }}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </MenuButton>
