@@ -1,4 +1,5 @@
 import {
+  ArrowForwardIcon,
   Box,
   Button,
   ButtonGroup,
@@ -81,10 +82,12 @@ export const PrivacyExperienceConfigColumnLayout = ({
 
 export const PrivacyExperienceForm = ({
   allPrivacyNotices,
+  translationsEnabled,
   onSelectTranslation,
   onCreateTranslation,
 }: {
   allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[];
+  translationsEnabled?: boolean;
   onSelectTranslation: (t: ExperienceTranslation) => void;
   onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
 }) => {
@@ -241,34 +244,48 @@ export const PrivacyExperienceForm = ({
         getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
         draggable
       />
-      <ScrollableList
-        label="Languages for this experience"
-        addButtonLabel="Add language"
-        values={values.translations ?? []}
-        setValues={(newValues) => setFieldValue("translations", newValues)}
-        idField="language"
-        canDeleteItem={(item) => !item.is_default}
-        allItems={allLanguages
-          .slice()
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map((lang) => ({
-            language: lang.id as SupportedLanguage,
-            is_default: false,
-          }))}
-        getItemLabel={getTranslationDisplayName}
-        createNewValue={(opt) =>
-          onCreateTranslation(opt.value as SupportedLanguage)
-        }
-        onRowClick={onSelectTranslation}
-        selectOnAdd
-        draggable
-      />
-      <CustomSwitch
-        name="auto_detect_language"
-        id="auto_detect_language"
-        label="Auto detect language"
-        variant="stacked"
-      />
+      {translationsEnabled ? (
+        <>
+          <ScrollableList
+            label="Languages for this experience"
+            addButtonLabel="Add language"
+            values={values.translations ?? []}
+            setValues={(newValues) => setFieldValue("translations", newValues)}
+            idField="language"
+            canDeleteItem={(item) => !item.is_default}
+            allItems={allLanguages
+              .slice()
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((lang) => ({
+                language: lang.id as SupportedLanguage,
+                is_default: false,
+              }))}
+            getItemLabel={getTranslationDisplayName}
+            createNewValue={(opt) =>
+              onCreateTranslation(opt.value as SupportedLanguage)
+            }
+            onRowClick={onSelectTranslation}
+            selectOnAdd
+            draggable
+          />
+          <CustomSwitch
+            name="auto_detect_language"
+            id="auto_detect_language"
+            label="Auto detect language"
+            variant="stacked"
+          />
+        </>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          rightIcon={<ArrowForwardIcon />}
+          onClick={() => onSelectTranslation(values.translations![0])}
+          data-testid="edit-experience-btn"
+        >
+          Edit experience text
+        </Button>
+      )}
     </PrivacyExperienceConfigColumnLayout>
   );
 };

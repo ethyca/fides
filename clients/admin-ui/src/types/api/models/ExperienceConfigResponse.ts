@@ -4,6 +4,7 @@
 
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
+import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 
@@ -24,4 +25,5 @@ export type ExperienceConfigResponse = {
   component: ComponentType;
   privacy_notices?: Array<PrivacyNoticeResponse>;
   translations?: Array<ExperienceTranslationResponse>;
+  properties?: Array<MinimalProperty>;
 };
