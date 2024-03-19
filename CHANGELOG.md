@@ -70,6 +70,9 @@ The types of changes are:
 - Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
 - Initialize Fides.consent with default values from experience when saved consent cookie (fides_consent) does not exist [#4665](https://github.com/ethyca/fides/pull/4665)
 
+### Changed
+- Sets GPP applicableSections to -1 when a user visits from a state that is not part of the GPP [#4727](https://github.com/ethyca/fides/pull/4727)
+
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
 
 ### Fixed
