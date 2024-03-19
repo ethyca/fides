@@ -554,4 +554,199 @@ describe("Fides-js GPP extension", () => {
       });
     });
   });
+
+  describe("with TCF disabled and GPP enabled, with experience region outside of GPP", () => {
+    beforeEach(() => {
+      cy.fixture("consent/experience_gpp.json").then((payload) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: false,
+          },
+          // override with a region that is outside GPP jurisdictions
+          experience: { ...payload.items[0], region: "us_nc" },
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
+      });
+    });
+
+    it("loads the gpp extension if it is enabled", () => {
+      cy.window().then((win) => {
+        win.__gpp("ping", cy.stub().as("gppPing"));
+        cy.get("@gppPing")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([data, success]) => {
+            expect(success).to.eql(true);
+            expect(data.signalStatus).to.eql("not ready");
+            expect(data.applicableSections).to.eql([-1]);
+          });
+      });
+    });
+
+    it("can go through the flow of user opting in to data sales and sharing", () => {
+      cy.get("button").contains("Opt in to all").click();
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const fidesCookie: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          const { consent } = fidesCookie;
+          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
+        });
+      });
+
+      const expected = [
+        // Empty gpp strings since user is not in GPP region
+        {
+          eventName: "listenerRegistered",
+          data: true,
+          gppString: "DBAA",
+        },
+        {
+          eventName: "cmpDisplayStatus",
+          data: "hidden",
+          gppString: "DBAA",
+        },
+        {
+          eventName: "signalStatus",
+          data: "ready",
+          gppString: "DBAA",
+          applicableSections: [-1],
+        },
+      ];
+      // Check the GPP events
+      cy.get("@gppListener")
+        .its("args")
+        .then(
+          (
+            args: [
+              { eventName: string; data: string | boolean; pingData: any },
+              boolean
+            ][]
+          ) => {
+            args.forEach(([data, success], idx) => {
+              expect(success).to.eql(true);
+              expect(data.eventName).to.eql(expected[idx].eventName);
+              expect(data.data).to.eql(expected[idx].data);
+              expect(data.pingData.gppString).to.eql(expected[idx].gppString);
+              if (expected[idx].applicableSections) {
+                expect(data.pingData.applicableSections).to.eql(
+                  expected[idx].applicableSections
+                );
+              }
+            });
+          }
+        );
+      cy.get("@gppListener")
+        .its("lastCall.args")
+        .then((args) => {
+          const [data] = args;
+          expect(data.pingData.applicableSections).to.eql([-1]);
+          // TODO: once locations and regulations are set, this value may change as it is currently hard coded
+          expect(data.pingData.supportedAPIs).to.eql([
+            "8:uscav1",
+            "10:uscov1",
+            "12:usctv1",
+            "11:usutv1",
+            "9:usvav1",
+          ]);
+        });
+    });
+
+    it("can go through the flow of user opting out of data sales and sharing", () => {
+      cy.get("button").contains("Opt out of all").click();
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const fidesCookie: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          const { consent } = fidesCookie;
+          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: false });
+        });
+      });
+
+      const expected = [
+        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served
+        {
+          eventName: "listenerRegistered",
+          data: true,
+          gppString: "DBAA",
+        },
+        {
+          eventName: "cmpDisplayStatus",
+          data: "hidden",
+          gppString: "DBAA",
+        },
+        // Last gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out of
+        {
+          eventName: "signalStatus",
+          data: "ready",
+          gppString: "DBAA",
+          applicableSections: [-1],
+        },
+      ];
+      // Check the GPP events
+      cy.get("@gppListener")
+        .its("args")
+        .then(
+          (
+            args: [
+              { eventName: string; data: string | boolean; pingData: any },
+              boolean
+            ][]
+          ) => {
+            args.forEach(([data, success], idx) => {
+              expect(success).to.eql(true);
+              expect(data.eventName).to.eql(expected[idx].eventName);
+              expect(data.data).to.eql(expected[idx].data);
+              expect(data.pingData.gppString).to.eql(expected[idx].gppString);
+              if (expected[idx].applicableSections) {
+                expect(data.pingData.applicableSections).to.eql(
+                  expected[idx].applicableSections
+                );
+              }
+            });
+          }
+        );
+    });
+
+    it("can handle a returning user", () => {
+      const cookie = mockCookie({
+        consent: { data_sales_sharing_gpp_us_state: true },
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_gpp.json").then((payload) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: false,
+          },
+          // override with a region that is outside GPP jurisdictions
+          experience: { ...payload.items[0], region: "us_nc" },
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
+        // Initializes string properly
+        cy.get("@gppListener")
+          .its("args")
+          .then((args) => {
+            const [data, success] = args[0];
+            expect(success).to.eql(true);
+            // Opt in string
+            expect(data.pingData.applicableSections).to.eql([-1]);
+            expect(data.pingData.gppString).to.eql("DBAA");
+          });
+      });
+    });
+  });
 });

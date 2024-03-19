@@ -45,7 +45,7 @@ const setMspaSections = ({
  * However, the GPP field mapping will only contain "us", so make sure we use "us" since we are configured for the national case.
  * Otherwise, we can use the experience region directly.
  */
-const deriveGppFieldRegion = ({
+export const deriveGppFieldRegion = ({
   experienceRegion,
   usApproach,
 }: {
@@ -83,6 +83,10 @@ export const setGppNoticesProvidedFromExperience = ({
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
+    if (experience?.gpp_settings?.us_approach === GPPUSApproach.STATE) {
+      cmpApi.setApplicableSections([-1]);
+      return [];
+    }
     return [];
   }
 
@@ -130,6 +134,10 @@ export const setGppOptOutsFromCookieAndExperience = ({
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
+    if (experience?.gpp_settings?.us_approach === GPPUSApproach.STATE) {
+      cmpApi.setApplicableSections([-1]);
+      return [];
+    }
     return [];
   }
   sectionsChanged.add(gppSection);
