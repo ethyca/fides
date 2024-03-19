@@ -1,6 +1,4 @@
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
   Badge,
   Box,
   Checkbox,
@@ -8,12 +6,13 @@ import {
   Flex,
   Switch,
   Text,
+  theme,
   useDisclosure,
   useToast,
   WarningIcon,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
-import { ChangeEvent, FC, ReactNode } from "react";
+import { ChangeEvent, FC } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -132,35 +131,14 @@ type DefaultHeaderCellProps<T, V> = {
 
 export const DefaultHeaderCell = <T,>({
   value,
-  column,
 }: DefaultHeaderCellProps<
   T,
   string | number | string[] | undefined | boolean
->) => {
-  let sortIcon: ReactNode = null;
-  if (column.getIsSorted()) {
-    sortIcon =
-      column.getAutoSortDir() === "desc" ? (
-        <ArrowDownIcon color="gray.500" />
-      ) : (
-        <ArrowUpIcon color="gray.500" />
-      );
-  }
-
-  return (
-    <Text
-      _hover={{ backgroundColor: "gray.100" }}
-      fontSize="xs"
-      lineHeight={4}
-      fontWeight="medium"
-      pr={sortIcon ? 0 : 3.5}
-      onClick={column.getToggleSortingHandler()}
-    >
-      {value}
-      {sortIcon}
-    </Text>
-  );
-};
+>) => (
+  <Text fontSize="xs" lineHeight={9} fontWeight="medium">
+    {value}
+  </Text>
+);
 
 type EnableCellProps = {
   value: boolean;
