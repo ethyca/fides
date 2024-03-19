@@ -13,6 +13,7 @@ from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
+from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import (
@@ -558,9 +559,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             filter_element_match(
                 row, query_paths=post_processed_node_input_data, delete_elements=False
             )
+
+        # TODO needs to be better organized.  I'm saving on the Privacy Request Task, would like to stop
+        # saving in the cache.
         self.resources.cache_results_with_placeholders(
             f"access_request__{self.key}", placeholder_output
         )
+        self.privacy_request_task.data_for_erasures = placeholder_output
 
         # For access request results, cache results with non-matching array elements *removed*
         for row in output:
@@ -570,6 +575,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             filter_element_match(row, post_processed_node_input_data)
         self.resources.cache_object(f"access_request__{self.key}", output)
+        self.privacy_request_task.access_data = output
+
+        # TODO this is not the right place for this, but I am converting datetimes
+        # to strings so this can be saved in postgres
+        for row in self.privacy_request_task.access_data:
+            for key, val in row.items():
+                row[key] = storage_json_encoder(val)
+        for row in self.privacy_request_task.data_for_erasures:
+            for key, val in row.items():
+                row[key] = storage_json_encoder(val)
 
         # Return filtered rows with non-matched array data removed.
         return output
@@ -670,6 +685,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             formatted_input_data,
         )
         self.log_end(ActionType.erasure)
+        self.privacy_request_task.rows_masked = output
         self.resources.cache_erasure(
             f"{self.key}", output
         )  # Cache that the erasure was performed in case we need to restart
@@ -782,7 +798,6 @@ def run_access_request(
     session: Session,
 ) -> None:
     """Queue the access request nodes"""
-    logger.info(f"Running access request function")
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(
         privacy_request, policy, connection_configs, session
@@ -799,15 +814,15 @@ def run_access_request(
         # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
         end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
 
-        created_privacy_request_tasks = create_privacy_request_task_objects(
-            session, privacy_request, traversal, env, end_nodes, ActionType.access
+        created_privacy_request_tasks = create_access_request_task_objects(
+            session, privacy_request, traversal, env, end_nodes
         )
         for task in created_privacy_request_tasks:
             if task.upstream_tasks_complete(session):
                 logger.info(
-                    f"Queuing task {privacy_request.id} > {task.id}: {task.collection_address}"
+                    f"Queuing access task {privacy_request.id} > {task.id}: {task.collection_address}"
                 )
-                run_node.delay(privacy_request.id, task.id)
+                run_access_node.delay(privacy_request.id, task.id)
 
         # TODO What is this for?
         # cache a map of collections -> data uses for the output package of access requests
@@ -819,7 +834,7 @@ def run_access_request(
         return
 
 
-def build_networkx_digraph(
+def build_access_networkx_digraph(
     env: Dict[CollectionAddress, Any],
     end_nodes: List[CollectionAddress],
     traversal: Traversal,
@@ -854,13 +869,12 @@ def build_networkx_digraph(
     return networkx_graph
 
 
-def create_privacy_request_task_objects(
+def create_access_request_task_objects(
     session: Session,
     privacy_request: PrivacyRequest,
     traversal: Traversal,
     env: Dict[CollectionAddress, Any],
     end_nodes: List[CollectionAddress],
-    action_type: ActionType,
 ):
     """Add PrivacyRequestTasks to the database or update existing Privacy Request tasks to a pending status
 
@@ -868,7 +882,7 @@ def create_privacy_request_task_objects(
 
     This should only be called if a PrivacyRequest is in a pending or errored state.
     """
-    graph: networkx.DiGraph = build_networkx_digraph(env, end_nodes, traversal)
+    graph: networkx.DiGraph = build_access_networkx_digraph(env, end_nodes, traversal)
 
     ready_tasks: List[PrivacyRequestTask] = []
 
@@ -877,7 +891,7 @@ def create_privacy_request_task_objects(
             session.query(PrivacyRequestTask)
             .filter(
                 PrivacyRequestTask.privacy_request_id == privacy_request.id,
-                PrivacyRequestTask.action_type == PrivacyRequestTask.action_type,
+                PrivacyRequestTask.action_type == ActionType.access,
                 PrivacyRequestTask.collection_address == node.value,
                 PrivacyRequestTask.status == TaskStatus.complete,
             )
@@ -902,10 +916,10 @@ def create_privacy_request_task_objects(
                 "status": TaskStatus.complete
                 if node == ROOT_COLLECTION_ADDRESS
                 else TaskStatus.pending,
-                "data": [traversal.seed_data]
+                "access_data": [traversal.seed_data]
                 if node == ROOT_COLLECTION_ADDRESS
                 else [],
-                "action_type": action_type,
+                "action_type": ActionType.access,
                 "collection_address": node.value,
                 "all_descendants": [
                     descend.value for descend in list(networkx.descendants(graph, node))
@@ -917,116 +931,238 @@ def create_privacy_request_task_objects(
     return ready_tasks
 
 
+def build_erasure_networkx_digraph(
+    env: Dict[CollectionAddress, Any],
+    end_nodes: List[CollectionAddress],
+) -> networkx.DiGraph:
+    """
+    Builds a networkx graph to get consistent formatting of upstream/downstream nodes, regardless of whether the node
+    is an actual node, or a "root"/"terminator" node.
+
+    Primarily though, we can utilize networkx's "descendants" method to pre-calculate every downstream node that
+    can be reached by each current node
+    """
+    networkx_graph = networkx.DiGraph()
+    networkx_graph.add_nodes_from(env.keys())
+    networkx_graph.add_nodes_from([ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS])
+
+    for k, t in env.items():
+        # Modifies end nodes in place as well?
+        erasure_dependencies = _evaluate_erasure_dependencies(t, end_nodes)
+        for dep in erasure_dependencies:
+            networkx_graph.add_edge(dep, k)
+
+    for node in end_nodes:
+        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+
+    try:
+        networkx.find_cycle(networkx_graph, ROOT_COLLECTION_ADDRESS)
+    except NetworkXNoCycle:
+        logger.info("No cycles found as expected")
+    else:
+        raise Exception("Cycles found in erasure DAG")
+
+    return networkx_graph
+
+
+def upfront_checks(session, privacy_request_id, privacy_request_task_id):
+    privacy_request: PrivacyRequest = PrivacyRequest.get(
+        db=session, object_id=privacy_request_id
+    )
+    request_task: PrivacyRequestTask = PrivacyRequestTask.get(
+        db=session, object_id=privacy_request_task_id
+    )
+
+    if not privacy_request:
+        raise PrivacyRequestNotFound(
+            f"Privacy request with id {privacy_request_id} not found"
+        )
+
+    if not request_task:
+        raise PrivacyRequestTaskNotFound(
+            f"Request Task with id {request_task} not found"
+        )
+
+    upstream_results = session.query(PrivacyRequestTask).filter(False)
+    if request_task.status == TaskStatus.pending:
+        upstream_results: Query = session.query(PrivacyRequestTask).filter(
+            PrivacyRequestTask.privacy_request_id == privacy_request_id,
+            PrivacyRequestTask.status == PrivacyRequestStatus.complete,
+            PrivacyRequestTask.action_type == request_task.action_type,
+            PrivacyRequestTask.collection_address.in_(request_task.upstream_tasks),
+        )
+
+        if not upstream_results.count() == len(request_task.upstream_tasks):
+            raise PrivacyRequestTaskNotFound(
+                f"Cannot start Privacy Request Task {request_task.id} - status is {request_task.status}"
+            )
+    return privacy_request, request_task, upstream_results
+
+
+def temporary_resources(session: Session, privacy_request: PrivacyRequest):
+    datasets = DatasetConfig.all(db=session)
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    dataset_graph = DatasetGraph(*dataset_graphs)
+    traversal: Traversal = Traversal(
+        dataset_graph, privacy_request.get_persisted_identity().dict()
+    )
+    task_resources = TaskResources(
+        privacy_request,
+        privacy_request.policy,
+        session.query(ConnectionConfig).all(),
+        session,
+    )
+
+    return traversal, task_resources
+
+
 @celery_app.task(base=DatabaseTask, bind=True)
-def run_node(
+def run_erasure_node(
     self: DatabaseTask, privacy_request_id: str, privacy_request_task_id: str
 ) -> None:
     with self.get_new_session() as session:
-        privacy_request: PrivacyRequest = PrivacyRequest.get(
-            db=session, object_id=privacy_request_id
+        privacy_request, request_task, upstream_results = upfront_checks(
+            session, privacy_request_id, privacy_request_task_id
         )
-        request_task: PrivacyRequestTask = PrivacyRequestTask.get(
-            db=session, object_id=privacy_request_task_id
-        )
-
-        if not privacy_request:
-            raise PrivacyRequestNotFound(
-                f"Privacy request with id {privacy_request_id} not found"
-            )
-
-        if not request_task:
-            raise PrivacyRequestTaskNotFound(
-                f"Request Task with id {request_task} not found"
-            )
-
         graph_task_key = CollectionAddress.from_string(request_task.collection_address)
 
-        if request_task.status == TaskStatus.pending:
-            upstream_results: Query = session.query(PrivacyRequestTask).filter(
-                PrivacyRequestTask.privacy_request_id == privacy_request_id,
-                PrivacyRequestTask.status == PrivacyRequestStatus.complete,
-                PrivacyRequestTask.action_type == request_task.action_type,
-                PrivacyRequestTask.collection_address.in_(request_task.upstream_tasks),
+        if request_task.status == TaskStatus.complete:
+            logger.info(
+                f"Cannot start erasure Privacy Request Task {request_task.id} {request_task.collection_address} - status is {request_task.status}"
             )
+            return
 
-            if not upstream_results.count() == len(request_task.upstream_tasks):
-                raise PrivacyRequestTaskNotFound(
-                    f"Cannot start Privacy Request Task {request_task.id} - status is {request_task.status}"
-                )
+        traversal, task_resources = temporary_resources(session, privacy_request)
 
-            # TODO Temporary: Former implementation does all this querying and builds all these resources
-            # up front so they don't have to be queried later.  I am rebuilding it here for every node
-            # because a lot of the internals use the "Traversal Node" which requires an awareness of the
-            # whole graph.  Instead, let's refactor to have the internals just need a resource that represents
-            # the current node and only its immediate upstream and downstream feeders
-            datasets = DatasetConfig.all(db=session)
-            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-            dataset_graph = DatasetGraph(*dataset_graphs)
-            traversal: Traversal = Traversal(
-                dataset_graph, privacy_request.get_persisted_identity().dict()
-            )
-            task_resources = TaskResources(
-                privacy_request,
-                privacy_request.policy,
-                session.query(ConnectionConfig).all(),
-                session,
-            )
-            upstream_data = [
-                upstream.data if upstream.data else [] for upstream in upstream_results
-            ]
+        logger.info(
+            f"Running erasure task {request_task.collection_address}:{request_task.id} for privacy request {privacy_request.id}"
+        )
 
-            if request_task.action_type == ActionType.access:
-                logger.info(
-                    f"Running access request task {request_task.id}:{request_task.collection_address} for privacy request {privacy_request.id}"
-                )
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, task_resources)
 
-                def collect_tasks_fn(
-                    tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-                ) -> None:
-                    """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-                    if not tn.is_root_node():
-                        data[tn.address] = GraphTask(tn, task_resources)
+        env: Dict[CollectionAddress, Any] = {}
+        # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
+        traversal.traverse(env, collect_tasks_fn)
 
-                env: Dict[CollectionAddress, Any] = {}
-                # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
-                traversal.traverse(env, collect_tasks_fn)
-
-                if graph_task_key == TERMINATOR_ADDRESS:
-                    # For the terminator node, collect all of the results
-                    final_results: Dict = {}
-                    for task in privacy_request.access_tasks.filter(
-                        PrivacyRequestTask.status == PrivacyRequestStatus.complete,
-                        PrivacyRequestTask.collection_address.notin_(
-                            [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
-                        ),
-                    ):
-                        final_results[task.collection_address] = task.data
-
-                    request_task.terminator_data = final_results
-                else:
-                    # For regular nodes, store the data on the node
-                    func = env[graph_task_key].access_request
-                    env[graph_task_key].privacy_request_task = request_task
-                    results: List[Row] = func(*upstream_data)
-                    for row in results:
-                        for key, val in row.items():
-                            row[key] = storage_json_encoder(val)
-                    request_task.data = results
-
-                request_task.status = TaskStatus.complete
-                request_task.save(session)
+        if graph_task_key != TERMINATOR_ADDRESS:
+            func = env[graph_task_key].erasure_request
+            env[graph_task_key].privacy_request_task = request_task
+            retrieved_data: List[Row] = request_task.data_for_erasures or []
+            inputs: List[List[Row]] = request_task.erasure_input_data or []
+            func(retrieved_data, inputs)
+            request_task.status = TaskStatus.complete
+            request_task.save(session)
+            logger.info(f"Marking node {graph_task_key} as complete")
 
         else:
-            logger.info(
-                f"Cannot start Privacy Request Task {request_task.id} {request_task.collection_address} - status is {request_task.status}"
+            request_task.status = TaskStatus.complete
+            request_task.save(session)
+            logger.info(f"Marking node {graph_task_key} as complete")
+
+            from fides.api.service.privacy_request.request_runner_service import (
+                queue_privacy_request,
             )
+
+            logger.info(
+                f"Terminator node reached for erasure graph of {privacy_request.id}. Queueing."
+            )
+
+            queue_privacy_request(
+                privacy_request_id=privacy_request.id,
+                from_step=CurrentStep.finalize_erasure.value,
+            )
+            return
 
         # If there are other downstream tasks that are ready to go, queue those now
         pending_downstream_tasks: Query = request_task.pending_downstream_tasks(session)
         for downstream_task in pending_downstream_tasks:
             if downstream_task.upstream_tasks_complete(session):
                 logger.info(f"Upstream tasks complete so queuing {downstream_task.id}")
-                run_node.delay(
+                run_erasure_node.delay(
+                    privacy_request_id=privacy_request_id,
+                    privacy_request_task_id=downstream_task.id,
+                )
+            else:
+                logger.info(
+                    f"Upstream tasks not completed for {downstream_task.collection_address} {downstream_task.id}"
+                )
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def run_access_node(
+    self: DatabaseTask, privacy_request_id: str, privacy_request_task_id: str
+) -> None:
+    with self.get_new_session() as session:
+        privacy_request, request_task, upstream_results = upfront_checks(
+            session, privacy_request_id, privacy_request_task_id
+        )
+
+        graph_task_key = CollectionAddress.from_string(request_task.collection_address)
+
+        if request_task.status != TaskStatus.pending:
+            logger.info(
+                f"Cannot start access Privacy Request Task {request_task.id} {request_task.collection_address} - status is {request_task.status}"
+            )
+            return
+
+        # TODO Temporary: Former implementation does all this querying and builds all these resources
+        # up front so they don't have to be queried later.  I am rebuilding it here for every node
+        # because a lot of the internals use the "Traversal Node" which requires an awareness of the
+        # whole graph.  Instead, let's refactor to have the internals just need a resource that represents
+        # the current node and only its immediate upstream and downstream feeders
+        traversal, task_resources = temporary_resources(session, privacy_request)
+
+        logger.info(
+            f"Running access request task {request_task.id}:{request_task.collection_address} for privacy request {privacy_request.id}"
+        )
+
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, task_resources)
+
+        env: Dict[CollectionAddress, Any] = {}
+        # Traversal.traverse modifies "env" in place, adding parents and children to the traversal nodes
+        traversal.traverse(env, collect_tasks_fn)
+
+        if graph_task_key == TERMINATOR_ADDRESS:
+            # For the terminator node, collect all of the results
+            final_results: Dict = {}
+            for task in privacy_request.access_tasks.filter(
+                PrivacyRequestTask.status == PrivacyRequestStatus.complete,
+                PrivacyRequestTask.collection_address.notin_(
+                    [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+                ),
+            ):
+                final_results[task.collection_address] = task.access_data
+
+            request_task.terminator_data = final_results
+        else:
+            # For regular nodes, store the data on the node
+            func = env[graph_task_key].access_request
+            env[graph_task_key].privacy_request_task = request_task
+            upstream_data = [
+                upstream.access_data if upstream.access_data else []
+                for upstream in upstream_results
+            ]
+            func(*upstream_data)
+
+        request_task.status = TaskStatus.complete
+        request_task.save(session)
+
+        # If there are other downstream tasks that are ready to go, queue those now
+        pending_downstream_tasks: Query = request_task.pending_downstream_tasks(session)
+        for downstream_task in pending_downstream_tasks:
+            if downstream_task.upstream_tasks_complete(session):
+                logger.info(f"Upstream tasks complete so queuing {downstream_task.id}")
+                run_access_node.delay(
                     privacy_request_id=privacy_request_id,
                     privacy_request_task_id=downstream_task.id,
                 )
@@ -1103,7 +1239,93 @@ def update_erasure_mapping_from_cache(
         ]
 
 
-async def run_erasure(  # pylint: disable = too-many-arguments
+def create_erasure_request_task_objects(
+    session: Session,
+    privacy_request: PrivacyRequest,
+    env: Dict[CollectionAddress, Any],
+    end_nodes: List[CollectionAddress],
+):
+    """
+    Erasure tasks need to access the Access Tasks.erasure_data
+
+
+    """
+    graph: networkx.DiGraph = build_erasure_networkx_digraph(env, end_nodes)
+
+    ready_tasks: List[PrivacyRequestTask] = []
+
+    for node in list(networkx.topological_sort(graph)):
+        existing_completed_task = (
+            session.query(PrivacyRequestTask)
+            .filter(
+                PrivacyRequestTask.privacy_request_id == privacy_request.id,
+                PrivacyRequestTask.action_type == ActionType.erasure,
+                PrivacyRequestTask.collection_address == node.value,
+                PrivacyRequestTask.status == TaskStatus.complete,
+            )
+            .first()
+        )
+
+        if existing_completed_task:
+            continue
+
+        # Select access task of the same name
+        access_task = (
+            session.query(PrivacyRequestTask)
+            .filter(
+                PrivacyRequestTask.privacy_request_id == privacy_request.id,
+                PrivacyRequestTask.action_type == ActionType.access,
+                PrivacyRequestTask.collection_address == node.value,
+                PrivacyRequestTask.status == TaskStatus.complete,
+            )
+            .first()
+        )
+        retrieved_task_data = []
+        if access_task:
+            retrieved_task_data = access_task.data_for_erasures
+
+        # Select upstream inputs of this node for things like email connectors
+        input_tasks = session.query(PrivacyRequestTask).filter(
+            PrivacyRequestTask.privacy_request_id == privacy_request.id,
+            PrivacyRequestTask.action_type == ActionType.access,
+            PrivacyRequestTask.collection_address.in_(access_task.upstream_tasks),
+            PrivacyRequestTask.status == TaskStatus.complete,
+        )
+
+        combined_input_data = []
+        for input_data in input_tasks or []:
+            combined_input_data.append(input_data.data_for_erasures or [])
+
+        task = PrivacyRequestTask.create(
+            session,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "upstream_tasks": [
+                    upstream.value for upstream in graph.predecessors(node)
+                ],
+                "downstream_tasks": [
+                    downstream.value for downstream in graph.successors(node)
+                ],
+                "dataset_name": node.dataset,
+                "collection_name": node.collection,
+                "status": TaskStatus.complete
+                if node == ROOT_COLLECTION_ADDRESS
+                else TaskStatus.pending,
+                "data_for_erasures": retrieved_task_data or [],
+                "erasure_input_data": combined_input_data,
+                "action_type": ActionType.erasure,
+                "collection_address": node.value,
+                "all_descendants": [
+                    descend.value for descend in list(networkx.descendants(graph, node))
+                ],
+            },
+        )
+        ready_tasks.append(task)
+
+    return ready_tasks
+
+
+def run_erasure(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -1112,7 +1334,8 @@ async def run_erasure(  # pylint: disable = too-many-arguments
     access_request_data: Dict[str, List[Row]],
     session: Session,
 ) -> Dict[str, int]:
-    """Run an erasure request"""
+    """Queue the erasure request nodes"""
+    logger.info("Building erasure graph")
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(
         privacy_request, policy, connection_configs, session
@@ -1125,60 +1348,27 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        # We store the end nodes from the traversal for analytics purposes
-        # but we generate a separate erasure_end_nodes list for the actual erasure traversal
         env: Dict[CollectionAddress, Any] = {}
-        access_end_nodes = traversal.traverse(env, collect_tasks_fn)
+        traversal.traverse(env, collect_tasks_fn)
         erasure_end_nodes = list(graph.nodes.keys())
 
-        def termination_fn(*dependent_values: int) -> Dict[str, int]:
-            """
-            The erasure order can be affected in a way that not every node is directly linked
-            to the termination node. This means that we can't just aggregate the inputs directly,
-            we must read the erasure results from the cache.
-            """
-            return resources.get_all_cached_erasures()
-
-        access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
-
-        dsk: Dict[CollectionAddress, Any] = {
-            k: (
-                t.erasure_request,
-                access_request_data.get(
-                    str(k), []
-                ),  # Pass in the results of the access request for this collection
-                [
-                    access_request_data.get(
-                        str(upstream_key), []
-                    )  # Additionally pass in the original input data we used for the access request. It's helpful in
-                    # cases like the EmailConnector where the access request doesn't actually retrieve data.
-                    for upstream_key in t.input_keys
-                ],
-                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
-            )
-            for k, t in env.items()
-        }
-
-        # root node returns 0 to be consistent with the output of the other erasure tasks
-        dsk[ROOT_COLLECTION_ADDRESS] = 0
-        # terminator function reads and returns the cached erasure results for the entire erasure traversal
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
-        update_erasure_mapping_from_cache(dsk, resources)
-        await fideslog_graph_rerun(
-            prepare_rerun_graph_analytics_event(
-                privacy_request, env, access_end_nodes, resources, ActionType.erasure
-            )
+        created_privacy_request_tasks = create_erasure_request_task_objects(
+            session, privacy_request, env, erasure_end_nodes
         )
 
-        # using an existing function from dask.core to detect cycles in the generated graph
-        collection_cycle = getcycle(dsk, None)
-        if collection_cycle:
-            raise TraversalError(
-                f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
-            )
+        queued_tasks = []
+        for task in created_privacy_request_tasks:
+            queued_tasks.append(task)
+            if (
+                task.upstream_tasks_complete(session)
+                and task.collection_address != ROOT_COLLECTION_ADDRESS.value
+            ):
+                logger.info(
+                    f"Queuing erasure task {privacy_request.id} > {task.id}: {task.collection_address}"
+                )
+                run_erasure_node.delay(privacy_request.id, task.id)
 
-        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-        return v.compute()
+        return queued_tasks
 
 
 def _evaluate_erasure_dependencies(

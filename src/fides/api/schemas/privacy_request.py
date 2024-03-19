@@ -10,7 +10,8 @@ from fides.api.models.audit_log import AuditLogAction
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
-    PrivacyRequestStatus, TaskStatus,
+    PrivacyRequestStatus,
+    TaskStatus,
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema

@@ -1,17 +1,17 @@
 """privacyrequesttask
 
-Revision ID: e743d13cac34
+Revision ID: 9f97aa2ae1e6
 Revises: 69e51a460e66
-Create Date: 2024-03-17 15:55:26.380723
+Create Date: 2024-03-19 22:44:27.862892
 
 """
-import sqlalchemy as sa
 import sqlalchemy_utils
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "e743d13cac34"
+revision = "9f97aa2ae1e6"
 down_revision = "69e51a460e66"
 branch_labels = None
 depends_on = None
@@ -58,7 +58,16 @@ def upgrade():
         sa.Column("collection_address", sa.String(), nullable=False),
         sa.Column("status", sa.String(), nullable=False),
         sa.Column("action_type", sa.String(), nullable=False),
-        sa.Column("data", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column(
+            "access_data", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+        sa.Column(
+            "data_for_erasures", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+        sa.Column(
+            "erasure_input_data", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+        sa.Column("rows_masked", sa.Integer(), nullable=True),
         sa.Column(
             "terminator_data",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),

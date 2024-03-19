@@ -388,6 +388,7 @@ def run_privacy_request(
             )
             access_result_urls: List[str] = []
 
+            # ACCESS CHECKPOINT
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
                 or policy.get_rules_for_action(action_type=ActionType.erasure)
@@ -404,6 +405,7 @@ def run_privacy_request(
                 )
                 return
 
+            # UPLOAD ACCESS RESULTS CHECKPOINT
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
                 or policy.get_rules_for_action(action_type=ActionType.erasure)
@@ -428,24 +430,33 @@ def run_privacy_request(
                     fides_connector_datasets,
                 )
 
-            # if policy.get_rules_for_action(
-            #     action_type=ActionType.erasure
-            # ) and can_run_checkpoint(
-            #     request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
-            # ):
-            #     # We only need to run the erasure once until masking strategies are handled
-            #     await run_erasure(
-            #         privacy_request=privacy_request,
-            #         policy=policy,
-            #         graph=dataset_graph,
-            #         connection_configs=connection_configs,
-            #         identity=identity_data,
-            #         access_request_data=get_cached_data_for_erasures(
-            #             privacy_request.id
-            #         ),
-            #         session=session,
-            #     )
+            # ERASURE CHECKPOINT
+            if policy.get_rules_for_action(
+                action_type=ActionType.erasure
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
+            ):
+                # We only need to run the erasure once until masking strategies are handled
+                run_erasure(
+                    privacy_request=privacy_request,
+                    policy=policy,
+                    graph=dataset_graph,
+                    connection_configs=connection_configs,
+                    identity=identity_data,
+                    access_request_data=get_cached_data_for_erasures(
+                        privacy_request.id
+                    ),
+                    session=session,
+                )
+                return
 
+            # Finalize Erasure CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.finalize_erasure,
+                from_checkpoint=resume_step,
+            ):
+                pass
+                "Adding a checkpoint for after the erasure is complete"
             # if policy.get_rules_for_action(
             #     action_type=ActionType.consent
             # ) and can_run_checkpoint(

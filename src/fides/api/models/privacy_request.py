@@ -89,6 +89,7 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.access,
     CurrentStep.upload_access,
     CurrentStep.erasure,
+    CurrentStep.finalize_erasure,
     CurrentStep.consent,
     CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
@@ -981,13 +982,16 @@ class PrivacyRequest(
 
     def get_access_data(self, db: Session) -> Dict:
         """Get data written by the access graph"""
-        terminator_task = db.query(PrivacyRequestTask).filter(
-            PrivacyRequestTask.privacy_request_id == self.id,
-            PrivacyRequestTask.collection_address
-            == TERMINATOR_ADDRESS.value,
-            PrivacyRequestTask.action_type == ActionType.access,
-            PrivacyRequestTask.status == TaskStatus.complete,
-        ).first()
+        terminator_task = (
+            db.query(PrivacyRequestTask)
+            .filter(
+                PrivacyRequestTask.privacy_request_id == self.id,
+                PrivacyRequestTask.collection_address == TERMINATOR_ADDRESS.value,
+                PrivacyRequestTask.action_type == ActionType.access,
+                PrivacyRequestTask.status == TaskStatus.complete,
+            )
+            .first()
+        )
 
         if terminator_task:
             return terminator_task.terminator_data or {}
@@ -1482,11 +1486,27 @@ class PrivacyRequestTask(Base):
     )
     action_type = Column(EnumColumn(ActionType), nullable=False)
 
-    # TODO ENCRYPT THIS -  it is a list of dicts, StringEncryptedType may not work here
-    data = Column(
+    # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
+    access_data = Column(
         MutableList.as_mutable(JSONB),
         nullable=True,
     )
+
+    # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
+    # terrible name, but this is the data that should feed into the erasure node
+    # or be used by the erasure node.
+    data_for_erasures = Column(
+        MutableList.as_mutable(JSONB),
+        nullable=True,
+    )
+
+    # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
+    erasure_input_data = Column(
+        MutableList.as_mutable(JSONB),
+        nullable=True,
+    )
+
+    rows_masked = Column(Integer)
 
     # The final data stored for a terminator node
     terminator_data = Column(

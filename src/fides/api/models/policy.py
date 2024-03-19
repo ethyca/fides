@@ -35,7 +35,7 @@ class CurrentStep(EnumType):
     access = "access"
     upload_access = "upload_access"
     erasure = "erasure"
-    finalize_erausre = "finalize_erasure"
+    finalize_erasure = "finalize_erasure"
     consent = "consent"
     email_post_send = "email_post_send"
     post_webhooks = "post_webhooks"
