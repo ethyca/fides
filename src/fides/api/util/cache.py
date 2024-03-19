@@ -196,10 +196,11 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
     return _connection
 
 
-def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> str:
-    """Return the key at which to save this PrivacyRequest's identity for the passed in attribute"""
-    # TODO: Remove this prefix
-    return f"id-{privacy_request_id}-identity-{identity_attribute}"
+def get_derived_identity_cache_key(
+    privacy_request_id: str, identity_attribute: str
+) -> str:
+    """Return the key at which to save this PrivacyRequest's derived identity for the passed in attribute"""
+    return f"id-{privacy_request_id}-derived-identity-{identity_attribute}"
 
 
 def get_custom_privacy_request_field_cache_key(
@@ -228,6 +229,11 @@ def get_masking_secret_cache_key(
     return (
         f"id-{privacy_request_id}-masking-secret-{masking_strategy}-{secret_type.value}"
     )
+
+
+def get_all_masking_secret_keys(privacy_request_id: str):
+    cache: FidesopsRedis = get_cache()
+    return cache.keys(f"id-{privacy_request_id}-masking-secret-*")
 
 
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:

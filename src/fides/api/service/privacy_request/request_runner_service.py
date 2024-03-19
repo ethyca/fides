@@ -13,6 +13,7 @@ from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     IdentityNotFoundException,
     ManualWebhookFieldsUnset,
+    MaskingSecretsExpired,
     MessageDispatchException,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
@@ -73,6 +74,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
+    get_all_masking_secret_keys,
     get_async_task_tracking_cache_key,
     get_cache,
 )
@@ -415,7 +417,9 @@ async def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
+                _verify_masking_secrets(policy, privacy_request_id, resume_step)
                 privacy_request.cache_masking_secrets(policy.generate_masking_secrets())
+
                 # We only need to run the erasure once until masking strategies are handled
                 await run_erasure(
                     privacy_request=privacy_request,
@@ -784,3 +788,23 @@ def _create_execution_logs_for_skipped_email_send(
     for connection_config in can_skip_consent_email:
         connector = get_connector(connection_config)
         connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
+
+
+def _verify_masking_secrets(
+    policy: Policy, privacy_request_id: str, resume_step: Optional[CurrentStep]
+) -> None:
+    """
+    Checks that the required masking secrets are still cached for the given request.
+    Raises an exception if masking secrets are needed for the given policy but they don't exist.
+    """
+
+    if resume_step is None:
+        return
+
+    # if masking can be performed without any masking secrets, we skip the cache check
+    if policy.generate_masking_secrets() and get_all_masking_secret_keys(
+        privacy_request_id
+    ):
+        raise MaskingSecretsExpired(
+            f"The masking secrets for privacy request ID '{privacy_request_id}' have expired. Please submit a new erasure request."
+        )

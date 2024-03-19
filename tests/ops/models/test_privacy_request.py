@@ -240,7 +240,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[0]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.persist_identity(db, identity)
+        privacy_request.cache_derived_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
             # One-way requests ignore any responses returned
@@ -268,7 +268,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.persist_identity(db, identity)
+        privacy_request.cache_derived_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -294,7 +294,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.persist_identity(db, identity)
+        privacy_request.cache_derived_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -322,7 +322,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.persist_identity(db, identity)
+        privacy_request.cache_derived_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -350,7 +350,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.persist_identity(db, identity)
+        privacy_request.cache_derived_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(
@@ -383,7 +383,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.persist_identity(db, identity)
+        privacy_request.cache_derived_identity(identity)
 
         # halt not included
         with requests_mock.Mocker() as mock_response:

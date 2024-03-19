@@ -151,6 +151,10 @@ class NoCachedManualWebhookEntry(BaseException):
     """No manual data exists for this webhook on the given privacy request."""
 
 
+class MaskingSecretsExpired(BaseException):
+    """The cached masking secrets have expired for the given privacy request."""
+
+
 class ManualWebhookFieldsUnset(BaseException):
     """Manual webhook has fields that are not explicitly set: Likely new field has been added"""
 

@@ -139,7 +139,7 @@ class Policy(Base):
         except IndexError:
             return None
 
-    def create_masking_secrets(self) -> Optional[List[MaskingSecretCache]]:
+    def generate_masking_secrets(self) -> Optional[List[MaskingSecretCache]]:
         """
         Returns a list of masking secrets for the masking strategies in the policy.
         """

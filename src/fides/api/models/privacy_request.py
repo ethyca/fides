@@ -67,7 +67,9 @@ from fides.api.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
+    get_derived_identity_cache_key,
     get_drp_request_body_cache_key,
+    get_identity_cache_key,
     get_masking_secret_cache_key,
 )
 from fides.api.util.collection_util import Row
@@ -340,6 +342,24 @@ class PrivacyRequest(
             provided_identity.delete(db=db)
         super().delete(db=db)
 
+    def cache_derived_identity(self, identity: Identity) -> None:
+        """Sets the derived identity's values at their specific locations in the Fides app cache"""
+        cache: FidesopsRedis = get_cache()
+        identity_dict: Dict[str, Any] = dict(identity)
+        for key, value in identity_dict.items():
+            if value is not None:
+                cache.set_with_autoexpire(
+                    get_derived_identity_cache_key(self.id, key),
+                    value,
+                )
+
+    def get_cached_derived_identity_data(self) -> Dict[str, Any]:
+        """Retrieves any derived identity data pertaining to this request from the cache"""
+        prefix = f"id-{self.id}-derived-identity-*"
+        cache: FidesopsRedis = get_cache()
+        keys = cache.keys(prefix)
+        return {key.split("-")[-1]: cache.get(key) for key in keys}
+
     def persist_identity(self, db: Session, identity: Identity) -> None:
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
@@ -374,8 +394,14 @@ class PrivacyRequest(
         return schema
 
     def get_identity_map(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache"""
-        return self.get_persisted_identity().dict(exclude_none=True)
+        """
+        Returns a combined map of derived identities from the cache and provided identities
+        from the database with provided identities overwriting any overlapping
+        derived identities of the same type.
+        """
+        derived_identity_data = self.get_cached_derived_identity_data()
+        provided_identity_data = self.get_persisted_identity().dict(exclude_none=True)
+        return {**derived_identity_data, **provided_identity_data}
 
     def persist_custom_privacy_request_fields(
         self,
@@ -847,8 +873,9 @@ class PrivacyRequest(
                 self.id,
                 webhook.key,
             )
-            db = Session.object_session(self)
-            self.persist_identity(db, response_body.derived_identity)
+            # Don't persist derived identities because they aren't provided directly
+            # by the end user
+            self.cache_derived_identity(response_body.derived_identity)
 
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
