@@ -19,6 +19,9 @@ The types of changes are:
 
 ### Changed
 - Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728)
+ 
+### Fixed
+- Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
 
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
