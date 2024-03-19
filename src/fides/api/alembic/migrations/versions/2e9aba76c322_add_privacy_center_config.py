@@ -34,7 +34,14 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("config", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column("single_row", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        sa.CheckConstraint(
+            "single_row", name="plus_privacy_center_config_single_row_check"
+        ),
+        sa.UniqueConstraint(
+            "single_row", name="plus_privacy_center_config_single_row_unique"
+        ),
     )
     op.create_index(
         op.f("ix_plus_privacy_center_config_id"),
