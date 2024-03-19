@@ -45,7 +45,7 @@ const setMspaSections = ({
  * However, the GPP field mapping will only contain "us", so make sure we use "us" since we are configured for the national case.
  * Otherwise, we can use the experience region directly.
  */
-export const deriveGppFieldRegion = ({
+const deriveGppFieldRegion = ({
   experienceRegion,
   usApproach,
 }: {

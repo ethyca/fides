@@ -583,7 +583,7 @@ describe("Fides-js GPP extension", () => {
           .its("lastCall.args")
           .then(([data, success]) => {
             expect(success).to.eql(true);
-            expect(data.signalStatus).to.eql("not ready");
+            expect(data.signalStatus).to.eql("ready");
             expect(data.applicableSections).to.eql([-1]);
           });
       });
@@ -732,6 +732,9 @@ describe("Fides-js GPP extension", () => {
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
+        // TODO(PROD-1439): remove this workaround
+        workaroundGppInitializationDelayBug();
+
         cy.get("@FidesUIShown").should("not.have.been.called");
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
