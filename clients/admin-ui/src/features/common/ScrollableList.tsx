@@ -39,6 +39,7 @@ const ScrollableListItem = <T extends unknown>({
         direction="row"
         gap={2}
         maxH={maxH}
+        w="full"
         px={2}
         align="center"
         role="group"
@@ -66,12 +67,18 @@ const ScrollableListItem = <T extends unknown>({
               onRowClick(item);
             }
           }}
+          overflow="clip"
         >
-          <Text fontSize="sm" userSelect="none">
+          <Text
+            fontSize="sm"
+            userSelect="none"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            overflow="hidden"
+          >
             {label}
           </Text>
         </Flex>
-
         {onDeleteItem ? (
           <IconButton
             aria-label="Delete"
@@ -118,6 +125,7 @@ const ScrollableListAdd = ({
         options={options}
         onChange={(e: any) => handleElementSelected(e)}
         autoFocus
+        menuPosition="fixed"
         menuPlacement="auto"
       />
     </Box>
@@ -221,7 +229,8 @@ const ScrollableList = <T extends unknown>({
     borderColor: "gray.200",
     borderRadius: "md",
     w: "full",
-    overflowY: "scroll",
+    maxH: "8.5rem",
+    overflowY: "auto",
   } as ChakraProps;
 
   const innerList = draggable ? (

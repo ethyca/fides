@@ -31,7 +31,9 @@ import {
   selectPageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
+import { OOBTranslationNotice } from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import {
+  NoticeTranslation,
   NoticeTranslationCreate,
   PrivacyNoticeCreation,
   SupportedLanguage,
@@ -40,12 +42,15 @@ import {
 const TranslationFormBlock = ({
   index,
   name,
+  isOOB,
 }: {
   index: number;
   name: string;
+  isOOB?: boolean;
 }) => (
   <Flex direction="column" gap={6}>
     <Heading size="sm">Edit {name} translation</Heading>
+    {isOOB ? <OOBTranslationNotice languageName={name} /> : null}
     <CustomTextInput
       autoFocus={index !== 0}
       name={`translations.${index}.title`}
@@ -94,11 +99,16 @@ const TranslationTabButton = ({
   </Flex>
 );
 
-const PrivacyNoticeTranslationForm = () => {
+const PrivacyNoticeTranslationForm = ({
+  availableTranslations,
+}: {
+  availableTranslations?: NoticeTranslation[];
+}) => {
   const { values, setFieldValue } = useFormikContext<PrivacyNoticeCreation>();
 
   const [isSelectingLanguage, setIsSelectingLanguage] =
     useState<boolean>(false);
+  const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
   const [tabIndex, setTabIndex] = useState<number>(0);
 
   const languagePage = useAppSelector(selectPage);
@@ -114,10 +124,19 @@ const PrivacyNoticeTranslationForm = () => {
         (translation) => translation.language !== lang.id
       )
     )
-    .map((lang) => ({ label: lang.name, value: lang.id }));
+    .map((lang) => ({ label: lang.name, value: lang.id as SupportedLanguage }));
 
-  const handleLanguageSelected = (language: string) => {
-    const newTranslation: NoticeTranslationCreate = {
+  const handleTabSelected = (index: number) => {
+    setTabIndex(index);
+    setTranslationIsOOB(false);
+  };
+
+  const handleCreateLanguage = (language: SupportedLanguage) => {
+    const availableTranslation = availableTranslations?.find(
+      (translation) => translation.language === language
+    );
+    setTranslationIsOOB(!!availableTranslation);
+    const newTranslation = availableTranslation ?? {
       language: language as SupportedLanguage,
       title: "",
       description: "",
@@ -146,7 +165,7 @@ const PrivacyNoticeTranslationForm = () => {
     <FormSection title="Localizations">
       <Tabs
         index={tabIndex}
-        onChange={setTabIndex}
+        onChange={handleTabSelected}
         as={HStack}
         spacing={8}
         align="start"
@@ -183,7 +202,7 @@ const PrivacyNoticeTranslationForm = () => {
                 chakraStyles={SELECT_STYLES}
                 size="sm"
                 options={languageOptions}
-                onChange={(e: any) => handleLanguageSelected(e.value)}
+                onChange={(e: any) => handleCreateLanguage(e.value)}
                 autoFocus
                 classNamePrefix="select-language"
                 menuPlacement="auto"
@@ -213,6 +232,7 @@ const PrivacyNoticeTranslationForm = () => {
                     <TranslationFormBlock
                       index={idx}
                       name={getLanguageDisplayName(translation.language)}
+                      isOOB={translationIsOOB}
                     />
                   </TabPanel>
                 ))}
