@@ -17,6 +17,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.32.0...main)
 
+### Fixed
+
+- Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
+
+
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
 ### Added
