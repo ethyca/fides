@@ -1,4 +1,4 @@
-import { stubPlus } from "cypress/support/stubs";
+import { stubPlus, stubTranslationConfig } from "cypress/support/stubs";
 
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
@@ -190,6 +190,23 @@ describe("Privacy experiences", () => {
         // Make sure regions is still ["us_ca"] (unchanged)
         expect(body.regions).to.eql(["us_ca"]);
       });
+    });
+  });
+
+  describe("translation interface", () => {
+    it("shows the language interface when translations are enabled", () => {
+      stubTranslationConfig(true);
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
+      cy.wait("@getTranslationConfig");
+      cy.getByTestId("input-auto_detect_language").should("exist");
+    });
+
+    it("shows an edit button instead when translations are disabled", () => {
+      stubTranslationConfig(false);
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
+      cy.wait("@getTranslationConfig");
+      cy.getByTestId("input-auto_detect_language").should("not.exist");
+      cy.getByTestId("edit-experience-btn").should("exist");
     });
   });
 });

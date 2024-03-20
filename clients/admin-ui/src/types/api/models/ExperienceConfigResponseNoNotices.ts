@@ -4,6 +4,7 @@
 
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
+import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { SupportedLanguage } from "./SupportedLanguage";
 
@@ -75,4 +76,5 @@ export type ExperienceConfigResponseNoNotices = {
   updated_at: string;
   component: ComponentType;
   translations?: Array<ExperienceTranslationResponse>;
+  properties?: Array<MinimalProperty>;
 };
