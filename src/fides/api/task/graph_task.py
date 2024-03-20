@@ -378,7 +378,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         ) = self.build_incoming_field_path_maps(group_dependent_fields)
 
         for i, rowset in enumerate(data):
-            collection_address = self.input_keys[i]
+            # Input of order data matters - should match the order of upstream tasks
+            collection_address = CollectionAddress.from_string(
+                self.privacy_request_task.upstream_tasks[i]
+            )
 
             if (
                 group_dependent_fields
@@ -1148,6 +1151,11 @@ def run_access_node(
             # For regular nodes, store the data on the node
             func = env[graph_task_key].access_request
             env[graph_task_key].privacy_request_task = request_task
+            upstream_data = [
+                upstream.access_data if upstream.access_data else []
+                for upstream in upstream_results
+            ]
+            # order matters, downstream now looking at order of upstream_results
             upstream_data = [
                 upstream.access_data if upstream.access_data else []
                 for upstream in upstream_results

@@ -1,3 +1,4 @@
+import json
 import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -81,6 +82,7 @@ from fides.api.util.cache import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
+from fides.api.util.storage_util import storage_json_encoder
 from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
@@ -415,7 +417,9 @@ def run_privacy_request(
             ):
                 # TODO Terminator task must exist and must be in state done
                 access_results = privacy_request.get_access_data(session)
-                logger.info(f"SUCCESSFUL ACCESS REQUEST: {access_results}")
+                logger.info(
+                    f"Unfiltered access results {json.loads(json.dumps(access_results, default=storage_json_encoder))}"
+                )
 
                 filtered_access_results = filter_by_enabled_actions(
                     access_results, connection_configs
