@@ -378,10 +378,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         ) = self.build_incoming_field_path_maps(group_dependent_fields)
 
         for i, rowset in enumerate(data):
-            # Input of order data matters - should match the order of upstream tasks
-            collection_address = CollectionAddress.from_string(
-                self.privacy_request_task.upstream_tasks[i]
-            )
+            collection_address = self.input_keys[i]
 
             if (
                 group_dependent_fields
@@ -1151,16 +1148,9 @@ def run_access_node(
             # For regular nodes, store the data on the node
             func = env[graph_task_key].access_request
             env[graph_task_key].privacy_request_task = request_task
-            upstream_data = [
-                upstream.access_data if upstream.access_data else []
-                for upstream in upstream_results
-            ]
-            # order matters, downstream now looking at order of upstream_results
-            upstream_data = [
-                upstream.access_data if upstream.access_data else []
-                for upstream in upstream_results
-            ]
-            func(*upstream_data)
+            ordered_upstream_tasks = order_tasks_by_input_key(env[graph_task_key].input_keys, upstream_results)
+            # Put access data in the same order as the input keys
+            func(*[upstream.access_data if upstream else [] for upstream in ordered_upstream_tasks])
 
         request_task.status = TaskStatus.complete
         request_task.save(session)
@@ -1188,6 +1178,21 @@ def run_access_node(
                 privacy_request_id=privacy_request.id,
                 from_step=CurrentStep.upload_access.value,
             )
+
+def order_tasks_by_input_key(input_keys: List[CollectionAddress], upstream_tasks: Query) -> List[Optional[PrivacyRequestTask]]:
+    """Order tasks by input key. If task doesn't exist, add None in its place"""
+    tasks: List[Optional[PrivacyRequestTask]] = []
+    for key in input_keys:
+        task = next(
+            (
+                upstream
+                for upstream in upstream_tasks
+                if upstream.collection_address == key.value
+            ),
+            None,
+        )
+        tasks.append(task)
+    return tasks
 
 
 def filter_by_enabled_actions(
@@ -1299,9 +1304,10 @@ def create_erasure_request_task_objects(
             PrivacyRequestTask.collection_address.in_(access_task.upstream_tasks),
             PrivacyRequestTask.status == TaskStatus.complete,
         )
+        ordered_upstream_tasks = [] if node in [ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS] else order_tasks_by_input_key(env[node].input_keys, input_tasks)
 
         combined_input_data = []
-        for input_data in input_tasks or []:
+        for input_data in ordered_upstream_tasks or []:
             combined_input_data.append(input_data.data_for_erasures or [])
 
         task = PrivacyRequestTask.create(
