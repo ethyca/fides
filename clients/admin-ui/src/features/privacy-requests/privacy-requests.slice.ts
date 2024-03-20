@@ -471,6 +471,12 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.body,
       }),
     }),
+    getPrivacyCenterConfig: build.query<any, void>({
+      query: () => ({
+        method: "GET",
+        url: `plus/privacy-center-config`,
+      }),
+    }),
   }),
 });
 
@@ -485,6 +491,7 @@ export const {
   useSaveNotificationMutation,
   useUploadManualAccessWebhookDataMutation,
   useUploadManualErasureWebhookDataMutation,
+  useGetPrivacyCenterConfigQuery,
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,

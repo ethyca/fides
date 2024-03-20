@@ -3,6 +3,8 @@ import dynamic from "next/dynamic";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
+import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
+
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
 import RequestFilters from "./RequestFilters";
 import RequestTable from "./RequestTable";
@@ -22,11 +24,12 @@ const PrivacyRequestsContainer: React.FC = () => {
 
   return (
     <>
-      <Flex data-testid="privacy-requests">
+      <Flex data-testid="privacy-requests" gap={4}>
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           Privacy Requests
         </Heading>
         <Spacer />
+        <SubmitPrivacyRequest />
         <ActionButtons />
       </Flex>
       <RequestFilters revealPII={revealPII} setRevealPII={setRevealPII} />
