@@ -26,8 +26,7 @@ import React, { ReactNode, useMemo, useState } from "react";
 
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
-
-import { getTableTHandTDStyles } from "./util";
+import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 /*
   This was throwing a false positive for unused parameters.
