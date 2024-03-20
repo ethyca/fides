@@ -168,7 +168,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-name").should("not.be.disabled");
     });
 
-    it("allows changes to data uses for non-GVL vendors", () => {
+    it("don't allow editing declaration name after creation", () => {
       cy.getSelectValueContainer("input-name").type("L{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
@@ -176,8 +176,20 @@ describe("System management with Plus features", () => {
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
       cy.getByTestId("row-functional.service.improve").click();
-      cy.getByTestId("input-name").should("not.be.disabled");
+      cy.getByTestId("input-name").should("be.disabled");
     });
+
+    it("don't allow editing data uses after creation", () => {
+      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn");
+      cy.getByTestId("delete-btn");
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-data_use").find('input').should("be.disabled");
+    });
+
   });
 
   describe("custom metadata", () => {
