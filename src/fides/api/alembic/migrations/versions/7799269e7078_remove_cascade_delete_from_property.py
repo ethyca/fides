@@ -1,15 +1,16 @@
 """remove cascade delete from property linking table
 
 Revision ID: 7799269e7078
-Revises: 69e51a460e66
+Revises: 2e9aba76c322
 Create Date: 2024-03-14 05:53:23.282985
 
 """
+
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "7799269e7078"
-down_revision = "69e51a460e66"
+down_revision = "2e9aba76c322"
 branch_labels = None
 depends_on = None
 
