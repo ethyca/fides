@@ -3,6 +3,7 @@ import {
   stubPlus,
   stubPrivacyNoticesCrud,
   stubTaxonomyEntities,
+  stubTranslationConfig,
 } from "cypress/support/stubs";
 
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
@@ -307,6 +308,7 @@ describe("Privacy notices", () => {
     });
 
     it("can create a new privacy notice", () => {
+      stubTranslationConfig(true);
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.getByTestId("new-privacy-notice-page");
       const notice = {
@@ -380,6 +382,23 @@ describe("Privacy notices", () => {
 
       // can still edit the notice key field to be something else
       cy.getByTestId("input-notice_key").clear().type("custom_key");
+    });
+  });
+
+  describe("translation interface", () => {
+    it("shows the translation interface when translations are enabled", () => {
+      stubLanguages();
+      stubTranslationConfig(true);
+      cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
+      cy.wait("@getTranslationConfig");
+      cy.getByTestId("add-language-btn").should("exist");
+    });
+
+    it("doesn't show the translation interface when translations are disabled", () => {
+      stubTranslationConfig(false);
+      cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
+      cy.wait("@getTranslationConfig");
+      cy.getByTestId("add-language-btn").should("not.exist");
     });
   });
 });
