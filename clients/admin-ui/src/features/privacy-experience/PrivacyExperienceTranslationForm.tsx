@@ -40,10 +40,12 @@ export const OOBTranslationNotice = ({
 
 const PrivacyExperienceTranslationForm = ({
   translation,
+  translationsEnabled,
   isOOB,
   onReturnToMainForm,
 }: {
   translation: TranslationWithLanguageName;
+  translationsEnabled?: boolean;
   isOOB?: boolean;
   onReturnToMainForm: () => void;
 }) => {
@@ -148,46 +150,57 @@ const PrivacyExperienceTranslationForm = ({
     </ButtonGroup>
   );
 
+  let unsavedChangesMessage;
+  if (!translationsEnabled) {
+    unsavedChangesMessage =
+      "You have unsaved changes to this experience text. Discard changes?";
+  } else {
+    unsavedChangesMessage = isEditing
+      ? "You have unsaved changes to this translation. Discard changes?"
+      : "This translation has not been added to your experience.  Discard translation?";
+  }
+
   return (
     <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
       <BackButtonNonLink onClick={handleLeaveForm} mt={4} />
       <WarningModal
         isOpen={unsavedChangesIsOpen}
         onClose={onCloseUnsavedChanges}
-        title="Translation not saved"
-        message={
-          <Text>
-            {isEditing
-              ? "You have unsaved changes to this translation. Discard changes?"
-              : "This translation has not been added to your experience.  Discard translation?"}
-          </Text>
-        }
+        title={translationsEnabled ? "Translation not saved" : "Text not saved"}
+        message={<Text>{unsavedChangesMessage}</Text>}
         confirmButtonText="Discard"
         handleConfirm={discardChanges}
       />
-      <WarningModal
-        isOpen={newDefaultIsOpen}
-        onClose={onCloseNewDefault}
-        title="Update default language"
-        message={
-          <Text>
-            Are you sure you want to update the default language of this
-            experience?
-          </Text>
-        }
-        handleConfirm={() => setNewDefaultTranslation(translationIndex)}
-      />
       <Heading fontSize="md" fontWeight="semibold">
-        Edit {translation.name} translation
+        {translationsEnabled
+          ? `Edit ${translation.name} translation`
+          : "Edit experience text"}
       </Heading>
       {isOOB ? <OOBTranslationNotice languageName={translation.name} /> : null}
-      <CustomSwitch
-        name={`translations.${translationIndex}.is_default`}
-        id={`translations.${translationIndex}.is_default`}
-        label="Default language"
-        isDisabled={initialTranslation.is_default}
-        variant="stacked"
-      />
+      {translationsEnabled ? (
+        <>
+          <CustomSwitch
+            name={`translations.${translationIndex}.is_default`}
+            id={`translations.${translationIndex}.is_default`}
+            label="Default language"
+            isDisabled={initialTranslation.is_default}
+            variant="stacked"
+          />
+          <WarningModal
+            isOpen={newDefaultIsOpen}
+            onClose={onCloseNewDefault}
+            title="Update default language"
+            message={
+              <Text>
+                Are you sure you want to update the default language of this
+                experience?
+              </Text>
+            }
+            handleConfirm={() => setNewDefaultTranslation(translationIndex)}
+          />
+        </>
+      ) : null}
+
       <CustomTextInput
         name={`translations.${translationIndex}.title`}
         id={`translations.${translationIndex}.title`}
