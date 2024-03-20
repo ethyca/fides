@@ -187,9 +187,8 @@ describe("System management with Plus features", () => {
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
       cy.getByTestId("row-functional.service.improve").click();
-      cy.getByTestId("input-data_use").find('input').should("be.disabled");
+      cy.getByTestId("input-data_use").find("input").should("be.disabled");
     });
-
   });
 
   describe("custom metadata", () => {
