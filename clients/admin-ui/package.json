@@ -46,7 +46,7 @@
     "fides-js": "^0.0.1",
     "file-saver": "^2.0.5",
     "formik": "^2.2.9",
-    "framer-motion": "6.0",
+    "framer-motion": "6.5.1",
     "i18n-iso-countries": "^7.5.0",
     "immer": "^9.0.21",
     "js-yaml": "^4.1.0",
