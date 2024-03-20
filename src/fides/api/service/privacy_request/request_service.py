@@ -163,7 +163,13 @@ def poll_for_exited_privacy_request_tasks(self):
         for pr in in_progress_privacy_requests.all():
             if pr.erasure_tasks.count():
                 """These are not created until access tasks are created."""
-                # TODO handle erasure
+                if all(
+                    tsk.status in [TaskStatus.complete, TaskStatus.error]
+                    for tsk in pr.erasure_tasks
+                ):
+                    logger.info(f"Marking erasure step of {pr.id} as error")
+                    pr.status = PrivacyRequestStatus.error
+                    pr.save(db)
 
             elif pr.access_tasks.count():
                 if all(
