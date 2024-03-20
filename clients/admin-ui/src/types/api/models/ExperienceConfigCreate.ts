@@ -4,9 +4,8 @@
 
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationCreate } from "./ExperienceTranslationCreate";
-import { MinimalProperty } from "./MinimalProperty";
+import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { Property } from "./Property";
 
 /**
  * Schema for creating Experience Configs via the API
