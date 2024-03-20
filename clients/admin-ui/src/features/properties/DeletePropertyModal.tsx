@@ -8,37 +8,36 @@ import {
 import router from "next/router";
 import React from "react";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import Restrict from "~/features/common/Restrict";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useDeletePropertyMutation } from "~/features/properties/property.slice";
 import { Property, ScopeRegistryEnum } from "~/types/api";
-
-import { getErrorMessage, isErrorResult } from "../common/helpers";
-import { PROPERTIES_ROUTE } from "../common/nav/v2/routes";
-import Restrict from "../common/Restrict";
-import { errorToastParams, successToastParams } from "../common/toast";
-import { useDeletePropertyMutation } from "./property.slice";
 
 interface Props {
   property: Property;
-  displayComponent: React.ReactElement & { isDisabled?: boolean };
+  triggerComponent: React.ReactElement & { isDisabled?: boolean };
 }
 
 /**
  * A component that encapsulates the logic to display the "delete property" modal.
- * It accepts a displayComponent prop that will be used as the button to trigger the modal.
- * The displayComponent should implement the isDisabled prop to indicate if it should be disabled.
+ * It accepts a triggerComponent prop that will be used as the button to trigger the modal.
+ * The triggerComponent should implement the isDisabled prop to indicate if it should be disabled.
  *
  * @param property The property associated with the modal.
- * @param displayComponent The React component to be rendered as the trigger for the modals.
+ * @param triggerComponent The React component to be rendered as the trigger for the modals.
  *
  * @example
- * <DeletePropertyModalTrigger
+ * <DeletePropertyModal
  *   property={selectedProperty}
- *   displayComponent={<Button>Delete Property</Button>}
+ *   triggerComponent={<Button>Delete Property</Button>}
  * />
  */
-const DeletePropertyModalTrigger: React.FC<Props> = ({
+const DeletePropertyModal: React.FC<Props> = ({
   property,
-  displayComponent,
+  triggerComponent,
 }) => {
   const toast = useToast();
   const confirmationModal = useDisclosure();
@@ -72,7 +71,7 @@ const DeletePropertyModalTrigger: React.FC<Props> = ({
         isDisabled={!isDisabled}
       >
         <span>
-          {React.cloneElement(displayComponent, {
+          {React.cloneElement(triggerComponent, {
             onClick: handleModalOpen,
             isDisabled,
           })}
@@ -99,4 +98,4 @@ const DeletePropertyModalTrigger: React.FC<Props> = ({
   );
 };
 
-export default DeletePropertyModalTrigger;
+export default DeletePropertyModal;

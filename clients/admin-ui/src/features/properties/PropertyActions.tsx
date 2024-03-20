@@ -8,7 +8,7 @@ import Restrict from "~/features/common/Restrict";
 import NewJavaScriptTag from "~/features/privacy-experience/NewJavaScriptTag";
 import { Property, ScopeRegistryEnum } from "~/types/api";
 
-import DeletePropertyModalTrigger from "./DeletePropertyModalTrigger";
+import DeletePropertyModal from "./DeletePropertyModal";
 
 interface Props {
   property: Property;
@@ -38,9 +38,9 @@ const PropertyActions = ({ property }: Props) => {
           }}
         />
       </Restrict>
-      <DeletePropertyModalTrigger
+      <DeletePropertyModal
         property={property}
-        displayComponent={
+        triggerComponent={
           <IconButton
             aria-label="Delete property"
             data-testid="delete-property-button"

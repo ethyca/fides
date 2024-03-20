@@ -21,7 +21,7 @@ import {
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { MinimalPrivacyExperience, Property, PropertyType } from "~/types/api";
 
-import DeletePropertyModalTrigger from "./DeletePropertyModalTrigger";
+import DeletePropertyModal from "./DeletePropertyModal";
 
 interface Props {
   property?: Property;
@@ -129,9 +129,9 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
           )}
           <Flex justifyContent="space-between" width="100%" paddingTop={2}>
             {property && (
-              <DeletePropertyModalTrigger
+              <DeletePropertyModal
                 property={property}
-                displayComponent={
+                triggerComponent={
                   <Button
                     data-testid="delete-property-button"
                     size="sm"
