@@ -43,7 +43,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
   const fidesJsScriptTag = useMemo(() => {
     const script = FIDES_JS_SCRIPT_TEMPLATE.replace(
       PROPERTY_UNIQUE_ID_TEMPLATE,
-      property.id.toString()
+      property.id!.toString()
     );
     if (isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url) {
       script.replace(

@@ -13,7 +13,7 @@ import type { UserConsentPreference } from "./UserConsentPreference";
 /**
  * An API representation of a PrivacyNotice used for response payloads
  *
- * Overrides fields from PriavcyNotice schema to indicate which ones
+ * Overrides fields from PrivacyNotice schema to indicate which ones
  * are guaranteed to be supplied
  */
 export type PrivacyNoticeResponse = {
