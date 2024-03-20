@@ -1,7 +1,7 @@
 """add encryption key and masking secrets to privacy request
 
 Revision ID: ffca47b43275
-Revises: 26d5976531d6
+Revises: 2e9aba76c322
 Create Date: 2024-02-12 23:06:23.868617
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ffca47b43275"
-down_revision = "26d5976531d6"
+down_revision = "2e9aba76c322"
 branch_labels = None
 depends_on = None
 

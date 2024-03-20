@@ -834,7 +834,7 @@ def resume_privacy_request(
     # We don't want to persist derived identities because they have not been provided
     # by the end user
 
-    privacy_request.cache_derived_identity(webhook_callback.derived_identity)
+    privacy_request.cache_derived_identity(webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(

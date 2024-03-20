@@ -802,7 +802,7 @@ def _verify_masking_secrets(
         return
 
     # if masking can be performed without any masking secrets, we skip the cache check
-    if policy.generate_masking_secrets() and get_all_masking_secret_keys(
+    if policy.generate_masking_secrets() and not get_all_masking_secret_keys(
         privacy_request_id
     ):
         raise MaskingSecretsExpired(

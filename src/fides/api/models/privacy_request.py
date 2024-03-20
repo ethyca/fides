@@ -69,7 +69,6 @@ from fides.api.util.cache import (
     get_cache,
     get_derived_identity_cache_key,
     get_drp_request_body_cache_key,
-    get_identity_cache_key,
     get_masking_secret_cache_key,
 )
 from fides.api.util.collection_util import Row
