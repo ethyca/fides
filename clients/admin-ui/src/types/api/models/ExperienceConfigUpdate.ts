@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ExperienceTranslation } from "./ExperienceTranslation";
+import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
@@ -24,4 +25,5 @@ export type ExperienceConfigUpdate = {
   regions: Array<PrivacyNoticeRegion>;
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;
+  properties: Array<MinimalProperty>;
 };
