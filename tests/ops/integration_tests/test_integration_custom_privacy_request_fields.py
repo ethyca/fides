@@ -101,6 +101,7 @@ class TestCustomPrivacyRequestFields:
                 "account_ids": CustomPrivacyRequestField(
                     label="Account IDs", value=[123, 456]
                 ),
+                "support_id": CustomPrivacyRequestField(label="Support ID", value=1),
             },
         }
 
@@ -123,6 +124,7 @@ class TestCustomPrivacyRequestFields:
             "order_id": None,
             "subscriber_ids": ["123", "456"],
             "account_ids": [123, 456],
+            "support_id": 1,
         }
 
     @pytest.mark.usefixtures(
@@ -150,6 +152,7 @@ class TestCustomPrivacyRequestFields:
                 "account_ids": CustomPrivacyRequestField(
                     label="Account IDs", value=[123, 456]
                 ),
+                "support_id": CustomPrivacyRequestField(label="Support ID", value=1),
             },
         }
 
@@ -173,5 +176,6 @@ class TestCustomPrivacyRequestFields:
                 "last_name": "Doe",
                 "subscriber_ids": ["123", "456"],
                 "account_ids": [123, 456],
+                "support_id": 1,
             }
         }

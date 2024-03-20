@@ -369,11 +369,7 @@ class PrivacyRequest(
                 if item is not None:
                     cache.set_with_autoexpire(
                         get_custom_privacy_request_field_cache_key(self.id, key),
-                        (
-                            json.dumps(item.value, cls=CustomJSONEncoder)
-                            if isinstance(item.value, list)
-                            else f'"{item.value}"'
-                        ),
+                        json.dumps(item.value, cls=CustomJSONEncoder),
                     )
         else:
             logger.info(

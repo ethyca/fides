@@ -37,7 +37,8 @@ saas_config:
               "last_name": "<custom_privacy_request_fields.last_name>",
               "order_id": "<custom_privacy_request_fields.order_id?>",
               "subscriber_ids": <custom_privacy_request_fields.subscriber_ids>,
-              "account_ids": <custom_privacy_request_fields.account_ids>
+              "account_ids": <custom_privacy_request_fields.account_ids>,
+              "support_id": <custom_privacy_request_fields.support_id>
             }
           ignore_errors: True
         update:

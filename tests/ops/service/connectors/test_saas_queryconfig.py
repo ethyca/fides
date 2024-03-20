@@ -688,6 +688,7 @@ class TestSaaSQueryConfig:
                 "account_ids": [123, 456],
             }
         }
+
         opt_in_request: SaaSRequest = config.generate_consent_stmt(
             consent_policy,
             privacy_request,
