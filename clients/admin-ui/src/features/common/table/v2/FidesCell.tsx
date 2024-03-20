@@ -56,15 +56,8 @@ export const FidesCell = <T,>({
           borderTopColor: "red",
         },
       }}
-      _first={{
-        borderBottomWidth:
-          (!isTableGrouped && !isLastRowOfPage) ||
-          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
-          (isFirstRowOfGroupedRows && hasOneSubRow)
-            ? "1px"
-            : "0px",
-        borderLeftWidth: "1px",
-        borderLeftColor: "gray.200",
+      _last={{
+        borderRightWidth: 0,
       }}
       height="inherit"
       style={{
