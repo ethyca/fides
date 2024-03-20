@@ -56,6 +56,14 @@ export const FidesCell = <T,>({
           borderTopColor: "red",
         },
       }}
+      _first={{
+        borderBottomWidth:
+          (!isTableGrouped && !isLastRowOfPage) ||
+          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
+          (isFirstRowOfGroupedRows && hasOneSubRow)
+            ? "1px"
+            : "0px",
+      }}
       _last={{
         borderRightWidth: 0,
       }}
