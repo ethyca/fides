@@ -84,6 +84,7 @@ const HeaderContent = <T,>({
         data-testid={`${header.id}-header-menu`}
         _focus={{
           backgroundColor: "gray.100",
+          outline: "none",
         }}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
