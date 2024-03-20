@@ -22,6 +22,8 @@ The types of changes are:
 
 ### Fixed
 - Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
+- Disable editing of data use declaration name and type after creation [#4731](https://github.com/ethyca/fides/pull/4731)
+
 
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
