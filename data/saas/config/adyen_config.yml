@@ -1,0 +1,57 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Adyen SaaS Config
+  type: adyen
+  description: A sample schema representing the Adyen connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain-test
+      default_value: management-test.adyen.com
+    - name: domain
+      default_value: ca-test.adyen.com
+    - name: management-domain
+      default_value: management-test.adyen.com
+    - name: x-API-key
+      default_value: >-
+        AQEohmfxLIrOYhFEw0m/n3Q5qf3Ve4dEDpZ1CRV26BqjZ92SXJHgqPt/7BDBXVsNvuR83LVYjEgiTGAH-zYPwPLXX6NFYNYNjl6k+IYqT+FdAUFlukv3d4nafRgw=-+3N4nW6,,PASfkVU
+
+  external_references:
+    - name: pspReference
+      description: pspReference that matches an enduser
+
+  client_config:
+    protocol: https
+    host: <domain-test>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: x-API-key
+            value: <x-API-key>
+
+  test_request:
+    method: GET
+    path: /v3/me
+
+  endpoints:
+    - name: erasure
+      requests:
+        read:
+          method: GET
+          path: /v3/me
+        delete:
+          method: POST
+          path: /ca/services/DataProtectionService/v1/requestSubjectErasure
+          client_config:
+            protocol: https
+            host: <domain>
+            authentication:
+              strategy: api_key
+              configuration:
+                headers:
+                  - name: x-API-key
+                    value: <x-API-key>
+          body: >
+            {     "merchantAccount":"ws_300946@Company.Slice_",    
+            "pspReference":"9915520502347613" }
