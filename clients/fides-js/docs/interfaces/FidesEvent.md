@@ -66,7 +66,7 @@ window.addEventListener("FidesUpdated", (evt) => {
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `consent` | `Record`\<`string`, `boolean`\> | Current consent preferences |
-| `extraDetails?` | \{ `consentMethod?`: `string` ; `servingComponent?`: `string`  } | Extra event properties for context |
-| `extraDetails.consentMethod?` | `string` | - |
-| `extraDetails.servingComponent?` | `string` | - |
+| `consent` | `Record`\<`string`, `boolean`\> | Current consent preferences TODO |
+| `extraDetails?` | \{ `consentMethod?`: `string` ; `servingComponent?`: `string`  } | Extra event properties for context TODO |
+| `extraDetails.consentMethod?` | `string` | TODO |
+| `extraDetails.servingComponent?` | `string` | TODO |

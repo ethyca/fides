@@ -31,6 +31,8 @@ TODO: more
 
 User's current consent preferences.
 
+TODO
+
 ___
 
 ### fides\_meta
@@ -127,7 +129,7 @@ ___
 Display the FidesJS modal component on the page, if the current user's
 session (location, property ID, etc.) matches an `experience` with a modal
 component. If the `experience` does not match, this function has no effect
-and can be called safely at any time. 
+and can be called safely at any time.
 
 This function is designed to be used to programmatically show the FidesJS
 modal via an `onclick` handler on a "modal link" element on the page.
