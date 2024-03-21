@@ -16,9 +16,7 @@ from loguru import logger
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from toml import load as load_toml
 
-from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -40,7 +38,6 @@ from fides.api.oauth.roles import (
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.util.cache import get_cache
-from fides.api.util.consent_util import load_default_experience_configs_on_startup
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
@@ -1209,14 +1206,3 @@ def load_default_data_uses(db):
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.dict())
-
-
-@pytest.fixture(scope="function", autouse=True)
-def load_default_privacy_experience_configs(db):
-    """Ops tests drop db data, so for now, load these back in if they don't exist"""
-    if not PrivacyExperienceConfig.get_default_config(
-        db, ComponentType.overlay
-    ) or not PrivacyExperienceConfig.get_default_config(
-        db, ComponentType.privacy_center
-    ):
-        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)

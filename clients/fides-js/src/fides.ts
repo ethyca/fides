@@ -53,6 +53,7 @@ import {
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
+  CookieKeyConsent,
   FidesConfig,
   FidesCookie,
   FidesOptionsOverrides,
@@ -74,7 +75,7 @@ import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
-import { debugLog } from "./lib/consent-utils";
+import { defaultShowModal } from "./lib/consent-utils";
 
 declare global {
   interface Window {
@@ -87,12 +88,12 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateExperience = async (
+const updateExperience = (
   cookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
-): Promise<PrivacyExperience> => {
+): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent
@@ -128,9 +129,17 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
+
+  // Keep a copy of saved consent from the cookie, since we update the "cookie"
+  // value during initialization based on overrides, experience, etc.
+  const savedConsent: CookieKeyConsent = {
+    ...cookie.consent,
+  };
+
   const initialFides = getInitialFides({
     ...config,
     cookie,
+    savedConsent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
@@ -141,6 +150,7 @@ const init = async (config: FidesConfig) => {
   const updatedFides = await initialize({
     ...config,
     cookie,
+    savedConsent,
     experience,
     renderOverlay,
     updateExperience: ({
@@ -160,13 +170,6 @@ const init = async (config: FidesConfig) => {
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-};
-
-export const defaultShowModal = () => {
-  debugLog(
-    window.Fides.options.debug,
-    "The current experience does not support displaying a modal."
-  );
 };
 
 // The global Fides object; this is bound to window.Fides if available
@@ -197,10 +200,12 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
+    fidesPreviewMode: false,
   },
   fides_meta: {},
   identity: {},
   tcf_consent: {},
+  saved_consent: {},
   gtm,
   init,
   initialized: false,
@@ -214,7 +219,6 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
-export * from "./components";
 export * from "./services/api";
 export * from "./services/external/geolocation";
 export * from "./lib/consent";

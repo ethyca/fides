@@ -15,7 +15,7 @@ on:
       - "release-**"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10.12"
+  DEFAULT_PYTHON_VERSION: "3.10.13"
 
 jobs:
   # Basic smoke test of a local install of the fides Python CLI

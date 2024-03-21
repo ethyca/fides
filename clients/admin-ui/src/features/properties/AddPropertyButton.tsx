@@ -27,7 +27,7 @@ const AddPropertyButton = ({
   return (
     <Button
       onClick={() => router.push(ADD_PROPERTY_ROUTE)}
-      data-testid="add-property-btn"
+      data-testid="add-property-button"
       {...openButtonStyles}
     >
       {buttonLabel}

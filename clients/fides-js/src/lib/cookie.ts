@@ -235,7 +235,6 @@ export const saveFidesCookie = (
  * Updates prefetched experience, based on:
  * 1) experience: pre-fetched or client-side experience-based consent configuration
  * 2) cookie: cookie containing user preference.
-
  *
  * Returns updated experience with user preferences.
  */
@@ -352,5 +351,50 @@ export const updateCookieFromNoticePreferences = async (
   return {
     ...oldCookie,
     consent: consentCookieKey,
+  };
+};
+
+/**
+ * Extract the current consent state from the given PrivacyExperience by
+ * iterating through the notices and pulling out the current preferences (or
+ * default values). This is used during initialization to override saved cookie
+ * values with newer values from the experience.
+ */
+export const getConsentStateFromExperience = (
+  experience: PrivacyExperience
+): CookieKeyConsent => {
+  const consent: CookieKeyConsent = {};
+  if (!experience.privacy_notices) {
+    return consent;
+  }
+  experience.privacy_notices.forEach((notice) => {
+    if (notice.current_preference) {
+      consent[notice.notice_key] = transformUserPreferenceToBoolean(
+        notice.current_preference
+      );
+    } else if (notice.default_preference) {
+      consent[notice.notice_key] = transformUserPreferenceToBoolean(
+        notice.default_preference
+      );
+    }
+  });
+  return consent;
+};
+
+/**
+ * Update the "cookie" state with any preferences from the given
+ * PrivacyExperience. See getConsentStateFromExperience for details.
+ */
+export const updateCookieFromExperience = ({
+  cookie,
+  experience,
+}: {
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+}): FidesCookie => {
+  const consent = getConsentStateFromExperience(experience);
+  return {
+    ...cookie,
+    consent,
   };
 };

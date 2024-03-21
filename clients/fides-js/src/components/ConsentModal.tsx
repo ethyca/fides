@@ -1,18 +1,21 @@
 import { VNode, h } from "preact";
+
 import { Attributes } from "../lib/a11y-dialog";
-import { ExperienceConfig } from "../lib/consent-types";
+import type { I18n } from "../lib/i18n";
 
 import CloseButton from "./CloseButton";
 import ConsentContent from "./ConsentContent";
 
 const ConsentModal = ({
   attributes,
-  experience,
+  dismissable,
+  i18n,
   renderModalFooter,
   renderModalContent,
 }: {
   attributes: Attributes;
-  experience: ExperienceConfig;
+  dismissable: boolean | undefined;
+  i18n: I18n;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode;
   renderModalContent: () => VNode;
@@ -36,13 +39,17 @@ const ConsentModal = ({
           <div />
           <CloseButton
             ariaLabel="Close modal"
-            onClick={closeButton.onClick}
-            hidden={window.Fides.options.preventDismissal}
+            onClick={
+              window.Fides.options.fidesPreviewMode
+                ? () => {}
+                : closeButton.onClick
+            }
+            hidden={window.Fides.options.preventDismissal || !dismissable}
           />
         </div>
         <ConsentContent
-          title={title}
-          experience={experience}
+          titleProps={title}
+          i18n={i18n}
           renderModalFooter={renderModalFooter}
         >
           {renderModalContent()}

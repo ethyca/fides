@@ -13,7 +13,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.12"
+  DEFAULT_PYTHON_VERSION: "3.10.13"
 
 jobs:
   ###############
@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.8.17", "3.9.17", "3.10.12"]
+        python_version: ["3.8.18", "3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -222,7 +222,7 @@ jobs:
     needs: Check-Container-Startup
     strategy:
       matrix:
-        python_version: ["3.8.17", "3.9.17", "3.10.12"]
+        python_version: ["3.8.18", "3.9.18", "3.10.13"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
@@ -274,7 +274,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.17", "3.9.17", "3.10.12"]
+        python_version: ["3.8.18", "3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -314,7 +314,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.17", "3.9.17", "3.10.12"]
+        python_version: ["3.8.18", "3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -369,7 +369,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.17", "3.9.17", "3.10.12"]
+        python_version: ["3.8.18", "3.9.18", "3.10.13"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v3

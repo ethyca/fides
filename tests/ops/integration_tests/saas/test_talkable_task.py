@@ -15,7 +15,7 @@ class TestTalkableConnector:
         access_results = await talkable_runner.access_request(
             access_policy=policy, identities={"email": talkable_identity_email}
         )
-        
+
         # verify we only returned data for our identity email
         assert (
             access_results["talkable_instance:person"][0]["email"]

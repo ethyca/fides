@@ -1,8 +1,10 @@
 import type {
+  CookieKeyConsent,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
+import type { I18n } from "../lib/i18n";
 
 /**
  * The type of the parent component for the preact app
@@ -14,6 +16,8 @@ import type {
 export interface OverlayProps {
   options: FidesOptions;
   experience: PrivacyExperience;
+  i18n: I18n;
   cookie: FidesCookie;
   fidesRegionString: string;
+  savedConsent: CookieKeyConsent;
 }

@@ -262,15 +262,13 @@ class TestConsentEmailConnectorMethods:
                         preference=UserConsentPreference.opt_in,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Targeted Advertising",
-                            regions=["us_ca"],
                             notice_key="targeted_advertising",
                             id="test_1",
-                            privacy_notice_id="12345",
+                            translation_id="12345",
                             consent_mechanism=ConsentMechanism.opt_in,
                             data_uses=["marketing.advertising.first_party.targeted"],
                             enforcement_level=EnforcementLevel.system_wide,
                             version=1.0,
-                            displayed_in_overlay=True,
                         ),
                     )
                 ],
@@ -284,14 +282,12 @@ class TestConsentEmailConnectorMethods:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="Analytics",
                             notice_key="analytics",
-                            regions=["us_ca"],
                             id="test_2",
-                            privacy_notice_id="67890",
+                            translation_id="67890",
                             consent_mechanism=ConsentMechanism.opt_out,
                             data_uses=["functional.service.improve"],
                             enforcement_level=EnforcementLevel.system_wide,
                             version=1.0,
-                            displayed_in_overlay=True,
                         ),
                     )
                 ],

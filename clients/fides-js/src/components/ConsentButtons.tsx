@@ -1,17 +1,17 @@
-import { Fragment, VNode, h } from "preact";
+import { h, Fragment, VNode } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
-  ExperienceConfig,
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
+import type { I18n } from "../lib/i18n";
 
 export const ConsentButtons = ({
-  experienceConfig,
+  i18n,
   onManagePreferencesClick,
   firstButton,
   onAcceptAll,
@@ -20,7 +20,7 @@ export const ConsentButtons = ({
   includePrivacyPolicy,
   saveOnly = false,
 }: {
-  experienceConfig: ExperienceConfig;
+  i18n: I18n;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
   onAcceptAll: () => void;
@@ -34,15 +34,13 @@ export const ConsentButtons = ({
       <div style={{ display: "flex" }}>
         <Button
           buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
-          label={experienceConfig.privacy_preferences_link_label}
+          label={i18n.t("exp.privacy_preferences_link_label")}
           onClick={onManagePreferencesClick}
           className="fides-manage-preferences-button"
         />
       </div>
     ) : null}
-    {includePrivacyPolicy ? (
-      <PrivacyPolicyLink experience={experienceConfig} />
-    ) : null}
+    {includePrivacyPolicy ? <PrivacyPolicyLink i18n={i18n} /> : null}
     <div
       className={
         firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
@@ -53,13 +51,13 @@ export const ConsentButtons = ({
         <Fragment>
           <Button
             buttonType={ButtonType.PRIMARY}
-            label={experienceConfig.reject_button_label}
+            label={i18n.t("exp.reject_button_label")}
             onClick={onRejectAll}
             className="fides-reject-all-button"
           />
           <Button
             buttonType={ButtonType.PRIMARY}
-            label={experienceConfig.accept_button_label}
+            label={i18n.t("exp.accept_button_label")}
             onClick={onAcceptAll}
             className="fides-accept-all-button"
           />
@@ -73,6 +71,7 @@ type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
 interface NoticeConsentButtonProps {
   experience: PrivacyExperience;
+  i18n: I18n;
   onSave: (consentMethod: ConsentMethod, noticeKeys: NoticeKeys) => void;
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
@@ -80,10 +79,12 @@ interface NoticeConsentButtonProps {
   isInModal?: boolean;
   isMobile: boolean;
   saveOnly?: boolean;
+  fidesPreviewMode?: boolean;
 }
 
 export const NoticeConsentButtons = ({
   experience,
+  i18n,
   onSave,
   onManagePreferencesClick,
   enabledKeys,
@@ -91,13 +92,17 @@ export const NoticeConsentButtons = ({
   isAcknowledge,
   isMobile,
   saveOnly = false,
+  fidesPreviewMode = false,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
   }
-  const { experience_config: config, privacy_notices: notices } = experience;
+  const { privacy_notices: notices } = experience;
 
   const handleAcceptAll = () => {
+    if (fidesPreviewMode) {
+      return;
+    }
     onSave(
       ConsentMethod.ACCEPT,
       notices.map((n) => n.notice_key)
@@ -105,6 +110,9 @@ export const NoticeConsentButtons = ({
   };
 
   const handleRejectAll = () => {
+    if (fidesPreviewMode) {
+      return;
+    }
     onSave(
       ConsentMethod.REJECT,
       notices
@@ -114,6 +122,9 @@ export const NoticeConsentButtons = ({
   };
 
   const handleSave = () => {
+    if (fidesPreviewMode) {
+      return;
+    }
     onSave(ConsentMethod.SAVE, enabledKeys);
   };
 
@@ -126,7 +137,7 @@ export const NoticeConsentButtons = ({
       >
         <Button
           buttonType={ButtonType.PRIMARY}
-          label={config.acknowledge_button_label}
+          label={i18n.t("exp.acknowledge_button_label")}
           onClick={handleAcceptAll}
           className="fides-acknowledge-button"
         />
@@ -136,7 +147,7 @@ export const NoticeConsentButtons = ({
 
   return (
     <ConsentButtons
-      experienceConfig={config}
+      i18n={i18n}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
@@ -144,7 +155,7 @@ export const NoticeConsentButtons = ({
         isInModal ? (
           <Button
             buttonType={saveOnly ? ButtonType.PRIMARY : ButtonType.SECONDARY}
-            label={config.save_button_label}
+            label={i18n.t("exp.save_button_label")}
             onClick={handleSave}
             className="fides-save-button"
           />

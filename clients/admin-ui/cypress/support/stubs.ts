@@ -13,6 +13,12 @@ export const stubTaxonomyEntities = () => {
   }).as("getDataUses");
 };
 
+export const stubLanguages = () => {
+  cy.intercept("GET", "/api/v1/plus/languages*", {
+    fixture: "languages.json",
+  }).as("getLanguages");
+};
+
 export const stubSystemCrud = () => {
   cy.intercept("POST", "/api/v1/system", {
     fixture: "systems/system.json",
@@ -130,9 +136,6 @@ export const stubPrivacyNoticesCrud = () => {
   cy.intercept("POST", "/api/v1/privacy-notice", {
     fixture: "privacy-notices/list.json",
   }).as("postNotices");
-  cy.intercept("PATCH", "/api/v1/privacy-notice", {
-    fixture: "privacy-notices/list.json",
-  }).as("patchNotices");
 };
 
 export const CONNECTION_STRING =
@@ -243,4 +246,15 @@ export const stubSystemVendors = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system-vendors", {
     fixture: "systems/system-vendors.json",
   }).as("getSystemVendors");
+};
+
+export const stubTranslationConfig = (enabled: boolean) => {
+  cy.intercept("GET", "/api/v1/config*", {
+    body: {
+      plus_consent_settings: {
+        enable_translations: enabled,
+        enable_oob_translations: enabled,
+      },
+    },
+  }).as("getTranslationConfig");
 };

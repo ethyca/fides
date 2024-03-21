@@ -3,12 +3,14 @@
     {
       "name": "Property A",
       "type": "Website",
-      "key": "property_a"
+      "id": "FDS-CEA9EV",
+      "experiences": []
     },
     {
       "name": "Property B",
-      "type": "Other",
-      "key": "property_b"
+      "type": "Website",
+      "id": "FDS-Z21I5X",
+      "experiences": [{ "id": 1, "name": "US Privacy Center" }]
     }
   ],
   "total": 2,
