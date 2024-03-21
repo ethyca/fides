@@ -1,4 +1,4 @@
-from nox import Session
+from typing import Optional
 
 from constants_nox import (
     CI_ARGS_EXEC,
@@ -11,7 +11,8 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
-from run_infrastructure import OPS_TEST_DIR, run_infrastructure
+from nox import Session
+from run_infrastructure import API_TEST_DIR, OPS_TEST_DIR, run_infrastructure
 
 
 def pytest_lib(session: Session, coverage_arg: str) -> None:
@@ -99,19 +100,44 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*run_command, external=True)
 
 
-def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
+def pytest_ops(
+    session: Session,
+    mark: str,
+    coverage_arg: str,
+    subset_dir: Optional[str] = None,
+) -> None:
     """Runs fidesops tests."""
     session.notify("teardown")
     if mark == "unit":
         session.run(*START_APP, external=True)
-        run_command = (
-            *EXEC,
-            "pytest",
-            coverage_arg,
-            OPS_TEST_DIR,
-            "-m",
-            "not integration and not integration_external and not integration_saas",
-        )
+        if subset_dir == "api":
+            run_command = (
+                *EXEC,
+                "pytest",
+                coverage_arg,
+                API_TEST_DIR,
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
+        elif subset_dir == "non-api":
+            run_command = (
+                *EXEC,
+                "pytest",
+                coverage_arg,
+                OPS_TEST_DIR,
+                f"--ignore={API_TEST_DIR}",
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
+        else:
+            run_command = (
+                *EXEC,
+                "pytest",
+                coverage_arg,
+                OPS_TEST_DIR,
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
         session.run(*run_command, external=True)
     elif mark == "integration":
         # The coverage_arg is hardcoded in 'run_infrastructure.py'
