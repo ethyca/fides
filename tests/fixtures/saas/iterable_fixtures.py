@@ -18,8 +18,6 @@ def iterable_secrets(saas_config) -> Dict[str, Any]:
         "domain": pydash.get(saas_config, "iterable.domain")
         or secrets["domain"],
         "api_key": pydash.get(saas_config, "iterable.api_key") or  secrets["api_key"],
-        "email": pydash.get(saas_config, "iterable.email") or  secrets["email"],
-        # add the rest of your secrets here
     }
 
 
