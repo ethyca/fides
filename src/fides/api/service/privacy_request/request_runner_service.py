@@ -67,6 +67,7 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import (
+    build_consent_dataset_graph,
     filter_by_enabled_actions,
     get_cached_data_for_erasures,
     run_access_request,
@@ -461,20 +462,30 @@ def run_privacy_request(
             ):
                 pass
                 "Adding a checkpoint for after the erasure is complete"
-            # if policy.get_rules_for_action(
-            #     action_type=ActionType.consent
-            # ) and can_run_checkpoint(
-            #     request_checkpoint=CurrentStep.consent,
-            #     from_checkpoint=resume_step,
-            # ):
-            #     await run_consent_request(
-            #         privacy_request=privacy_request,
-            #         policy=policy,
-            #         graph=build_consent_dataset_graph(datasets),
-            #         connection_configs=connection_configs,
-            #         identity=identity_data,
-            #         session=session,
-            #     )
+
+            if policy.get_rules_for_action(
+                action_type=ActionType.consent
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.consent,
+                from_checkpoint=resume_step,
+            ):
+                run_consent_request(
+                    privacy_request=privacy_request,
+                    policy=policy,
+                    graph=build_consent_dataset_graph(datasets),
+                    connection_configs=connection_configs,
+                    identity=identity_data,
+                    session=session,
+                )
+                return
+
+            # Finalize Consent CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.finalize_consent,
+                from_checkpoint=resume_step,
+            ):
+                pass
+                "Adding a checkpoint for after consent is complete"
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
@@ -553,31 +564,6 @@ def run_privacy_request(
         privacy_request.status = PrivacyRequestStatus.complete
         logger.info("Privacy request {} run completed.", privacy_request.id)
         privacy_request.save(db=session)
-
-
-def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
-    """
-    Build the starting DatasetGraph for consent requests.
-
-    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
-    """
-    consent_datasets: List[GraphDataset] = []
-
-    for dataset_config in datasets:
-        connection_type: ConnectionType = (
-            dataset_config.connection_config.connection_type  # type: ignore
-        )
-        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
-        if (
-            connection_type == ConnectionType.saas
-            and saas_config
-            and saas_config.get("consent_requests")
-        ):
-            consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
-            )
-
-    return DatasetGraph(*consent_datasets)
 
 
 def initiate_privacy_request_completion_email(

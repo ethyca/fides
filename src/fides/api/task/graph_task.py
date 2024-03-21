@@ -38,10 +38,15 @@ from fides.api.graph.config import (
     Field,
     FieldAddress,
     FieldPath,
+    GraphDataset,
 )
 from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
@@ -71,7 +76,6 @@ from fides.api.util.consent_util import add_errored_system_status_for_consent_re
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.api.util.storage_util import storage_json_encoder
-from fides.api.util.wrappers import sync
 from fides.config import CONFIG
 
 dask.config.set(scheduler="threads")
@@ -715,6 +719,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             identity,
             self.resources.session,
         )
+        self.privacy_request_task.consent_success = output
         self.log_end(ActionType.consent)
         return output
 
@@ -1148,9 +1153,16 @@ def run_access_node(
             # For regular nodes, store the data on the node
             func = env[graph_task_key].access_request
             env[graph_task_key].privacy_request_task = request_task
-            ordered_upstream_tasks = order_tasks_by_input_key(env[graph_task_key].input_keys, upstream_results)
+            ordered_upstream_tasks = order_tasks_by_input_key(
+                env[graph_task_key].input_keys, upstream_results
+            )
             # Put access data in the same order as the input keys
-            func(*[upstream.access_data if upstream else [] for upstream in ordered_upstream_tasks])
+            func(
+                *[
+                    upstream.access_data if upstream else []
+                    for upstream in ordered_upstream_tasks
+                ]
+            )
 
         request_task.status = TaskStatus.complete
         request_task.save(session)
@@ -1179,7 +1191,78 @@ def run_access_node(
                 from_step=CurrentStep.upload_access.value,
             )
 
-def order_tasks_by_input_key(input_keys: List[CollectionAddress], upstream_tasks: Query) -> List[Optional[PrivacyRequestTask]]:
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def run_consent_node(
+    self: DatabaseTask, privacy_request_id: str, privacy_request_task_id: str
+) -> None:
+    with self.get_new_session() as session:
+        privacy_request, request_task, upstream_results = upfront_checks(
+            session, privacy_request_id, privacy_request_task_id
+        )
+
+        graph_task_key = CollectionAddress.from_string(request_task.collection_address)
+
+        if request_task.status != TaskStatus.pending:
+            logger.info(
+                f"Cannot start consent Privacy Request Task {request_task.id} {request_task.collection_address} - status is {request_task.status}"
+            )
+            return
+
+        logger.info(
+            f"Running consent request task {request_task.id}:{request_task.collection_address} for privacy request {privacy_request.id}"
+        )
+
+        if graph_task_key != TERMINATOR_ADDRESS:
+            datasets = DatasetConfig.all(db=session)
+            dataset_graph = build_consent_dataset_graph(datasets)
+            node = dataset_graph.nodes[graph_task_key]
+            traversal_node = TraversalNode(node)
+            task_resources = TaskResources(
+                privacy_request,
+                privacy_request.policy,
+                session.query(ConnectionConfig).all(),
+                session,
+            )
+            task = GraphTask(traversal_node, task_resources)
+
+            # For regular nodes, store the data on the node
+            func = task.consent_request
+            task.privacy_request_task = request_task
+
+            # TODO catch errors if no upstream result
+            func(upstream_results[0].consent_data)
+
+        request_task.status = TaskStatus.complete
+        request_task.save(session)
+
+        # If there are other downstream tasks that are ready to go, queue those now
+        pending_downstream_tasks: Query = request_task.pending_downstream_tasks(session)
+        for downstream_task in pending_downstream_tasks:
+            if downstream_task.upstream_tasks_complete(session):
+                logger.info(f"Upstream tasks complete so queuing {downstream_task.id}")
+                run_consent_node.delay(
+                    privacy_request_id=privacy_request_id,
+                    privacy_request_task_id=downstream_task.id,
+                )
+            else:
+                logger.info(f"Upstream tasks not completed for {downstream_task.id}")
+
+        # If we've made it to the terminator node, requeue the entire Privacy request to continue where we left off,
+        if graph_task_key == TERMINATOR_ADDRESS:
+            from fides.api.service.privacy_request.request_runner_service import (
+                queue_privacy_request,
+            )
+
+            queue_privacy_request(
+                privacy_request_id=privacy_request.id,
+                from_step=CurrentStep.finalize_consent.value,
+            )
+
+
+def order_tasks_by_input_key(
+    input_keys: List[CollectionAddress], upstream_tasks: Query
+) -> List[Optional[PrivacyRequestTask]]:
     """Order tasks by input key. If task doesn't exist, add None in its place"""
     tasks: List[Optional[PrivacyRequestTask]] = []
     for key in input_keys:
@@ -1283,7 +1366,7 @@ def create_erasure_request_task_objects(
             continue
 
         # Select access task of the same name
-        access_task = (
+        erasure_task = (
             session.query(PrivacyRequestTask)
             .filter(
                 PrivacyRequestTask.privacy_request_id == privacy_request.id,
@@ -1294,17 +1377,21 @@ def create_erasure_request_task_objects(
             .first()
         )
         retrieved_task_data = []
-        if access_task:
-            retrieved_task_data = access_task.data_for_erasures
+        if erasure_task:
+            retrieved_task_data = erasure_task.data_for_erasures
 
         # Select upstream inputs of this node for things like email connectors
         input_tasks = session.query(PrivacyRequestTask).filter(
             PrivacyRequestTask.privacy_request_id == privacy_request.id,
             PrivacyRequestTask.action_type == ActionType.access,
-            PrivacyRequestTask.collection_address.in_(access_task.upstream_tasks),
+            PrivacyRequestTask.collection_address.in_(erasure_task.upstream_tasks),
             PrivacyRequestTask.status == TaskStatus.complete,
         )
-        ordered_upstream_tasks = [] if node in [ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS] else order_tasks_by_input_key(env[node].input_keys, input_tasks)
+        ordered_upstream_tasks = (
+            []
+            if node in [ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS]
+            else order_tasks_by_input_key(env[node].input_keys, input_tasks)
+        )
 
         combined_input_data = []
         for input_data in ordered_upstream_tasks or []:
@@ -1332,6 +1419,69 @@ def create_erasure_request_task_objects(
                 "all_descendants": [
                     descend.value for descend in list(networkx.descendants(graph, node))
                 ],
+            },
+        )
+        ready_tasks.append(task)
+
+    return ready_tasks
+
+
+def create_consent_request_task_objects(
+    session: Session,
+    privacy_request: PrivacyRequest,
+    env: Dict[CollectionAddress, Any],
+    identity: Dict[str, Any],
+):
+    """
+    The graph built is very simple: there are no relationships between the nodes, every node has
+    identity data input and every node outputs whether the consent request succeeded.
+
+    The DatasetGraph passed in is expected to have one Node per Dataset.  That Node is expected to carry out requests
+    for the Dataset as a whole.
+
+    """
+    ready_tasks: List[PrivacyRequestTask] = []
+    node_keys: List[CollectionAddress] = [node for node in list(env.keys())]
+    for node in node_keys + [ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS]:
+        existing_completed_task = (
+            session.query(PrivacyRequestTask)
+            .filter(
+                PrivacyRequestTask.privacy_request_id == privacy_request.id,
+                PrivacyRequestTask.action_type == ActionType.consent,
+                PrivacyRequestTask.collection_address == node.value,
+                PrivacyRequestTask.status == TaskStatus.complete,
+            )
+            .first()
+        )
+
+        if existing_completed_task:
+            continue
+
+        if node == ROOT_COLLECTION_ADDRESS:
+            upstream_tasks = []
+            downstream_tasks = [node.value for node in node_keys]
+        elif node == TERMINATOR_ADDRESS:
+            upstream_tasks = [node.value for node in node_keys]
+            downstream_tasks = []
+        else:
+            upstream_tasks = [ROOT_COLLECTION_ADDRESS.value]
+            downstream_tasks = [TERMINATOR_ADDRESS.value]
+
+        task = PrivacyRequestTask.create(
+            session,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "upstream_tasks": upstream_tasks,
+                "downstream_tasks": downstream_tasks,
+                "dataset_name": node.dataset,
+                "collection_name": node.collection,
+                "status": TaskStatus.complete
+                if node == ROOT_COLLECTION_ADDRESS
+                else TaskStatus.pending,
+                "consent_data": identity if node == ROOT_COLLECTION_ADDRESS else {},
+                "action_type": ActionType.consent,
+                "collection_address": node.value,
+                "all_descendants": [TERMINATOR_ADDRESS.value],
             },
         )
         ready_tasks.append(task)
@@ -1372,7 +1522,6 @@ def run_erasure(  # pylint: disable = too-many-arguments
 
         queued_tasks = []
         for task in created_privacy_request_tasks:
-            queued_tasks.append(task)
             if (
                 task.upstream_tasks_complete(session)
                 and task.collection_address != ROOT_COLLECTION_ADDRESS.value
@@ -1380,6 +1529,7 @@ def run_erasure(  # pylint: disable = too-many-arguments
                 logger.info(
                     f"Queuing erasure task {privacy_request.id} > {task.id}: {task.collection_address}"
                 )
+                queued_tasks.append(task)
                 run_erasure_node.delay(privacy_request.id, task.id)
 
         return queued_tasks
@@ -1404,14 +1554,14 @@ def _evaluate_erasure_dependencies(
     return erase_after if len(erase_after) else {ROOT_COLLECTION_ADDRESS}
 
 
-async def run_consent_request(  # pylint: disable = too-many-arguments
+def run_consent_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-) -> Dict[str, bool]:
+) -> List[PrivacyRequestTask]:
     """Run a consent request
 
     The graph built is very simple: there are no relationships between the nodes, every node has
@@ -1420,39 +1570,23 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
     The DatasetGraph passed in is expected to have one Node per Dataset.  That Node is expected to carry out requests
     for the Dataset as a whole.
     """
+    created_consent_tasks = create_consent_request_task_objects(
+        session, privacy_request, graph.nodes, identity
+    )
 
-    with TaskResources(
-        privacy_request, policy, connection_configs, session
-    ) as resources:
-        graph_keys: List[CollectionAddress] = list(graph.nodes.keys())
-        dsk: Dict[CollectionAddress, Any] = {}
+    queued_tasks = []
+    for task in created_consent_tasks:
+        if (
+            task.upstream_tasks_complete(session)
+            and task.collection_address != ROOT_COLLECTION_ADDRESS.value
+        ):
+            logger.info(
+                f"Queuing consent task {privacy_request.id} > {task.id}: {task.collection_address}"
+            )
+            queued_tasks.append(task)
+            run_consent_node.delay(privacy_request.id, task.id)
 
-        for col_address, node in graph.nodes.items():
-            traversal_node = TraversalNode(node)
-            task = GraphTask(traversal_node, resources)
-            dsk[col_address] = (task.consent_request, identity)
-
-        def termination_fn(*dependent_values: bool) -> Tuple[bool, ...]:
-            """The dependent_values here is an bool output from each task feeding in, where
-            each task reports the output of 'task.consent_request(identity_data)', which is whether the
-            consent request succeeded
-
-            The termination function just returns this tuple of booleans."""
-            return dependent_values
-
-        # terminator function waits for all keys
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph_keys)
-
-        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-
-        update_successes: Tuple[bool, ...] = v.compute()
-        # we combine the output of the termination function with the input keys to provide
-        # a map of {collection_name: whether consent request succeeded}:
-        consent_update_map: Dict[str, bool] = dict(
-            zip([coll.value for coll in graph_keys], update_successes)
-        )
-
-        return consent_update_map
+    return queued_tasks
 
 
 def build_affected_field_logs(
@@ -1502,3 +1636,28 @@ def build_affected_field_logs(
         )
 
     return ret
+
+
+def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
+    """
+    Build the starting DatasetGraph for consent requests.
+
+    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
+    """
+    consent_datasets: List[GraphDataset] = []
+
+    for dataset_config in datasets:
+        connection_type: ConnectionType = (
+            dataset_config.connection_config.connection_type  # type: ignore
+        )
+        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
+        if (
+            connection_type == ConnectionType.saas
+            and saas_config
+            and saas_config.get("consent_requests")
+        ):
+            consent_datasets.append(
+                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
+            )
+
+    return DatasetGraph(*consent_datasets)

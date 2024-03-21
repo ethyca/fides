@@ -41,7 +41,7 @@ from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_s
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
-from fides.api.graph.config import CollectionAddress, TERMINATOR_ADDRESS
+from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.graph.graph_differences import GraphRepr
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
@@ -91,6 +91,7 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.erasure,
     CurrentStep.finalize_erasure,
     CurrentStep.consent,
+    CurrentStep.finalize_consent,
     CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
 ]
@@ -969,6 +970,12 @@ class PrivacyRequest(
         return {LoggerContextKeys.privacy_request_id: self.id}
 
     @property
+    def consent_tasks(self):
+        return self.request_tasks.filter(
+            PrivacyRequestTask.action_type == ActionType.consent
+        )
+
+    @property
     def erasure_tasks(self):
         return self.request_tasks.filter(
             PrivacyRequestTask.action_type == ActionType.erasure
@@ -1492,6 +1499,18 @@ class PrivacyRequestTask(Base):
         nullable=True,
     )
 
+    consent_data = Column(
+        MutableDict.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                CONFIG.security.app_encryption_key,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=True,
+    )  # Type bytea in the db
+
     # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
     # terrible name, but this is the data that should feed into the erasure node
     # or be used by the erasure node.
@@ -1507,6 +1526,7 @@ class PrivacyRequestTask(Base):
     )
 
     rows_masked = Column(Integer)
+    consent_success = Column(Boolean)
 
     # The final data stored for a terminator node
     terminator_data = Column(

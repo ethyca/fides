@@ -160,22 +160,32 @@ def poll_for_exited_privacy_request_tasks(self):
             .order_by(PrivacyRequest.created_at)
         )
 
+        def all_complete(tasks: List[PrivacyRequestTask]) -> bool:
+            return all(tsk.status == TaskStatus.complete for tsk in tasks)
+
+        def some_errored(tasks: List[PrivacyRequestTask]) -> bool:
+            return all(
+                tsk.status in [TaskStatus.complete, TaskStatus.error] for tsk in tasks
+            )
+
         for pr in in_progress_privacy_requests.all():
-            if pr.erasure_tasks.count():
+            if pr.consent_tasks.count():
+                # Consent propagation tasks - these are not created until access and erasure steps are complete
+
+                if some_errored(pr.consent_tasks):
+                    logger.info(f"Marking consent step of {pr.id} as error")
+                    pr.status = PrivacyRequestStatus.error
+                    pr.save(db)
+
+            elif pr.erasure_tasks.count():
                 """These are not created until access tasks are created."""
-                if all(
-                    tsk.status in [TaskStatus.complete, TaskStatus.error]
-                    for tsk in pr.erasure_tasks
-                ):
+                if some_errored(pr.erasure_tasks):
                     logger.info(f"Marking erasure step of {pr.id} as error")
                     pr.status = PrivacyRequestStatus.error
                     pr.save(db)
 
             elif pr.access_tasks.count():
-                if all(
-                    tsk.status in [TaskStatus.complete, TaskStatus.error]
-                    for tsk in pr.access_tasks
-                ):
+                if some_errored(pr.access_tasks):
                     logger.info(f"Marking access step of {pr.id} as error")
                     pr.status = PrivacyRequestStatus.error
                     pr.save(db)
