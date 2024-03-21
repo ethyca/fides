@@ -113,6 +113,7 @@ export enum ScopeRegistryEnum {
   PRIVACY_REQUEST_UPLOAD_DATA = "privacy-request:upload_data",
   PRIVACY_REQUEST_VIEW_DATA = "privacy-request:view_data",
   PROPERTY_CREATE = "property:create",
+  PROPERTY_DELETE = "property:delete",
   PROPERTY_READ = "property:read",
   PROPERTY_UPDATE = "property:update",
   RULE_CREATE_OR_UPDATE = "rule:create_or_update",
