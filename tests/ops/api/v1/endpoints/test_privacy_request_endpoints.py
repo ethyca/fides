@@ -220,6 +220,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         policy,
         allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_CUSTOM_FIELDS = {
@@ -245,7 +246,7 @@ class TestCreatePrivacyRequest:
         persisted_identity = pr.get_persisted_identity()
         assert persisted_identity.email == TEST_EMAIL
         persisted_custom_privacy_request_fields = (
-            pr.get_persisted_custom_privacy_request_fields()
+            pr.get_custom_privacy_request_field_map()
         )
         assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
         pr.delete(db=db)

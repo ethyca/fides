@@ -374,7 +374,7 @@ class TestPrivacyRequestTriggerWebhooks:
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
-        privacy_request.cache_derived_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         with requests_mock.Mocker() as mock_response:
             mock_response.post(

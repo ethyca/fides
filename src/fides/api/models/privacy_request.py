@@ -399,12 +399,12 @@ class PrivacyRequest(
     def get_identity_map(self) -> Dict[str, Any]:
         """
         Returns a combined map of derived identities from the cache and provided identities
-        from the database with provided identities overwriting any overlapping
-        derived identities of the same type.
+        from the database with derived identities overwriting any overlapping
+        provided identities of the same type.
         """
         derived_identity_data = self.get_cached_derived_identity_data()
         provided_identity_data = self.get_persisted_identity().dict(exclude_none=True)
-        return {**derived_identity_data, **provided_identity_data}
+        return {**provided_identity_data, **derived_identity_data}
 
     def persist_custom_privacy_request_fields(
         self,
