@@ -20,6 +20,7 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
+from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.location_regulation_selections import (
     DeprecatedNoticeRegion,
     PrivacyNoticeRegion,
@@ -153,15 +154,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         order_by="NoticeTranslation.created_at",
     )
 
-    # Forward declaration to avoid circular import errors
-    PrivacyExperienceConfig = "PrivacyExperienceConfig"
-
-    experience_configs = relationship(
-        PrivacyExperienceConfig,
-        secondary="experiencenotices",
-        back_populates="privacy_notices",
-    )
-
     @hybridproperty
     def default_preference(self) -> UserConsentPreference:
         """Returns the user's default consent preference given the consent
@@ -212,10 +204,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     @property
     def configured_regions(self) -> List[PrivacyNoticeRegion]:
         """Convenience property to look up which regions are using these Notices."""
-        from fides.api.models.privacy_experience import (
-            ExperienceNotices,
-            PrivacyExperience,
-        )
+        from fides.api.models.privacy_experience import PrivacyExperience
 
         db = Session.object_session(self)
         configured_regions = (
