@@ -5,6 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.skip("Enterprise account only")
+@pytest.mark.integration_saas
 class TestOracleResponsysConnector:
     def test_connection(self, oracle_responsys_runner: ConnectorRunner):
         oracle_responsys_runner.test_connection()
