@@ -82,8 +82,10 @@ const HeaderContent = <T,>({
         sx={{ ...getTableTHandTDStyles(header.column.id) }}
         textAlign="start"
         data-testid={`${header.id}-header-menu`}
-        _focus={{
+        _focusVisible={{
           backgroundColor: "gray.100",
+        }}
+        _focus={{
           outline: "none",
         }}
       >
