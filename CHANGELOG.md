@@ -22,6 +22,7 @@ The types of changes are:
 
 ### Changed
 - Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734) 
+- Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
  
 ### Fixed
 - Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
