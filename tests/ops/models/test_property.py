@@ -78,3 +78,7 @@ class TestProperty:
         experience = updated_property.experiences[0]
         assert experience.id == minimal_experience["id"]
         assert experience.name == minimal_experience["name"]
+
+    def test_delete_property(self, db: Session, property_a):
+        property_a.delete(db=db)
+        assert Property.get_by(db=db, field="id", value=property_a.id) is None

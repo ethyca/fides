@@ -992,11 +992,21 @@ class TestPrivacyRequestCustomFieldFunctions:
                     label="First name", value="John"
                 ),
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+                "subscriber_ids": CustomPrivacyRequestField(
+                    label="Subscriber IDs", value=["123", "456"]
+                ),
+                "account_ids": CustomPrivacyRequestField(
+                    label="Account IDs", value=[123, 456]
+                ),
+                "support_id": CustomPrivacyRequestField(label="Support ID", value=1),
             },
         )
         assert privacy_request.get_custom_privacy_request_field_map() == {
             "first_name": {"label": "First name", "value": "John"},
             "last_name": {"label": "Last name", "value": "Doe"},
+            "subscriber_ids": {"label": "Subscriber IDs", "value": ["123", "456"]},
+            "account_ids": {"label": "Account IDs", "value": [123, 456]},
+            "support_id": {"label": "Support ID", "value": 1},
         }
 
     def test_persist_custom_privacy_request_fields_collection_disabled(
@@ -1013,6 +1023,13 @@ class TestPrivacyRequestCustomFieldFunctions:
                     label="First name", value="John"
                 ),
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+                "subscriber_ids": CustomPrivacyRequestField(
+                    label="Subscriber IDs", value=["123", "456"]
+                ),
+                "account_ids": CustomPrivacyRequestField(
+                    label="Account IDs", value=[123, 456]
+                ),
+                "support_id": CustomPrivacyRequestField(label="Support ID", value=1),
             },
         )
         assert privacy_request.get_custom_privacy_request_field_map() == {}
@@ -1055,11 +1072,19 @@ class TestConsentRequestCustomFieldFunctions:
                     label="First name", value="John"
                 ),
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+                "subscriber_ids": CustomPrivacyRequestField(
+                    label="Subscriber IDs", value=["123", "456"]
+                ),
+                "account_ids": CustomPrivacyRequestField(
+                    label="Account IDs", value=[123, 456]
+                ),
             },
         )
         assert consent_request.get_custom_privacy_request_field_map() == {
             "first_name": {"label": "First name", "value": "John"},
             "last_name": {"label": "Last name", "value": "Doe"},
+            "subscriber_ids": {"label": "Subscriber IDs", "value": ["123", "456"]},
+            "account_ids": {"label": "Account IDs", "value": [123, 456]},
         }
 
     def test_persist_custom_privacy_request_fields_collection_disabled(
@@ -1076,6 +1101,12 @@ class TestConsentRequestCustomFieldFunctions:
                     label="First name", value="John"
                 ),
                 "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+                "subscriber_ids": CustomPrivacyRequestField(
+                    label="Subscriber IDs", value=["123", "456"]
+                ),
+                "account_ids": CustomPrivacyRequestField(
+                    label="Account IDs", value=[123, 456]
+                ),
             },
         )
         assert consent_request.get_custom_privacy_request_field_map() == {}

@@ -34,7 +34,7 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.cryptography.cryptographic_util import hash_with_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
@@ -60,9 +60,14 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
-from fides.api.schemas.redis_cache import Identity, IdentityBase
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestFieldValue,
+    Identity,
+    IdentityBase,
+)
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
+    CustomJSONEncoder,
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
@@ -753,10 +758,10 @@ class PrivacyRequest(
         This is for use by the *manual* connector which is integrated with the graph.
         """
         cache: FidesopsRedis = get_cache()
-        cached_results: Optional[
-            Dict[str, Optional[List[Row]]]
-        ] = cache.get_encoded_objects_by_prefix(
-            f"MANUAL_INPUT__{self.id}__{collection.value}"
+        cached_results: Optional[Dict[str, Optional[List[Row]]]] = (
+            cache.get_encoded_objects_by_prefix(
+                f"MANUAL_INPUT__{self.id}__{collection.value}"
+            )
         )
         return list(cached_results.values())[0] if cached_results else None
 
@@ -794,9 +799,9 @@ class PrivacyRequest(
     def get_cached_access_graph(self) -> Optional[GraphRepr]:
         """Fetch the graph built for the access request"""
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[GraphRepr]]
-        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
+        value_dict: Optional[Dict[str, Optional[GraphRepr]]] = (
+            cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
+        )
         return list(value_dict.values())[0] if value_dict else None
 
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
@@ -812,9 +817,9 @@ class PrivacyRequest(
         Fetch the collection -> data use map cached for this privacy request
         """
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[Dict[str, Set[str]]]]
-        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        value_dict: Optional[Dict[str, Optional[Dict[str, Set[str]]]]] = (
+            cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        )
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(
@@ -962,10 +967,10 @@ def _get_manual_access_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[
-        Optional[Dict[str, Any]]
-    ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    cached_results: Optional[Optional[Dict[str, Any]]] = (
+        cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        )
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -978,10 +983,10 @@ def _get_manual_erasure_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[
-        Optional[Dict[str, Any]]
-    ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    cached_results: Optional[Optional[Dict[str, Any]]] = (
+        cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        )
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -1130,16 +1135,23 @@ class CustomPrivacyRequestField(Base):
     @classmethod
     def hash_value(
         cls,
-        value: str,
+        value: CustomPrivacyRequestFieldValue,
         encoding: str = "UTF-8",
-    ) -> str:
-        """Utility function to hash the value with a generated salt"""
-        salt = generate_salt()
-        hashed_value = hash_with_salt(
-            value.encode(encoding),
-            salt.encode(encoding),
-        )
-        return hashed_value
+    ) -> Union[str, List[str]]:
+        """Utility function to hash the value(s) with a generated salt"""
+
+        def hash_single_value(value: Union[str, int]) -> str:
+            SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+            value_str = str(value)
+            hashed_value = hash_with_salt(
+                value_str.encode(encoding),
+                SALT.encode(encoding),
+            )
+            return hashed_value
+
+        if isinstance(value, list):
+            return [hash_single_value(item) for item in value]
+        return hash_single_value(value)
 
 
 class Consent(Base):
