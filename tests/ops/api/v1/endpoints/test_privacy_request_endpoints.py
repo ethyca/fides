@@ -22,7 +22,6 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
-    JWE_PAYLOAD_SCOPES,
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -44,7 +43,6 @@ from fides.api.models.privacy_request import (
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
-from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingServiceType,
@@ -56,11 +54,6 @@ from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
 from fides.api.tasks import MESSAGING_QUEUE_NAME
-from fides.api.util.cache import (
-    get_encryption_cache_key,
-    get_identity_cache_key,
-    get_masking_secret_cache_key,
-)
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,

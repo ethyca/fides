@@ -26,19 +26,10 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
-from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.manual_connector import ManualAction
-from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fides.api.util.cache import (
-    FidesopsRedis,
-    get_all_cache_keys_for_privacy_request,
-    get_cache,
-    get_encryption_cache_key,
-    get_identity_cache_key,
-    get_masking_secret_cache_key,
-)
+from fides.api.util.cache import FidesopsRedis, get_derived_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 
@@ -227,6 +218,39 @@ def test_delete_privacy_request(db: Session, policy: Policy) -> None:
     privacy_request.delete(db)
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
+
+
+def test_delete_privacy_request_removes_cached_data(
+    cache: FidesopsRedis,
+    db: Session,
+    policy: Policy,
+) -> None:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": str(uuid4()),
+            "started_processing_at": datetime.utcnow(),
+            "requested_at": datetime.utcnow() - timedelta(days=1),
+            "status": PrivacyRequestStatus.in_processing,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    identity_attribute = "email"
+    identity_value = "test@example.com"
+    identity_kwargs = {identity_attribute: identity_value}
+    identity = Identity(**identity_kwargs)
+    privacy_request.cache_derived_identity(identity)
+    key = get_derived_identity_cache_key(
+        privacy_request_id=privacy_request.id,
+        identity_attribute=identity_attribute,
+    )
+    assert cache.get(key) == identity_value
+    privacy_request.delete(db)
+    from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
+    assert from_db is None
+    assert cache.get(key) is None
 
 
 class TestPrivacyRequestTriggerWebhooks:

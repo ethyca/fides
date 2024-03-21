@@ -1273,6 +1273,7 @@ def _create_privacy_request_for_policy(
     )
     return pr
 
+
 def _create_privacy_request_for_policy_no_identities(
     db: Session,
     policy: Policy,
