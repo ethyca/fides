@@ -247,3 +247,14 @@ export const stubSystemVendors = () => {
     fixture: "systems/system-vendors.json",
   }).as("getSystemVendors");
 };
+
+export const stubTranslationConfig = (enabled: boolean) => {
+  cy.intercept("GET", "/api/v1/config*", {
+    body: {
+      plus_consent_settings: {
+        enable_translations: enabled,
+        enable_oob_translations: enabled,
+      },
+    },
+  }).as("getTranslationConfig");
+};

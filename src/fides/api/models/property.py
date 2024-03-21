@@ -98,14 +98,14 @@ class PrivacyExperienceConfigProperty(Base):
 
     privacy_experience_config_id = Column(
         String,
-        ForeignKey("privacyexperienceconfig.id", ondelete="CASCADE"),
+        ForeignKey("privacyexperienceconfig.id"),
         index=True,
         nullable=False,
         primary_key=True,
     )
     property_id = Column(
         String,
-        ForeignKey("plus_property.id", ondelete="CASCADE"),
+        ForeignKey("plus_property.id"),
         index=True,
         nullable=False,
         primary_key=True,

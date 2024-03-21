@@ -32,12 +32,29 @@ import {
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
 import { OOBTranslationNotice } from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
+import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import {
   NoticeTranslation,
   NoticeTranslationCreate,
   PrivacyNoticeCreation,
   SupportedLanguage,
 } from "~/types/api";
+
+const NoticeFormFields = ({ index }: { index: number }) => (
+  <>
+    <CustomTextInput
+      autoFocus={index !== 0}
+      name={`translations.${index}.title`}
+      label="Title of consent notice as displayed to user"
+      variant="stacked"
+    />
+    <CustomTextArea
+      name={`translations.${index}.description`}
+      label="Privacy notice displayed to the user"
+      variant="stacked"
+    />
+  </>
+);
 
 const TranslationFormBlock = ({
   index,
@@ -51,17 +68,7 @@ const TranslationFormBlock = ({
   <Flex direction="column" gap={6}>
     <Heading size="sm">Edit {name} translation</Heading>
     {isOOB ? <OOBTranslationNotice languageName={name} /> : null}
-    <CustomTextInput
-      autoFocus={index !== 0}
-      name={`translations.${index}.title`}
-      label="Title of consent notice as displayed to user"
-      variant="stacked"
-    />
-    <CustomTextArea
-      name={`translations.${index}.description`}
-      label="Privacy notice displayed to the user"
-      variant="stacked"
-    />
+    <NoticeFormFields index={index} />
   </Flex>
 );
 
@@ -110,6 +117,12 @@ const PrivacyNoticeTranslationForm = ({
     useState<boolean>(false);
   const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
   const [tabIndex, setTabIndex] = useState<number>(0);
+
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const translationsEnabled =
+    appConfig?.plus_consent_settings?.enable_translations;
 
   const languagePage = useAppSelector(selectPage);
   const languagePageSize = useAppSelector(selectPageSize);
@@ -160,6 +173,14 @@ const PrivacyNoticeTranslationForm = ({
 
   const getLanguageDisplayName = (lang: SupportedLanguage) =>
     allLanguages.find((language) => language.id === lang)?.name ?? lang;
+
+  if (!translationsEnabled) {
+    return (
+      <FormSection title="Notice text">
+        <NoticeFormFields index={0} />
+      </FormSection>
+    );
+  }
 
   return (
     <FormSection title="Localizations">
