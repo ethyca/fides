@@ -68,7 +68,7 @@ export interface FidesEvent extends CustomEvent {
    * @example
    * ```ts
    * window.addEventListener("FidesUpdated", (evt) => {
-   *   if (evt.detail.extraDetails?.consentMethod == "accept") {
+   *   if (evt.detail.extraDetails?.consentMethod === "accept") {
    *     console.log("Current user clicked the 'Accept' button!");
    *   }
    * });
