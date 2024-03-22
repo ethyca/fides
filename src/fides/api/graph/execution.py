@@ -27,7 +27,7 @@ class TraversalDetails(FidesSchema):
 class ExecutionNode:
     """Node for *executing* a task. This node only has knowledge of itself and its incoming and outgoing edges
 
-    After we build the graph, we save details to RequestTasks that are hydrated here to execute an individual
+    After we build the graph, we save details to RequestTasks in the database that are hydrated here to execute an individual
     node without rebuilding the graph
 
     """

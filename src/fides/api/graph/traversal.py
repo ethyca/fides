@@ -25,7 +25,7 @@ Datastore = Dict[CollectionAddress, List[Row]]
 
 
 class TraversalNode(Contextualizable):
-    """Base traversal traversal_node type. This type will never be used directly."""
+    """Traversal_node type. This type is used for building the graph, not for executing the graph."""
 
     def __init__(self, node: Node):
         self.node = node

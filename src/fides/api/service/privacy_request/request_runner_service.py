@@ -63,14 +63,16 @@ from fides.api.service.connectors.erasure_email_connector import (
 from fides.api.service.connectors.fides_connector import filter_fides_connector_datasets
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.storage.storage_uploader_service import upload
+from fides.api.task.create_tasks import (
+    run_access_request,
+    run_consent_request,
+    run_erasure_request,
+)
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
     get_cached_data_for_erasures,
-    run_access_request,
-    run_consent_request,
-    run_erasure,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -398,9 +400,7 @@ def run_privacy_request(
             ):
                 run_access_request(
                     privacy_request=privacy_request,
-                    policy=policy,
                     graph=dataset_graph,
-                    connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
                 )
@@ -440,15 +440,10 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
                 # We only need to run the erasure once until masking strategies are handled
-                run_erasure(
+                run_erasure_request(
                     privacy_request=privacy_request,
-                    policy=policy,
                     graph=dataset_graph,
-                    connection_configs=connection_configs,
                     identity=identity_data,
-                    access_request_data=get_cached_data_for_erasures(
-                        privacy_request.id
-                    ),
                     session=session,
                 )
                 return
@@ -469,9 +464,7 @@ def run_privacy_request(
             ):
                 run_consent_request(
                     privacy_request=privacy_request,
-                    policy=policy,
                     graph=build_consent_dataset_graph(datasets),
-                    connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
                 )
