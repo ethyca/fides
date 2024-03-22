@@ -80,6 +80,7 @@ export interface FidesOptions {
    *     <!-- FidesJS will render it's UI here! -->
    *   </div>
    * </body>
+   * ```
    */ 
   fides_embed: boolean;
 

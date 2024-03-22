@@ -104,6 +104,7 @@ Defaults to `false`.
     <!-- FidesJS will render it's UI here! -->
   </div>
 </body>
+```
 
 ___
 
