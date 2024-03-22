@@ -256,6 +256,8 @@ export function loadMessagesFromExperience(
     }
   }
 
+  i18n.setAvailableLocales(availableLocales);
+
   // Load all the extracted messages into the i18n module
   availableLocales.forEach((locale) => {
     i18n.load(locale, allMessages[locale]);
@@ -496,6 +498,9 @@ export function initializeI18n(
  * LinguiJS once we're ready to upgrade to the real thing!
  */
 export function setupI18n(): I18n {
+  // Available locales
+  let availableLocales: Locale[] = [];
+
   // Default locale; default this to English
   let defaultLocale: Locale = DEFAULT_LOCALE;
 
@@ -507,6 +512,14 @@ export function setupI18n(): I18n {
 
   // Return a new I18n instance
   return {
+    setAvailableLocales: (locales: Locale[]): void => {
+      availableLocales = locales;
+    },
+
+    get availableLocales() {
+      return availableLocales;
+    },
+
     activate: (locale: Locale): void => {
       currentLocale = locale;
     },

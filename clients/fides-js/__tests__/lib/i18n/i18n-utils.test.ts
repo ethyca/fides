@@ -34,11 +34,20 @@ describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
   let mockDefaultLocale = DEFAULT_LOCALE;
+  let mockAvailableLocales: Locale[] = [DEFAULT_LOCALE, "es"];
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     activate: jest.fn((locale: Locale): void => {
       mockCurrentLocale = locale;
     }),
+
+    setAvailableLocales: jest.fn((locales: Locale[]): void => {
+      mockAvailableLocales = locales;
+    }),
+
+    get availableLocales(): Locale[] {
+      return mockAvailableLocales;
+    },
 
     getDefaultLocale: jest.fn((): Locale => mockDefaultLocale),
 

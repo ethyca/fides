@@ -57,6 +57,16 @@ interface I18n {
   activate(locale: Locale): void;
 
   /**
+   * Set a list of all available locales for this session.
+   */
+  setAvailableLocales(locales: Locale[]): void;
+
+  /**
+   * Get a list of all available locales for this session.
+   */
+  get availableLocales(): Locale[];
+
+  /**
    * Get the current default locale for this session.
    *
    * WARN: LinguiJS does not support getting/setting the default locale, so
