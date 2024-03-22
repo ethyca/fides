@@ -375,7 +375,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
         logger.info(
-            "Starting {}, traversal_node {}", self.resources.request.id, self.key
+            "Starting {}, node {}", self.resources.request.id, self.key
         )
 
         self.update_status(

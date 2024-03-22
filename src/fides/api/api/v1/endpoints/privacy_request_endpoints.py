@@ -1958,6 +1958,6 @@ def get_task_data(
     """
     pr = get_privacy_request_or_error(db, privacy_request_id)
     logger.info(f"Getting privacy request '{privacy_request_id}' data")
-    data = pr.get_access_data(db)
+    data = pr.get_raw_access_results()
     logger.info(f"Getting '{data}' data")
     return data

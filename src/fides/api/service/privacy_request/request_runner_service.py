@@ -72,7 +72,6 @@ from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
-    get_cached_data_for_erasures,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -287,7 +286,9 @@ def queue_privacy_request(
     from_step: Optional[str] = None,
 ) -> str:
     cache: FidesopsRedis = get_cache()
-    logger.info("queueing privacy request")
+    logger.info(
+        "Queueing privacy request {} from step {}", privacy_request_id, from_step
+    )
     task = run_privacy_request.delay(
         privacy_request_id=privacy_request_id,
         from_webhook_id=from_webhook_id,
@@ -398,6 +399,7 @@ def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
+                logger.info("RUNNING ACCESS REQUEST {}", privacy_request.id)
                 run_access_request(
                     privacy_request=privacy_request,
                     graph=dataset_graph,
@@ -415,13 +417,13 @@ def run_privacy_request(
                 from_checkpoint=resume_step,
             ):
                 # TODO Terminator task must exist and must be in state done
-                access_results = privacy_request.get_access_data(session)
+                raw_access_results: Dict = privacy_request.get_raw_access_results()
                 logger.info(
-                    f"Unfiltered access results {json.loads(json.dumps(access_results, default=storage_json_encoder))}"
+                    f"Unfiltered access results {json.loads(json.dumps(raw_access_results, default=storage_json_encoder))}"
                 )
 
                 filtered_access_results = filter_by_enabled_actions(
-                    access_results, connection_configs
+                    raw_access_results, connection_configs
                 )
                 access_result_urls = upload_access_results(
                     session,

@@ -41,7 +41,11 @@ from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_s
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
-from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
+from fides.api.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+)
 from fides.api.graph.graph_differences import GraphRepr
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
@@ -981,22 +985,37 @@ class PrivacyRequest(
     def access_tasks(self):
         return self.request_tasks.filter(RequestTask.action_type == ActionType.access)
 
-    def get_access_data(self, db: Session) -> Dict:
-        """Get data written by the access graph"""
-        terminator_task = (
-            db.query(RequestTask)
-            .filter(
-                RequestTask.privacy_request_id == self.id,
-                RequestTask.collection_address == TERMINATOR_ADDRESS.value,
-                RequestTask.action_type == ActionType.access,
-                RequestTask.status == TaskStatus.complete,
-            )
-            .first()
-        )
+    def get_root_task_by_action(
+        self, action: ActionType.access
+    ) -> Optional[RequestTask]:
+        """Get the root tasks for a specific action"""
+        if action == ActionType.access:
+            return self.access_tasks.filter(
+                RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value
+            ).first()
 
-        if terminator_task:
-            return terminator_task.terminator_data or {}
-        return {}
+        if action == ActionType.erasure:
+            return self.erasure_tasks.filter(
+                RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value
+            ).first()
+
+        if action == ActionType.consent:
+            return self.consent_tasks.filter(
+                RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value
+            ).first()
+
+    def get_raw_access_results(self) -> Dict:
+        """Retrieve the access data saved on the individual access nodes"""
+        final_results: Dict = {}
+        for task in self.access_tasks.filter(
+            RequestTask.status == PrivacyRequestStatus.complete,
+            RequestTask.collection_address.notin_(
+                [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+            ),
+        ):
+            final_results[task.collection_address] = task.access_data
+
+        return final_results
 
 
 class PrivacyRequestError(Base):
@@ -1538,6 +1557,22 @@ class RequestTask(Base):
         MutableDict.as_mutable(JSONB)
     )  # Storing a serialized Collection
     traversal_details = Column(MutableDict.as_mutable(JSONB))
+
+    @property
+    def request_task_address(self) -> CollectionAddress:
+        return CollectionAddress.from_string(self.collection_address)
+
+    @property
+    def is_root_task(self) -> bool:
+        return self.request_task_address == ROOT_COLLECTION_ADDRESS
+
+    @property
+    def is_terminator_task(self) -> bool:
+        return self.request_task_address == TERMINATOR_ADDRESS
+
+    def update_status(self, db: Session, status: TaskStatus):
+        self.status = status
+        self.save(db)
 
     def get_related_task(
         self, db: Session, collection_address_str: str
