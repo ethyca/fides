@@ -3,7 +3,16 @@
 Once FidesJS is initialized, it exports this global object to `window.Fides`
 as the main API to integrate into your web applications.
 
-TODO: finish me!
+You can then use `Fides` in your Javascript code to check the user's current
+consent preferences (e.g. `if (Fides.consent.marketing) { ... }`), enable
+FidesJS integrations (e.g. `Fides.gtm()`), programmaticaly show the FidesJS
+UI (e.g. `Fides.showModal()`) and more. See the full list of properties below
+for details.
+
+NOTE: FidesJS will need to be downloaded, executed, and initialized before
+the `Fides` object is available. Therefore, your code should check for the
+existence of Fides *or* subscribe to the global `FidesInitialized` event (see
+[FidesEvent](FidesEvent.md)) for details) before using the `Fides` object in your own code.
 
 **`Example`**
 
@@ -29,8 +38,6 @@ TODO: finish me!
 
 - [consent](Fides.md#consent)
 - [fides\_string](Fides.md#fides_string)
-- [fides\_meta](Fides.md#fides_meta)
-- [identity](Fides.md#identity)
 - [initialized](Fides.md#initialized)
 - [showModal](Fides.md#showmodal)
 - [gtm](Fides.md#gtm)
@@ -42,9 +49,38 @@ TODO: finish me!
 
 • **consent**: `Record`\<`string`, `boolean`\>
 
-User's current consent preferences.
+User's current consent preferences, formatted as a key/value object with:
+- key: the applicable Fides `notice_key` (e.g. `data_sales_and_sharing`, `analytics`)
+- value: `true` or `false`, depending on whether or not the current user
+has consented to the notice
 
-TODO
+Note that FidesJS will automatically set default consent preferences based
+on the type of notice - so, for example a typical "opt-in" analytics notice
+will be given a default value of `false`. This allows very writing very
+simple (and readable!) code to check a user's consent preferences.
+
+The specific keys provided in the `Fides.consent` property are determined
+based on your Fides configuration, and are provided to the browser based on
+the user's location, property ID, etc.
+
+**`Example`**
+
+A `Fides.consent` value showing the user has opted-out of data sales & sharing:
+```ts
+{
+  "data_sales_and_sharing": false
+}
+```
+
+**`Example`**
+
+A `Fides.consent` value showing the user has opted-in to analytics, but not marketing:
+```ts
+{
+  "analytics": true,
+  "marketing": false
+}
+```
 
 ___
 
@@ -52,25 +88,18 @@ ___
 
 • `Optional` **fides\_string**: `string`
 
-User's current advanced consent preferences.
+User's current consent string(s) combined into a single value. Currently,
+this is used by FidesJS to store IAB consent strings from various
+frameworks such as TCF, GPP, and Google's "Additional Consent" string.
 
-TODO
+**`Example`**
 
-___
-
-### fides\_meta
-
-• **fides\_meta**: `object`
-
-TODO
-
-___
-
-### identity
-
-• **identity**: `Record`\<`string`, `string`\>
-
-User's current "identity" values, which are recorded
+Example `fides_string` showing a combination of:
+- IAB TC string: `CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA`
+- Google AC string: `1~61.70`
+```ts
+console.log(Fides.fides_string); // CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70
+```
 
 ___
 
@@ -78,7 +107,11 @@ ___
 
 • **initialized**: `boolean`
 
-TODO
+Whether or not FidesJS has finished initialization and has loaded the
+current user's experience, consent preferences, etc.
+
+NOTE: To be notified when initialization has completed, you can subscribe
+to the `FidesInitialized` event. See [FidesEvent](FidesEvent.md) for details.
 
 ___
 

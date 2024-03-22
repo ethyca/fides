@@ -79,10 +79,10 @@ window.addEventListener("FidesUpdated", (evt) => {
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `consent` | `Record`\<`string`, `boolean`\> | User's current consent preferences; see [Fides.consent](Fides.md#consent) for detail. |
-| `fides_string?` | `string` | User's current advanced consent preferences; see [Fides.fides_string](Fides.md#fides_string) for detail. |
-| `extraDetails?` | \{ `servingComponent?`: `string` ; `consentMethod?`: `string`  } | Extra event properties for context TODO |
-| `extraDetails.servingComponent?` | `string` | TODO |
-| `extraDetails.consentMethod?` | `string` | TODO |
+| `fides_string?` | `string` | User's current consent string; see [Fides.fides_string](Fides.md#fides_string) for detail. |
+| `extraDetails?` | \{ `servingComponent?`: ``"banner"`` \| ``"modal"`` \| ``"tcf_banner"`` \| ``"tcf_overlay"`` ; `consentMethod?`: ``"dismiss"`` \| ``"accept"`` \| ``"reject"`` \| ``"save"`` \| ``"gpc"``  } | Extra event properties, for additional context. |
+| `extraDetails.servingComponent?` | ``"banner"`` \| ``"modal"`` \| ``"tcf_banner"`` \| ``"tcf_overlay"`` | Which FidesJS UI component (if any) caused this event. |
+| `extraDetails.consentMethod?` | ``"dismiss"`` \| ``"accept"`` \| ``"reject"`` \| ``"save"`` \| ``"gpc"`` | What consent method (if any) caused this event. |
 
 #### Overrides
 

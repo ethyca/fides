@@ -81,25 +81,23 @@ export interface FidesEvent extends CustomEvent {
     consent: Record<string, boolean>;
 
     /**
-     * User's current advanced consent preferences; see {@link Fides.fides_string} for detail.
+     * User's current consent string; see {@link Fides.fides_string} for detail.
      */
     fides_string?: string;
 
     /**
-     * Extra event properties for context
-     *
-     * TODO
+     * Extra event properties, for additional context.
      */
     extraDetails?: {
       /**
-       * TODO
+       * Which FidesJS UI component (if any) caused this event.
        */
-      servingComponent?: string;
+      servingComponent?: "banner" | "modal" | "tcf_banner" | "tcf_overlay";
 
       /**
-       * TODO
+       * What consent method (if any) caused this event.
        */
-      consentMethod?: string;
+      consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
     };
   };
 };
