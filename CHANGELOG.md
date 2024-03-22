@@ -17,10 +17,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.32.0...main)
 
-<<<<<<< HEAD
-### Changed
-- Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
-=======
 ### Added
 - Added models for Privacy Center configuration (for plus users) [#4716](https://github.com/ethyca/fides/pull/4716)
 - Added ability to delete properties [#4708](https://github.com/ethyca/fides/pull/4708)
@@ -28,13 +24,12 @@ The types of changes are:
 ### Changed
 - Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734) 
 - Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
- 
+- Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
+
 ### Fixed
 - Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
 - Disable editing of data use declaration name and type after creation [#4731](https://github.com/ethyca/fides/pull/4731)
-
-- Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
->>>>>>> d0988077413d957a432c22735578bfa71d5c6809
+- Initialization issues with ExperienceNotices [#4723](https://github.com/ethyca/fides/pull/4723)
 
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
