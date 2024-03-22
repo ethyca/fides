@@ -1,5 +1,5 @@
 /* eslint-disable object-shorthand */
-import type { Locale, Messages } from "..";
+import type { Locale, Messages, Language } from "..";
 
 /**
  * Statically load all the pre-localized dictionaries from the ./locales directory.
@@ -91,3 +91,55 @@ export const STATIC_MESSAGES: Record<Locale, Messages> = {
   uk: uk,
   zh: zh,
 };
+
+export const LOCALE_LANGUAGE_MAP: Language[] = [
+  { locale: "ar", english: "Arabic", original: "العَرَبِيَّة" },
+  { locale: "bg", english: "Bulgarian", original: "български език" },
+  { locale: "bs", english: "Bosnian", original: "Bosanski Jezik" },
+  { locale: "ca", english: "Catalan Spanish", original: "català" },
+  { locale: "cs", english: "Czech", original: "český jazyk" },
+  { locale: "da", english: "Danish", original: "Dansk" },
+  { locale: "de", english: "German", original: "Deutsch" },
+  { locale: "el", english: "Greek", original: "ελληνικά" },
+  { locale: "en", english: "English", original: "English" },
+  { locale: "es", english: "European Spanish", original: "Español" },
+  { locale: "es-MX", english: "Mexican Spanish", original: "Español - MX" },
+  { locale: "et", english: "Estonian", original: "Eesti" },
+  { locale: "eu", english: "Basque Spanish", original: "euskara" },
+  { locale: "fi", english: "Finnish", original: "Suomi" },
+  { locale: "fl", english: "Filipino", original: "Pilipino" },
+  { locale: "fr", english: "European French", original: "Français" },
+  { locale: "fr-CA", english: "French Canadian", original: "Français - CA" },
+  { locale: "gl", english: "Galician", original: "Galego" },
+  { locale: "hi-IN", english: "Indian Hindi", original: "हिन्दी" },
+  { locale: "hr", english: "Croatian", original: "Hrvatski Jezik" },
+  { locale: "hu", english: "Hungarian", original: "magyar" },
+  { locale: "hy", english: "Armenian", original: "Հայերեն" },
+  { locale: "it", english: "Italian", original: "Italiano" },
+  { locale: "ja", english: "Japanese", original: "日本語" },
+  { locale: "lt", english: "Lithuanian", original: "lietuvių kalba" },
+  { locale: "lv", english: "Latvian", original: "latviešu valoda" },
+  { locale: "mt", english: "Maltese", original: "Malti" },
+  { locale: "nl", english: "Dutch", original: "Nederlands" },
+  { locale: "no", english: "Norwegian", original: "Norsk" },
+  {
+    locale: "pt-BR",
+    english: "Brazilian Portuguese",
+    original: "Português - BR",
+  },
+  {
+    locale: "pt-PT",
+    english: "Portugal Portuguese",
+    original: "Português - PT",
+  },
+  { locale: "ro", english: "Romanian", original: "limba română" },
+  { locale: "ru", english: "Russian", original: "русский язык" },
+  { locale: "sk", english: "Slovak", original: "slovenčina" },
+  { locale: "sl", english: "Slovenian", original: "Slovenski Jezik" },
+  { locale: "sr-Cyrl", english: "Cyrillic Serbian", original: "српски" },
+  { locale: "sr-Latn", english: "Latin Serbian", original: "Srpski" },
+  { locale: "sv", english: "Swedish", original: "Sverige" },
+  { locale: "tr", english: "Turkish", original: "Türkçe" },
+  { locale: "uk", english: "Ukrainian", original: "українська мова" },
+  { locale: "zh", english: "Chinese (Mandarin)", original: "中文" },
+];

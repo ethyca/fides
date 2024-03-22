@@ -41,15 +41,15 @@ export const ConsentButtons = ({
   };
   return (
     <div id="fides-button-group" tabIndex={-1}>
-      {includeLanguageSelector && i18n.availableLocales?.length > 1 && (
+      {includeLanguageSelector && i18n.availableLanguages?.length > 1 && (
         <div className="fides-i18n-menu">
           <div role="group" className="fides-i18n-popover">
-            {i18n.availableLocales.map((locale) => (
+            {i18n.availableLanguages.map((lang) => (
               <MenuItem
-                onClick={() => handleLocaleSelect(locale)}
-                isActive={currentLocale === locale}
+                onClick={() => handleLocaleSelect(lang.locale)}
+                isActive={currentLocale === lang.locale}
               >
-                {locale.toLocaleUpperCase()}
+                {lang.original}
               </MenuItem>
             ))}
           </div>

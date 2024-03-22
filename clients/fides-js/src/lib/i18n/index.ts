@@ -47,6 +47,12 @@ type MessageDescriptor = {
 };
 
 /**
+ * A simple type for a list of languages that can be used to populate a
+ * language selector dropdown, for example.
+ */
+type Language = { locale: string; english: string; original: string };
+
+/**
  * Minimum interface required for the global "i18n" object
  */
 interface I18n {
@@ -57,14 +63,14 @@ interface I18n {
   activate(locale: Locale): void;
 
   /**
-   * Set a list of all available locales for this session.
+   * Set the list of available languages for this session.
    */
-  setAvailableLocales(locales: Locale[]): void;
+  setAvailableLanguages(languages: Language[]): void;
 
   /**
-   * Get a list of all available locales for this session.
+   * Get the list of available languages for the user to choose from.
    */
-  get availableLocales(): Locale[];
+  get availableLanguages(): Language[];
 
   /**
    * Get the current default locale for this session.
@@ -130,7 +136,13 @@ interface I18n {
 
 const i18n: I18n = setupI18n();
 
-export { type Locale, type Messages, type MessageDescriptor, type I18n };
+export {
+  type Locale,
+  type Messages,
+  type MessageDescriptor,
+  type Language,
+  type I18n,
+};
 
 export { i18n };
 export * from "./i18n-utils";
