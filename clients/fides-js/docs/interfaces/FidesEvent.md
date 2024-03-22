@@ -23,7 +23,7 @@ For more information on working with these kind of `CustomEvent` objects in
 the browser, see the MDN docs:
 [https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
 
-### FidesJS Events
+### List of FidesEvent Types
 
 - `FidesInitialized`: Dispatched when initialization is complete and the
 current user's consent preferences - either previously saved or applicable
@@ -43,6 +43,18 @@ preferences in the FidesJS UI but has yet to *save* those changes (i.e.
 "dirty").
 
 - `FidesModalClosed`: Dispatched whenever the FidesJS modal is closed.
+
+## Hierarchy
+
+- `CustomEvent`
+
+  ↳ **`FidesEvent`**
+
+## Table of contents
+
+### Properties
+
+- [detail](FidesEvent.md#detail)
 
 ## Properties
 
@@ -66,7 +78,12 @@ window.addEventListener("FidesUpdated", (evt) => {
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `consent` | `Record`\<`string`, `boolean`\> | Current consent preferences TODO |
-| `extraDetails?` | \{ `consentMethod?`: `string` ; `servingComponent?`: `string`  } | Extra event properties for context TODO |
-| `extraDetails.consentMethod?` | `string` | TODO |
+| `consent` | `Record`\<`string`, `boolean`\> | User's current consent preferences; see [Fides.consent](Fides.md#consent) for detail. |
+| `fides_string?` | `string` | User's current advanced consent preferences; see [Fides.fides_string](Fides.md#fides_string) for detail. |
+| `extraDetails?` | \{ `servingComponent?`: `string` ; `consentMethod?`: `string`  } | Extra event properties for context TODO |
 | `extraDetails.servingComponent?` | `string` | TODO |
+| `extraDetails.consentMethod?` | `string` | TODO |
+
+#### Overrides
+
+CustomEvent.detail

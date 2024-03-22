@@ -78,9 +78,10 @@
     "excludePrivate": true,
     "githubPages": false,
     "hideBreadcrumbs": true,
-    "hideInPageTOC": true,
+    "hideInPageTOC": false,
     "name": "FidesJS: Javascript SDK for Fides",
     "plugin": "typedoc-plugin-markdown",
-    "readme": "none"
+    "readme": "none",
+    "sort": ["visibility", "source-order"]
   }
 }

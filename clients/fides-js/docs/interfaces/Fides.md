@@ -3,7 +3,7 @@
 Once FidesJS is initialized, it exports this global object to `window.Fides`
 as the main API to integrate into your web applications.
 
-TODO: more
+TODO: finish me!
 
 **`Example`**
 
@@ -23,6 +23,19 @@ TODO: more
 </body>
 ```
 
+## Table of contents
+
+### Properties
+
+- [consent](Fides.md#consent)
+- [fides\_string](Fides.md#fides_string)
+- [fides\_meta](Fides.md#fides_meta)
+- [identity](Fides.md#identity)
+- [initialized](Fides.md#initialized)
+- [showModal](Fides.md#showmodal)
+- [gtm](Fides.md#gtm)
+- [init](Fides.md#init)
+
 ## Properties
 
 ### consent
@@ -35,47 +48,21 @@ TODO
 
 ___
 
-### fides\_meta
-
-• **fides\_meta**: `object`
-
-___
-
 ### fides\_string
 
 • `Optional` **fides\_string**: `string`
 
+User's current advanced consent preferences.
+
+TODO
+
 ___
 
-### gtm
+### fides\_meta
 
-• **gtm**: () => `void`
+• **fides\_meta**: `object`
 
-Enable the Google Tag Manager (GTM) integration. This should be called
-immediately after FidesJS is included, and once enabled, FidesJS will
-automatically push all [FidesEvent](FidesEvent.md) events to the GTM data layer as
-they occur, which can then be used to trigger/block tags in GTM based on
-`Fides.consent` preferences or other business logic.
-
-See the Google Tag Manager tutorial for more: [https://fid.es/configuring-gtm-consent](https://fid.es/configuring-gtm-consent)
-
-**`Example`**
-
-Enabling the GTM integration in your site's `<head>`:
-```html
-<head>
-  <script src="path/to/fides.js"></script>
-  <script>Fides.gtm()</script>
-</head>
-```
-
-#### Type declaration
-
-▸ (): `void`
-
-##### Returns
-
-`void`
+TODO
 
 ___
 
@@ -84,33 +71,6 @@ ___
 • **identity**: `Record`\<`string`, `string`\>
 
 User's current "identity" values, which are recorded
-
-___
-
-### init
-
-• **init**: (`config`: `object`) => `Promise`\<`void`\>
-
-Initialize FidesJS based
-
-NOTE: In most cases, you should never have to call this directly, since
-Fides Cloud will automatically bundle a `Fides.init(...)` call server-side
-with the appropriate options for the user's session based on their
-location, property ID, and the latest configuration options from Fides.
-
-#### Type declaration
-
-▸ (`config`): `Promise`\<`void`\>
-
-##### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `config` | `object` | something |
-
-##### Returns
-
-`Promise`\<`void`\>
 
 ___
 
@@ -183,3 +143,62 @@ function myCustomShowModalFunction() {
 ##### Returns
 
 `void`
+
+___
+
+### gtm
+
+• **gtm**: () => `void`
+
+Enable the Google Tag Manager (GTM) integration. This should be called
+immediately after FidesJS is included, and once enabled, FidesJS will
+automatically push all [FidesEvent](FidesEvent.md) events to the GTM data layer as
+they occur, which can then be used to trigger/block tags in GTM based on
+`Fides.consent` preferences or other business logic.
+
+See the Google Tag Manager tutorial for more: [https://fid.es/configuring-gtm-consent](https://fid.es/configuring-gtm-consent)
+
+**`Example`**
+
+Enabling the GTM integration in your site's `<head>`:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>Fides.gtm()</script>
+</head>
+```
+
+#### Type declaration
+
+▸ (): `void`
+
+##### Returns
+
+`void`
+
+___
+
+### init
+
+• **init**: (`config`: `object`) => `Promise`\<`void`\>
+
+Initialize FidesJS based
+
+NOTE: In most cases, you should never have to call this directly, since
+Fides Cloud will automatically bundle a `Fides.init(...)` call server-side
+with the appropriate options for the user's session based on their
+location, property ID, and the latest configuration options from Fides.
+
+#### Type declaration
+
+▸ (`config`): `Promise`\<`void`\>
+
+##### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `config` | `object` | something |
+
+##### Returns
+
+`Promise`\<`void`\>
