@@ -68,7 +68,7 @@ Event properties passed by FidesJS when dispatched. Depending on the event type,
 
 ```ts
 window.addEventListener("FidesUpdated", (evt) => {
-  if (evt.detail.extraDetails?.consentMethod == "accept") {
+  if (evt.detail.extraDetails?.consentMethod === "accept") {
     console.log("Current user clicked the 'Accept' button!");
   }
 });
