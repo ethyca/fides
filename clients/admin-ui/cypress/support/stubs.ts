@@ -251,7 +251,7 @@ export const stubSystemVendors = () => {
 export const stubTranslationConfig = (enabled: boolean) => {
   cy.intercept("GET", "/api/v1/config*", {
     body: {
-      consent: {
+      plus_consent_settings: {
         enable_translations: enabled,
         enable_oob_translations: enabled,
       },
