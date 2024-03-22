@@ -2,18 +2,28 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Adyen
   type: adyen
-  description: A sample schema representing the Adyen connector for Fides
+  description: A sample schema representing the Adyen integration for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/adyen
   version: 0.1.0
 
   connector_params:
-    - name: domain-test
+    - name: management_endpoint
       default_value: management-test.adyen.com
-    - name: domain
+      label: The default value here is management-test.adyen.com, be sure to change this to reflect the live url, e.g. management-live.adyen.com.
+    - name: domain-test-replaceme #this needs to be live in the final version, problem here though is that we don't have a 'live' endpoint to test with as the keys we have access to are for the 'test' endpoint for Slice.
+      label: The default value here is ca-test.adyen.com, be sure to change this to reflect the live url, e.g. ca-live.adyen.com.
       default_value: ca-test.adyen.com
-    - name: management-domain
-      default_value: management-test.adyen.com
-    - name: x-API-key
-
+    - name: pspReference
+      label: pspReference
+      description: The PSP reference of the original payment authorisation. See https://docs.adyen.com/development-resources/data-protection-api/ for more details.
+      sensitive: True
+    - name: x_API_key
+      label: API key
+      sensitive: True
+      description: The API key/token for your Adyen environment (see https://docs.adyen.com/development-resources/api-credentials/#page-introduction for more details). **Note** Adyen uses roles to restrict operations that can be performed with a given API key. In order to use this integration the role of Data Protection API (see https://docs.adyen.com/development-resources/api-credentials/roles/#management-api for more details).
+    - name: merchantAccount
+      label: merchantAccount
+      description: Your merchant account.
 
   external_references:
     - name: pspReference
@@ -21,30 +31,28 @@ saas_config:
 
   client_config:
     protocol: https
-    host: <domain-test>
+    host: management-test.adyen.com
+    # similar to the above, there are test and 'live' endpoints, and our testing has been with the 'test' endpoint, we do not have a live version of the API key
     authentication:
       strategy: api_key
       configuration:
         headers:
           - name: x-API-key
             value: <x-API-key>
-
+## This endpoint needs to use the management-test (or live) endpoint. We currently only have the test api key from Slice.
   test_request:
     method: GET
     path: /v3/me
 
   endpoints:
-    - name: erasure
+    - name: user
       requests:
-        read:
-          method: GET
-          path: /v3/me
         delete:
           method: POST
           path: /ca/services/DataProtectionService/v1/requestSubjectErasure
           client_config:
             protocol: https
-            host: <domain>
+            host: ca-test.adyen.com
             authentication:
               strategy: api_key
               configuration:

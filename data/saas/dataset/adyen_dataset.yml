@@ -1,52 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: adyen
-    description: A sample dataset representing the Adyen connector for Fides
+    description: A sample dataset representing the Adyen integration for Fides
     collections:
-      - name: erasure
-        fields:
-          - name: id
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: username
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: description
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: allowedIpAddresses
-          - name: roles
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: 'string[]'
-          - name: active
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: boolean
-          - name: _links
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: self
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: href
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-              - name: allowedOrigins
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: href
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-          - name: companyName
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
+      - name: user
+        fields: []

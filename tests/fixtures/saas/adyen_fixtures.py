@@ -16,16 +16,17 @@ secrets = get_secrets("adyen")
 def adyen_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "adyen.domain")
-        or secrets["domain"]
+        or secrets["domain"],
+        "x-API-key": pydash.get(saas_config, "adyen.x-API-key"),
+        "merchantAccount": pydash.get(saas_config, "adyen.merchantAccount"),
+        "pspReference": pydash.get(saas_config, "adyen.pspReference")
         # add the rest of your secrets here
     }
 
 
 @pytest.fixture(scope="session")
 def adyen_identity_email(saas_config) -> str:
-    return (
-        pydash.get(saas_config, "adyen.identity_email") or secrets["identity_email"]
-    )
+    return pydash.get(saas_config, "adyen.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture
