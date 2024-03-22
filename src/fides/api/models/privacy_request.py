@@ -1603,7 +1603,7 @@ class RequestTask(Base):
             return True
         return False
 
-    def get_related_task(self, db: Session, collection_address_str: str) -> Query:
+    def get_related_tasks(self, db: Session, collection_address_str: str) -> Query:
         """Fetch task on the same privacy request and action type as current by collection address"""
         return db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
@@ -1611,13 +1611,18 @@ class RequestTask(Base):
             RequestTask.collection_address == collection_address_str,
         )
 
-    def pending_downstream_tasks(self, db: Session) -> Query:
+    def all_downstream_tasks(self, db: Session) -> Query:
         """Returns the immediate downstream task objects that are still pending"""
         return db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
-            RequestTask.status == TaskStatus.pending,
             RequestTask.action_type == self.action_type,
             RequestTask.collection_address.in_(self.downstream_tasks),
+        )
+
+    def pending_downstream_tasks(self, db: Session) -> Query:
+        """Returns the immediate downstream task objects that are still pending"""
+        return self.all_downstream_tasks(db).filter(
+            RequestTask.status == TaskStatus.pending
         )
 
     def upstream_tasks_complete(self, db) -> bool:
