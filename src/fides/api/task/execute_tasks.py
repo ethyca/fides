@@ -120,8 +120,6 @@ def run_access_node(
             )
             return
 
-        # Set to pending in case of retry
-        request_task.update_status(session, TaskStatus.pending)
         # Build GraphTask resource to facilitate execution
         task_resources: TaskResources = collect_task_resources(session, privacy_request)
         graph_task: GraphTask = GraphTask(request_task, task_resources)
@@ -169,9 +167,11 @@ def queue_downstream_tasks(
     for downstream_task in pending_downstream_tasks:
         if downstream_task.upstream_tasks_complete(session):
             logger.info(
-                "Queuing {} task {}. Privacy Request: {}, Request Task {}. Upstream nodes complete.",
+                "Queuing {} task {} from {} {}. Privacy Request: {}, Request Task {}. Upstream nodes complete.",
                 downstream_task.action_type.value,
                 downstream_task.collection_address,
+                request_task.action_type.value,
+                request_task.collection_address,
                 privacy_request.id,
                 downstream_task.id,
             )

@@ -18,6 +18,8 @@ COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldP
 
 
 class TraversalDetails(FidesSchema):
+    """Schema to format saving pre-calculated traversal details on RequestTask.traversal_details"""
+
     dataset_connection_key: str
     incoming_edges: List[Tuple[str, str]]
     outgoing_edges: List[Tuple[str, str]]

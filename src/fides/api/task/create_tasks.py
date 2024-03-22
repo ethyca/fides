@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import networkx
 from dask import delayed  # type: ignore[attr-defined]
+from fideslang.validation import FidesKey
 from loguru import logger
 from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
@@ -24,6 +25,7 @@ from fides.api.task.execute_tasks import (
     run_consent_node,
     run_erasure_node,
 )
+from fides.api.util.collection_util import Row
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
@@ -42,7 +44,7 @@ def _format_traversal_details_for_save(
         return {}
 
     traversal_node: TraversalNode = env[node]
-    connection_key = traversal_node.node.dataset.connection_key
+    connection_key: FidesKey = traversal_node.node.dataset.connection_key
 
     return TraversalDetails(
         dataset_connection_key=connection_key,
@@ -62,17 +64,18 @@ def build_access_networkx_digraph(
     traversal: Traversal,
 ) -> networkx.DiGraph:
     """
-    Builds a networkx graph to get consistent formatting of upstream/downstream nodes, regardless of whether the node
-    is an actual node, or a "root"/"terminator" node.
+    Builds a networkx graph to get consistent formatting of nodes, regardless of whether node is real or artificial.
 
-    Primarily though, we can utilize networkx's "descendants" method to pre-calculate every downstream node that
-    can be reached by each current node
+    Primarily though, this lets us use networkx.descendants to calculate every node that can be reached from the current
+    node to more easily mark downstream nodes as failed if the current node fails.
     """
-    first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
-
     networkx_graph = networkx.DiGraph()
     networkx_graph.add_nodes_from(env.keys())
-    networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
+    networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
+
+    # The first nodes visited are the nodes that only need identity data.
+    # Therefore, they are all immediately downstream of the root.
+    first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
 
     for node in [
         CollectionAddress(initial_node.dataset, initial_node.collection)
@@ -82,94 +85,15 @@ def build_access_networkx_digraph(
 
     for collection_address, traversal_node in env.items():
         for child in traversal_node.children:
+            # For every node, add a downstream edge to its children
+            # that were calculated in traversal.traverse
             networkx_graph.add_edge(collection_address, child)
 
     for node in end_nodes:
+        # Connect the end nodes, those that have no downstream dependencies, to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
     return networkx_graph
-
-
-def persist_access_request_tasks(
-    session: Session,
-    privacy_request: PrivacyRequest,
-    traversal: Traversal,
-    traversal_nodes: Dict[CollectionAddress, Any],
-    end_nodes: List[CollectionAddress],
-    dataset_graph: DatasetGraph,
-) -> Tuple[RequestTask, List[RequestTask]]:
-    """
-    Create individual RequestTasks from the TraversalNodes and persist to the database.
-    """
-    logger.info(
-        "Creating access request tasks for privacy request {}.", privacy_request.id
-    )
-    graph: networkx.DiGraph = build_access_networkx_digraph(
-        traversal_nodes, end_nodes, traversal
-    )
-
-    ready_tasks: List[RequestTask] = []
-
-    for node in list(networkx.topological_sort(graph)):
-        existing_task = (
-            session.query(RequestTask)
-            .filter(
-                RequestTask.privacy_request_id == privacy_request.id,
-                RequestTask.action_type == ActionType.access,
-                RequestTask.collection_address == node.value,
-            )
-            .first()
-        )
-        if existing_task:
-            logger.info(
-                "Existing task already exists {}",
-                existing_task.collection_address,
-                existing_task.action_type,
-            )
-            continue
-
-        collection_representation: Optional[Dict] = None
-        if node not in ARTIFICIAL_NODES:
-            collection_representation = json.loads(
-                dataset_graph.nodes[node].collection.json()
-            )
-
-        task = RequestTask.create(
-            session,
-            data={
-                "privacy_request_id": privacy_request.id,
-                "upstream_tasks": [
-                    upstream.value for upstream in graph.predecessors(node)
-                ],
-                "downstream_tasks": [
-                    downstream.value for downstream in graph.successors(node)
-                ],
-                "dataset_name": node.dataset,
-                "collection_name": node.collection,
-                "status": TaskStatus.complete
-                if node == ROOT_COLLECTION_ADDRESS
-                else TaskStatus.pending,
-                "access_data": [traversal.seed_data]
-                if node == ROOT_COLLECTION_ADDRESS
-                else [],
-                "action_type": ActionType.access,
-                "collection_address": node.value,
-                "all_descendant_tasks": [
-                    descend.value for descend in list(networkx.descendants(graph, node))
-                ],
-                "collection": collection_representation,
-                "traversal_details": _format_traversal_details_for_save(
-                    node, traversal_nodes
-                ),
-            },
-        )
-        ready_tasks.append(task)
-
-    root_task: Optional[RequestTask] = privacy_request.get_root_task_by_action(
-        ActionType.access
-    )
-
-    return root_task, ready_tasks
 
 
 def _evaluate_erasure_dependencies(
@@ -192,30 +116,33 @@ def _evaluate_erasure_dependencies(
 
 
 def build_erasure_networkx_digraph(
-    env: Dict[CollectionAddress, Any],
+    traversal_nodes: Dict[CollectionAddress, Any],
     end_nodes: List[CollectionAddress],
 ) -> networkx.DiGraph:
     """
-    Builds a networkx graph to get consistent formatting of upstream/downstream nodes, regardless of whether the node
-    is an actual node, or a "root"/"terminator" node.
+    Builds a networkx graph of erasure nodes to get consistent formatting of nodes, regardless of whether node is real or artificial.
 
-    Primarily though, we can utilize networkx's "descendants" method to pre-calculate every downstream node that
-    can be reached by each current node
+    In addition, a major benefit is adding in "erase_after" dependencies that aren't captured in traversal.traverse
     """
     networkx_graph = networkx.DiGraph()
-    networkx_graph.add_nodes_from(env.keys())
-    networkx_graph.add_nodes_from([ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS])
+    networkx_graph.add_nodes_from(traversal_nodes.keys())
+    networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
-    for node_name, traversal_node in env.items():
-        # Modifies end nodes in place as well?
-        erasure_dependencies = _evaluate_erasure_dependencies(traversal_node, end_nodes)
+    for node_name, traversal_node in traversal_nodes.items():
+        # Add an edge from the root node to the current node, unless explicit erasure
+        # dependencies are defined. Modifies end_nodes in place
+        erasure_dependencies: Set[CollectionAddress] = _evaluate_erasure_dependencies(
+            traversal_node, end_nodes
+        )
         for dep in erasure_dependencies:
             networkx_graph.add_edge(dep, node_name)
 
     for node in end_nodes:
+        # Connect each end node without downstream dependencies to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
     try:
+        # Run extra checks on the graph since we potentially modified traversal_nodes
         networkx.find_cycle(networkx_graph, ROOT_COLLECTION_ADDRESS)
     except NetworkXNoCycle:
         logger.info("No cycles found as expected")
@@ -225,7 +152,26 @@ def build_erasure_networkx_digraph(
     return networkx_graph
 
 
-def order_tasks_by_input_key(
+def build_consent_networkx_digraph(
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
+) -> networkx.DiGraph:
+    """
+    Builds a networkx graph of consent nodes to get consistent formatting of nodes, regardless of whether node is real or artificial.
+    """
+    networkx_graph = networkx.DiGraph()
+    networkx_graph.add_nodes_from(traversal_nodes.keys())
+    networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
+
+    for collection_address, traversal_node in traversal_nodes.items():
+        # Consent graphs are simple. One node for every dataset (which has a mocked collection)
+        # and no dependencies between nodes.
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, collection_address)
+        networkx_graph.add_edge(collection_address, TERMINATOR_ADDRESS)
+
+    return networkx_graph
+
+
+def _order_tasks_by_input_key(
     input_keys: List[CollectionAddress], upstream_tasks: Query
 ) -> List[Optional[RequestTask]]:
     """Order tasks by input key. If task doesn't exist, add None in its place"""
@@ -243,54 +189,131 @@ def order_tasks_by_input_key(
     return tasks
 
 
+def base_task_data(
+    graph: networkx.DiGraph,
+    dataset_graph: DatasetGraph,
+    privacy_request: PrivacyRequest,
+    node: CollectionAddress,
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
+) -> Dict:
+    """Build a dictionary of common RequestTask attributes that are shared between
+    access, consent, and erasures"""
+    collection_representation: Optional[Dict] = None
+    if node not in ARTIFICIAL_NODES:
+        # Save a representation of the collection that can be re-hydrated later
+        # when executing the node
+        collection_representation = json.loads(
+            dataset_graph.nodes[node].collection.json()
+        )
+
+    return {
+        "privacy_request_id": privacy_request.id,
+        "upstream_tasks": [upstream.value for upstream in graph.predecessors(node)],
+        "downstream_tasks": [downstream.value for downstream in graph.successors(node)],
+        "all_descendant_tasks": [
+            descend.value for descend in list(networkx.descendants(graph, node))
+        ],
+        "collection_address": node.value,
+        "dataset_name": node.dataset,
+        "collection_name": node.collection,
+        "status": TaskStatus.complete
+        if node == ROOT_COLLECTION_ADDRESS
+        else TaskStatus.pending,
+        "collection": collection_representation,
+        "traversal_details": _format_traversal_details_for_save(node, traversal_nodes),
+    }
+
+
+def persist_access_request_tasks(
+    session: Session,
+    privacy_request: PrivacyRequest,
+    traversal: Traversal,
+    traversal_nodes: Dict[CollectionAddress, Any],
+    end_nodes: List[CollectionAddress],
+    dataset_graph: DatasetGraph,
+) -> Tuple[RequestTask, List[RequestTask]]:
+    """
+    Create individual access RequestTasks from the TraversalNodes and persist to the database.
+    """
+    logger.info(
+        "Creating access request tasks for privacy request {}.", privacy_request.id
+    )
+    graph: networkx.DiGraph = build_access_networkx_digraph(
+        traversal_nodes, end_nodes, traversal
+    )
+
+    ready_tasks: List[RequestTask] = []
+    for node in list(networkx.topological_sort(graph)):
+        existing_task: RequestTask = privacy_request.get_existing_request_task(
+            session, action_type=ActionType.access, collection_address=node
+        )
+        if existing_task:
+            updated: bool = existing_task.mark_pending_if_error(session)
+            if updated:
+                ready_tasks.append(existing_task)
+            continue
+
+        ready_tasks.append(
+            RequestTask.create(
+                session,
+                data={
+                    **base_task_data(
+                        graph, dataset_graph, privacy_request, node, traversal_nodes
+                    ),
+                    "access_data": [traversal.seed_data]
+                    if node == ROOT_COLLECTION_ADDRESS
+                    else [],
+                    "action_type": ActionType.access,
+                },
+            )
+        )
+
+    root_task: Optional[RequestTask] = privacy_request.get_root_task_by_action(
+        ActionType.access
+    )
+
+    return root_task, ready_tasks
+
+
 def persist_erasure_request_tasks(
     session: Session,
     privacy_request: PrivacyRequest,
-    env: Dict[CollectionAddress, TraversalNode],
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
     end_nodes: List[CollectionAddress],
     dataset_graph: DatasetGraph,
 ):
     """
-    Erasure tasks need to access the Access Tasks.erasure_data
+    Create individual erasure RequestTasks from the TraversalNodes and persist to the database.
     """
     logger.info(
         "Creating erasure request tasks for privacy request {}.", privacy_request.id
     )
-    graph: networkx.DiGraph = build_erasure_networkx_digraph(env, end_nodes)
+    graph: networkx.DiGraph = build_erasure_networkx_digraph(traversal_nodes, end_nodes)
 
     ready_tasks: List[RequestTask] = []
-
     for node in list(networkx.topological_sort(graph)):
-        existing_task = (
-            session.query(RequestTask)
-            .filter(
-                RequestTask.privacy_request_id == privacy_request.id,
-                RequestTask.action_type == ActionType.erasure,
-                RequestTask.collection_address == node.value,
-            )
-            .first()
+        existing_task: RequestTask = privacy_request.get_existing_request_task(
+            session, action_type=ActionType.erasure, collection_address=node
         )
-
         if existing_task:
+            updated: bool = existing_task.mark_pending_if_error(session)
+            if updated:
+                ready_tasks.append(existing_task)
             continue
 
         # Select ACCESS task of the same name
-        corresponding_access_task = (
-            session.query(RequestTask)
-            .filter(
-                RequestTask.privacy_request_id == privacy_request.id,
-                RequestTask.action_type == ActionType.access,
-                RequestTask.collection_address == node.value,
-                RequestTask.status == TaskStatus.complete,
-            )
-            .first()
+        corresponding_access_task: Optional[
+            RequestTask
+        ] = privacy_request.get_existing_request_task(
+            db=session, action_type=ActionType.access, collection_address=node
         )
         retrieved_task_data: List[Dict] = []
         if corresponding_access_task:
-            # IMPORTANT. Use "data_for_erasures" - not RequestTask.access_data
+            # IMPORTANT. Use "data_for_erasures" - not RequestTask.access_data.
             retrieved_task_data = corresponding_access_task.data_for_erasures
 
-        # Select upstream inputs of this node for things like email connectors
+        # Select upstream inputs of this node for things like email connectors, which
+        # don't retrieve data directly
         input_tasks: Query = session.query(RequestTask).filter(
             RequestTask.privacy_request_id == privacy_request.id,
             RequestTask.action_type == ActionType.access,
@@ -299,44 +322,27 @@ def persist_erasure_request_tasks(
             ),
             RequestTask.status == TaskStatus.complete,
         )
-        ordered_upstream_tasks = (
+        ordered_upstream_tasks: List[Optional[RequestTask]] = (
             []
             if node in ARTIFICIAL_NODES
-            else order_tasks_by_input_key(env[node].input_keys(), input_tasks)
+            else _order_tasks_by_input_key(
+                traversal_nodes[node].input_keys(), input_tasks
+            )
         )
 
-        combined_input_data = []
+        combined_input_data: List[List[Row]] = []
         for input_data in ordered_upstream_tasks or []:
             combined_input_data.append(input_data.data_for_erasures or [])
-
-        json_collection: Optional[Dict] = None
-        if node not in ARTIFICIAL_NODES:
-            json_collection = json.loads(dataset_graph.nodes[node].collection.json())
 
         task = RequestTask.create(
             session,
             data={
-                "privacy_request_id": privacy_request.id,
-                "upstream_tasks": [
-                    upstream.value for upstream in graph.predecessors(node)
-                ],
-                "downstream_tasks": [
-                    downstream.value for downstream in graph.successors(node)
-                ],
-                "dataset_name": node.dataset,
-                "collection_name": node.collection,
-                "status": TaskStatus.complete
-                if node == ROOT_COLLECTION_ADDRESS
-                else TaskStatus.pending,
+                **base_task_data(
+                    graph, dataset_graph, privacy_request, node, traversal_nodes
+                ),
                 "data_for_erasures": retrieved_task_data,
                 "erasure_input_data": combined_input_data,
                 "action_type": ActionType.erasure,
-                "collection_address": node.value,
-                "all_descendant_tasks": [
-                    descend.value for descend in list(networkx.descendants(graph, node))
-                ],
-                "collection": json_collection,
-                "traversal_details": _format_traversal_details_for_save(node, env),
             },
         )
         ready_tasks.append(task)
@@ -348,27 +354,6 @@ def persist_erasure_request_tasks(
     return root_task, ready_tasks
 
 
-def build_consent_networkx_digraph(
-    traversal_nodes: Dict[CollectionAddress, TraversalNode],
-) -> networkx.DiGraph:
-    """
-    Builds a networkx graph to get consistent formatting of upstream/downstream nodes, regardless of whether the node
-    is an actual node, or a "root"/"terminator" node.
-
-    Primarily though, we can utilize networkx's "descendants" method to pre-calculate every downstream node that
-    can be reached by each current node
-    """
-    networkx_graph = networkx.DiGraph()
-    networkx_graph.add_nodes_from(traversal_nodes.keys())
-    networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
-
-    for collection_address, traversal_node in traversal_nodes.items():
-        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, collection_address)
-        networkx_graph.add_edge(collection_address, TERMINATOR_ADDRESS)
-
-    return networkx_graph
-
-
 def persist_consent_request_tasks(
     session: Session,
     privacy_request: PrivacyRequest,
@@ -377,65 +362,37 @@ def persist_consent_request_tasks(
     dataset_graph: DatasetGraph,
 ):
     """
-    The graph built is very simple: there are no relationships between the nodes, every node has
-    identity data input and every node outputs whether the consent request succeeded.
+    Create individual erasure RequestTasks from the TraversalNodes and persist to the database.
 
-    The DatasetGraph passed in is expected to have one Node per Dataset.  That Node is expected to carry out requests
-    for the Dataset as a whole.
-
+    Consent propagation graphs are much simpler with no relationships between nodes. Every node has identity data input,
+    and every node outputs whether the consent request succeeded.
     """
     graph: networkx.DiGraph = build_consent_networkx_digraph(traversal_nodes)
 
     ready_tasks: List[RequestTask] = []
 
     for node in list(networkx.topological_sort(graph)):
-        existing_task = (
-            session.query(RequestTask)
-            .filter(
-                RequestTask.privacy_request_id == privacy_request.id,
-                RequestTask.action_type == ActionType.consent,
-                RequestTask.collection_address == node.value,
-            )
-            .first()
+        existing_task: RequestTask = privacy_request.get_existing_request_task(
+            session, action_type=ActionType.consent, collection_address=node
         )
-
         if existing_task:
+            updated: bool = existing_task.mark_pending_if_error(session)
+            if updated:
+                ready_tasks.append(existing_task)
             continue
 
-        collection_representation: Optional[Dict] = None
-        if node not in ARTIFICIAL_NODES:
-            collection_representation = json.loads(
-                dataset_graph.nodes[node].collection.json()
+        ready_tasks.append(
+            RequestTask.create(
+                session,
+                data={
+                    **base_task_data(
+                        graph, dataset_graph, privacy_request, node, traversal_nodes
+                    ),
+                    "consent_data": identity if node == ROOT_COLLECTION_ADDRESS else {},
+                    "action_type": ActionType.consent,
+                },
             )
-
-        task = RequestTask.create(
-            session,
-            data={
-                "privacy_request_id": privacy_request.id,
-                "upstream_tasks": [
-                    upstream.value for upstream in graph.predecessors(node)
-                ],
-                "downstream_tasks": [
-                    downstream.value for downstream in graph.successors(node)
-                ],
-                "dataset_name": node.dataset,
-                "collection_name": node.collection,
-                "status": TaskStatus.complete
-                if node == ROOT_COLLECTION_ADDRESS
-                else TaskStatus.pending,
-                "consent_data": identity if node == ROOT_COLLECTION_ADDRESS else {},
-                "action_type": ActionType.consent,
-                "collection_address": node.value,
-                "all_descendant_tasks": [
-                    descend.value for descend in list(networkx.descendants(graph, node))
-                ],
-                "collection": collection_representation,
-                "traversal_details": _format_traversal_details_for_save(
-                    node, traversal_nodes
-                ),
-            },
         )
-        ready_tasks.append(task)
 
     root_task: Optional[RequestTask] = privacy_request.get_root_task_by_action(
         ActionType.consent

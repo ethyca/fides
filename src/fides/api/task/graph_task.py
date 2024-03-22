@@ -195,7 +195,7 @@ def mark_current_and_downstream_nodes_as_failed(
     db.add(privacy_request_task)
     for descendant_addr in privacy_request_task.all_descendant_tasks:
         descendant: Optional[RequestTask] = (
-            privacy_request_task.get_related_task(db, descendant_addr)
+            privacy_request_task.get_related_tasks(db, descendant_addr)
             .filter(RequestTask.status == TaskStatus.pending)
             .first()
         )
@@ -374,9 +374,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info(
-            "Starting {}, node {}", self.resources.request.id, self.key
-        )
+        logger.info("Starting {}, node {}", self.resources.request.id, self.key)
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -567,7 +565,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self,
         retrieved_data: List[Row],
         inputs: List[List[Row]],
-        *erasure_prereqs: int,
     ) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration

@@ -974,16 +974,36 @@ class PrivacyRequest(
         return {LoggerContextKeys.privacy_request_id: self.id}
 
     @property
-    def consent_tasks(self):
-        return self.request_tasks.filter(RequestTask.action_type == ActionType.consent)
+    def access_tasks(self) -> Query:
+        """Return existing Access Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.access)
 
     @property
-    def erasure_tasks(self):
+    def erasure_tasks(self) -> Query:
+        """Return existing Erasure Request Tasks for the current privacy request"""
         return self.request_tasks.filter(RequestTask.action_type == ActionType.erasure)
 
     @property
-    def access_tasks(self):
-        return self.request_tasks.filter(RequestTask.action_type == ActionType.access)
+    def consent_tasks(self) -> Query:
+        """Return existing Consent Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.consent)
+
+    def get_existing_request_task(
+        self,
+        db: Session,
+        action_type: ActionType,
+        collection_address: CollectionAddress,
+    ) -> Optional[RequestTask]:
+        """Returns a Request Task for the current Privacy Request with action type and collection address"""
+        return (
+            db.query(RequestTask)
+            .filter(
+                RequestTask.privacy_request_id == self.id,
+                RequestTask.action_type == action_type,
+                RequestTask.collection_address == collection_address.value,
+            )
+            .first()
+        )
 
     def get_root_task_by_action(
         self, action: ActionType.access
@@ -1574,9 +1594,16 @@ class RequestTask(Base):
         self.status = status
         self.save(db)
 
-    def get_related_task(
-        self, db: Session, collection_address_str: str
-    ) -> Optional[RequestTask]:
+    def mark_pending_if_error(self, db: Session) -> bool:
+        """If task is errored, reset to pending and return whether the reset occurred"""
+        if self.status == TaskStatus.error:
+            self.update_status(db, TaskStatus.pending)
+            self.save(db)
+            return True
+        return False
+
+    def get_related_task(self, db: Session, collection_address_str: str) -> Query:
+        """Fetch task on the same privacy request and action type as current by collection address"""
         return db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.action_type == self.action_type,
