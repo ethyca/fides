@@ -37,6 +37,7 @@ import {
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
+import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import {
   ComponentType,
   ExperienceConfigCreate,
@@ -90,6 +91,12 @@ const ConfigurePrivacyExperience = ({
   const [isMobilePreview, setIsMobilePreview] = useState(false);
 
   const router = useRouter();
+
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const translationsEnabled =
+    appConfig?.plus_consent_settings?.enable_translations;
 
   const languagePage = useAppSelector(selectLanguagePage);
   const languagePageSize = useAppSelector(selectLanguagePageSize);
@@ -184,12 +191,14 @@ const ConfigurePrivacyExperience = ({
           {translationToEdit ? (
             <PrivacyExperienceTranslationForm
               translation={translationToEdit}
+              translationsEnabled={translationsEnabled}
               isOOB={usingOOBValues}
               onReturnToMainForm={handleExitTranslationForm}
             />
           ) : (
             <PrivacyExperienceForm
               allPrivacyNotices={allPrivacyNotices}
+              translationsEnabled={translationsEnabled}
               onSelectTranslation={handleTranslationSelected}
               onCreateTranslation={handleCreateNewTranslation}
             />

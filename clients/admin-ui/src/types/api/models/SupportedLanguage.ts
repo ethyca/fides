@@ -16,6 +16,7 @@ export enum SupportedLanguage {
   EL = "el",
   EN = "en",
   ES = "es",
+  ES_MX = "es-MX",
   ET = "et",
   EU = "eu",
   FI = "fi",
