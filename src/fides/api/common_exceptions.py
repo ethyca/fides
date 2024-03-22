@@ -147,7 +147,7 @@ class PrivacyRequestNotFound(BaseException):
     """Privacy Request Not Found"""
 
 
-class PrivacyRequestTaskNotFound(BaseException):
+class RequestTaskNotFound(BaseException):
     """Privacy Request Task Not Found"""
 
 

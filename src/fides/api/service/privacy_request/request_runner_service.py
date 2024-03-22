@@ -43,9 +43,7 @@ from fides.api.models.policy import (
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    PrivacyRequestTask,
     ProvidedIdentityType,
-    TaskStatus,
     can_run_checkpoint,
 )
 from fides.api.schemas.base_class import FidesSchema

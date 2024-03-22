@@ -16,7 +16,7 @@ from fides.api.graph.config import (
     GraphDataset,
 )
 from fides.api.graph.graph import DatasetGraph, Edge, Node
-from fides.api.util.collection_util import Row, append
+from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
 
@@ -120,6 +120,12 @@ class TraversalNode(Contextualizable):
                 if filtered:
                     out[key] = filtered
         return out
+
+    def incoming_edges_by_collection(self) -> Dict[CollectionAddress, List[Edge]]:
+        return partition(self.incoming_edges(), lambda e: e.f1.collection_address())
+
+    def input_keys(self) -> List[CollectionAddress]:
+        return sorted(self.incoming_edges_by_collection().keys())
 
     def can_run_given(self, remaining_node_keys: Set[CollectionAddress]) -> bool:
         """True if finished_node_keys covers all the nodes that this traversal_node is waiting for.  If

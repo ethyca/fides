@@ -6,7 +6,7 @@ from loguru import logger
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -66,12 +66,12 @@ class HTTPSConnector(BaseConnector[None]):
         """
         return ConnectionTestStatus.skipped
 
-    def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
@@ -83,7 +83,7 @@ class HTTPSConnector(BaseConnector[None]):
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],

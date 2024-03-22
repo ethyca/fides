@@ -62,9 +62,9 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
-    PrivacyRequestTask,
     ProvidedIdentity,
     ProvidedIdentityType,
+    RequestTask,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
@@ -873,7 +873,7 @@ def validate_manual_input(
     """
     for row in manual_rows:
         for field_name in row:
-            if not dataset_graph.nodes[collection].contains_field(
+            if not dataset_graph.nodes[collection].collection.contains_field(
                 lambda f: f.name == field_name  # pylint: disable=W0640
             ):
                 raise HTTPException(
@@ -1933,11 +1933,11 @@ def get_individual_privacy_request_tasks(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-) -> List[PrivacyRequestTask]:
+) -> List[RequestTask]:
     """Returns Privacy Request Tasks in order by creation"""
     pr = get_privacy_request_or_error(db, privacy_request_id)
 
-    return pr.request_tasks.order_by(PrivacyRequestTask.created_at.asc()).all()
+    return pr.request_tasks.order_by(RequestTask.created_at.asc()).all()
 
 
 @router.get(

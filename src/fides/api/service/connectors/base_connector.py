@@ -4,7 +4,7 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import NotSupportedForCollection
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -39,7 +39,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod
-    def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
 
     @abstractmethod
@@ -63,7 +63,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     @abstractmethod
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
@@ -76,7 +76,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     @abstractmethod
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
@@ -91,7 +91,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
 
     def run_consent_request(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
@@ -106,7 +106,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
             f"Consent requests are not supported for connectors of type {self.configuration.connection_type}"
         )
 
-    def dry_run_query(self, node: TraversalNode) -> Optional[str]:
+    def dry_run_query(self, node: ExecutionNode) -> Optional[str]:
         """Generate a dry-run query to display action that will be taken"""
         return self.query_config(node).dry_run_query()
 

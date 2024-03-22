@@ -11,7 +11,7 @@ from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import ScalarField
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
@@ -40,7 +40,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def __init__(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
         data_protection_request: Optional[SaaSRequest] = None,

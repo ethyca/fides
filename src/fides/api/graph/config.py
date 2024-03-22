@@ -237,6 +237,9 @@ class FieldAddress:
     def __hash__(self) -> int:
         return hash(self.value)
 
+    def __str__(self) -> str:
+        return self.value
+
     def __repr__(self) -> str:
         return self.value
 
@@ -271,6 +274,10 @@ class Field(BaseModel, ABC):
         """for pydantic incorporation of custom non-pydantic types"""
 
         arbitrary_types_allowed = True
+        json_encoders = {
+            FieldAddress: lambda fa: fa.value,
+            DataTypeConverter: lambda dtc: dtc.name,
+        }
 
     @abstractmethod
     def cast(self, value: Any) -> Optional[Any]:
@@ -435,17 +442,6 @@ class Collection(BaseModel):
     # An optional set of dependent fields that need to be queried together
     grouped_inputs: Set[str] = set()
 
-    def dict(self, **kwargs):
-        model_dict = super().dict(**kwargs)
-        for collection_attribute, val in model_dict.items():
-            if isinstance(val, Set):
-                model_dict[collection_attribute] = list(val)
-
-        for field in model_dict["fields"]:
-            field["data_type_converter"] = field["data_type_converter"].name
-
-        return model_dict
-
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
         """Maps FieldPaths to Fields
@@ -512,10 +508,64 @@ class Collection(BaseModel):
                 categories[category].append(field_path)
         return categories
 
+    def contains_field(self, func: Callable[[Field], bool]) -> bool:
+        """True if any field in this collection matches the condition of the callable
+
+        Currently used to assert at least one field in the collection contains a primary
+        key before erasing
+        """
+        return any(self.recursively_collect_matches(func))
+
+    @classmethod
+    def parse_from_task(cls, data: Dict) -> Collection:
+        """Raw collection data may be stored in RequestTask.collection with some
+        adjustments made on references, data type converters, and fields so it can be serialized
+        """
+        data = data.copy()
+
+        def build_field(field: dict):
+            converted_references = []
+            for reference in field.pop("references", []):
+                field_address: str = reference[0]
+                edge_direction: Optional[str] = reference[1]
+                converted_references.append(
+                    (FieldAddress.from_string(field_address), edge_direction)
+                )
+
+            data_type_converter = get_data_type_converter(
+                field.pop("data_type_converter")
+            )
+
+            if field.get("fields"):
+                field["fields"] = [build_field(field) for field in field["fields"]]
+                converted = ObjectField.parse_obj(field)
+                converted.references = converted_references
+                converted.data_type_converter = data_type_converter
+                return converted
+            else:
+                converted = ScalarField.parse_obj(field)
+                converted.references = converted_references
+                converted.data_type_converter = data_type_converter
+                return converted
+
+        converted_fields = []
+        for field in data.pop("fields"):
+            converted_fields.append(build_field(field))
+
+        data["fields"] = converted_fields
+        c = Collection.parse_obj(data)
+        return c
+
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
 
         arbitrary_types_allowed = True
+        # For running Collection.json()
+        json_encoders = {
+            Set: lambda val: list(val),
+            DataTypeConverter: lambda dtc: dtc.name,
+            FieldAddress: lambda fa: fa.value,
+        }
 
 
 class GraphDataset(BaseModel):

@@ -52,6 +52,8 @@ class Node:
 
         Currently used to assert at least one field in the collection contains a primary
         key before erasing
+
+        TODO remove and repoint tests
         """
         return any(self.collection.recursively_collect_matches(func))
 

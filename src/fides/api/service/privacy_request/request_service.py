@@ -12,7 +12,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    PrivacyRequestTask,
+    RequestTask,
     TaskStatus,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -160,10 +160,10 @@ def poll_for_exited_privacy_request_tasks(self):
             .order_by(PrivacyRequest.created_at)
         )
 
-        def all_complete(tasks: List[PrivacyRequestTask]) -> bool:
+        def all_complete(tasks: List[RequestTask]) -> bool:
             return all(tsk.status == TaskStatus.complete for tsk in tasks)
 
-        def some_errored(tasks: List[PrivacyRequestTask]) -> bool:
+        def some_errored(tasks: List[RequestTask]) -> bool:
             return all(
                 tsk.status in [TaskStatus.complete, TaskStatus.error] for tsk in tasks
             )

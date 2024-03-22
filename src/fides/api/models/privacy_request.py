@@ -291,10 +291,10 @@ class PrivacyRequest(
     resume_endpoint: Optional[str] = None
 
     request_tasks: RelationshipProperty[AppenderQuery] = relationship(
-        "PrivacyRequestTask",
+        "RequestTask",
         backref="privacy_request",
         lazy="dynamic",
-        order_by="PrivacyRequestTask.created_at",
+        order_by="RequestTask.created_at",
     )
 
     @property
@@ -971,31 +971,25 @@ class PrivacyRequest(
 
     @property
     def consent_tasks(self):
-        return self.request_tasks.filter(
-            PrivacyRequestTask.action_type == ActionType.consent
-        )
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.consent)
 
     @property
     def erasure_tasks(self):
-        return self.request_tasks.filter(
-            PrivacyRequestTask.action_type == ActionType.erasure
-        )
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.erasure)
 
     @property
     def access_tasks(self):
-        return self.request_tasks.filter(
-            PrivacyRequestTask.action_type == ActionType.access
-        )
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.access)
 
     def get_access_data(self, db: Session) -> Dict:
         """Get data written by the access graph"""
         terminator_task = (
-            db.query(PrivacyRequestTask)
+            db.query(RequestTask)
             .filter(
-                PrivacyRequestTask.privacy_request_id == self.id,
-                PrivacyRequestTask.collection_address == TERMINATOR_ADDRESS.value,
-                PrivacyRequestTask.action_type == ActionType.access,
-                PrivacyRequestTask.status == TaskStatus.complete,
+                RequestTask.privacy_request_id == self.id,
+                RequestTask.collection_address == TERMINATOR_ADDRESS.value,
+                RequestTask.action_type == ActionType.access,
+                RequestTask.status == TaskStatus.complete,
             )
             .first()
         )
@@ -1466,23 +1460,22 @@ class TaskStatus(str, EnumType):
     skipped = "skipped"
 
 
-class PrivacyRequestTask(Base):
+class RequestTask(Base):
     """
-    TODO should we FK to upstream/downstream tasks or just reference by name?
-    Name is simpler
+    An individual Task for a Privacy Request
     """
 
     privacy_request_id = Column(
         String,
         ForeignKey(PrivacyRequest.id_field_path, ondelete="SET NULL"),
-        nullable=False,
+        nullable=True,
     )
-    upstream_tasks = Column(MutableList.as_mutable(JSONB), server_default="{}")
-    downstream_tasks = Column(MutableList.as_mutable(JSONB), server_default="{}")
-    all_descendants = Column(MutableList.as_mutable(JSONB), server_default="{}")
+    upstream_tasks = Column(MutableList.as_mutable(JSONB))
+    downstream_tasks = Column(MutableList.as_mutable(JSONB))
+    all_descendant_tasks = Column(MutableList.as_mutable(JSONB))
 
-    collection_name = Column(String, nullable=False)
     dataset_name = Column(String, nullable=False)
+    collection_name = Column(String, nullable=False)
     collection_address = Column(
         String, nullable=False
     )  # Of the format dataset_name:collection_name for convenience
@@ -1541,48 +1534,44 @@ class PrivacyRequestTask(Base):
         nullable=True,
     )  # Type bytea in the db
 
-    # Tentative fields - so we can store calculated fields upfront when the node
-    # is created without having to recalculate later - TODO
-    connection_config_key = Column(String)
-    # {"collection_address": [["from_field_address", "to_field_address"]]}
-    incoming_edges = Column(MutableDict.as_mutable(JSONB))
-    grouped_fields = Column(ARRAY(String), server_default="{}", default=dict)
-    dependent_identity_fields = Column(Boolean)
-    collection = Column(MutableDict.as_mutable(JSONB))
+    collection = Column(
+        MutableDict.as_mutable(JSONB)
+    )  # Storing a serialized Collection
+    traversal_details = Column(MutableDict.as_mutable(JSONB))
 
     def get_related_task(
         self, db: Session, collection_address_str: str
-    ) -> Optional[PrivacyRequestTask]:
-        return db.query(PrivacyRequestTask).filter(
-            PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
-            PrivacyRequestTask.action_type == self.action_type,
-            PrivacyRequestTask.collection_address == collection_address_str,
+    ) -> Optional[RequestTask]:
+        return db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.action_type == self.action_type,
+            RequestTask.collection_address == collection_address_str,
         )
 
     def pending_downstream_tasks(self, db: Session) -> Query:
         """Returns the immediate downstream task objects that are still pending"""
-        return db.query(PrivacyRequestTask).filter(
-            PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
-            PrivacyRequestTask.status == TaskStatus.pending,
-            PrivacyRequestTask.action_type == self.action_type,
-            PrivacyRequestTask.collection_address.in_(self.downstream_tasks),
+        return db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.status == TaskStatus.pending,
+            RequestTask.action_type == self.action_type,
+            RequestTask.collection_address.in_(self.downstream_tasks),
         )
 
     def upstream_tasks_complete(self, db) -> bool:
         """Determines if a given task is ready to run"""
         upstream_tasks: Query = (
             db.query(
-                PrivacyRequestTask.collection_address,
-                func.bool_or(PrivacyRequestTask.status == TaskStatus.complete).label(
+                RequestTask.collection_address,
+                func.bool_or(RequestTask.status == TaskStatus.complete).label(
                     "one_complete_run"
                 ),
             )
             .filter(
-                PrivacyRequestTask.privacy_request_id == self.privacy_request_id,
-                PrivacyRequestTask.collection_address.in_(self.upstream_tasks),
-                PrivacyRequestTask.action_type == self.action_type,
+                RequestTask.privacy_request_id == self.privacy_request_id,
+                RequestTask.collection_address.in_(self.upstream_tasks),
+                RequestTask.action_type == self.action_type,
             )
-            .group_by(PrivacyRequestTask.collection_address)
+            .group_by(RequestTask.collection_address)
             .all()
         )
         return all(upstream_task.one_complete_run for upstream_task in upstream_tasks)
