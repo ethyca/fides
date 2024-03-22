@@ -24,12 +24,13 @@ The types of changes are:
 ### Changed
 - Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734)
 - Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
+- Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
 
 ### Fixed
 - Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
 - Fixed hover/focus issues with the v2 tables [#4730](https://github.com/ethyca/fides/pull/4730)
 - Disable editing of data use declaration name and type after creation [#4731](https://github.com/ethyca/fides/pull/4731)
-
+- Cleaned up table borders [#4733](https://github.com/ethyca/fides/pull/4733)
 - Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
 
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
@@ -78,12 +79,12 @@ The types of changes are:
 - Navbar update and new properties page [#4633](https://github.com/ethyca/fides/pull/4633)
 - Access and erasure support for Oracle Responsys [#4618](https://github.com/ethyca/fides/pull/4618)
 
-### Changed
-- Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
-
 ### Fixed
 - Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
 - Initialize Fides.consent with default values from experience when saved consent cookie (fides_consent) does not exist [#4665](https://github.com/ethyca/fides/pull/4665)
+
+### Changed
+- Sets GPP applicableSections to -1 when a user visits from a state that is not part of the GPP [#4727](https://github.com/ethyca/fides/pull/4727)
 
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
 
