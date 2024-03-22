@@ -23,7 +23,7 @@ real-time based on the current user's actions
 Google Tag Manager, IAB TCF, etc.
 - ...and more!
 
-See [Fides](interfaces/Fides.md) for how to use the `window.Fides` Javascript API and [FidesEvent](interfaces/FidesEvent.md) for how to use `window.addEventListener(...)` to subscribe to
+See [Fides](interfaces/Fides.md) for how to use the `window.Fides` Javascript API, [FidesOptions](interfaces/FidesOptions.md) for supported options to customize it's behavior, and [FidesEvent](interfaces/FidesEvent.md) for how to use `window.addEventListener(...)` to subscribe to
 custom Fides events for real-time updates.
 
 ## Table of contents
@@ -31,4 +31,5 @@ custom Fides events for real-time updates.
 ### Interfaces
 
 - [FidesEvent](interfaces/FidesEvent.md)
+- [FidesOptions](interfaces/FidesOptions.md)
 - [Fides](interfaces/Fides.md)

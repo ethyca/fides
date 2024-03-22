@@ -7,7 +7,7 @@
  * @example
  * ```html
  * <head>
- *  <script src="path/to/fides.js"></script>
+ *   <script src="path/to/fides.js"></script>
  * </head>
  * <body>
  *   <!--- ...later, in your own application code... --->

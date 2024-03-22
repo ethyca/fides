@@ -22,7 +22,8 @@
  * Google Tag Manager, IAB TCF, etc.
  * - ...and more!
  *
- * See {@link Fides} for how to use the `window.Fides` Javascript API and {@link
+ * See {@link Fides} for how to use the `window.Fides` Javascript API, {@link
+ * FidesOptions} for supported options to customize it's behavior, and {@link
  * FidesEvent} for how to use `window.addEventListener(...)` to subscribe to
  * custom Fides events for real-time updates.
  *
@@ -50,3 +51,4 @@
  */
 export * from "./fides";
 export * from "./fides-event";
+export * from "./fides-options";
