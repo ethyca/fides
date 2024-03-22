@@ -1590,7 +1590,8 @@ class RequestTask(Base):
     def is_terminator_task(self) -> bool:
         return self.request_task_address == TERMINATOR_ADDRESS
 
-    def update_status(self, db: Session, status: TaskStatus):
+    def update_status(self, db: Session, status: TaskStatus) -> None:
+        """Helper method to update a tasks's status"""
         self.status = status
         self.save(db)
 
@@ -1636,4 +1637,6 @@ class RequestTask(Base):
             .group_by(RequestTask.collection_address)
             .all()
         )
+        # TODO - I originally queued multiple nodes of the same type on retry but
+        # now I change the status of the original node - this query could be simplified
         return all(upstream_task.one_complete_run for upstream_task in upstream_tasks)
