@@ -1,7 +1,7 @@
 """privacyrequesttask
 
 Revision ID: b21343172e81
-Revises: 2e9aba76c322
+Revises: 7799269e7078
 Create Date: 2024-03-21 20:34:31.841026
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "b21343172e81"
-down_revision = "2e9aba76c322"
+down_revision = "7799269e7078"
 branch_labels = None
 depends_on = None
 
