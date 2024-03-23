@@ -1005,24 +1005,25 @@ class PrivacyRequest(
             .first()
         )
 
-    def get_root_task_by_action(
-        self, action: ActionType.access
-    ) -> Optional[RequestTask]:
-        """Get the root tasks for a specific action"""
+    def get_tasks_by_action(self, action: ActionType) -> Query:
         if action == ActionType.access:
-            return self.access_tasks.filter(
-                RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value
-            ).first()
+            return self.access_tasks
 
         if action == ActionType.erasure:
-            return self.erasure_tasks.filter(
-                RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value
-            ).first()
+            return self.erasure_tasks
 
         if action == ActionType.consent:
-            return self.consent_tasks.filter(
-                RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value
-            ).first()
+            return self.consent_tasks
+
+        raise Exception(f"Unsupported Privacy Request Action Type {action}")
+
+    def get_root_task_by_action(self, action: ActionType) -> Optional[RequestTask]:
+        """Get the root tasks for a specific action"""
+        return (
+            self.get_tasks_by_action(action)
+            .filter(RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value)
+            .first()
+        )
 
     def get_raw_access_results(self) -> Dict:
         """Retrieve the access data saved on the individual access nodes"""

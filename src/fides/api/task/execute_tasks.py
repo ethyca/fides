@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 
 from loguru import logger
 from sqlalchemy.orm import Query, Session
@@ -18,6 +18,11 @@ from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.collection_util import Row
+
+
+def logger_method(request_task: RequestTask) -> Callable:
+    """Log selected no-op items with debug method and others with info method"""
+    return logger.debug if request_task.status == TaskStatus.complete else logger.info
 
 
 def order_tasks_by_input_key(
@@ -54,10 +59,11 @@ def collect_task_resources(
     )
 
 
-def prerequisite_task_checks(
+def run_prerequisite_task_checks(
     session: Session, privacy_request_id: str, privacy_request_task_id: str
-):
-    """Verify privacy request and task request exist and upstream tasks are complete"""
+) -> Tuple[PrivacyRequest, RequestTask, Query]:
+    """Verify privacy request and task request exist and upstream tasks are complete and return resources
+    for use in executing task"""
     privacy_request: PrivacyRequest = PrivacyRequest.get(
         db=session, object_id=privacy_request_id
     )
@@ -73,7 +79,7 @@ def prerequisite_task_checks(
     if not request_task:
         raise RequestTaskNotFound(f"Request Task with id {request_task} not found")
 
-    upstream_results = session.query(RequestTask).filter(False)
+    upstream_results: Query = session.query(RequestTask).filter(False)
     if request_task.status == TaskStatus.pending:
         upstream_results: Query = session.query(RequestTask).filter(
             RequestTask.privacy_request_id == privacy_request_id,
@@ -93,46 +99,44 @@ def prerequisite_task_checks(
     return privacy_request, request_task, upstream_results
 
 
-def log_task_starting(
-    privacy_request: PrivacyRequest, request_task: RequestTask
-) -> None:
-    logger.info(
-        "Starting {} task {} with current status {}. Privacy Request: {}, Request Task {}",
+def log_task_starting(request_task: RequestTask) -> None:
+    """Convenience method for logging task start"""
+    logger_method(request_task)(
+        "Starting '{}' task {} with current status '{}'. Privacy Request: {}, Request Task {}",
         request_task.action_type,
         request_task.collection_address,
         request_task.status,
-        privacy_request.id,
+        request_task.privacy_request_id,
         request_task.id,
     )
 
 
-def log_task_complete(
-    privacy_request: PrivacyRequest, request_task: RequestTask
-) -> None:
+def log_task_complete(request_task: RequestTask) -> None:
+    """Convenience method for logging task completion"""
     logger.info(
         "{} task {} is {}. Privacy Request: {}, Request Task {}",
         request_task.action_type.value.capitalize(),
         request_task.collection_address,
         request_task.status,
-        privacy_request.id,
+        request_task.privacy_request_id,
         request_task.id,
     )
 
 
-def task_is_complete(
-    db: Session,
+def can_run_task_body(
     request_task: RequestTask,
 ) -> bool:
-    """Return true if the task is already complete or we've reached the terminator node"""
+    """Return true if we can execute the task body. We should skip if the task is already
+    complete or we've reached a terminator node"""
     if request_task.status == TaskStatus.complete:
-        logger.info(
+        logger_method(request_task)(
             "Skipping already-completed {} task {}. Privacy Request: {}, Request Task {}",
             request_task.action_type.value,
             request_task.collection_address,
             request_task.privacy_request_id,
             request_task.id,
         )
-        return True
+        return False
     if request_task.is_terminator_task:
         # This is logged when the terminator node is reached for the first time.
         logger.info(
@@ -141,52 +145,12 @@ def task_is_complete(
             request_task.privacy_request_id,
             request_task.id,
         )
-        return True
+        return False
+    if request_task.is_root_task:
+        # Shouldn't be possible but adding as a catch-all
+        return False
 
-    return False
-
-
-@celery_app.task(base=DatabaseTask, bind=True)
-def run_access_node(
-    self: DatabaseTask, privacy_request_id: str, privacy_request_task_id: str
-) -> None:
-    """Run an individual task in the access graph"""
-    with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = prerequisite_task_checks(
-            session, privacy_request_id, privacy_request_task_id
-        )
-        log_task_starting(privacy_request, request_task)
-
-        if not task_is_complete(session, request_task):
-            # Build GraphTask resource to facilitate execution
-            task_resources: TaskResources = collect_task_resources(
-                session, privacy_request
-            )
-            graph_task: GraphTask = GraphTask(request_task, task_resources)
-            ordered_upstream_tasks: List[
-                Optional[RequestTask]
-            ] = order_tasks_by_input_key(
-                graph_task.execution_node.input_keys, upstream_results
-            )
-            # Pass in access data dependencies in the same order as the input keys.
-            # If we don't have access data for an upstream node, pass in an empty list
-            upstream_access_data: List[List[Row]] = [
-                upstream.access_data if upstream else []
-                for upstream in ordered_upstream_tasks
-            ]
-            # Run the main access function!
-            graph_task.access_request(*upstream_access_data)
-            request_task.update_status(session, TaskStatus.complete)
-            log_task_complete(privacy_request, request_task)
-
-        queue_downstream_tasks(
-            session,
-            request_task,
-            privacy_request,
-            run_access_node,
-            CurrentStep.upload_access,
-        )
-        return
+    return True
 
 
 def queue_downstream_tasks(
@@ -200,11 +164,11 @@ def queue_downstream_tasks(
 
     If we've reached the terminator task, restart the privacy request from the appropriate checkpoint.
     """
-    immediate_downstream_tasks: Query = request_task.all_downstream_tasks(session)
-    for downstream_task in immediate_downstream_tasks:
+    pending_downstream: Query = request_task.pending_downstream_tasks(session)
+    for downstream_task in pending_downstream:
         if downstream_task.upstream_tasks_complete(session):
-            logger.info(
-                "Queuing {} task {} from {} {}. Privacy Request: {}, Request Task {}. Upstream nodes complete.",
+            logger_method(downstream_task)(
+                "Queuing {} task {} from {} {}: upstream nodes complete. Privacy Request: {}, Request Task {}.",
                 downstream_task.action_type.value,
                 downstream_task.collection_address,
                 request_task.action_type.value,
@@ -217,8 +181,8 @@ def queue_downstream_tasks(
                 privacy_request_task_id=downstream_task.id,
             )
         else:
-            logger.info(
-                "Cannot queue {} task {}. Privacy Request: {}, Request Task {}. Waiting for upstream nodes.",
+            logger.debug(
+                "Cannot yet queue {} task {}. Privacy Request: {}, Request Task {}. Waiting for other upstream nodes.",
                 downstream_task.action_type.value,
                 downstream_task.collection_address,
                 privacy_request.id,
@@ -244,25 +208,68 @@ def queue_downstream_tasks(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+def run_access_node(
+    self: DatabaseTask, privacy_request_id: str, privacy_request_task_id: str
+) -> None:
+    """Run an individual task in the access graph"""
+    with self.get_new_session() as session:
+        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
+            session, privacy_request_id, privacy_request_task_id
+        )
+        log_task_starting(request_task)
+
+        if can_run_task_body(request_task):
+            # Build GraphTask resource to facilitate execution
+            task_resources: TaskResources = collect_task_resources(
+                session, privacy_request
+            )
+            graph_task: GraphTask = GraphTask(request_task, task_resources)
+            ordered_upstream_tasks: List[
+                Optional[RequestTask]
+            ] = order_tasks_by_input_key(
+                graph_task.execution_node.input_keys, upstream_results
+            )
+            # Pass in access data dependencies in the same order as the input keys.
+            # If we don't have access data for an upstream node, pass in an empty list
+            upstream_access_data: List[List[Row]] = [
+                upstream.access_data if upstream else []
+                for upstream in ordered_upstream_tasks
+            ]
+            # Run the main access function
+            graph_task.access_request(*upstream_access_data)
+            request_task.update_status(session, TaskStatus.complete)
+            log_task_complete(request_task)
+
+        queue_downstream_tasks(
+            session,
+            request_task,
+            privacy_request,
+            run_access_node,
+            CurrentStep.upload_access,
+        )
+        return
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
 def run_erasure_node(
     self: DatabaseTask, privacy_request_id: str, privacy_request_task_id: str
 ) -> None:
     """Run an individual task in the erasure graph"""
     with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = prerequisite_task_checks(
+        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
-        log_task_starting(privacy_request, request_task)
+        log_task_starting(request_task)
 
-        if not task_is_complete(session, request_task):
+        if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
             task_resources = collect_task_resources(session, privacy_request)
             graph_task: GraphTask = GraphTask(request_task, task_resources)
             # Get access data that was saved in the erasure format that was collected from the
-            # access task for the same node.  This data is used to build the masking request
+            # access task for the same collection.  This data is used to build the masking request
             retrieved_data: List[Row] = request_task.data_for_erasures or []
-            # Get access data in erasure format from upstream tasks of the current node. This is useful
-            # for email connectors where the access request doesn't actually retrieve data
+            # Get access data in erasure format from upstream tasks of the current corresponding access node.
+            # This is useful for email connectors where the access request doesn't actually retrieve data
             upstream_retrieved_data: List[List[Row]] = (
                 request_task.erasure_input_data or []
             )
@@ -270,7 +277,7 @@ def run_erasure_node(
             graph_task.erasure_request(retrieved_data, upstream_retrieved_data)
             request_task.update_status(session, TaskStatus.complete)
 
-            log_task_complete(privacy_request, request_task)
+            log_task_complete(request_task)
 
         queue_downstream_tasks(
             session,
@@ -288,12 +295,12 @@ def run_consent_node(
 ) -> None:
     """Run an individual task in the consent graph"""
     with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = prerequisite_task_checks(
+        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
-        log_task_starting(privacy_request, request_task)
+        log_task_starting(request_task)
 
-        if not task_is_complete(session, request_task):
+        if can_run_task_body(request_task):
             task_resources: TaskResources = collect_task_resources(
                 session, privacy_request
             )
@@ -303,7 +310,7 @@ def run_consent_node(
             task.consent_request(upstream_results[0].consent_data)
 
             request_task.update_status(session, TaskStatus.complete)
-            log_task_complete(privacy_request, request_task)
+            log_task_complete(request_task)
 
         queue_downstream_tasks(
             session,

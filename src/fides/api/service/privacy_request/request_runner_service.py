@@ -399,7 +399,6 @@ def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                logger.info("RUNNING ACCESS REQUEST {}", privacy_request.id)
                 run_access_request(
                     privacy_request=privacy_request,
                     graph=dataset_graph,
