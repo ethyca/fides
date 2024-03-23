@@ -67,6 +67,7 @@ def upgrade():
         ),
         sa.Column("rows_masked", sa.Integer(), nullable=True),
         sa.Column("consent_success", sa.Boolean(), nullable=True),
+        sa.Column("callback_succeeded", sa.Boolean(), nullable=True),
         sa.Column(
             "terminator_data",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),

@@ -1560,6 +1560,7 @@ class RequestTask(Base):
 
     rows_masked = Column(Integer)
     consent_success = Column(Boolean)
+    callback_succeeded = Column(Boolean)
 
     # The final data stored for a terminator node
     terminator_data = Column(

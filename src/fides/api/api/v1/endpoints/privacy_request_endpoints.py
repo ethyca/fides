@@ -43,7 +43,7 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PolicyNotFoundException,
     TraversalError,
-    ValidationError,
+    ValidationError, RequestTaskNotFound, PrivacyRequestNotFound,
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph, Node
@@ -64,7 +64,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
     ProvidedIdentity,
     ProvidedIdentityType,
-    RequestTask,
+    RequestTask, ExecutionLogStatus,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
@@ -105,6 +105,8 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.task.create_tasks import log_task_queued
+from fides.api.task.execute_tasks import run_prerequisite_task_checks, run_access_node
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.task.task_resources import TaskResources
@@ -146,7 +148,7 @@ from fides.common.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
     REQUEST_STATUS_TASKS,
-    V1_URL_PREFIX,
+    V1_URL_PREFIX, PRIVACY_REQUEST_TASK_CALLBACK,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -1957,7 +1959,88 @@ def get_task_data(
     - Manually uploaded data is not included here
     """
     pr = get_privacy_request_or_error(db, privacy_request_id)
-    logger.info(f"Getting privacy request '{privacy_request_id}' data")
+    logger.info(f"Getting privacy request '{privacy_request_id}' access data")
     data = pr.get_raw_access_results()
-    logger.info(f"Getting '{data}' data")
     return data
+
+
+@router.get(
+    PRIVACY_REQUEST_DATA,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
+    response_model=Dict,
+)
+def get_task_data(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """Returns data collected from all the privacy request tasks
+
+    Note this is currently everything collected by the access request graph
+    - It should be further filtered by the policy
+    - Manually uploaded data is not included here
+    """
+    pr = get_privacy_request_or_error(db, privacy_request_id)
+    logger.info(f"Getting privacy request '{privacy_request_id}' access data")
+    data = pr.get_raw_access_results()
+    return data
+
+
+@router.post(
+    PRIVACY_REQUEST_TASK_CALLBACK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])],
+    response_model=Dict,
+)
+def task_callback(
+    privacy_request_id: str,
+    task_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """
+    Early callback POC endpoint - just for experimenting!
+
+    Here I'm just demonstrating we can run an individual task from this point provided its upstream tasks are complete and the task
+    itself is in the appropriate state.
+
+    Individual task functions don't yet support working with any input data other than data dependencies described in the dataset
+    """
+    try:
+        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
+            db, privacy_request_id, task_id
+        )
+    except (PrivacyRequestNotFound, RequestTaskNotFound) as exc:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+
+    if privacy_request.status != PrivacyRequestStatus.in_processing:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Callback failed. Cannot run {request_task.action_type.value} task {request_task.id} with privacy request of status {request_task.status.value}",
+        )
+
+    if request_task.status != ExecutionLogStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Callback failed. Cannot run {request_task.action_type.value} task {request_task.id} with status {request_task.status.value}",
+        )
+
+    logger.info("Callback received for {} task {} {}", request_task.action_type.value, request_task.collection_address, request_task.id)
+
+    # Mark that the callback was received on the task itself - just experimenting here. We could also save data
+    # to the request task itself in another column
+    request_task.callback_succeeded = True
+    request_task.update_status(db, ExecutionLogStatus.pending)
+    request_task.save(db)
+
+    if request_task.action_type == ActionType.access:
+        log_task_queued(request_task)
+        run_access_node.delay(privacy_request.id, request_task.id)
+
+    # ... handle other cases
+
+    return {"task_queued": True}
+
+

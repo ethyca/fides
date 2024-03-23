@@ -15,7 +15,7 @@ from fides.api.common_exceptions import (
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
-    SkippingConsentPropagation,
+    SkippingConsentPropagation, AwaitingTaskCallback,
 )
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -107,7 +107,21 @@ def retry(
                     )
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
+                    # TODO revisit this
                     raise
+                except AwaitingTaskCallback as ex:
+                    traceback.print_exc()
+                    logger.warning(
+                        "{} task {} exiting - awaiting callback. Privacy Request: {}, Request Task {}.",
+                        method_name.capitalize(),
+                        self.execution_node.address,
+                        self.request_task.privacy_request_id,
+                        self.request_task.id,
+                    )
+                    self.log_paused(action_type, ex)
+                    # Re-raise to stop privacy request execution on pause.
+                    # TODO revisit this
+                    return
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
                     self.log_end(action_type, ex=None, success_override_msg=exc)

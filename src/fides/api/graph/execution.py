@@ -36,6 +36,7 @@ class ExecutionNode:
 
     def __init__(self, request_task: RequestTask):
         assert request_task.collection  # For mypy
+        self.request_task = request_task  # TODO Temporarily putting this here while retrieve_data doesn't take in a request task
         self.collection: Collection = Collection.parse_from_task(
             request_task.collection
         )
