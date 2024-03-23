@@ -95,7 +95,8 @@ const ConfigurePrivacyExperience = ({
   const { data: appConfig } = useGetConfigurationSettingsQuery({
     api_set: false,
   });
-  const translationsEnabled = appConfig?.consent?.enable_translations;
+  const translationsEnabled =
+    appConfig?.plus_consent_settings?.enable_translations;
 
   const languagePage = useAppSelector(selectLanguagePage);
   const languagePageSize = useAppSelector(selectLanguagePageSize);
