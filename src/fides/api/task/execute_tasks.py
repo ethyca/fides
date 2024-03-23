@@ -10,9 +10,8 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
     PrivacyRequest,
-    PrivacyRequestStatus,
     RequestTask,
-    TaskStatus,
+    ExecutionLogStatus, completed_statuses,
 )
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
@@ -22,7 +21,7 @@ from fides.api.util.collection_util import Row
 
 def logger_method(request_task: RequestTask) -> Callable:
     """Log selected no-op items with debug method and others with info method"""
-    return logger.debug if request_task.status == TaskStatus.complete else logger.info
+    return logger.debug if request_task.status == ExecutionLogStatus.complete else logger.info
 
 
 def order_tasks_by_input_key(
@@ -80,10 +79,10 @@ def run_prerequisite_task_checks(
         raise RequestTaskNotFound(f"Request Task with id {request_task} not found")
 
     upstream_results: Query = session.query(RequestTask).filter(False)
-    if request_task.status == TaskStatus.pending:
+    if request_task.status == ExecutionLogStatus.pending:
         upstream_results = session.query(RequestTask).filter(
             RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.status == PrivacyRequestStatus.complete,
+            RequestTask.status.in_(completed_statuses),
             RequestTask.action_type == request_task.action_type,
             RequestTask.collection_address.in_(request_task.upstream_tasks or []),
         )
@@ -125,7 +124,7 @@ def can_run_task_body(
 ) -> bool:
     """Return true if we can execute the task body. We should skip if the task is already
     complete or we've reached a terminator node"""
-    if request_task.status == TaskStatus.complete:
+    if request_task.status == ExecutionLogStatus.complete:
         logger_method(request_task)(
             "Skipping already-completed {} task {}. Privacy Request: {}, Request Task {}",
             request_task.action_type.value,
@@ -188,12 +187,11 @@ def queue_downstream_tasks(
 
     if (
         request_task.request_task_address == TERMINATOR_ADDRESS
-        and request_task.status != TaskStatus.complete
+        and request_task.status != ExecutionLogStatus.complete
     ):
         # Only queue privacy request from the next step if we haven't reached the terminator before.
         # Multiple pathways could mark the same node as complete, so we may have already reached the
         # terminator node through a quicker path.
-        request_task.update_status(session, TaskStatus.complete)
         from fides.api.service.privacy_request.request_runner_service import (
             queue_privacy_request,
         )
@@ -202,6 +200,7 @@ def queue_downstream_tasks(
             privacy_request_id=privacy_request.id,
             from_step=next_step.value,
         )
+        request_task.update_status(session, ExecutionLogStatus.complete)
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -234,7 +233,6 @@ def run_access_node(
             ]
             # Run the main access function
             graph_task.access_request(*upstream_access_data)
-            request_task.update_status(session, TaskStatus.complete)
             log_task_complete(request_task)
 
         queue_downstream_tasks(
@@ -272,7 +270,6 @@ def run_erasure_node(
             )
             # Run the main erasure function!
             graph_task.erasure_request(retrieved_data, upstream_retrieved_data)
-            request_task.update_status(session, TaskStatus.complete)
 
             log_task_complete(request_task)
 
@@ -306,7 +303,6 @@ def run_consent_node(
             # TODO catch errors if no upstream result
             task.consent_request(upstream_results[0].consent_data)
 
-            request_task.update_status(session, TaskStatus.complete)
             log_task_complete(request_task)
 
         queue_downstream_tasks(

@@ -17,7 +17,7 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import TraversalDetails
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask, TaskStatus
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask, ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.execute_tasks import (
     run_access_node,
@@ -215,9 +215,9 @@ def base_task_data(
         "collection_address": node.value,
         "dataset_name": node.dataset,
         "collection_name": node.collection,
-        "status": TaskStatus.complete
+        "status": ExecutionLogStatus.complete
         if node == ROOT_COLLECTION_ADDRESS
-        else TaskStatus.pending,
+        else ExecutionLogStatus.pending,
         "collection": collection_representation,
         "traversal_details": _format_traversal_details_for_save(node, traversal_nodes),
     }
@@ -296,7 +296,7 @@ def _get_data_for_erasures(
             RequestTask.collection_address.in_(
                 corresponding_access_task.upstream_tasks
             ),
-            RequestTask.status == TaskStatus.complete,
+            RequestTask.status == ExecutionLogStatus.complete,
         )
         ordered_upstream_tasks: List[Optional[RequestTask]] = (
             []
@@ -532,14 +532,14 @@ def get_existing_ready_tasks(
     request_tasks = privacy_request.get_tasks_by_action(action_type)
     if request_tasks.count():
         incomplete_tasks: Query = request_tasks.filter(
-            RequestTask.status != TaskStatus.complete
+            RequestTask.status != ExecutionLogStatus.complete
         )
         for task in incomplete_tasks:
             if task.upstream_tasks_complete(session):
-                task.update_status(session, TaskStatus.pending)
+                task.update_status(session, ExecutionLogStatus.pending)
                 ready.append(task)
-            elif task.status == TaskStatus.error:
-                task.update_status(session, TaskStatus.pending)
+            elif task.status == ExecutionLogStatus.error:
+                task.update_status(session, ExecutionLogStatus.pending)
 
         if ready:
             logger.info(

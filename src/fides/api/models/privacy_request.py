@@ -1424,6 +1424,10 @@ class ExecutionLogStatus(EnumType):
     skipped = "skipped"
 
 
+completed_statuses = [ExecutionLogStatus.complete, ExecutionLogStatus.skipped]
+exited_statuses = [ExecutionLogStatus.skipped, ExecutionLogStatus.complete, ExecutionLogStatus.error]
+
+
 class ExecutionLog(Base):
     """
     Stores the individual execution logs associated with a PrivacyRequest.
@@ -1496,17 +1500,6 @@ def _parse_cache_to_checkpoint_action_required(
     )
 
 
-class TaskStatus(str, EnumType):
-    """Enum for task statuses, reflecting where they are in the Privacy Request Lifecycle"""
-
-    pending = "pending"
-    in_processing = "in_processing"
-    complete = "complete"
-    error = "error"
-    skipped = "skipped"
-    awaiting_callback = "awaiting_callback"
-
-
 class RequestTask(Base):
     """
     An individual Task for a Privacy Request
@@ -1527,7 +1520,7 @@ class RequestTask(Base):
         String, nullable=False
     )  # Of the format dataset_name:collection_name for convenience
     status = Column(
-        EnumColumn(TaskStatus),
+        EnumColumn(ExecutionLogStatus),
         index=True,
         nullable=False,
     )
@@ -1598,15 +1591,15 @@ class RequestTask(Base):
     def is_terminator_task(self) -> bool:
         return self.request_task_address == TERMINATOR_ADDRESS
 
-    def update_status(self, db: Session, status: TaskStatus) -> None:
+    def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
         """Helper method to update a tasks's status"""
         self.status = status
         self.save(db)
 
     def mark_pending_if_error(self, db: Session) -> bool:
         """If task is errored, reset to pending and return whether the reset occurred"""
-        if self.status == TaskStatus.error:
-            self.update_status(db, TaskStatus.pending)
+        if self.status == ExecutionLogStatus.error:
+            self.update_status(db, ExecutionLogStatus.pending)
             self.save(db)
             return True
         return False
@@ -1630,7 +1623,7 @@ class RequestTask(Base):
     def pending_downstream_tasks(self, db: Session) -> Query:
         """Returns the immediate downstream task objects that are still pending"""
         return self.all_downstream_tasks(db).filter(
-            RequestTask.status == TaskStatus.pending
+            RequestTask.status == ExecutionLogStatus.pending
         )
 
     def upstream_tasks_complete(self, db: Session) -> bool:
@@ -1640,7 +1633,8 @@ class RequestTask(Base):
             RequestTask.collection_address.in_(self.upstream_tasks or []),
             RequestTask.action_type == self.action_type,
         )
+
         return all(
-            upstream_task.status == TaskStatus.complete
+            upstream_task.status in [ExecutionLogStatus.skipped, ExecutionLogStatus.complete]
             for upstream_task in upstream_tasks
         )

@@ -13,7 +13,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    TaskStatus,
+    ExecutionLogStatus, exited_statuses,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
@@ -164,13 +164,12 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
 
         def some_errored(tasks: Query) -> bool:
             return all(
-                tsk.status in [TaskStatus.complete, TaskStatus.error] for tsk in tasks
+                tsk.status in exited_statuses for tsk in tasks
             )
 
         for pr in in_progress_privacy_requests.all():
             if pr.consent_tasks.count():
-                # Consent propagation tasks - these are not created until access and erasure steps are complete
-
+                # Consent propagation tasks - these are not created until access and erasure steps are complete.
                 if some_errored(pr.consent_tasks):
                     logger.info(f"Marking consent step of {pr.id} as error")
                     pr.status = PrivacyRequestStatus.error
@@ -189,8 +188,9 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
                     pr.status = PrivacyRequestStatus.error
                     pr.save(db)
 
+        # TODO revisit this
         scheduler.add_job(
             poll_for_exited_privacy_request_tasks,
             trigger="date",
-            next_run_time=datetime.now() + timedelta(seconds=60),
+            next_run_time=datetime.now() + timedelta(seconds=30),
         )

@@ -4,7 +4,7 @@ import traceback
 from abc import ABC
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -39,7 +39,7 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
-    TaskStatus,
+    ExecutionLogStatus,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
@@ -156,9 +156,6 @@ def retry(
                     sleep(func_delay)
                     raised_ex = ex
             self.log_end(action_type, raised_ex)
-            mark_current_and_downstream_nodes_as_failed(
-                self.request_task, self.resources.session
-            )
             self.resources.request.cache_failed_checkpoint_details(
                 step=action_type, collection=self.execution_node.address
             )
@@ -167,9 +164,6 @@ def retry(
                 self.resources.request,
                 self.connector.configuration,
             )
-            # TODO Remove re-raise now that this is happening for just an individual task
-            # Re-raise to stop privacy request execution on failure.
-            raise raised_ex  # type: ignore
 
         return result
 
@@ -188,17 +182,17 @@ def mark_current_and_downstream_nodes_as_failed(
 
     logger.info(f"Marking task {privacy_request_task.id} and descendants as errored")
 
-    privacy_request_task.status = TaskStatus.error
+    privacy_request_task.status = ExecutionLogStatus.error
     db.add(privacy_request_task)
     for descendant_addr in privacy_request_task.all_descendant_tasks or []:
         descendant: Optional[RequestTask] = (
             privacy_request_task.get_related_tasks(db, descendant_addr)
-            .filter(RequestTask.status == TaskStatus.pending)
+            .filter(RequestTask.status == ExecutionLogStatus.pending)
             .first()
         )
         if not descendant:
             continue
-        descendant.status = TaskStatus.error
+        descendant.status = ExecutionLogStatus.error
         db.add(descendant)
 
     db.commit()
@@ -363,6 +357,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             status,
             msg,
         )
+        self.request_task.update_status(self.resources.session, status)
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
@@ -405,6 +400,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 Pii(ex),
             )
             self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
+            mark_current_and_downstream_nodes_as_failed(
+                self.request_task, self.resources.session
+            )
         else:
             logger.info("Ending {}, {}", self.resources.request.id, self.key)
             self.update_status(
