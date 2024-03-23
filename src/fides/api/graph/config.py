@@ -548,9 +548,10 @@ class Collection(BaseModel):
             converted: Union[ObjectField, ScalarField]
             if serialized_field.get("fields"):
                 # Recursively build nested fields under Object field
-                serialized_field["fields"] = [
-                    build_field(field) for field in serialized_field["fields"]
-                ]
+                serialized_field["fields"] = {
+                    field_name: build_field(fld)
+                    for field_name, fld in serialized_field["fields"].items()
+                }
                 converted = ObjectField.parse_obj(serialized_field)
                 converted.references = converted_references
                 converted.data_type_converter = data_type_converter
