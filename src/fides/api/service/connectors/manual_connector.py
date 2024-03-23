@@ -9,6 +9,12 @@ from fides.api.service.connectors.query_config import ManualQueryConfig
 from fides.api.util.collection_util import Row
 
 
+"""
+This is an old manual connector that was intended to be run as *part* of the traversal - stopping on each node 
+requiring manual attention. Later we added the manual_webhook connector which collects manual data upfront instead
+"""
+
+
 class ManualConnector(BaseConnector[None]):
     def query_config(self, node: ExecutionNode) -> ManualQueryConfig:
         """

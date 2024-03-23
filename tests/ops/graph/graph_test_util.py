@@ -1,11 +1,11 @@
 import random
 from typing import Iterable
 
-from fideslang.validation import FidesKey
 from sqlalchemy.engine import Engine
 
 from fides.api.db.base_class import FidesBase
 from fides.api.graph.config import *
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.traversal import *
 from fides.api.graph.traversal import Traversal, TraversalNode
 
@@ -43,7 +43,7 @@ class MockSqlConnector(SQLConnector):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],

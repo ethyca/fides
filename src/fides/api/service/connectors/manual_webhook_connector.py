@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -9,7 +9,7 @@ from fides.api.util.collection_util import Row
 
 
 class ManualWebhookConnector(BaseConnector[None]):
-    def query_config(self, node: TraversalNode) -> None:  # type: ignore
+    def query_config(self, node: ExecutionNode) -> None:  # type: ignore
         """
         Not applicable for this connector type. Manual Webhooks are not run as part of the traversal.
         There will not be a node associated with the ManualWebhook.
@@ -35,7 +35,7 @@ class ManualWebhookConnector(BaseConnector[None]):
 
     def retrieve_data(  # type: ignore
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
@@ -47,7 +47,7 @@ class ManualWebhookConnector(BaseConnector[None]):
 
     def mask_data(  # type: ignore
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
