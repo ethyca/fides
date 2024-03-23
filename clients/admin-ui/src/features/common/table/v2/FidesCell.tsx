@@ -63,8 +63,9 @@ export const FidesCell = <T,>({
           (isFirstRowOfGroupedRows && hasOneSubRow)
             ? "1px"
             : "0px",
-        borderLeftWidth: "1px",
-        borderLeftColor: "gray.200",
+      }}
+      _last={{
+        borderRightWidth: 0,
       }}
       height="inherit"
       style={{

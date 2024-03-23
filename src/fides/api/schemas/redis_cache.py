@@ -1,7 +1,7 @@
 import uuid
-from typing import Any, Optional
+from typing import List, Optional, Union
 
-from pydantic import EmailStr, Extra, validator
+from pydantic import EmailStr, Extra, StrictInt, StrictStr, validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
@@ -44,8 +44,14 @@ class Identity(IdentityBase):
         return v
 
 
+CustomPrivacyRequestFieldValue = Union[
+    Union[StrictInt, StrictStr], List[Union[StrictInt, StrictStr]]
+]
+
+
 class CustomPrivacyRequestField(FidesSchema):
     """Schema for custom privacy request fields."""
 
     label: str
-    value: Any
+    # use StrictInt and StrictStr to avoid type coercion and maintain the original types
+    value: CustomPrivacyRequestFieldValue
