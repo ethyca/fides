@@ -406,8 +406,8 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.upload_access,
                 from_checkpoint=resume_step,
             ):
-                # TODO Terminator task must exist and must be in state done
                 raw_access_results: Dict = privacy_request.get_raw_access_results()
+                # TODO Remove - for debugging purposes
                 logger.info(
                     f"Unfiltered access results {json.loads(json.dumps(raw_access_results, default=storage_json_encoder))}"
                 )

@@ -538,6 +538,9 @@ def get_existing_ready_tasks(
             if task.upstream_tasks_complete(session):
                 task.update_status(session, TaskStatus.pending)
                 ready.append(task)
+            elif task.status == TaskStatus.error:
+                task.update_status(session, TaskStatus.pending)
+
         if ready:
             logger.info(
                 "Found existing {} task(s) read to reprocess: {}. Privacy Request: {}",
