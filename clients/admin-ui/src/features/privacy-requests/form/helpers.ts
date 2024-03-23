@@ -7,18 +7,9 @@ export const findActionFromPolicyKey = (
   allActions?: PrivacyRequestOption[]
 ) => allActions?.find((action) => action.policy_key === key);
 
-export const validationSchema = Yup.object().shape({
-  policy_key: Yup.string().required(),
-  identity: Yup.object().required().shape({
-    email: Yup.string().required(),
-    phone_number: Yup.string().nullable(),
-  }),
-});
-
 export const generateValidationSchemaFromAction = (
   action?: PrivacyRequestOption
 ) => {
-  // TEMP-- make sure you un-! this, it can be undefined
   if (!action) {
     return Yup.object().shape({
       policy_key: Yup.string().required().label("Request type"),

@@ -1,0 +1,38 @@
+{
+  "actions": [
+    {
+      "policy_key": "default_access_policy",
+      "title": "Access your data",
+      "identity_inputs": {
+        "name": null,
+        "email": "required",
+        "phone": null
+      },
+      "custom_privacy_request_fields": {
+        "required_field": {
+          "label": "Required example field",
+          "required": true
+        },
+        "optional_field": {
+          "label": "Optional example field",
+          "required": false
+        },
+        "field_with_default_value": {
+          "label": "Example field with default value",
+          "required": false,
+          "default_value": "The default value"
+        }
+      }
+    },
+    {
+      "policy_key": "default_erasure_policy",
+      "title": "Erase your data",
+      "identity_inputs": {
+        "name": null,
+        "email": "required",
+        "phone": null
+      },
+      "custom_privacy_request_fields": null
+    }
+  ]
+}

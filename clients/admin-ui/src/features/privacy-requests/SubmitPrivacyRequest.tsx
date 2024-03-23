@@ -36,7 +36,18 @@ const SubmitPrivacyRequestModal = ({
 
   const handleSubmit = async (values: PrivacyRequestSubmitFormValues) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { is_verified, ...payload } = values;
+    const { is_verified, ...rest } = values;
+    const customFields = rest.custom_privacy_request_fields
+      ? Object.entries(rest.custom_privacy_request_fields)
+          .map(([fieldName, fieldInfo]) =>
+            fieldInfo.value ? { [fieldName]: fieldInfo } : {}
+          )
+          .reduce((acc, next) => ({ ...acc, ...next }), {})
+      : undefined;
+    const payload = {
+      ...rest,
+      custom_privacy_request_fields: customFields,
+    };
     const result = await postPrivacyRequestMutationTrigger([payload]);
     if (isErrorResult(result)) {
       toast(
@@ -56,7 +67,7 @@ const SubmitPrivacyRequestModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent data-testid="submit-request-modal">
         <ModalHeader>Submit privacy request</ModalHeader>
         <ModalBody>
           <Stack spacing={4}>
@@ -77,7 +88,12 @@ const SubmitPrivacyRequest = () => {
   return (
     <>
       <SubmitPrivacyRequestModal isOpen={isOpen} onClose={onClose} />
-      <Button colorScheme="primary" size="sm" onClick={onOpen}>
+      <Button
+        colorScheme="primary"
+        size="sm"
+        onClick={onOpen}
+        data-testid="submit-request-btn"
+      >
         Submit request
       </Button>
     </>

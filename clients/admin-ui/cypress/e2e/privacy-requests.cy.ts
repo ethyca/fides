@@ -194,4 +194,47 @@ describe("Privacy Requests", () => {
       });
     });
   });
+
+  describe("submitting a request", () => {
+    beforeEach(() => {
+      cy.visit("/privacy-requests");
+      cy.wait("@getPrivacyRequests");
+    });
+
+    it("opens the modal", () => {
+      cy.getByTestId("submit-request-btn").click();
+      cy.wait("@getPrivacyCenterConfig");
+      cy.getByTestId("submit-request-modal").should("exist");
+    });
+
+    it("shows configured fields and values", () => {
+      cy.getByTestId("submit-request-btn").click();
+      cy.wait("@getPrivacyCenterConfig");
+      cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+      cy.getByTestId("input-identity.phone").should("not.exist");
+      cy.getByTestId("input-identity.email").should("exist");
+      cy.getByTestId(
+        "input-custom_privacy_request_fields.required_field.value"
+      ).should("exist");
+      cy.getByTestId(
+        "input-custom_privacy_request_fields.field_with_default_value.value"
+      ).should("have.value", "The default value");
+      cy.getByTestId("submit-btn").should("be.disabled");
+    });
+
+    it("can submit a privacy request", () => {
+      cy.getByTestId("submit-request-btn").click();
+      cy.wait("@getPrivacyCenterConfig");
+      cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+      cy.getByTestId("input-identity.email").type("email@ethyca.com");
+      cy.getByTestId(
+        "input-custom_privacy_request_fields.required_field.value"
+      ).type("A value for the required field");
+      cy.getByTestId("input-is_verified").click();
+      cy.intercept("POST", "/api/v1/privacy-request").as("postPrivacyRequest");
+      cy.getByTestId("submit-btn").click();
+      cy.wait("@postPrivacyRequest");
+      cy.getByTestId("toast-success-msg").should("exist");
+    });
+  });
 });
