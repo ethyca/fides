@@ -6,13 +6,13 @@ from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
+from sqlalchemy.orm import Query
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    RequestTask,
     TaskStatus,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -147,8 +147,10 @@ async def poll_server_for_completion(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def poll_for_exited_privacy_request_tasks(self):
-    """Look for Privacy Requests whose Tasks are in a mixture of Error/Complete and mark as error.
+def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
+    """
+    Mark a privacy request as errored if all of its tasks have run and they are in a mixture
+    of complete and errored.
 
     Want to wait to do this until all tasks have had a chance to run
     """
@@ -160,10 +162,7 @@ def poll_for_exited_privacy_request_tasks(self):
             .order_by(PrivacyRequest.created_at)
         )
 
-        def all_complete(tasks: List[RequestTask]) -> bool:
-            return all(tsk.status == TaskStatus.complete for tsk in tasks)
-
-        def some_errored(tasks: List[RequestTask]) -> bool:
+        def some_errored(tasks: Query) -> bool:
             return all(
                 tsk.status in [TaskStatus.complete, TaskStatus.error] for tsk in tasks
             )
@@ -178,7 +177,7 @@ def poll_for_exited_privacy_request_tasks(self):
                     pr.save(db)
 
             elif pr.erasure_tasks.count():
-                """These are not created until access tasks are created."""
+                # These are not created until access tasks are created.
                 if some_errored(pr.erasure_tasks):
                     logger.info(f"Marking erasure step of {pr.id} as error")
                     pr.status = PrivacyRequestStatus.error

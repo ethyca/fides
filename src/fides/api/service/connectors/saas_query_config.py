@@ -283,7 +283,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if not self.current_request:
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "
-                f"endpoint in {self.node.node.dataset.connection_key}"
+                f"endpoint in {self.node.connection_key}"
             )
 
         # create the source of param values to populate the various placeholders

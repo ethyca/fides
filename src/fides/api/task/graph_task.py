@@ -7,28 +7,25 @@ from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from loguru import logger
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     ActionDisabled,
     CollectionDisabled,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
-    PrivacyRequestNotFound,
     PrivacyRequestPaused,
-    RequestTaskNotFound,
     SkippingConsentPropagation,
 )
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
-    TERMINATOR_ADDRESS,
     CollectionAddress,
     Field,
     FieldAddress,
     FieldPath,
     GraphDataset,
 )
-from fides.api.graph.execution import ExecutionNode, TraversalDetails
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import (
@@ -51,7 +48,6 @@ from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
-from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
     NodeInput,
@@ -182,9 +178,10 @@ def retry(
 
 def mark_current_and_downstream_nodes_as_failed(
     privacy_request_task: Optional[RequestTask], db: Session
-):
+) -> None:
     """
-    If the current node fails, mark it and its descendants as failed
+    If the current node fails, mark it and *every descendant that can be reached by the current node*
+    as failed
     """
     if not privacy_request_task:
         return
@@ -193,7 +190,7 @@ def mark_current_and_downstream_nodes_as_failed(
 
     privacy_request_task.status = TaskStatus.error
     db.add(privacy_request_task)
-    for descendant_addr in privacy_request_task.all_descendant_tasks:
+    for descendant_addr in privacy_request_task.all_descendant_tasks or []:
         descendant: Optional[RequestTask] = (
             privacy_request_task.get_related_tasks(db, descendant_addr)
             .filter(RequestTask.status == TaskStatus.pending)

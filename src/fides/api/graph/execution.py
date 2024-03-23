@@ -35,6 +35,7 @@ class ExecutionNode:
     """
 
     def __init__(self, request_task: RequestTask):
+        assert request_task.collection
         self.collection: Collection = Collection.parse_from_task(
             request_task.collection
         )

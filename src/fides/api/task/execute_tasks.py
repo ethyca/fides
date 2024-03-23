@@ -1,5 +1,6 @@
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
+from celery.app.task import Task
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 
@@ -13,7 +14,6 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TaskStatus,
 )
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
@@ -64,10 +64,10 @@ def run_prerequisite_task_checks(
 ) -> Tuple[PrivacyRequest, RequestTask, Query]:
     """Verify privacy request and task request exist and upstream tasks are complete and return resources
     for use in executing task"""
-    privacy_request: PrivacyRequest = PrivacyRequest.get(
+    privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
         db=session, object_id=privacy_request_id
     )
-    request_task: RequestTask = RequestTask.get(
+    request_task: Optional[RequestTask] = RequestTask.get(
         db=session, object_id=privacy_request_task_id
     )
 
@@ -81,21 +81,18 @@ def run_prerequisite_task_checks(
 
     upstream_results: Query = session.query(RequestTask).filter(False)
     if request_task.status == TaskStatus.pending:
-        upstream_results: Query = session.query(RequestTask).filter(
+        upstream_results = session.query(RequestTask).filter(
             RequestTask.privacy_request_id == privacy_request_id,
             RequestTask.status == PrivacyRequestStatus.complete,
             RequestTask.action_type == request_task.action_type,
-            RequestTask.collection_address.in_(request_task.upstream_tasks),
+            RequestTask.collection_address.in_(request_task.upstream_tasks or []),
         )
 
-        if not upstream_results.count() == len(request_task.upstream_tasks):
+        if not upstream_results.count() == len(request_task.upstream_tasks or []):
             raise RequestTaskNotFound(
-                "Cannot start {} task {}. Privacy Request: {}, Request Task {}.  Waiting for upstream tasks to finish.",
-                request_task.action_type,
-                request_task.collection_address,
-                privacy_request.id,
-                request_task.id,
+                f"Cannot start {request_task.action_type} task {request_task.collection_address}. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
             )
+
     return privacy_request, request_task, upstream_results
 
 
@@ -157,9 +154,9 @@ def queue_downstream_tasks(
     session: Session,
     request_task: RequestTask,
     privacy_request: PrivacyRequest,
-    run_node_function: Callable,
+    run_node_function: Task,
     next_step: CurrentStep,
-):
+) -> None:
     """Queue downstream tasks of the current node **if** the downstream task has all its upstream tasks completed.
 
     If we've reached the terminator task, restart the privacy request from the appropriate checkpoint.
@@ -256,7 +253,7 @@ def run_erasure_node(
 ) -> None:
     """Run an individual task in the erasure graph"""
     with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
+        privacy_request, request_task, _ = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
         log_task_starting(request_task)

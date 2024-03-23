@@ -1,6 +1,6 @@
 # pylint: disable=too-many-lines
 import json
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import networkx
 from fideslang.validation import FidesKey
@@ -161,7 +161,7 @@ def build_consent_networkx_digraph(
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
 
-    for collection_address, traversal_node in traversal_nodes.items():
+    for collection_address, _ in traversal_nodes.items():
         # Consent graphs are simple. One node for every dataset (which has a mocked collection)
         # and no dependencies between nodes.
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, collection_address)
@@ -227,7 +227,7 @@ def persist_new_access_request_tasks(
     session: Session,
     privacy_request: PrivacyRequest,
     traversal: Traversal,
-    traversal_nodes: Dict[CollectionAddress, Any],
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
     end_nodes: List[CollectionAddress],
     dataset_graph: DatasetGraph,
 ) -> List[RequestTask]:
@@ -261,11 +261,57 @@ def persist_new_access_request_tasks(
             },
         )
 
-    root_task: Optional[RequestTask] = privacy_request.get_root_task_by_action(
-        ActionType.access
-    )
+    root_task: RequestTask = privacy_request.get_root_task_by_action(ActionType.access)
 
     return [root_task]
+
+
+def _get_data_for_erasures(
+    session: Session,
+    privacy_request: PrivacyRequest,
+    node: CollectionAddress,
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
+) -> Tuple[List[Dict], List[List[Row]]]:
+    """
+    Return the access data in erasure format needed to format the masking request for the current node.
+    """
+    corresponding_access_task: Optional[
+        RequestTask
+    ] = privacy_request.get_existing_request_task(
+        db=session, action_type=ActionType.access, collection_address=node
+    )
+    retrieved_task_data: List[Dict] = []
+    combined_input_data: List[List[Row]] = []
+    if corresponding_access_task:
+        # IMPORTANT. Use "data_for_erasures" - not RequestTask.access_data.
+        # For arrays, "access_data" may remove non-matched elements, but to build erasure
+        # queries we need the original data in the appropriate indices
+        retrieved_task_data = corresponding_access_task.data_for_erasures
+
+        # Select upstream inputs of this node for things like email connectors, which
+        # don't retrieve data directly
+        input_tasks: Query = session.query(RequestTask).filter(
+            RequestTask.privacy_request_id == privacy_request.id,
+            RequestTask.action_type == ActionType.access,
+            RequestTask.collection_address.in_(
+                corresponding_access_task.upstream_tasks
+            ),
+            RequestTask.status == TaskStatus.complete,
+        )
+        ordered_upstream_tasks: List[Optional[RequestTask]] = (
+            []
+            if node in ARTIFICIAL_NODES
+            else _order_tasks_by_input_key(
+                traversal_nodes[node].input_keys(), input_tasks
+            )
+        )
+
+        for input_data in ordered_upstream_tasks or []:
+            combined_input_data.append(
+                input_data.data_for_erasures or [] if input_data else []
+            )
+
+    return retrieved_task_data, combined_input_data
 
 
 def persist_new_erasure_request_tasks(
@@ -290,38 +336,9 @@ def persist_new_erasure_request_tasks(
         ):
             continue
 
-        # Select ACCESS task of the same name
-        corresponding_access_task: Optional[
-            RequestTask
-        ] = privacy_request.get_existing_request_task(
-            db=session, action_type=ActionType.access, collection_address=node
+        retrieved_task_data, combined_input_data = _get_data_for_erasures(
+            session, privacy_request, node, traversal_nodes
         )
-        retrieved_task_data: List[Dict] = []
-        if corresponding_access_task:
-            # IMPORTANT. Use "data_for_erasures" - not RequestTask.access_data.
-            retrieved_task_data = corresponding_access_task.data_for_erasures
-
-        # Select upstream inputs of this node for things like email connectors, which
-        # don't retrieve data directly
-        input_tasks: Query = session.query(RequestTask).filter(
-            RequestTask.privacy_request_id == privacy_request.id,
-            RequestTask.action_type == ActionType.access,
-            RequestTask.collection_address.in_(
-                corresponding_access_task.upstream_tasks
-            ),
-            RequestTask.status == TaskStatus.complete,
-        )
-        ordered_upstream_tasks: List[Optional[RequestTask]] = (
-            []
-            if node in ARTIFICIAL_NODES
-            else _order_tasks_by_input_key(
-                traversal_nodes[node].input_keys(), input_tasks
-            )
-        )
-
-        combined_input_data: List[List[Row]] = []
-        for input_data in ordered_upstream_tasks or []:
-            combined_input_data.append(input_data.data_for_erasures or [])
 
         RequestTask.create(
             session,
@@ -335,9 +352,7 @@ def persist_new_erasure_request_tasks(
             },
         )
 
-    root_task: Optional[RequestTask] = privacy_request.get_root_task_by_action(
-        ActionType.erasure
-    )
+    root_task: RequestTask = privacy_request.get_root_task_by_action(ActionType.erasure)
 
     return [root_task]
 
@@ -374,9 +389,7 @@ def persist_new_consent_request_tasks(
             },
         )
 
-    root_task: Optional[RequestTask] = privacy_request.get_root_task_by_action(
-        ActionType.consent
-    )
+    root_task: RequestTask = privacy_request.get_root_task_by_action(ActionType.consent)
 
     return [root_task]
 
@@ -392,7 +405,7 @@ def collect_tasks_fn(
         data[tn.address] = tn
 
 
-def log_task_queued(request_task: RequestTask):
+def log_task_queued(request_task: RequestTask) -> None:
     logger.info(
         "Queuing {} task {} from main runner. Privacy Request: {}, Request Task {}",
         request_task.action_type.value,

@@ -19,18 +19,10 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.analytics_events import (
-    failed_graph_analytics_event,
-    fideslog_graph_failure,
-)
-from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress, GraphDataset
+from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
+from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -83,7 +75,6 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.storage_util import storage_json_encoder
-from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -454,8 +445,8 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.finalize_erasure,
                 from_checkpoint=resume_step,
             ):
+                # This conditional adds a checkpoint for resuming after erasure graph complete
                 pass
-                "Adding a checkpoint for after the erasure is complete"
 
             if policy.get_rules_for_action(
                 action_type=ActionType.consent
@@ -476,8 +467,8 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.finalize_consent,
                 from_checkpoint=resume_step,
             ):
+                # This conditional adds a checkpoint for resuming after consent graph complete
                 pass
-                "Adding a checkpoint for after consent is complete"
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
@@ -486,10 +477,6 @@ def run_privacy_request(
 
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
-            # Send analytics to Fideslog
-            # await fideslog_graph_failure(
-            #     failed_graph_analytics_event(privacy_request, exc)
-            # )
             # If dev mode, log traceback
             _log_exception(exc, CONFIG.dev_mode)
             return
@@ -538,9 +525,6 @@ def run_privacy_request(
             except (IdentityNotFoundException, MessageDispatchException) as e:
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
-                # await fideslog_graph_failure(
-                #     failed_graph_analytics_event(privacy_request, e)
-                # )
                 _log_exception(e, CONFIG.dev_mode)
                 return
         privacy_request.finished_processing_at = datetime.utcnow()

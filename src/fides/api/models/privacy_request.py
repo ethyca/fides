@@ -11,7 +11,6 @@ from celery.result import AsyncResult
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import (
-    ARRAY,
     Boolean,
     Column,
     DateTime,
@@ -19,7 +18,6 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
-    func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -46,7 +44,6 @@ from fides.api.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
-from fides.api.graph.graph_differences import GraphRepr
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -819,19 +816,6 @@ class PrivacyRequest(
         )
         return list(value_dict.values())[0] if value_dict else None
 
-    def cache_access_graph(self, value: GraphRepr) -> None:
-        """Cache a representation of the graph built for the access request"""
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"ACCESS_GRAPH__{self.id}", value)
-
-    def get_cached_access_graph(self) -> Optional[GraphRepr]:
-        """Fetch the graph built for the access request"""
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[GraphRepr]]
-        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
-        return list(value_dict.values())[0] if value_dict else None
-
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
         """
         Cache a dict of collections traversed in the privacy request
@@ -1017,13 +1001,18 @@ class PrivacyRequest(
 
         raise Exception(f"Unsupported Privacy Request Action Type {action}")
 
-    def get_root_task_by_action(self, action: ActionType) -> Optional[RequestTask]:
+    def get_root_task_by_action(self, action: ActionType) -> RequestTask:
         """Get the root tasks for a specific action"""
-        return (
+        root: RequestTask = (
             self.get_tasks_by_action(action)
             .filter(RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value)
             .first()
         )
+        if not root:
+            raise Exception(
+                f"Expected {action.value.capitalize()} root node cannot be found on privacy request {self.id} "
+            )
+        return root
 
     def get_raw_access_results(self) -> Dict:
         """Retrieve the access data saved on the individual access nodes"""
@@ -1498,6 +1487,7 @@ class TaskStatus(str, EnumType):
     complete = "complete"
     error = "error"
     skipped = "skipped"
+    awaiting_callback = "awaiting_callback"
 
 
 class RequestTask(Base):
@@ -1617,7 +1607,7 @@ class RequestTask(Base):
         return db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.action_type == self.action_type,
-            RequestTask.collection_address.in_(self.downstream_tasks),
+            RequestTask.collection_address.in_(self.downstream_tasks or []),
         )
 
     def pending_downstream_tasks(self, db: Session) -> Query:
@@ -1626,23 +1616,14 @@ class RequestTask(Base):
             RequestTask.status == TaskStatus.pending
         )
 
-    def upstream_tasks_complete(self, db) -> bool:
+    def upstream_tasks_complete(self, db: Session) -> bool:
         """Determines if a given task is ready to run"""
-        upstream_tasks: Query = (
-            db.query(
-                RequestTask.collection_address,
-                func.bool_or(RequestTask.status == TaskStatus.complete).label(
-                    "one_complete_run"
-                ),
-            )
-            .filter(
-                RequestTask.privacy_request_id == self.privacy_request_id,
-                RequestTask.collection_address.in_(self.upstream_tasks),
-                RequestTask.action_type == self.action_type,
-            )
-            .group_by(RequestTask.collection_address)
-            .all()
+        upstream_tasks: Query = db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.collection_address.in_(self.upstream_tasks or []),
+            RequestTask.action_type == self.action_type,
         )
-        # TODO - I originally queued multiple nodes of the same type on retry but
-        # now I change the status of the original node - this query could be simplified
-        return all(upstream_task.one_complete_run for upstream_task in upstream_tasks)
+        return all(
+            upstream_task.status == TaskStatus.complete
+            for upstream_task in upstream_tasks
+        )

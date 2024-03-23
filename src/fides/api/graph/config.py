@@ -80,7 +80,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, validator
@@ -216,7 +216,8 @@ class FieldAddress:
         return CollectionAddress(self.dataset, self.collection)
 
     @staticmethod
-    def from_string(field_address_string: str):
+    def from_string(field_address_string: str) -> FieldAddress:
+        """Create a Field Address from a string"""
         try:
             split_string = field_address_string.split(":")
             dataset = split_string[0]
@@ -518,14 +519,20 @@ class Collection(BaseModel):
 
     @classmethod
     def parse_from_task(cls, data: Dict) -> Collection:
-        """Raw collection data may be stored in RequestTask.collection with some
-        adjustments made on references, data type converters, and fields so it can be serialized
+        """
+        Take raw collection data saved on RequestTask.collection and convert it back into a Collection.
+
+        See Config > json_encoders for some of the fields that needed special handling for serialization for
+        database storage.
         """
         data = data.copy()
 
-        def build_field(field: dict):
-            converted_references = []
-            for reference in field.pop("references", []):
+        def build_field(serialized_field: dict) -> Field:
+            # Convert serialized references into expected format on Collection
+            converted_references: List[
+                Tuple[FieldAddress, Optional[EdgeDirection]]
+            ] = []
+            for reference in serialized_field.pop("references", []):
                 field_address: str = reference[0]
                 edge_direction: Optional[str] = reference[1]
                 converted_references.append(
@@ -533,28 +540,32 @@ class Collection(BaseModel):
                 )
 
             data_type_converter = get_data_type_converter(
-                field.pop("data_type_converter")
+                serialized_field.pop("data_type_converter")
             )
 
-            if field.get("fields"):
-                field["fields"] = [build_field(field) for field in field["fields"]]
-                converted = ObjectField.parse_obj(field)
+            # We can't convert the fields to abstract class Field - they need to be proper
+            # Scalar or ObjectFields
+            converted: Union[ObjectField, ScalarField]
+            if serialized_field.get("fields"):
+                # Recursively build nested fields under Object field
+                serialized_field["fields"] = [
+                    build_field(field) for field in serialized_field["fields"]
+                ]
+                converted = ObjectField.parse_obj(serialized_field)
                 converted.references = converted_references
                 converted.data_type_converter = data_type_converter
                 return converted
-            else:
-                converted = ScalarField.parse_obj(field)
-                converted.references = converted_references
-                converted.data_type_converter = data_type_converter
-                return converted
+            converted = ScalarField.parse_obj(serialized_field)
+            converted.references = converted_references
+            converted.data_type_converter = data_type_converter
+            return converted
 
         converted_fields = []
         for field in data.pop("fields"):
             converted_fields.append(build_field(field))
 
         data["fields"] = converted_fields
-        c = Collection.parse_obj(data)
-        return c
+        return Collection.parse_obj(data)
 
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
@@ -563,7 +574,7 @@ class Collection(BaseModel):
         # For running Collection.json()
         json_encoders = {
             Set: lambda val: list(val),
-            DataTypeConverter: lambda dtc: dtc.name,
+            DataTypeConverter: lambda dtc: dtc.name if dtc.name else None,
             FieldAddress: lambda fa: fa.value,
         }
 

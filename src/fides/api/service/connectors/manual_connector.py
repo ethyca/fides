@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from fides.api.common_exceptions import PrivacyRequestPaused
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.service.connectors.base_connector import BaseConnector
@@ -10,7 +10,7 @@ from fides.api.util.collection_util import Row
 
 
 class ManualConnector(BaseConnector[None]):
-    def query_config(self, node: TraversalNode) -> ManualQueryConfig:
+    def query_config(self, node: ExecutionNode) -> ManualQueryConfig:
         """
         The ManualQueryConfig generates instructions for the user to retrieve and mask
         data manually.
@@ -31,7 +31,7 @@ class ManualConnector(BaseConnector[None]):
 
     def retrieve_data(  # type: ignore
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
@@ -66,7 +66,7 @@ class ManualConnector(BaseConnector[None]):
 
     def mask_data(  # type: ignore
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],

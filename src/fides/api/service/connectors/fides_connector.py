@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from loguru import logger as log
 
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
@@ -42,7 +42,7 @@ class FidesConnector(BaseConnector[FidesClient]):
             else DEFAULT_POLLING_INTERVAL
         )
 
-    def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
         # no query config for fides connectors
 
@@ -82,7 +82,7 @@ class FidesConnector(BaseConnector[FidesClient]):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
@@ -129,7 +129,7 @@ class FidesConnector(BaseConnector[FidesClient]):
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
