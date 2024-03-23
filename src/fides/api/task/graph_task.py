@@ -217,13 +217,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.connector: BaseConnector = resources.get_connector(
             self.execution_node.connection_key  # ConnectionConfig.key
         )
-        self.data_uses: Set[str] = (
-            System.get_data_uses(
-                [self.connector.configuration.system], include_parents=False
-            )
-            if self.connector.configuration.system
-            else {}
-        )
 
         self.key: CollectionAddress = self.execution_node.address
 
@@ -236,7 +229,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return f"{type(self)}:{self.key}"
 
     def generate_dry_run_query(self) -> Optional[str]:
-        """Type-specific query generated for this traversal_node."""
+        """Type-specific query generated for this traversal_node.
+        TODO unaddressed -
+        """
         return self.connector.dry_run_query(self.execution_node)
 
     def can_write_data(self) -> bool:
@@ -646,7 +641,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 def collect_queries(
     traversal: Traversal, resources: TaskResources
 ) -> Dict[CollectionAddress, str]:
-    """Collect all queries for dry-run"""
+    """Collect all queries for dry-run
+
+    TODO This will fail now
+    """
 
     def collect_queries_fn(
         tn: TraversalNode, data: Dict[CollectionAddress, str]
@@ -677,28 +675,6 @@ def update_mapping_from_cache(
         dsk[CollectionAddress.from_string(collection_name)] = (
             start_fn(cached_results[collection_name]),
         )
-
-
-def _format_data_use_map_for_caching(
-    env: Dict[CollectionAddress, "GraphTask"]
-) -> Dict[str, Set[str]]:
-    """
-    Create a map of `Collection`s mapped to their associated `DataUse`s
-    to be stored in the cache. This is done before request execution, so that we
-    maintain the _original_ state of the graph as it's used for request execution.
-    The graph is subject to change "from underneath" the request execution runtime,
-    but we want to avoid picking up those changes in our data use map.
-
-    `DataUse`s are associated with a `Collection` by means of the `System`
-    that's linked to a `Collection`'s `Connection` definition.
-
-    Example:
-    {
-       <collection1>: {"data_use_1", "data_use_2"},
-       <collection2>: {"data_use_1"},
-    }
-    """
-    return {collection.value: g_task.data_uses for collection, g_task in env.items()}
 
 
 def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
