@@ -5,6 +5,8 @@ import {
   BulkPostPrivacyRequests,
   GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
+  PrivacyCenterConfig,
+  PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
   SecurityApplicationConfig,
 } from "~/types/api";
@@ -293,6 +295,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         });
       },
     }),
+    postPrivacyRequest: build.mutation<
+      PrivacyRequestResponse,
+      PrivacyRequestCreate[]
+    >({
+      query: (payload) => ({
+        url: `privacy-request`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: () => ["Request"],
+    }),
     getNotification: build.query<PrivacyRequestNotificationInfo, void>({
       query: () => ({
         url: `privacy-request/notification`,
@@ -471,7 +484,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.body,
       }),
     }),
-    getPrivacyCenterConfig: build.query<any, void>({
+    getPrivacyCenterConfig: build.query<PrivacyCenterConfig, void>({
       query: () => ({
         method: "GET",
         url: `plus/privacy-center-config`,
@@ -485,6 +498,7 @@ export const {
   useBulkRetryMutation,
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
+  usePostPrivacyRequestMutation,
   useGetNotificationQuery,
   useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
