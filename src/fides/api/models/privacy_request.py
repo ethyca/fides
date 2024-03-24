@@ -1023,6 +1023,7 @@ class PrivacyRequest(
             raise Exception(
                 f"Expected {action.value.capitalize()} root node cannot be found on privacy request {self.id} "
             )
+        assert root  # for mypy
         return root
 
     def get_raw_access_results(self) -> Dict:
@@ -1611,14 +1612,14 @@ class RequestTask(Base):
     def is_terminator_task(self) -> bool:
         return self.request_task_address == TERMINATOR_ADDRESS
 
-    def get_decoded_access_data(self):
+    def get_decoded_access_data(self) -> List[Row]:
         logger.info(f"access data {self.access_data}")
         return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
 
-    def get_decoded_data_for_erasures(self):
+    def get_decoded_data_for_erasures(self) -> List[Row]:
         return json.loads(self.data_for_erasures or "[]", object_hook=_custom_decoder)
 
-    def get_decoded_erasure_input_data(self):
+    def get_decoded_erasure_input_data(self) -> List[List[Row]]:
         return json.loads(self.erasure_input_data or "[]", object_hook=_custom_decoder)
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:

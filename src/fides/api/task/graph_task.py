@@ -43,7 +43,6 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
 )
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
@@ -60,7 +59,6 @@ from fides.api.util.collection_util import (
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.api.util.storage_util import storage_json_encoder
 from fides.config import CONFIG
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]

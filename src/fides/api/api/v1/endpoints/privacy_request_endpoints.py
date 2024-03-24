@@ -1968,28 +1968,6 @@ def get_task_data(
     return data
 
 
-@router.get(
-    PRIVACY_REQUEST_DATA,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
-    response_model=Dict,
-)
-def get_task_data(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-) -> Dict:
-    """Returns data collected from all the privacy request tasks
-
-    Note this is currently everything collected by the access request graph
-    - It should be further filtered by the policy
-    - Manually uploaded data is not included here
-    """
-    pr = get_privacy_request_or_error(db, privacy_request_id)
-    logger.info(f"Getting privacy request '{privacy_request_id}' access data")
-    data = pr.get_raw_access_results()
-    return data
-
-
 @router.post(
     PRIVACY_REQUEST_TASK_CALLBACK,
     dependencies=[
@@ -2012,7 +1990,7 @@ def task_callback(
     Individual task functions don't yet support working with any input data other than data dependencies described in the dataset
     """
     try:
-        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
+        privacy_request, request_task, _ = run_prerequisite_task_checks(
             db, privacy_request_id, task_id
         )
     except (PrivacyRequestNotFound, RequestTaskNotFound) as exc:

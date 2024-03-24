@@ -1,20 +1,12 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 from fideslang.validation import FidesKey
-from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectorNotFoundException
-from fides.api.graph.config import CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    RequestTask,
-)
-from fides.api.schemas.policy import ActionType
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors import (
     BaseConnector,
     BigQueryConnector,

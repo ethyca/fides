@@ -11,7 +11,6 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.graph import Edge
 from fides.api.models.privacy_request import RequestTask, TraversalDetails
-from fides.api.schemas.base_class import FidesSchema
 from fides.api.util.collection_util import partition
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]

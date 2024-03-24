@@ -300,7 +300,7 @@ def _get_data_for_erasures(
             RequestTask.privacy_request_id == privacy_request.id,
             RequestTask.action_type == ActionType.access,
             RequestTask.collection_address.in_(
-                corresponding_access_task.upstream_tasks
+                corresponding_access_task.upstream_tasks or []
             ),
             RequestTask.status == ExecutionLogStatus.complete,
         )

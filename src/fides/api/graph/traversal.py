@@ -10,7 +10,6 @@ from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
-    Field,
     FieldAddress,
     FieldPath,
     GraphDataset,

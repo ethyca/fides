@@ -11,7 +11,6 @@ from sqlalchemy.orm import Query
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
     exited_statuses,
