@@ -302,7 +302,6 @@ class PrivacyRequest(
         ),
     )
 
-
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[property] = None
@@ -838,24 +837,6 @@ class PrivacyRequest(
         )
         return list(value_dict.values())[0] if value_dict else None
 
-    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
-        """
-        Cache a dict of collections traversed in the privacy request
-        mapped to their associated data uses
-        """
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
-
-    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
-        """
-        Fetch the collection -> data use map cached for this privacy request
-        """
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[Dict[str, Set[str]]]]
-        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        return list(value_dict.values())[0] if value_dict else None
-
     def trigger_policy_webhook(
         self,
         webhook: WebhookTypes,
@@ -1067,9 +1048,7 @@ class PrivacyRequest(
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
             return
 
-        self.filtered_final_upload = json.dumps(
-            results, cls=CustomJSONEncoder
-        )
+        self.filtered_final_upload = json.dumps(results, cls=CustomJSONEncoder)
         self.save(db)
 
         return None
@@ -1711,7 +1690,6 @@ class RequestTask(Base):
         )
 
         return all(
-            upstream_task.status
-            in [ExecutionLogStatus.skipped, ExecutionLogStatus.complete]
+            upstream_task.status in completed_statuses
             for upstream_task in upstream_tasks
         )

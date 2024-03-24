@@ -255,8 +255,6 @@ def upload_access_results(  # pylint: disable=R0912
                 privacy_request=privacy_request,
                 data=filtered_results,
                 storage_key=storage_destination.key,  # type: ignore
-                data_category_field_mapping=dataset_graph.data_category_field_mapping,
-                data_use_map=privacy_request.get_cached_data_use_map(),
             )
             if download_url:
                 download_urls.append(download_url)

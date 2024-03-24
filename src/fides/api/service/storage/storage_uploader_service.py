@@ -22,8 +22,6 @@ def upload(
     privacy_request: PrivacyRequest,
     data: Dict,
     storage_key: FidesKey,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """
     Retrieves storage configs and calls appropriate upload method
@@ -41,9 +39,7 @@ def upload(
         logger.warning("Storage type not found: {}", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
-    return uploader(
-        db, config, data, privacy_request, data_category_field_mapping, data_use_map
-    )
+    return uploader(db, config, data, privacy_request)
 
 
 def get_extension(resp_format: ResponseFormat) -> str:
@@ -88,8 +84,6 @@ def _s3_uploader(
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Constructs necessary info needed for s3 before calling upload"""
     file_key: str = _construct_file_key(privacy_request.id, config)
@@ -98,7 +92,7 @@ def _s3_uploader(
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
 
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value, privacy_request, auth_method, data_category_field_mapping, data_use_map  # type: ignore
+        config.secrets, data, bucket_name, file_key, config.format.value, privacy_request, auth_method  # type: ignore
     )
 
 
@@ -107,9 +101,7 @@ def _local_uploader(
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads data to local storage, used for quick-start/demo purposes"""
     file_key: str = _construct_file_key(privacy_request.id, config)
-    return upload_to_local(data, file_key, privacy_request, config.format.value, data_category_field_mapping, data_use_map)  # type: ignore
+    return upload_to_local(data, file_key, privacy_request, config.format.value)  # type: ignore

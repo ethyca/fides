@@ -175,7 +175,6 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
                     logger.info(f"Marking consent step of {pr.id} as error")
                     pr.error_processing(db)
 
-
             elif pr.erasure_tasks.count():
                 # These are not created until access tasks are created.
                 if some_errored(pr.erasure_tasks):
@@ -186,7 +185,6 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
                 if some_errored(pr.access_tasks):
                     logger.info(f"Marking access step of {pr.id} as error")
                     pr.error_processing(db)
-
 
         # Schedule itself when this is finished
         scheduler.add_job(
