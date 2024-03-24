@@ -168,9 +168,7 @@ def retry(
                     sleep(func_delay)
                     raised_ex = ex
             self.log_end(action_type, raised_ex)
-            self.resources.request.cache_failed_checkpoint_details(
-                step=action_type
-            )
+            self.resources.request.cache_failed_checkpoint_details(step=action_type)
             add_errored_system_status_for_consent_reporting(
                 self.resources.session,
                 self.resources.request,

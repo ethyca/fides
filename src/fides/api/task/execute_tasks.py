@@ -4,21 +4,28 @@ from celery.app.task import Task
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 
-from fides.api.common_exceptions import PrivacyRequestNotFound, RequestTaskNotFound
+from fides.api.common_exceptions import (
+    PrivacyRequestNotFound,
+    RequestTaskNotFound,
+    ResumeTaskException,
+)
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
+    ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
     completed_statuses,
 )
-from fides.api.task.graph_task import GraphTask
+from fides.api.task.graph_task import (
+    GraphTask,
+    mark_current_and_downstream_nodes_as_failed,
+)
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.collection_util import Row
-from fides.api.util.wrappers import sync
 
 
 def logger_method(request_task: RequestTask) -> Callable:
@@ -100,6 +107,45 @@ def run_prerequisite_task_checks(
             )
 
     return privacy_request, request_task, upstream_results
+
+
+def create_graph_task(session: Session, request_task: RequestTask) -> GraphTask:
+    """Hydrates a GraphTask from the saved collection details on the Request Task in the database
+
+    This could fail if things like our Collection definitions have changed since we created the Task
+    to begin with - this may be unrecoverable and a new Privacy Request should be created.
+    """
+    try:
+        graph_task: GraphTask = GraphTask(collect_task_resources(session, request_task))
+
+    except Exception as exc:
+        logger.debug(
+            "Cannot execute task - error loading task from database. Privacy Request: {}, Request Task {}. Exception {}",
+            request_task.privacy_request_id,
+            request_task.id,
+            str(exc),
+        )
+        # Normally the GraphTask takes care of this logging, but in this case we can't create it in the first place!
+        ExecutionLog.create(
+            db=session,
+            data={
+                "connection_key": None,
+                "dataset_name": request_task.dataset_name,
+                "collection_name": request_task.collection_name,
+                "fields_affected": [],
+                "action_type": request_task.action_type,
+                "status": ExecutionLogStatus.error,
+                "privacy_request_id": request_task.privacy_request_id,
+                "message": str(exc),
+            },
+        )
+        mark_current_and_downstream_nodes_as_failed(request_task, session)
+
+        raise ResumeTaskException(
+            f"Cannot resume task. Error loading task from database: {request_task.privacy_request_id}, Request Task {request_task.id}"
+        )
+
+    return graph_task
 
 
 def log_task_starting(request_task: RequestTask) -> None:
@@ -223,9 +269,7 @@ def run_access_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            graph_task: GraphTask = GraphTask(
-                collect_task_resources(session, request_task)
-            )
+            graph_task: GraphTask = create_graph_task(session, request_task)
             ordered_upstream_tasks: List[
                 Optional[RequestTask]
             ] = order_tasks_by_input_key(
@@ -264,9 +308,7 @@ def run_erasure_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            graph_task: GraphTask = GraphTask(
-                collect_task_resources(session, request_task)
-            )
+            graph_task: GraphTask = create_graph_task(session, request_task)
             # Get access data that was saved in the erasure format that was collected from the
             # access task for the same collection.  This data is used to build the masking request
             retrieved_data: List[Row] = (
@@ -305,14 +347,14 @@ def run_consent_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            task: GraphTask = GraphTask(collect_task_resources(session, request_task))
+            graph_task: GraphTask = create_graph_task(session, request_task)
             if upstream_results:
                 # For consent, expected that there is only one upstream node, the root node,
                 # and it holds the identity data (stored in a list for consistency with other
                 # data stored in access_data)
                 access_data: List = upstream_results[0].get_decoded_access_data() or []
 
-            task.consent_request(access_data[0] if access_data else {})
+            graph_task.consent_request(access_data[0] if access_data else {})
 
             log_task_complete(request_task)
 

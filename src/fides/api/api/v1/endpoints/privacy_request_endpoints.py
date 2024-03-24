@@ -111,10 +111,7 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.task.create_tasks import log_task_queued
 from fides.api.task.execute_tasks import run_access_node, run_prerequisite_task_checks
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import (
-    EMPTY_REQUEST,
-    collect_queries,
-)
+from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
