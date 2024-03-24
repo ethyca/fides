@@ -11,7 +11,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
-    PrivacyRequest,
+    PrivacyRequest, RequestTask,
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import (
@@ -96,12 +96,12 @@ class Connections:
 
 
 class TaskResources:
-    """Shared information and environment for all nodes of a given task.
+    """Holds some Database resources for the given task.
     This includes
      - the privacy request
+     - the request task
      - the policy
-     - redis connection
-     -  configurations to any outside resources the task will require to run
+     - configurations to any outside resources the task will require to run
     """
 
     def __init__(
@@ -109,66 +109,17 @@ class TaskResources:
         request: PrivacyRequest,
         policy: Policy,
         connection_configs: List[ConnectionConfig],
+        privacy_request_task: RequestTask,
         session: Session,
     ):
         self.request = request
         self.policy = policy
-        self.cache = get_cache()
-        # tbd populate connection configurations.
+        self.privacy_request_task = privacy_request_task
         self.connection_configs: Dict[str, ConnectionConfig] = {
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
         self.session = session
-
-    def __enter__(self) -> "TaskResources":
-        """Support 'with' usage for closing resources"""
-        return self
-
-    def __exit__(self, _type: Any, value: Any, traceback: Any) -> None:
-        """Support 'with' usage for closing resources"""
-        self.close()
-
-    def cache_results_with_placeholders(self, key: str, value: Any) -> None:
-        """Cache raw results from node. Object will be
-        stored in redis under 'PLACEHOLDER_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS
-        """
-        self.cache.set_encoded_object(
-            f"PLACEHOLDER_RESULTS__{self.request.id}__{key}", value
-        )
-
-    def cache_object(self, key: str, value: Any) -> None:
-        """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
-        self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
-
-    def get_all_cached_objects(self) -> Dict[str, Optional[List[Row]]]:
-        """Retrieve the access results of all steps (cache_object)"""
-        value_dict = self.cache.get_encoded_objects_by_prefix(
-            f"{self.request.id}__access_request"
-        )
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
-        return {
-            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
-            for k, v in value_dict.items()
-        }
-
-    def cache_erasure(self, key: str, value: int) -> None:
-        """Cache that a node's masking is complete. Object will be stored in redis under
-        'REQUEST_ID__erasure_request__ADDRESS
-        '"""
-        self.cache.set_encoded_object(
-            f"{self.request.id}__erasure_request__{key}", value
-        )
-
-    def get_all_cached_erasures(self) -> Dict[str, int]:
-        """Retrieve which collections have been masked and their row counts(cache_erasure)"""
-        value_dict = self.cache.get_encoded_objects_by_prefix(
-            f"{self.request.id}__erasure_request"
-        )
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
-        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
 
     def write_execution_log(  # pylint: disable=too-many-arguments
         self,
@@ -202,7 +153,3 @@ class TaskResources:
             return self.connections.get_connector(self.connection_configs[key])
         raise ConnectorNotFoundException(f"No available connector for {key}")
 
-    def close(self) -> None:
-        """Close any held resources"""
-        logger.debug("Closing all task resources for {}", self.request.id)
-        self.connections.close()

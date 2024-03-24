@@ -47,13 +47,14 @@ def order_tasks_by_input_key(
 
 
 def collect_task_resources(
-    session: Session, privacy_request: PrivacyRequest
+    session: Session, request_task: RequestTask
 ) -> TaskResources:
-    """Build the TaskResources artifact which has historically been used for GraphTask"""
+    """Build the TaskResources artifact which just collects some Database resources needed for the current task"""
     return TaskResources(
-        privacy_request,
-        privacy_request.policy,
+        request_task.privacy_request,
+        request_task.privacy_request.policy,
         session.query(ConnectionConfig).all(),
+        request_task,
         session,
     )
 
@@ -101,7 +102,7 @@ def log_task_starting(request_task: RequestTask) -> None:
         "Starting '{}' task {} with current status '{}'. Privacy Request: {}, Request Task {}",
         request_task.action_type,
         request_task.collection_address,
-        request_task.status,
+        request_task.status.value,
         request_task.privacy_request_id,
         request_task.id,
     )
@@ -113,7 +114,7 @@ def log_task_complete(request_task: RequestTask) -> None:
         "{} task {} is {}. Privacy Request: {}, Request Task {}",
         request_task.action_type.value.capitalize(),
         request_task.collection_address,
-        request_task.status,
+        request_task.status.value,
         request_task.privacy_request_id,
         request_task.id,
     )
@@ -124,7 +125,7 @@ def can_run_task_body(
 ) -> bool:
     """Return true if we can execute the task body. We should skip if the task is already
     complete or we've reached a terminator node"""
-    if request_task.status == ExecutionLogStatus.complete:
+    if request_task.status in completed_statuses:
         logger_method(request_task)(
             "Skipping already-completed {} task {}. Privacy Request: {}, Request Task {}",
             request_task.action_type.value,
@@ -216,10 +217,9 @@ def run_access_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            task_resources: TaskResources = collect_task_resources(
-                session, privacy_request
-            )
-            graph_task: GraphTask = GraphTask(request_task, task_resources)
+            graph_task: GraphTask = GraphTask(collect_task_resources(
+                session, request_task
+            ))
             ordered_upstream_tasks: List[
                 Optional[RequestTask]
             ] = order_tasks_by_input_key(
@@ -258,8 +258,7 @@ def run_erasure_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            task_resources = collect_task_resources(session, privacy_request)
-            graph_task: GraphTask = GraphTask(request_task, task_resources)
+            graph_task: GraphTask = GraphTask(collect_task_resources(session, request_task))
             # Get access data that was saved in the erasure format that was collected from the
             # access task for the same collection.  This data is used to build the masking request
             retrieved_data: List[Row] = request_task.data_for_erasures or []
@@ -295,11 +294,10 @@ def run_consent_node(
         log_task_starting(request_task)
 
         if can_run_task_body(request_task):
-            task_resources: TaskResources = collect_task_resources(
-                session, privacy_request
-            )
             # Build GraphTask resource to facilitate execution
-            task: GraphTask = GraphTask(request_task, task_resources)
+            task: GraphTask = GraphTask(collect_task_resources(
+                session, request_task
+            ))
             # TODO catch errors if no upstream result
             task.consent_request(upstream_results[0].consent_data)
 

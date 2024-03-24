@@ -39,7 +39,7 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
-    ExecutionLogStatus,
+    ExecutionLogStatus, ExecutionLog,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
@@ -124,10 +124,8 @@ def retry(
                     return
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
+                    self.request_task.rows_masked = 0
                     self.log_end(action_type, ex=None, success_override_msg=exc)
-                    self.resources.cache_erasure(
-                        f"{self.execution_node.address.value}", 0
-                    )  # Cache that the erasure was performed in case we need to restart
                     return 0
                 except (
                     CollectionDisabled,
@@ -216,11 +214,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     """A task that operates on one traversal_node of a traversal"""
 
     def __init__(
-        self, privacy_request_task: RequestTask, resources: TaskResources
+        self, resources: TaskResources
     ):  # cache config, log config, db store config
         super().__init__()
-        self.request_task = privacy_request_task
-        self.execution_node = ExecutionNode(privacy_request_task)
+        self.request_task = resources.privacy_request_task
+        self.execution_node = ExecutionNode(resources.privacy_request_task)
         self.resources = resources
         self.connector: BaseConnector = resources.get_connector(
             self.execution_node.connection_key  # ConnectionConfig.key
@@ -491,11 +489,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 row, query_paths=post_processed_node_input_data, delete_elements=False
             )
 
-        # TODO needs to be better organized.  I'm saving on the Privacy Request Task, would like to stop
-        # saving in the cache.
-        self.resources.cache_results_with_placeholders(
-            f"access_request__{self.key}", placeholder_output
-        )
+        # For performing erasures later, save results with matching array elements preserved
         self.request_task.data_for_erasures = placeholder_output
 
         # For access request results, cache results with non-matching array elements *removed*
@@ -505,7 +499,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             filter_element_match(row, post_processed_node_input_data)
-        self.resources.cache_object(f"access_request__{self.key}", output)
         self.request_task.access_data = output
 
         # TODO this is not the right place for this, but I am converting datetimes
@@ -584,8 +577,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.complete,
             )
-            # Cache that the erasure was performed in case we need to restart
-            self.resources.cache_erasure(self.key.value, 0)
+            self.request_task.rows_masked = 0
             return 0
 
         if not self.can_write_data():
@@ -600,7 +592,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.error,
             )
-            self.resources.cache_erasure(self.key.value, 0)
+            self.request_task.rows_masked = 0
             return 0
 
         formatted_input_data: NodeInput = self.pre_process_input_data(
@@ -616,9 +608,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         )
         self.log_end(ActionType.erasure)
         self.request_task.rows_masked = output
-        self.resources.cache_erasure(
-            f"{self.key}", output
-        )  # Cache that the erasure was performed in case we need to restart
         return output
 
     @retry(action_type=ActionType.consent, default_return=False)
@@ -667,26 +656,6 @@ def collect_queries(
     env: Dict[CollectionAddress, str] = {}
     traversal.traverse(env, collect_queries_fn)
     return env
-
-
-def update_mapping_from_cache(
-    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
-    resources: TaskResources,
-    start_fn: Callable,
-) -> None:
-    """When resuming a privacy request from a paused or failed state, update the `dsk` dictionary with results we've
-    already obtained from a previous run. Remove upstream dependencies for these nodes, and just return the data we've
-    already retrieved, rather than visiting them again.
-
-    If there's no cached data, the dsk dictionary won't change.
-    """
-
-    cached_results: Dict[str, Optional[List[Row]]] = resources.get_all_cached_objects()
-
-    for collection_name in cached_results:
-        dsk[CollectionAddress.from_string(collection_name)] = (
-            start_fn(cached_results[collection_name]),
-        )
 
 
 def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
@@ -740,22 +709,6 @@ def get_cached_data_for_erasures(
         extract_key_for_address(k, number_of_leading_strings_to_exclude): v
         for k, v in value_dict.items()
     }
-
-
-def update_erasure_mapping_from_cache(
-    dsk: Dict[CollectionAddress, Union[Tuple[Any, ...], int]], resources: TaskResources
-) -> None:
-    """On pause or restart from failure, update the dsk graph to skip running erasures on collections
-    we've already visited. Instead, just return the previous count of rows affected.
-
-    If there's no cached data, the dsk dictionary won't change.
-    """
-    cached_erasures: Dict[str, int] = resources.get_all_cached_erasures()
-
-    for collection_name in cached_erasures:
-        dsk[CollectionAddress.from_string(collection_name)] = cached_erasures[
-            collection_name
-        ]
 
 
 def build_affected_field_logs(
