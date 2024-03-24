@@ -52,7 +52,7 @@ def upgrade():
         sa.Column("status", sa.String(), nullable=False),
         sa.Column("action_type", sa.String(), nullable=False),
         sa.Column(
-            "access_data", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+            "access_data", sa.String(), nullable=True
         ),
         sa.Column(
             "consent_data",
@@ -60,19 +60,14 @@ def upgrade():
             nullable=True,
         ),
         sa.Column(
-            "data_for_erasures", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+            "data_for_erasures", sa.String(), nullable=True
         ),
         sa.Column(
-            "erasure_input_data", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+            "erasure_input_data", sa.String(), nullable=True
         ),
         sa.Column("rows_masked", sa.Integer(), nullable=True),
         sa.Column("consent_success", sa.Boolean(), nullable=True),
         sa.Column("callback_succeeded", sa.Boolean(), nullable=True),
-        sa.Column(
-            "terminator_data",
-            sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
-            nullable=True,
-        ),
         sa.Column("collection", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column(
             "traversal_details", postgresql.JSONB(astext_type=sa.Text()), nullable=True

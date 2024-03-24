@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 import copy
+import json
 import traceback
 from abc import ABC
 from functools import wraps
@@ -49,7 +50,7 @@ from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.cache import get_cache
+from fides.api.util.cache import get_cache, CustomJSONEncoder
 from fides.api.util.collection_util import (
     NodeInput,
     Row,
@@ -491,7 +492,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
 
         # For performing erasures later, save results with matching array elements preserved
-        self.request_task.data_for_erasures = placeholder_output
+        self.request_task.data_for_erasures = json.dumps(placeholder_output, cls=CustomJSONEncoder)
 
         # For access request results, cache results with non-matching array elements *removed*
         for row in output:
@@ -500,16 +501,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             filter_element_match(row, post_processed_node_input_data)
-        self.request_task.access_data = output
-
-        # TODO this is not the right place for this, but I am converting datetimes
-        # to strings so this can be saved in postgres
-        for row in self.request_task.access_data:
-            for key, val in row.items():
-                row[key] = storage_json_encoder(val)
-        for row in self.request_task.data_for_erasures:
-            for key, val in row.items():
-                row[key] = storage_json_encoder(val)
+        self.request_task.access_data = json.dumps(output, cls=CustomJSONEncoder)
 
         # Return filtered rows with non-matched array data removed.
         return output

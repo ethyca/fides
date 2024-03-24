@@ -29,6 +29,7 @@ from fides.api.task.execute_tasks import (
     run_consent_node,
     run_erasure_node,
 )
+from fides.api.util.cache import CustomJSONEncoder
 from fides.api.util.collection_util import Row
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
@@ -259,7 +260,7 @@ def persist_new_access_request_tasks(
                 **base_task_data(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
-                "access_data": [traversal.seed_data]
+                "access_data": json.dumps([traversal.seed_data], cls=CustomJSONEncoder)
                 if node == ROOT_COLLECTION_ADDRESS
                 else [],
                 "action_type": ActionType.access,
@@ -291,7 +292,7 @@ def _get_data_for_erasures(
         # IMPORTANT. Use "data_for_erasures" - not RequestTask.access_data.
         # For arrays, "access_data" may remove non-matched elements, but to build erasure
         # queries we need the original data in the appropriate indices
-        retrieved_task_data = corresponding_access_task.data_for_erasures
+        retrieved_task_data = corresponding_access_task.get_decoded_data_for_erasures()
 
         # Select upstream inputs of this node for things like email connectors, which
         # don't retrieve data directly
@@ -313,7 +314,7 @@ def _get_data_for_erasures(
 
         for input_data in ordered_upstream_tasks or []:
             combined_input_data.append(
-                input_data.data_for_erasures or [] if input_data else []
+                input_data.get_decoded_data_for_erasures() or [] if input_data else []
             )
 
     return retrieved_task_data, combined_input_data
@@ -341,6 +342,8 @@ def persist_new_erasure_request_tasks(
         ):
             continue
 
+        # I pull access data saved in the format suitable for erasures
+        # off of the access nodes to be saved on these nodes.
         retrieved_task_data, combined_input_data = _get_data_for_erasures(
             session, privacy_request, node, traversal_nodes
         )
@@ -351,8 +354,8 @@ def persist_new_erasure_request_tasks(
                 **base_task_data(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
-                "data_for_erasures": retrieved_task_data,
-                "erasure_input_data": combined_input_data,
+                "data_for_erasures": json.dumps(retrieved_task_data, cls=CustomJSONEncoder),
+                "erasure_input_data": json.dumps(combined_input_data, cls=CustomJSONEncoder),
                 "action_type": ActionType.erasure,
             },
         )

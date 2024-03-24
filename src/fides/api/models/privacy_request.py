@@ -80,7 +80,7 @@ from fides.api.util.cache import (
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
     get_identity_cache_key,
-    get_masking_secret_cache_key,
+    get_masking_secret_cache_key, _custom_decoder,
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
@@ -1033,7 +1033,7 @@ class PrivacyRequest(
                 [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
             ),
         ):
-            final_results[task.collection_address] = task.access_data
+            final_results[task.collection_address] = task.get_decoded_access_data()
 
         return final_results
 
@@ -1531,10 +1531,8 @@ class RequestTask(Base):
     action_type = Column(EnumColumn(ActionType), nullable=False)
 
     # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
-    access_data = Column(
-        MutableList.as_mutable(JSONB),
-        nullable=True,
-    )
+
+    access_data = Column(String, nullable=True)  # JSON String, list of rows
 
     consent_data = Column(
         MutableDict.as_mutable(
@@ -1549,35 +1547,15 @@ class RequestTask(Base):
     )  # Type bytea in the db
 
     # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
-    # terrible name, but this is the data that should feed into the erasure node
-    # or be used by the erasure node.
-    data_for_erasures = Column(
-        MutableList.as_mutable(JSONB),
-        nullable=True,
-    )
+    # This is the data saved in erasure format
+    data_for_erasures = Column(String, nullable=True)   # JSON String, list of rows
 
     # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
-    erasure_input_data = Column(
-        MutableList.as_mutable(JSONB),
-        nullable=True,
-    )
+    erasure_input_data = Column(String, nullable=True)   # JSON String, list of list of rows
 
     rows_masked = Column(Integer)
     consent_success = Column(Boolean)
     callback_succeeded = Column(Boolean)
-
-    # The final data stored for a terminator node
-    terminator_data = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
-        nullable=True,
-    )  # Type bytea in the db
 
     collection = Column(
         MutableDict.as_mutable(JSONB)
@@ -1595,6 +1573,15 @@ class RequestTask(Base):
     @property
     def is_terminator_task(self) -> bool:
         return self.request_task_address == TERMINATOR_ADDRESS
+
+    def get_decoded_access_data(self):
+        return json.loads(self.access_data or '[]', object_hook=_custom_decoder)
+
+    def get_decoded_data_for_erasures(self):
+        return json.loads(self.data_for_erasures or '[]', object_hook=_custom_decoder)
+
+    def get_decoded_erasure_input_data(self):
+        return json.loads(self.erasure_input_data or '[]', object_hook=_custom_decoder)
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
         """Helper method to update a tasks's status"""

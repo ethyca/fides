@@ -233,7 +233,7 @@ def run_access_node(
             # Pass in access data dependencies in the same order as the input keys.
             # If we don't have access data for an upstream node, pass in an empty list
             upstream_access_data: List[List[Row]] = [
-                upstream.access_data if upstream else []
+                upstream.get_decoded_access_data() if upstream else []
                 for upstream in ordered_upstream_tasks
             ]
             # Run the main access function
@@ -268,11 +268,11 @@ def run_erasure_node(
             )
             # Get access data that was saved in the erasure format that was collected from the
             # access task for the same collection.  This data is used to build the masking request
-            retrieved_data: List[Row] = request_task.data_for_erasures or []
+            retrieved_data: List[Row] = request_task.get_decoded_data_for_erasures() or []
             # Get access data in erasure format from upstream tasks of the current corresponding access node.
             # This is useful for email connectors where the access request doesn't actually retrieve data
             upstream_retrieved_data: List[List[Row]] = (
-                request_task.erasure_input_data or []
+                request_task.get_decoded_erasure_input_data() or []
             )
             # Run the main erasure function!
             graph_task.erasure_request(retrieved_data, upstream_retrieved_data)
