@@ -17,7 +17,12 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import TraversalDetails
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask, ExecutionLogStatus, completed_statuses
+from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequest,
+    RequestTask,
+    completed_statuses,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.task.execute_tasks import (
     run_access_node,

@@ -9,9 +9,10 @@ from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
-    ExecutionLogStatus, completed_statuses,
+    completed_statuses,
 )
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
@@ -21,7 +22,11 @@ from fides.api.util.collection_util import Row
 
 def logger_method(request_task: RequestTask) -> Callable:
     """Log selected no-op items with debug method and others with info method"""
-    return logger.debug if request_task.status == ExecutionLogStatus.complete else logger.info
+    return (
+        logger.debug
+        if request_task.status == ExecutionLogStatus.complete
+        else logger.info
+    )
 
 
 def order_tasks_by_input_key(
@@ -217,9 +222,9 @@ def run_access_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            graph_task: GraphTask = GraphTask(collect_task_resources(
-                session, request_task
-            ))
+            graph_task: GraphTask = GraphTask(
+                collect_task_resources(session, request_task)
+            )
             ordered_upstream_tasks: List[
                 Optional[RequestTask]
             ] = order_tasks_by_input_key(
@@ -258,7 +263,9 @@ def run_erasure_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            graph_task: GraphTask = GraphTask(collect_task_resources(session, request_task))
+            graph_task: GraphTask = GraphTask(
+                collect_task_resources(session, request_task)
+            )
             # Get access data that was saved in the erasure format that was collected from the
             # access task for the same collection.  This data is used to build the masking request
             retrieved_data: List[Row] = request_task.data_for_erasures or []
@@ -295,9 +302,7 @@ def run_consent_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            task: GraphTask = GraphTask(collect_task_resources(
-                session, request_task
-            ))
+            task: GraphTask = GraphTask(collect_task_resources(session, request_task))
             # TODO catch errors if no upstream result
             task.consent_request(upstream_results[0].consent_data)
 

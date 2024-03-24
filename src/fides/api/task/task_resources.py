@@ -11,7 +11,8 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
-    PrivacyRequest, RequestTask,
+    PrivacyRequest,
+    RequestTask,
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import (
@@ -152,4 +153,3 @@ class TaskResources:
         if key in self.connection_configs:
             return self.connections.get_connector(self.connection_configs[key])
         raise ConnectorNotFoundException(f"No available connector for {key}")
-

@@ -42,8 +42,10 @@ from fides.api.common_exceptions import (
     MessageDispatchException,
     NoCachedManualWebhookEntry,
     PolicyNotFoundException,
+    PrivacyRequestNotFound,
+    RequestTaskNotFound,
     TraversalError,
-    ValidationError, RequestTaskNotFound, PrivacyRequestNotFound,
+    ValidationError,
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph, Node
@@ -59,12 +61,13 @@ from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
     ExecutionLog,
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
     ProvidedIdentityType,
-    RequestTask, ExecutionLogStatus,
+    RequestTask,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
@@ -106,7 +109,7 @@ from fides.api.service.privacy_request.request_service import (
     cache_data,
 )
 from fides.api.task.create_tasks import log_task_queued
-from fides.api.task.execute_tasks import run_prerequisite_task_checks, run_access_node
+from fides.api.task.execute_tasks import run_access_node, run_prerequisite_task_checks
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.task.task_resources import TaskResources
@@ -142,13 +145,14 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_TASK_CALLBACK,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
     REQUEST_STATUS_TASKS,
-    V1_URL_PREFIX, PRIVACY_REQUEST_TASK_CALLBACK,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -1988,7 +1992,9 @@ def get_task_data(
 
 @router.post(
     PRIVACY_REQUEST_TASK_CALLBACK,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])],
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
     response_model=Dict,
 )
 def task_callback(
@@ -2027,7 +2033,12 @@ def task_callback(
             detail=f"Callback failed. Cannot run {request_task.action_type.value} task {request_task.id} with status {request_task.status.value}",
         )
 
-    logger.info("Callback received for {} task {} {}", request_task.action_type.value, request_task.collection_address, request_task.id)
+    logger.info(
+        "Callback received for {} task {} {}",
+        request_task.action_type.value,
+        request_task.collection_address,
+        request_task.id,
+    )
 
     # Mark that the callback was received on the task itself - just experimenting here. We could also save data
     # to the request task itself in another column
@@ -2042,5 +2053,3 @@ def task_callback(
     # ... handle other cases
 
     return {"task_queued": True}
-
-

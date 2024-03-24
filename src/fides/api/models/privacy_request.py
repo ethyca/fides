@@ -1425,7 +1425,11 @@ class ExecutionLogStatus(EnumType):
 
 
 completed_statuses = [ExecutionLogStatus.complete, ExecutionLogStatus.skipped]
-exited_statuses = [ExecutionLogStatus.skipped, ExecutionLogStatus.complete, ExecutionLogStatus.error]
+exited_statuses = [
+    ExecutionLogStatus.skipped,
+    ExecutionLogStatus.complete,
+    ExecutionLogStatus.error,
+]
 
 
 class ExecutionLog(Base):
@@ -1636,6 +1640,7 @@ class RequestTask(Base):
         )
 
         return all(
-            upstream_task.status in [ExecutionLogStatus.skipped, ExecutionLogStatus.complete]
+            upstream_task.status
+            in [ExecutionLogStatus.skipped, ExecutionLogStatus.complete]
             for upstream_task in upstream_tasks
         )

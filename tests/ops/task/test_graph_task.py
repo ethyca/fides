@@ -27,12 +27,10 @@ from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
-from fides.api.task.graph_task import (
+from fides.api.task.graph_task import (  # _evaluate_erasure_dependencies,; _format_data_use_map_for_caching,
     EMPTY_REQUEST,
     GraphTask,
     TaskResources,
-    # _evaluate_erasure_dependencies,
-    # _format_data_use_map_for_caching,
     build_affected_field_logs,
     collect_queries,
     filter_by_enabled_actions,

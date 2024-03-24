@@ -75,7 +75,9 @@ PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 REQUEST_STATUS_TASKS = "/privacy-request/{privacy_request_id}/tasks/}"
 PRIVACY_REQUEST_DATA = "/privacy-request/{privacy_request_id}/task_data/}"
-PRIVACY_REQUEST_TASK_CALLBACK = "/privacy-request/{privacy_request_id}/tasks/{task_id}/callback"
+PRIVACY_REQUEST_TASK_CALLBACK = (
+    "/privacy-request/{privacy_request_id}/tasks/{task_id}/callback"
+)
 
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"

@@ -11,9 +11,10 @@ from sqlalchemy.orm import Query
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
-    ExecutionLogStatus, exited_statuses,
+    exited_statuses,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
@@ -163,9 +164,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
         )
 
         def some_errored(tasks: Query) -> bool:
-            return all(
-                tsk.status in exited_statuses for tsk in tasks
-            )
+            return all(tsk.status in exited_statuses for tsk in tasks)
 
         for pr in in_progress_privacy_requests.all():
             if pr.consent_tasks.count():

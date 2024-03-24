@@ -11,7 +11,6 @@ from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
     PrivacyRequestStatus,
-    ExecutionLogStatus,
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
