@@ -18,6 +18,7 @@ from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.collection_util import Row
+from fides.api.util.wrappers import sync
 
 
 def logger_method(request_task: RequestTask) -> Callable:

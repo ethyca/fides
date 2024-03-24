@@ -1613,7 +1613,6 @@ class RequestTask(Base):
         return self.request_task_address == TERMINATOR_ADDRESS
 
     def get_decoded_access_data(self) -> List[Row]:
-        logger.info(f"access data {self.access_data}")
         return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
 
     def get_decoded_data_for_erasures(self) -> List[Row]:

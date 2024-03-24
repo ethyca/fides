@@ -75,6 +75,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -299,7 +300,8 @@ def queue_privacy_request(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def run_privacy_request(
+@sync
+async def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
@@ -390,7 +392,7 @@ def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                run_access_request(
+                await run_access_request(
                     privacy_request=privacy_request,
                     graph=dataset_graph,
                     identity=identity_data,
@@ -432,7 +434,7 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
                 # We only need to run the erasure once until masking strategies are handled
-                run_erasure_request(
+                await run_erasure_request(
                     privacy_request=privacy_request,
                     graph=dataset_graph,
                     identity=identity_data,
@@ -454,7 +456,7 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.consent,
                 from_checkpoint=resume_step,
             ):
-                run_consent_request(
+                await run_consent_request(
                     privacy_request=privacy_request,
                     graph=build_consent_dataset_graph(datasets),
                     identity=identity_data,
