@@ -268,7 +268,9 @@ def run_erasure_node(
             )
             # Get access data that was saved in the erasure format that was collected from the
             # access task for the same collection.  This data is used to build the masking request
-            retrieved_data: List[Row] = request_task.get_decoded_data_for_erasures() or []
+            retrieved_data: List[Row] = (
+                request_task.get_decoded_data_for_erasures() or []
+            )
             # Get access data in erasure format from upstream tasks of the current corresponding access node.
             # This is useful for email connectors where the access request doesn't actually retrieve data
             upstream_retrieved_data: List[List[Row]] = (
@@ -303,8 +305,13 @@ def run_consent_node(
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
             task: GraphTask = GraphTask(collect_task_resources(session, request_task))
-            # TODO catch errors if no upstream result
-            task.consent_request(upstream_results[0].consent_data)
+            if upstream_results:
+                # For consent, expected that there is only one upstream node, the root node,
+                # and it holds the identity data (stored in a list for consistency with other
+                # data stored in access_data)
+                access_data: List = upstream_results[0].get_decoded_access_data() or []
+
+            task.consent_request(access_data[0] if access_data else {})
 
             log_task_complete(request_task)
 

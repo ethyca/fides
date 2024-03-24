@@ -10,20 +10,11 @@ from fides.api.graph.config import (
     FieldPath,
 )
 from fides.api.graph.graph import Edge
-from fides.api.models.privacy_request import RequestTask
+from fides.api.models.privacy_request import RequestTask, TraversalDetails
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.util.collection_util import partition
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
-
-
-class TraversalDetails(FidesSchema):
-    """Schema to format saving pre-calculated traversal details on RequestTask.traversal_details"""
-
-    dataset_connection_key: str
-    incoming_edges: List[Tuple[str, str]]
-    outgoing_edges: List[Tuple[str, str]]
-    input_keys: List[str]
 
 
 class ExecutionNode:

@@ -50,7 +50,7 @@ from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.cache import get_cache, CustomJSONEncoder
+from fides.api.util.cache import CustomJSONEncoder, get_cache
 from fides.api.util.collection_util import (
     NodeInput,
     Row,
@@ -200,7 +200,7 @@ def mark_current_and_downstream_nodes_as_failed(
     db.add(privacy_request_task)
     for descendant_addr in privacy_request_task.all_descendant_tasks or []:
         descendant: Optional[RequestTask] = (
-            privacy_request_task.get_related_tasks(db, descendant_addr)
+            privacy_request_task.get_tasks_with_same_action_type(db, descendant_addr)
             .filter(RequestTask.status == ExecutionLogStatus.pending)
             .first()
         )
@@ -500,7 +500,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
 
         # For performing erasures later, save results with matching array elements preserved
-        self.request_task.data_for_erasures = json.dumps(placeholder_output, cls=CustomJSONEncoder)
+        self.request_task.data_for_erasures = json.dumps(
+            placeholder_output, cls=CustomJSONEncoder
+        )
 
         # For access request results, cache results with non-matching array elements *removed*
         for row in output:

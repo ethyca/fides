@@ -14,13 +14,13 @@ from fides.api.graph.config import (
     CollectionAddress,
     FieldAddress,
 )
-from fides.api.graph.execution import TraversalDetails
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
+    TraversalDetails,
     completed_statuses,
 )
 from fides.api.schemas.policy import ActionType
@@ -343,7 +343,7 @@ def persist_new_erasure_request_tasks(
             continue
 
         # I pull access data saved in the format suitable for erasures
-        # off of the access nodes to be saved on these nodes.
+        # off of the access nodes to be saved onto the erasure nodes.
         retrieved_task_data, combined_input_data = _get_data_for_erasures(
             session, privacy_request, node, traversal_nodes
         )
@@ -354,8 +354,12 @@ def persist_new_erasure_request_tasks(
                 **base_task_data(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
-                "data_for_erasures": json.dumps(retrieved_task_data, cls=CustomJSONEncoder),
-                "erasure_input_data": json.dumps(combined_input_data, cls=CustomJSONEncoder),
+                "data_for_erasures": json.dumps(
+                    retrieved_task_data, cls=CustomJSONEncoder
+                ),
+                "erasure_input_data": json.dumps(
+                    combined_input_data, cls=CustomJSONEncoder
+                ),
                 "action_type": ActionType.erasure,
             },
         )
@@ -392,7 +396,10 @@ def persist_new_consent_request_tasks(
                 **base_task_data(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
-                "consent_data": identity if node == ROOT_COLLECTION_ADDRESS else {},
+                # Consent nodes take in identity data from their upstream root node
+                "access_data": json.dumps([identity], cls=CustomJSONEncoder)
+                if node == ROOT_COLLECTION_ADDRESS
+                else [],
                 "action_type": ActionType.consent,
             },
         )

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -73,6 +73,7 @@ from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     CustomJSONEncoder,
     FidesopsRedis,
+    _custom_decoder,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -80,7 +81,7 @@ from fides.api.util.cache import (
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
     get_identity_cache_key,
-    get_masking_secret_cache_key, _custom_decoder,
+    get_masking_secret_cache_key,
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
@@ -1504,6 +1505,15 @@ def _parse_cache_to_checkpoint_action_required(
     )
 
 
+class TraversalDetails(FidesSchema):
+    """Schema to format saving pre-calculated traversal details on RequestTask.traversal_details"""
+
+    dataset_connection_key: str
+    incoming_edges: List[Tuple[str, str]]
+    outgoing_edges: List[Tuple[str, str]]
+    input_keys: List[str]
+
+
 class RequestTask(Base):
     """
     An individual Task for a Privacy Request
@@ -1513,57 +1523,84 @@ class RequestTask(Base):
         String,
         ForeignKey(PrivacyRequest.id_field_path, ondelete="SET NULL"),
         nullable=True,
+        index=True,
     )
-    upstream_tasks = Column(MutableList.as_mutable(JSONB))
-    downstream_tasks = Column(MutableList.as_mutable(JSONB))
-    all_descendant_tasks = Column(MutableList.as_mutable(JSONB))
 
-    dataset_name = Column(String, nullable=False)
-    collection_name = Column(String, nullable=False)
+    # Identifiers of this request task
     collection_address = Column(
-        String, nullable=False
+        String, nullable=False, index=True
     )  # Of the format dataset_name:collection_name for convenience
+    dataset_name = Column(String, nullable=False, index=True)
+    collection_name = Column(String, nullable=False, index=True)
+    action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
+
     status = Column(
         EnumColumn(ExecutionLogStatus),
         index=True,
         nullable=False,
     )
-    action_type = Column(EnumColumn(ActionType), nullable=False)
 
-    # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
+    upstream_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # List of collection address strings
+    downstream_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # List of collection address strings
+    all_descendant_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # All tasks that can be reached by the current task
 
-    access_data = Column(String, nullable=True)  # JSON String, list of rows
-
-    consent_data = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
+    # Data retrieved from an access request is stored here
+    access_data = Column(  # An encrypted JSON String - saved as a list of rows
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
         ),
-        nullable=True,
-    )  # Type bytea in the db
+    )
 
-    # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
-    # This is the data saved in erasure format
-    data_for_erasures = Column(String, nullable=True)   # JSON String, list of rows
+    # This is the data saved in erasure format.  We retrieve this on an access request, and save to the access node.
+    # Then on the erasure step, we copy this over to the erasure node, and this data should be used to build
+    # the masking request
+    data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
 
-    # TODO ENCRYPT THIS - UNENCRYPTED CURRENTLY FOR TROUBLESHOOTING
-    erasure_input_data = Column(String, nullable=True)   # JSON String, list of list of rows
+    # This data likely only exists on erasure nodes - it takes "data_for_erasures" from upstream access nodes
+    # and adds here for things like email connectors that don't run an access request on their own node.
+    erasure_input_data = (
+        Column(  # An encrypted JSON String - saved as a list of list of rows
+            StringEncryptedType(
+                type_in=String(),
+                key=CONFIG.security.app_encryption_key,
+                engine=AesGcmEngine,
+                padding="pkcs5",
+            ),
+        )
+    )
 
+    # Written after an erasure is completed
     rows_masked = Column(Integer)
+    # Written after a consent request is completed
     consent_success = Column(Boolean)
+    # Written after a callback is completed
     callback_succeeded = Column(Boolean)
 
-    collection = Column(
-        MutableDict.as_mutable(JSONB)
-    )  # Storing a serialized Collection
+    # Stores a serialized collection that can be transformed back into a Collection to help
+    # execute the current task
+    collection = Column(MutableDict.as_mutable(JSONB))
+    # Stores key details from traversal.traverse in the format of TraversalDetails
     traversal_details = Column(MutableDict.as_mutable(JSONB))
 
     @property
     def request_task_address(self) -> CollectionAddress:
+        """Convert the collection_address into Collection Address format"""
         return CollectionAddress.from_string(self.collection_address)
 
     @property
@@ -1575,16 +1612,17 @@ class RequestTask(Base):
         return self.request_task_address == TERMINATOR_ADDRESS
 
     def get_decoded_access_data(self):
-        return json.loads(self.access_data or '[]', object_hook=_custom_decoder)
+        logger.info(f"access data {self.access_data}")
+        return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
 
     def get_decoded_data_for_erasures(self):
-        return json.loads(self.data_for_erasures or '[]', object_hook=_custom_decoder)
+        return json.loads(self.data_for_erasures or "[]", object_hook=_custom_decoder)
 
     def get_decoded_erasure_input_data(self):
-        return json.loads(self.erasure_input_data or '[]', object_hook=_custom_decoder)
+        return json.loads(self.erasure_input_data or "[]", object_hook=_custom_decoder)
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
-        """Helper method to update a tasks's status"""
+        """Helper method to update a task's status"""
         self.status = status
         self.save(db)
 
@@ -1596,7 +1634,9 @@ class RequestTask(Base):
             return True
         return False
 
-    def get_related_tasks(self, db: Session, collection_address_str: str) -> Query:
+    def get_tasks_with_same_action_type(
+        self, db: Session, collection_address_str: str
+    ) -> Query:
         """Fetch task on the same privacy request and action type as current by collection address"""
         return db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
