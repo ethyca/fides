@@ -173,21 +173,20 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
                 # Consent propagation tasks - these are not created until access and erasure steps are complete.
                 if some_errored(pr.consent_tasks):
                     logger.info(f"Marking consent step of {pr.id} as error")
-                    pr.status = PrivacyRequestStatus.error
-                    pr.save(db)
+                    pr.error_processing(db)
+
 
             elif pr.erasure_tasks.count():
                 # These are not created until access tasks are created.
                 if some_errored(pr.erasure_tasks):
                     logger.info(f"Marking erasure step of {pr.id} as error")
-                    pr.status = PrivacyRequestStatus.error
-                    pr.save(db)
+                    pr.error_processing(db)
 
             elif pr.access_tasks.count():
                 if some_errored(pr.access_tasks):
                     logger.info(f"Marking access step of {pr.id} as error")
-                    pr.status = PrivacyRequestStatus.error
-                    pr.save(db)
+                    pr.error_processing(db)
+
 
         # Schedule itself when this is finished
         scheduler.add_job(
@@ -233,11 +232,9 @@ def remove_saved_customer_data(self: DatabaseTask) -> None:
 
         remove_dsr_data: Text = text(
             """
-            UPDATE requesttask
-            SET access_data = null, data_for_erasures = null, erasure_input_data = null
-            FROM privacyrequest
+            DELETE FROM requesttask
+            USING privacyrequest
             WHERE requesttask.privacy_request_id = privacyrequest.id
-            AND access_data IS NOT null OR data_for_erasures IS NOT null OR erasure_input_data IS NOT null
             AND requesttask.created_at < :ttl
             AND privacyrequest.status = 'complete';
             """
