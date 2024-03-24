@@ -362,15 +362,23 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         action_type: ActionType,
         status: ExecutionLogStatus,
     ) -> None:
-        """Update status activities"""
-        self.resources.write_execution_log(
-            self.execution_node.connection_key,
-            self.execution_node.address,
-            fields_affected,
-            action_type,
-            status,
-            msg,
+        """Update status activities - create an execution log (which stores historical logs)
+        and update the Request Task's current status.
+        """
+        ExecutionLog.create(
+            db=self.resources.session,
+            data={
+                "connection_key": self.execution_node.connection_key,
+                "dataset_name": self.execution_node.address.dataset,
+                "collection_name": self.execution_node.address.collection,
+                "fields_affected": fields_affected,
+                "action_type": action_type,
+                "status": status,
+                "privacy_request_id": self.resources.request.id,
+                "message": msg,
+            },
         )
+
         self.request_task.update_status(self.resources.session, status)
 
     def log_start(self, action_type: ActionType) -> None:

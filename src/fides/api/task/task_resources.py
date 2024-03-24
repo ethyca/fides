@@ -32,8 +32,6 @@ from fides.api.service.connectors import (
     TimescaleConnector,
 )
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
-from fides.api.util.cache import get_cache
-from fides.api.util.collection_util import Row, extract_key_for_address
 
 
 class Connections:
@@ -121,32 +119,6 @@ class TaskResources:
         }
         self.connections = Connections()
         self.session = session
-
-    def write_execution_log(  # pylint: disable=too-many-arguments
-        self,
-        connection_key: str,
-        collection_address: CollectionAddress,
-        fields_affected: Any,
-        action_type: ActionType,
-        status: ExecutionLogStatus,
-        message: str = None,
-    ) -> Any:
-        """Store in application db. Return the created or written-to id field value."""
-        db = self.session
-
-        ExecutionLog.create(
-            db=db,
-            data={
-                "connection_key": connection_key,
-                "dataset_name": collection_address.dataset,
-                "collection_name": collection_address.collection,
-                "fields_affected": fields_affected,
-                "action_type": action_type,
-                "status": status,
-                "privacy_request_id": self.request.id,
-                "message": message,
-            },
-        )
 
     def get_connector(self, key: FidesKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""
