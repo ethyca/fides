@@ -114,7 +114,6 @@ from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import (
     EMPTY_REQUEST,
     collect_queries,
-    filter_by_enabled_actions,
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME

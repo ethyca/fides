@@ -300,8 +300,7 @@ def queue_privacy_request(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-@sync
-async def run_privacy_request(
+def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
@@ -392,7 +391,7 @@ async def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                await run_access_request(
+                run_access_request(
                     privacy_request=privacy_request,
                     graph=dataset_graph,
                     identity=identity_data,
@@ -432,7 +431,7 @@ async def run_privacy_request(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
                 # We only need to run the erasure once until masking strategies are handled
-                await run_erasure_request(
+                run_erasure_request(
                     privacy_request=privacy_request,
                     graph=dataset_graph,
                     identity=identity_data,
@@ -454,7 +453,7 @@ async def run_privacy_request(
                 request_checkpoint=CurrentStep.consent,
                 from_checkpoint=resume_step,
             ):
-                await run_consent_request(
+                run_consent_request(
                     privacy_request=privacy_request,
                     graph=build_consent_dataset_graph(datasets),
                     identity=identity_data,

@@ -430,7 +430,7 @@ def log_task_queued(request_task: RequestTask) -> None:
     )
 
 
-async def run_access_request(
+def run_access_request(
     privacy_request: PrivacyRequest,
     graph: DatasetGraph,
     identity: Dict[str, Any],
@@ -463,7 +463,7 @@ async def run_access_request(
     return ready_tasks
 
 
-async def run_erasure_request(  # pylint: disable = too-many-arguments
+def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     graph: DatasetGraph,
     identity: Dict[str, Any],
@@ -497,7 +497,7 @@ async def run_erasure_request(  # pylint: disable = too-many-arguments
     return ready_tasks
 
 
-async def run_consent_request(  # pylint: disable = too-many-arguments
+def run_consent_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     graph: DatasetGraph,
     identity: Dict[str, Any],
