@@ -5,7 +5,7 @@ import os
 import secrets
 import zipfile
 from io import BytesIO
-from typing import Any, Dict, Optional, Set, Union
+from typing import Any, Dict, Union
 
 import pandas as pd
 from boto3 import Session
@@ -13,7 +13,6 @@ from botocore.exceptions import ClientError, ParamValidationError
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
-from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import (
     ResponseFormat,

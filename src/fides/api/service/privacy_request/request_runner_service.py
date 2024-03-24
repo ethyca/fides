@@ -73,8 +73,6 @@ from fides.api.util.cache import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
-from fides.api.util.storage_util import storage_json_encoder
-from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -222,7 +220,7 @@ def upload_access_results(  # pylint: disable=R0912
     if not access_result:
         logger.info("No results returned for access request {}", privacy_request.id)
 
-    rule_filtered_results: Dict[Dict[str, List[Row]]] = {}
+    rule_filtered_results: Dict[str, Dict[str, List[Row]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):

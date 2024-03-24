@@ -1,11 +1,10 @@
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Optional
 
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import StorageUploadError
-from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import (

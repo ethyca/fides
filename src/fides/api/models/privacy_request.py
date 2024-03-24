@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -1035,25 +1035,23 @@ class PrivacyRequest(
         return final_results
 
     def save_filtered_access_results(
-        self, db: Session, results: Dict[Dict[str, List[Row]]]
+        self, db: Session, results: Dict[str, Dict[str, List[Row]]]
     ) -> None:
         """
         For access requests, save the access data filtered by data category that we uploaded to the end user
 
         This is keyed by policy rule key, because we uploaded different packages for different policy rules
 
-        Saving this on the "terminator" access task
-
         """
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
-            return
+            return None
 
         self.filtered_final_upload = json.dumps(results, cls=CustomJSONEncoder)
         self.save(db)
 
         return None
 
-    def get_filtered_access_results(self) -> Dict:
+    def get_filtered_access_results(self) -> Dict[str, Dict[str, List[Row]]]:
         """Fetched the same filtered access results we uploaded to the user"""
         return json.loads(
             self.filtered_final_upload or "{}",

@@ -4,11 +4,11 @@ from asyncio import sleep
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
-import sqlalchemy as sa
 from httpx import AsyncClient
 from loguru import logger
-from sqlalchemy import Text, text
+from sqlalchemy import text
 from sqlalchemy.orm import Query
+from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
@@ -228,7 +228,7 @@ def remove_saved_customer_data(self: DatabaseTask) -> None:
     with self.get_new_session() as db:
         logger.info("Running DSR Data Removal Task to cleanup obsolete user data")
 
-        remove_dsr_data: Text = text(
+        remove_dsr_data: TextClause = text(
             """
             DELETE FROM requesttask
             USING privacyrequest

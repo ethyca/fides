@@ -1955,7 +1955,7 @@ def get_task_data(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-) -> Dict:
+) -> Dict[str, Dict[str, List[Row]]]:
     """Returns filtered data collected for an access request by policy rule key."""
     pr = get_privacy_request_or_error(db, privacy_request_id)
 
