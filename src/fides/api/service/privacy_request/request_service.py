@@ -4,8 +4,10 @@ from asyncio import sleep
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
+import sqlalchemy as sa
 from httpx import AsyncClient
 from loguru import logger
+from sqlalchemy import Text, text
 from sqlalchemy.orm import Query
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
@@ -24,6 +26,10 @@ from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
+from fides.config import CONFIG
+
+ERRORED_PRIVACY_REQUEST_POLL = "errored_privacy_request_poll"
+DSR_DATA_REMOVAL = "dsr_data_removal"
 
 
 def build_required_privacy_request_kwargs(
@@ -149,13 +155,10 @@ async def poll_server_for_completion(
 @celery_app.task(base=DatabaseTask, bind=True)
 def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
     """
-    Mark a privacy request as errored if all of its tasks have run and they are in a mixture
-    of complete and errored.
-
-    Want to wait to do this until all tasks have had a chance to run
+    Mark a privacy request as errored if all of its tasks have run but some have errored.
     """
     with self.get_new_session() as db:
-        logger.info("Polling for in-progress privacy requests")
+        logger.info("Polling for errored privacy requests")
         in_progress_privacy_requests = (
             db.query(PrivacyRequest)
             .filter(PrivacyRequest.status == PrivacyRequestStatus.in_processing)
@@ -186,9 +189,66 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
                     pr.status = PrivacyRequestStatus.error
                     pr.save(db)
 
-        # TODO revisit this
+        # Schedule itself when this is finished
         scheduler.add_job(
             poll_for_exited_privacy_request_tasks,
             trigger="date",
-            next_run_time=datetime.now() + timedelta(seconds=30),
+            next_run_time=datetime.now()
+            + timedelta(seconds=30),  # TODO revisit this interval
         )
+
+
+def initiate_scheduled_dsr_data_removal() -> None:
+    """Initiates scheduler to cleanup obsolete access and erasure data"""
+
+    if CONFIG.test_mode:
+        return
+
+    assert (
+        scheduler.running
+    ), "Scheduler is not running! Cannot add DSR data removal job."
+
+    logger.info("Initiating scheduler for DSR Data Removal")
+    scheduler.add_job(
+        func=remove_saved_customer_data,
+        kwargs={},
+        id=DSR_DATA_REMOVAL,
+        coalesce=False,
+        replace_existing=True,
+        trigger="cron",
+        minute="0",
+        hour="10",
+        day_of_week="mon",
+        timezone="US/Eastern",
+    )
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def remove_saved_customer_data(self: DatabaseTask) -> None:
+    """
+    Remove saved customer data that is no longer needed to facilitate running the access or erasure request.
+    """
+    with self.get_new_session() as db:
+        logger.info("Running DSR Data Removal Task to cleanup obsolete user data")
+
+        remove_dsr_data: Text = text(
+            """
+            UPDATE requesttask
+            SET access_data = null, data_for_erasures = null, erasure_input_data = null
+            FROM privacyrequest
+            WHERE requesttask.privacy_request_id = privacyrequest.id
+            AND access_data IS NOT null OR data_for_erasures IS NOT null OR erasure_input_data IS NOT null
+            AND requesttask.created_at < :ttl
+            AND privacyrequest.status = 'complete';
+            """
+        )
+
+        db.execute(
+            remove_dsr_data,
+            {
+                "ttl": (
+                    datetime.now() - timedelta(seconds=CONFIG.redis.default_ttl_seconds)
+                ),
+            },
+        )
+        db.commit()

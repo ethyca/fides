@@ -292,6 +292,17 @@ class PrivacyRequest(
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Encrypted filtered access results saved for later retrieval
+    filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[property] = None
@@ -1042,7 +1053,9 @@ class PrivacyRequest(
 
         return final_results
 
-    def save_filtered_access_results(self, db: Session, results: Dict[Dict[str, List[Row]]]) -> None:
+    def save_filtered_access_results(
+        self, db: Session, results: Dict[Dict[str, List[Row]]]
+    ) -> None:
         """
         For access requests, save the access data filtered by data category that we uploaded to the end user
 
@@ -1054,29 +1067,19 @@ class PrivacyRequest(
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
             return
 
-        terminator_access_task = self.access_tasks.filter(
-            RequestTask.status == PrivacyRequestStatus.complete,
-            RequestTask.collection_address == TERMINATOR_ADDRESS.value
-        ).first()
-        if not terminator_access_task:
-            return
-
-        terminator_access_task.filtered_final_upload = json.dumps(results, cls=CustomJSONEncoder)
-        terminator_access_task.save(db)
+        self.filtered_final_upload = json.dumps(
+            results, cls=CustomJSONEncoder
+        )
+        self.save(db)
 
         return None
 
-    def get_filtered_access_results(self) -> {}:
-        """Getting the access results we uploaded to the user"""
-
-        terminator_access_task = self.access_tasks.filter(
-            RequestTask.status == PrivacyRequestStatus.complete,
-            RequestTask.collection_address == TERMINATOR_ADDRESS.value
-        ).first()
-        if not terminator_access_task:
-            return {}
-
-        return json.loads(terminator_access_task.filtered_final_upload or "{}", object_hook=_custom_decoder)
+    def get_filtered_access_results(self) -> Dict:
+        """Fetched the same filtered access results we uploaded to the user"""
+        return json.loads(
+            self.filtered_final_upload or "{}",
+            object_hook=_custom_decoder,
+        )
 
 
 class PrivacyRequestError(Base):
@@ -1618,19 +1621,6 @@ class RequestTask(Base):
     # This is useful for things like email connectors whose access nodes do not execute their own requests
     erasure_input_data = (
         Column(  # An encrypted JSON String - saved as a list of list of rows
-            StringEncryptedType(
-                type_in=String(),
-                key=CONFIG.security.app_encryption_key,
-                engine=AesGcmEngine,
-                padding="pkcs5",
-            ),
-        )
-    )
-
-    # On the terminator access task save the filtered results uploaded to the end user by
-    # rule key. This is saved when the access results are uploaded for later retrieval.
-    filtered_final_upload = (
-        Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
             StringEncryptedType(
                 type_in=String(),
                 key=CONFIG.security.app_encryption_key,

@@ -111,7 +111,11 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.task.create_tasks import log_task_queued
 from fides.api.task.execute_tasks import run_access_node, run_prerequisite_task_checks
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries, filter_by_enabled_actions
+from fides.api.task.graph_task import (
+    EMPTY_REQUEST,
+    collect_queries,
+    filter_by_enabled_actions,
+)
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
@@ -1956,8 +1960,7 @@ def get_task_data(
     *,
     db: Session = Depends(deps.get_db),
 ) -> Dict:
-    """Returns filtered data collected for an access request by policy rule key.
-    """
+    """Returns filtered data collected for an access request by policy rule key."""
     pr = get_privacy_request_or_error(db, privacy_request_id)
 
     if not pr.policy.get_rules_for_action(action_type=ActionType.access):

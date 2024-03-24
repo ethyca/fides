@@ -412,9 +412,7 @@ async def run_privacy_request(
             ):
                 raw_access_results: Dict = privacy_request.get_raw_access_results()
                 # TODO Remove - for debugging purposes
-                logger.info(
-                    f"Unfiltered access results {raw_access_results}"
-                )
+                logger.info(f"Unfiltered access results {raw_access_results}")
 
                 filtered_access_results = filter_by_enabled_actions(
                     raw_access_results, connection_configs
