@@ -17,7 +17,7 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import TraversalDetails
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask, ExecutionLogStatus
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask, ExecutionLogStatus, completed_statuses
 from fides.api.schemas.policy import ActionType
 from fides.api.task.execute_tasks import (
     run_access_node,
@@ -460,7 +460,7 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
     ready_tasks: List[RequestTask] = get_existing_ready_tasks(
-        session, privacy_request, ActionType.access
+        session, privacy_request, ActionType.erasure
     )
     if not ready_tasks:
         logger.info("Building erasure graph for {}", privacy_request.id)
@@ -532,7 +532,7 @@ def get_existing_ready_tasks(
     request_tasks = privacy_request.get_tasks_by_action(action_type)
     if request_tasks.count():
         incomplete_tasks: Query = request_tasks.filter(
-            RequestTask.status != ExecutionLogStatus.complete
+            RequestTask.status.notin_(completed_statuses)
         )
         for task in incomplete_tasks:
             if task.upstream_tasks_complete(session):
