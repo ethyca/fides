@@ -570,13 +570,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "No erasures on {} as there is no primary_key defined.",
                 self.execution_node.address,
             )
+            self.request_task.rows_masked = 0  # Saved as part of update_status
             self.update_status(
                 "No values were erased since no primary key was defined for this collection",
                 None,
                 ActionType.erasure,
                 ExecutionLogStatus.complete,
             )
-            self.request_task.rows_masked = 0
             return 0
 
         if not self.can_write_data():
@@ -584,6 +584,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "No erasures on {} as its ConnectionConfig does not have write access.",
                 self.execution_node.address,
             )
+            self.request_task.rows_masked = 0  # Saved as part of update_status
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "
                 f"given write access",
@@ -591,7 +592,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.error,
             )
-            self.request_task.rows_masked = 0
             return 0
 
         formatted_input_data: NodeInput = self.pre_process_input_data(
@@ -605,8 +605,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             retrieved_data,
             formatted_input_data,
         )
+        self.request_task.rows_masked = output  # Saved as part of update_status
         self.log_end(ActionType.erasure)
-        self.request_task.rows_masked = output
         return output
 
     @retry(action_type=ActionType.consent, default_return=False)
