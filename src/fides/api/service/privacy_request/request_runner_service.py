@@ -1,4 +1,3 @@
-import json
 import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -223,6 +222,7 @@ def upload_access_results(  # pylint: disable=R0912
     if not access_result:
         logger.info("No results returned for access request {}", privacy_request.id)
 
+    rule_filtered_results: Dict[Dict[str, List[Row]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
@@ -242,6 +242,7 @@ def upload_access_results(  # pylint: disable=R0912
         filtered_results.update(
             manual_data
         )  # Add manual data directly to each upload packet
+        rule_filtered_results[rule.key] = filtered_results
 
         logger.info(
             "Starting access request upload for rule {} for privacy request {}",
@@ -268,7 +269,8 @@ def upload_access_results(  # pylint: disable=R0912
                 Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
-
+    # Save the results we uploaded to the user for later retrieval
+    privacy_request.save_filtered_access_results(session, rule_filtered_results)
     return download_urls
 
 
@@ -411,7 +413,7 @@ async def run_privacy_request(
                 raw_access_results: Dict = privacy_request.get_raw_access_results()
                 # TODO Remove - for debugging purposes
                 logger.info(
-                    f"Unfiltered access results {json.loads(json.dumps(raw_access_results, default=storage_json_encoder))}"
+                    f"Unfiltered access results {raw_access_results}"
                 )
 
                 filtered_access_results = filter_by_enabled_actions(

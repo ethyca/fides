@@ -111,7 +111,7 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.task.create_tasks import log_task_queued
 from fides.api.task.execute_tasks import run_access_node, run_prerequisite_task_checks
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
+from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries, filter_by_enabled_actions
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
@@ -1956,16 +1956,24 @@ def get_task_data(
     *,
     db: Session = Depends(deps.get_db),
 ) -> Dict:
-    """Returns data collected from all the privacy request tasks
-
-    Note this is currently everything collected by the access request graph
-    - It should be further filtered by the policy
-    - Manually uploaded data is not included here
+    """Returns filtered data collected for an access request by policy rule key.
     """
     pr = get_privacy_request_or_error(db, privacy_request_id)
+
+    if not pr.policy.get_rules_for_action(action_type=ActionType.access):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot retrieve access data for {pr.id}. This is not an access request",
+        )
+
+    if pr.status != PrivacyRequestStatus.complete:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot retrieve access data for incomplete request {pr.id}.",
+        )
+
     logger.info(f"Getting privacy request '{privacy_request_id}' access data")
-    data = pr.get_raw_access_results()
-    return data
+    return pr.get_filtered_access_results()
 
 
 @router.post(
@@ -2025,6 +2033,7 @@ def task_callback(
     request_task.save(db)
 
     if request_task.action_type == ActionType.access:
+        # Requeuing the particular task now that the callback is received
         log_task_queued(request_task)
         run_access_node.delay(privacy_request.id, request_task.id)
 

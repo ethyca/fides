@@ -1026,8 +1026,11 @@ class PrivacyRequest(
         assert root  # for mypy
         return root
 
-    def get_raw_access_results(self) -> Dict:
-        """Retrieve the access data saved on the individual access nodes"""
+    def get_raw_access_results(self) -> Dict[str, List[Row]]:
+        """Retrieve the *raw* access data saved on the individual access nodes
+
+        These shouldn't be returned to the user - they are not filtered by data category
+        """
         final_results: Dict = {}
         for task in self.access_tasks.filter(
             RequestTask.status == PrivacyRequestStatus.complete,
@@ -1038,6 +1041,42 @@ class PrivacyRequest(
             final_results[task.collection_address] = task.get_decoded_access_data()
 
         return final_results
+
+    def save_filtered_access_results(self, db: Session, results: Dict[Dict[str, List[Row]]]) -> None:
+        """
+        For access requests, save the access data filtered by data category that we uploaded to the end user
+
+        This is keyed by policy rule key, because we uploaded different packages for different policy rules
+
+        Saving this on the "terminator" access task
+
+        """
+        if not self.policy.get_rules_for_action(action_type=ActionType.access):
+            return
+
+        terminator_access_task = self.access_tasks.filter(
+            RequestTask.status == PrivacyRequestStatus.complete,
+            RequestTask.collection_address == TERMINATOR_ADDRESS.value
+        ).first()
+        if not terminator_access_task:
+            return
+
+        terminator_access_task.filtered_final_upload = json.dumps(results, cls=CustomJSONEncoder)
+        terminator_access_task.save(db)
+
+        return None
+
+    def get_filtered_access_results(self) -> {}:
+        """Getting the access results we uploaded to the user"""
+
+        terminator_access_task = self.access_tasks.filter(
+            RequestTask.status == PrivacyRequestStatus.complete,
+            RequestTask.collection_address == TERMINATOR_ADDRESS.value
+        ).first()
+        if not terminator_access_task:
+            return {}
+
+        return json.loads(terminator_access_task.filtered_final_upload or "{}", object_hook=_custom_decoder)
 
 
 class PrivacyRequestError(Base):
@@ -1551,7 +1590,9 @@ class RequestTask(Base):
         MutableList.as_mutable(JSONB)
     )  # All tasks that can be reached by the current task
 
-    # Data retrieved from an access request is stored here
+    # Raw data retrieved from an access request is stored here.  This contains all of the data
+    # we retrieved, needed for downstream tasks, but hasn't been filtered by data category
+    # for the end user.
     access_data = Column(  # An encrypted JSON String - saved as a list of rows
         StringEncryptedType(
             type_in=String(),
@@ -1561,9 +1602,8 @@ class RequestTask(Base):
         ),
     )
 
-    # This is the data saved in erasure format.  We retrieve this on an access request, and save to the access node.
-    # Then on the erasure step, we copy this over to the erasure node, and this data should be used to build
-    # the masking request
+    # This is the raw access data saved in erasure format (with placeholders preserved) to perform a masking request.
+    # First saved on the access node, and then copied to the corresponding erasure node.
     data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
         StringEncryptedType(
             type_in=String(),
@@ -1573,10 +1613,24 @@ class RequestTask(Base):
         ),
     )
 
-    # This data likely only exists on erasure nodes - it takes "data_for_erasures" from upstream access nodes
-    # and adds here for things like email connectors that don't run an access request on their own node.
+    # This is the raw access data saved in erasure format from the upstream access nodes (with placeholders preserved) to perform a masking request.
+    # First saved on access nodes, and then copied to the erasure nodes.
+    # This is useful for things like email connectors whose access nodes do not execute their own requests
     erasure_input_data = (
         Column(  # An encrypted JSON String - saved as a list of list of rows
+            StringEncryptedType(
+                type_in=String(),
+                key=CONFIG.security.app_encryption_key,
+                engine=AesGcmEngine,
+                padding="pkcs5",
+            ),
+        )
+    )
+
+    # On the terminator access task save the filtered results uploaded to the end user by
+    # rule key. This is saved when the access results are uploaded for later retrieval.
+    filtered_final_upload = (
+        Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
             StringEncryptedType(
                 type_in=String(),
                 key=CONFIG.security.app_encryption_key,
