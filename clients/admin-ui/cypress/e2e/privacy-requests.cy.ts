@@ -1,4 +1,5 @@
 import {
+  stubPlus,
   stubPrivacyRequests,
   stubPrivacyRequestsConfigurationCrud,
 } from "cypress/support/stubs";
@@ -197,6 +198,7 @@ describe("Privacy Requests", () => {
 
   describe("submitting a request", () => {
     beforeEach(() => {
+      stubPlus(true);
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
     });
@@ -234,12 +236,34 @@ describe("Privacy Requests", () => {
         "input-custom_privacy_request_fields.required_field.value"
       ).type("A value for the required field");
       cy.getByTestId("input-is_verified").click();
-      cy.intercept("POST", "/api/v1/privacy-request").as("postPrivacyRequest");
+      cy.intercept("POST", "/api/v1/privacy-request/authenticated", {
+        statusCode: 200,
+        body: {
+          succeeded: [
+            {
+              policy_key: "default_access_policy",
+              identity: {
+                email: "email@ethyca.com",
+              },
+              custom_privacy_request_fields: {
+                required_field: {
+                  label: "Required example field",
+                  value: "A value for the required field",
+                },
+                field_with_default_value: {
+                  label: "Example field with default value",
+                  value: "The default value",
+                },
+              },
+            },
+          ],
+        },
+      }).as("postPrivacyRequest");
       cy.getByTestId("submit-btn").click();
-      // cy.getByTestId("toast-success-msg").should("exist");
+      cy.getByTestId("toast-success-msg").should("exist");
       // TEMP -- do not merge
-      cy.getByTestId("toast-error-msg").should("exist");
       cy.wait("@postPrivacyRequest");
+      cy.wait("@getPrivacyRequests");
     });
   });
 });

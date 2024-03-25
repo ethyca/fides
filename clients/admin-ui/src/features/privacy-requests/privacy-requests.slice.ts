@@ -300,7 +300,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       PrivacyRequestCreate[]
     >({
       query: (payload) => ({
-        url: `privacy-request`,
+        url: `privacy-request/authenticated`,
         method: "POST",
         body: payload,
       }),

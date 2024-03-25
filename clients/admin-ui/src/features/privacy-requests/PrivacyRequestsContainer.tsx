@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
 
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
@@ -18,6 +19,8 @@ const PrivacyRequestsContainer: React.FC = () => {
   const { processing } = useDSRErrorAlert();
   const [revealPII, setRevealPII] = useState(false);
 
+  const { plus: hasPlus } = useFeatures();
+
   useEffect(() => {
     processing();
   }, [processing]);
@@ -29,7 +32,7 @@ const PrivacyRequestsContainer: React.FC = () => {
           Privacy Requests
         </Heading>
         <Spacer />
-        <SubmitPrivacyRequest />
+        {hasPlus ? <SubmitPrivacyRequest /> : null}
         <ActionButtons />
       </Flex>
       <RequestFilters revealPII={revealPII} setRevealPII={setRevealPII} />
