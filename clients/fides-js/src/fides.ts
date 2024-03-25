@@ -53,7 +53,7 @@ import {
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
-  CookieKeyConsent,
+  NoticeConsent,
   FidesConfig,
   FidesCookie,
   FidesOptionsOverrides,
@@ -132,7 +132,7 @@ const init = async (config: FidesConfig) => {
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
-  const savedConsent: CookieKeyConsent = {
+  const savedConsent: NoticeConsent = {
     ...cookie.consent,
   };
 

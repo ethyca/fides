@@ -10,7 +10,7 @@ import {
 import { useA11yDialog } from "../lib/a11y-dialog";
 import {
   ComponentType,
-  CookieKeyConsent,
+  NoticeConsent,
   FidesCookie,
   FidesOptions,
   PrivacyExperience,
@@ -44,7 +44,7 @@ interface Props {
   experience: PrivacyExperience;
   i18n: I18n;
   cookie: FidesCookie;
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;

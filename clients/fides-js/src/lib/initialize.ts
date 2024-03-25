@@ -33,7 +33,7 @@ import {
   FidesCookie,
   CookieMeta,
   CookieIdentity,
-  CookieKeyConsent,
+  NoticeConsent,
 } from "./consent-types";
 import {
   constructFidesRegionString,
@@ -49,7 +49,7 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { TcfCookieConsent } from "./tcf/types";
+import { TcfOtherConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 import { setupExtensions } from "./extensions";
 import {
@@ -58,14 +58,14 @@ import {
 } from "./shared-consent-utils";
 
 export interface FidesJS {
-  consent: CookieKeyConsent;
+  consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
   fides_string?: string | undefined;
   options: FidesOptions;
   fides_meta: CookieMeta;
-  tcf_consent: TcfCookieConsent;
-  saved_consent: CookieKeyConsent;
+  tcf_consent: TcfOtherConsent;
+  saved_consent: NoticeConsent;
   gtm: typeof gtm;
   identity: CookieIdentity;
   init: (config: FidesConfig) => Promise<void>;
@@ -109,7 +109,7 @@ const automaticallyApplyGPCPreferences = async ({
   fidesOptions,
   i18n,
 }: {
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
   effectiveExperience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string | null;
@@ -274,7 +274,7 @@ export const getInitialFides = ({
   updateExperienceFromCookieConsent,
 }: {
   cookie: FidesCookie;
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
 } & FidesConfig & {
     updateExperienceFromCookieConsent: (props: {
       experience: PrivacyExperience;
@@ -330,7 +330,7 @@ export const initialize = async ({
   updateExperience,
 }: {
   cookie: FidesCookie;
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
   /**
    * Once we for sure have a valid experience, this is another chance to update values

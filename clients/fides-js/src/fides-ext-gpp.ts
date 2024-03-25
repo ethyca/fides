@@ -29,7 +29,7 @@ import {
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import type { FidesJS } from "./lib/initialize";
 import type {
-  CookieKeyConsent,
+  NoticeConsent,
   OverrideOptions,
   PrivacyNoticeWithPreference,
 } from "./lib/consent-types";
@@ -57,13 +57,13 @@ declare global {
 /**
  * Special GPP util method to determine if user has existing prefs, including those on the cookie or fides string.
  * Specifically, this method does not consider legacy consent has an existing pref, since they aren't relevant for GPP.
- * @param savedConsent: CookieKeyConsent | undefined
+ * @param savedConsent: NoticeConsent | undefined
  * @param fides_string: string | undefined
  * @param notices: Array<PrivacyNoticeWithPreference> | undefined
  * @return boolean
  */
 const userHasExistingPrefs = (
-  savedConsent: CookieKeyConsent | undefined,
+  savedConsent: NoticeConsent | undefined,
   fides_string: string | undefined,
   notices: Array<PrivacyNoticeWithPreference> | undefined
 ): boolean => {

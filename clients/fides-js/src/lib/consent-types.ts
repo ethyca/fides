@@ -16,7 +16,7 @@ import type {
   TCFVendorRelationships,
   TCFVendorSave,
 } from "./tcf/types";
-import { TcfCookieConsent } from "./tcf/types";
+import { TcfOtherConsent } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -111,16 +111,15 @@ export type FidesOptions = {
 };
 
 /**
- * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
+ * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
  * {
  *   "data_sales": false,
  *   "analytics": true,
  *   ...
  * }
  */
-export type CookieKeyConsent = {
-  [cookieKey: string]: boolean | undefined;
-};
+export type NoticeConsent = Record<string, boolean>;
+
 /**
  * Store the user's identity values on the cookie, e.g.
  * {
@@ -130,6 +129,7 @@ export type CookieKeyConsent = {
  * }
  */
 export type CookieIdentity = Record<string, string>;
+
 /**
  * Store metadata about the cookie itself, e.g.
  * {
@@ -141,17 +141,17 @@ export type CookieIdentity = Record<string, string>;
 export type CookieMeta = Record<string, string>;
 
 export interface FidesCookie {
-  consent: CookieKeyConsent;
+  consent: NoticeConsent;
   identity: CookieIdentity;
   fides_meta: CookieMeta;
   fides_string?: string;
-  tcf_consent: TcfCookieConsent;
+  tcf_consent: TcfOtherConsent;
   tcf_version_hash?: ExperienceMeta["version_hash"];
 }
 
 export type GetPreferencesFnResp = {
   // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
-  consent?: CookieKeyConsent;
+  consent?: NoticeConsent;
   // Overrides the value for Fides.fides_string for the user’s TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
   fides_string?: string;
   // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
@@ -169,7 +169,7 @@ export type FidesApiOptions = {
    */
   savePreferencesFn?: (
     consentMethod: ConsentMethod,
-    consent: CookieKeyConsent,
+    consent: NoticeConsent,
     fides_string: string | undefined,
     experience: PrivacyExperience
   ) => Promise<void>;
