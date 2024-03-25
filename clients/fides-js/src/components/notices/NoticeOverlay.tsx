@@ -79,7 +79,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
    * current locale and memo-ize it's history ID to use for all API calls
    */
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
-    if (experience.experience_config && currentLocale) {
+    if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
         i18n,
         experience.experience_config
@@ -87,6 +87,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experience, i18n, currentLocale]);
 
   /**
@@ -108,7 +109,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const bestTranslation = selectBestNoticeTranslation(i18n, notice);
         return { notice, bestTranslation };
       }),
-    [experience.privacy_notices, i18n]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [experience.privacy_notices, i18n, currentLocale]
   );
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<

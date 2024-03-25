@@ -46,6 +46,8 @@ export const ConsentButtons = ({
           <div role="group" className="fides-i18n-popover">
             {i18n.availableLanguages.map((lang) => (
               <MenuItem
+                key={lang.locale}
+                id={`fides-i18n-option-${lang.locale}`}
                 onClick={() => handleLocaleSelect(lang.locale)}
                 isActive={i18n.locale === lang.locale}
               >

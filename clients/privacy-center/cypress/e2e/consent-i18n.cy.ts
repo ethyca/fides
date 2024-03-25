@@ -694,8 +694,7 @@ describe("Consent i18n", () => {
       });
     });
 
-    // TODO (PROD-1598): enable this test and add other cases as needed!
-    describe.skip("when user selects their own locale", () => {
+    describe("when user selects their own locale", () => {
       it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
         // Visit the demo site in English, but expect Spanish translations when the user selects
         visitDemoWithI18n({
@@ -703,7 +702,10 @@ describe("Consent i18n", () => {
           globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
         });
-        // TODO (PROD-1598): select Spanish from banner
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(200); // wait for the overlay to appear
+        cy.get(`#fides-i18n-option-${SPANISH_LOCALE}`).focus();
+        cy.get(`.fides-i18n-menu`).focused().click();
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
         testModalNoticesLocalization(SPANISH_NOTICES);
