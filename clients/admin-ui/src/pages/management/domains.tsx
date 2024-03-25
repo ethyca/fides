@@ -45,7 +45,9 @@ const CORSConfigurationPage: NextPage = () => {
   const currentSettings = useAppSelector(selectCORSOrigins);
   const apiSettings = currentSettings.apiSet;
   const configSettings = currentSettings.configSet;
-  const hasConfigSettings: boolean = !!configSettings.cors_origins?.length;
+  const hasConfigSettings: boolean = !!(
+    configSettings.cors_origins?.length || configSettings.cors_origin_regex
+  );
   const applicationConfig = useAppSelector(selectApplicationConfig());
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
     usePutConfigurationSettingsMutation();
@@ -280,6 +282,16 @@ const CORSConfigurationPage: NextPage = () => {
                     isPassword={false}
                   />
                 ))}
+                {configSettings.cors_origin_regex ? (
+                  <TextInput
+                    data-testid="input-config_cors_origin_regex"
+                    key="cors_origin_regex"
+                    marginY={3}
+                    value={configSettings.cors_origin_regex}
+                    isDisabled
+                    isPassword={false}
+                  />
+                ) : undefined}
                 {!hasConfigSettings ? (
                   <Text fontSize="xs" color="gray.500">
                     No advanced domain settings configured.
