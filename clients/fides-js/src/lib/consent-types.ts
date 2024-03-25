@@ -110,7 +110,7 @@ export type FidesOptions = {
   fidesPreviewMode: boolean;
 
   // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
-  overlayPrimaryColor: string;
+  fidesPrimaryColor: string | null;
 };
 
 /**
@@ -608,7 +608,7 @@ export type OverrideOptions = {
   fides_embed: boolean;
   fides_tcf_gdpr_applies: boolean;
   fides_locale: string;
-  primary_color: string;
+  fides_primary_color: string;
 };
 
 export type OverrideExperienceTranslations = {
@@ -626,7 +626,7 @@ export type FidesOptionsOverrides = Pick<
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
   | "fidesLocale"
-  | "overlayPrimaryColor"
+  | "fidesPrimaryColor"
 >;
 
 export type FidesExperienceTranslationOverrides = {

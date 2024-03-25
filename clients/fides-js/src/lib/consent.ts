@@ -60,18 +60,18 @@ export const initOverlay = async ({
         }
       }
       // update CSS variables based on configured primary color
-      if (options.overlayPrimaryColor) {
+      if (options.fidesPrimaryColor) {
         document.documentElement.style.setProperty(
           "--fides-overlay-primary-color",
-          options.overlayPrimaryColor
+          options.fidesPrimaryColor
         );
         const lighterPrimaryColor: string = generateLighterColor(
-          options.overlayPrimaryColor,
+          options.fidesPrimaryColor,
           ColorFormat.HEX,
           1
         );
         const lightestPrimaryColor: string = generateLighterColor(
-          options.overlayPrimaryColor,
+          options.fidesPrimaryColor,
           ColorFormat.HEX,
           2
         );

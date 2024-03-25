@@ -12,8 +12,6 @@ import { LOCALE_REGEX } from "./i18n/i18n-constants";
 // 3) Separated by a dash (e.g. "US-CA")
 export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
-export const DEFAULT_OVERLAY_PRIMARY_COLOR = "#8243f2";
-
 export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
   overrideName: keyof FidesOptionsOverrides;
   overrideType: "string" | "boolean";
@@ -57,9 +55,9 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     validationRegex: LOCALE_REGEX,
   },
   {
-    overrideName: "overlayPrimaryColor",
+    overrideName: "fidesPrimaryColor",
     overrideType: "string",
-    overrideKey: "primary_color",
+    overrideKey: "fides_primary_color",
     validationRegex: /(.*)/,
   },
 ];

@@ -255,7 +255,7 @@ _Fides = {
     allowHTMLDescription: null,
     base64Cookie: false,
     fidesPreviewMode: false,
-    overlayPrimaryColor: "",
+    fidesPrimaryColor: null,
   },
   fides_meta: {},
   identity: {},
