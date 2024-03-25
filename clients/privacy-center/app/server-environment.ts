@@ -58,6 +58,7 @@ export interface PrivacyCenterSettings {
   ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PREVIEW_MODE: boolean | false; // (optional) sets fides to preview mode, save prefs to cookie, disabling buttons, etc
+  OVERLAY_PRIMARY_COLOR: string; // (optional) sets overlay primary color, defaults to "#8243f2"
 }
 
 /**
@@ -88,6 +89,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "ALLOW_HTML_DESCRIPTION"
   | "BASE_64_COOKIE"
   | "FIDES_PREVIEW_MODE"
+  | "OVERLAY_PRIMARY_COLOR"
 >;
 
 export type Styles = string;
@@ -365,6 +367,10 @@ export const loadPrivacyCenterEnvironment =
       FIDES_PREVIEW_MODE: process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE === "true"
         : false,
+      OVERLAY_PRIMARY_COLOR: process.env
+        .FIDES_PRIVACY_CENTER__OVERLAY_PRIMARY_COLOR
+        ? process.env.FIDES_PRIVACY_CENTER__OVERLAY_PRIMARY_COLOR
+        : "#8243f2",
     };
 
     // Load configuration file (if it exists)
@@ -397,6 +403,7 @@ export const loadPrivacyCenterEnvironment =
       ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
       BASE_64_COOKIE: settings.BASE_64_COOKIE,
       FIDES_PREVIEW_MODE: settings.FIDES_PREVIEW_MODE,
+      OVERLAY_PRIMARY_COLOR: settings.OVERLAY_PRIMARY_COLOR,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

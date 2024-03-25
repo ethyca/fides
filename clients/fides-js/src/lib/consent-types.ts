@@ -108,6 +108,9 @@ export type FidesOptions = {
   // Allows preview of banner components for internal use or testing, such that saving to cookie disabled,
   // and some buttons are disabled on the Fides components
   fidesPreviewMode: boolean;
+
+  // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
+  overlayPrimaryColor: string;
 };
 
 /**
@@ -605,6 +608,14 @@ export type OverrideOptions = {
   fides_embed: boolean;
   fides_tcf_gdpr_applies: boolean;
   fides_locale: string;
+  primary_color: string;
+};
+
+export type OverrideExperienceTranslations = {
+  title: string;
+  description: string;
+  privacy_policy_link_url: string;
+  override_language: string;
 };
 
 export type FidesOptionsOverrides = Pick<
@@ -615,12 +626,27 @@ export type FidesOptionsOverrides = Pick<
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
   | "fidesLocale"
+  | "overlayPrimaryColor"
 >;
+
+export type FidesExperienceTranslationOverrides = {
+  title: string;
+  description: string;
+  privacy_policy_link_url: string;
+  override_language: string;
+};
 
 export type FidesOverrides = {
   optionsOverrides: Partial<FidesOptionsOverrides>;
   consentPrefsOverrides: GetPreferencesFnResp | null;
+  experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides>;
 };
+
+export enum OverrideType {
+  OPTIONS = "options",
+  LANGUAGE = "language",
+  THEME = "theme",
+}
 
 export enum ButtonType {
   PRIMARY = "primary",

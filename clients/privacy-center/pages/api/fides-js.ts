@@ -172,6 +172,7 @@ export default async function handler(
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
       base64Cookie: environment.settings.BASE_64_COOKIE,
+      overlayPrimaryColor: environment.settings.OVERLAY_PRIMARY_COLOR,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
