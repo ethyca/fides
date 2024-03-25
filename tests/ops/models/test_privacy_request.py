@@ -24,11 +24,10 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
-    can_run_checkpoint,
+    can_run_checkpoint, ManualAction,
 )
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors.manual_connector import ManualAction
 from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG

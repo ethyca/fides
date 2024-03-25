@@ -24,9 +24,7 @@ from fides.api.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
 from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
-from fides.api.service.connectors.manual_connector import (
-    ManualConnector as ManualConnector,
-)
+
 from fides.api.service.connectors.manual_webhook_connector import (
     ManualWebhookConnector as ManualWebhookConnector,
 )
@@ -65,7 +63,6 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.generic_consent_email.value: GenericConsentEmailConnector,
     ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,
     ConnectionType.https.value: HTTPSConnector,
-    ConnectionType.manual.value: ManualConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.mariadb.value: MariaDBConnector,
     ConnectionType.mongodb.value: MongoDBConnector,

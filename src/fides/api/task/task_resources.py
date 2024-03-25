@@ -12,7 +12,6 @@ from fides.api.service.connectors import (
     BigQueryConnector,
     DynamoDBConnector,
     FidesConnector,
-    ManualConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -66,8 +65,6 @@ class Connections:
             return BigQueryConnector(connection_config)
         if connection_config.connection_type == ConnectionType.saas:
             return SaaSConnector(connection_config)
-        if connection_config.connection_type == ConnectionType.manual:
-            return ManualConnector(connection_config)
         if connection_config.connection_type == ConnectionType.timescale:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.dynamodb:
