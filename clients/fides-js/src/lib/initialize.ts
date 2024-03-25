@@ -57,7 +57,7 @@ import {
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
 
-export type Fides = {
+export interface FidesJS {
   consent: CookieKeyConsent;
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
@@ -281,7 +281,7 @@ export const getInitialFides = ({
       cookie: FidesCookie;
       debug: boolean;
     }) => PrivacyExperience;
-  }): Partial<Fides> | null => {
+  }): Partial<FidesJS> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
   if (!hasExistingCookie && !options.fidesString) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
@@ -347,7 +347,7 @@ export const initialize = async ({
     debug?: boolean;
     isExperienceClientSideFetched: boolean;
   }) => Partial<PrivacyExperience>;
-} & FidesConfig): Promise<Partial<Fides>> => {
+} & FidesConfig): Promise<Partial<FidesJS>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;

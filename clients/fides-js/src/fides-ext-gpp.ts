@@ -27,7 +27,7 @@ import {
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
-import type { Fides } from "./lib/initialize";
+import type { FidesJS } from "./lib/initialize";
 import type {
   CookieKeyConsent,
   OverrideOptions,
@@ -44,7 +44,7 @@ const CMP_VERSION = 1;
 
 declare global {
   interface Window {
-    Fides: Fides;
+    Fides: FidesJS;
     config: {
       // DEFER (PROD-1243): support a configurable "custom options" path
       tc_info: OverrideOptions;

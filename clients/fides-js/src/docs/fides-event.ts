@@ -1,5 +1,3 @@
-import type { Fides } from "./fides";
-
 /**
  * Defines the list of FidesEvent names. See {@link FidesEvent} for details on each!
  *

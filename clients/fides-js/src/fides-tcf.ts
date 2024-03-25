@@ -68,7 +68,7 @@ import {
   getOptionsOverrides,
   initialize,
 } from "./lib/initialize";
-import type { Fides } from "./lib/initialize";
+import type { FidesJS } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
 import { debugLog, FidesCookie, defaultShowModal } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
@@ -83,7 +83,7 @@ import {
 
 declare global {
   interface Window {
-    Fides: Fides;
+    Fides: FidesJS;
     fides_overrides: OverrideOptions;
     __tcfapiLocator?: Window;
     __tcfapi?: (
@@ -99,7 +99,7 @@ declare global {
 
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _Fides: Fides;
+let _Fides: FidesJS;
 
 const updateExperience = ({
   cookie,

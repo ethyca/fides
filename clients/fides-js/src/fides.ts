@@ -71,7 +71,7 @@ import {
   getInitialFides,
   getOptionsOverrides,
 } from "./lib/initialize";
-import type { Fides } from "./lib/initialize";
+import type { FidesJS } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
@@ -79,14 +79,14 @@ import { defaultShowModal } from "./lib/consent-utils";
 
 declare global {
   interface Window {
-    Fides: Fides;
+    Fides: FidesJS;
     fides_overrides: OverrideOptions;
   }
 }
 
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _Fides: Fides;
+let _Fides: FidesJS;
 
 const updateExperience = (
   cookie: FidesCookie,
