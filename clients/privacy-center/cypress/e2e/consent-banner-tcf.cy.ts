@@ -7,7 +7,7 @@ import {
   PrivacyExperience,
 } from "fides-js";
 import { TCString } from "@iabtechlabtcf/core";
-import { CookieKeyConsent } from "fides-js/src/lib/consent-types";
+import { NoticeConsent } from "fides-js/src/lib/consent-types";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
 import {
   API_URL,
@@ -894,7 +894,7 @@ describe("Fides-js TCF", () => {
           /* eslint-disable @typescript-eslint/no-unused-vars */
           savePreferencesFn: async (
             consentMethod: ConsentMethod,
-            consent: CookieKeyConsent,
+            consent: NoticeConsent,
             fides_string: string | undefined,
             experience: PrivacyExperience
           ): Promise<void> => {},

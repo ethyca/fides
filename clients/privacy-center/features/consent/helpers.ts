@@ -50,7 +50,7 @@ export const translateV1ConfigToV2 = ({
   },
 });
 
-export const makeCookieKeyConsent = ({
+export const makeNoticeConsent = ({
   consentOptions,
   fidesKeyToConsent,
   consentContext,
