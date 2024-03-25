@@ -1,8 +1,8 @@
 import {
   ConsentContext,
-  CookieKeyConsent,
-  resolveLegacyConsentValue,
   GpcStatus,
+  NoticeConsent,
+  resolveLegacyConsentValue,
 } from "fides-js";
 
 import {
@@ -58,8 +58,8 @@ export const makeCookieKeyConsent = ({
   consentOptions: ConfigConsentOption[];
   fidesKeyToConsent: FidesKeyToConsent;
   consentContext: ConsentContext;
-}): CookieKeyConsent => {
-  const cookieKeyConsent: CookieKeyConsent = {};
+}): NoticeConsent => {
+  const consent: NoticeConsent = {};
   consentOptions.forEach((option) => {
     const defaultValue = resolveLegacyConsentValue(
       option.default,
@@ -68,14 +68,14 @@ export const makeCookieKeyConsent = ({
     const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
 
     option.cookieKeys?.forEach((cookieKey) => {
-      const previousConsent = cookieKeyConsent[cookieKey];
+      const previousConsent = consent[cookieKey];
       // For a cookie key to have consent, _all_ data uses that target that cookie key
       // must have consent. E.g. if previous consent is false, keep false, else if true, we use new value
-      cookieKeyConsent[cookieKey] =
+      consent[cookieKey] =
         previousConsent === undefined ? value : previousConsent && value;
     });
   });
-  return cookieKeyConsent;
+  return consent;
 };
 
 export const getGpcStatus = ({

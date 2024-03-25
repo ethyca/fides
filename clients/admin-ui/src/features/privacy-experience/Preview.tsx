@@ -1,8 +1,8 @@
 import { Flex, Text, useToast } from "@fidesui/react";
 import {
-  CookieKeyConsent,
   EmptyExperience,
   FidesOptions,
+  NoticeConsent,
   PrivacyExperience,
   UserGeolocation,
 } from "fides-js/src/lib/consent-types";
@@ -25,7 +25,7 @@ import {
 } from "~/types/api";
 
 export type Fides = {
-  consent: CookieKeyConsent;
+  consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
   options: FidesOptions;
