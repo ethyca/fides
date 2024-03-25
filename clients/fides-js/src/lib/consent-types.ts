@@ -128,7 +128,7 @@ export type NoticeConsent = Record<string, boolean>;
  *   ...
  * }
  */
-export type FidesIdentity = Record<string, string>;
+export type FidesJSIdentity = Record<string, string>;
 
 /**
  * Store metadata about the cookie itself, e.g.
@@ -142,7 +142,7 @@ export type FidesJSMeta = Record<string, string>;
 
 export interface FidesCookie {
   consent: NoticeConsent;
-  identity: FidesIdentity;
+  identity: FidesJSIdentity;
   fides_meta: FidesJSMeta;
   fides_string?: string;
   tcf_consent: TcfOtherConsent;

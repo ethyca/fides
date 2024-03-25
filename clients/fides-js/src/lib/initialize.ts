@@ -32,7 +32,7 @@ import {
   UserGeolocation,
   FidesCookie,
   FidesJSMeta,
-  FidesIdentity,
+  FidesJSIdentity,
   NoticeConsent,
 } from "./consent-types";
 import {
@@ -75,7 +75,7 @@ export interface FidesGlobal extends Fides {
   tcf_consent: TcfOtherConsent;
   saved_consent: NoticeConsent;
   gtm: typeof gtm;
-  identity: FidesIdentity;
+  identity: FidesJSIdentity;
   init: (config: FidesConfig) => Promise<void>;
   initialized: boolean;
   meta: typeof meta;
