@@ -56,8 +56,16 @@ import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
+import type { Fides } from "../docs";
 
-export interface FidesJS {
+/**
+ * Defines the exact interface used for the `Fides` global object. Note that we
+ * extend the documented `Fides` interface here to provide some narrower, more
+ * specific types. This is mostly for legacy purposes, but also since we want to
+ * ensure that the documented interface isn't overly specific in areas we may
+ * need to change.
+ */
+export interface FidesGlobal extends Fides {
   consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
@@ -281,7 +289,7 @@ export const getInitialFides = ({
       cookie: FidesCookie;
       debug: boolean;
     }) => PrivacyExperience;
-  }): Partial<FidesJS> | null => {
+  }): Partial<FidesGlobal> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
   if (!hasExistingCookie && !options.fidesString) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
@@ -347,7 +355,7 @@ export const initialize = async ({
     debug?: boolean;
     isExperienceClientSideFetched: boolean;
   }) => Partial<PrivacyExperience>;
-} & FidesConfig): Promise<Partial<FidesJS>> => {
+} & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;

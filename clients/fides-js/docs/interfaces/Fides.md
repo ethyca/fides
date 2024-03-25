@@ -213,7 +213,7 @@ ___
 
 ### init
 
-• **init**: (`config`: `object`) => `Promise`\<`void`\>
+• **init**: (`config`: `any`) => `Promise`\<`void`\>
 
 Initialize FidesJS based
 
@@ -230,7 +230,7 @@ location, property ID, and the latest configuration options from Fides.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `config` | `object` | something |
+| `config` | `any` | something |
 
 ##### Returns
 

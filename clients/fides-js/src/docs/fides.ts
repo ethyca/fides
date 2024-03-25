@@ -173,7 +173,7 @@ export interface Fides {
    *
    * @param config something
    */
-  init: (config: object) => Promise<void>;
+  init: (config: any) => Promise<void>;
 
   /**
    * NOTE: The properties below are all marked @private, despite being exported
@@ -187,7 +187,7 @@ export interface Fides {
    * 
    * @private
    */
-  fides_meta: object;
+  fides_meta: any;
 
   /**
    * TODO: This probably *should* be part of the documented SDK.
@@ -199,22 +199,22 @@ export interface Fides {
   /**
    * @private
    */
-  experience?: object;
+  experience?: any;
 
   /**
    * @private
    */
-  geolocation?: object;
+  geolocation?: any;
 
   /**
    * @private
    */
-  options: object;
+  options: any;
 
   /**
    * @private
    */
-  tcf_consent: object;
+  tcf_consent: any;
 
   /**
    * @private
@@ -224,10 +224,10 @@ export interface Fides {
   /**
    * @private
    */
-  meta: (options: object) => void;
+  meta: (options: any) => void;
 
   /**
    * @private
    */
-  shopify: (options: object) => void;
+  shopify: (options: any) => void;
 };
