@@ -24,7 +24,6 @@ from fides.api.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
 from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
-
 from fides.api.service.connectors.manual_webhook_connector import (
     ManualWebhookConnector as ManualWebhookConnector,
 )

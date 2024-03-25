@@ -14,7 +14,7 @@ from fides.api.common_exceptions import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
@@ -178,6 +178,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
@@ -394,6 +395,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:
@@ -481,6 +483,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:

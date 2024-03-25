@@ -112,9 +112,9 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.task.create_tasks import log_task_queued
 from fides.api.task.execute_tasks import (
     run_access_node,
-    run_prerequisite_task_checks,
-    run_erasure_node,
     run_consent_node,
+    run_erasure_node,
+    run_prerequisite_task_checks,
 )
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -152,13 +152,14 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
     PRIVACY_REQUEST_TASK_CALLBACK,
+    PRIVACY_REQUEST_TASK_QUEUE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
     REQUEST_STATUS_TASKS,
-    V1_URL_PREFIX, PRIVACY_REQUEST_TASK_QUEUE,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy

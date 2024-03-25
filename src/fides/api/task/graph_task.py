@@ -555,6 +555,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.execution_node,
             self.resources.policy,
             self.resources.request,
+            self.resources.privacy_request_task,
             formatted_input_data,
         )
         filtered_output: List[Row] = self.access_results_post_processing(
@@ -609,6 +610,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.execution_node,
             self.resources.policy,
             self.resources.request,
+            self.resources.privacy_request_task,
             retrieved_data,
             formatted_input_data,
         )
@@ -637,6 +639,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.execution_node,
             self.resources.policy,
             self.resources.request,
+            self.resources.privacy_request_task,
             identity,
             self.resources.session,
         )

@@ -9,7 +9,7 @@ from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import HttpsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import QueryConfig
@@ -74,6 +74,7 @@ class HTTPSConnector(BaseConnector[None]):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Currently not supported as webhooks are not called at the collection level"""
@@ -86,6 +87,7 @@ class HTTPSConnector(BaseConnector[None]):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:

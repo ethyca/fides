@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.util.collection_util import Row
 
@@ -38,6 +38,7 @@ class ManualWebhookConnector(BaseConnector[None]):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> None:
         """
@@ -50,6 +51,7 @@ class ManualWebhookConnector(BaseConnector[None]):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> None:

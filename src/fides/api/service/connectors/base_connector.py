@@ -7,7 +7,7 @@ from fides.api.common_exceptions import NotSupportedForCollection
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
@@ -66,6 +66,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data in a connector dependent way based on input data.
@@ -79,6 +80,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:
@@ -94,6 +96,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:

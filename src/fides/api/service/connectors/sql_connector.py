@@ -27,7 +27,7 @@ from fides.api.common_exceptions import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
     MicrosoftSQLServerSchema,
@@ -133,6 +133,7 @@ class SQLConnector(BaseConnector[Engine]):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
@@ -141,7 +142,7 @@ class SQLConnector(BaseConnector[Engine]):
         #     raise Exception()
         # TODO REMOVE THIS IS FOR LOCAL CALLBACK TESTING
         # if node.address.collection == "payment_card":
-        #     if node.request_task.callback_succeeded:
+        #     if request_task.callback_succeeded:
         #         return []
         #     # Send request and await for results. This will put the task
         #     # in a paused state
@@ -162,6 +163,7 @@ class SQLConnector(BaseConnector[Engine]):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:
@@ -494,6 +496,7 @@ class BigQueryConnector(SQLConnector):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:

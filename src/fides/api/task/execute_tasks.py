@@ -89,9 +89,12 @@ def run_prerequisite_task_checks(
             f"Privacy request with id {privacy_request_id} not found"
         )
 
-    if not request_task and not request_task.id == privacy_request.id:
-        raise RequestTaskNotFound(f"Request Task with id {request_task} not found for privacy request {privacy_request_task_id}")
+    if not request_task or not request_task.privacy_request_id == privacy_request.id:
+        raise RequestTaskNotFound(
+            f"Request Task with id {privacy_request_task_id} not found for privacy request {privacy_request_id}"
+        )
 
+    assert request_task  # For mypy
     upstream_results: Query = session.query(RequestTask).filter(False)
     if request_task.status == ExecutionLogStatus.pending:
         upstream_results = session.query(RequestTask).filter(
