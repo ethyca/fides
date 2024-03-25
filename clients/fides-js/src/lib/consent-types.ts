@@ -121,14 +121,14 @@ export type FidesOptions = {
 export type NoticeConsent = Record<string, boolean>;
 
 /**
- * Store the user's identity values on the cookie, e.g.
+ * Store the user's identity values, e.g.
  * {
  *   "fides_user_device_id": "1234-",
  *   "email": "jane@example.com",
  *   ...
  * }
  */
-export type CookieIdentity = Record<string, string>;
+export type FidesIdentity = Record<string, string>;
 
 /**
  * Store metadata about the cookie itself, e.g.
@@ -142,7 +142,7 @@ export type CookieMeta = Record<string, string>;
 
 export interface FidesCookie {
   consent: NoticeConsent;
-  identity: CookieIdentity;
+  identity: FidesIdentity;
   fides_meta: CookieMeta;
   fides_string?: string;
   tcf_consent: TcfOtherConsent;
