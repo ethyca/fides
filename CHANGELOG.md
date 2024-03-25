@@ -31,6 +31,7 @@ The types of changes are:
 - Disable editing of data use declaration name and type after creation [#4731](https://github.com/ethyca/fides/pull/4731)
 - Cleaned up table borders [#4733](https://github.com/ethyca/fides/pull/4733)
 - Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
+- Re-add CORS origin regex field to admin UI (#4742)[https://github.com/ethyca/fides/pull/4742]
 
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
