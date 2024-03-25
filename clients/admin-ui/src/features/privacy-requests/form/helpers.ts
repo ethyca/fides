@@ -19,9 +19,10 @@ export const generateValidationSchemaFromAction = (
     ? Object.entries(action.custom_privacy_request_fields)
         .map(([fieldName, fieldInfo]) => ({
           [fieldName]: Yup.object().shape({
-            value: fieldInfo.required
-              ? Yup.string().required().label(fieldInfo.label)
-              : Yup.string().nullable(),
+            value:
+              fieldInfo.required && !fieldInfo.hidden
+                ? Yup.string().required().label(fieldInfo.label)
+                : Yup.string().nullable(),
           }),
         }))
         .reduce((acc, next) => ({ ...acc, ...next }), {})

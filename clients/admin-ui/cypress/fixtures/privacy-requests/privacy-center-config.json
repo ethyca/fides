@@ -17,6 +17,11 @@
           "label": "Optional example field",
           "required": false
         },
+        "hidden_field": {
+          "label": "Hidden example field",
+          "hidden": true,
+          "required": true
+        },
         "field_with_default_value": {
           "label": "Example field with default value",
           "required": false,

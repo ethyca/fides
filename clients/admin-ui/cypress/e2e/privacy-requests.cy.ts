@@ -217,6 +217,9 @@ describe("Privacy Requests", () => {
         "input-custom_privacy_request_fields.required_field.value"
       ).should("exist");
       cy.getByTestId(
+        "input-custom_privacy_request_fields.hidden_field.value"
+      ).should("not.exist");
+      cy.getByTestId(
         "input-custom_privacy_request_fields.field_with_default_value.value"
       ).should("have.value", "The default value");
       cy.getByTestId("submit-btn").should("be.disabled");
