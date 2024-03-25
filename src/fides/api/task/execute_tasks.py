@@ -89,8 +89,8 @@ def run_prerequisite_task_checks(
             f"Privacy request with id {privacy_request_id} not found"
         )
 
-    if not request_task:
-        raise RequestTaskNotFound(f"Request Task with id {request_task} not found")
+    if not request_task and not request_task.id == privacy_request.id:
+        raise RequestTaskNotFound(f"Request Task with id {request_task} not found for privacy request {privacy_request_task_id}")
 
     upstream_results: Query = session.query(RequestTask).filter(False)
     if request_task.status == ExecutionLogStatus.pending:
@@ -142,7 +142,7 @@ def create_graph_task(session: Session, request_task: RequestTask) -> GraphTask:
         mark_current_and_downstream_nodes_as_failed(request_task, session)
 
         raise ResumeTaskException(
-            f"Cannot resume task. Error loading task from database: {request_task.privacy_request_id}, Request Task {request_task.id}"
+            f"Cannot resume task. Error hydrating task from database: {request_task.privacy_request_id}, Request Task {request_task.id}"
         )
 
     return graph_task

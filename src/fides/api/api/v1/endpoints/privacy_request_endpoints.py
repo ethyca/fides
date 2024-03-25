@@ -68,6 +68,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
     RequestTask,
+    completed_statuses,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
@@ -109,7 +110,12 @@ from fides.api.service.privacy_request.request_service import (
     cache_data,
 )
 from fides.api.task.create_tasks import log_task_queued
-from fides.api.task.execute_tasks import run_access_node, run_prerequisite_task_checks
+from fides.api.task.execute_tasks import (
+    run_access_node,
+    run_prerequisite_task_checks,
+    run_erasure_node,
+    run_consent_node,
+)
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
 from fides.api.task.task_resources import TaskResources
@@ -152,7 +158,7 @@ from fides.common.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
     REQUEST_STATUS_TASKS,
-    V1_URL_PREFIX,
+    V1_URL_PREFIX, PRIVACY_REQUEST_TASK_QUEUE,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -1976,6 +1982,80 @@ def get_task_data(
 
     logger.info(f"Getting privacy request '{privacy_request_id}' access data")
     return pr.get_filtered_access_results()
+
+
+@router.post(
+    PRIVACY_REQUEST_TASK_QUEUE,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+    response_model=Dict,
+)
+def queue_task(
+    privacy_request_id: str,
+    task_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """
+    Experimental endpoint to support queueing a specific task if allowed.
+
+    The intent of this endpoint is if a task was missed -
+
+    """
+    try:
+        privacy_request, request_task, _ = run_prerequisite_task_checks(
+            db, privacy_request_id, task_id
+        )
+    except (PrivacyRequestNotFound, RequestTaskNotFound) as exc:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+
+    if privacy_request.status != PrivacyRequestStatus.in_processing:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} with privacy request of status {request_task.status.value}",
+        )
+
+    if request_task.status in completed_statuses:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} with completed status {request_task.status.value}",
+        )
+
+    if (
+        request_task.action_type == ActionType.access
+        and privacy_request.erasure_tasks.first()
+    ):
+        # Shouldn't be possible -
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Request failed. Cannot run {request_task.action_type.value} access task {request_task.id} after erasure checkpoint has started.",
+        )
+
+    logger.info(
+        "Manual task call received for {} task {} {}",
+        request_task.action_type.value,
+        request_task.collection_address,
+        request_task.id,
+    )
+
+    # Requeuing the particular task now that the callback is received
+    log_task_queued(request_task)
+    task_function(request_task).delay(privacy_request.id, request_task.id)
+
+    return {"task_queued": True}
+
+
+def task_function(request_task: RequestTask) -> Callable:
+    mapping = {
+        ActionType.access: run_access_node,
+        ActionType.erasure: run_erasure_node,
+        ActionType.consent: run_consent_node,
+    }
+    return mapping[request_task.action_type]
 
 
 @router.post(
