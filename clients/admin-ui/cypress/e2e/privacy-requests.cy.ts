@@ -195,7 +195,7 @@ describe("Privacy Requests", () => {
     });
   });
 
-  describe.only("submitting a request", () => {
+  describe("submitting a request", () => {
     beforeEach(() => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
