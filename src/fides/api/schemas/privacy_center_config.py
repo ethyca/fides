@@ -15,7 +15,7 @@ class IdentityInputs(FidesSchema):
 
 class CustomPrivacyRequestField(FidesSchema):
     label: str
-    required: Optional[bool] = False
+    required: Optional[bool] = True
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
 
