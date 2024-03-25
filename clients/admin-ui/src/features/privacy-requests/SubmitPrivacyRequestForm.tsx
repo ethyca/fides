@@ -168,6 +168,7 @@ const SubmitPrivacyRequestForm = ({
                   size="sm"
                   isDisabled={!values.is_verified || !dirty || !isValid}
                   isLoading={isSubmitting}
+                  data-testid="submit-btn"
                 >
                   Submit
                 </Button>
