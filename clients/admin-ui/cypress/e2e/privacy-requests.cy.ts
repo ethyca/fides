@@ -237,6 +237,8 @@ describe("Privacy Requests", () => {
       cy.intercept("POST", "/api/v1/privacy-request").as("postPrivacyRequest");
       cy.getByTestId("submit-btn").click();
       cy.getByTestId("toast-success-msg").should("exist");
+      // TEMP -- do not merge
+      cy.getByTestId("toast-error-msg").should("exist");
       cy.wait("@postPrivacyRequest");
     });
   });
