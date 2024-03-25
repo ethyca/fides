@@ -138,12 +138,12 @@ export type FidesIdentity = Record<string, string>;
  *   ...
  * }
  */
-export type CookieMeta = Record<string, string>;
+export type FidesJSMeta = Record<string, string>;
 
 export interface FidesCookie {
   consent: NoticeConsent;
   identity: FidesIdentity;
-  fides_meta: CookieMeta;
+  fides_meta: FidesJSMeta;
   fides_string?: string;
   tcf_consent: TcfOtherConsent;
   tcf_version_hash?: ExperienceMeta["version_hash"];

@@ -16,7 +16,7 @@ import {
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
   NoticeConsent,
-  CookieMeta,
+  FidesJSMeta,
   Cookies,
   FidesCookie,
   LegacyConsentConfig,
@@ -136,7 +136,7 @@ describe("getOrMakeFidesCookie", () => {
 
       it("returns the saved cookie including optional fides_meta details like consentMethod", () => {
         // extend the cookie object with some extra details on fides_meta
-        const extendedFidesMeta: CookieMeta = {
+        const extendedFidesMeta: FidesJSMeta = {
           ...V090_COOKIE_OBJECT.fides_meta,
           ...{ consentMethod: "accept", otherMetadata: "foo" },
         };
