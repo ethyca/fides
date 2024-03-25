@@ -3,7 +3,6 @@ import json
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import networkx
-from fideslang.validation import FidesKey
 from loguru import logger
 from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
@@ -20,7 +19,6 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
-    TraversalDetails,
     completed_statuses,
 )
 from fides.api.schemas.policy import ActionType
@@ -29,38 +27,12 @@ from fides.api.task.execute_tasks import (
     run_consent_node,
     run_erasure_node,
 )
+from fides.api.task.graph_task import (
+    ARTIFICIAL_NODES,
+    _format_traversal_details_for_save,
+)
 from fides.api.util.cache import CustomJSONEncoder
 from fides.api.util.collection_util import Row
-
-ARTIFICIAL_NODES: List[CollectionAddress] = [
-    ROOT_COLLECTION_ADDRESS,
-    TERMINATOR_ADDRESS,
-]
-
-
-def _format_traversal_details_for_save(
-    node: CollectionAddress, env: Dict[CollectionAddress, TraversalNode]
-) -> Dict:
-    """Format selected TraversalNode details in a way they can be saved in the database.
-
-    This will let us execute the node when ready without having to reconstruct the traversal node later.
-    """
-    if node in ARTIFICIAL_NODES:
-        return {}
-
-    traversal_node: TraversalNode = env[node]
-    connection_key: FidesKey = traversal_node.node.dataset.connection_key
-
-    return TraversalDetails(
-        dataset_connection_key=connection_key,
-        incoming_edges=[
-            [edge.f1.value, edge.f2.value] for edge in traversal_node.incoming_edges()
-        ],
-        outgoing_edges=[
-            [edge.f1.value, edge.f2.value] for edge in traversal_node.outgoing_edges()
-        ],
-        input_keys=[tn.value for tn in traversal_node.input_keys()],
-    ).dict()
 
 
 def build_access_networkx_digraph(
