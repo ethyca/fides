@@ -191,7 +191,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
             poll_for_exited_privacy_request_tasks,
             trigger="date",
             next_run_time=datetime.now()
-            + timedelta(seconds=30),  # TODO revisit this interval
+            + timedelta(seconds=CONFIG.execution.state_polling_interval),
         )
 
 
