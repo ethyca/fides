@@ -1,5 +1,4 @@
 import { h, Fragment, VNode } from "preact";
-import { useState } from "preact/hooks";
 import Button from "./Button";
 import {
   ButtonType,
@@ -11,6 +10,7 @@ import {
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import type { I18n } from "../lib/i18n";
 import MenuItem from "./MenuItem";
+import { useI18n } from "../lib/i18n/i18n-context";
 
 export const ConsentButtons = ({
   i18n,
@@ -33,10 +33,10 @@ export const ConsentButtons = ({
   saveOnly?: boolean;
   includeLanguageSelector?: boolean;
 }) => {
-  const [currentLocale, setCurrentLocale] = useState(i18n.locale);
+  const { setCurrentLocale } = useI18n();
   const handleLocaleSelect = (locale: string) => {
     i18n.activate(locale);
-    setCurrentLocale(locale);
+    setCurrentLocale(i18n.locale);
     document.getElementById("fides-button-group")?.focus();
   };
   return (
@@ -47,7 +47,7 @@ export const ConsentButtons = ({
             {i18n.availableLanguages.map((lang) => (
               <MenuItem
                 onClick={() => handleLocaleSelect(lang.locale)}
-                isActive={currentLocale === lang.locale}
+                isActive={i18n.locale === lang.locale}
               >
                 {lang.original}
               </MenuItem>

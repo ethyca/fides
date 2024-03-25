@@ -34,6 +34,7 @@ import Overlay from "../Overlay";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
+import { useI18n } from "../../lib/i18n/i18n-context";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of
@@ -71,12 +72,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return [];
   };
 
+  const { currentLocale } = useI18n();
+
   /**
    * Determine which ExperienceConfig translation is being used based on the
    * current locale and memo-ize it's history ID to use for all API calls
    */
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
-    if (experience.experience_config) {
+    if (experience.experience_config && currentLocale) {
       const bestTranslation = selectBestExperienceConfigTranslation(
         i18n,
         experience.experience_config
@@ -84,7 +87,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experience, i18n]);
+  }, [experience, i18n, currentLocale]);
 
   /**
    * Collect the given PrivacyNotices into a list of "items" for rendering.
