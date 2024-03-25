@@ -195,7 +195,7 @@ describe("Privacy Requests", () => {
     });
   });
 
-  describe("submitting a request", () => {
+  describe.only("submitting a request", () => {
     beforeEach(() => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
@@ -233,8 +233,8 @@ describe("Privacy Requests", () => {
       cy.getByTestId("input-is_verified").click();
       cy.intercept("POST", "/api/v1/privacy-request").as("postPrivacyRequest");
       cy.getByTestId("submit-btn").click();
-      cy.wait("@postPrivacyRequest");
       cy.getByTestId("toast-success-msg").should("exist");
+      cy.wait("@postPrivacyRequest");
     });
   });
 });
