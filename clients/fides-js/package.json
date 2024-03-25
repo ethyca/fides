@@ -14,7 +14,7 @@
     "build": "NODE_ENV=production rollup -c",
     "build:windows": "set NODE_ENV=production && rollup -c",
     "clean": "rm -rf dist .turbo node_modules",
-    "docs:generate": "typedoc --out docs src/types/",
+    "docs:generate": "typedoc --out docs src/docs/",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "lint": "eslint . --ext .ts,.tsx",

@@ -1,6 +1,6 @@
 import { debugLog } from "./consent-utils";
 import { FidesCookie } from "./consent-types";
-import type { FidesEventType } from "../types";
+import type { FidesEventType } from "../docs";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
