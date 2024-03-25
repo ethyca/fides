@@ -21,6 +21,7 @@ The types of changes are:
 - Added models for Privacy Center configuration (for plus users) [#4716](https://github.com/ethyca/fides/pull/4716)
 - Added ability to delete properties [#4708](https://github.com/ethyca/fides/pull/4708)
 - Added erasure support for Iterable [#4695](https://github.com/ethyca/fides/pull/4695)
+
 ### Changed
 - Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734) 
 - Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
