@@ -11,6 +11,12 @@ Currently, there are two libraries that `fides-js` can build:
 
 Since `fides-js` is just a package/library, it needs to be hosted somewhere in order to access it. We use the `privacy-center`[../privacy-center]'s `/api/fides-js` endpoint to do so.
 
+## Documentation
+
+We use [Typedoc](https://typedoc.org/) to generate "FidesJS SDK Reference" docs that explain how to use the `fides.js` script in a customer website. You can find those docs here: [docs/README.md](./docs/README.md)
+
+To regenerate the developer docs, run `npm run docs:generate`.
+
 ## Developing
 
 You will need certain environment variables:

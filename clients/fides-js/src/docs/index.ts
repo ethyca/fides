@@ -31,14 +31,14 @@
  */
 
 /**
- * NOTE: This file exports the small subset of types used by this project that
- * are the user-facing classes, functions, events, etc. that engineers
- * integrating FidesJS into their own applications rely on. The TSDoc comments
- * here are used to generate living developer documentation that is then
- * imported and hosted on Ethyca's developer docs here:
- * [FidesJS SDK Documentation](https://ethyca.com/docs/dev-docs/js)
- *
- * Therefore, all the types here should be considered part of FidesJS'
+ * NOTE: This src/docs directory defines a subset of types used by this project
+ * that should be the user-facing classes, functions, events, etc. that
+ * engineers integrating FidesJS into their own applications rely on. The TSDoc
+ * comments are then used to generate (via `npm run docs:generate`) living
+ * developer documentation that is then imported and hosted on Ethyca's
+ * docs site here: [FidesJS SDK Documentation](https://ethyca.com/docs/dev-docs/js)
+ * 
+ * Therefore, all the types in src/docs should be considered part of FidesJS'
  * *official* developer API, so treat them with care!
  *
  * You can also use the \@private tag to intentionally leave specific
@@ -46,7 +46,7 @@
  * types for developers contributing directly to FidesJS, but that shouldn't be
  * included in the generic developer documentation. This comment itself is a
  * good example of that!
- *
+ * 
  * @private
  */
 export * from "./fides";
