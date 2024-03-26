@@ -7,7 +7,7 @@ import {
   FidesCookie,
   FidesInitOptions,
   GpcStatus,
-  OverrideOptions,
+  FidesOptions,
   PrivacyExperience,
   PrivacyNotice,
   PrivacyNoticeWithPreference,
@@ -262,7 +262,7 @@ export const shouldResurfaceConsent = (
  */
 export const getWindowObjFromPath = (
   path: string[]
-): OverrideOptions | undefined => {
+): FidesOptions | undefined => {
   // Implicitly start from the global "window" object
   if (path[0] === "window") {
     path.shift();

@@ -26,7 +26,7 @@ import {
   FidesConfig,
   FidesInitOptionsOverrides,
   FidesInitOptions,
-  OverrideOptions,
+  FidesOptions,
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
@@ -224,7 +224,7 @@ export const getOptionsOverrides = (
     const customPathArr: "" | null | string[] =
       config.options.customOptionsPath &&
       config.options.customOptionsPath.split(".");
-    const windowObj: OverrideOptions | undefined =
+    const windowObj: FidesOptions | undefined =
       customPathArr && customPathArr.length >= 0
         ? getWindowObjFromPath(customPathArr)
         : window.fides_overrides;

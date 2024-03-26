@@ -604,7 +604,7 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-export type OverrideOptions = {
+export interface FidesOptions {
   fides_string: string;
   fides_disable_save_api: boolean;
   fides_disable_banner: boolean;

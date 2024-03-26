@@ -30,7 +30,7 @@ import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import type { FidesGlobal } from "./lib/initialize";
 import type {
   NoticeConsent,
-  OverrideOptions,
+  FidesOptions,
   PrivacyNoticeWithPreference,
 } from "./lib/consent-types";
 import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
@@ -47,7 +47,7 @@ declare global {
     Fides: FidesGlobal;
     config: {
       // DEFER (PROD-1243): support a configurable "custom options" path
-      tc_info: OverrideOptions;
+      tc_info: FidesOptions;
     };
     __gpp?: GppFunction;
     __gppLocator?: Window;

@@ -59,7 +59,7 @@ import {
   FidesInitOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
-  OverrideOptions,
+  FidesOptions,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -80,7 +80,7 @@ import { defaultShowModal } from "./lib/consent-utils";
 declare global {
   interface Window {
     Fides: FidesGlobal;
-    fides_overrides: OverrideOptions;
+    fides_overrides: FidesOptions;
   }
 }
 
