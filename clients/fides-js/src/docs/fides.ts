@@ -183,14 +183,14 @@ export interface Fides {
    */
 
   /**
-   * TODO: This probably *should* be part of the documented SDK.
+   * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
    * 
    * @private
    */
-  fides_meta: any;
+  fides_meta: Record<any, any>;
 
   /**
-   * TODO: This probably *should* be part of the documented SDK.
+   * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
    * 
    * @private
    */
