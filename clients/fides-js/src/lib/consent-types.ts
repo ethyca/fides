@@ -1,3 +1,4 @@
+import type { FidesOptions } from "../docs";
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
@@ -604,14 +605,11 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-export interface FidesOptions {
-  fides_string: string;
-  fides_disable_save_api: boolean;
-  fides_disable_banner: boolean;
-  fides_embed: boolean;
-  fides_tcf_gdpr_applies: boolean;
-  fides_locale: string;
-};
+/**
+ * Re-export the FidesOptions interface from src/docs; mostly for convenience as
+ * a lot of code wants to import from this consent-types.ts file!
+ */
+export { FidesOptions };
 
 /**
  * Select the subset of FidesInitOptions that can be overriden at runtime using
