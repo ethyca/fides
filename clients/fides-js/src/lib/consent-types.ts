@@ -96,7 +96,7 @@ export interface FidesInitOptions {
   // Base URL for directory of fides.js scripts
   fidesJsBaseUrl: string;
 
-  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
+  // A custom path to fetch FidesOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;
 
   // Prevents the banner and modal from being dismissed

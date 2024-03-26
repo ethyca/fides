@@ -16,7 +16,7 @@ export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
   fidesOption: keyof FidesInitOptionsOverrides;
   fidesOptionType: "string" | "boolean";
-  fidesOverrideKey: keyof OverrideOptions;
+  fidesOverrideKey: keyof FidesOptions;
   validationRegex: RegExp;
 }[] = [
   {
