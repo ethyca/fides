@@ -13,10 +13,9 @@ const MenuItem: FunctionComponent<MenuItemProps> = ({
 }) => (
   <button
     type="button"
-    className={`fides-banner-button fides-menu-item ${className}`}
-    id={isActive ? "fides-menu-item-active" : ""}
     aria-pressed={isActive || undefined}
     {...props}
+    className={`fides-banner-button fides-menu-item ${className || ""}`}
   >
     {children}
   </button>

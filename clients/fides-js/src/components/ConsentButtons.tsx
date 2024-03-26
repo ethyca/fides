@@ -4,6 +4,7 @@ import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
+  FidesOptions,
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
@@ -11,6 +12,7 @@ import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import type { I18n } from "../lib/i18n";
 import MenuItem from "./MenuItem";
 import { useI18n } from "../lib/i18n/i18n-context";
+import { debugLog } from "../fides";
 
 export const ConsentButtons = ({
   i18n,
@@ -21,7 +23,8 @@ export const ConsentButtons = ({
   isMobile,
   includePrivacyPolicy,
   saveOnly = false,
-  includeLanguageSelector = true,
+  includeLanguageSelector,
+  options,
 }: {
   i18n: I18n;
   onManagePreferencesClick?: () => void;
@@ -29,16 +32,22 @@ export const ConsentButtons = ({
   onAcceptAll: () => void;
   onRejectAll: () => void;
   isMobile: boolean;
+  options: FidesOptions;
   includePrivacyPolicy?: boolean;
   saveOnly?: boolean;
   includeLanguageSelector?: boolean;
 }) => {
-  const { setCurrentLocale } = useI18n();
+  const { currentLocale, setCurrentLocale } = useI18n();
+
   const handleLocaleSelect = (locale: string) => {
-    i18n.activate(locale);
-    setCurrentLocale(i18n.locale);
-    document.getElementById("fides-button-group")?.focus();
+    if (locale !== i18n.locale) {
+      i18n.activate(locale);
+      setCurrentLocale(locale);
+      document.getElementById("fides-button-group")?.focus();
+      debugLog(options.debug, `Fides locale updated to ${locale}`);
+    }
   };
+
   return (
     <div id="fides-button-group" tabIndex={-1}>
       {includeLanguageSelector && i18n.availableLanguages?.length > 1 && (
@@ -47,9 +56,9 @@ export const ConsentButtons = ({
             {i18n.availableLanguages.map((lang) => (
               <MenuItem
                 key={lang.locale}
-                id={`fides-i18n-option-${lang.locale}`}
+                data-testid={`fides-i18n-option-${lang.locale}`}
                 onClick={() => handleLocaleSelect(lang.locale)}
-                isActive={i18n.locale === lang.locale}
+                isActive={currentLocale === lang.locale}
               >
                 {lang.original}
               </MenuItem>
@@ -114,10 +123,10 @@ interface NoticeConsentButtonProps {
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
+  options: FidesOptions;
   isInModal?: boolean;
   isMobile: boolean;
   saveOnly?: boolean;
-  fidesPreviewMode?: boolean;
 }
 
 export const NoticeConsentButtons = ({
@@ -130,8 +139,9 @@ export const NoticeConsentButtons = ({
   isAcknowledge,
   isMobile,
   saveOnly = false,
-  fidesPreviewMode = false,
+  options,
 }: NoticeConsentButtonProps) => {
+  const { fidesPreviewMode } = options;
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
   }
@@ -203,6 +213,7 @@ export const NoticeConsentButtons = ({
       includePrivacyPolicy={!isInModal}
       saveOnly={saveOnly}
       includeLanguageSelector={!isInModal}
+      options={options}
     />
   );
 };

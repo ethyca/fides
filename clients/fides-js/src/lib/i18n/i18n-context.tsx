@@ -19,6 +19,7 @@ export const I18nProvider: FunctionComponent = ({ children }) => {
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 };
+
 export const useI18n = () => {
   const context = useContext(I18nContext);
   if (!context) {

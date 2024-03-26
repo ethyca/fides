@@ -702,9 +702,8 @@ describe("Consent i18n", () => {
           globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
         });
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(200); // wait for the overlay to appear
-        cy.get(`#fides-i18n-option-${SPANISH_LOCALE}`).focus();
+        cy.get("#fides-banner").should("be.visible");
+        cy.getByTestId(`fides-i18n-option-${SPANISH_LOCALE}`).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);

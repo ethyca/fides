@@ -351,6 +351,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 }}
                 isMobile={isMobile}
                 includePrivacyPolicy
+                includeLanguageSelector
+                options={options}
               />
             )}
             className="fides-tcf-banner-container"
@@ -399,6 +401,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 />
               }
               isMobile={isMobile}
+              options={options}
             />
             <PrivacyPolicyLink i18n={i18n} />
           </Fragment>

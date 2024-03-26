@@ -1102,18 +1102,18 @@ button.fides-banner-button.fides-menu-item {
   padding-left: 1.5rem;
 }
 
-#fides-menu-item-active {
+button.fides-banner-button.fides-menu-item[aria-pressed="true"] {
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
 }
 
-#fides-menu-item-active::before {
+button.fides-banner-button.fides-menu-item[aria-pressed="true"]::before {
   content: "\2713";
   display: inline-block;
   margin-right: 0.25rem;
   margin-left: -1rem;
 }
 
-button.fides-banner-button.fides-menu-item:not(#fides-menu-item-active):hover {
+button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
   background: var(--fides-overlay-secondary-button-background-hover-color);
 }

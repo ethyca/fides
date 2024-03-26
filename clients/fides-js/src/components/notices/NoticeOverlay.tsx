@@ -269,7 +269,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
               isAcknowledge={isAllNoticeOnly}
               isMobile={isMobile}
-              fidesPreviewMode={options.fidesPreviewMode}
+              options={options}
             />
           )}
         />
@@ -309,7 +309,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isAcknowledge={isAllNoticeOnly}
             isMobile={isMobile}
             saveOnly={privacyNoticeItems.length === 1}
-            fidesPreviewMode={options.fidesPreviewMode}
+            options={options}
           />
           <PrivacyPolicyLink i18n={i18n} />
         </Fragment>
