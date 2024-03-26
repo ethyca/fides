@@ -100,9 +100,6 @@ export const useConsentServed = ({
       // The only time a notices served API call isn't triggered is when
       // the BANNER is shown or preview mode is enabled. Calls can be triggered for
       // TCF_BANNER, TCF_OVERLAY, and OVERLAY
-      if (options.fidesPreviewMode) {
-        return;
-      }
       if (
         !event.detail.extraDetails ||
         event.detail.extraDetails.servingComponent === ServingComponent.BANNER
