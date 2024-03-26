@@ -81,7 +81,7 @@ export interface FidesGlobal extends Fides {
   meta: typeof meta;
   shopify: typeof shopify;
   showModal: () => void;
-};
+}
 
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,

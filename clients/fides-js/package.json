@@ -82,6 +82,9 @@
     "name": "FidesJS: Javascript SDK for Fides",
     "plugin": "typedoc-plugin-markdown",
     "readme": "none",
-    "sort": ["visibility", "source-order"]
+    "sort": [
+      "visibility",
+      "source-order"
+    ]
   }
 }

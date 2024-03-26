@@ -32,7 +32,7 @@ export type FidesEventDetail = FidesCookie & {
 
 /**
  * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
- * 
+ *
  * However, this will require locking down some types and refactoring usage.
  */
 export type FidesEvent = CustomEvent<FidesEventDetail>;
