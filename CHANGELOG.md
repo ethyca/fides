@@ -32,6 +32,7 @@ The types of changes are:
 - Disable editing of data use declaration name and type after creation [#4731](https://github.com/ethyca/fides/pull/4731)
 - Cleaned up table borders [#4733](https://github.com/ethyca/fides/pull/4733)
 - Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
+- Re-add CORS origin regex field to admin UI (#4742)[https://github.com/ethyca/fides/pull/4742]
 
 ### Developer Experience
 - Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)

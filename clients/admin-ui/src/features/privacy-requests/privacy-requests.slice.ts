@@ -514,8 +514,8 @@ export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
  * be consistent!
  */
 export type CORSOriginsSettings = {
-  configSet: Pick<SecurityApplicationConfig, "cors_origins">;
-  apiSet: Pick<SecurityApplicationConfig, "cors_origins">;
+  configSet: SecurityApplicationConfig & { cors_origin_regex?: string };
+  apiSet: SecurityApplicationConfig;
 };
 
 export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
@@ -535,6 +535,7 @@ export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
       const currentCORSOriginSettings: CORSOriginsSettings = {
         configSet: {
           cors_origins: configSetConfig?.security?.cors_origins || [],
+          cors_origin_regex: configSetConfig?.security?.cors_origin_regex,
         },
         apiSet: {
           cors_origins: apiSetConfig?.security?.cors_origins || [],
