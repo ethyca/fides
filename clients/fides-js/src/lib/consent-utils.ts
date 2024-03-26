@@ -5,7 +5,7 @@ import {
   NoticeConsent,
   EmptyExperience,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   GpcStatus,
   OverrideOptions,
   PrivacyExperience,
@@ -108,7 +108,7 @@ export const constructFidesRegionString = (
 /**
  * Validate the fides global config options. If invalid, we cannot make API calls to Fides or link to the Privacy Center.
  */
-export const validateOptions = (options: FidesOptions): boolean => {
+export const validateOptions = (options: FidesInitOptions): boolean => {
   // Check if options is an invalid type
   debugLog(
     options.debug,
@@ -151,7 +151,7 @@ export const validateOptions = (options: FidesOptions): boolean => {
  */
 export const experienceIsValid = (
   effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
-  options: FidesOptions
+  options: FidesInitOptions
 ): boolean => {
   if (!isPrivacyExperience(effectiveExperience)) {
     debugLog(

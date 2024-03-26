@@ -1,7 +1,7 @@
 import type {
   NoticeConsent,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
 import type { I18n } from "../lib/i18n";
@@ -14,7 +14,7 @@ import type { I18n } from "../lib/i18n";
  * this type as a prop.
  */
 export interface OverlayProps {
-  options: FidesOptions;
+  options: FidesInitOptions;
   experience: PrivacyExperience;
   i18n: I18n;
   cookie: FidesCookie;

@@ -29,11 +29,11 @@ export interface FidesConfig {
   experience?: PrivacyExperience | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
-  // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
-  options: FidesOptions;
+  // Global options for this Fides.js instance
+  options: FidesInitOptions;
 }
 
-export type FidesOptions = {
+export interface FidesInitOptions {
   // Whether or not debug log statements should be enabled
   debug: boolean;
 
@@ -608,7 +608,7 @@ export type OverrideOptions = {
 };
 
 export type FidesOptionsOverrides = Pick<
-  FidesOptions,
+  FidesInitOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
   | "fidesEmbed"

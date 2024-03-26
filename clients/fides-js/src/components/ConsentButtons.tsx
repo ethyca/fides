@@ -4,7 +4,7 @@ import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
@@ -32,7 +32,7 @@ export const ConsentButtons = ({
   onAcceptAll: () => void;
   onRejectAll: () => void;
   isMobile: boolean;
-  options: FidesOptions;
+  options: FidesInitOptions;
   includePrivacyPolicy?: boolean;
   saveOnly?: boolean;
   includeLanguageSelector?: boolean;
@@ -123,7 +123,7 @@ interface NoticeConsentButtonProps {
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
-  options: FidesOptions;
+  options: FidesInitOptions;
   isInModal?: boolean;
   isMobile: boolean;
   saveOnly?: boolean;

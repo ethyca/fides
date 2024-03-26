@@ -2,7 +2,7 @@ import { VNode, h } from "preact";
 
 import {
   ConsentMethod,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
 } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
@@ -12,7 +12,7 @@ import { I18n } from "../../lib/i18n";
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;
   i18n: I18n;
-  options: FidesOptions;
+  options: FidesInitOptions;
   onManagePreferencesClick?: () => void;
   onSave: (consentMethod: ConsentMethod, keys: EnabledIds) => void;
   firstButton?: VNode;

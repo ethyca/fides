@@ -12,7 +12,7 @@ import {
   ComponentType,
   NoticeConsent,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
 import {
@@ -40,7 +40,7 @@ interface RenderModalFooter {
 }
 
 interface Props {
-  options: FidesOptions;
+  options: FidesInitOptions;
   experience: PrivacyExperience;
   i18n: I18n;
   cookie: FidesCookie;

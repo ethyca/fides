@@ -25,7 +25,7 @@ import {
   EmptyExperience,
   FidesConfig,
   FidesOptionsOverrides,
-  FidesOptions,
+  FidesInitOptions,
   OverrideOptions,
   PrivacyExperience,
   SaveConsentPreference,
@@ -70,7 +70,7 @@ export interface FidesGlobal extends Fides {
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
   fides_string?: string | undefined;
-  options: FidesOptions;
+  options: FidesInitOptions;
   fides_meta: FidesJSMeta;
   tcf_consent: TcfOtherConsent;
   saved_consent: NoticeConsent;
@@ -85,7 +85,7 @@ export interface FidesGlobal extends Fides {
 
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
-  options: FidesOptions
+  options: FidesInitOptions
 ) => {
   // Prefer the provided geolocation if available and valid; otherwise, fallback to automatically
   // geolocating the user by calling the geolocation API
@@ -121,7 +121,7 @@ const automaticallyApplyGPCPreferences = async ({
   effectiveExperience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string | null;
-  fidesOptions: FidesOptions;
+  fidesOptions: FidesInitOptions;
   i18n: I18n;
 }): Promise<boolean> => {
   // Early-exit if there is no experience or notices, since we've nothing to do

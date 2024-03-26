@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "preact/hooks";
 import { FidesEvent } from "./events";
 import {
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   RecordConsentServedRequest,
   ServingComponent,
@@ -85,7 +85,7 @@ export const useConsentServed = ({
   userGeography,
   acknowledgeMode,
 }: {
-  options: FidesOptions;
+  options: FidesInitOptions;
   privacyExperience: PrivacyExperience;
   privacyExperienceConfigHistoryId?: string;
   privacyNoticeHistoryIds?: string[];

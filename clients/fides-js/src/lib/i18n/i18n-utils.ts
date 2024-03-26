@@ -2,7 +2,7 @@ import {
   ComponentType,
   ExperienceConfig,
   ExperienceConfigTranslation,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
   PrivacyNoticeTranslation,
@@ -283,7 +283,7 @@ export function getCurrentLocale(i18n: I18n): Locale {
  */
 export function detectUserLocale(
   navigator: Partial<Navigator>,
-  options?: Partial<FidesOptions>
+  options?: Partial<FidesInitOptions>
 ): Locale {
   const browserLocale = navigator?.language;
   const fidesLocaleOverride = options?.fidesLocale;
@@ -449,7 +449,7 @@ export function initializeI18n(
   i18n: I18n,
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
-  options?: Partial<FidesOptions>
+  options?: Partial<FidesInitOptions>
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
