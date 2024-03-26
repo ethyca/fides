@@ -115,7 +115,7 @@ export interface FidesInitOptions {
   // Allows preview of banner components for internal use or testing, such that saving to cookie disabled,
   // and some buttons are disabled on the Fides components
   fidesPreviewMode: boolean;
-};
+}
 
 /**
  * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
