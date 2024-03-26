@@ -191,7 +191,9 @@ export const initializeGppCmpApi = () => {
         cmpApi,
         experience,
       });
-      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      if (sectionsChanged.length) {
+        cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      }
     }
   });
 

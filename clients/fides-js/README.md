@@ -34,9 +34,11 @@ You can put these in an `.env` file. The location of your `.env` file depends on
 
 ### From a development privacy center
 
-Typically, you will want to make your changes within `fides-js`, then run `turbo dev` in the `privacy-center`[../privacy-center] directory. In this case, you want your `.env` file at the root of the privacy-center folder. Because of how we have `turbo` configured, the privacy center will build the latest in `fides-js`, then use it directly within its app. However, because it is built and then pulled into the privacy center, this means that hot reloading does not work, so you will have to stop and restart your `turbo dev` each time you make a change in `fides-js`.
+Typically, you will want to make your changes within `fides-js`, then run `turbo dev` in the `privacy-center`[../privacy-center] directory. In this case, you want your `.env` file at the root of the privacy-center folder. Because of how we have `turbo` configured, the privacy center will build the latest in `fides-js`, then use it directly within its app.
 
-Once you have the privacy center running, you can view `fides-js` in action at our demo page, located at `[privacy-center-host]:[port]/fides-js-demo.html`. This is an HTML page with helpful information about how `fides-js` is configured, and will itself load `fides-js`.
+To recompile as you make changes to the library, you will need to run `npm run dev` from the folder `fides-js`.
+
+Once you have the privacy center running, you can view `fides-js` in action at our demo page, located at `[privacy-center-host]:[port]/fides-js-demo.html`. This is an HTML page with helpful information about how `fides-js` is configured, and will itself load `fides-js` and display the overlay. To get it to re-appear again on next page load, you'll need to clear your cookies, specifically the `fides_consent` cookie. You'll see a button near the top of the page makes this easy.
 
 ### From a full test environment
 

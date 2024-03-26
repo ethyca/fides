@@ -12,6 +12,7 @@ export const setupExtensions = async ({
   options: FidesOptions;
   experience: PrivacyExperience | EmptyExperience | undefined;
 }) => {
+  // TODO (PROD-1830): pre-bundle this when GPP is enabled instead of relying on experience
   if (experience?.gpp_settings?.enabled) {
     try {
       await import(`${options.fidesJsBaseUrl}/fides-ext-gpp.js`);

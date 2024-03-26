@@ -124,6 +124,10 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PUT", "/api/v1/messaging/default", {
     fixture: "/privacy-requests/messaging_configuration.json",
   }).as("createMessagingConfiguration");
+
+  cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
+    fixture: "/privacy-requests/privacy-center-config.json",
+  }).as("getPrivacyCenterConfig");
 };
 
 export const stubPrivacyNoticesCrud = () => {
@@ -251,7 +255,7 @@ export const stubSystemVendors = () => {
 export const stubTranslationConfig = (enabled: boolean) => {
   cy.intercept("GET", "/api/v1/config*", {
     body: {
-      consent: {
+      plus_consent_settings: {
         enable_translations: enabled,
         enable_oob_translations: enabled,
       },
