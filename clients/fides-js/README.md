@@ -38,7 +38,7 @@ Typically, you will want to make your changes within `fides-js`, then run `turbo
 
 To recompile as you make changes to the library, you will need to run `npm run dev` from the folder `fides-js`.
 
-Once you have the privacy center running, you can view `fides-js` in action at our demo page, located at `[privacy-center-host]:[port]/fides-js-demo.html`. This is an HTML page with helpful information about how `fides-js` is configured, and will itself load `fides-js`.
+Once you have the privacy center running, you can view `fides-js` in action at our demo page, located at `[privacy-center-host]:[port]/fides-js-demo.html`. This is an HTML page with helpful information about how `fides-js` is configured, and will itself load `fides-js` and display the overlay. To get it to re-appear again on next page load, you'll need to clear you cookies, specifically the `fides_consent` cookie. You'll see a button near the top of the page makes this easy.
 
 ### From a full test environment
 
