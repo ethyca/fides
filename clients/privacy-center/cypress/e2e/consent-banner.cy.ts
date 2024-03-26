@@ -4,7 +4,7 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   UserConsentPreference,
 } from "fides-js";
 
@@ -285,7 +285,7 @@ describe("Consent overlay", () => {
           // Shared helper that overrides the experience config description with
           // an HTML example and allows toggling the allowHTMLDescription option
           const setupHTMLDescriptionTest = (
-            options: Partial<FidesOptions> = {}
+            options: Partial<FidesInitOptions> = {}
           ) => {
             const HTMLDescription = `
             <p>
