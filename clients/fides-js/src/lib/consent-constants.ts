@@ -1,4 +1,4 @@
-import { FidesInitOptionsOverrides, OverrideOptions } from "./consent-types";
+import { FidesInitOptionsOverrides, FidesOptions } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 
 // Regex to validate a location string, which must:
@@ -7,6 +7,12 @@ import { LOCALE_REGEX } from "./i18n/i18n-constants";
 // 3) Separated by a dash (e.g. "US-CA")
 export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
+/**
+ * Define the mapping of a FidesOption (e.g. "fides_locale") to a
+ * FidesInitOption (e.g. "fidesLocale"). This allows runtime options to be
+ * provided by customers just-in-time for the `Fides.init()` call and override
+ * default FidesInitOptions, etc.
+ */
 export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
   fidesOption: keyof FidesInitOptionsOverrides;
   fidesOptionType: "string" | "boolean";

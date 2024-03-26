@@ -33,6 +33,12 @@ export interface FidesConfig {
   options: FidesInitOptions;
 }
 
+/**
+ * Defines all the options supported by `Fides.init()`. Many of these are
+ * effectively constants that aren't meant to be set at runtime by customers,
+ * but we do allow _some_ of them to be overriden via query params / cookie
+ * values / window object. See the {@link FidesOptions} docs for details.
+ */
 export interface FidesInitOptions {
   // Whether or not debug log statements should be enabled
   debug: boolean;
@@ -607,6 +613,13 @@ export type OverrideOptions = {
   fides_locale: string;
 };
 
+/**
+ * Select the subset of FidesInitOptions that can be overriden at runtime using
+ * one of the customer-provided FidesOptions properties above. There's a 1:1
+ * correspondence here, but note that we use snake_case for the runtime options
+ * and then convert to camelCase variables for the `Fides.init({ options })`
+ * invocation itself.
+ */
 export type FidesInitOptionsOverrides = Pick<
   FidesInitOptions,
   | "fidesString"
