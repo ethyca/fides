@@ -5,6 +5,8 @@ import {
   BulkPostPrivacyRequests,
   GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
+  PrivacyCenterConfig,
+  PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
   SecurityApplicationConfig,
 } from "~/types/api";
@@ -293,6 +295,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         });
       },
     }),
+    postPrivacyRequest: build.mutation<
+      PrivacyRequestResponse,
+      PrivacyRequestCreate[]
+    >({
+      query: (payload) => ({
+        url: `privacy-request/authenticated`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: () => ["Request"],
+    }),
     getNotification: build.query<PrivacyRequestNotificationInfo, void>({
       query: () => ({
         url: `privacy-request/notification`,
@@ -471,6 +484,12 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.body,
       }),
     }),
+    getPrivacyCenterConfig: build.query<PrivacyCenterConfig, void>({
+      query: () => ({
+        method: "GET",
+        url: `plus/privacy-center-config`,
+      }),
+    }),
   }),
 });
 
@@ -479,12 +498,14 @@ export const {
   useBulkRetryMutation,
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
+  usePostPrivacyRequestMutation,
   useGetNotificationQuery,
   useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
   useSaveNotificationMutation,
   useUploadManualAccessWebhookDataMutation,
   useUploadManualErasureWebhookDataMutation,
+  useGetPrivacyCenterConfigQuery,
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
@@ -514,8 +535,8 @@ export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
  * be consistent!
  */
 export type CORSOriginsSettings = {
-  configSet: Pick<SecurityApplicationConfig, "cors_origins">;
-  apiSet: Pick<SecurityApplicationConfig, "cors_origins">;
+  configSet: SecurityApplicationConfig & { cors_origin_regex?: string };
+  apiSet: SecurityApplicationConfig;
 };
 
 export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
@@ -535,6 +556,7 @@ export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
       const currentCORSOriginSettings: CORSOriginsSettings = {
         configSet: {
           cors_origins: configSetConfig?.security?.cors_origins || [],
+          cors_origin_regex: configSetConfig?.security?.cors_origin_regex,
         },
         apiSet: {
           cors_origins: apiSetConfig?.security?.cors_origins || [],

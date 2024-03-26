@@ -60,7 +60,10 @@ const HeaderContent = <T,>({
     return (
       <Box
         data-testid={`${header.id}-header`}
-        style={{ ...getTableTHandTDStyles(header.column.id) }}
+        sx={{ ...getTableTHandTDStyles(header.column.id) }}
+        fontSize="xs"
+        lineHeight={9} // same as table header height
+        fontWeight="medium"
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
@@ -73,10 +76,18 @@ const HeaderContent = <T,>({
         as={Button}
         rightIcon={<ChevronDownIcon />}
         variant="ghost"
+        size="sm"
+        height={9} // same as table header height
         width="100%"
-        pr={1}
+        sx={{ ...getTableTHandTDStyles(header.column.id) }}
         textAlign="start"
         data-testid={`${header.id}-header-menu`}
+        _focusVisible={{
+          backgroundColor: "gray.100",
+        }}
+        _focus={{
+          outline: "none",
+        }}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </MenuButton>
@@ -136,7 +147,7 @@ const TableBody = <T,>({
     ))}
     {tableInstance.getRowModel().rows.length === 0 && emptyTableNotice && (
       <Tr>
-        <Td colSpan={100} borderLeftWidth="1px" borderRightWidth="1px">
+        <Td colSpan={100} borderRightWidth="1px">
           {emptyTableNotice}
         </Td>
       </Tr>
@@ -194,8 +205,10 @@ export const FidesTableV2 = <T,>({
     <TableContainer
       data-testid="fidesTable"
       overflowY="auto"
+      borderColor="gray.200"
       borderBottomWidth="1px"
-      borderBottomColor="gray.200"
+      borderRightWidth="1px"
+      borderLeftWidth="1px"
     >
       <Table
         variant="unstyled"
@@ -218,15 +231,12 @@ export const FidesTableV2 = <T,>({
               {headerGroup.headers.map((header) => (
                 <Th
                   key={header.id}
+                  borderColor="gray.200"
                   borderTopWidth="1px"
-                  borderTopColor="gray.200"
                   borderBottomWidth="1px"
-                  borderBottomColor="gray.200"
                   borderRightWidth="1px"
-                  borderRightColor="gray.200"
-                  _first={{
-                    borderLeftWidth: "1px",
-                    borderLeftColor: "gray.200",
+                  _last={{
+                    borderRightWidth: 0,
                   }}
                   colSpan={header.colSpan}
                   data-testid={`column-${header.id}`}
