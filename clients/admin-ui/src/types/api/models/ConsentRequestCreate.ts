@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CustomPrivacyRequestField } from "./CustomPrivacyRequestField";
+import type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from "./fides__api__schemas__redis_cache__CustomPrivacyRequestField";
 import type { Identity } from "./Identity";
 
 /**
@@ -10,5 +10,8 @@ import type { Identity } from "./Identity";
  */
 export type ConsentRequestCreate = {
   identity: Identity;
-  custom_privacy_request_fields?: Record<string, CustomPrivacyRequestField>;
+  custom_privacy_request_fields?: Record<
+    string,
+    fides__api__schemas__redis_cache__CustomPrivacyRequestField
+  >;
 };

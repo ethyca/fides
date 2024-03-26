@@ -5,7 +5,7 @@
 /**
  * Schema for custom privacy request fields.
  */
-export type CustomPrivacyRequestField = {
+export type fides__api__schemas__redis_cache__CustomPrivacyRequestField = {
   label: string;
-  value?: any;
+  value: number | string;
 };
