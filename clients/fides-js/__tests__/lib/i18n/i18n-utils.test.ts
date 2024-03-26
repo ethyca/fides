@@ -25,7 +25,13 @@ import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import messagesTcfEn from "~/lib/tcf/i18n/locales/en/messages-tcf.json";
 import messagesTcfEs from "~/lib/tcf/i18n/locales/es/messages-tcf.json";
-import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
+import type {
+  I18n,
+  Locale,
+  Language,
+  MessageDescriptor,
+  Messages,
+} from "~/lib/i18n";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
@@ -34,11 +40,24 @@ describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
   let mockDefaultLocale = DEFAULT_LOCALE;
+  let mockAvailableLanguages: Language[] = [
+    { locale: "en", label_en: "English", label_original: "English" },
+    { locale: "es", label_en: "Spanish", label_original: "Español" },
+  ];
+
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     activate: jest.fn((locale: Locale): void => {
       mockCurrentLocale = locale;
     }),
+
+    setAvailableLanguages: jest.fn((languages: Language[]): void => {
+      mockAvailableLanguages = languages;
+    }),
+
+    get availableLanguages(): Language[] {
+      return mockAvailableLanguages;
+    },
 
     getDefaultLocale: jest.fn((): Locale => mockDefaultLocale),
 
@@ -127,6 +146,9 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.setDefaultLocale).toHaveBeenCalledWith("es");
+      expect(mockI18n.setAvailableLanguages).toHaveBeenCalledWith(
+        mockAvailableLanguages
+      );
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
   });
