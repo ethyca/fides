@@ -50,7 +50,7 @@ type MessageDescriptor = {
  * A simple type for a list of languages that can be used to populate a
  * language selector dropdown, for example.
  */
-type Language = { locale: string; english: string; original: string };
+type Language = { locale: string; label_en: string; label_original: string };
 
 /**
  * Minimum interface required for the global "i18n" object

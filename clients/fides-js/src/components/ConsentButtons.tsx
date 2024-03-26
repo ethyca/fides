@@ -60,7 +60,7 @@ export const ConsentButtons = ({
                 onClick={() => handleLocaleSelect(lang.locale)}
                 isActive={currentLocale === lang.locale}
               >
-                {lang.original}
+                {lang.label_original}
               </MenuItem>
             ))}
           </div>

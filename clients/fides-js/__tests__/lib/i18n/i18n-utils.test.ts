@@ -41,8 +41,8 @@ describe("i18n-utils", () => {
   let mockCurrentLocale = "";
   let mockDefaultLocale = DEFAULT_LOCALE;
   let mockAvailableLanguages: Language[] = [
-    { locale: "en", english: "English", original: "English" },
-    { locale: "es", english: "Spanish", original: "Español" },
+    { locale: "en", label_en: "English", label_original: "English" },
+    { locale: "es", label_en: "Spanish", label_original: "Español" },
   ];
 
   const mockI18n = {
