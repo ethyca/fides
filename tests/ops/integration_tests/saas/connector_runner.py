@@ -100,7 +100,7 @@ class ConnectorRunner:
             )
         )
         identity = Identity(**identities)
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         # cache external dataset data
         if self.external_references:
@@ -189,7 +189,7 @@ class ConnectorRunner:
             status=PrivacyRequestStatus.pending,
         )
         identity = Identity(**identities)
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         privacy_request.consent_preferences = [
             {"data_use": "marketing.advertising", "opt_in": True}
@@ -238,7 +238,7 @@ class ConnectorRunner:
         privacy_request.save(self.db)
 
         identity = Identity(**identities)
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         _privacy_preference_history(self.db, privacy_request, identities, opt_in=True)
         opt_in = await graph_task.run_consent_request(
@@ -277,7 +277,7 @@ class ConnectorRunner:
             )
         )
         identity = Identity(**identities)
-        privacy_request.cache_identity(identity)
+        privacy_request.persist_identity(db, identity)
 
         # cache external dataset data
         if self.erasure_external_references:

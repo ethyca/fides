@@ -35,7 +35,7 @@ async def test_square_access_request_task_by_email(
         id=f"test_square_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": square_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = square_connection_config.get_saas_config().fides_key
     merged_graph = square_dataset_config.get_graph()
@@ -120,7 +120,7 @@ async def test_square_access_request_task_by_phone_number(
         id=f"test_square_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"phone_number": square_identity_phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = square_connection_config.get_saas_config().fides_key
     merged_graph = square_dataset_config.get_graph()
@@ -182,7 +182,7 @@ async def test_square_erasure_request_task(
     )
     identity_kwargs = {"email": square_erasure_identity_email}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = square_connection_config.get_saas_config().fides_key
     merged_graph = square_dataset_config.get_graph()

@@ -36,7 +36,7 @@ async def test_rollbar_access_request_task(
         id=f"test_rollbar_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": rollbar_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = rollbar_connection_config.get_saas_config().fides_key
     merged_graph = rollbar_dataset_config.get_graph()
@@ -111,7 +111,7 @@ async def test_rollbar_erasure_request_task(
     identity_kwargs = {"email": rollbar_erasure_identity_email}
 
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = rollbar_connection_config.get_saas_config().fides_key
     merged_graph = rollbar_dataset_config.get_graph()

@@ -37,7 +37,7 @@ async def test_aircall_access_request_task_with_phone_number(
         id=f"test_aircall_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"phone_number": aircall_identity_phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = aircall_connection_config.get_saas_config().fides_key
     merged_graph = aircall_dataset_config.get_graph()
@@ -100,7 +100,7 @@ async def test_aircall_erasure_request_task(
         id=f"test_aircall_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"phone_number": aircall_erasure_identity_phone_number})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = aircall_connection_config.get_saas_config().fides_key
     merged_graph = aircall_dataset_config.get_graph()

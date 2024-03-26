@@ -44,7 +44,7 @@ async def test_braintree_access_request_task(
     identity_value = braintree_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = braintree_connection_config.get_saas_config().fides_key
     merged_graph = braintree_dataset_config.get_graph()
@@ -105,7 +105,7 @@ async def test_braintree_erasure_request_task(
     identity_value = braintree_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = braintree_connection_config.get_saas_config().fides_key
     merged_graph = braintree_dataset_config.get_graph()

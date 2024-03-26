@@ -37,7 +37,7 @@ async def test_recharge_access_request_task(
     identity_value = recharge_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = recharge_connection_config.get_saas_config().fides_key
     merged_graph = recharge_dataset_config.get_graph()
@@ -143,7 +143,7 @@ async def test_recharge_erasure_request_task(
     identity_value = recharge_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = recharge_connection_config.get_saas_config().fides_key
 

@@ -22,7 +22,6 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
-    JWE_PAYLOAD_SCOPES,
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -44,7 +43,6 @@ from fides.api.models.privacy_request import (
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
-from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingServiceType,
@@ -56,11 +54,6 @@ from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
 from fides.api.tasks import MESSAGING_QUEUE_NAME
-from fides.api.util.cache import (
-    get_encryption_cache_key,
-    get_identity_cache_key,
-    get_masking_secret_cache_key,
-)
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -185,6 +178,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         policy,
         allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_CUSTOM_FIELDS = {
@@ -209,7 +203,7 @@ class TestCreatePrivacyRequest:
         persisted_identity = pr.get_persisted_identity()
         assert persisted_identity.email == TEST_EMAIL
         persisted_custom_privacy_request_fields = (
-            pr.get_persisted_custom_privacy_request_fields()
+            pr.get_custom_privacy_request_field_map()
         )
         assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
         pr.delete(db=db)
@@ -226,6 +220,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         policy,
         allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_CUSTOM_FIELDS = {
@@ -251,7 +246,7 @@ class TestCreatePrivacyRequest:
         persisted_identity = pr.get_persisted_identity()
         assert persisted_identity.email == TEST_EMAIL
         persisted_custom_privacy_request_fields = (
-            pr.get_persisted_custom_privacy_request_fields()
+            pr.get_custom_privacy_request_field_map()
         )
         assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
         pr.delete(db=db)
@@ -433,73 +428,6 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         assert run_access_request_mock.called
 
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_caches_identity(
-        self,
-        run_access_request_mock,
-        url,
-        db,
-        api_client: TestClient,
-        policy,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identity": identity,
-            }
-        ]
-        resp = api_client.post(url, json=data)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute=list(identity.keys())[0],
-        )
-        assert cache.get(key) == list(identity.values())[0]
-        pr.delete(db=db)
-        assert run_access_request_mock.called
-
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_caches_masking_secrets(
-        self,
-        run_erasure_request_mock,
-        url,
-        db,
-        api_client: TestClient,
-        erasure_policy_aes,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy_aes.key,
-                "identity": identity,
-            }
-        ]
-        resp = api_client.post(url, json=data)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
-        )
-        assert cache.get_encoded_by_key(secret_key) is not None
-        pr.delete(db=db)
-        assert run_erasure_request_mock.called
-
     def test_create_privacy_request_invalid_encryption_values(
         self, url, db, api_client: TestClient, policy, cache
     ):
@@ -514,41 +442,6 @@ class TestCreatePrivacyRequest:
         resp = api_client.post(url, json=data)
         assert resp.status_code == 422
         assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
-
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_caches_encryption_keys(
-        self,
-        run_access_request_mock,
-        url,
-        db,
-        api_client: TestClient,
-        policy,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identity": identity,
-                "encryption_key": "test--encryption",
-            }
-        ]
-        resp = api_client.post(url, json=data)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        encryption_key = get_encryption_cache_key(
-            privacy_request_id=pr.id,
-            encryption_attr="key",
-        )
-        assert cache.get(encryption_key) == "test--encryption"
-
-        pr.delete(db=db)
-        assert run_access_request_mock.called
 
     def test_create_privacy_request_no_identities(
         self,
@@ -968,7 +861,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == privacy_request.id
         assert (
             resp["items"][0]["custom_privacy_request_fields"]
-            == privacy_request.get_persisted_custom_privacy_request_fields()
+            == privacy_request.get_custom_privacy_request_field_map()
         )
 
         assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
@@ -1463,11 +1356,12 @@ class TestGetPrivacyRequests:
         privacy_request.reviewed_at = reviewed_at
         TEST_EMAIL = "test@example.com"
         TEST_PHONE = "+12345678910"
-        privacy_request.cache_identity(
-            {
+        privacy_request.persist_identity(
+            db=db,
+            identity={
                 "email": TEST_EMAIL,
                 "phone_number": TEST_PHONE,
-            }
+            },
         )
         privacy_request.save(db)
 
@@ -2288,7 +2182,9 @@ class TestApprovePrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com", phone_number="+12345678910"
+        )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -2420,7 +2316,9 @@ class TestDenyPrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            phone_number="+12345678910", email="test@example.com"
+        )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -2491,7 +2389,9 @@ class TestDenyPrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            phone_number="+12345678910", email="test@example.com"
+        )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4838,75 +4738,6 @@ class TestCreatePrivacyRequestAuthenticated:
         assert pr.external_id == external_id
         assert run_access_request_mock.called
 
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_caches_identity(
-        self,
-        run_access_request_mock,
-        url,
-        db,
-        generate_auth_header,
-        api_client: TestClient,
-        policy,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identity": identity,
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute=list(identity.keys())[0],
-        )
-        assert cache.get(key) == list(identity.values())[0]
-        assert run_access_request_mock.called
-
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_caches_masking_secrets(
-        self,
-        run_erasure_request_mock,
-        url,
-        db,
-        generate_auth_header,
-        api_client: TestClient,
-        erasure_policy_aes,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy_aes.key,
-                "identity": identity,
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
-        )
-        assert cache.get_encoded_by_key(secret_key) is not None
-        assert run_erasure_request_mock.called
-
     def test_create_privacy_request_invalid_encryption_values(
         self, url, generate_auth_header, api_client: TestClient, policy  # , cache
     ):
@@ -4922,41 +4753,6 @@ class TestCreatePrivacyRequestAuthenticated:
         resp = api_client.post(url, json=data, headers=auth_header)
         assert resp.status_code == 422
         assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
-
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_create_privacy_request_caches_encryption_keys(
-        self,
-        run_access_request_mock,
-        url,
-        db,
-        generate_auth_header,
-        api_client: TestClient,
-        policy,
-        cache,
-    ):
-        identity = {"email": "test@example.com"}
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identity": identity,
-                "encryption_key": "test--encryption",
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        encryption_key = get_encryption_cache_key(
-            privacy_request_id=pr.id,
-            encryption_attr="key",
-        )
-        assert cache.get(encryption_key) == "test--encryption"
-        assert run_access_request_mock.called
 
     def test_create_privacy_request_no_identities(
         self,

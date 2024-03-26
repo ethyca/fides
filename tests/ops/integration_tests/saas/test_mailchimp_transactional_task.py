@@ -48,7 +48,7 @@ async def test_mailchimp_transactional_consent_request_task_old_workflow(
     )
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = "mailchimp_transactional_instance"
 
@@ -132,7 +132,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
     )
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     await graph_task.run_consent_request(
         privacy_request,
@@ -171,7 +171,7 @@ async def test_no_prepared_request_fired_without_consent_preferences_old_workflo
     )
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     await graph_task.run_consent_request(
         privacy_request,
@@ -220,7 +220,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
     privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = "mailchimp_transactional_instance"
 
@@ -321,7 +321,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
     privacy_preference_history.save(db=db)
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
-    privacy_request_with_consent_policy.cache_identity(identity)
+    privacy_request_with_consent_policy.persist_identity(db, identity)
 
     await graph_task.run_consent_request(
         privacy_request_with_consent_policy,
@@ -373,7 +373,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
     privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = "mailchimp_transactional_instance"
 
@@ -455,7 +455,7 @@ async def test_mailchimp_transactional_consent_request_task_error(
     privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = "mailchimp_transactional_instance"
 
