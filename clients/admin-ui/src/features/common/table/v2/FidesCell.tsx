@@ -54,11 +54,11 @@ export const FidesCell = <T,>({
         article: {
           borderTopWidth: "2x",
           borderTopColor: "red",
-          ...getTableTHandTDStyles(cell.column.id),
-          // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
-          maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
-          minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
         },
+        ...getTableTHandTDStyles(cell.column.id),
+        // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
+        maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
+        minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
       }}
       _first={{
         borderBottomWidth:
