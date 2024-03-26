@@ -54,7 +54,7 @@ import { shopify } from "./integrations/shopify";
 import {
   NoticeConsent,
   FidesConfig,
-  FidesOptionsOverrides,
+  FidesInitOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
   OverrideOptions,
@@ -140,7 +140,7 @@ const updateExperience = ({
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesOptionsOverrides> =
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOptionsOverrides(config);
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,

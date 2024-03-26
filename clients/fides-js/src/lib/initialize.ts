@@ -24,7 +24,7 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesConfig,
-  FidesOptionsOverrides,
+  FidesInitOptionsOverrides,
   FidesInitOptions,
   OverrideOptions,
   PrivacyExperience,
@@ -215,8 +215,8 @@ const automaticallyApplyGPCPreferences = async ({
  */
 export const getOptionsOverrides = (
   config: FidesConfig
-): Partial<FidesOptionsOverrides> => {
-  const overrideOptions: Partial<FidesOptionsOverrides> = {};
+): Partial<FidesInitOptionsOverrides> => {
+  const overrideOptions: Partial<FidesInitOptionsOverrides> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);

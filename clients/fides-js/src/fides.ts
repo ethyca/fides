@@ -56,7 +56,7 @@ import {
   NoticeConsent,
   FidesConfig,
   FidesCookie,
-  FidesOptionsOverrides,
+  FidesInitOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
   OverrideOptions,
@@ -114,7 +114,7 @@ const updateExperience = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesOptionsOverrides> =
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOptionsOverrides(config);
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);

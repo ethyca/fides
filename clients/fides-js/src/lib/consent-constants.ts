@@ -1,4 +1,4 @@
-import { FidesOptionsOverrides, OverrideOptions } from "./consent-types";
+import { FidesInitOptionsOverrides, OverrideOptions } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 
 // Regex to validate a location string, which must:
@@ -8,7 +8,7 @@ import { LOCALE_REGEX } from "./i18n/i18n-constants";
 export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
 export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
-  fidesOption: keyof FidesOptionsOverrides;
+  fidesOption: keyof FidesInitOptionsOverrides;
   fidesOptionType: "string" | "boolean";
   fidesOverrideKey: keyof OverrideOptions;
   validationRegex: RegExp;

@@ -607,7 +607,7 @@ export type OverrideOptions = {
   fides_locale: string;
 };
 
-export type FidesOptionsOverrides = Pick<
+export type FidesInitOptionsOverrides = Pick<
   FidesInitOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
@@ -618,7 +618,7 @@ export type FidesOptionsOverrides = Pick<
 >;
 
 export type FidesOverrides = {
-  optionsOverrides: Partial<FidesOptionsOverrides>;
+  optionsOverrides: Partial<FidesInitOptionsOverrides>;
   consentPrefsOverrides: GetPreferencesFnResp | null;
 };
 
