@@ -60,7 +60,10 @@ const HeaderContent = <T,>({
     return (
       <Box
         data-testid={`${header.id}-header`}
-        style={{ ...getTableTHandTDStyles(header.column.id) }}
+        sx={{ ...getTableTHandTDStyles(header.column.id) }}
+        fontSize="xs"
+        lineHeight={9} // same as table header height
+        fontWeight="medium"
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
@@ -73,10 +76,18 @@ const HeaderContent = <T,>({
         as={Button}
         rightIcon={<ChevronDownIcon />}
         variant="ghost"
+        size="sm"
+        height={9} // same as table header height
         width="100%"
-        pr={1}
+        sx={{ ...getTableTHandTDStyles(header.column.id) }}
         textAlign="start"
         data-testid={`${header.id}-header-menu`}
+        _focusVisible={{
+          backgroundColor: "gray.100",
+        }}
+        _focus={{
+          outline: "none",
+        }}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </MenuButton>
