@@ -22,6 +22,7 @@ The types of changes are:
 - Added models for Privacy Center configuration (for plus users) [#4716](https://github.com/ethyca/fides/pull/4716)
 - Added ability to delete properties [#4708](https://github.com/ethyca/fides/pull/4708)
 - Add interface for submitting privacy requests in admin UI [#4738](https://github.com/ethyca/fides/pull/4738)
+- Added language switching support to the FidesJS UI based on configured translations [#4737](https://github.com/ethyca/fides/pull/4737)
 
 ### Changed
 

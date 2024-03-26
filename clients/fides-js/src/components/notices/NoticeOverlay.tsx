@@ -34,6 +34,7 @@ import Overlay from "../Overlay";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
+import { useI18n } from "../../lib/i18n/i18n-context";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of
@@ -71,6 +72,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return [];
   };
 
+  const { currentLocale } = useI18n();
+
   /**
    * Determine which ExperienceConfig translation is being used based on the
    * current locale and memo-ize it's history ID to use for all API calls
@@ -84,7 +87,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experience, i18n]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experience, i18n, currentLocale]);
 
   /**
    * Collect the given PrivacyNotices into a list of "items" for rendering.
@@ -105,7 +109,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const bestTranslation = selectBestNoticeTranslation(i18n, notice);
         return { notice, bestTranslation };
       }),
-    [experience.privacy_notices, i18n]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [experience.privacy_notices, i18n, currentLocale]
   );
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
@@ -264,7 +269,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
               isAcknowledge={isAllNoticeOnly}
               isMobile={isMobile}
-              fidesPreviewMode={options.fidesPreviewMode}
+              options={options}
             />
           )}
         />
@@ -304,7 +309,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isAcknowledge={isAllNoticeOnly}
             isMobile={isMobile}
             saveOnly={privacyNoticeItems.length === 1}
-            fidesPreviewMode={options.fidesPreviewMode}
+            options={options}
           />
           <PrivacyPolicyLink i18n={i18n} />
         </Fragment>
