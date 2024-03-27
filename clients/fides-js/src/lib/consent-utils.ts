@@ -17,7 +17,7 @@ import {
 } from "./consent-types";
 import { TcfModelsRecord } from "./tcf/types";
 import {
-  FIDES_OVERRIDE_LANGUAGE_VALIDATOR_MAP,
+  FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
   FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-constants";
@@ -155,14 +155,14 @@ export const getOverrideValidatorMapByType = (
   overrideType: OverrideType
 ):
   | typeof FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP
-  | typeof FIDES_OVERRIDE_LANGUAGE_VALIDATOR_MAP
+  | typeof FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP
   | null => {
   // eslint-disable-next-line default-case
   switch (overrideType) {
     case OverrideType.OPTIONS:
       return FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP;
-    case OverrideType.LANGUAGE:
-      return FIDES_OVERRIDE_LANGUAGE_VALIDATOR_MAP;
+    case OverrideType.EXPERIENCE_TRANSLATION:
+      return FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP;
   }
   return null;
 };

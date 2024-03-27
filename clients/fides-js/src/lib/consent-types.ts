@@ -612,10 +612,10 @@ export type OverrideOptions = {
 };
 
 export type OverrideExperienceTranslations = {
-  title: string;
-  description: string;
-  privacy_policy_link_url: string;
-  override_language: string;
+  fides_title: string;
+  fides_description: string;
+  fides_privacy_policy_url: string;
+  fides_override_language: string;
 };
 
 export type FidesOptionsOverrides = Pick<
@@ -632,7 +632,7 @@ export type FidesOptionsOverrides = Pick<
 export type FidesExperienceTranslationOverrides = {
   title: string;
   description: string;
-  privacy_policy_link_url: string;
+  privacy_policy_url: string;
   override_language: string;
 };
 
@@ -644,8 +644,7 @@ export type FidesOverrides = {
 
 export enum OverrideType {
   OPTIONS = "options",
-  LANGUAGE = "language",
-  THEME = "theme",
+  EXPERIENCE_TRANSLATION = "language",
 }
 
 export enum ButtonType {

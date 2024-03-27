@@ -31,6 +31,63 @@ export function areLocalesEqual(a: Locale, b: Locale): boolean {
   );
 }
 
+function matchLocale(
+  requestedLocale: Locale,
+  availableLocales: Locale[]
+): Locale | null {
+  // 1) Parse the requested locale string using our regex
+  const match = requestedLocale.match(LOCALE_REGEX);
+  if (match) {
+    const [locale, language] = match;
+
+    // 2) Look for an exact match of the requested locale
+    const exactMatch = availableLocales.find((elem) =>
+      areLocalesEqual(elem, locale)
+    );
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    // 3) Fallback to the {language} of the requested locale
+    const languageMatch = availableLocales.find((elem) =>
+      areLocalesEqual(elem, language)
+    );
+    if (languageMatch) {
+      return languageMatch;
+    }
+  }
+  return null;
+}
+
+/**
+ * Match the user's preferred locale to the best match from the given locales.
+ *
+ * NOTE: This might seem trivial but doing it *correctly* is pretty complex.
+ * There's a standards-track proposal to define a "Intl.LocaleMatcher" function as
+ * part of the core library you can see here:
+ * https://github.com/tc39/proposal-intl-localematcher
+ *
+ * This function follows the basic structure of that LocaleMatcher function (with fewer options) and does the following:
+ * 1) Parse the locale string (e.g. "fr-CA" into {language}-{region})
+ * 2) Return an exact match for {language}-{region} if possible (e.g. "fr-CA" -> "fr-CA")
+ * 3) Fallback to the {language} only if possible (e.g. "fr-CA" -> "fr")
+ *
+ * Fallback to the default locale otherwise (e.g. "fr-CA" -> "en")
+ */
+export function matchAvailableLocales(
+  requestedLocale: Locale,
+  availableLocales: Locale[],
+  defaultLocale: Locale = DEFAULT_LOCALE
+): Locale {
+  const localeMatch: Locale | null = matchLocale(
+    requestedLocale,
+    availableLocales
+  );
+
+  // Fallback to default locale
+  return localeMatch || defaultLocale;
+}
+
 /**
  * Helper function to extract all the translated messages from an
  * ExperienceConfig API response. Returns an object that maps locales -> messages, e.g.
@@ -68,19 +125,25 @@ function extractMessagesFromExperienceConfig(
       // For each translation, extract each of the translated fields
       (translation: ExperienceConfigTranslation) => {
         const locale = translation.language;
-        const localeHasOverride =
-          experienceTranslationOverrides?.override_language === locale;
+        // We only override experience translations if the override_language matches current locale
+        let localeHasOverride = false;
+        if (experienceTranslationOverrides?.override_language) {
+          localeHasOverride = !!matchLocale(
+            experienceTranslationOverrides?.override_language,
+            [locale]
+          );
+        }
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
-          const overrideValue =
-            localeHasOverride &&
-            Object.prototype.hasOwnProperty.call(
-              experienceTranslationOverrides,
-              key
-            )
-              ? // @ts-ignore
-                experienceTranslationOverrides[key]
-              : null;
+          let overrideValue: string | null | undefined = null;
+          if (experienceTranslationOverrides) {
+            overrideValue =
+              localeHasOverride && key in experienceTranslationOverrides
+                ? experienceTranslationOverrides[
+                    key as keyof FidesExperienceTranslationOverrides
+                  ]
+                : null;
+          }
           const message = translation[key];
           if (typeof message === "string") {
             messages[`exp.${key}`] = overrideValue || message;
@@ -299,51 +362,6 @@ export function detectUserLocale(
   const browserLocale = navigator?.language;
   const fidesLocaleOverride = options?.fidesLocale;
   return fidesLocaleOverride || browserLocale || DEFAULT_LOCALE;
-}
-
-/**
- * Match the user's preferred locale to the best match from the given locales.
- *
- * NOTE: This might seem trivial but doing it *correctly* is pretty complex.
- * There's a standards-track proposal to define a "Intl.LocaleMatcher" function as
- * part of the core library you can see here:
- * https://github.com/tc39/proposal-intl-localematcher
- *
- * This function follows the basic structure of that LocaleMatcher function (with fewer options) and does the following:
- * 1) Parse the locale string (e.g. "fr-CA" into {language}-{region})
- * 2) Return an exact match for {language}-{region} if possible (e.g. "fr-CA" -> "fr-CA")
- * 3) Fallback to the {language} only if possible (e.g. "fr-CA" -> "fr")
- * 4) Fallback to the default locale otherwise (e.g. "fr-CA" -> "en")
- */
-export function matchAvailableLocales(
-  requestedLocale: Locale,
-  availableLocales: Locale[],
-  defaultLocale: Locale = DEFAULT_LOCALE
-): Locale {
-  // 1) Parse the requested locale string using our regex
-  const match = requestedLocale.match(LOCALE_REGEX);
-  if (match) {
-    const [locale, language] = match;
-
-    // 2) Look for an exact match of the requested locale
-    const exactMatch = availableLocales.find((elem) =>
-      areLocalesEqual(elem, locale)
-    );
-    if (exactMatch) {
-      return exactMatch;
-    }
-
-    // 3) Fallback to the {language} of the requested locale
-    const languageMatch = availableLocales.find((elem) =>
-      areLocalesEqual(elem, language)
-    );
-    if (languageMatch) {
-      return languageMatch;
-    }
-  }
-
-  // 4) Fallback to default locale
-  return defaultLocale;
 }
 
 /**

@@ -9,6 +9,7 @@ import {
 } from "fides-js";
 
 import { RecordConsentServedRequest } from "fides-js/src/lib/consent-types";
+import { TEST_OVERRIDE_WINDOW_PATH } from "~/cypress/support/constants";
 
 import {
   mockPrivacyNotice,
@@ -2334,6 +2335,37 @@ describe("Consent overlay", () => {
       cy.get(".fides-modal-button-group")
         .find("button")
         .should("have.length", 3);
+    });
+  });
+
+  describe("fides overrides", () => {
+    describe("when set via window obj", () => {
+      it("applies primary color override", () => {
+        const overrides = {
+          fides_primary_color: "#999000",
+        };
+        cy.fixture("consent/experience_banner_modal.json").then(
+          (experience) => {
+            stubConfig(
+              {
+                options: {
+                  customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                },
+                experience: experience.items[0],
+              },
+              null,
+              null,
+              undefined,
+              { ...overrides }
+            );
+          }
+        );
+        cy.get("div#fides-banner .fides-accept-all-button").should(
+          "have.css",
+          "background-color",
+          "rgb(153, 144, 0)"
+        );
+      });
     });
   });
 });

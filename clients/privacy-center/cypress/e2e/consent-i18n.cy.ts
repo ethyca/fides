@@ -1,5 +1,11 @@
 /* eslint-disable spaced-comment */
-import { FidesOptions, PrivacyExperience, PrivacyNotice } from "fides-js";
+import {
+  ExperienceConfigTranslation,
+  FidesOptions,
+  PrivacyExperience,
+  PrivacyNotice,
+} from "fides-js";
+import { TEST_OVERRIDE_WINDOW_PATH } from "~/cypress/support/constants";
 import { stubConfig } from "../support/stubs";
 
 /**
@@ -543,7 +549,7 @@ describe("Consent i18n", () => {
               banner_description: modal.description,
               // Expect privacy policy link to not exist
               privacy_policy_link_label: null,
-              privacy_policy_link_url: null,
+              privacy_policy_url: null,
             },
           });
           openAndTestModalLocalization({
@@ -551,7 +557,7 @@ describe("Consent i18n", () => {
             ...{
               // Expect privacy policy link to not exist
               privacy_policy_link_label: null,
-              privacy_policy_link_url: null,
+              privacy_policy_url: null,
             },
           });
           testModalNoticesLocalization(notices);
@@ -897,6 +903,256 @@ describe("Consent i18n", () => {
                   "Ce site Web utilise des témoins et des services essentiels",
               },
             ]);
+          });
+        });
+      });
+    });
+    describe("experience translation overrides", () => {
+      describe("when set via window obj", () => {
+        describe("when fides_override_language exactly matches experience locale", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: ENGLISH_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          it("applies experience language overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My override title",
+              fides_description: "My override description",
+              fides_privacy_policy_url: "https://example.com/privacy",
+              fides_override_language: "en",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "en"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    experienceTranslationOverrides.fides_title
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    experienceTranslationOverrides.fides_description
+                  );
+                });
+              }
+            );
+          });
+        });
+        describe("when fides_override_language is only part of an experience locale string", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: FRENCH_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          // TODO (PROD-1885): matchLocale needs to support partial language match
+          it.skip("applies experience language overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My French override title",
+              fides_description: "My French override description",
+              fides_privacy_policy_url: "https://example.com/privacy-french",
+              fides_override_language: "fr",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "fr-CA"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    experienceTranslationOverrides.fides_title
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    experienceTranslationOverrides.fides_description
+                  );
+                });
+              }
+            );
+          });
+        });
+        describe("when fides_override_language is in a locale that does not exist in experience translations", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: JAPANESE_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          it("does not apply experience translation overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My override title",
+              fides_description: "My override description",
+              fides_privacy_policy_url: "https://example.com/privacy",
+              fides_override_language: "ja",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                // we expect to default to english translation
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "en"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    translation.privacy_policy_url as string
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    translation.title as string
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    translation.description as string
+                  );
+                });
+              }
+            );
+          });
+        });
+        describe("when fides_override_language is not provided", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: ENGLISH_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          it("does not apply experience translation overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My override title",
+              fides_description: "My override description",
+              fides_privacy_policy_url: "https://example.com/privacy",
+              // skips setting fides_override_language
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "en"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    translation.privacy_policy_url as string
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    translation.title as string
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    translation.description as string
+                  );
+                });
+              }
+            );
           });
         });
       });

@@ -222,8 +222,7 @@ export const getOverridesByType = <T>(
       config.options.customOptionsPath &&
       config.options.customOptionsPath.split(".");
     const windowObj:
-      | OverrideOptions
-      | OverrideExperienceTranslations
+      | Partial<OverrideOptions & OverrideExperienceTranslations>
       | undefined =
       customPathArr && customPathArr.length >= 0
         ? getWindowObjFromPath(customPathArr)
@@ -235,8 +234,7 @@ export const getOverridesByType = <T>(
       ({ overrideName, overrideType, overrideKey, validationRegex }) => {
         const queryParamOverride: string | null = queryParams.get(overrideKey);
         const windowObjOverride: string | boolean | undefined = windowObj
-          ? // @ts-ignore
-            windowObj[overrideKey]
+          ? windowObj[overrideKey]
           : undefined;
         const cookieOverride: string | undefined = getCookieByName(overrideKey);
 
@@ -244,8 +242,7 @@ export const getOverridesByType = <T>(
         const value = queryParamOverride || windowObjOverride || cookieOverride;
         if (value && validationRegex.test(value.toString())) {
           // coerce to expected type
-          // @ts-ignore
-          overrides[overrideName] =
+          overrides[overrideName as keyof T] =
             overrideType === "string" ? value : JSON.parse(value.toString());
         }
       }

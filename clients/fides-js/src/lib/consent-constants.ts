@@ -12,6 +12,10 @@ import { LOCALE_REGEX } from "./i18n/i18n-constants";
 // 3) Separated by a dash (e.g. "US-CA")
 export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
+/**
+ * Allows various user-provided options overrides to be validated and mapped to the appropriate Fides variable.
+ * overrideName is Fides internal, but overrideKey is the key the user uses to override the option.
+ */
 export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
   overrideName: keyof FidesOptionsOverrides;
   overrideType: "string" | "boolean";
@@ -62,34 +66,38 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
   },
 ];
 
-export const FIDES_OVERRIDE_LANGUAGE_VALIDATOR_MAP: {
+/**
+ * Allows various user-provided experience lang overrides to be validated and mapped to the appropriate Fides variable.
+ * overrideName is Fides internal, but overrideKey is the key the user uses to override the option.
+ */
+export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
   overrideName: keyof FidesExperienceTranslationOverrides;
-  overrideType: "string" | "boolean";
+  overrideType: "string";
   overrideKey: keyof OverrideExperienceTranslations;
   validationRegex: RegExp;
 }[] = [
   {
     overrideName: "title",
     overrideType: "string",
-    overrideKey: "title",
+    overrideKey: "fides_title",
     validationRegex: /(.*)/,
   },
   {
     overrideName: "description",
     overrideType: "string",
-    overrideKey: "description",
+    overrideKey: "fides_description",
     validationRegex: /(.*)/,
   },
   {
-    overrideName: "privacy_policy_link_url",
+    overrideName: "privacy_policy_url",
     overrideType: "string",
-    overrideKey: "privacy_policy_link_url",
+    overrideKey: "fides_privacy_policy_url",
     validationRegex: /(.*)/,
   },
   {
     overrideName: "override_language",
     overrideType: "string",
-    overrideKey: "override_language",
+    overrideKey: "fides_override_language",
     validationRegex: LOCALE_REGEX,
   },
 ];

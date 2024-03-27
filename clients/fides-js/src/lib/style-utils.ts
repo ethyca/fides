@@ -4,7 +4,10 @@ type Hsl = {
   l: number;
 };
 
-// adapted from https://gist.github.com/xenozauros/f6e185c8de2a04cdfecf
+/**
+ * Converts hex CSS string to HSL obj.
+ * Adapted from https://gist.github.com/xenozauros/f6e185c8de2a04cdfecf
+ */
 const hexToHSL = (hex: string): Hsl | null => {
   try {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -49,7 +52,9 @@ const hexToHSL = (hex: string): Hsl | null => {
   }
 };
 
-// converts hsl raw object to a string digestible by CSS
+/**
+ * Converts an HSL object to a string digestible by CSS
+ */
 const hslToCssHsl = (hsl: Hsl, valuesOnly = false): string => {
   let cssString = "";
   const h = Math.round(hsl.h * 360);
@@ -67,8 +72,11 @@ export enum ColorFormat {
   HSL = "hsl",
 }
 
-// takes color, lightens it by grade, returns HSL string or same hex color in case of error
-// grade 1 is one degree lighter, grade 2 is two degrees lighter
+/**
+ * Given a color, we generate a lighter color, which requires converting to HSL format.
+ * Grade 1 is one degree lighter, Grade 2 is two degrees lighter.
+ * Default to returning same hex color if there was an issue with conversion to HSL.
+ */
 export const generateLighterColor = (
   color: string | Hsl,
   format: ColorFormat,
@@ -77,9 +85,11 @@ export const generateLighterColor = (
   const hsl: Hsl | null =
     format === ColorFormat.HEX ? hexToHSL(color as string) : (color as Hsl);
 
-  if (hsl) {
+  if (hsl && hsl.l) {
+    // This adds to the lightness parameter in decreasingly smaller increments across pre-determined intervals.
+    // The reason for this being that the lighter the original color is, the more impact an increase in lightness
+    // has on the resulting color.
     if (hsl.l < 0.25) {
-      // this is the lowest we can go ensuring enough contrast with the original color
       hsl.l = grade === 1 ? hsl.l + 0.1 : hsl.l + 0.2;
     } else if (hsl.l < 0.5) {
       hsl.l = grade === 1 ? hsl.l + 0.08 : hsl.l + 0.16;

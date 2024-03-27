@@ -121,7 +121,7 @@ const init = async (config: FidesConfig) => {
   >(OverrideType.OPTIONS, config);
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
-      OverrideType.LANGUAGE,
+      OverrideType.EXPERIENCE_TRANSLATION,
       config
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
