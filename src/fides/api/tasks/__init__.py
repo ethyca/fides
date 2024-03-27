@@ -2,7 +2,7 @@ from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, scoped_session
 
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.logger import create_handler_dicts
@@ -40,6 +40,32 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         # to prevent session overlap when requests are executing concurrently
         # when in task_always_eager mode (i.e. without proper workers)
         return self._sessionmaker()
+
+    def get_scoped_session(self) -> ContextManager[Session]:
+        """
+        Creates a new Scoped Session to be used for each task invocation.
+
+        The new Sessions will reuse a shared `Engine` and `sessionmaker`
+        across invocations, so as to reuse db connection resources.
+        """
+        # only one engine will be instantiated in a given task scope, i.e
+        # once per celery process.
+        if self._task_engine is None:
+            _task_engine = get_db_engine(
+                config=CONFIG,
+                pool_size=CONFIG.database.task_engine_pool_size,
+                max_overflow=CONFIG.database.task_engine_max_overflow,
+            )
+
+        # same for the sessionmaker
+        if self._sessionmaker is None:
+            self._sessionmaker = get_db_session(config=CONFIG, engine=_task_engine)
+
+        # but a new session is instantiated each time the method is invoked
+        # to prevent session overlap when requests are executing concurrently
+        # when in task_always_eager mode (i.e. without proper workers)
+        ScopedSession = scoped_session(self._sessionmaker)
+        return ScopedSession()
 
 
 def _create_celery(config: FidesConfig = CONFIG) -> Celery:

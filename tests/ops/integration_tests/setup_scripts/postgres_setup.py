@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils import create_database, database_exists, drop_database
 from toml import load as load_toml
 
+from fides.api.models.privacy_experience import ExperienceNotices
+
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.connectionconfig import (
     AccessLevel,

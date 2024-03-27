@@ -135,6 +135,8 @@ class SQLConnector(BaseConnector[Engine]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
+        # if node.node.collection.name in ["visit", "employee"]:
+        #     raise Exception(f"{node.node.collection.name} node failed")
         query_config = self.query_config(node)
         client = self.client()
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)

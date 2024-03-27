@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -110,6 +110,7 @@ class TaskResources:
         policy: Policy,
         connection_configs: List[ConnectionConfig],
         session: Session,
+        session_function: Callable
     ):
         self.request = request
         self.policy = policy
@@ -120,6 +121,7 @@ class TaskResources:
         }
         self.connections = Connections()
         self.session = session
+        self.session_function = session_function
 
     def __enter__(self) -> "TaskResources":
         """Support 'with' usage for closing resources"""
@@ -180,7 +182,7 @@ class TaskResources:
         message: str = None,
     ) -> Any:
         """Store in application db. Return the created or written-to id field value."""
-        db = self.session
+        db = self.session_function()
 
         ExecutionLog.create(
             db=db,
