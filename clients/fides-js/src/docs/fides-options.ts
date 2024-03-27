@@ -96,7 +96,7 @@ export interface FidesOptions {
   fides_locale: string;
 
   /**
-   * TODO (PROD-1691): Add docs for using this option. Once added, remove the
+   * TODO (PROD-1887): Add docs for using this option. Once added, remove the
    * @private tag and rebuild!
    * 
    * @private
