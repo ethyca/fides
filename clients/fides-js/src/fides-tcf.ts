@@ -1,49 +1,11 @@
 /**
- * Fides-tcf.js: JavaScript library for Fides (https://github.com/ethyca/fides), including
- * features for supporting the Transparency Consent Framework
+ * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
+ * 
+ * This is the primary entry point for the fides-tcf.js module, which includes
+ * everything from fides.js plus adds support for the IAB Transparency and
+ * Consent Framework (TCF).
  *
- * This JS module provides easy access to interact with Fides from a webpage, including the ability to:
- * - initialize the page with default consent options (e.g. opt-out of advertising cookies, opt-in to analytics, etc.)
- * - read/write the current user's consent preferences to their browser as a cookie
- * - push the current user's consent preferences to other systems via integrations (Google Tag Manager, Meta, etc.)
- *
- * See https://fid.es for more information!
- *
- * Basic usage of this module in an HTML page is:
- * ```
- * <script src="https://privacy.{company}.com/fides.js"></script>
- * <script>
- *   window.Fides.init({
- *     consent: {
- *       options: [{
- *         cookieKeys: ["data_sales"],
- *         default: true,
- *         fidesDataUseKey: "advertising"
- *       }]
- *     },
- *     experience: {},
- *     geolocation: {},
- *     options: {
- *           debug: true,
- *           isDisabled: false,
- *           isGeolocationEnabled: false,
- *           geolocationApiUrl: "",
- *           overlayParentId: null,
- *           modalLinkId: null,
- *           privacyCenterUrl: "http://localhost:3000"
- *         }
- *   });
- * </script>
- * ```
- *
- * ...and later:
- * ```
- * <script>
- *   // Query user consent preferences
- *   if (window.Fides.consent.data_sales) {
- *     // ...enable advertising scripts
- *   }
- * ```
+ * See the overall package docs in ./docs/README.md for more!
  */
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
