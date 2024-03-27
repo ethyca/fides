@@ -1,6 +1,5 @@
 import { Box, Heading, Text } from "@fidesui/react";
 import type { NextPage } from "next";
-import InfoBox from "~/features/common/InfoBox";
 
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
