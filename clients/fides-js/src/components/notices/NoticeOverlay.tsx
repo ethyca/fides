@@ -269,7 +269,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
               isAcknowledge={isAllNoticeOnly}
               isMobile={isMobile}
-              options={options}
             />
           )}
         />
@@ -282,9 +281,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               i18n={i18n}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
-                if (options.fidesPreviewMode) {
-                  return;
-                }
                 setDraftEnabledNoticeKeys(updatedKeys);
                 dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
               }}
@@ -309,7 +305,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             isAcknowledge={isAllNoticeOnly}
             isMobile={isMobile}
             saveOnly={privacyNoticeItems.length === 1}
-            options={options}
           />
           <PrivacyPolicyLink i18n={i18n} />
         </Fragment>
