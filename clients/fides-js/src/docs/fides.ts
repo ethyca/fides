@@ -39,8 +39,8 @@ export interface Fides {
    * 
    * Note that FidesJS will automatically set default consent preferences based
    * on the type of notice - so, for example a typical "opt-in" analytics notice
-   * will be given a default value of `false`. This allows very writing very
-   * simple (and readable!) code to check a user's consent preferences.
+   * will be given a default value of `false`. This allows writing very simple
+   * (and readable!) code to check a user's consent preferences.
    * 
    * The specific keys provided in the `Fides.consent` property are determined
    * based on your Fides configuration, and are provided to the browser based on
@@ -110,21 +110,28 @@ export interface Fides {
    *
    *
    * @example
-   * Showing the FidesJS modal via an `onclick` handler on a custom link element:
+   * Showing the FidesJS modal via an `onclick` handler on a custom button element:
    * ```html
-   * <a href="#" class="my-custom-link" onclick="Fides.showModal()">
+   * <button class="my-custom-show-modal" onclick="Fides.showModal()">
+   *   Your Privacy Choices
+   * </button>
+   * ```
+   * 
+   * Another option, using a custom link element instead:
+   * ```html
+   * <a role="button" class="my-custom-show-modal" onclick="Fides.showModal()">
    *   Your Privacy Choices
    * </a>
    * ```
    *
-   * Showing/hiding the custom link element using the `fides-overlay-modal-link` CSS class:
+   * Showing/hiding the custom element using the `fides-overlay-modal-link` CSS class:
    * ```css
-   * /* Hide the modal link by default *\/
-   * .my-custom-link {
+   * /* Hide the custom element by default *\/
+   * .my-custom-show-modal {
    *   display: none;
    * }
-   * /* Only show the modal link when applicable *\/
-   * .fides-overlay-modal-link-shown .my-custom-link {
+   * /* Only show the custom element when applicable *\/
+   * .fides-overlay-modal-link-shown .my-custom-show-modal {
    *   display: inline;
    * }
    * ```
