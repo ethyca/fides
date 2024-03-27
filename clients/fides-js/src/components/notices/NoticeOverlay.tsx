@@ -1,7 +1,7 @@
 import "../fides.css";
 
 import { Fragment, FunctionComponent, h } from "preact";
-import { useCallback, useMemo, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { getConsentContext } from "../../lib/consent-context";
 import {
@@ -72,7 +72,13 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return [];
   };
 
-  const { currentLocale } = useI18n();
+  const { currentLocale, setCurrentLocale } = useI18n();
+
+  useEffect(() => {
+    if (!currentLocale && i18n.locale) {
+      setCurrentLocale(i18n.locale);
+    }
+  }, [currentLocale, i18n.locale, setCurrentLocale]);
 
   /**
    * Determine which ExperienceConfig translation is being used based on the
