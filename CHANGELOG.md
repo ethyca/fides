@@ -45,11 +45,7 @@ The types of changes are:
 
 ### Developer Experience
 - Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)
-
-
-### Developer Experience
-- Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)
-
+- Update Cookie House to support for additional locations (Canada, Quebec, EEA) and a "property_id" override [#4750](https://github.com/ethyca/fides/pull/4750)
 
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
