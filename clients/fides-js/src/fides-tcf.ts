@@ -1,6 +1,6 @@
 /**
  * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
- * 
+ *
  * This is the primary entry point for the fides-tcf.js module, which includes
  * everything from fides.js plus adds support for the IAB Transparency and
  * Consent Framework (TCF).
@@ -104,9 +104,11 @@ const updateExperience = ({
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesInitOptionsOverrides> = getOverridesByType<
-    Partial<FidesInitOptionsOverrides>
-  >(OverrideType.OPTIONS, config);
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
+    getOverridesByType<Partial<FidesInitOptionsOverrides>>(
+      OverrideType.OPTIONS,
+      config
+    );
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });

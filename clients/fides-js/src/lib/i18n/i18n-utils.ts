@@ -474,7 +474,7 @@ export function initializeI18n(
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
   options?: Partial<FidesInitOptions>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);

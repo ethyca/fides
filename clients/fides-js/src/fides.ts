@@ -1,6 +1,6 @@
 /**
  * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
- * 
+ *
  * This is the primary entry point for the fides.js module.
  *
  * See the overall package docs in ./docs/README.md for more!
@@ -76,9 +76,11 @@ const updateExperience = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesInitOptionsOverrides> = getOverridesByType<
-    Partial<FidesInitOptionsOverrides>
-  >(OverrideType.OPTIONS, config);
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
+    getOverridesByType<Partial<FidesInitOptionsOverrides>>(
+      OverrideType.OPTIONS,
+      config
+    );
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
