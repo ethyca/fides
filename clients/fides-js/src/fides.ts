@@ -56,10 +56,12 @@ import {
   CookieKeyConsent,
   FidesConfig,
   FidesCookie,
+  FidesExperienceTranslationOverrides,
   FidesOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
   OverrideOptions,
+  OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -69,7 +71,7 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
-  getOptionsOverrides,
+  getOverridesByType,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
@@ -114,14 +116,21 @@ const updateExperience = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesOptionsOverrides> =
-    getOptionsOverrides(config);
+  const optionsOverrides: Partial<FidesOptionsOverrides> = getOverridesByType<
+    Partial<FidesOptionsOverrides>
+  >(OverrideType.OPTIONS, config);
+  const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
+      OverrideType.EXPERIENCE_TRANSLATION,
+      config
+    );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
+    experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrides.optionsOverrides };
@@ -165,6 +174,7 @@ const init = async (config: FidesConfig) => {
         debug,
         isExperienceClientSideFetched
       ),
+    overrides,
   });
   Object.assign(_Fides, updatedFides);
 
@@ -200,6 +210,7 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
+    fidesPrimaryColor: null,
   },
   fides_meta: {},
   identity: {},

@@ -23,6 +23,7 @@ The types of changes are:
 - Added ability to delete properties [#4708](https://github.com/ethyca/fides/pull/4708)
 - Add interface for submitting privacy requests in admin UI [#4738](https://github.com/ethyca/fides/pull/4738)
 - Added language switching support to the FidesJS UI based on configured translations [#4737](https://github.com/ethyca/fides/pull/4737)
+- Added ability to override some experience language and primary color [#4743](https://github.com/ethyca/fides/pull/4743)
 
 ### Changed
 

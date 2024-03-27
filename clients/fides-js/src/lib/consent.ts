@@ -4,6 +4,7 @@ import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 import { OverlayProps } from "../components/types";
+import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
 const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
@@ -57,6 +58,31 @@ export const initOverlay = async ({
           parentElem.id = overlayParentId;
           document.body.prepend(parentElem);
         }
+      }
+      // update CSS variables based on configured primary color
+      if (options.fidesPrimaryColor) {
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-color",
+          options.fidesPrimaryColor
+        );
+        const lighterPrimaryColor: string = generateLighterColor(
+          options.fidesPrimaryColor,
+          ColorFormat.HEX,
+          1
+        );
+        const lightestPrimaryColor: string = generateLighterColor(
+          options.fidesPrimaryColor,
+          ColorFormat.HEX,
+          2
+        );
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-button-background-hover-color",
+          lighterPrimaryColor
+        );
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-active-disabled-color",
+          lightestPrimaryColor
+        );
       }
 
       if (
