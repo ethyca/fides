@@ -742,7 +742,7 @@ describe("Consent i18n", () => {
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
       it(`ignores query params and localizes in the user selected locale (${ENGLISH_LOCALE})`, () => {
-        // Visit the demo site in English, but expect Spanish translations when the user selects
+        // Override the demo site in Spanish, but expect English translations when the user selects
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
           globalPrivacyControl: true,
