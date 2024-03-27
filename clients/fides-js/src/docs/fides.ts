@@ -2,7 +2,7 @@
  * Once FidesJS is initialized, it exports this global object to `window.Fides`
  * as the main API to integrate into your web applications.
  * 
- * You can then use `Fides` in your Javascript code to check the user's current
+ * You can then use `Fides` in your JavaScript code to check the user's current
  * consent preferences (e.g. `if (Fides.consent.marketing) { ... }`), enable
  * FidesJS integrations (e.g. `Fides.gtm()`), programmaticaly show the FidesJS
  * UI (e.g. `Fides.showModal()`) and more. See the full list of properties below
@@ -105,7 +105,7 @@ export interface Fides {
    * link on the page via CSS rules - see the example below!
    *
    * When not used as a click handler, `Fides.showModal()` can be called
-   * programmatically at any time from your own custom Javascript logic as
+   * programmatically at any time from your own custom JavaScript logic as
    * desired.
    *
    *
@@ -130,7 +130,7 @@ export interface Fides {
    * ```
    *
    * @example
-   * Showing the FidesJS modal programmatically in a Javascript function:
+   * Showing the FidesJS modal programmatically in a JavaScript function:
    * ```ts
    * function myCustomShowModalFunction() {
    *   console.log("Displaying FidesJS consent modal")

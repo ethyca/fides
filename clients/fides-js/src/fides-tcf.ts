@@ -1,5 +1,5 @@
 /**
- * Fides-tcf.js: Javascript library for Fides (https://github.com/ethyca/fides), including
+ * Fides-tcf.js: JavaScript library for Fides (https://github.com/ethyca/fides), including
  * features for supporting the Transparency Consent Framework
  *
  * This JS module provides easy access to interact with Fides from a webpage, including the ability to:

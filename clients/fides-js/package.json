@@ -1,7 +1,7 @@
 {
   "name": "fides-js",
   "version": "0.0.1",
-  "description": "Fides Javascript",
+  "description": "FidesJS: JavaScript SDK for Fides",
   "license": "Apache-2.0",
   "main": "./dist/fides.js",
   "source": "./src/fides.ts",
@@ -14,6 +14,7 @@
     "dev": "NODE_ENV=production rollup --watch -c",
     "build": "NODE_ENV=production rollup -c",
     "build:windows": "set NODE_ENV=production && rollup -c",
+    "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
     "docs:generate": "typedoc --out docs src/docs/",
     "format": "prettier --write .",
@@ -80,7 +81,7 @@
     "githubPages": false,
     "hideBreadcrumbs": true,
     "hideInPageTOC": false,
-    "name": "FidesJS: Javascript SDK for Fides",
+    "name": "FidesJS: JavaScript SDK for Fides",
     "plugin": "typedoc-plugin-markdown",
     "readme": "none",
     "sort": [

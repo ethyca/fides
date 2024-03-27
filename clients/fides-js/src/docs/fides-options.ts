@@ -58,7 +58,7 @@ export interface FidesOptions {
    * `id="fides-embed-container"` exists on the page, which FidesJS will then
    * use as the parent element to render within.
    * 
-   * NOTE: If you're using a Javascript framework (e.g. React), ensure that you
+   * NOTE: If you're using a JavaScript framework (e.g. React), ensure that you
    * do not re-render the parent `<div>` element, as this could remove the
    * FidesJS UI fully from the page!
    * 
