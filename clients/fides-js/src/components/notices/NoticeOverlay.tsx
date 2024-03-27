@@ -235,7 +235,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
-  const isDismissable = experience.experience_config?.dismissable;
+  const isDismissable = !!experience.experience_config?.dismissable;
 
   return (
     <Overlay
