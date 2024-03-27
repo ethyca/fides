@@ -1,9 +1,11 @@
 import {
+  stubPlus,
   stubPrivacyRequests,
   stubPrivacyRequestsConfigurationCrud,
 } from "cypress/support/stubs";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy Requests", () => {
   beforeEach(() => {
@@ -191,6 +193,98 @@ describe("Privacy Requests", () => {
       cy.getByTestId("option-twilio-sms").click();
       cy.wait("@createMessagingConfiguration").then(() => {
         cy.contains("Messaging provider saved successfully.");
+      });
+    });
+  });
+
+  describe("privacy request creation", () => {
+    describe("showing button depending on role", () => {
+      beforeEach(() => {
+        stubPlus(true);
+      });
+
+      it("shows the option to create when permitted", () => {
+        cy.assumeRole(RoleRegistryEnum.OWNER);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+        cy.getByTestId("submit-request-btn").should("exist");
+      });
+
+      it("does not show the option to create when not permitted", () => {
+        cy.assumeRole(RoleRegistryEnum.VIEWER_AND_APPROVER);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+        cy.getByTestId("submit-request-btn").should("not.exist");
+      });
+    });
+
+    describe("submitting a request", () => {
+      beforeEach(() => {
+        stubPlus(true);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+      });
+
+      it("opens the modal", () => {
+        cy.getByTestId("submit-request-btn").click();
+        cy.wait("@getPrivacyCenterConfig");
+        cy.getByTestId("submit-request-modal").should("exist");
+      });
+
+      it("shows configured fields and values", () => {
+        cy.getByTestId("submit-request-btn").click();
+        cy.wait("@getPrivacyCenterConfig");
+        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+        cy.getByTestId("input-identity.phone").should("not.exist");
+        cy.getByTestId("input-identity.email").should("exist");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.required_field.value"
+        ).should("exist");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.hidden_field.value"
+        ).should("not.exist");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.field_with_default_value.value"
+        ).should("have.value", "The default value");
+        cy.getByTestId("submit-btn").should("be.disabled");
+      });
+
+      it("can submit a privacy request", () => {
+        cy.getByTestId("submit-request-btn").click();
+        cy.wait("@getPrivacyCenterConfig");
+        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+        cy.getByTestId("input-identity.email").type("email@ethyca.com");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.required_field.value"
+        ).type("A value for the required field");
+        cy.getByTestId("input-is_verified").click();
+        cy.intercept("POST", "/api/v1/privacy-request/authenticated", {
+          statusCode: 200,
+          body: {
+            succeeded: [
+              {
+                policy_key: "default_access_policy",
+                identity: {
+                  email: "email@ethyca.com",
+                },
+                custom_privacy_request_fields: {
+                  required_field: {
+                    label: "Required example field",
+                    value: "A value for the required field",
+                  },
+                  field_with_default_value: {
+                    label: "Example field with default value",
+                    value: "The default value",
+                  },
+                },
+              },
+            ],
+          },
+        }).as("postPrivacyRequest");
+        cy.getByTestId("submit-btn").click();
+        cy.getByTestId("toast-success-msg").should("exist");
+        cy.wait("@postPrivacyRequest");
+        cy.wait("@getPrivacyRequests");
       });
     });
   });

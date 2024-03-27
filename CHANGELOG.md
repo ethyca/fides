@@ -18,19 +18,30 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.32.0...main)
 
 ### Added
+
 - Added models for Privacy Center configuration (for plus users) [#4716](https://github.com/ethyca/fides/pull/4716)
 - Added ability to delete properties [#4708](https://github.com/ethyca/fides/pull/4708)
+- Add interface for submitting privacy requests in admin UI [#4738](https://github.com/ethyca/fides/pull/4738)
+- Added language switching support to the FidesJS UI based on configured translations [#4737](https://github.com/ethyca/fides/pull/4737)
 
 ### Changed
-- Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734) 
+
+- Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734)
 - Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
 - Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
 
 ### Fixed
+
 - Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
+- Fixed hover/focus issues with the v2 tables [#4730](https://github.com/ethyca/fides/pull/4730)
 - Disable editing of data use declaration name and type after creation [#4731](https://github.com/ethyca/fides/pull/4731)
 - Cleaned up table borders [#4733](https://github.com/ethyca/fides/pull/4733)
 - Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
+- Re-add CORS origin regex field to admin UI (#4742)[https://github.com/ethyca/fides/pull/4742]
+
+### Developer Experience
+- Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)
+
 
 ### Developer Experience
 - Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)
@@ -39,6 +50,7 @@ The types of changes are:
 ## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
 
 ### Added
+
 - Updated configuration pages for Experiences with live Preview of FidesJS banner & modal components [#4576](https://github.com/ethyca/fides/pull/4576)
 - Added ability to configure multiple language translations for Notices & Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
 - Automatically localize all strings in FidesJS CMP UIs (banner, modal, and TCF overlay) based on user's locale and experience configuration [#4576](https://github.com/ethyca/fides/pull/4576)
@@ -56,6 +68,7 @@ The types of changes are:
 - Add loading of template translations for notices and experiences [#4718](https://github.com/ethyca/fides/pull/4718)
 
 ### Changed
+
 - Moved location-targeting from Notices to Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
 - Replaced previous default Notices & Experiences with new versions with updated locations, translations, etc. [#4576](https://github.com/ethyca/fides/pull/4576)
 - Automatically migrate existing Notices & Experiences to updated model where possible [#4576](https://github.com/ethyca/fides/pull/4576)
@@ -70,6 +83,7 @@ The types of changes are:
 - Bumped supported Python versions to `3.10.13`, `3.9.18`, and `3.8.18`. Bumped Debian base image from `-bullseye` to `-bookworm`. [#4630](https://github.com/ethyca/fides/pull/4630)
 
 ### Fixed
+
 - Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
 - Various FE fixes for Admin-UI experience config form [#4707](https://github.com/ethyca/fides/pull/4707)
 - Fix modal preview in Admin-UI experience config form [#4712](https://github.com/ethyca/fides/pull/4712)
@@ -78,22 +92,25 @@ The types of changes are:
 ## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
 
 ### Added
+
 - Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
 - Navbar update and new properties page [#4633](https://github.com/ethyca/fides/pull/4633)
 - Access and erasure support for Oracle Responsys [#4618](https://github.com/ethyca/fides/pull/4618)
 
 ### Fixed
+
 - Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
 - Initialize Fides.consent with default values from experience when saved consent cookie (fides_consent) does not exist [#4665](https://github.com/ethyca/fides/pull/4665)
 
 ### Changed
+
 - Sets GPP applicableSections to -1 when a user visits from a state that is not part of the GPP [#4727](https://github.com/ethyca/fides/pull/4727)
 
 ## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
 
 ### Fixed
-- Configure logger correctly on worker initialization [#4624](https://github.com/ethyca/fides/pull/4624)
 
+- Configure logger correctly on worker initialization [#4624](https://github.com/ethyca/fides/pull/4624)
 
 ## [2.30.0](https://github.com/ethyca/fides/compare/2.29.0...2.30.0)
 
@@ -155,7 +172,6 @@ The types of changes are:
 - Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
 - Fixed browser compatibility issues with Object.hasOwn [#4568](https://github.com/ethyca/fides/pull/4568)
-
 
 ### Developer Experience
 
