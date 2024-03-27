@@ -9,9 +9,15 @@ import {
   PrivacyNoticeTranslation,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
-import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
+import type {
+  I18n,
+  Locale,
+  Messages,
+  MessageDescriptor,
+  Language,
+} from "./index";
 import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
-import { STATIC_MESSAGES } from "./locales";
+import { STATIC_MESSAGES, LOCALE_LANGUAGE_MAP } from "./locales";
 import { GVLTranslations } from "../tcf/types";
 
 /**
@@ -493,6 +499,17 @@ export function initializeI18n(
     `Loaded Fides i18n with available locales = ${availableLocales}`
   );
 
+  // Set the list of available languages for the user to choose from
+  const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
+    availableLocales.includes(lang.locale)
+  );
+  i18n.setAvailableLanguages(availableLanguages);
+  debugLog(
+    options?.debug,
+    `Loaded Fides i18n with available languages`,
+    availableLanguages
+  );
+
   // Extract the default locale from the experience API, or fallback to DEFAULT_LOCALE
   const defaultLocale: Locale =
     extractDefaultLocaleFromExperience(experience) || DEFAULT_LOCALE;
@@ -536,6 +553,9 @@ export function initializeI18n(
  * LinguiJS once we're ready to upgrade to the real thing!
  */
 export function setupI18n(): I18n {
+  // Available language maps
+  let availableLanguages: Language[] = [];
+
   // Default locale; default this to English
   let defaultLocale: Locale = DEFAULT_LOCALE;
 
@@ -547,6 +567,14 @@ export function setupI18n(): I18n {
 
   // Return a new I18n instance
   return {
+    setAvailableLanguages(languages: Language[]) {
+      availableLanguages = languages;
+    },
+
+    get availableLanguages() {
+      return availableLanguages;
+    },
+
     activate: (locale: Locale): void => {
       currentLocale = locale;
     },

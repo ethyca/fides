@@ -101,24 +101,27 @@ describe("Consent overlay", () => {
           ).contains("[banner-opts] We use cookies and similar methods");
           cy.get("div#fides-button-group").within(() => {
             cy.get(
-              "button#fides-banner-button-tertiary.fides-banner-button.fides-banner-button-tertiary"
+              "button.fides-banner-button.fides-banner-button-tertiary"
             ).contains("Manage preferences");
             cy.get(
-              "button#fides-banner-button-primary.fides-banner-button.fides-banner-button-primary"
+              "button.fides-banner-button.fides-banner-button-primary"
             ).contains("Opt out of all");
             cy.get(
-              "button#fides-banner-button-primary.fides-banner-button.fides-banner-button-primary"
+              "button.fides-banner-button.fides-banner-button-primary"
             ).contains("Opt in to all");
             // Order matters - it should always be secondary, then primary!
-            cy.get("button")
-              .eq(0)
-              .should("have.id", "fides-banner-button-tertiary");
-            cy.get("button")
-              .eq(1)
-              .should("have.id", "fides-banner-button-primary");
-            cy.get("button")
-              .eq(2)
-              .should("have.id", "fides-banner-button-primary");
+            cy.get("button.fides-manage-preferences-button").should(
+              "have.class",
+              "fides-banner-button-tertiary"
+            );
+            cy.get("button.fides-reject-all-button").should(
+              "have.class",
+              "fides-banner-button-primary"
+            );
+            cy.get("button.fides-accept-all-button").should(
+              "have.class",
+              "fides-banner-button-primary"
+            );
           });
         });
       });

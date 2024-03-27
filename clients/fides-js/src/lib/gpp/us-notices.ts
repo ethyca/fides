@@ -83,6 +83,10 @@ export const setGppNoticesProvidedFromExperience = ({
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
+    if (experience?.gpp_settings?.us_approach === GPPUSApproach.STATE) {
+      cmpApi.setApplicableSections([-1]);
+      return [];
+    }
     return [];
   }
 
@@ -130,6 +134,10 @@ export const setGppOptOutsFromCookieAndExperience = ({
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
+    if (experience?.gpp_settings?.us_approach === GPPUSApproach.STATE) {
+      cmpApi.setApplicableSections([-1]);
+      return [];
+    }
     return [];
   }
   sectionsChanged.add(gppSection);
