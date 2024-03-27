@@ -139,7 +139,7 @@ export interface FidesGlobal extends Fides {
   meta: typeof meta;
   shopify: typeof shopify;
   showModal: () => void;
-}
+};
 
 /**
  * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
