@@ -171,14 +171,12 @@ export interface Fides {
   gtm: () => void;
 
   /**
-   * Initialize FidesJS based
+   * Initializes FidesJS with an initial configuration object.
    *
    * NOTE: In most cases, you should never have to call this directly, since
    * Fides Cloud will automatically bundle a `Fides.init(...)` call server-side
-   * with the appropriate options for the user's session based on their
-   * location, property ID, and the latest configuration options from Fides.
-   *
-   * @param config something
+   * with the appropriate configuration options for the user's session based on
+   * their location, property ID, and the matching experience config from Fides.
    */
   init: (config: any) => Promise<void>;
 
