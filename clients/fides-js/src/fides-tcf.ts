@@ -244,7 +244,6 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
-    fidesPreviewMode: false,
   },
   fides_meta: {},
   identity: {},
