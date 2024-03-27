@@ -2,44 +2,36 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Adyen
   type: adyen
-  description: A sample schema representing the Adyen integration for Fides
+  description: A sample schema representing the Adyen integrations for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/adyen
   version: 0.1.0
 
   connector_params:
-    - name: management_endpoint
-      default_value: management-test.adyen.com
-      label: The default value here is management-test.adyen.com, be sure to change this to reflect the live url, e.g. management-live.adyen.com.
-    - name: domain-test-replaceme #this needs to be live in the final version, problem here though is that we don't have a 'live' endpoint to test with as the keys we have access to are for the 'test' endpoint for Slice.
-      label: The default value here is ca-test.adyen.com, be sure to change this to reflect the live url, e.g. ca-live.adyen.com.
-      default_value: ca-test.adyen.com
-    - name: pspReference
-      label: pspReference
-      description: The PSP reference of the original payment authorisation. See https://docs.adyen.com/development-resources/data-protection-api/ for more details.
-      sensitive: True
-    - name: x_API_key
+    - name: domain_management
+      label: Management domain
+      description: Please note that Adyen has both TEST and LIVE environments. E.g. management-test.adyen.com or management-live.adyen.com, and that API keys for live and test will not be the same.
+    - name: domain_ca
+      label: CA domain
+      description: Please note that Adyen has both TEST and LIVE environments. E.g. ca-test.adyen.com or ca-live.adyen.com, and that API keys for live and test will not be the same.
+    - name: api_key
       label: API key
+      description: See Adyen's documentation for me details about creating API keys, and how to assign roles for the key here (https://docs.adyen.com/development-resources/api-credentials/).
       sensitive: True
-      description: The API key/token for your Adyen environment (see https://docs.adyen.com/development-resources/api-credentials/#page-introduction for more details). **Note** Adyen uses roles to restrict operations that can be performed with a given API key. In order to use this integration the role of Data Protection API (see https://docs.adyen.com/development-resources/api-credentials/roles/#management-api for more details).
-    - name: merchantAccount
-      label: merchantAccount
-      description: Your merchant account.
 
   external_references:
-    - name: pspReference
-      description: pspReference that matches an enduser
+    - name: adyen_user_id
+      label: The PSP reference
+      description: The dataset reference to the PSP reference of the original payment authorization which maps to the desired user.
 
   client_config:
     protocol: https
-    host: management-test.adyen.com
-    # similar to the above, there are test and 'live' endpoints, and our testing has been with the 'test' endpoint, we do not have a live version of the API key
+    host: <domain_management>
     authentication:
       strategy: api_key
       configuration:
         headers:
           - name: x-API-key
-            value: <x-API-key>
-## This endpoint needs to use the management-test (or live) endpoint. We currently only have the test api key from Slice.
+            value: <api_key>
   test_request:
     method: GET
     path: /v3/me
@@ -47,18 +39,24 @@ saas_config:
   endpoints:
     - name: user
       requests:
+        read:
+          request_override: adyen_user_read
+          param_values:
+            - name: user_id
+              references:
+                - adyen_user_id
         delete:
           method: POST
           path: /ca/services/DataProtectionService/v1/requestSubjectErasure
           client_config:
             protocol: https
-            host: ca-test.adyen.com
+            host: <domain_ca>
             authentication:
               strategy: api_key
               configuration:
                 headers:
                   - name: x-API-key
-                    value: <x-API-key>
+                    value: <api_key>
           body: >
             {     "merchantAccount":<merchantAccount>,    
             "pspReference":<pspReference> }

@@ -15,18 +15,24 @@ secrets = get_secrets("adyen")
 @pytest.fixture(scope="session")
 def adyen_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "adyen.domain")
-        or secrets["domain"],
-        "x-API-key": pydash.get(saas_config, "adyen.x-API-key"),
-        "merchantAccount": pydash.get(saas_config, "adyen.merchantAccount"),
+        "domain_management": pydash.get(saas_config, "adyen.domain_management")
+        or secrets["domain_management"],
+        "domain_ca": pydash.get(saas_config, "adyen.domain_ca") or secrets["domain_ca"],
+        "api_key": pydash.get(saas_config, "adyen.api_key") or secrets["adyen.api_key"],
+        "merchantAccount": pydash.get(saas_config, "adyen.merchantAccount")
+        or secrets["adyen.mechantAccount"],
         "pspReference": pydash.get(saas_config, "adyen.pspReference")
+        or secrets["adyen.pspReference"],
+        "adyen_user_id": pydash.get(saas_config, "adyen.user_id")
+        or secrets["adyen.user_id"],
         # add the rest of your secrets here
     }
 
 
-@pytest.fixture(scope="session")
-def adyen_identity_email(saas_config) -> str:
-    return pydash.get(saas_config, "adyen.identity_email") or secrets["identity_email"]
+### In this case, we aren't passing an identity email as Adyen's data protection endpoint requires a different value, the pspReference value which will be provided to us by our customer.
+# @pytest.fixture(scope="session")
+# def adyen_identity_email(saas_config) -> str:
+#     return pydash.get(saas_config, "adyen.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture
@@ -34,22 +40,25 @@ def adyen_erasure_identity_email() -> str:
     return generate_random_email()
 
 
+### note -- not sure why we were able to remove this in statsig - it could be that we don't really need a full item to delete, will comment out for now.
 @pytest.fixture
 def adyen_external_references() -> Dict[str, Any]:
-    return {}
+    return {"pspReference": "852617375522786K"}
 
 
+### I think the pspReference could be random as we will get a 200 back even if the pspReference doesn't exist
 @pytest.fixture
 def adyen_erasure_external_references() -> Dict[str, Any]:
-    return {}
+    return {"pspReference": "852617375522786K"}
 
 
-@pytest.fixture
-def adyen_erasure_data(
-    adyen_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
+### Given how the erasure works, it isn't required that we have data in the system to test the deletion as we're just looking for the response to be a 200
+# @pytest.fixture
+# def adyen_erasure_data(
+#     adyen_erasure_identity_email: str,
+# ) -> Generator:
+#     # create the data needed for erasure tests here
+#     yield {}
 
 
 @pytest.fixture
