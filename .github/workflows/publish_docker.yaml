@@ -66,7 +66,7 @@ jobs:
       matrix:
         application: ["fides", "sample_app", "privacy_center"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # This is required to properly tag images
 
