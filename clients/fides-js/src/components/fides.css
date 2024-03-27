@@ -418,6 +418,10 @@ div#fides-consent-content .fides-modal-description {
   gap: 12px;
 }
 
+.fides-no-scroll {
+  overflow-y: hidden;
+}
+
 /* Responsive overlay */
 @media (max-width: 48em) {
   div.fides-modal-content,

@@ -31,6 +31,7 @@ The types of changes are:
 - Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734)
 - Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
 - Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
+- Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
 - Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
 
 ### Fixed
@@ -41,6 +42,10 @@ The types of changes are:
 - Cleaned up table borders [#4733](https://github.com/ethyca/fides/pull/4733)
 - Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
 - Re-add CORS origin regex field to admin UI (#4742)[https://github.com/ethyca/fides/pull/4742]
+
+### Developer Experience
+- Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)
+
 
 ### Developer Experience
 - Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)

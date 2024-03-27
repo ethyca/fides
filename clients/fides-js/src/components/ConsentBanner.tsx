@@ -13,7 +13,7 @@ interface ButtonGroupProps {
 
 interface BannerProps {
   i18n: I18n;
-  dismissable: boolean | undefined;
+  dismissable: boolean;
   onOpen: () => void;
   onClose: () => void;
   bannerIsOpen: boolean;

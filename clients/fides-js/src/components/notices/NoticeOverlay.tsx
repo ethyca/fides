@@ -235,6 +235,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
+  const isDismissable = !!experience.experience_config?.dismissable;
+
   return (
     <Overlay
       options={options}
@@ -242,12 +244,13 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       i18n={i18n}
       cookie={cookie}
       savedConsent={savedConsent}
+      isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}
-          dismissable={experience.experience_config?.dismissable}
+          dismissable={isDismissable}
           onOpen={dispatchOpenBannerEvent}
           onClose={() => {
             onClose();
