@@ -212,6 +212,7 @@ export const PrivacyExperienceForm = ({
         setValues={(newValues) => setFieldValue("properties", newValues)}
         draggable
         maxHeight={100}
+        baseTestId="property"
       />
       <Divider />
       {values.component !== ComponentType.TCF_OVERLAY ? (
@@ -228,6 +229,7 @@ export const PrivacyExperienceForm = ({
             }
             getItemLabel={getPrivacyNoticeName}
             draggable
+            baseTestId="privacy-notice"
           />
           <Divider />
         </>
@@ -243,6 +245,7 @@ export const PrivacyExperienceForm = ({
         setValues={(newValues) => setFieldValue("regions", newValues)}
         getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
         draggable
+        baseTestId="location"
       />
       {translationsEnabled ? (
         <>
@@ -267,6 +270,7 @@ export const PrivacyExperienceForm = ({
             onRowClick={onSelectTranslation}
             selectOnAdd
             draggable
+            baseTestId="language"
           />
           <CustomSwitch
             name="auto_detect_language"

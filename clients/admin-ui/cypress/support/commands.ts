@@ -75,6 +75,17 @@ Cypress.Commands.add("assumeRole", (role) => {
   });
 });
 
+// this prevents an infinite loop that occurs sometimes and causes tests to
+// fail-- see https://github.com/cypress-io/cypress/issues/20341
+Cypress.on("uncaught:exception", (err) => {
+  if (err.message.includes("ResizeObserver")) {
+    // returning false here prevents Cypress from
+    // failing the test
+    return false;
+  }
+  return true;
+});
+
 declare global {
   namespace Cypress {
     type GetBy = (

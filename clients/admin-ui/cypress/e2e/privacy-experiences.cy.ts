@@ -1,4 +1,9 @@
-import { stubPlus, stubTranslationConfig } from "cypress/support/stubs";
+import {
+  stubLocations,
+  stubPlus,
+  stubPrivacyNoticesCrud,
+  stubTranslationConfig,
+} from "cypress/support/stubs";
 
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
@@ -12,6 +17,9 @@ describe("Privacy experiences", () => {
     cy.intercept("GET", "/api/v1/experience-config*", {
       fixture: "privacy-experiences/list.json",
     }).as("getExperiences");
+    cy.intercept("GET", "/api/v1/experience-config/pri*", {
+      fixture: "privacy-experiences/experienceConfig.json",
+    }).as("getExperienceDetail");
     stubPlus(true);
   });
 
@@ -99,12 +107,17 @@ describe("Privacy experiences", () => {
     });
 
     it("can click a row to go to the experience page", () => {
-      cy.intercept("GET", "/api/v1/experience-config/pri*", {
-        fixture: "privacy-experiences/experienceConfig.json",
-      }).as("getExperienceDetail");
       cy.get("table").contains("tr", "notice enabled test").click();
       cy.wait("@getExperienceDetail");
-      cy.getByTestId("input-name").should("have.value", "Experience title");
+      cy.getByTestId("input-name").should(
+        "have.value",
+        "Example modal experience"
+      );
+    });
+
+    it("can click the button to create a new experience", () => {
+      cy.getByTestId("add-privacy-experience-btn").click();
+      cy.url().should("contain", "privacy-experience/new");
     });
 
     describe("enabling and disabling", () => {
@@ -157,38 +170,174 @@ describe("Privacy experiences", () => {
   });
 
   describe("forms", () => {
-    beforeEach(() => {
-      cy.intercept("PATCH", "/api/v1/experience-config/*", {
-        fixture: "privacy-experiences/experienceConfig.json",
-      }).as("patchExperience");
-    });
-    /**
-     * Helper function to swap out the component type in a stubbed experience
-     * @example stubExperience({component: "overlay"})
-     */
-    const stubExperience = () => {
-      cy.intercept("GET", "/api/v1/experience-config/pri*", {
-        fixture: "privacy-experiences/experienceConfig.json",
+    describe("creating a new experience config", () => {
+      beforeEach(() => {
+        stubPrivacyNoticesCrud();
+        stubLocations();
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
+        cy.wait("@getNotices");
       });
-    };
 
-    it.skip("can populate an experience config form with existing values", () => {
-      stubExperience();
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${EXPERIENCE_ID}`);
-      cy.getByTestId("input-name").should("have.value", "notice enabled test");
+      it("can create an experience", () => {
+        cy.getByTestId("input-name").type("Test experience name");
+        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").click();
+        cy.get(".select-privacy-notice__menu")
+          .find(".select-privacy-notice__option")
+          .first()
+          .click();
+        cy.getByTestId("add-location").click();
+        cy.getByTestId("select-location").click();
+        cy.get(".select-location__menu")
+          .find(".select-location__option")
+          .first()
+          .click();
+        cy.intercept("POST", "/api/v1/experience-config", {
+          statusCode: 200,
+        }).as("postExperience");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@postExperience").then((interception) => {
+          const { body } = interception.request;
+          expect(body).to.eql({
+            allow_language_selection: false,
+            component: "banner_and_modal",
+            disabled: true,
+            name: "Test experience name",
+            privacy_notice_ids: ["pri_b1244715-2adb-499f-abb2-e86b6c0040c2"],
+            regions: ["fr"],
+            translations: [
+              {
+                accept_button_label: "Accept",
+                acknowledge_button_label: "OK",
+                description: "Description",
+                is_default: true,
+                language: "en",
+                privacy_preferences_link_label: "Privacy Preferences",
+                reject_button_label: "Reject",
+                save_button_label: "Save",
+                title: "Title",
+              },
+            ],
+          });
+        });
+        cy.url().should("match", /privacy-experience$/);
+        cy.getByTestId("toast-success-msg").should("exist");
+      });
+
+      it("doesn't allow component type to be changed after selection", () => {
+        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("input-component").find("input").should("be.disabled");
+      });
+
+      it("doesn't show a preview for a privacy center", () => {
+        cy.selectOption("input-component", "Privacy center");
+        cy.getByTestId("no-preview-notice").contains(
+          "Privacy center preview not available"
+        );
+      });
+
+      it("doesn't show preview until privacy notice is added", () => {
+        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("no-preview-notice").contains(
+          "No privacy notices added"
+        );
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").click();
+        cy.get(".select-privacy-notice__menu")
+          .find(".select-privacy-notice__option")
+          .first()
+          .click();
+        cy.getByTestId("no-preview-notice").should("not.exist");
+        cy.get("#preview-container").should("be.visible");
+      });
+
+      it("allows editing experience text and shows updated text in the preview", () => {
+        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").click();
+        cy.get(".select-privacy-notice__menu")
+          .find(".select-privacy-notice__option")
+          .first()
+          .click();
+        cy.getByTestId("edit-experience-btn").click();
+        cy.getByTestId("input-translations.0.title")
+          .clear()
+          .type("Edited title");
+        cy.getByTestId("save-btn").click();
+        cy.get("#preview-container")
+          .find("#fides-banner")
+          .contains("Edited title");
+      });
     });
 
-    it.skip("can submit an experience config form", () => {
-      stubExperience();
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${EXPERIENCE_ID}`);
-      cy.getByTestId("save-btn").should("be.disabled");
-      cy.getByTestId("input-name").clear().type("New experience title");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@patchExperience").then((interception) => {
-        const { body } = interception.request;
-        expect(body.name).to.eql("New experience title");
-        // Make sure regions is still ["us_ca"] (unchanged)
-        expect(body.regions).to.eql(["us_ca"]);
+    describe("editing an existing experience config", () => {
+      beforeEach(() => {
+        stubPrivacyNoticesCrud();
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+      });
+
+      it("populates the form and shows the preview with the existing values", () => {
+        cy.wait("@getExperienceDetail");
+        cy.getByTestId("input-component").find("input").should("be.disabled");
+        cy.getByTestId("input-name").should(
+          "have.value",
+          "Example modal experience"
+        );
+        cy.get("#preview-container").contains(
+          "Manage your consent preferences"
+        );
+      });
+
+      it("doesn't show a preview while editing TCF experience", () => {
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri*", {
+            ...data,
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
+        });
+        cy.wait("@getTCFExperience");
+        cy.getByTestId("no-preview-notice").contains(
+          "TCF preview not available"
+        );
+      });
+    });
+
+    describe("editing translations", () => {
+      beforeEach(() => {
+        stubTranslationConfig(true);
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getExperienceDetail");
+      });
+
+      it("shows the preview for the translation currently being edited", () => {
+        cy.getByTestId("language-row-fr").click();
+        cy.get("#preview-container").contains(
+          "Gestion du consentement et des préférences"
+        );
+      });
+
+      it("allows discarding unsaved changes after showing a modal", () => {
+        cy.getByTestId("language-row-en").click();
+        cy.getByTestId("input-translations.0.title")
+          .clear()
+          .type("Some other title");
+        cy.getByTestId("cancel-btn").click();
+        cy.getByTestId("warning-modal-confirm-btn").click();
+        cy.get("#preview-container").contains(
+          "Manage your consent preferences"
+        );
+      });
+
+      it("allows changing the default language after showing a modal", () => {
+        cy.getByTestId("language-row-fr").click();
+        cy.getByTestId("input-translations.1.is_default").click();
+        cy.getByTestId("save-btn").click();
+        cy.getByTestId("warning-modal-confirm-btn").click();
+        cy.getByTestId("language-row-fr").contains("(Default)");
+        cy.get("#preview-container").contains(
+          "Gestion du consentement et des préférences"
+        );
       });
     });
   });

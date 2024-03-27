@@ -35,6 +35,7 @@ export const OOBTranslationNotice = ({
 }) => (
   <InfoBox
     text={`This is a default translation provided by Fides. If you've modified the default English language text, these translations will not match, so verify any changes with a native ${languageName} speaker before using.`}
+    data-testid="oob-translation-notice"
   />
 );
 
@@ -136,7 +137,11 @@ const PrivacyExperienceTranslationForm = ({
 
   const buttonPanel = (
     <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-      <Button variant="outline" onClick={handleLeaveForm}>
+      <Button
+        variant="outline"
+        onClick={handleLeaveForm}
+        data-testid="cancel-btn"
+      >
         Cancel
       </Button>
       <Button
