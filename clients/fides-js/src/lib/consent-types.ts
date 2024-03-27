@@ -114,7 +114,7 @@ export interface FidesInitOptions {
 
   // Allows specifying the preferred locale used for translations
   fidesLocale?: string;
-};
+}
 
 /**
  * Defines the exact interface used for the `Fides` global object. Note that we
@@ -139,7 +139,7 @@ export interface FidesGlobal extends Fides {
   meta: typeof meta;
   shopify: typeof shopify;
   showModal: () => void;
-};
+}
 
 /**
  * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
