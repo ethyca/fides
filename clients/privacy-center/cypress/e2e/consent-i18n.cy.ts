@@ -971,6 +971,7 @@ describe("Consent i18n", () => {
             );
           });
         });
+
         describe("when fides_override_language is only part of an experience locale string", () => {
           beforeEach(() => {
             visitDemoWithI18n({
@@ -1033,6 +1034,7 @@ describe("Consent i18n", () => {
             );
           });
         });
+
         describe("when fides_override_language is in a locale that does not exist in experience translations", () => {
           beforeEach(() => {
             visitDemoWithI18n({
@@ -1095,6 +1097,7 @@ describe("Consent i18n", () => {
             );
           });
         });
+
         describe("when fides_override_language is not provided", () => {
           beforeEach(() => {
             visitDemoWithI18n({
