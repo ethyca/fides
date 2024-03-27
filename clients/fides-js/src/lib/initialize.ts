@@ -1,8 +1,5 @@
 import { ContainerNode } from "preact";
 
-import { gtm } from "../integrations/gtm";
-import { meta } from "../integrations/meta";
-import { shopify } from "../integrations/shopify";
 import {
   I18n,
   initializeI18n,
@@ -22,8 +19,8 @@ import {
 import {
   ConsentMechanism,
   ConsentMethod,
-  EmptyExperience,
   FidesConfig,
+  FidesGlobal,
   FidesInitOptionsOverrides,
   FidesInitOptions,
   FidesOptions,
@@ -31,8 +28,6 @@ import {
   SaveConsentPreference,
   UserGeolocation,
   FidesCookie,
-  FidesJSMeta,
-  FidesJSIdentity,
   NoticeConsent,
 } from "./consent-types";
 import {
@@ -49,39 +44,12 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { TcfOtherConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 import { setupExtensions } from "./extensions";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
-import type { Fides } from "../docs";
-
-/**
- * Defines the exact interface used for the `Fides` global object. Note that we
- * extend the documented `Fides` interface here to provide some narrower, more
- * specific types. This is mostly for legacy purposes, but also since we want to
- * ensure that the documented interface isn't overly specific in areas we may
- * need to change.
- */
-export interface FidesGlobal extends Fides {
-  consent: NoticeConsent;
-  experience?: PrivacyExperience | EmptyExperience;
-  geolocation?: UserGeolocation;
-  fides_string?: string | undefined;
-  options: FidesInitOptions;
-  fides_meta: FidesJSMeta;
-  tcf_consent: TcfOtherConsent;
-  saved_consent: NoticeConsent;
-  gtm: typeof gtm;
-  identity: FidesJSIdentity;
-  init: (config: FidesConfig) => Promise<void>;
-  initialized: boolean;
-  meta: typeof meta;
-  shopify: typeof shopify;
-  showModal: () => void;
-}
 
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,

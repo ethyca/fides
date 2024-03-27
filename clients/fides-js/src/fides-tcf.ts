@@ -52,12 +52,13 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
 import {
-  NoticeConsent,
   FidesConfig,
+  FidesGlobal,
   FidesInitOptionsOverrides,
+  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  FidesOptions,
+  NoticeConsent,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -68,7 +69,6 @@ import {
   getOptionsOverrides,
   initialize,
 } from "./lib/initialize";
-import type { FidesGlobal } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
 import { debugLog, FidesCookie, defaultShowModal } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";

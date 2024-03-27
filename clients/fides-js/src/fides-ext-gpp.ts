@@ -27,10 +27,10 @@ import {
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
-import type { FidesGlobal } from "./lib/initialize";
 import type {
-  NoticeConsent,
+  FidesGlobal,
   FidesOptions,
+  NoticeConsent,
   PrivacyNoticeWithPreference,
 } from "./lib/consent-types";
 import { GPPUSApproach, GppFunction } from "./lib/gpp/types";

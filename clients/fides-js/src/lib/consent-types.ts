@@ -1,4 +1,4 @@
-import type { FidesOptions } from "../docs";
+import type { Fides, FidesOptions } from "../docs";
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
@@ -18,6 +18,9 @@ import type {
   TCFVendorSave,
 } from "./tcf/types";
 import { TcfOtherConsent } from "./tcf/types";
+import type { gtm } from "../integrations/gtm";
+import type { meta } from "../integrations/meta";
+import type { shopify } from "../integrations/shopify";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -112,6 +115,31 @@ export interface FidesInitOptions {
   // Allows specifying the preferred locale used for translations
   fidesLocale?: string;
 };
+
+/**
+ * Defines the exact interface used for the `Fides` global object. Note that we
+ * extend the documented `Fides` interface here to provide some narrower, more
+ * specific types. This is mostly for legacy purposes, but also since we want to
+ * ensure that the documented interface isn't overly specific in areas we may
+ * need to change.
+ */
+export interface FidesGlobal extends Fides {
+  consent: NoticeConsent;
+  experience?: PrivacyExperience | EmptyExperience;
+  geolocation?: UserGeolocation;
+  fides_string?: string | undefined;
+  options: FidesInitOptions;
+  fides_meta: FidesJSMeta;
+  tcf_consent: TcfOtherConsent;
+  saved_consent: NoticeConsent;
+  gtm: typeof gtm;
+  identity: FidesJSIdentity;
+  init: (config: FidesConfig) => Promise<void>;
+  initialized: boolean;
+  meta: typeof meta;
+  shopify: typeof shopify;
+  showModal: () => void;
+}
 
 /**
  * Store the user's consent preferences as notice_key -> boolean pairs, e.g.

@@ -53,13 +53,14 @@ import {
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
-  NoticeConsent,
   FidesConfig,
   FidesCookie,
+  FidesGlobal,
   FidesInitOptionsOverrides,
+  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  FidesOptions,
+  NoticeConsent,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -71,8 +72,6 @@ import {
   getInitialFides,
   getOptionsOverrides,
 } from "./lib/initialize";
-import type { FidesGlobal } from "./lib/initialize";
-
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
 import { defaultShowModal } from "./lib/consent-utils";
