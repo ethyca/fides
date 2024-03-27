@@ -10,7 +10,7 @@
       ],
       "consent_mechanism": "opt_out",
       "configured_regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
-      "systems_applicable": false,
+      "systems_applicable": true,
       "disabled": true,
       "framework": null
     },
@@ -157,7 +157,7 @@
         "sk"
       ],
       "systems_applicable": false,
-      "disabled": true,
+      "disabled": false,
       "framework": null
     },
     {
@@ -200,8 +200,8 @@
         "si",
         "sk"
       ],
-      "systems_applicable": false,
-      "disabled": true,
+      "systems_applicable": true,
+      "disabled": false,
       "framework": null
     }
   ],
