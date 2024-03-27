@@ -2,6 +2,7 @@ import {
   ComponentType,
   ExperienceConfig,
   ExperienceConfigTranslation,
+  FidesExperienceTranslationOverrides,
   FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
@@ -51,7 +52,8 @@ export function areLocalesEqual(a: Locale, b: Locale): boolean {
  * }
  */
 function extractMessagesFromExperienceConfig(
-  experienceConfig: ExperienceConfig
+  experienceConfig: ExperienceConfig,
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): Record<Locale, Messages> {
   const extracted: Record<Locale, Messages> = {};
   const EXPERIENCE_TRANSLATION_FIELDS = [
@@ -72,11 +74,29 @@ function extractMessagesFromExperienceConfig(
       // For each translation, extract each of the translated fields
       (translation: ExperienceConfigTranslation) => {
         const locale = translation.language;
+        // We only override experience translations if the override_language matches current locale
+        let localeHasOverride = false;
+        if (experienceTranslationOverrides?.override_language) {
+          // If translation overrides exist for this language, we will need to apply them below
+          localeHasOverride = areLocalesEqual(
+            experienceTranslationOverrides.override_language,
+            locale
+          );
+        }
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
+          let overrideValue: string | null | undefined = null;
+          if (experienceTranslationOverrides && localeHasOverride) {
+            overrideValue =
+              key in experienceTranslationOverrides
+                ? experienceTranslationOverrides[
+                    key as keyof FidesExperienceTranslationOverrides
+                  ]
+                : null;
+          }
           const message = translation[key];
           if (typeof message === "string") {
-            messages[`exp.${key}`] = message;
+            messages[`exp.${key}`] = overrideValue || message;
           }
         });
 
@@ -218,7 +238,8 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
  */
 export function loadMessagesFromExperience(
   i18n: I18n,
-  experience: Partial<PrivacyExperience>
+  experience: Partial<PrivacyExperience>,
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): Locale[] {
   const allMessages: Record<Locale, Messages> = {};
   let availableLocales: Locale[] = [];
@@ -227,7 +248,10 @@ export function loadMessagesFromExperience(
   if (experience?.experience_config) {
     const config = experience.experience_config;
     const extracted: Record<Locale, Messages> =
-      extractMessagesFromExperienceConfig(config);
+      extractMessagesFromExperienceConfig(
+        config,
+        experienceTranslationOverrides
+      );
     Object.keys(extracted).forEach((locale) => {
       allMessages[locale] = {
         ...extracted[locale],
@@ -449,11 +473,16 @@ export function initializeI18n(
   i18n: I18n,
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
-  options?: Partial<FidesInitOptions>
+  options?: Partial<FidesInitOptions>,
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
-  const availableLocales = loadMessagesFromExperience(i18n, experience);
+  const availableLocales = loadMessagesFromExperience(
+    i18n,
+    experience,
+    experienceTranslationOverrides
+  );
   debugLog(
     options?.debug,
     `Loaded Fides i18n with available locales = ${availableLocales}`

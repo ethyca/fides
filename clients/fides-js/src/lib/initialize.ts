@@ -20,20 +20,23 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesConfig,
+  FidesCookie,
   FidesGlobal,
-  FidesInitOptionsOverrides,
   FidesInitOptions,
   FidesOptions,
+  FidesOverrides,
+  NoticeConsent,
+  OverrideExperienceTranslations,
+  OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
-  FidesCookie,
-  NoticeConsent,
 } from "./consent-types";
 import {
   constructFidesRegionString,
   debugLog,
   experienceIsValid,
+  getOverrideValidatorMapByType,
   getWindowObjFromPath,
   isPrivacyExperience,
   validateOptions,
@@ -44,7 +47,6 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 import { setupExtensions } from "./extensions";
 import {
   noticeHasConsentInCookie,
@@ -174,51 +176,55 @@ const automaticallyApplyGPCPreferences = async ({
 };
 
 /**
- * Gets and validates override options provided through URL query params, cookie, or window obj
+ * Gets and validates overrides provided through URL query params, cookie, or window obj
+ * This shared fn supports getting 2 different types of overrides: FidesOptionsOverrides and
+ * FidesExperienceLanguageOverrides
  *
- * If the same override option is provided in multiple ways, load the value in this order:
+ * If the same override is provided in multiple ways, load the value in this order:
  * 1) query param  (top priority)
  * 2) window obj   (second priority)
  * 3) cookie value (last priority)
  */
-export const getOptionsOverrides = (
+export const getOverridesByType = <T>(
+  type: OverrideType,
   config: FidesConfig
-): Partial<FidesInitOptionsOverrides> => {
-  const overrideOptions: Partial<FidesInitOptionsOverrides> = {};
+): Partial<T> => {
+  const overrides: Partial<T> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);
-    // Grab override options if exists (e.g. window.fides_overrides = { fides_string: "123..." })
+    // Grab window overrides if exists (e.g. window.fides_overrides = { fides_string: "123..." })
     const customPathArr: "" | null | string[] =
       config.options.customOptionsPath &&
       config.options.customOptionsPath.split(".");
-    const windowObj: FidesOptions | undefined =
+    const windowObj:
+      | Partial<FidesOptions & OverrideExperienceTranslations>
+      | undefined =
       customPathArr && customPathArr.length >= 0
         ? getWindowObjFromPath(customPathArr)
         : window.fides_overrides;
 
     // Look for each of the override options in all three locations: query params, window object, cookie
-    FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP.forEach(
-      ({ fidesOption, fidesOptionType, fidesOverrideKey, validationRegex }) => {
-        const queryParamOverride: string | null =
-          queryParams.get(fidesOverrideKey);
+    const overrideValidatorMap = getOverrideValidatorMapByType(type);
+    overrideValidatorMap?.forEach(
+      ({ overrideName, overrideType, overrideKey, validationRegex }) => {
+        const queryParamOverride: string | null = queryParams.get(overrideKey);
         const windowObjOverride: string | boolean | undefined = windowObj
-          ? windowObj[fidesOverrideKey]
+          ? windowObj[overrideKey]
           : undefined;
-        const cookieOverride: string | undefined =
-          getCookieByName(fidesOverrideKey);
+        const cookieOverride: string | undefined = getCookieByName(overrideKey);
 
-        // Load the override option value, respecting the order of precedence (query params > window object > cookie)
+        // Load the override value, respecting the order of precedence (query params > window object > cookie)
         const value = queryParamOverride || windowObjOverride || cookieOverride;
         if (value && validationRegex.test(value.toString())) {
-          // coerce to expected type in FidesOptions
-          overrideOptions[fidesOption] =
-            fidesOptionType === "string" ? value : JSON.parse(value.toString());
+          // coerce to expected type
+          overrides[overrideName as keyof T] =
+            overrideType === "string" ? value : JSON.parse(value.toString());
         }
       }
     );
   }
-  return overrideOptions;
+  return overrides;
 };
 
 /**
@@ -304,6 +310,7 @@ export const initialize = async ({
   geolocation,
   renderOverlay,
   updateExperience,
+  overrides,
 }: {
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
@@ -323,6 +330,7 @@ export const initialize = async ({
     debug?: boolean;
     isExperienceClientSideFetched: boolean;
   }) => Partial<PrivacyExperience>;
+  overrides?: Partial<FidesOverrides>;
 } & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
@@ -414,7 +422,13 @@ export const initialize = async ({
       if (shouldInitOverlay) {
         // Initialize the i18n singleton before we render the overlay
         const i18n = setupI18n();
-        initializeI18n(i18n, window?.navigator, effectiveExperience, options);
+        initializeI18n(
+          i18n,
+          window?.navigator,
+          effectiveExperience,
+          options,
+          overrides?.experienceTranslationOverrides
+        );
 
         // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({

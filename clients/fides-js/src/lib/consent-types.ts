@@ -114,6 +114,9 @@ export interface FidesInitOptions {
 
   // Allows specifying the preferred locale used for translations
   fidesLocale?: string;
+
+  // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
+  fidesPrimaryColor: string | null;
 }
 
 /**
@@ -635,6 +638,13 @@ export type UserGeolocation = {
  */
 export { FidesOptions };
 
+export type OverrideExperienceTranslations = {
+  fides_title: string;
+  fides_description: string;
+  fides_privacy_policy_url: string;
+  fides_override_language: string;
+};
+
 /**
  * Select the subset of FidesInitOptions that can be overriden at runtime using
  * one of the customer-provided FidesOptions properties above. There's a 1:1
@@ -650,12 +660,26 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
   | "fidesLocale"
+  | "fidesPrimaryColor"
 >;
+
+export type FidesExperienceTranslationOverrides = {
+  title: string;
+  description: string;
+  privacy_policy_url: string;
+  override_language: string;
+};
 
 export type FidesOverrides = {
   optionsOverrides: Partial<FidesInitOptionsOverrides>;
   consentPrefsOverrides: GetPreferencesFnResp | null;
+  experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides>;
 };
+
+export enum OverrideType {
+  OPTIONS = "options",
+  EXPERIENCE_TRANSLATION = "language",
+}
 
 export enum ButtonType {
   PRIMARY = "primary",

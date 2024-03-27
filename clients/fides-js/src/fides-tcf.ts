@@ -53,12 +53,14 @@ import { shopify } from "./integrations/shopify";
 
 import {
   FidesConfig,
+  FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
+  OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -66,7 +68,7 @@ import { initializeTcfCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
-  getOptionsOverrides,
+  getOverridesByType,
   initialize,
 } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
@@ -140,11 +142,17 @@ const updateExperience = ({
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
-    getOptionsOverrides(config);
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> = getOverridesByType<
+    Partial<FidesInitOptionsOverrides>
+  >(OverrideType.OPTIONS, config);
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });
+  const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
+      OverrideType.EXPERIENCE_TRANSLATION,
+      config
+    );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // if we don't already have a fidesString override, use fidesString from consent prefs if they exist
@@ -154,6 +162,7 @@ const init = async (config: FidesConfig) => {
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
+    experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrides.optionsOverrides };
@@ -209,6 +218,7 @@ const init = async (config: FidesConfig) => {
     experience,
     renderOverlay,
     updateExperience,
+    overrides,
   });
   Object.assign(_Fides, updatedFides);
 
@@ -244,6 +254,7 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
+    fidesPrimaryColor: null,
   },
   fides_meta: {},
   identity: {},

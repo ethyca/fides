@@ -55,12 +55,14 @@ import {
 import {
   FidesConfig,
   FidesCookie,
+  FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
+  OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -70,7 +72,7 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
-  getOptionsOverrides,
+  getOverridesByType,
 } from "./lib/initialize";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
@@ -113,14 +115,21 @@ const updateExperience = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
-    getOptionsOverrides(config);
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> = getOverridesByType<
+    Partial<FidesInitOptionsOverrides>
+  >(OverrideType.OPTIONS, config);
+  const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
+      OverrideType.EXPERIENCE_TRANSLATION,
+      config
+    );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
+    experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrides.optionsOverrides };
@@ -164,6 +173,7 @@ const init = async (config: FidesConfig) => {
         debug,
         isExperienceClientSideFetched
       ),
+    overrides,
   });
   Object.assign(_Fides, updatedFides);
 
@@ -199,6 +209,7 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
+    fidesPrimaryColor: null,
   },
   fides_meta: {},
   identity: {},

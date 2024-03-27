@@ -1,5 +1,6 @@
 import {
   ExperienceConfig,
+  FidesExperienceTranslationOverrides,
   FidesInitOptions,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
@@ -308,6 +309,97 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
+      });
+    });
+
+    it("sets overrides experience_config translations when no locale match", () => {
+      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+        {
+          title: "My override title",
+          description: "My override description",
+          privacy_policy_url: "https://example.com/privacy",
+          override_language: "en",
+        };
+      const updatedLocales = loadMessagesFromExperience(
+        mockI18n,
+        mockExperience,
+        experienceTranslationOverrides
+      );
+      const EXPECTED_NUM_TRANSLATIONS = 2;
+      expect(updatedLocales).toEqual(["en", "es"]);
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
+        "exp.accept_button_label": "Accept Test",
+        "exp.acknowledge_button_label": "Acknowledge Test",
+        "exp.banner_description": "Banner Description Test",
+        "exp.banner_title": "Banner Title Test",
+        "exp.description": experienceTranslationOverrides.description,
+        "exp.privacy_policy_link_label": "Privacy Policy Test",
+        "exp.privacy_policy_url":
+          experienceTranslationOverrides.privacy_policy_url,
+        "exp.privacy_preferences_link_label": "Manage Preferences Test",
+        "exp.reject_button_label": "Reject Test",
+        "exp.save_button_label": "Save Test",
+        "exp.title": experienceTranslationOverrides.title,
+      });
+      expect(mockI18n.load).toHaveBeenCalledWith("es", {
+        "exp.accept_button_label": "Aceptar Prueba",
+        "exp.acknowledge_button_label": "Reconocer Prueba",
+        "exp.banner_description": "Descripción del Banner de Prueba",
+        "exp.banner_title": "Título del Banner de Prueba",
+        "exp.description": "Descripción de la Prueba",
+        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
+        "exp.privacy_policy_url": "https://privacy.example.com/es",
+        "exp.privacy_preferences_link_label":
+          "Administrar Preferencias de Prueba",
+        "exp.reject_button_label": "Rechazar Prueba",
+        "exp.save_button_label": "Guardar Prueba",
+        "exp.title": "Título de la Prueba",
+      });
+    });
+
+    it("does not set overrides experience_config translations when no locale match", () => {
+      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+        {
+          title: "My override title",
+          description: "My override description",
+          privacy_policy_url: "https://example.com/privacy",
+          override_language: "ja",
+        };
+      const updatedLocales = loadMessagesFromExperience(
+        mockI18n,
+        mockExperience,
+        experienceTranslationOverrides
+      );
+      const EXPECTED_NUM_TRANSLATIONS = 2;
+      expect(updatedLocales).toEqual(["en", "es"]);
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
+        "exp.accept_button_label": "Accept Test",
+        "exp.acknowledge_button_label": "Acknowledge Test",
+        "exp.banner_description": "Banner Description Test",
+        "exp.banner_title": "Banner Title Test",
+        "exp.description": "Description Test",
+        "exp.privacy_policy_link_label": "Privacy Policy Test",
+        "exp.privacy_policy_url": "https://privacy.example.com/",
+        "exp.privacy_preferences_link_label": "Manage Preferences Test",
+        "exp.reject_button_label": "Reject Test",
+        "exp.save_button_label": "Save Test",
+        "exp.title": "Title Test",
+      });
+      expect(mockI18n.load).toHaveBeenCalledWith("es", {
+        "exp.accept_button_label": "Aceptar Prueba",
+        "exp.acknowledge_button_label": "Reconocer Prueba",
+        "exp.banner_description": "Descripción del Banner de Prueba",
+        "exp.banner_title": "Título del Banner de Prueba",
+        "exp.description": "Descripción de la Prueba",
+        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
+        "exp.privacy_policy_url": "https://privacy.example.com/es",
+        "exp.privacy_preferences_link_label":
+          "Administrar Preferencias de Prueba",
+        "exp.reject_button_label": "Rechazar Prueba",
+        "exp.save_button_label": "Guardar Prueba",
+        "exp.title": "Título de la Prueba",
       });
     });
 

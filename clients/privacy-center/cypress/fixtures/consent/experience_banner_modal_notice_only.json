@@ -35,6 +35,21 @@
             "save_button_label": "Guardar",
             "title": "Administrar sus preferencias de consentimiento",
             "privacy_experience_config_history_id": "pri_exp-history-banner-modal-es-000"
+          },
+          {
+            "language": "fr-CA",
+            "accept_button_label": "Tout activer",
+            "acknowledge_button_label": "OK",
+            "banner_description": "[banner] Nous utilisons des témoins et des méthodes similaires pour reconnaitre les visiteurs et se souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité des campagnes de publicité, cibler les annonces et analyser le trafic du site. Selon votre emplacement, vous pouvez activer ou désactiver l’utilisation de ces technologies.",
+            "banner_title": "[banner] Gestion de vos préférences de consentement",
+            "description": "Nous utilisons des témoins et des méthodes similaires pour reconnaitre les visiteurs et se souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité des campagnes de publicité, cibler les annonces et analyser le trafic du site. Selon votre emplacement, vous pouvez activer ou désactiver l’utilisation de ces technologies.",
+            "is_default": false,
+            "privacy_policy_link_label": "Politique de confidentialité",
+            "privacy_preferences_link_label": "Gestion des préférences",
+            "reject_button_label": "Tout désactiver",
+            "save_button_label": "Sauvegarder",
+            "title": "Gestion de vos préférences de consentement",
+            "privacy_experience_config_history_id": "pri_exp-history-banner-modal-fr-ca-000"
           }
         ],
         "language": "en",
@@ -78,6 +93,12 @@
               "title": "Esenciales",
               "description": "Este sitio web utiliza cookies esenciales y servicios para habilitar las funciones principales del sitio web y brindar una experiencia de usuario perfecta. Estas cookies y servicios se usan para facilitar características como la navegación, recordar referencias del usuario y garantizar la seguridad del sitio web.",
               "privacy_notice_history_id": "pri_notice-history-essential-es-000"
+            },
+            {
+              "language": "fr-CA",
+              "title": "Marketing",
+              "description": "Ce site Web utilise des témoins et des services marketing pour délivrer des publicités personnalisées, des promotions et des offres qui vous correspondent.  Ils aident à optimiser la délivrance de publicités, à mesurer l’efficacité des campagnes publicitaires et permettent aux annonceurs d’atteindre des audiences ciblées spécifiques.",
+              "privacy_notice_history_id": "pri_notice-history-advertising-fr-ca-000"
             }
           ]
         }
