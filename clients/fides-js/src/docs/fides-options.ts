@@ -96,6 +96,13 @@ export interface FidesOptions {
   fides_locale: string;
 
   /**
+   * TODO (PROD-1815): docs!
+   * 
+   * Defaults to `undefined`.
+   */
+  fides_primary_color: string;
+
+  /**
    * Override the current user's `fides_string` consent preferences (see {@link
    * Fides.fides_string}). Can be used to synchronize consent preferences for a
    * registered user from a custom backend, where the `fides_string` could be
@@ -117,4 +124,4 @@ export interface FidesOptions {
    * Defaults to `true`.
    */
   fides_tcf_gdpr_applies: boolean;
-}
+};
