@@ -1,18 +1,18 @@
 import random
 from typing import Iterable
 
-from fideslang.validation import FidesKey
 from sqlalchemy.engine import Engine
 
 from fides.api.db.base_class import FidesBase
 from fides.api.graph.config import *
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.traversal import *
 from fides.api.graph.traversal import Traversal, TraversalNode
 
 # to avoid having faker spam the logs
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors import BaseConnector, MongoDBConnector
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.graph_task import GraphTask
@@ -43,9 +43,10 @@ class MockSqlConnector(SQLConnector):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         return [generate_collection(node.node.collection) for _ in range(3)]

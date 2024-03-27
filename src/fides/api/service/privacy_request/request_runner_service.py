@@ -18,18 +18,10 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.analytics_events import (
-    failed_graph_analytics_event,
-    fideslog_graph_failure,
-)
-from fides.api.graph.config import CollectionAddress, GraphDataset
+from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
+from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -62,12 +54,15 @@ from fides.api.service.connectors.erasure_email_connector import (
 from fides.api.service.connectors.fides_connector import filter_fides_connector_datasets
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.storage.storage_uploader_service import upload
-from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import (
-    get_cached_data_for_erasures,
+from fides.api.task.create_tasks import (
     run_access_request,
     run_consent_request,
-    run_erasure,
+    run_erasure_request,
+)
+from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_task import (
+    build_consent_dataset_graph,
+    filter_by_enabled_actions,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -78,7 +73,6 @@ from fides.api.util.cache import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
-from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -226,6 +220,7 @@ def upload_access_results(  # pylint: disable=R0912
     if not access_result:
         logger.info("No results returned for access request {}", privacy_request.id)
 
+    rule_filtered_results: Dict[str, Dict[str, List[Row]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
@@ -245,6 +240,7 @@ def upload_access_results(  # pylint: disable=R0912
         filtered_results.update(
             manual_data
         )  # Add manual data directly to each upload packet
+        rule_filtered_results[rule.key] = filtered_results
 
         logger.info(
             "Starting access request upload for rule {} for privacy request {}",
@@ -257,8 +253,6 @@ def upload_access_results(  # pylint: disable=R0912
                 privacy_request=privacy_request,
                 data=filtered_results,
                 storage_key=storage_destination.key,  # type: ignore
-                data_category_field_mapping=dataset_graph.data_category_field_mapping,
-                data_use_map=privacy_request.get_cached_data_use_map(),
             )
             if download_url:
                 download_urls.append(download_url)
@@ -271,7 +265,8 @@ def upload_access_results(  # pylint: disable=R0912
                 Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
-
+    # Save the results we uploaded to the user for later retrieval
+    privacy_request.save_filtered_access_results(session, rule_filtered_results)
     return download_urls
 
 
@@ -281,7 +276,9 @@ def queue_privacy_request(
     from_step: Optional[str] = None,
 ) -> str:
     cache: FidesopsRedis = get_cache()
-    logger.info("queueing privacy request")
+    logger.info(
+        "Queueing privacy request {} from step {}", privacy_request_id, from_step
+    )
     task = run_privacy_request.delay(
         privacy_request_id=privacy_request_id,
         from_webhook_id=from_webhook_id,
@@ -301,8 +298,7 @@ def queue_privacy_request(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-@sync
-async def run_privacy_request(
+def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
@@ -379,54 +375,75 @@ async def run_privacy_request(
             datasets = DatasetConfig.all(db=session)
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
             dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = privacy_request.get_cached_identity_data()
+            identity_data = privacy_request.get_persisted_identity().dict()
             connection_configs = ConnectionConfig.all(db=session)
             fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
                 connection_configs
             )
             access_result_urls: List[str] = []
 
+            # ACCESS CHECKPOINT
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
                 or policy.get_rules_for_action(action_type=ActionType.erasure)
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                access_result: Dict[str, List[Row]] = await run_access_request(
+                run_access_request(
                     privacy_request=privacy_request,
-                    policy=policy,
                     graph=dataset_graph,
-                    connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
+                )
+                return
+
+            # UPLOAD ACCESS RESULTS CHECKPOINT
+            if (
+                policy.get_rules_for_action(action_type=ActionType.access)
+                or policy.get_rules_for_action(action_type=ActionType.erasure)
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.upload_access,
+                from_checkpoint=resume_step,
+            ):
+                raw_access_results: Dict = privacy_request.get_raw_access_results()
+                # TODO Remove - for debugging purposes
+                logger.info(f"Unfiltered access results {raw_access_results}")
+
+                filtered_access_results = filter_by_enabled_actions(
+                    raw_access_results, connection_configs
                 )
                 access_result_urls = upload_access_results(
                     session,
                     policy,
-                    access_result,
+                    filtered_access_results,
                     dataset_graph,
                     privacy_request,
                     manual_webhook_access_results.manual_data,
                     fides_connector_datasets,
                 )
 
+            # ERASURE CHECKPOINT
             if policy.get_rules_for_action(
                 action_type=ActionType.erasure
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
                 # We only need to run the erasure once until masking strategies are handled
-                await run_erasure(
+                run_erasure_request(
                     privacy_request=privacy_request,
-                    policy=policy,
                     graph=dataset_graph,
-                    connection_configs=connection_configs,
                     identity=identity_data,
-                    access_request_data=get_cached_data_for_erasures(
-                        privacy_request.id
-                    ),
                     session=session,
                 )
+                return
+
+            # Finalize Erasure CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.finalize_erasure,
+                from_checkpoint=resume_step,
+            ):
+                # This conditional adds a checkpoint for resuming after erasure graph complete
+                pass
 
             if policy.get_rules_for_action(
                 action_type=ActionType.consent
@@ -434,14 +451,21 @@ async def run_privacy_request(
                 request_checkpoint=CurrentStep.consent,
                 from_checkpoint=resume_step,
             ):
-                await run_consent_request(
+                run_consent_request(
                     privacy_request=privacy_request,
-                    policy=policy,
                     graph=build_consent_dataset_graph(datasets),
-                    connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
                 )
+                return
+
+            # Finalize Consent CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.finalize_consent,
+                from_checkpoint=resume_step,
+            ):
+                # This conditional adds a checkpoint for resuming after consent graph complete
+                pass
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
@@ -450,10 +474,6 @@ async def run_privacy_request(
 
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
-            # Send analytics to Fideslog
-            await fideslog_graph_failure(
-                failed_graph_analytics_event(privacy_request, exc)
-            )
             # If dev mode, log traceback
             _log_exception(exc, CONFIG.dev_mode)
             return
@@ -502,9 +522,6 @@ async def run_privacy_request(
             except (IdentityNotFoundException, MessageDispatchException) as e:
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, e)
-                )
                 _log_exception(e, CONFIG.dev_mode)
                 return
         privacy_request.finished_processing_at = datetime.utcnow()
@@ -520,31 +537,6 @@ async def run_privacy_request(
         privacy_request.status = PrivacyRequestStatus.complete
         logger.info("Privacy request {} run completed.", privacy_request.id)
         privacy_request.save(db=session)
-
-
-def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
-    """
-    Build the starting DatasetGraph for consent requests.
-
-    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
-    """
-    consent_datasets: List[GraphDataset] = []
-
-    for dataset_config in datasets:
-        connection_type: ConnectionType = (
-            dataset_config.connection_config.connection_type  # type: ignore
-        )
-        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
-        if (
-            connection_type == ConnectionType.saas
-            and saas_config
-            and saas_config.get("consent_requests")
-        ):
-            consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
-            )
-
-    return DatasetGraph(*consent_datasets)
 
 
 def initiate_privacy_request_completion_email(

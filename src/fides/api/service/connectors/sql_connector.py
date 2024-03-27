@@ -20,13 +20,14 @@ from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import (
+    AwaitingTaskCallback,
     ConnectionException,
     SSHTunnelConfigNotFoundException,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
     MicrosoftSQLServerSchema,
@@ -102,8 +103,8 @@ class SQLConnector(BaseConnector[Engine]):
     def build_uri(self) -> str:
         """Build a database specific uri connection string"""
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return SQLQueryConfig(node)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -129,12 +130,23 @@ class SQLConnector(BaseConnector[Engine]):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
+        # TODO REMOVE THIS IS FOR LOCAL TESTING FAILURES ON NODE
+        # if node.address.collection == "payment_card":
+        #     raise Exception()
+        # TODO REMOVE THIS IS FOR LOCAL CALLBACK TESTING
+        # if node.address.collection == "payment_card":
+        #     if request_task.callback_succeeded:
+        #         return []
+        #     # Send request and await for results. This will put the task
+        #     # in a paused state
+        #     raise AwaitingTaskCallback()
         query_config = self.query_config(node)
         client = self.client()
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
@@ -148,9 +160,10 @@ class SQLConnector(BaseConnector[Engine]):
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:
@@ -436,8 +449,8 @@ class RedshiftConnector(SQLConnector):
             connection.execute(stmt)
 
     # Overrides SQLConnector.query_config
-    def query_config(self, node: TraversalNode) -> RedshiftQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> RedshiftQueryConfig:
+        """Query wrapper corresponding to the input execution node."""
         return RedshiftQueryConfig(node)
 
 
@@ -474,15 +487,16 @@ class BigQueryConnector(SQLConnector):
         )
 
     # Overrides SQLConnector.query_config
-    def query_config(self, node: TraversalNode) -> BigQueryQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> BigQueryQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return BigQueryQueryConfig(node)
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:
@@ -532,8 +546,8 @@ class SnowflakeConnector(SQLConnector):
         url: str = Snowflake_URL(**kwargs)
         return url
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return SnowflakeQueryConfig(node)
 
 
@@ -564,8 +578,8 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
         return url
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return MicrosoftSQLServerQueryConfig(node)
 
     @staticmethod

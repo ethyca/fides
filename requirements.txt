@@ -7,7 +7,6 @@ boto3==1.26.1
 celery[pytest]==5.2.7
 colorama>=0.4.3
 cryptography==38.0.3
-dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
 expandvars==0.9.0

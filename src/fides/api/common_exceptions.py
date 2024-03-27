@@ -91,6 +91,10 @@ class PolicyNotFoundException(Exception):
     """Policy could not be found"""
 
 
+class ResumeTaskException(Exception):
+    """Issue restoring data from collection to resume Privacy Request Processing"""
+
+
 class ConnectorNotFoundException(Exception):
     """Connector could not be found"""
 
@@ -143,8 +147,16 @@ class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
 
+class AwaitingTaskCallback(BaseException):
+    """Task awaiting callback"""
+
+
 class PrivacyRequestNotFound(BaseException):
     """Privacy Request Not Found"""
+
+
+class RequestTaskNotFound(BaseException):
+    """Privacy Request Task Not Found"""
 
 
 class NoCachedManualWebhookEntry(BaseException):

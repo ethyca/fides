@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -22,7 +22,8 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -38,8 +39,11 @@ from fides.api.cryptography.cryptographic_util import hash_with_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph_differences import GraphRepr
+from fides.api.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+)
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -69,6 +73,7 @@ from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     CustomJSONEncoder,
     FidesopsRedis,
+    _custom_decoder,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -89,8 +94,11 @@ from fides.config import CONFIG
 EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,
     CurrentStep.access,
+    CurrentStep.upload_access,
     CurrentStep.erasure,
+    CurrentStep.finalize_erasure,
     CurrentStep.consent,
+    CurrentStep.finalize_consent,
     CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
 ]
@@ -284,10 +292,27 @@ class PrivacyRequest(
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Encrypted filtered access results saved for later retrieval
+    filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[property] = None
     resume_endpoint: Optional[str] = None
+
+    request_tasks: RelationshipProperty[AppenderQuery] = relationship(
+        "RequestTask",
+        backref="privacy_request",
+        lazy="dynamic",
+        order_by="RequestTask.created_at",
+    )
 
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
@@ -812,37 +837,6 @@ class PrivacyRequest(
         )
         return list(value_dict.values())[0] if value_dict else None
 
-    def cache_access_graph(self, value: GraphRepr) -> None:
-        """Cache a representation of the graph built for the access request"""
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"ACCESS_GRAPH__{self.id}", value)
-
-    def get_cached_access_graph(self) -> Optional[GraphRepr]:
-        """Fetch the graph built for the access request"""
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[GraphRepr]]
-        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
-        return list(value_dict.values())[0] if value_dict else None
-
-    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
-        """
-        Cache a dict of collections traversed in the privacy request
-        mapped to their associated data uses
-        """
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
-
-    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
-        """
-        Fetch the collection -> data use map cached for this privacy request
-        """
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[Dict[str, Set[str]]]]
-        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        return list(value_dict.values())[0] if value_dict else None
-
     def trigger_policy_webhook(
         self,
         webhook: WebhookTypes,
@@ -965,6 +959,104 @@ class PrivacyRequest(
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
         return {LoggerContextKeys.privacy_request_id: self.id}
+
+    @property
+    def access_tasks(self) -> Query:
+        """Return existing Access Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.access)
+
+    @property
+    def erasure_tasks(self) -> Query:
+        """Return existing Erasure Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.erasure)
+
+    @property
+    def consent_tasks(self) -> Query:
+        """Return existing Consent Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.consent)
+
+    def get_existing_request_task(
+        self,
+        db: Session,
+        action_type: ActionType,
+        collection_address: CollectionAddress,
+    ) -> Optional[RequestTask]:
+        """Returns a Request Task for the current Privacy Request with action type and collection address"""
+        return (
+            db.query(RequestTask)
+            .filter(
+                RequestTask.privacy_request_id == self.id,
+                RequestTask.action_type == action_type,
+                RequestTask.collection_address == collection_address.value,
+            )
+            .first()
+        )
+
+    def get_tasks_by_action(self, action: ActionType) -> Query:
+        if action == ActionType.access:
+            return self.access_tasks
+
+        if action == ActionType.erasure:
+            return self.erasure_tasks
+
+        if action == ActionType.consent:
+            return self.consent_tasks
+
+        raise Exception(f"Unsupported Privacy Request Action Type {action}")
+
+    def get_root_task_by_action(self, action: ActionType) -> RequestTask:
+        """Get the root tasks for a specific action"""
+        root: RequestTask = (
+            self.get_tasks_by_action(action)
+            .filter(RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value)
+            .first()
+        )
+        if not root:
+            raise Exception(
+                f"Expected {action.value.capitalize()} root node cannot be found on privacy request {self.id} "
+            )
+        assert root  # for mypy
+        return root
+
+    def get_raw_access_results(self) -> Dict[str, List[Row]]:
+        """Retrieve the *raw* access data saved on the individual access nodes
+
+        These shouldn't be returned to the user - they are not filtered by data category
+        """
+        final_results: Dict = {}
+        for task in self.access_tasks.filter(
+            RequestTask.status == PrivacyRequestStatus.complete,
+            RequestTask.collection_address.notin_(
+                [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+            ),
+        ):
+            final_results[task.collection_address] = task.get_decoded_access_data()
+
+        return final_results
+
+    def save_filtered_access_results(
+        self, db: Session, results: Dict[str, Dict[str, List[Row]]]
+    ) -> None:
+        """
+        For access requests, save the access data filtered by data category that we uploaded to the end user
+
+        This is keyed by policy rule key, because we uploaded different packages for different policy rules
+
+        """
+        if not self.policy.get_rules_for_action(action_type=ActionType.access):
+            return None
+
+        self.filtered_final_upload = json.dumps(results, cls=CustomJSONEncoder)
+        self.save(db)
+
+        return None
+
+    def get_filtered_access_results(self) -> Dict[str, Dict[str, List[Row]]]:
+        """Fetched the same filtered access results we uploaded to the user"""
+        return json.loads(
+            self.filtered_final_upload or "{}",
+            object_hook=_custom_decoder,
+        )
 
 
 class PrivacyRequestError(Base):
@@ -1353,6 +1445,14 @@ class ExecutionLogStatus(EnumType):
     skipped = "skipped"
 
 
+completed_statuses = [ExecutionLogStatus.complete, ExecutionLogStatus.skipped]
+exited_statuses = [
+    ExecutionLogStatus.skipped,
+    ExecutionLogStatus.complete,
+    ExecutionLogStatus.error,
+]
+
+
 class ExecutionLog(Base):
     """
     Stores the individual execution logs associated with a PrivacyRequest.
@@ -1423,3 +1523,171 @@ def _parse_cache_to_checkpoint_action_required(
         collection=collection,
         action_needed=action_needed,
     )
+
+
+class TraversalDetails(FidesSchema):
+    """Schema to format saving pre-calculated traversal details on RequestTask.traversal_details"""
+
+    dataset_connection_key: str
+    incoming_edges: List[Tuple[str, str]]
+    outgoing_edges: List[Tuple[str, str]]
+    input_keys: List[str]
+
+
+class RequestTask(Base):
+    """
+    An individual Task for a Privacy Request
+    """
+
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
+    # Identifiers of this request task
+    collection_address = Column(
+        String, nullable=False, index=True
+    )  # Of the format dataset_name:collection_name for convenience
+    dataset_name = Column(String, nullable=False, index=True)
+    collection_name = Column(String, nullable=False, index=True)
+    action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
+
+    status = Column(
+        EnumColumn(ExecutionLogStatus),
+        index=True,
+        nullable=False,
+    )
+
+    upstream_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # List of collection address strings
+    downstream_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # List of collection address strings
+    all_descendant_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # All tasks that can be reached by the current task
+
+    # Raw data retrieved from an access request is stored here.  This contains all of the data
+    # we retrieved, needed for downstream tasks, but hasn't been filtered by data category
+    # for the end user.
+    access_data = Column(  # An encrypted JSON String - saved as a list of rows
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+    # This is the raw access data saved in erasure format (with placeholders preserved) to perform a masking request.
+    # First saved on the access node, and then copied to the corresponding erasure node.
+    data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+    # This is the raw access data saved in erasure format from the upstream access nodes (with placeholders preserved) to perform a masking request.
+    # First saved on access nodes, and then copied to the erasure nodes.
+    # This is useful for things like email connectors whose access nodes do not execute their own requests
+    erasure_input_data = (
+        Column(  # An encrypted JSON String - saved as a list of list of rows
+            StringEncryptedType(
+                type_in=String(),
+                key=CONFIG.security.app_encryption_key,
+                engine=AesGcmEngine,
+                padding="pkcs5",
+            ),
+        )
+    )
+
+    # Written after an erasure is completed
+    rows_masked = Column(Integer)
+    # Written after a consent request is completed
+    consent_success = Column(Boolean)
+    # Written after a callback is completed
+    callback_succeeded = Column(Boolean)
+
+    # Stores a serialized collection that can be transformed back into a Collection to help
+    # execute the current task
+    collection = Column(MutableDict.as_mutable(JSONB))
+    # Stores key details from traversal.traverse in the format of TraversalDetails
+    traversal_details = Column(MutableDict.as_mutable(JSONB))
+
+    @property
+    def request_task_address(self) -> CollectionAddress:
+        """Convert the collection_address into Collection Address format"""
+        return CollectionAddress.from_string(self.collection_address)
+
+    @property
+    def is_root_task(self) -> bool:
+        return self.request_task_address == ROOT_COLLECTION_ADDRESS
+
+    @property
+    def is_terminator_task(self) -> bool:
+        return self.request_task_address == TERMINATOR_ADDRESS
+
+    def get_decoded_access_data(self) -> List[Row]:
+        return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
+
+    def get_decoded_data_for_erasures(self) -> List[Row]:
+        return json.loads(self.data_for_erasures or "[]", object_hook=_custom_decoder)
+
+    def get_decoded_erasure_input_data(self) -> List[List[Row]]:
+        return json.loads(self.erasure_input_data or "[]", object_hook=_custom_decoder)
+
+    def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
+        """Helper method to update a task's status"""
+        self.status = status
+        self.save(db)
+
+    def mark_pending_if_error(self, db: Session) -> bool:
+        """If task is errored, reset to pending and return whether the reset occurred"""
+        if self.status == ExecutionLogStatus.error:
+            self.update_status(db, ExecutionLogStatus.pending)
+            self.save(db)
+            return True
+        return False
+
+    def get_tasks_with_same_action_type(
+        self, db: Session, collection_address_str: str
+    ) -> Query:
+        """Fetch task on the same privacy request and action type as current by collection address"""
+        return db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.action_type == self.action_type,
+            RequestTask.collection_address == collection_address_str,
+        )
+
+    def all_downstream_tasks(self, db: Session) -> Query:
+        """Returns the immediate downstream task objects that are still pending"""
+        return db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.action_type == self.action_type,
+            RequestTask.collection_address.in_(self.downstream_tasks or []),
+        )
+
+    def pending_downstream_tasks(self, db: Session) -> Query:
+        """Returns the immediate downstream task objects that are still pending"""
+        return self.all_downstream_tasks(db).filter(
+            RequestTask.status == ExecutionLogStatus.pending
+        )
+
+    def upstream_tasks_complete(self, db: Session) -> bool:
+        """Determines if a given task is ready to run"""
+        upstream_tasks: Query = db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.collection_address.in_(self.upstream_tasks or []),
+            RequestTask.action_type == self.action_type,
+        )
+
+        return all(
+            upstream_task.status in completed_statuses
+            for upstream_task in upstream_tasks
+        )

@@ -136,6 +136,19 @@ class ExecutionLogResponse(FidesSchema):
         use_enum_values = True
 
 
+class PrivacyRequestTaskSchema(FidesSchema):
+    """Schema for Privacy Request Tasks, which are individual nodes that are queued"""
+
+    id: str
+    collection_address: str
+    status: ExecutionLogStatus
+    created_at: datetime
+    updated_at: datetime
+    upstream_tasks: List[str]
+    downstream_tasks: List[str]
+    action_type: ActionType
+
+
 class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 

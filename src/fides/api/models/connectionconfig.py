@@ -44,11 +44,11 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mariadb = "mariadb"
     bigquery = "bigquery"
-    manual = "manual"  # Run as part of the traversal
+    manual = "manual"  # Deprecated - use manual_webhook instead
     sovrn = "sovrn"
     attentive = "attentive"
     dynamodb = "dynamodb"
-    manual_webhook = "manual_webhook"  # Run before the traversal
+    manual_webhook = "manual_webhook"  # Runs upfront before the traversal
     timescale = "timescale"
     fides = "fides"
     generic_erasure_email = "generic_erasure_email"  # Run after the traversal

@@ -48,6 +48,10 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Allows custom privacy request fields to be used in request execution.",
     )
+    state_polling_interval: int = Field(
+        default=30,
+        description="Seconds between polling for Privacy Requests that should change state",
+    )
 
     class Config:
         env_prefix = ENV_PREFIX

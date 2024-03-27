@@ -10,13 +10,12 @@ from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
-    Field,
     FieldAddress,
     FieldPath,
     GraphDataset,
 )
 from fides.api.graph.graph import DatasetGraph, Edge, Node
-from fides.api.util.collection_util import Row, append
+from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
 
@@ -25,7 +24,7 @@ Datastore = Dict[CollectionAddress, List[Row]]
 
 
 class TraversalNode(Contextualizable):
-    """Base traversal traversal_node type. This type will never be used directly."""
+    """Traversal_node type. This type is used for building the graph, not for executing the graph."""
 
     def __init__(self, node: Node):
         self.node = node
@@ -71,18 +70,6 @@ class TraversalNode(Contextualizable):
             for _, parent_field_path, self_field_path in tuples
         }
 
-    def incoming_edges_from_same_dataset(self) -> Set[Edge]:
-        """Return the incoming edges from the same dataset"""
-        return {
-            Edge(
-                p_collection_address.field_address(parent_field_path),
-                self.address.field_address(self_field_path),
-            )
-            for p_collection_address, tuples in self.parents.items()
-            if p_collection_address.dataset == self.address.dataset
-            for _, parent_field_path, self_field_path in tuples
-        }
-
     def outgoing_edges(self) -> Set[Edge]:
         """Return the outgoing edges to this traversal_node,in (self.address -> other.address) order."""
         return {
@@ -102,24 +89,15 @@ class TraversalNode(Contextualizable):
         """
         return {edge.f2.field_path for edge in self.incoming_edges()}
 
-    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
-        """
-        Return a filtered list of key/value sets of data items that are both in
-        the list of incoming edge fields, and contain data in the input data set.
+    def incoming_edges_by_collection(self) -> Dict[CollectionAddress, List[Edge]]:
+        return partition(self.incoming_edges(), lambda e: e.f1.collection_address())
 
-        The values are cast based on field types, if those types are specified.
+    def input_keys(self) -> List[CollectionAddress]:
+        """Returns the inputs to the current node that are data dependencies
+        This is copied and saved to the RequestTask and used to maintain a consistent order
+        for passing in data for an access task
         """
-        out = {}
-        for key, values in input_data.items():
-            path: FieldPath = FieldPath.parse(key)
-            field: Field | None = self.node.collection.field(path)
-
-            if field and path in self.query_field_paths and isinstance(values, list):
-                cast_values = [field.cast(v) for v in values]
-                filtered = list(filter(lambda x: x is not None, cast_values))
-                if filtered:
-                    out[key] = filtered
-        return out
+        return sorted(self.incoming_edges_by_collection().keys())
 
     def can_run_given(self, remaining_node_keys: Set[CollectionAddress]) -> bool:
         """True if finished_node_keys covers all the nodes that this traversal_node is waiting for.  If
