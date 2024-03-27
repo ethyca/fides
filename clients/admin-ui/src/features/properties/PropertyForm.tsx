@@ -58,6 +58,7 @@ const ExperiencesFormSection = () => {
         values={values.experiences ?? []}
         setValues={(newValues) => setFieldValue("experiences", newValues)}
         draggable
+        baseTestId="experience"
       />
     </FormSection>
   );
