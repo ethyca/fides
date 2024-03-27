@@ -1,6 +1,6 @@
 export const blockPageScrolling = () => {
-  document.body.style.overflowY = "hidden";
+  document.body.classList.add("fides-no-scroll");
 };
 export const unblockPageScrolling = () => {
-  document.body.style.overflowY = "auto";
+  document.body.classList.remove("fides-no-scroll");
 };
