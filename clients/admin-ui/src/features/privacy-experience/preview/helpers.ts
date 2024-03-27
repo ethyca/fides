@@ -35,7 +35,7 @@ export const buildBaseConfig = (
   notices: PrivacyNoticeResponse[]
 ) => ({
   options: {
-    debug: true,
+    debug: false,
     geolocationApiUrl: "",
     isGeolocationEnabled: false,
     isOverlayEnabled: true,
@@ -45,7 +45,6 @@ export const buildBaseConfig = (
     privacyCenterUrl: "http://localhost:3000",
     fidesApiUrl: "http://localhost:8080/api/v1",
     preventDismissal: experienceConfig.dismissable ?? false,
-    fidesPreviewMode: true,
     allowHTMLDescription: true,
     serverSideFidesApiUrl: "",
     fidesString: null,

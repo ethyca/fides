@@ -105,10 +105,6 @@ export type FidesOptions = {
   // Allows specifying the preferred locale used for translations
   fidesLocale?: string;
 
-  // Allows preview of banner components for internal use or testing, such that saving to cookie disabled,
-  // and some buttons are disabled on the Fides components
-  fidesPreviewMode: boolean;
-
   // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
   fidesPrimaryColor: string | null;
 };

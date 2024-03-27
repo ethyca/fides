@@ -57,7 +57,6 @@ export interface PrivacyCenterSettings {
   PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
   ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
-  FIDES_PREVIEW_MODE: boolean | false; // (optional) sets fides to preview mode, save prefs to cookie, disabling buttons, etc
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
 }
 
@@ -88,7 +87,6 @@ export type PrivacyCenterClientSettings = Pick<
   | "PREVENT_DISMISSAL"
   | "ALLOW_HTML_DESCRIPTION"
   | "BASE_64_COOKIE"
-  | "FIDES_PREVIEW_MODE"
   | "FIDES_PRIMARY_COLOR"
 >;
 
@@ -364,9 +362,6 @@ export const loadPrivacyCenterEnvironment =
       BASE_64_COOKIE: process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE
         ? process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE === "true"
         : false,
-      FIDES_PREVIEW_MODE: process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE
-        ? process.env.FIDES_PRIVACY_CENTER__FIDES_PREVIEW_MODE === "true"
-        : false,
       FIDES_PRIMARY_COLOR: process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
         : null,
@@ -401,7 +396,6 @@ export const loadPrivacyCenterEnvironment =
       PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
       ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
       BASE_64_COOKIE: settings.BASE_64_COOKIE,
-      FIDES_PREVIEW_MODE: settings.FIDES_PREVIEW_MODE,
       FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
     };
 

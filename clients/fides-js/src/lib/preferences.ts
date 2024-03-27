@@ -88,10 +88,6 @@ export const updateConsentPreferences = async ({
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
-  if (options.fidesPreviewMode) {
-    // Shouldn't be hit in preview mode, but just in case, we ensure we never write a Fides Cookie
-    return;
-  }
   // Collect any "extra" details that should be recorded on the cookie & event
   const extraDetails: FidesEventExtraDetails = { consentMethod };
 
