@@ -30,6 +30,7 @@ The types of changes are:
 - Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
 - Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
 - Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
+- Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
 
 ### Fixed
 
