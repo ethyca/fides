@@ -1,7 +1,7 @@
 /* eslint-disable spaced-comment */
 import {
   ExperienceConfigTranslation,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
 } from "fides-js";
@@ -362,7 +362,7 @@ describe("Consent i18n", () => {
     navigatorLanguage: string;
     fixture: TestFixture;
     globalPrivacyControl?: boolean;
-    options?: Partial<FidesOptions>;
+    options?: Partial<FidesInitOptions>;
     queryParams?: Cypress.VisitOptions["qs"];
     overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
   }) => {

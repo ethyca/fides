@@ -1,8 +1,8 @@
 import {
   FidesExperienceTranslationOverrides,
-  FidesOptionsOverrides,
+  FidesInitOptionsOverrides,
   OverrideExperienceTranslations,
-  OverrideOptions,
+  FidesOptions,
 } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 
@@ -13,13 +13,15 @@ import { LOCALE_REGEX } from "./i18n/i18n-constants";
 export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
 /**
- * Allows various user-provided options overrides to be validated and mapped to the appropriate Fides variable.
- * overrideName is Fides internal, but overrideKey is the key the user uses to override the option.
+ * Define the mapping of a FidesOption (e.g. "fides_locale") to a
+ * FidesInitOption (e.g. "fidesLocale"). This allows runtime options to be
+ * provided by customers just-in-time for the `Fides.init()` call and override
+ * default FidesInitOptions, etc.
  */
 export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
-  overrideName: keyof FidesOptionsOverrides;
+  overrideName: keyof FidesInitOptionsOverrides;
   overrideType: "string" | "boolean";
-  overrideKey: keyof OverrideOptions;
+  overrideKey: keyof FidesOptions;
   validationRegex: RegExp;
 }[] = [
   {

@@ -1,7 +1,7 @@
 import {
   ExperienceConfig,
   FidesExperienceTranslationOverrides,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "~/fides";
@@ -634,7 +634,7 @@ describe("i18n-utils", () => {
     });
 
     it("returns the fides_locale override if present in options", () => {
-      const mockOptions: Partial<FidesOptions> = {
+      const mockOptions: Partial<FidesInitOptions> = {
         fidesLocale: "fr",
       };
       expect(detectUserLocale(mockNavigator, mockOptions)).toEqual("fr");

@@ -1,3 +1,4 @@
+import type { Fides, FidesOptions } from "../docs";
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
@@ -16,7 +17,10 @@ import type {
   TCFVendorRelationships,
   TCFVendorSave,
 } from "./tcf/types";
-import { TcfCookieConsent } from "./tcf/types";
+import { TcfOtherConsent } from "./tcf/types";
+import type { gtm } from "../integrations/gtm";
+import type { meta } from "../integrations/meta";
+import type { shopify } from "../integrations/shopify";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -29,11 +33,17 @@ export interface FidesConfig {
   experience?: PrivacyExperience | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
-  // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
-  options: FidesOptions;
+  // Global options for this Fides.js instance
+  options: FidesInitOptions;
 }
 
-export type FidesOptions = {
+/**
+ * Defines all the options supported by `Fides.init()`. Many of these are
+ * effectively constants that aren't meant to be set at runtime by customers,
+ * but we do allow _some_ of them to be overriden via query params / cookie
+ * values / window object. See the {@link FidesOptions} docs for details.
+ */
+export interface FidesInitOptions {
   // Whether or not debug log statements should be enabled
   debug: boolean;
 
@@ -90,7 +100,7 @@ export type FidesOptions = {
   // Base URL for directory of fides.js scripts
   fidesJsBaseUrl: string;
 
-  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
+  // A custom path to fetch FidesOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;
 
   // Prevents the banner and modal from being dismissed
@@ -107,28 +117,53 @@ export type FidesOptions = {
 
   // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
   fidesPrimaryColor: string | null;
-};
+}
 
 /**
- * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
+ * Defines the exact interface used for the `Fides` global object. Note that we
+ * extend the documented `Fides` interface here to provide some narrower, more
+ * specific types. This is mostly for legacy purposes, but also since we want to
+ * ensure that the documented interface isn't overly specific in areas we may
+ * need to change.
+ */
+export interface FidesGlobal extends Fides {
+  consent: NoticeConsent;
+  experience?: PrivacyExperience | EmptyExperience;
+  geolocation?: UserGeolocation;
+  fides_string?: string | undefined;
+  options: FidesInitOptions;
+  fides_meta: FidesJSMeta;
+  tcf_consent: TcfOtherConsent;
+  saved_consent: NoticeConsent;
+  gtm: typeof gtm;
+  identity: FidesJSIdentity;
+  init: (config: FidesConfig) => Promise<void>;
+  initialized: boolean;
+  meta: typeof meta;
+  shopify: typeof shopify;
+  showModal: () => void;
+}
+
+/**
+ * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
  * {
  *   "data_sales": false,
  *   "analytics": true,
  *   ...
  * }
  */
-export type CookieKeyConsent = {
-  [cookieKey: string]: boolean | undefined;
-};
+export type NoticeConsent = Record<string, boolean>;
+
 /**
- * Store the user's identity values on the cookie, e.g.
+ * Store the user's identity values, e.g.
  * {
  *   "fides_user_device_id": "1234-",
  *   "email": "jane@example.com",
  *   ...
  * }
  */
-export type CookieIdentity = Record<string, string>;
+export type FidesJSIdentity = Record<string, string>;
+
 /**
  * Store metadata about the cookie itself, e.g.
  * {
@@ -137,20 +172,20 @@ export type CookieIdentity = Record<string, string>;
  *   ...
  * }
  */
-export type CookieMeta = Record<string, string>;
+export type FidesJSMeta = Record<string, string>;
 
 export interface FidesCookie {
-  consent: CookieKeyConsent;
-  identity: CookieIdentity;
-  fides_meta: CookieMeta;
+  consent: NoticeConsent;
+  identity: FidesJSIdentity;
+  fides_meta: FidesJSMeta;
   fides_string?: string;
-  tcf_consent: TcfCookieConsent;
+  tcf_consent: TcfOtherConsent;
   tcf_version_hash?: ExperienceMeta["version_hash"];
 }
 
 export type GetPreferencesFnResp = {
   // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
-  consent?: CookieKeyConsent;
+  consent?: NoticeConsent;
   // Overrides the value for Fides.fides_string for the user’s TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
   fides_string?: string;
   // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
@@ -168,7 +203,7 @@ export type FidesApiOptions = {
    */
   savePreferencesFn?: (
     consentMethod: ConsentMethod,
-    consent: CookieKeyConsent,
+    consent: NoticeConsent,
     fides_string: string | undefined,
     experience: PrivacyExperience
   ) => Promise<void>;
@@ -597,15 +632,11 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-export type OverrideOptions = {
-  fides_string: string;
-  fides_disable_save_api: boolean;
-  fides_disable_banner: boolean;
-  fides_embed: boolean;
-  fides_tcf_gdpr_applies: boolean;
-  fides_locale: string;
-  fides_primary_color: string;
-};
+/**
+ * Re-export the FidesOptions interface from src/docs; mostly for convenience as
+ * a lot of code wants to import from this consent-types.ts file!
+ */
+export { FidesOptions };
 
 export type OverrideExperienceTranslations = {
   fides_title: string;
@@ -614,8 +645,15 @@ export type OverrideExperienceTranslations = {
   fides_override_language: string;
 };
 
-export type FidesOptionsOverrides = Pick<
-  FidesOptions,
+/**
+ * Select the subset of FidesInitOptions that can be overriden at runtime using
+ * one of the customer-provided FidesOptions properties above. There's a 1:1
+ * correspondence here, but note that we use snake_case for the runtime options
+ * and then convert to camelCase variables for the `Fides.init({ options })`
+ * invocation itself.
+ */
+export type FidesInitOptionsOverrides = Pick<
+  FidesInitOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
   | "fidesEmbed"
@@ -633,7 +671,7 @@ export type FidesExperienceTranslationOverrides = {
 };
 
 export type FidesOverrides = {
-  optionsOverrides: Partial<FidesOptionsOverrides>;
+  optionsOverrides: Partial<FidesInitOptionsOverrides>;
   consentPrefsOverrides: GetPreferencesFnResp | null;
   experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides>;
 };

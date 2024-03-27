@@ -4,7 +4,7 @@ import {
   EmptyExperience,
   FidesApiOptions,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
@@ -116,7 +116,7 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
 export const patchUserPreference = async (
   consentMethod: ConsentMethod,
   preferences: PrivacyPreferencesRequest,
-  options: FidesOptions,
+  options: FidesInitOptions,
   cookie: FidesCookie,
   experience: PrivacyExperience
 ): Promise<void> => {
@@ -164,7 +164,7 @@ export const patchNoticesServed = async ({
   options,
 }: {
   request: RecordConsentServedRequest;
-  options: FidesOptions;
+  options: FidesInitOptions;
 }): Promise<RecordsServedResponse | null> => {
   debugLog(options.debug, "Saving that notices were served...");
   if (options.apiOptions?.patchNoticesServedFn) {

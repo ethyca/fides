@@ -2,12 +2,12 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
-  CookieKeyConsent,
   EmptyExperience,
   FidesCookie,
+  FidesInitOptions,
   FidesOptions,
   GpcStatus,
-  OverrideOptions,
+  NoticeConsent,
   OverrideType,
   PrivacyExperience,
   PrivacyNotice,
@@ -113,7 +113,7 @@ export const constructFidesRegionString = (
 /**
  * Validate the fides global config options. If invalid, we cannot make API calls to Fides or link to the Privacy Center.
  */
-export const validateOptions = (options: FidesOptions): boolean => {
+export const validateOptions = (options: FidesInitOptions): boolean => {
   // Check if options is an invalid type
   debugLog(
     options.debug,
@@ -172,7 +172,7 @@ export const getOverrideValidatorMapByType = (
  */
 export const experienceIsValid = (
   effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
-  options: FidesOptions
+  options: FidesInitOptions
 ): boolean => {
   if (!isPrivacyExperience(effectiveExperience)) {
     debugLog(
@@ -232,7 +232,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie,
-  savedConsent: CookieKeyConsent
+  savedConsent: NoticeConsent
 ): boolean => {
   if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
@@ -283,7 +283,7 @@ export const shouldResurfaceConsent = (
  */
 export const getWindowObjFromPath = (
   path: string[]
-): OverrideOptions | undefined => {
+): FidesOptions | undefined => {
   // Implicitly start from the global "window" object
   if (path[0] === "window") {
     path.shift();

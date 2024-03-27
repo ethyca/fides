@@ -1,8 +1,5 @@
 import { ContainerNode } from "preact";
 
-import { gtm } from "../integrations/gtm";
-import { meta } from "../integrations/meta";
-import { shopify } from "../integrations/shopify";
 import {
   I18n,
   initializeI18n,
@@ -22,16 +19,14 @@ import {
 import {
   ConsentMechanism,
   ConsentMethod,
-  CookieIdentity,
-  CookieKeyConsent,
-  CookieMeta,
-  EmptyExperience,
   FidesConfig,
   FidesCookie,
+  FidesGlobal,
+  FidesInitOptions,
   FidesOptions,
   FidesOverrides,
+  NoticeConsent,
   OverrideExperienceTranslations,
-  OverrideOptions,
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
@@ -52,34 +47,15 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { TcfCookieConsent } from "./tcf/types";
 import { setupExtensions } from "./extensions";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
 
-export type Fides = {
-  consent: CookieKeyConsent;
-  experience?: PrivacyExperience | EmptyExperience;
-  geolocation?: UserGeolocation;
-  fides_string?: string | undefined;
-  options: FidesOptions;
-  fides_meta: CookieMeta;
-  tcf_consent: TcfCookieConsent;
-  saved_consent: CookieKeyConsent;
-  gtm: typeof gtm;
-  identity: CookieIdentity;
-  init: (config: FidesConfig) => Promise<void>;
-  initialized: boolean;
-  meta: typeof meta;
-  shopify: typeof shopify;
-  showModal: () => void;
-};
-
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
-  options: FidesOptions
+  options: FidesInitOptions
 ) => {
   // Prefer the provided geolocation if available and valid; otherwise, fallback to automatically
   // geolocating the user by calling the geolocation API
@@ -111,11 +87,11 @@ const automaticallyApplyGPCPreferences = async ({
   fidesOptions,
   i18n,
 }: {
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
   effectiveExperience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string | null;
-  fidesOptions: FidesOptions;
+  fidesOptions: FidesInitOptions;
   i18n: I18n;
 }): Promise<boolean> => {
   // Early-exit if there is no experience or notices, since we've nothing to do
@@ -222,7 +198,7 @@ export const getOverridesByType = <T>(
       config.options.customOptionsPath &&
       config.options.customOptionsPath.split(".");
     const windowObj:
-      | Partial<OverrideOptions & OverrideExperienceTranslations>
+      | Partial<FidesOptions & OverrideExperienceTranslations>
       | undefined =
       customPathArr && customPathArr.length >= 0
         ? getWindowObjFromPath(customPathArr)
@@ -280,14 +256,14 @@ export const getInitialFides = ({
   updateExperienceFromCookieConsent,
 }: {
   cookie: FidesCookie;
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
 } & FidesConfig & {
     updateExperienceFromCookieConsent: (props: {
       experience: PrivacyExperience;
       cookie: FidesCookie;
       debug: boolean;
     }) => PrivacyExperience;
-  }): Partial<Fides> | null => {
+  }): Partial<FidesGlobal> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
   if (!hasExistingCookie && !options.fidesString) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
@@ -337,7 +313,7 @@ export const initialize = async ({
   overrides,
 }: {
   cookie: FidesCookie;
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
   /**
    * Once we for sure have a valid experience, this is another chance to update values
@@ -355,7 +331,7 @@ export const initialize = async ({
     isExperienceClientSideFetched: boolean;
   }) => Partial<PrivacyExperience>;
   overrides?: Partial<FidesOverrides>;
-} & FidesConfig): Promise<Partial<Fides>> => {
+} & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
