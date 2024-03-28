@@ -109,7 +109,7 @@ const Datamap = () => {
           resetSelectedSystemId={resetSelectedSystemId}
         />
       </Flex>
-      </Flex>
+    </Flex>
   );
 };
 

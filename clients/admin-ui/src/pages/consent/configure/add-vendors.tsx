@@ -22,11 +22,7 @@ const AddMultipleVendorsPage: NextPage = () => (
       <Text fontSize="sm" mb={8}>
         Select your vendors below and they will be added as systems to your data
         map. Fides Compass will automatically populate the system information so
-        that you can quickly configure privacy requests and consent. Note that,
-        for clarity, Global Vendor List (GVL) and Google Additional Consent (AC)
-        vendors will not be displayed on the &quot;Data lineage&quot;
-        visualization page.  To manage these vendors, use the &quot;Systems &
-        vendors&quot; page instead.
+        that you can quickly configure privacy requests and consent.
       </Text>
     </Box>
     <AddMultipleSystems redirectRoute={CONFIGURE_CONSENT_ROUTE} />
