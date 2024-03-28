@@ -35,6 +35,7 @@ The types of changes are:
 - Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
 - Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
 - Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
+- Show a "systems displayed" count on datamap map & table reporting page [#4752](https://github.com/ethyca/fides/pull/4752)
 
 ### Fixed
 
@@ -44,7 +45,6 @@ The types of changes are:
 - Cleaned up table borders [#4733](https://github.com/ethyca/fides/pull/4733)
 - Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
 - Re-add CORS origin regex field to admin UI (#4742)[https://github.com/ethyca/fides/pull/4742]
-- Move notice about hidden GVL/AC vendors from "Data lineage" to "Choose vendors" page [#4752](https://github.com/ethyca/fides/pull/4752)
 
 
 ### Developer Experience
