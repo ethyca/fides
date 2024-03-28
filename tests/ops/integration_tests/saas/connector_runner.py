@@ -17,7 +17,6 @@ from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
-    PrivacyNoticeRegion,
 )
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
@@ -398,17 +397,16 @@ def _privacy_preference_history(
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            "description": "example privacy notice",
-            "regions": [
-                PrivacyNoticeRegion.us_ca,
-                PrivacyNoticeRegion.us_co,
-            ],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_privacy_center": True,
-            "displayed_in_overlay": True,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
         },
     )
 
@@ -428,7 +426,7 @@ def _privacy_preference_history(
         data={
             "privacy_request_id": privacy_request.id,
             "preference": "opt_in" if opt_in else "opt_out",
-            "privacy_notice_history_id": privacy_notice.histories[0].id,
+            "privacy_notice_history_id": privacy_notice.translations[0].histories[0].id,
         },
         check_name=False,
     )
@@ -500,6 +498,7 @@ def _process_external_references(
 
 def generate_random_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
 
 def generate_random_phone_number() -> str:
     """

@@ -149,6 +149,7 @@ div#fides-banner-inner div#fides-button-group {
   margin-top: 0px;
   margin-bottom: 0px;
   width: 100%;
+  align-items: center;
 }
 
 div#fides-banner-inner-container {
@@ -399,6 +400,7 @@ div#fides-consent-content .fides-modal-description {
 .fides-banner-button-group {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 .fides-modal-button-group {
@@ -414,6 +416,10 @@ div#fides-consent-content .fides-modal-description {
   div#fides-banner-inner
   div#fides-button-group {
   gap: 12px;
+}
+
+.fides-no-scroll {
+  overflow-y: hidden;
 }
 
 /* Responsive overlay */
@@ -950,6 +956,7 @@ div#fides-banner-inner .fides-privacy-policy {
 @media screen and (max-width: 768px) {
   div#fides-banner {
     padding: 24px;
+    width: 100%;
   }
 
   div#fides-banner-description {
@@ -958,16 +965,19 @@ div#fides-banner-inner .fides-privacy-policy {
 
   div#fides-banner-inner div#fides-button-group {
     flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
     padding-top: 24px;
   }
 
   .fides-banner-button-group {
     flex-direction: column;
+    width: 100%;
   }
 
   button.fides-banner-button {
     margin: 0px;
+    width: 100%;
   }
 
   div#fides-tcf-banner-inner {
@@ -1042,4 +1052,72 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-paging-previous-button:disabled,
 .fides-paging-next-button:disabled {
   cursor: default;
+}
+
+/* Language Selection Menu */
+
+.fides-i18n-menu {
+  position: relative;
+}
+
+div.fides-i18n-pseudo-button {
+  /* looks like a button, but for a11y reasons don't actually make it a button (not focusable) */
+  cursor: pointer;
+  height: 1.5rem;
+}
+
+.fides-i18n-popover {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  height: 0px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 7rem;
+  transition: height 0.2s;
+}
+@media screen and (max-width: 768px) {
+  .fides-i18n-popover {
+    bottom: auto;
+    top: 100%;
+  }
+}
+
+.fides-i18n-menu:hover .fides-i18n-popover,
+.fides-i18n-menu:focus-within .fides-i18n-popover {
+  min-width: 9rem;
+  height: auto;
+  border: 1px solid var(--fides-overlay-primary-color);
+  background-color: var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  overflow: scroll;
+}
+
+button.fides-banner-button.fides-menu-item {
+  background: var(--fides-overlay-secondary-button-background-color);
+  color: var(--fides-overlay-secondary-button-text-color);
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  text-align: left;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+button.fides-banner-button.fides-menu-item[aria-pressed="true"] {
+  background: var(--fides-overlay-primary-button-background-color);
+  color: var(--fides-overlay-primary-button-text-color);
+}
+
+button.fides-banner-button.fides-menu-item[aria-pressed="true"]::before {
+  content: "\2713";
+  display: inline-block;
+  margin-right: 0.25rem;
+  margin-left: -1rem;
+}
+
+button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
+  background: var(--fides-overlay-secondary-button-background-hover-color);
 }

@@ -21,7 +21,7 @@ import { Property } from "~/types/api";
 
 const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
 const PROPERTY_UNIQUE_ID_TEMPLATE = "{property-unique-id}";
-const FIDES_JS_SCRIPT_TEMPLATE = `<script src="https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js?${PROPERTY_UNIQUE_ID_TEMPLATE}"></script>`;
+const FIDES_JS_SCRIPT_TEMPLATE = `<script src="https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js?property_id=${PROPERTY_UNIQUE_ID_TEMPLATE}"></script>`;
 const FIDES_GTM_SCRIPT_TAG = "<script>Fides.gtm()</script>";
 
 interface Props {
@@ -43,7 +43,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
   const fidesJsScriptTag = useMemo(() => {
     const script = FIDES_JS_SCRIPT_TEMPLATE.replace(
       PROPERTY_UNIQUE_ID_TEMPLATE,
-      property.key.toString()
+      property.id!.toString()
     );
     if (isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url) {
       script.replace(

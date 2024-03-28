@@ -14,7 +14,7 @@ import {
   selectFidesKeyToConsent,
   useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
+import { getGpcStatus, makeNoticeConsent } from "~/features/consent/helpers";
 
 import { useConfig } from "~/features/common/config.slice";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
@@ -53,7 +53,7 @@ const ConfigDrivenConsent = ({
    * Update the consent choices on the backend.
    */
   const saveUserConsentOptions = useCallback(() => {
-    const newConsent = makeCookieKeyConsent({
+    const newConsent = makeNoticeConsent({
       consentOptions,
       fidesKeyToConsent,
       consentContext,

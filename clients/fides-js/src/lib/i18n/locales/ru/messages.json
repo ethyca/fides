@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Global Privacy Control",
+  "static.gpc.description": "Ваша настройка Global Privacy Control учтена. Вы автоматически исключаетесь в сценариях, где используется Global Privacy Control.",
+  "static.gpc.status.applied": "Применено",
+  "static.gpc.status.overridden": "Изменено",
+  "static.gpc.title": "Обнаружено использование Global Privacy Control"
+}

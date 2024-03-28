@@ -1,7 +1,7 @@
 {
   "name": "fides-js",
   "version": "0.0.1",
-  "description": "Fides Javascript",
+  "description": "FidesJS: JavaScript SDK for Fides",
   "license": "Apache-2.0",
   "main": "./dist/fides.js",
   "source": "./src/fides.ts",
@@ -11,9 +11,12 @@
     "dist/**"
   ],
   "scripts": {
+    "dev": "NODE_ENV=production rollup --watch -c",
     "build": "NODE_ENV=production rollup -c",
     "build:windows": "set NODE_ENV=production && rollup -c",
+    "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
+    "docs:generate": "typedoc --out docs src/docs/",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "lint": "eslint . --ext .ts,.tsx",
@@ -43,6 +46,7 @@
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@types/base-64": "^1.0.2",
+    "@types/jest": "^29.5.12",
     "@types/node": "^18.16.3",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
@@ -64,8 +68,25 @@
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-filesize": "^10.0.0",
     "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-visualizer": "^5.12.0",
     "ts-jest": "^29.1.0",
     "typescript": "^4.9.5",
+    "typedoc-plugin-markdown": "^3.17.1",
     "typescript-plugin-css-modules": "^5.0.1"
+  },
+  "typedocOptions": {
+    "disableSources": true,
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "githubPages": false,
+    "hideBreadcrumbs": true,
+    "hideInPageTOC": false,
+    "name": "FidesJS: JavaScript SDK for Fides",
+    "plugin": "typedoc-plugin-markdown",
+    "readme": "none",
+    "sort": [
+      "visibility",
+      "source-order"
+    ]
   }
 }

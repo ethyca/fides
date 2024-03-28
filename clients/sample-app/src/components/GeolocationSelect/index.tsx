@@ -18,6 +18,9 @@ const geolocationOptions: GeolocationOption[] = [
   { value: "US-CA", label: "California", flag: "us-ca" },
   { value: "US-VA", label: "Virginia", flag: "us" },
   { value: "US-NY", label: "New York", flag: "us" },
+  { value: "CA", label: "Canada", flag: "ca" },
+  { value: "CA-QC", label: "Quebec", flag: "ca-qc" },
+  { value: "EEA", label: "EEA", flag: "eu" },
   { value: "FR-IDG", label: "Paris", flag: "fr" },
   { value: "DE-HE", label: "Frankfurt", flag: "de" },
 ];

@@ -37,7 +37,6 @@ from fides.api.models.policy import (
     RuleTarget,
 )
 from fides.api.models.privacy_experience import (
-    ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
@@ -46,7 +45,9 @@ from fides.api.models.privacy_notice import (
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
+    PrivacyNoticeTemplate,
 )
+from fides.api.models.privacy_preference import ServingComponent
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
     CurrentPrivacyPreferenceV2,
@@ -1464,26 +1465,49 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 @pytest.fixture(scope="function")
 def privacy_notice(db: Session) -> Generator:
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
+            "name": "example privacy notice",
+            "notice_key": "example_privacy_notice_2",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            "description": "user&#x27;s description &lt;script /&gt;",
-            "regions": [
-                PrivacyNoticeRegion.us_ca,
-                PrivacyNoticeRegion.us_co,
-            ],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_privacy_center": True,
-            "displayed_in_overlay": True,
-            "displayed_in_api": False,
+            "origin": template.id,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
         },
     )
 
     yield privacy_notice
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1494,7 +1518,7 @@ def served_notice_history(
         db=db,
         data={
             "acknowledge_mode": False,
-            "serving_component": "overlay",
+            "serving_component": ServingComponent.overlay,
             "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
@@ -1513,15 +1537,17 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_ca provide",
             "notice_key": "example_privacy_notice_us_ca_provide",
-            # no description or origin on this privacy notice to help
+            # no origin on this privacy notice to help
             # cover edge cases due to column nullability
-            "regions": [PrivacyNoticeRegion.us_ca],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_overlay": True,
-            "displayed_in_privacy_center": False,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "example privacy notice us_ca provide",
+                }
+            ],
         },
     )
 
@@ -1542,10 +1568,13 @@ def privacy_preference_history_us_ca_provide(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
-            "privacy_experience_id": privacy_experience_privacy_center.id,
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
+                0
+            ].privacy_experience_config_history_id,
             "preference": "opt_in",
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[0].id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
+                0
+            ].privacy_notice_history_id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
@@ -1566,14 +1595,16 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co third_party_sharing",
             "notice_key": "example_privacy_notice_us_co_third_party_sharing",
-            "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_overlay": True,
-            "displayed_in_privacy_center": True,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "example privacy notice us_co third_party_sharing",
+                    "description": "a sample privacy notice configuration",
+                }
+            ],
         },
     )
 
@@ -1587,14 +1618,16 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service.operations"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_privacy_center": False,
-            "displayed_in_overlay": True,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "example privacy notice us_co provide.service.operations",
+                    "description": "a sample privacy notice configuration",
+                }
+            ],
         },
     )
 
@@ -1608,7 +1641,6 @@ def privacy_experience_france_tcf_overlay(
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.tcf_overlay,
             "region": PrivacyNoticeRegion.fr,
             "experience_config_id": experience_config_tcf_overlay.id,
         },
@@ -1621,14 +1653,13 @@ def privacy_experience_france_tcf_overlay(
 
 @pytest.fixture(scope="function")
 def privacy_experience_france_overlay(
-    db: Session, experience_config_overlay
+    db: Session, experience_config_banner_and_modal
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.overlay,
             "region": PrivacyNoticeRegion.fr,
-            "experience_config_id": experience_config_overlay.id,
+            "experience_config_id": experience_config_banner_and_modal.id,
         },
     )
 
@@ -1643,14 +1674,16 @@ def privacy_notice_fr_provide_service_frontend_only(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "notice_key": "example_privacy_notice_us_co_provide.service.operations",
-            "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.fr],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
-            "displayed_in_overlay": True,
-            "displayed_in_privacy_center": False,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "example privacy notice us_co provide.service.operations",
+                    "description": "a sample privacy notice configuration",
+                }
+            ],
         },
     )
 
@@ -1664,14 +1697,16 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
         data={
             "name": "example privacy notice eu_cy provide.service.operations",
             "notice_key": "example_privacy_notice_eu_cy_provide.service.operations",
-            "description": "a sample privacy notice configuration",
-            "regions": [PrivacyNoticeRegion.cy],
             "consent_mechanism": ConsentMechanism.opt_out,
             "data_uses": ["essential.service"],
             "enforcement_level": EnforcementLevel.frontend,
-            "displayed_in_overlay": False,
-            "displayed_in_privacy_center": True,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "example privacy notice eu_cy provide.service.operations",
+                    "description": "a sample privacy notice configuration",
+                }
+            ],
         },
     )
 
@@ -1691,12 +1726,13 @@ def privacy_preference_history_fr_provide_service_frontend_only(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
-            "privacy_experience_id": privacy_experience_privacy_center.id,
-            "preference": "opt_out",
-            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
                 0
-            ].id,
+            ].privacy_experience_config_history_id,
+            "preference": "opt_out",
+            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.translations[
+                0
+            ].privacy_notice_history_id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "fr_idg",
@@ -2223,7 +2259,7 @@ def privacy_preference_history(
     privacy_experience_privacy_center,
     served_notice_history,
 ):
-    privacy_notice_history = privacy_notice.histories[0]
+    privacy_notice_history = privacy_notice.translations[0].histories[0]
 
     preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
@@ -2231,8 +2267,9 @@ def privacy_preference_history(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
-            "privacy_experience_id": privacy_experience_privacy_center.id,
+            "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.translations[
+                0
+            ].privacy_experience_config_history_id,
             "preference": "opt_out",
             "privacy_notice_history_id": privacy_notice_history.id,
             "request_origin": "privacy_center",
@@ -2315,22 +2352,60 @@ def consent_records(
 
 
 @pytest.fixture(scope="function")
+def experience_config_modal(db: Session) -> Generator:
+    exp = PrivacyExperienceConfig.create(
+        db=db,
+        data={
+            "component": "modal",
+            "regions": [PrivacyNoticeRegion.it],
+            "disabled": False,
+            "name": "Experience Config Modal",
+            "translations": [
+                {
+                    "language": "en",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Control your privacy",
+                    "accept_button_label": "Accept all",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
+    yield exp
+    for translation in exp.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
+    exp.delete(db)
+
+
+@pytest.fixture(scope="function")
 def experience_config_privacy_center(db: Session) -> Generator:
     exp = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "accept_button_label": "Accept all",
-            "description": "user&#x27;s description &lt;script /&gt;",
             "component": "privacy_center",
-            "reject_button_label": "Reject all",
-            "save_button_label": "Save",
-            "title": "Control your privacy",
-            "disabled": True,
+            "name": "Privacy Center config",
+            "translations": [
+                {
+                    "language": "en",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Control your privacy",
+                    "accept_button_label": "Accept all",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
         },
     )
     yield exp
-    for history in exp.histories:
-        history.delete(db)
+    for translation in exp.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
     exp.delete(db)
 
 
@@ -2341,7 +2416,6 @@ def privacy_experience_privacy_center(
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.privacy_center,
             "region": PrivacyNoticeRegion.us_co,
             "experience_config_id": experience_config_privacy_center.id,
         },
@@ -2352,30 +2426,38 @@ def privacy_experience_privacy_center(
 
 
 @pytest.fixture(scope="function")
-def experience_config_overlay(db: Session) -> Generator:
+def experience_config_banner_and_modal(db: Session) -> Generator:
     config = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "accept_button_label": "Accept all",
-            "acknowledge_button_label": "Confirm",
-            "banner_description": "You can accept, reject, or manage your preferences in detail.",
-            "banner_enabled": "enabled_where_required",
-            "banner_title": "Manage Your Consent",
-            "component": "overlay",
-            "description": "On this page you can opt in and out of these data uses cases",
-            "disabled": False,
-            "privacy_preferences_link_label": "Manage preferences",
-            "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "https://example.com/privacy",
-            "reject_button_label": "Reject all",
-            "save_button_label": "Save",
-            "title": "Manage your consent",
+            "component": "banner_and_modal",
+            "allow_language_selection": False,
+            "name": "Banner and modal config",
+            "translations": [
+                {
+                    "language": "en",
+                    "accept_button_label": "Accept all",
+                    "acknowledge_button_label": "Confirm",
+                    "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                    "banner_title": "Manage Your Consent",
+                    "description": "On this page you can opt in and out of these data uses cases",
+                    "privacy_preferences_link_label": "Manage preferences",
+                    "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                    "privacy_policy_url": "https://example.com/privacy",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Manage your consent",
+                }
+            ],
         },
     )
 
     yield config
-    for history in config.histories:
-        history.delete(db)
+    for translation in config.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
     config.delete(db)
 
 
@@ -2384,37 +2466,45 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
     config = PrivacyExperienceConfig.create(
         db=db,
         data={
-            "accept_button_label": "Accept all",
-            "acknowledge_button_label": "Confirm",
-            "banner_description": "You can accept, reject, or manage your preferences in detail.",
-            "banner_enabled": "enabled_where_required",
-            "banner_title": "Manage Your Consent",
             "component": "tcf_overlay",
-            "description": "On this page you can opt in and out of these data uses cases",
-            "disabled": False,
-            "privacy_preferences_link_label": "Manage preferences",
-            "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "https://example.com/privacy",
-            "reject_button_label": "Reject all",
-            "save_button_label": "Save",
-            "title": "Manage your consent",
+            "name": "TCF Config",
+            "translations": [
+                {
+                    "language": "en",
+                    "privacy_preferences_link_label": "Manage preferences",
+                    "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+                    "privacy_policy_url": "https://example.com/privacy",
+                    "reject_button_label": "Reject all",
+                    "save_button_label": "Save",
+                    "title": "Manage your consent",
+                    "description": "On this page you can opt in and out of these data uses cases",
+                    "accept_button_label": "Accept all",
+                    "acknowledge_button_label": "Confirm",
+                    "banner_description": "You can accept, reject, or manage your preferences in detail.",
+                    "banner_title": "Manage Your Consent",
+                }
+            ],
         },
     )
 
     yield config
-    for history in config.histories:
-        history.delete(db)
+    for translation in config.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+
     config.delete(db)
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_overlay(db: Session, experience_config_overlay) -> Generator:
+def privacy_experience_overlay(
+    db: Session, experience_config_banner_and_modal
+) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.overlay,
             "region": PrivacyNoticeRegion.us_ca,
-            "experience_config_id": experience_config_overlay.id,
+            "experience_config_id": experience_config_banner_and_modal.id,
         },
     )
 
@@ -2429,7 +2519,6 @@ def privacy_experience_privacy_center_france(
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
-            "component": ComponentType.privacy_center,
             "region": PrivacyNoticeRegion.fr,
             "experience_config_id": experience_config_privacy_center.id,
         },
@@ -2446,16 +2535,16 @@ def privacy_notice_france(db: Session) -> Generator:
         data={
             "name": "example privacy notice",
             "notice_key": "example_privacy_notice",
-            "description": "user description",
-            "regions": [
-                PrivacyNoticeRegion.fr,
-            ],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
-            "displayed_in_privacy_center": True,
-            "displayed_in_overlay": False,
-            "displayed_in_api": False,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "example privacy notice",
+                    "description": "user description",
+                }
+            ],
         },
     )
 
@@ -2881,8 +2970,10 @@ def served_notice_history(
         db=db,
         data={
             "acknowledge_mode": False,
-            "serving_component": "overlay",
-            "privacy_notice_history_id": privacy_notice.histories[0].id,
+            "serving_component": ServingComponent.overlay,
+            "privacy_notice_history_id": privacy_notice.translations[
+                0
+            ].privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
             "served_notice_history_id": "ser_12345",

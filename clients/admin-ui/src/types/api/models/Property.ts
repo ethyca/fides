@@ -2,11 +2,15 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { PropertyType } from "./PropertyType";
+import type { MinimalPrivacyExperience } from "./MinimalPrivacyExperience";
+import type { PropertyType } from "./PropertyType";
 
+/**
+ * A base template for all other Fides Schemas to inherit from.
+ */
 export type Property = {
-  key: string;
   name: string;
-  type: string;
-  experiences?: Array<string>;
+  type: PropertyType;
+  id?: string;
+  experiences: Array<MinimalPrivacyExperience>;
 };

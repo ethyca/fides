@@ -5,7 +5,6 @@ from fides.api.schemas.language import SupportedLanguage, supported_languages_by
 
 
 class TestLanguageSchema:
-
     def test_languages_by_id(self):
         # some basic language lookups
         assert supported_languages_by_id["ar"].name == "Arabic"
@@ -35,9 +34,9 @@ class TestLanguageSchema:
         assert SupportedLanguage.portuguese_portugal.value == "pt-PT"
         assert SupportedLanguage.serbian_cyrillic.value == "sr-Cyrl"
         assert SupportedLanguage.serbian_latin.value == "sr-Latn"
+        assert SupportedLanguage.spanish_mexico.value == "es-MX"
 
     def test_language_enum_in_schema(self):
-
         class SamplePydanticSchema(BaseModel):
             test_prop: str
             language: SupportedLanguage
@@ -48,8 +47,8 @@ class TestLanguageSchema:
         test_schema_instance = SamplePydanticSchema(test_prop="foo", language="pt-BR")
         assert test_schema_instance.language == SupportedLanguage.portuguese_brazil
 
-        # test that specifying an invalid language (e.g. es-MX) throws a validation error
+        # test that specifying an invalid language (e.g. es-ES) throws a validation error
         with pytest.raises(ValidationError):
             test_schema_instance = SamplePydanticSchema(
-                test_prop="foo", language="es-MX"
+                test_prop="foo", language="es-ES"
             )

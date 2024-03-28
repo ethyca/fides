@@ -49,13 +49,17 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
   // Load the fides.js script from the Fides Privacy Center, assumed to be
   // running at http://localhost:3001
-  let fidesScriptTagUrl = `${privacyCenterUrl}/fides.js`;
+  const fidesScriptTagUrl = new URL(`${privacyCenterUrl}/fides.js`);
   const router = useRouter();
-  const { geolocation } = router.query;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { geolocation, property_id } = router.query;
 
-  // If a `?geolocation=` query param exists, pass that along to the fides.js fetch
-  if (geolocation) {
-    fidesScriptTagUrl += `?geolocation=${geolocation}`;
+  // If `geolocation=` or `property_id` query params exists, pass those along to the fides.js fetch
+  if (geolocation && typeof geolocation === "string") {
+    fidesScriptTagUrl.searchParams.append("geolocation", geolocation);
+  }
+  if (typeof property_id === "string") {
+    fidesScriptTagUrl.searchParams.append("property_id", property_id);
   }
 
   return (
@@ -73,7 +77,7 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
       <Script
         id="fides-js"
         strategy="beforeInteractive"
-        src={fidesScriptTagUrl}
+        src={fidesScriptTagUrl.href}
         onReady={() => {
           // Enable the GTM integration, if GTM is configured
           if (gtmContainerId) {

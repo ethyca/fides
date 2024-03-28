@@ -11,6 +11,7 @@ import {
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
+import { safeLookupPropertyId } from "~/common/property-id";
 
 // one hour, how long the client should cache fides.js for
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
@@ -38,6 +39,12 @@ let autoRefresh: boolean = true;
  *         schema:
  *           type: string
  *         example: US-CA
+ *       - in: query
+ *         name: property_id
+ *         required: false
+ *         description: Optional identifier used to filter for experiences associated with the given property. If omitted, returns all experiences not associated with any properties.
+ *         schema:
+ *           type: string
  *       - in: query
  *         name: refresh
  *         required: false
@@ -91,6 +98,13 @@ export default async function handler(
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
+  const propertyId = safeLookupPropertyId(
+    req,
+    geolocation,
+    environment,
+    fidesString
+  );
+
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
@@ -113,7 +127,8 @@ export default async function handler(
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
         environment.settings.DEBUG,
-        null
+        null,
+        propertyId
       );
     }
   }
@@ -122,7 +137,7 @@ export default async function handler(
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
   // be able to prefetch the experience.
   const tcfEnabled = experience
-    ? experience.component === ComponentType.TCF_OVERLAY
+    ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
     : environment.settings.IS_FORCED_TCF;
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
@@ -156,6 +171,7 @@ export default async function handler(
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
       base64Cookie: environment.settings.BASE_64_COOKIE,
+      fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

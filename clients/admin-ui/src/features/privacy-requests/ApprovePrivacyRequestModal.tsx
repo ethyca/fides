@@ -98,7 +98,10 @@ const ApprovePrivacyRequestModal = ({
                         fontSize="sm"
                         mr={2}
                       >
-                        {item.value} (Unverified)
+                        {Array.isArray(item.value)
+                          ? item.value.join(", ")
+                          : item.value}{" "}
+                        (Unverified)
                       </Text>
                     </Flex>
                   </ListItem>

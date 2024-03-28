@@ -1,7 +1,8 @@
 import {
   ConsentMethod,
+  ConsentOptionCreate,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
@@ -17,10 +18,11 @@ import { TcfSavePreferences } from "./tcf/types";
  * Helper function to transform save prefs and call API
  */
 async function savePreferencesApi(
-  options: FidesOptions,
+  options: FidesInitOptions,
   cookie: FidesCookie,
   experience: PrivacyExperience,
   consentMethod: ConsentMethod,
+  privacyExperienceConfigHistoryId?: string,
   consentPreferencesToSave?: Array<SaveConsentPreference>,
   tcf?: TcfSavePreferences,
   userLocationString?: string,
@@ -28,14 +30,17 @@ async function savePreferencesApi(
 ) {
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
-  const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
-    privacy_notice_history_id: preference.notice.privacy_notice_history_id,
+  const fidesUserPreferences: ConsentOptionCreate[] = (
+    consentPreferencesToSave || []
+  ).map((preference) => ({
     preference: preference.consentPreference,
+    privacy_notice_history_id: preference.noticeHistoryId || "",
   }));
+
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
-    privacy_experience_id: experience.id,
+    privacy_experience_config_history_id: privacyExperienceConfigHistoryId,
     user_geography: userLocationString,
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
@@ -61,6 +66,7 @@ async function savePreferencesApi(
  */
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
+  privacyExperienceConfigHistoryId,
   experience,
   consentMethod,
   options,
@@ -71,9 +77,10 @@ export const updateConsentPreferences = async ({
   updateCookie,
 }: {
   consentPreferencesToSave?: Array<SaveConsentPreference>;
+  privacyExperienceConfigHistoryId?: string;
   experience: PrivacyExperience;
   consentMethod: ConsentMethod;
-  options: FidesOptions;
+  options: FidesInitOptions;
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
@@ -108,6 +115,7 @@ export const updateConsentPreferences = async ({
         cookie,
         experience,
         consentMethod,
+        privacyExperienceConfigHistoryId,
         consentPreferencesToSave,
         tcf,
         userLocationString,
