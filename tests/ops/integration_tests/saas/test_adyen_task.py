@@ -4,7 +4,7 @@ from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
-## @pytest.mark.integration_saas
+@pytest.mark.integration_saas
 class TestAdyenConnector:
     def test_connection(self, adyen_runner: ConnectorRunner):
         adyen_runner.test_connection()
