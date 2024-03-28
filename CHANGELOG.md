@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.33.0...main)
 
+### Fixed
+- Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
+
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
 
 ### Added
