@@ -173,5 +173,7 @@ def delighted_create_erasure_data(
     # create survey response
     response = delighted_test_client.create_survey_response(person["id"])
     assert response.ok
-    poll_for_existence(delighted_test_client.get_survey_responses, (person["id"],))
+    poll_for_existence(
+        delighted_test_client.get_survey_responses, (person["id"],), interval=30
+    )
     yield person
