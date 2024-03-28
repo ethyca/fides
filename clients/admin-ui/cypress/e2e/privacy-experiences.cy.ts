@@ -228,10 +228,12 @@ describe("Privacy experiences", () => {
       it("doesn't allow component type to be changed after selection", () => {
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("input-component").find("input").should("be.disabled");
+        cy.getByTestId("input-dismissable").should("be.visible");
       });
 
       it("doesn't show a preview for a privacy center", () => {
         cy.selectOption("input-component", "Privacy center");
+        cy.getByTestId("input-dismissable").should("not.be.visible");
         cy.getByTestId("no-preview-notice").contains(
           "Privacy center preview not available"
         );
@@ -297,6 +299,7 @@ describe("Privacy experiences", () => {
           }).as("getTCFExperience");
         });
         cy.wait("@getTCFExperience");
+        cy.getByTestId("input-dismissable").should("be.visible");
         cy.getByTestId("no-preview-notice").contains(
           "TCF preview not available"
         );
