@@ -14,14 +14,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
-@pytest.mark.integration_adobe_campaign
 def test_adobe_campaign_connection_test(adobe_campaign_connection_config) -> None:
     get_connector(adobe_campaign_connection_config).test_connection()
 
 
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
-@pytest.mark.integration_adobe_campaign
 @pytest.mark.asyncio
 async def test_adobe_campaign_access_request_task(
     policy,
@@ -160,7 +158,6 @@ async def test_adobe_campaign_access_request_task(
 
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
-@pytest.mark.integration_adobe_campaign
 @pytest.mark.asyncio
 async def test_adobe_campaign_erasure_request_task(
     db,

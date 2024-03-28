@@ -15,13 +15,11 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_braze
 def test_braze_connection_test(braze_connection_config) -> None:
     get_connector(braze_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_braze
 @pytest.mark.asyncio
 async def test_braze_access_request_task_with_email(
     db,
@@ -96,7 +94,6 @@ async def test_braze_access_request_task_with_email(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_braze
 @pytest.mark.asyncio
 async def test_braze_access_request_task_with_phone_number(
     db,
@@ -154,7 +151,6 @@ async def test_braze_access_request_task_with_phone_number(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_braze
 @pytest.mark.asyncio
 async def test_braze_erasure_request_task(
     db,

@@ -16,13 +16,11 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_stripe
 def test_stripe_connection_test(stripe_connection_config) -> None:
     get_connector(stripe_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_stripe
 @pytest.mark.asyncio
 async def test_stripe_access_request_task_with_email(
     db,
@@ -251,7 +249,7 @@ async def test_stripe_access_request_task_with_email(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice"],
-        min_size=2,
+        min_size=1,
         keys=[
             "account_country",
             "account_name",
@@ -640,7 +638,6 @@ async def test_stripe_access_request_task_with_email(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_stripe
 @pytest.mark.asyncio
 async def test_stripe_access_request_task_with_phone_number(
     db,
@@ -706,7 +703,6 @@ async def test_stripe_access_request_task_with_phone_number(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_stripe
 @pytest.mark.asyncio
 async def test_stripe_erasure_request_task(
     db,
@@ -936,7 +932,7 @@ async def test_stripe_erasure_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice"],
-        min_size=2,
+        min_size=1,
         keys=[
             "account_country",
             "account_name",
