@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.33.0...main)
 
+### Fixed
+
+- Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
+
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
 
 ### Added
