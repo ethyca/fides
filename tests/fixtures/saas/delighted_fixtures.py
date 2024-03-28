@@ -177,6 +177,6 @@ def delighted_create_erasure_data(
         delighted_test_client.get_survey_responses,
         (person["id"],),
         interval=60,
-        verification_count=3,
+        verification_count=10,
     )
     yield person

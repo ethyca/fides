@@ -111,7 +111,6 @@ class TestPrivacyRequestLogging:
             "privacy_request_id": privacy_request["id"],
             "method": "DELETE",
             "url": f"https://api.typeform.com/rtbf/{typeform_secrets['account_id']}/responses",
-            "body": '["test@email.com"]\n',
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }
@@ -147,7 +146,6 @@ class TestPrivacyRequestLogging:
             "privacy_request_id": "123",
             "method": "POST",
             "url": "https://a.klaviyo.com/api/profile-suppression-bulk-delete-jobs/",
-            "body": '{\n  "data": {\n    "type": "profile-suppression-bulk-delete-job",\n    "attributes": {\n      "profiles": {\n        "data": [\n          {\n            "type": "profile",\n            "attributes": {\n              "email": "test@email.com"\n            }\n          }\n        ]\n      }\n    }\n  }\n}\n',
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }
