@@ -16,6 +16,8 @@ The types of changes are:
 - `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.33.0...main)
+
+### Added
 - Added erasure support for Iterable [#4695](https://github.com/ethyca/fides/pull/4695)
 
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
