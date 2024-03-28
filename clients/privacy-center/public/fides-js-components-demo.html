@@ -4,7 +4,7 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- 
+    <!--
       We use the fides*.js file directly so that we can dynamically inject options.
       We read fidesConfig.options to determine which fides*.js bundle to use.
     -->
@@ -15,6 +15,11 @@
           : "./lib/fides.js";
         document.write('<script src="' + src + '"><\/script>');
       })();
+      var deleteCookie = function () {
+        document.cookie =
+          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        location.reload();
+      };
     </script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
@@ -110,7 +115,7 @@
               notice_key: "advertising",
               description: "Advertising Description Test",
               internal_description: "Advertising Internal Description Test",
-              consent_mechanism: "opt_in",
+              consent_mechanism: "notice_only",
               data_uses: ["marketing.advertising.first_party.targeted"],
               enforcement_level: "frontend",
               disabled: false,
@@ -182,6 +187,7 @@
           modalLinkId: null,
           privacyCenterUrl: "http://localhost:3000",
           fidesApiUrl: "http://localhost:8080/api/v1",
+          fidesPrimaryColor: "#008000",
         },
       };
       window.Fides.init(fidesConfig);
@@ -210,6 +216,12 @@
         choices can be accessed by pages that live outside of the Privacy
         Center.
       </p>
+
+      <div>
+        <button type="button" onclick="deleteCookie()">
+          delete cookie and reload
+        </button>
+      </div>
 
       <div id="fides-embed-container"></div>
 

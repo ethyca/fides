@@ -4,11 +4,12 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   UserConsentPreference,
 } from "fides-js";
 
 import { RecordConsentServedRequest } from "fides-js/src/lib/consent-types";
+import { TEST_OVERRIDE_WINDOW_PATH } from "~/cypress/support/constants";
 
 import {
   mockPrivacyNotice,
@@ -100,24 +101,27 @@ describe("Consent overlay", () => {
           ).contains("[banner-opts] We use cookies and similar methods");
           cy.get("div#fides-button-group").within(() => {
             cy.get(
-              "button#fides-banner-button-tertiary.fides-banner-button.fides-banner-button-tertiary"
+              "button.fides-banner-button.fides-banner-button-tertiary"
             ).contains("Manage preferences");
             cy.get(
-              "button#fides-banner-button-primary.fides-banner-button.fides-banner-button-primary"
+              "button.fides-banner-button.fides-banner-button-primary"
             ).contains("Opt out of all");
             cy.get(
-              "button#fides-banner-button-primary.fides-banner-button.fides-banner-button-primary"
+              "button.fides-banner-button.fides-banner-button-primary"
             ).contains("Opt in to all");
             // Order matters - it should always be secondary, then primary!
-            cy.get("button")
-              .eq(0)
-              .should("have.id", "fides-banner-button-tertiary");
-            cy.get("button")
-              .eq(1)
-              .should("have.id", "fides-banner-button-primary");
-            cy.get("button")
-              .eq(2)
-              .should("have.id", "fides-banner-button-primary");
+            cy.get("button.fides-manage-preferences-button").should(
+              "have.class",
+              "fides-banner-button-tertiary"
+            );
+            cy.get("button.fides-reject-all-button").should(
+              "have.class",
+              "fides-banner-button-primary"
+            );
+            cy.get("button.fides-accept-all-button").should(
+              "have.class",
+              "fides-banner-button-primary"
+            );
           });
         });
       });
@@ -282,7 +286,7 @@ describe("Consent overlay", () => {
           // Shared helper that overrides the experience config description with
           // an HTML example and allows toggling the allowHTMLDescription option
           const setupHTMLDescriptionTest = (
-            options: Partial<FidesOptions> = {}
+            options: Partial<FidesInitOptions> = {}
           ) => {
             const HTMLDescription = `
             <p>
@@ -2334,6 +2338,37 @@ describe("Consent overlay", () => {
       cy.get(".fides-modal-button-group")
         .find("button")
         .should("have.length", 3);
+    });
+  });
+
+  describe("fides overrides", () => {
+    describe("when set via window obj", () => {
+      it("applies primary color override", () => {
+        const overrides = {
+          fides_primary_color: "#999000",
+        };
+        cy.fixture("consent/experience_banner_modal.json").then(
+          (experience) => {
+            stubConfig(
+              {
+                options: {
+                  customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                },
+                experience: experience.items[0],
+              },
+              null,
+              null,
+              undefined,
+              { ...overrides }
+            );
+          }
+        );
+        cy.get("div#fides-banner .fides-accept-all-button").should(
+          "have.css",
+          "background-color",
+          "rgb(153, 144, 0)"
+        );
+      });
     });
   });
 });

@@ -1,11 +1,5 @@
 import { Flex, Text, useToast } from "@fidesui/react";
-import {
-  CookieKeyConsent,
-  EmptyExperience,
-  FidesOptions,
-  PrivacyExperience,
-  UserGeolocation,
-} from "fides-js/src/lib/consent-types";
+import { FidesGlobal } from "fides-js/src/lib/consent-types";
 import { useFormikContext } from "formik";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
@@ -24,17 +18,9 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-export type Fides = {
-  consent: CookieKeyConsent;
-  experience?: PrivacyExperience | EmptyExperience;
-  geolocation?: UserGeolocation;
-  options: FidesOptions;
-  init: (config: any) => {};
-};
-
 declare global {
   interface Window {
-    Fides: Fides;
+    Fides: FidesGlobal;
   }
 }
 
@@ -55,6 +41,7 @@ const NoPreviewNotice = ({
       align="center"
       gap="2"
       maxW="512px"
+      data-testid="no-preview-notice"
     >
       <Text fontSize="lg" fontWeight="500" align="center">
         {title}
@@ -151,7 +138,7 @@ const Preview = ({
       values.component !== ComponentType.PRIVACY_CENTER &&
       values.component !== ComponentType.TCF_OVERLAY
     ) {
-      window.Fides.init(baseConfig);
+      window.Fides.init(baseConfig as any);
     }
   }, [values, translation, baseConfig, allPrivacyNotices]);
 
@@ -273,7 +260,7 @@ const Preview = ({
             values.component !== ComponentType.TCF_OVERLAY &&
             values.component !== ComponentType.PRIVACY_CENTER
           ) {
-            window.Fides?.init(baseConfig);
+            window.Fides?.init(baseConfig as any);
           }
         }}
       />

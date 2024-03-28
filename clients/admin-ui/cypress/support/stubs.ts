@@ -124,10 +124,14 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PUT", "/api/v1/messaging/default", {
     fixture: "/privacy-requests/messaging_configuration.json",
   }).as("createMessagingConfiguration");
+
+  cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
+    fixture: "/privacy-requests/privacy-center-config.json",
+  }).as("getPrivacyCenterConfig");
 };
 
 export const stubPrivacyNoticesCrud = () => {
-  cy.intercept("GET", "/api/v1/privacy-notice/*", {
+  cy.intercept("GET", "/api/v1/privacy-notice*", {
     fixture: "privacy-notices/list.json",
   }).as("getNotices");
   cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
@@ -240,6 +244,15 @@ export const stubDatamap = () => {
   cy.intercept("GET", "/api/v1/system", { fixture: "systems/systems.json" }).as(
     "getSystems"
   );
+};
+
+export const stubLocations = () => {
+  cy.intercept("GET", "/api/v1/plus/locations", {
+    fixture: "locations/list.json",
+  }).as("getLocations");
+  cy.intercept("PATCH", "/api/v1/plus/locations", {
+    fixture: "locations/list.json",
+  }).as("patchLocations");
 };
 
 export const stubSystemVendors = () => {

@@ -312,6 +312,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
+  const isDismissable = !!experience.experience_config?.dismissable;
+
   return (
     <Overlay
       options={options}
@@ -322,6 +324,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}
+      isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
@@ -332,7 +335,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         return (
           <ConsentBanner
             i18n={i18n}
-            dismissable={experience.experience_config?.dismissable}
+            dismissable={isDismissable}
             bannerIsOpen={isOpen}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
@@ -351,6 +354,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 }}
                 isMobile={isMobile}
                 includePrivacyPolicy
+                includeLanguageSelector
+                options={options}
               />
             )}
             className="fides-tcf-banner-container"
@@ -399,6 +404,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 />
               }
               isMobile={isMobile}
+              options={options}
             />
             <PrivacyPolicyLink i18n={i18n} />
           </Fragment>

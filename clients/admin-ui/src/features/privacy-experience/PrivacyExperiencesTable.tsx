@@ -230,7 +230,7 @@ export const PrivacyExperiencesTable = () => {
               <Button
                 size="xs"
                 colorScheme="primary"
-                data-testid="add-privacy-ecperience-btn"
+                data-testid="add-privacy-experience-btn"
               >
                 Create new experience
               </Button>

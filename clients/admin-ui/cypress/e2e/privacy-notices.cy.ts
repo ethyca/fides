@@ -9,7 +9,7 @@ import {
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const ESSENTIAL_NOTICE_ID = "pri_a92477b0-5157-4608-acdc-39283a442f29";
+const ESSENTIAL_NOTICE_ID = "pri_a518b4d0-9cbc-48b1-94dc-2fe911537b8e";
 
 describe("Privacy notices", () => {
   beforeEach(() => {
@@ -92,8 +92,8 @@ describe("Privacy notices", () => {
         "Essential",
         "Functional",
         "Analytics",
-        "Advertising",
-        "Data Sales",
+        "Marketing",
+        "Data Sales and Sharing",
       ].forEach((name) => {
         cy.get("table").contains("tr", name);
       });
@@ -187,7 +187,7 @@ describe("Privacy notices", () => {
           });
         // Disabled and has no applicable systems
         cy.get("table")
-          .contains("tr", "Advertising")
+          .contains("tr", "Marketing")
           .within(() => {
             cy.getByTestId("status-badge").contains("inactive");
           });

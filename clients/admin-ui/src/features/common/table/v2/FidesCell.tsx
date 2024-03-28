@@ -55,6 +55,10 @@ export const FidesCell = <T,>({
           borderTopWidth: "2x",
           borderTopColor: "red",
         },
+        ...getTableTHandTDStyles(cell.column.id),
+        // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
+        maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
+        minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
       }}
       _first={{
         borderBottomWidth:
@@ -68,12 +72,6 @@ export const FidesCell = <T,>({
         borderRightWidth: 0,
       }}
       height="inherit"
-      style={{
-        ...getTableTHandTDStyles(cell.column.id),
-        // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/examples/react/column-resizing-performant
-        maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
-        minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
-      }}
       onClick={
         cell.column.columnDef.id !== "enable" && onRowClick
           ? () => {

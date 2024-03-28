@@ -1,29 +1,78 @@
 {
-  "name": "Experience title",
-  "disabled": false,
-  "dismissable": false,
+  "name": "Example modal experience",
+  "disabled": true,
+  "dismissable": true,
   "allow_language_selection": false,
-  "regions": ["us_ca"],
-  "id": "pri_0338d055-f91b-4a17-ad4e-600c61551199",
-  "created_at": "2023-05-30T23:42:10.300484+00:00",
-  "updated_at": "2023-05-31T00:28:24.694384+00:00",
-  "origin": "???",
+  "auto_detect_language": true,
+  "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
+  "id": "pri_001",
+  "created_at": "2024-03-22T20:06:27.119285+00:00",
+  "updated_at": "2024-03-22T20:06:27.119285+00:00",
   "component": "modal",
-  "privacy_notices": [],
+  "privacy_notices": [
+    {
+      "name": "Example Notice",
+      "notice_key": "example_notice",
+      "internal_description": "An example of a marketing.advertising notice",
+      "consent_mechanism": "opt_out",
+      "data_uses": [
+        "marketing.advertising.first_party.targeted",
+        "marketing.advertising.third_party.targeted"
+      ],
+      "enforcement_level": "frontend",
+      "disabled": true,
+      "has_gpc_flag": true,
+      "framework": null,
+      "default_preference": "opt_in",
+      "id": "pri_002",
+      "origin": "pri_309d287c-b208-4fd1-93b2-7b2ff13eddat",
+      "created_at": "2024-03-22T20:06:26.928879+00:00",
+      "updated_at": "2024-03-22T20:06:26.928879+00:00",
+      "cookies": [],
+      "systems_applicable": false,
+      "translations": [
+        {
+          "language": "en",
+          "title": "Example Notice",
+          "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.",
+          "privacy_notice_history_id": "pri_81b6eda8-c460-4f5b-9b19-e85ee5a7059e"
+        }
+      ],
+      "gpp_field_mapping": null
+    }
+  ],
   "translations": [
     {
       "language": "en",
-      "is_default": true,
-      "title": "Translation title",
-      "accept_button_label": "Accept",
-      "reject_button_label": "Reject",
+      "accept_button_label": "Opt in to all",
       "acknowledge_button_label": "OK",
+      "banner_title": null,
+      "is_default": true,
+      "privacy_policy_link_label": "Privacy Policy",
+      "privacy_policy_url": null,
+      "privacy_preferences_link_label": "Manage preferences",
+      "reject_button_label": "Opt out of all",
       "save_button_label": "Save",
-      "description": "Translation description",
-      "privacy_policy_link_label": "Privacy policy",
-      "privacy_policy_url": "http://ethyca.com",
-      "privacy_preferences_link_label": "Privacy preferences",
-      "experience_config_history_id": "pri_50a8563a-c3fe-4861-9320-9c0f014276a0"
+      "title": "Manage your consent preferences",
+      "banner_description": null,
+      "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+      "privacy_experience_config_history_id": "pri_4aab49f4-8dfd-4f4b-a004-feda16971e2c"
+    },
+    {
+      "language": "fr",
+      "accept_button_label": "Accepter tout",
+      "acknowledge_button_label": "OK",
+      "banner_title": null,
+      "is_default": false,
+      "privacy_policy_link_label": "Politique de confidentialité",
+      "privacy_policy_url": null,
+      "privacy_preferences_link_label": "Gérer les préférences",
+      "reject_button_label": "Refuser tous",
+      "save_button_label": "Enregistrer",
+      "title": "Gestion du consentement et des préférences",
+      "banner_description": null,
+      "description": "Nous utilisons des cookies et des méthodes similaires pour reconnaître les visiteurs de ce site et nous souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité d’une campagne publicitaire, proposer des publicités ciblées et analyser le trafic du site. En fonction de votre emplacement géographique, vous pouvez choisir d’accepter ou de refuser l’utilisation de ces technologies."
     }
-  ]
+  ],
+  "properties": []
 }
