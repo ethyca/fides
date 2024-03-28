@@ -252,7 +252,7 @@ export const SelectInput = ({
   isMulti = false,
   singleValueBlock,
   isDisabled = false,
-  menuPosition = "absolute",
+  menuPosition = "fixed",
   onChange,
   isCustomOption,
   textColor,
