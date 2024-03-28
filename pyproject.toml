@@ -185,6 +185,7 @@ markers = [
     "integration_snowflake",
     "integration_mariadb",
     "integration_bigquery",
+    "integration_dynamodb",
     "integration_saas",
     "integration_saas_override",
     "unit_saas"
