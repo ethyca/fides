@@ -5,6 +5,7 @@ import {
   PrivacyExperience,
   PrivacyNotice,
 } from "fides-js";
+import { Locale } from "~/../fides-js/src/lib/i18n";
 import { TEST_OVERRIDE_WINDOW_PATH } from "~/cypress/support/constants";
 import { stubConfig } from "../support/stubs";
 
@@ -402,6 +403,14 @@ describe("Consent i18n", () => {
    *
    **********************************************************/
   describe("when localizing banner_and_modal components", () => {
+    const testBannerLanguageMenu = (locale: Locale) => {
+      cy.get("#fides-banner").within(() => {
+        cy.getByTestId(`fides-i18n-option-${locale}`).should(
+          "have.attr",
+          "aria-pressed"
+        );
+      });
+    };
     // Reusable assertions to test that the banner component localizes correctly
     const testBannerLocalization = (t: TestBannerTranslations) => {
       /**
@@ -700,6 +709,22 @@ describe("Consent i18n", () => {
       });
     });
 
+    describe(`when ?fides_locale override param is set to an available locale (${SPANISH_LOCALE})`, () => {
+      it(`ignores browser locale and localizes in the override locale (${SPANISH_LOCALE})`, () => {
+        // Visit the demo site in English, but expect Spanish translations when fides_locale override is set
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
+          fixture: "experience_banner_modal.json",
+          queryParams: { fides_locale: SPANISH_LOCALE },
+        });
+        testBannerLanguageMenu(SPANISH_LOCALE);
+        testBannerLocalization(SPANISH_BANNER);
+        openAndTestModalLocalization(SPANISH_MODAL);
+        testModalNoticesLocalization(SPANISH_NOTICES);
+      });
+    });
+
     describe("when user selects their own locale", () => {
       it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
         // Visit the demo site in English, but expect Spanish translations when the user selects
@@ -711,24 +736,26 @@ describe("Consent i18n", () => {
         cy.get("#fides-banner").should("be.visible");
         cy.getByTestId(`fides-i18n-option-${SPANISH_LOCALE}`).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
+        testBannerLanguageMenu(SPANISH_LOCALE);
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
         testModalNoticesLocalization(SPANISH_NOTICES);
       });
-    });
-
-    describe(`when ?fides_locale override param is set to an available locale (${SPANISH_LOCALE})`, () => {
-      it(`ignores browser locale and localizes in the override locale (${SPANISH_LOCALE})`, () => {
-        // Visit the demo site in English, but expect Spanish translations when fides_locale override is set
+      it(`ignores query params and localizes in the user selected locale (${ENGLISH_LOCALE})`, () => {
+        // Override the demo site in Spanish, but expect English translations when the user selects
         visitDemoWithI18n({
           navigatorLanguage: ENGLISH_LOCALE,
           globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
           queryParams: { fides_locale: SPANISH_LOCALE },
         });
-        testBannerLocalization(SPANISH_BANNER);
-        openAndTestModalLocalization(SPANISH_MODAL);
-        testModalNoticesLocalization(SPANISH_NOTICES);
+        cy.get("#fides-banner").should("be.visible");
+        cy.getByTestId(`fides-i18n-option-${ENGLISH_LOCALE}`).focus();
+        cy.get(`.fides-i18n-menu`).focused().click();
+        testBannerLanguageMenu(ENGLISH_LOCALE);
+        testBannerLocalization(ENGLISH_BANNER);
+        openAndTestModalLocalization(ENGLISH_MODAL);
+        testModalNoticesLocalization(ENGLISH_NOTICES);
       });
     });
 
