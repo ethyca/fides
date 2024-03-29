@@ -22,7 +22,6 @@ saas_config:
       sensitive: True
 
   external_references:
-  ### Match the name here to the name used in the fixures file
     - name: adyen_user_id
       label: pspReference
       description: The dataset reference to the pspReference of the original payment authorization which maps to the desired user.
@@ -65,6 +64,7 @@ saas_config:
             {
               "merchantAccount": "<merchant_account>",    
               "pspReference": "<psp_reference>"
+              "forceErasure": "true"
             }
           param_values:
             - name: merchant_account
@@ -74,3 +74,5 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: user.psp_reference
                   direction: from
+            # - name: force_erasure
+            #   connector_param: force_erasure

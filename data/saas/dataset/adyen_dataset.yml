@@ -4,7 +4,7 @@ dataset:
     description: A sample dataset representing the Adyen integration for Fides
     collections:
       - name: user
-        fields: #[]
+        fields: 
           - name: id
             data_categories: [system.operations]
             fidesops_meta:

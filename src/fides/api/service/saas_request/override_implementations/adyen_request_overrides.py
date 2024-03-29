@@ -1,3 +1,8 @@
+'''Notes for this particular override
+For more details consult the Adyen documentation for their Data Protection API
+The gist is that like some other vendors we do not get an email directly for this integration. The data protection endpoint in this case has two main requirements
+'''
+
 from typing import Any, Dict, List
 
 from fides.api.graph.traversal import TraversalNode
@@ -10,9 +15,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 
-## this has been stolen from stasig ###
-
-
 @register("adyen_user_read", [SaaSRequestType.READ])
 def adyen_user_read(
     client: AuthenticatedClient,
@@ -22,7 +24,6 @@ def adyen_user_read(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
-    ### Note - the value we are actually getting is a string that represents a PSP reference of the original payment authorization. This is what Adyen uses to remove all data about a particular shopper
     adyen_user_ids = input_data.get("user_id", [])
     results = []
     for adyen_user_id in adyen_user_ids:

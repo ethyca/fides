@@ -1,3 +1,12 @@
+'''Notes on the particulars for this Adyen integration
+In this case, we aren't passing an identity email as Adyen's data protection endpoint requires a different value, the pspReference value which will be provided to us by our customer. 
+The pspReference value itself will be provided by the customer
+For reference this is the name of the value in the Adyen API data erasure endpoint
+While we have hardcoded a value in this instance, it should be fairly straight-forward to make that a random value.
+Naming considerations
+adyen_external_references() & adyen_erasure_external_references()
+both will need to use naming consistent with that in the config.yml 
+'''
 from typing import Any, Dict, Generator
 
 import pydash
@@ -10,7 +19,6 @@ from tests.ops.integration_tests.saas.connector_runner import (
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("adyen")
-
 
 @pytest.fixture(scope="session")
 def adyen_secrets(saas_config) -> Dict[str, Any]:
@@ -28,40 +36,17 @@ def adyen_secrets(saas_config) -> Dict[str, Any]:
         # add the rest of your secrets here
     }
 
-
-### In this case, we aren't passing an identity email as Adyen's data protection endpoint requires a different value, the pspReference value which will be provided to us by our customer.
-# @pytest.fixture(scope="session")
-# def adyen_identity_email(saas_config) -> str:
-#     return pydash.get(saas_config, "adyen.identity_email") or secrets["identity_email"]
-
-
 @pytest.fixture
 def adyen_erasure_identity_email() -> str:
     return generate_random_email()
 
-
-### note -- not sure why we were able to remove this in statsig - it could be that we don't really need a full item to delete, will comment out for now.
-## This fixture needs to have naming to match that in the config.yml
 @pytest.fixture
 def adyen_external_references() -> Dict[str, Any]:
     return {"adyen_user_id": "852617375522786K"}
 
-
-### I think the pspReference could be random as we will get a 200 back even if the pspReference doesn't exist
-## This also needs to reference the names used in the config.yml
 @pytest.fixture
 def adyen_erasure_external_references() -> Dict[str, Any]:
     return {"adyen_user_id": "852617375522786K"}
-
-
-### Given how the erasure works, it isn't required that we have data in the system to test the deletion as we're just looking for the response to be a 200
-# @pytest.fixture
-# def adyen_erasure_data(
-#     adyen_erasure_identity_email: str,
-# ) -> Generator:
-#     # create the data needed for erasure tests here
-#     yield {}
-
 
 @pytest.fixture
 def adyen_runner(
