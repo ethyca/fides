@@ -24,8 +24,8 @@ saas_config:
   external_references:
   ### Match the name here to the name used in the fixures file
     - name: adyen_user_id
-      label: PSP reference
-      description: The dataset reference to the PSP reference of the original payment authorization which maps to the desired user.
+      label: pspReference
+      description: The dataset reference to the pspReference of the original payment authorization which maps to the desired user.
 
   client_config:
     protocol: https
