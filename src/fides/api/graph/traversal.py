@@ -10,13 +10,14 @@ from loguru import logger
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
     Collection,
     CollectionAddress,
     FieldAddress,
     FieldPath,
     GraphDataset,
-    TERMINATOR_ADDRESS,
 )
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.models.privacy_request import RequestTask, TraversalDetails
 from fides.api.util.collection_util import Row, append, partition
@@ -164,6 +165,10 @@ class TraversalNode(Contextualizable):
                 self.node.address, {self.node.address: self}
             ),
         )
+
+    def to_mock_execution_node(self):
+        request_task: RequestTask = self.to_mock_request_task()
+        return ExecutionNode(request_task)
 
 
 def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:

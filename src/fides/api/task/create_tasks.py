@@ -15,9 +15,9 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import (
+    ARTIFICIAL_NODES,
     Traversal,
     TraversalNode,
-    ARTIFICIAL_NODES,
     _format_traversal_details_for_save,
 )
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -34,7 +34,6 @@ from fides.api.task.execute_tasks import (
     run_consent_node,
     run_erasure_node,
 )
-
 from fides.api.util.cache import CustomJSONEncoder
 from fides.api.util.collection_util import Row
 

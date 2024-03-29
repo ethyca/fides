@@ -55,6 +55,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import (
     get_encryption_cache_key,
@@ -350,7 +351,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_access_request"
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
     def test_create_privacy_request_limit_exceeded(
         self,
@@ -4755,7 +4756,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert len(response_data) == 1
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_access_request"
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
     def test_create_privacy_request_limit_exceeded(
         self,
@@ -5057,7 +5058,7 @@ class TestPrivacyReqeustDataTransfer:
         # execute the privacy request to mimic the expected workflow on the "child"
         # this will populate the access results in the cache, which is required for the
         # transfer endpoint to work
-        await graph_task.run_access_request(
+        access_runner(
             privacy_request,
             policy,
             graph,

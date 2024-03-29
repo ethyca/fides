@@ -69,6 +69,7 @@ def test_retry_decorator(privacy_request, policy, db):
     payment_card_node = traversal_nodes[
         CollectionAddress("postgres_example", "payment_card")
     ]
+    execution_node = payment_card_node.to_mock_execution_node()
 
     CONFIG.execution.task_retry_count = 5
     CONFIG.execution.task_retry_delay = 0.1
@@ -76,12 +77,18 @@ def test_retry_decorator(privacy_request, policy, db):
 
     class TestRetryDecorator:
         def __init__(self):
-            self.traversal_node = payment_card_node
+            self.execution_node = execution_node
             self.call_count = 0
             self.start_logged = 0
             self.retry_logged = 0
             self.end_called_with = ()
-            self.resources = TaskResources(privacy_request, policy, [], db)
+            self.resources = TaskResources(
+                privacy_request,
+                policy,
+                [],
+                payment_card_node.to_mock_request_task(),
+                db,
+            )
 
         def log_end(self, action_type: ActionType, exc: Optional[str] = None):
             self.end_called_with = (action_type, exc)

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import SkippingConsentPropagation
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import Node
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
@@ -146,9 +147,11 @@ class TestSaasConnector:
             ),
         )
         traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
         connector: SaaSConnector = get_connector(saas_example_connection_config)
         assert connector.retrieve_data(
-            traversal_node, Policy(), PrivacyRequest(id="123"), {}
+            execution_node, Policy(), PrivacyRequest(id="123"), request_task, {}
         ) == [{}]
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -176,6 +179,10 @@ class TestSaasConnector:
             ),
         )
         traversal_node = TraversalNode(node)
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+
         connector: SaaSConnector = get_connector(saas_example_connection_config)
 
         # this request requires the email identity in the filter postprocessor so we include it here
@@ -183,9 +190,10 @@ class TestSaasConnector:
         privacy_request.cache_identity(Identity(email="test@example.com"))
 
         assert connector.retrieve_data(
-            traversal_node,
+            execution_node,
             Policy(),
             privacy_request,
+            request_task,
             {"fidesops_grouped_inputs": [], "conversation_id": ["456"]},
         ) == [{"id": "123", "from_email": "test@example.com"}]
 
@@ -208,10 +216,12 @@ class TestSaasConnector:
             ),
         )
         traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
         connector: SaaSConnector = get_connector(saas_example_connection_config)
         assert (
             connector.retrieve_data(
-                traversal_node, Policy(), PrivacyRequest(id="123"), {}
+                execution_node, Policy(), PrivacyRequest(id="123"), request_task, {}
             )
             == []
         )
@@ -239,11 +249,14 @@ class TestSaasConnector:
             ),
         )
         traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
         connector: SaaSConnector = get_connector(saas_example_connection_config)
         assert connector.retrieve_data(
-            traversal_node,
+            execution_node,
             Policy(),
             PrivacyRequest(id="123"),
+            request_task,
             {
                 "fidesops_grouped_inputs": [
                     {
@@ -273,10 +286,12 @@ class TestSaasConnector:
             ),
         )
         traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
         connector: SaaSConnector = get_connector(saas_example_connection_config)
         assert (
             connector.retrieve_data(
-                traversal_node, Policy(), PrivacyRequest(id="123"), {}
+                execution_node, Policy(), PrivacyRequest(id="123"), request_task, {}
             )
             == []
         )
@@ -306,14 +321,17 @@ class TestSaasConnector:
         )
 
         traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
         connector: SaaSConnector = get_connector(saas_example_connection_config)
 
         # Base case - we can populate all placeholders in request body
         assert (
             connector.mask_data(
-                traversal_node,
+                execution_node,
                 Policy(),
                 PrivacyRequest(id="123"),
+                request_task,
                 {"customer_id": 1},
                 {"phone_number": "555-555-5555"},
             )
@@ -330,9 +348,10 @@ class TestSaasConnector:
         # Should raise ValueError because we don't have email value for request body
         with pytest.raises(ValueError):
             connector.mask_data(
-                traversal_node,
+                execution_node,
                 Policy(),
                 PrivacyRequest(id="123"),
+                request_task,
                 {"customer_id": 1},
                 {"phone_number": "555-555-5555"},
             )
@@ -343,9 +362,10 @@ class TestSaasConnector:
         ].requests.update.skip_missing_param_values = True
         assert (
             connector.mask_data(
-                traversal_node,
+                execution_node,
                 Policy(),
                 PrivacyRequest(id="123"),
+                request_task,
                 {"customer_id": 1},
                 {"phone_number": "555-555-5555"},
             )
@@ -432,11 +452,15 @@ class TestSaasConnectorRunConsentRequest:
     ):
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
+            traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+            request_task = traversal_node.to_mock_request_task()
+            execution_node = traversal_node.to_mock_execution_node()
             connector.run_consent_request(
-                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                node=execution_node,
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                request_task=request_task,
                 session=db,
             )
         assert "no actionable consent preferences to propagate" in str(exc)
@@ -459,11 +483,15 @@ class TestSaasConnectorRunConsentRequest:
 
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
+            traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+            request_task = traversal_node.to_mock_request_task()
+            execution_node = traversal_node.to_mock_execution_node()
             connector.run_consent_request(
-                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                node=execution_node,
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                request_task=request_task,
                 session=db,
             )
 
@@ -490,11 +518,15 @@ class TestSaasConnectorRunConsentRequest:
 
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
+            traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+            request_task = traversal_node.to_mock_request_task()
+            execution_node = traversal_node.to_mock_execution_node()
             connector.run_consent_request(
-                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                node=execution_node,
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                request_task=request_task,
                 session=db,
             )
         assert "no actionable consent preferences to propagate" in str(exc)
@@ -527,11 +559,15 @@ class TestSaasConnectorRunConsentRequest:
 
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
         with pytest.raises(ValueError):
+            traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+            request_task = traversal_node.to_mock_request_task()
+            execution_node = traversal_node.to_mock_execution_node()
             connector.run_consent_request(
-                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                node=execution_node,
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                request_task=request_task,
                 session=db,
             )
 
@@ -564,11 +600,15 @@ class TestSaasConnectorRunConsentRequest:
 
         connector = get_connector(google_analytics_connection_config_without_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
+            traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+            request_task = traversal_node.to_mock_request_task()
+            execution_node = traversal_node.to_mock_execution_node()
             connector.run_consent_request(
-                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                node=execution_node,
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                request_task=request_task,
                 session=db,
             )
 
@@ -601,11 +641,15 @@ class TestSaasConnectorRunConsentRequest:
 
         connector = get_connector(google_analytics_connection_config_without_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
+            traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+            request_task = traversal_node.to_mock_request_task()
+            execution_node = traversal_node.to_mock_execution_node()
             connector.run_consent_request(
-                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                node=execution_node,
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                request_task=request_task,
                 session=db,
             )
 
@@ -631,11 +675,15 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history.save(db)
 
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = traversal_node.to_mock_execution_node()
         connector.run_consent_request(
-            node=TraversalNode(generate_node("a", "b", "c", "c2")),
+            node=execution_node,
             policy=consent_policy,
             privacy_request=privacy_request_with_consent_policy,
             identity_data={"ljt_readerID": "abcde"},
+            request_task=request_task,
             session=db,
         )
         assert mock_send.called

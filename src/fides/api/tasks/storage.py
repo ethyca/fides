@@ -5,7 +5,7 @@ import os
 import secrets
 import zipfile
 from io import BytesIO
-from typing import Any, Dict, Union, Optional, Set
+from typing import Any, Dict, Optional, Set, Union
 
 import pandas as pd
 from boto3 import Session
