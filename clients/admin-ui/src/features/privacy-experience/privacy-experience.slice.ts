@@ -37,7 +37,8 @@ type ExperienceConfigOptionalFields =
   | "banner_title"
   | "banner_description"
   | "privacy_policy_link_label"
-  | "privacy_policy_url";
+  | "privacy_policy_url"
+  | "trigger_link_label";
 export type ExperienceConfigUpdateParams = Omit<
   Partial<ExperienceConfigUpdate>,
   ExperienceConfigOptionalFields
@@ -47,6 +48,7 @@ export type ExperienceConfigUpdateParams = Omit<
   banner_description?: string | null;
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
+  trigger_link_label?: string | null;
 };
 type ExperienceConfigEnableDisableParams = ExperienceConfigDisabledUpdate & {
   id: string;
@@ -59,6 +61,7 @@ export type ExperienceConfigCreateParams = Omit<
   banner_description?: string | null;
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
+  trigger_link_label?: string | null;
 };
 
 const privacyExperienceConfigApi = baseApi.injectEndpoints({

@@ -51,4 +51,8 @@ export type ExperienceTranslationCreate = {
    */
   banner_description?: string;
   description: string;
+  /**
+   * Custom link/button trigger label
+   */
+  trigger_link_label?: string;
 };
