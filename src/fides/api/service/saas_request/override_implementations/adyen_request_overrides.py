@@ -10,7 +10,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 
-### NOTE this has been stolen from stasig ###
+## this has been stolen from stasig ###
 
 
 @register("adyen_user_read", [SaaSRequestType.READ])
