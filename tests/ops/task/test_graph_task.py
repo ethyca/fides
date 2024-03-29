@@ -27,6 +27,7 @@ from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
+from fides.api.task.deprecated_graph_task import update_erasure_mapping_from_cache
 from fides.api.task.graph_task import (  # _evaluate_erasure_dependencies,; _format_data_use_map_for_caching,
     EMPTY_REQUEST,
     GraphTask,
@@ -35,7 +36,6 @@ from fides.api.task.graph_task import (  # _evaluate_erasure_dependencies,; _for
     collect_queries,
     filter_by_enabled_actions,
     start_function,
-    update_erasure_mapping_from_cache,
 )
 from fides.api.task.task_resources import Connections
 from fides.api.util.consent_util import (

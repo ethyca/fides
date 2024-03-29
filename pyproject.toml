@@ -40,6 +40,7 @@ module = [
   "bson.*",
   "celery.*",
   "citext.*",
+  "dask.*",
   "deepdiff.*",
   "defusedxml.ElementTree.*",
   "fideslog.*",
