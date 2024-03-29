@@ -41,12 +41,14 @@ def adyen_erasure_identity_email() -> str:
 
 
 ### note -- not sure why we were able to remove this in statsig - it could be that we don't really need a full item to delete, will comment out for now.
+## This fixture needs to have naming to match that in the config.yml
 @pytest.fixture
 def adyen_external_references() -> Dict[str, Any]:
     return {"adyen_user_id": "852617375522786K"}
 
 
 ### I think the pspReference could be random as we will get a 200 back even if the pspReference doesn't exist
+## This also needs to reference the names used in the config.yml
 @pytest.fixture
 def adyen_erasure_external_references() -> Dict[str, Any]:
     return {"adyen_user_id": "852617375522786K"}
