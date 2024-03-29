@@ -7,7 +7,6 @@ from functools import wraps
 from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
-from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -22,7 +21,6 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
-    TERMINATOR_ADDRESS,
     CollectionAddress,
     Field,
     FieldAddress,
@@ -31,7 +29,11 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.graph.traversal import (
+    Traversal,
+    TraversalNode,
+    _format_traversal_details_for_save,
+)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -44,9 +46,7 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
-    TraversalDetails,
 )
-from fides.api.models.sql_models import System
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
@@ -69,11 +69,6 @@ COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldP
 
 EMPTY_REQUEST = PrivacyRequest()
 EMPTY_REQUEST_TASK = RequestTask()
-
-ARTIFICIAL_NODES: List[CollectionAddress] = [
-    ROOT_COLLECTION_ADDRESS,
-    TERMINATOR_ADDRESS,
-]
 
 
 def retry(
@@ -695,17 +690,8 @@ def collect_queries(
         tn: TraversalNode, data: Dict[CollectionAddress, str]
     ) -> None:
         if not tn.is_root_node():
-            collection_data = json.loads(tn.node.collection.json())
             # Mock a RequestTask object in memory
-            resources.privacy_request_task = RequestTask(
-                collection_address=tn.node.address.value,
-                dataset_name=tn.node.address.dataset,
-                collection_name=tn.node.address.collection,
-                collection=collection_data,
-                traversal_details=_format_traversal_details_for_save(
-                    tn.node.address, {tn.node.address: tn}
-                ),
-            )
+            resources.privacy_request_task = tn.to_mock_request_task()
             data[tn.address] = GraphTask(resources).generate_dry_run_query()  # type: ignore
 
     env: Dict[CollectionAddress, str] = {}
@@ -838,28 +824,3 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
             )
 
     return DatasetGraph(*consent_datasets)
-
-
-def _format_traversal_details_for_save(
-    node: CollectionAddress, env: Dict[CollectionAddress, TraversalNode]
-) -> Dict:
-    """Format selected TraversalNode details in a way they can be saved in the database.
-
-    This will let us execute the node when ready without having to reconstruct the traversal node later.
-    """
-    if node in ARTIFICIAL_NODES:
-        return {}
-
-    traversal_node: TraversalNode = env[node]
-    connection_key: FidesKey = traversal_node.node.dataset.connection_key
-
-    return TraversalDetails(
-        dataset_connection_key=connection_key,
-        incoming_edges=[
-            [edge.f1.value, edge.f2.value] for edge in traversal_node.incoming_edges()
-        ],
-        outgoing_edges=[
-            [edge.f1.value, edge.f2.value] for edge in traversal_node.outgoing_edges()
-        ],
-        input_keys=[tn.value for tn in traversal_node.input_keys()],
-    ).dict()

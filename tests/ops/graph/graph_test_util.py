@@ -49,7 +49,7 @@ class MockSqlConnector(SQLConnector):
         request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        return [generate_collection(node.node.collection) for _ in range(3)]
+        return [generate_collection(node.collection) for _ in range(3)]
 
 
 class MockSqlTask(GraphTask):

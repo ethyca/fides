@@ -85,7 +85,7 @@ def format_data_use_map_for_caching(
     }
     for collection_addr, connection_key in connection_key_mapping.items():
         connection_config = connection_config_mapping.get(connection_key, None)
-        if not connection_config:
+        if not connection_config or not connection_config.system:
             resp[collection_addr.value] = {}
             continue
         data_uses: Set[str] = System.get_data_uses(
@@ -213,17 +213,8 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
     ) -> None:
         """Run the traversal, as an action creating a GraphTask for each traversal_node."""
         if not tn.is_root_node():
-            collection_data = json.loads(tn.node.collection.json())
             # Mock a RequestTask object in memory
-            resources.privacy_request_task = RequestTask(
-                collection_address=tn.node.address.value,
-                dataset_name=tn.node.address.dataset,
-                collection_name=tn.node.address.collection,
-                collection=collection_data,
-                traversal_details=_format_traversal_details_for_save(
-                    tn.node.address, {tn.node.address: tn}
-                ),
-            )
+            resources.privacy_request_task = tn.to_mock_request_task()
             data[tn.address] = GraphTask(resources)
 
     # We store the end nodes from the traversal for analytics purposes

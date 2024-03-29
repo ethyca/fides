@@ -566,6 +566,15 @@ class Collection(BaseModel):
             converted_fields.append(build_field(field))
 
         data["fields"] = converted_fields
+        data["after"] = {
+            CollectionAddress.from_string(addr_string)
+            for addr_string in data.get("after", [])
+        }
+        data["erase_after"] = {
+            CollectionAddress.from_string(addr_string)
+            for addr_string in data.get("erase_after", [])
+        }
+
         return Collection.parse_obj(data)
 
     class Config:
@@ -577,6 +586,7 @@ class Collection(BaseModel):
             Set: lambda val: list(val),
             DataTypeConverter: lambda dtc: dtc.name if dtc.name else None,
             FieldAddress: lambda fa: fa.value,
+            CollectionAddress: lambda ca: ca.value,
         }
 
 

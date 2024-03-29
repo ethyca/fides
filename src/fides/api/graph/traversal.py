@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
+from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.common_exceptions import TraversalError
@@ -13,11 +15,18 @@ from fides.api.graph.config import (
     FieldAddress,
     FieldPath,
     GraphDataset,
+    TERMINATOR_ADDRESS,
 )
 from fides.api.graph.graph import DatasetGraph, Edge, Node
+from fides.api.models.privacy_request import RequestTask, TraversalDetails
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
+
+ARTIFICIAL_NODES: List[CollectionAddress] = [
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+]
 
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
@@ -142,6 +151,19 @@ class TraversalNode(Contextualizable):
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
         return {LoggerContextKeys.collection: self.node.collection.name}
+
+    def to_mock_request_task(self) -> RequestTask:
+        collection_data = json.loads(self.node.collection.json())
+        # Mock a RequestTask object in memory
+        return RequestTask(
+            collection_address=self.node.address.value,
+            dataset_name=self.node.address.dataset,
+            collection_name=self.node.address.collection,
+            collection=collection_data,
+            traversal_details=_format_traversal_details_for_save(
+                self.node.address, {self.node.address: self}
+            ),
+        )
 
 
 def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
@@ -355,3 +377,28 @@ class Traversal:
         if environment:
             logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes
+
+
+def _format_traversal_details_for_save(
+    node: CollectionAddress, env: Dict[CollectionAddress, TraversalNode]
+) -> Dict:
+    """Format selected TraversalNode details in a way they can be saved in the database.
+
+    This will let us execute the node when ready without having to reconstruct the traversal node later.
+    """
+    if node in ARTIFICIAL_NODES:
+        return {}
+
+    traversal_node: TraversalNode = env[node]
+    connection_key: FidesKey = traversal_node.node.dataset.connection_key
+
+    return TraversalDetails(
+        dataset_connection_key=connection_key,
+        incoming_edges=[
+            [edge.f1.value, edge.f2.value] for edge in traversal_node.incoming_edges()
+        ],
+        outgoing_edges=[
+            [edge.f1.value, edge.f2.value] for edge in traversal_node.outgoing_edges()
+        ],
+        input_keys=[tn.value for tn in traversal_node.input_keys()],
+    ).dict()
