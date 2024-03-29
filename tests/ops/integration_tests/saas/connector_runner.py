@@ -295,7 +295,7 @@ class ConnectorRunner:
 
         if (
             ActionType.access
-            in SaaSConfig(self.connection_config.saas_config).supported_actions
+            in SaaSConfig(**self.connection_config.saas_config).supported_actions
         ):
             access_results = await graph_task.run_access_request(
                 privacy_request,

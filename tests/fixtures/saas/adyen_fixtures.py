@@ -19,9 +19,9 @@ def adyen_secrets(saas_config) -> Dict[str, Any]:
         or secrets["domain_management"],
         "domain_ca": pydash.get(saas_config, "adyen.domain_ca") or secrets["domain_ca"],
         "api_key": pydash.get(saas_config, "adyen.api_key") or secrets["adyen.api_key"],
-        "merchantAccount": pydash.get(saas_config, "adyen.merchantAccount")
-        or secrets["adyen.mechantAccount"],
-        "pspReference": pydash.get(saas_config, "adyen.pspReference")
+        "merchant_account": pydash.get(saas_config, "adyen.merchant_account")
+        or secrets["adyen.merchant_account"],
+        "psp_reference": pydash.get(saas_config, "adyen.psp_reference")
         or secrets["adyen.pspReference"],
         "adyen_user_id": pydash.get(saas_config, "adyen.user_id")
         or secrets["adyen.user_id"],
@@ -43,13 +43,13 @@ def adyen_erasure_identity_email() -> str:
 ### note -- not sure why we were able to remove this in statsig - it could be that we don't really need a full item to delete, will comment out for now.
 @pytest.fixture
 def adyen_external_references() -> Dict[str, Any]:
-    return {"pspReference": "852617375522786K"}
+    return {"adyen_user_id": "852617375522786K"}
 
 
 ### I think the pspReference could be random as we will get a 200 back even if the pspReference doesn't exist
 @pytest.fixture
 def adyen_erasure_external_references() -> Dict[str, Any]:
-    return {"pspReference": "852617375522786K"}
+    return {"adyen_user_id": "852617375522786K"}
 
 
 ### Given how the erasure works, it isn't required that we have data in the system to test the deletion as we're just looking for the response to be a 200

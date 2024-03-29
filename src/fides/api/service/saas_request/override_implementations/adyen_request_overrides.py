@@ -22,9 +22,9 @@ def adyen_user_read(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
-    ### Note - the value we are actually getting is a string that represents a PSP reference of the original payment authorisation. This is what Adyen uses to remove all data about a particular shopper
-    adyen_users_id = input_data.get("user_id", [])
+    ### Note - the value we are actually getting is a string that represents a PSP reference of the original payment authorization. This is what Adyen uses to remove all data about a particular shopper
+    adyen_user_ids = input_data.get("user_id", [])
     results = []
-    for adyen_user_id in adyen_users_id:
-        results.append({"pspReference": adyen_user_id})
+    for adyen_user_id in adyen_user_ids:
+        results.append({"psp_reference": adyen_user_id})
     return results

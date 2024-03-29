@@ -13,6 +13,8 @@ saas_config:
     - name: domain_ca
       label: CA domain
       description: Please note that Adyen has both TEST and LIVE environments. E.g. ca-test.adyen.com or ca-live.adyen.com, and that API keys for live and test will not be the same.
+    - name: merchant_account
+      label: Merchant account
     - name: api_key
       label: API key
       description: See Adyen's documentation for me details about creating API keys, and how to assign roles for the key here (https://docs.adyen.com/development-resources/api-credentials/).
@@ -20,7 +22,7 @@ saas_config:
 
   external_references:
     - name: adyen_user_id
-      label: The PSP reference
+      label: PSP reference
       description: The dataset reference to the PSP reference of the original payment authorization which maps to the desired user.
 
   client_config:
@@ -57,6 +59,16 @@ saas_config:
                 headers:
                   - name: x-API-key
                     value: <api_key>
-          body: >
-            {     "merchantAccount":<merchantAccount>,    
-            "pspReference":<pspReference> }
+          body: |
+            {
+              "merchantAccount": "<merchant_account>",    
+              "pspReference": "<psp_reference>"
+            }
+          param_values:
+            - name: merchant_account
+              connector_param: merchant_account
+            - name: psp_reference
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.psp_reference
+                  direction: from

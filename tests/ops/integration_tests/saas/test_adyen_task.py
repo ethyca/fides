@@ -15,8 +15,8 @@ class TestAdyenConnector:
     #     access_results = await adyen_runner.access_request(
     #         access_policy=policy, identities={"email": adyen_identity_email}
     #     )
-        ## MARC remove this next line
-    #@pytest.mark.skip("Enterprise account only")
+    ## MARC remove this next line
+    # @pytest.mark.skip("Enterprise account only")
     async def test_non_strict_erasure_request(
         self,
         adyen_runner: ConnectorRunner,
@@ -26,10 +26,13 @@ class TestAdyenConnector:
     ):
         (
             _,
-            erasure_results, 
-            ) = await adyen_runner.non_strict_erasure_request(
+            erasure_results,
+        ) = await adyen_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": adyen_erasure_identity_email},
         )
-        # assert erasure_results == {"adyen_instance:user":1}
+        assert erasure_results == {
+            "adyen_external_dataset:adyen_external_collection": 0,
+            "adyen_instance:user": 1,
+        }
