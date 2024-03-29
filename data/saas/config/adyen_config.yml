@@ -63,8 +63,8 @@ saas_config:
           body: |
             {
               "merchantAccount": "<merchant_account>",    
-              "pspReference": "<psp_reference>"
-              "forceErasure": "true"
+              "pspReference": "<psp_reference>",
+              "forceErasure": "True"
             }
           param_values:
             - name: merchant_account
@@ -74,5 +74,3 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: user.psp_reference
                   direction: from
-            # - name: force_erasure
-            #   connector_param: force_erasure
