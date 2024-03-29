@@ -1,6 +1,7 @@
 import {
   ExperienceConfig,
-  FidesOptions,
+  FidesExperienceTranslationOverrides,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "~/fides";
@@ -25,7 +26,13 @@ import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import messagesTcfEn from "~/lib/tcf/i18n/locales/en/messages-tcf.json";
 import messagesTcfEs from "~/lib/tcf/i18n/locales/es/messages-tcf.json";
-import type { I18n, Locale, MessageDescriptor, Messages } from "~/lib/i18n";
+import type {
+  I18n,
+  Locale,
+  Language,
+  MessageDescriptor,
+  Messages,
+} from "~/lib/i18n";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
@@ -34,11 +41,24 @@ describe("i18n-utils", () => {
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
   let mockDefaultLocale = DEFAULT_LOCALE;
+  let mockAvailableLanguages: Language[] = [
+    { locale: "en", label_en: "English", label_original: "English" },
+    { locale: "es", label_en: "Spanish", label_original: "Español" },
+  ];
+
   const mockI18n = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     activate: jest.fn((locale: Locale): void => {
       mockCurrentLocale = locale;
     }),
+
+    setAvailableLanguages: jest.fn((languages: Language[]): void => {
+      mockAvailableLanguages = languages;
+    }),
+
+    get availableLanguages(): Language[] {
+      return mockAvailableLanguages;
+    },
 
     getDefaultLocale: jest.fn((): Locale => mockDefaultLocale),
 
@@ -127,6 +147,9 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.setDefaultLocale).toHaveBeenCalledWith("es");
+      expect(mockI18n.setAvailableLanguages).toHaveBeenCalledWith(
+        mockAvailableLanguages
+      );
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
   });
@@ -286,6 +309,97 @@ describe("i18n-utils", () => {
         "exp.reject_button_label": "Reject Test",
         "exp.save_button_label": "Save Test",
         "exp.title": "Title Test",
+      });
+    });
+
+    it("sets overrides experience_config translations when no locale match", () => {
+      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+        {
+          title: "My override title",
+          description: "My override description",
+          privacy_policy_url: "https://example.com/privacy",
+          override_language: "en",
+        };
+      const updatedLocales = loadMessagesFromExperience(
+        mockI18n,
+        mockExperience,
+        experienceTranslationOverrides
+      );
+      const EXPECTED_NUM_TRANSLATIONS = 2;
+      expect(updatedLocales).toEqual(["en", "es"]);
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
+        "exp.accept_button_label": "Accept Test",
+        "exp.acknowledge_button_label": "Acknowledge Test",
+        "exp.banner_description": "Banner Description Test",
+        "exp.banner_title": "Banner Title Test",
+        "exp.description": experienceTranslationOverrides.description,
+        "exp.privacy_policy_link_label": "Privacy Policy Test",
+        "exp.privacy_policy_url":
+          experienceTranslationOverrides.privacy_policy_url,
+        "exp.privacy_preferences_link_label": "Manage Preferences Test",
+        "exp.reject_button_label": "Reject Test",
+        "exp.save_button_label": "Save Test",
+        "exp.title": experienceTranslationOverrides.title,
+      });
+      expect(mockI18n.load).toHaveBeenCalledWith("es", {
+        "exp.accept_button_label": "Aceptar Prueba",
+        "exp.acknowledge_button_label": "Reconocer Prueba",
+        "exp.banner_description": "Descripción del Banner de Prueba",
+        "exp.banner_title": "Título del Banner de Prueba",
+        "exp.description": "Descripción de la Prueba",
+        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
+        "exp.privacy_policy_url": "https://privacy.example.com/es",
+        "exp.privacy_preferences_link_label":
+          "Administrar Preferencias de Prueba",
+        "exp.reject_button_label": "Rechazar Prueba",
+        "exp.save_button_label": "Guardar Prueba",
+        "exp.title": "Título de la Prueba",
+      });
+    });
+
+    it("does not set overrides experience_config translations when no locale match", () => {
+      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+        {
+          title: "My override title",
+          description: "My override description",
+          privacy_policy_url: "https://example.com/privacy",
+          override_language: "ja",
+        };
+      const updatedLocales = loadMessagesFromExperience(
+        mockI18n,
+        mockExperience,
+        experienceTranslationOverrides
+      );
+      const EXPECTED_NUM_TRANSLATIONS = 2;
+      expect(updatedLocales).toEqual(["en", "es"]);
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
+        "exp.accept_button_label": "Accept Test",
+        "exp.acknowledge_button_label": "Acknowledge Test",
+        "exp.banner_description": "Banner Description Test",
+        "exp.banner_title": "Banner Title Test",
+        "exp.description": "Description Test",
+        "exp.privacy_policy_link_label": "Privacy Policy Test",
+        "exp.privacy_policy_url": "https://privacy.example.com/",
+        "exp.privacy_preferences_link_label": "Manage Preferences Test",
+        "exp.reject_button_label": "Reject Test",
+        "exp.save_button_label": "Save Test",
+        "exp.title": "Title Test",
+      });
+      expect(mockI18n.load).toHaveBeenCalledWith("es", {
+        "exp.accept_button_label": "Aceptar Prueba",
+        "exp.acknowledge_button_label": "Reconocer Prueba",
+        "exp.banner_description": "Descripción del Banner de Prueba",
+        "exp.banner_title": "Título del Banner de Prueba",
+        "exp.description": "Descripción de la Prueba",
+        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
+        "exp.privacy_policy_url": "https://privacy.example.com/es",
+        "exp.privacy_preferences_link_label":
+          "Administrar Preferencias de Prueba",
+        "exp.reject_button_label": "Rechazar Prueba",
+        "exp.save_button_label": "Guardar Prueba",
+        "exp.title": "Título de la Prueba",
       });
     });
 
@@ -520,7 +634,7 @@ describe("i18n-utils", () => {
     });
 
     it("returns the fides_locale override if present in options", () => {
-      const mockOptions: Partial<FidesOptions> = {
+      const mockOptions: Partial<FidesInitOptions> = {
         fidesLocale: "fr",
       };
       expect(detectUserLocale(mockNavigator, mockOptions)).toEqual("fr");

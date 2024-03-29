@@ -15,8 +15,8 @@ import {
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
-  CookieKeyConsent,
-  CookieMeta,
+  NoticeConsent,
+  FidesJSMeta,
   Cookies,
   FidesCookie,
   LegacyConsentConfig,
@@ -25,7 +25,7 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
-import { TcfCookieConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
+import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -81,7 +81,7 @@ describe("makeFidesCookie", () => {
   });
 
   it("accepts default consent preferences", () => {
-    const defaults: CookieKeyConsent = {
+    const defaults: NoticeConsent = {
       essential: true,
       performance: false,
       data_sales: true,
@@ -136,7 +136,7 @@ describe("getOrMakeFidesCookie", () => {
 
       it("returns the saved cookie including optional fides_meta details like consentMethod", () => {
         // extend the cookie object with some extra details on fides_meta
-        const extendedFidesMeta: CookieMeta = {
+        const extendedFidesMeta: FidesJSMeta = {
           ...V090_COOKIE_OBJECT.fides_meta,
           ...{ consentMethod: "accept", otherMetadata: "foo" },
         };
@@ -419,7 +419,7 @@ describe("removeCookiesFromBrowser", () => {
 describe("transformTcfPreferencesToCookieKeys", () => {
   it("can handle empty preferences", () => {
     const preferences: TcfSavePreferences = { purpose_consent_preferences: [] };
-    const expected: TcfCookieConsent = {
+    const expected: TcfOtherConsent = {
       system_consent_preferences: {},
       system_legitimate_interests_preferences: {},
     };
@@ -451,7 +451,7 @@ describe("transformTcfPreferencesToCookieKeys", () => {
         { id: "ctl_test_system", preference: UserConsentPreference.OPT_IN },
       ],
     };
-    const expected: TcfCookieConsent = {
+    const expected: TcfOtherConsent = {
       system_consent_preferences: { ctl_test_system: true },
       system_legitimate_interests_preferences: { ctl_test_system: true },
     };

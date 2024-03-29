@@ -10,9 +10,9 @@ import {
 import { useA11yDialog } from "../lib/a11y-dialog";
 import {
   ComponentType,
-  CookieKeyConsent,
+  NoticeConsent,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
 } from "../lib/consent-types";
 import {
@@ -27,6 +27,7 @@ import type { I18n } from "../lib/i18n";
 import ConsentModal from "./ConsentModal";
 import ConsentContent from "./ConsentContent";
 import "./fides.css";
+import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -40,17 +41,18 @@ interface RenderModalFooter {
 }
 
 interface Props {
-  options: FidesOptions;
+  options: FidesInitOptions;
   experience: PrivacyExperience;
   i18n: I18n;
   cookie: FidesCookie;
-  savedConsent: CookieKeyConsent;
+  savedConsent: NoticeConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
   renderModalFooter: (props: RenderModalFooter) => VNode;
   onVendorPageClick?: () => void;
+  isUiBlocking: boolean;
 }
 
 const Overlay: FunctionComponent<Props> = ({
@@ -65,12 +67,25 @@ const Overlay: FunctionComponent<Props> = ({
   renderModalContent,
   renderModalFooter,
   onVendorPageClick,
+  isUiBlocking,
 }) => {
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
   const modalLinkRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isUiBlocking && bannerIsOpen) {
+      blockPageScrolling();
+    } else {
+      unblockPageScrolling();
+    }
+
+    return () => {
+      unblockPageScrolling();
+    };
+  }, [isUiBlocking, bannerIsOpen]);
 
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
@@ -177,9 +192,10 @@ const Overlay: FunctionComponent<Props> = ({
 
   return (
     <div>
-      {showBanner && bannerIsOpen && window.Fides.options.preventDismissal && (
+      {showBanner && bannerIsOpen && isUiBlocking && (
         <div className="fides-modal-overlay" />
       )}
+
       {showBanner
         ? renderBanner({
             isOpen: bannerIsOpen,

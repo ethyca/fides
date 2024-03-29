@@ -1,7 +1,7 @@
 import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  CookieKeyConsent,
+  NoticeConsent,
   getConsentContext,
   getOrMakeFidesCookie,
   removeCookiesFromBrowser,
@@ -265,9 +265,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         transformUserPreferenceToBoolean(preference.preference),
       ])
     );
-    const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeKeyMap);
-    window.Fides.consent = consentCookieKey;
-    const updatedCookie = { ...cookie, consent: consentCookieKey };
+    const noticeConsent: NoticeConsent = Object.fromEntries(noticeKeyMap);
+    window.Fides.consent = noticeConsent;
+    const updatedCookie = { ...cookie, consent: noticeConsent };
     updatedCookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
     saveFidesCookie(updatedCookie, base64Cookie);
     toast({
