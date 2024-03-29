@@ -15,6 +15,7 @@ from fides.api.common_exceptions import (
     ManualWebhookFieldsUnset,
     MessageDispatchException,
     NoCachedManualWebhookEntry,
+    PrivacyRequestExit,
     PrivacyRequestPaused,
 )
 from fides.api.db.session import get_db_session
@@ -54,12 +55,8 @@ from fides.api.service.connectors.erasure_email_connector import (
 from fides.api.service.connectors.fides_connector import filter_fides_connector_datasets
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.storage.storage_uploader_service import upload
-from fides.api.task.create_tasks import (
-    run_access_request,
-    run_consent_request,
-    run_erasure_request,
-)
 from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
@@ -352,6 +349,7 @@ def run_privacy_request(
         if not manual_webhook_erasure_results.proceed:
             return
 
+        # Pre-Webhooks CHECKPOINT
         if can_run_checkpoint(
             request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
         ):
@@ -382,22 +380,24 @@ def run_privacy_request(
             )
             access_result_urls: List[str] = []
 
-            # ACCESS CHECKPOINT
+            # Access CHECKPOINT
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
                 or policy.get_rules_for_action(action_type=ActionType.erasure)
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                run_access_request(
+                access_runner(
                     privacy_request=privacy_request,
+                    policy=policy,
                     graph=dataset_graph,
+                    connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
                 )
-                return
 
-            # UPLOAD ACCESS RESULTS CHECKPOINT
+            # Upload Access Results CHECKPOINT
+            raw_access_results: Dict = privacy_request.get_raw_access_results()
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
                 or policy.get_rules_for_action(action_type=ActionType.erasure)
@@ -405,7 +405,6 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.upload_access,
                 from_checkpoint=resume_step,
             ):
-                raw_access_results: Dict = privacy_request.get_raw_access_results()
                 # TODO Remove - for debugging purposes
                 logger.info(f"Unfiltered access results {raw_access_results}")
 
@@ -422,20 +421,22 @@ def run_privacy_request(
                     fides_connector_datasets,
                 )
 
-            # ERASURE CHECKPOINT
+            # Erasure CHECKPOINT
             if policy.get_rules_for_action(
                 action_type=ActionType.erasure
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
                 # We only need to run the erasure once until masking strategies are handled
-                run_erasure_request(
+                erasure_runner(
                     privacy_request=privacy_request,
+                    policy=policy,
                     graph=dataset_graph,
+                    connection_configs=connection_configs,
                     identity=identity_data,
+                    access_request_data=raw_access_results,
                     session=session,
                 )
-                return
 
             # Finalize Erasure CHECKPOINT
             if can_run_checkpoint(
@@ -451,13 +452,14 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.consent,
                 from_checkpoint=resume_step,
             ):
-                run_consent_request(
+                consent_runner(
                     privacy_request=privacy_request,
+                    policy=policy,
                     graph=build_consent_dataset_graph(datasets),
+                    connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
                 )
-                return
 
             # Finalize Consent CHECKPOINT
             if can_run_checkpoint(
@@ -472,6 +474,9 @@ def run_privacy_request(
             _log_warning(exc, CONFIG.dev_mode)
             return
 
+        except PrivacyRequestExit as exc:
+            return
+
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
@@ -479,6 +484,7 @@ def run_privacy_request(
             return
 
         # Check if privacy request needs erasure or consent emails sent
+        # Email post-send CHECKPOINT
         if (
             (
                 policy.get_rules_for_action(action_type=ActionType.erasure)
@@ -497,7 +503,7 @@ def run_privacy_request(
             )
             return
 
-        # Run post-execution webhooks
+        # Post Webhooks CHECKPOINT
         if can_run_checkpoint(
             request_checkpoint=CurrentStep.post_webhooks,
             from_checkpoint=resume_step,

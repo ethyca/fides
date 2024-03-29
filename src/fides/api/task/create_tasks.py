@@ -15,13 +15,15 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
     completed_statuses,
 )
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, Policy
+from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_tasks import (
     run_access_node,
     run_consent_node,
@@ -405,6 +407,7 @@ def log_task_queued(request_task: RequestTask) -> None:
 def run_access_request(
     privacy_request: PrivacyRequest,
     graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
 ) -> List[RequestTask]:
@@ -428,10 +431,20 @@ def run_access_request(
         ready_tasks = persist_new_access_request_tasks(
             session, privacy_request, traversal, traversal_nodes, end_nodes, graph
         )
+        privacy_request.cache_data_use_map(
+            format_data_use_map_for_caching(
+                {
+                    coll_address: tn.node.dataset.connection_key
+                    for (coll_address, tn) in traversal_nodes.items()
+                },
+                connection_configs,
+            )
+        )
 
     for task in ready_tasks:
         log_task_queued(task)
         run_access_node.delay(privacy_request.id, task.id)
+
     return ready_tasks
 
 

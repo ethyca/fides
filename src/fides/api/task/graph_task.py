@@ -5,7 +5,7 @@ import traceback
 from abc import ABC
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -46,6 +46,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TraversalDetails,
 )
+from fides.api.models.sql_models import System
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
@@ -183,6 +184,11 @@ def retry(
                 self.resources.request,
                 self.connector.configuration,
             )
+            # TODO Remove with deprecating DSR 2.0
+            if not self.request_task.id:
+                # Re-raise to stop privacy request execution on failure for
+                # deprecated DSR 2.0 sequential execution
+                raise raised_ex  # type: ignore
 
         return result
 
@@ -196,7 +202,7 @@ def mark_current_and_downstream_nodes_as_failed(
     If the current node fails, mark it and *every descendant that can be reached by the current node*
     as failed
     """
-    if not privacy_request_task:
+    if not privacy_request_task.id:
         return
 
     logger.info(f"Marking task {privacy_request_task.id} and descendants as errored")
@@ -382,7 +388,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             },
         )
 
-        self.request_task.update_status(self.resources.session, status)
+        # TODO Remove conditional check alongside deprecating DSR 2.0. For DSR 3.0, we want to update
+        # the Request Task status as well.
+        if self.request_task.id:
+            self.request_task.update_status(self.resources.session, status)
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
@@ -503,8 +512,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
 
         # For performing erasures later, save results with matching array elements preserved
-        self.request_task.data_for_erasures = json.dumps(
-            placeholder_output, cls=CustomJSONEncoder
+        # TODO Remove conditional check alongside deprecating DSR 2.0. For DSR 3.0, we want to store
+        # data for erasures on the Privacy Request
+        if self.request_task.id:
+            self.request_task.data_for_erasures = json.dumps(
+                placeholder_output, cls=CustomJSONEncoder
+            )
+
+        # TODO Remove alongside deprecating DSR 2.0.
+        self.resources.cache_results_with_placeholders(
+            f"access_request__{self.key}", placeholder_output
         )
 
         # For access request results, cache results with non-matching array elements *removed*
@@ -514,7 +531,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             filter_element_match(row, post_processed_node_input_data)
-        self.request_task.access_data = json.dumps(output, cls=CustomJSONEncoder)
+        if self.request_task.id:
+            self.request_task.access_data = json.dumps(output, cls=CustomJSONEncoder)
+
+        # TODO Remove alongside deprecating DSR 2.0.
+        self.resources.cache_object(f"access_request__{self.key}", output)
 
         # Return filtered rows with non-matched array data removed.
         return output
@@ -569,6 +590,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self,
         retrieved_data: List[Row],
         inputs: List[List[Row]],
+        *erasure_prereqs: int,  # REMOVE WITH DSR 2.0 Deprecation
     ) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
@@ -578,7 +600,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "No erasures on {} as there is no primary_key defined.",
                 self.execution_node.address,
             )
-            self.request_task.rows_masked = 0  # Saved as part of update_status
+            if self.request_task.id:
+                self.request_task.rows_masked = 0  # Saved as part of update_status
+
+            # TODO Remove alongside deprecating DSR 2.0.
+            self.resources.cache_erasure(
+                f"{self.key}", 0
+            )  # Cache that the erasure was performed in case we need to restart
             self.update_status(
                 "No values were erased since no primary key was defined for this collection",
                 None,
@@ -592,7 +620,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "No erasures on {} as its ConnectionConfig does not have write access.",
                 self.execution_node.address,
             )
-            self.request_task.rows_masked = 0  # Saved as part of update_status
+            if self.request_task.id:
+                self.request_task.rows_masked = 0  # Saved as part of update_status
+
+            # TODO Remove alongside deprecating DSR 2.0.
+            self.resources.cache_erasure(
+                f"{self.key}", 0
+            )  # Cache that the erasure was performed in case we need to restart
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "
                 f"given write access",
@@ -615,6 +649,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             formatted_input_data,
         )
         self.request_task.rows_masked = output  # Saved as part of update_status
+        # TODO Remove alongside deprecating DSR 2.0.
+        self.resources.cache_erasure(
+            f"{self.key}", output
+        )  # Cache that the erasure was performed in case we need to restart
         self.log_end(ActionType.erasure)
         return output
 

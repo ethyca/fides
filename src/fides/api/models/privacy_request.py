@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -83,7 +83,7 @@ from fides.api.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.api.util.collection_util import Row
+from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
@@ -507,6 +507,14 @@ class PrivacyRequest(
         task_id = self.get_cached_task_id()
         res: AsyncResult = AsyncResult(task_id)
         return res
+
+    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
+        """
+        Cache a dict of collections traversed in the privacy request
+        mapped to their associated data uses
+        """
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
 
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
@@ -1023,16 +1031,28 @@ class PrivacyRequest(
 
         These shouldn't be returned to the user - they are not filtered by data category
         """
-        final_results: Dict = {}
-        for task in self.access_tasks.filter(
-            RequestTask.status == PrivacyRequestStatus.complete,
-            RequestTask.collection_address.notin_(
-                [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
-            ),
-        ):
-            final_results[task.collection_address] = task.get_decoded_access_data()
+        if self.access_tasks.count():
+            final_results: Dict = {}
+            for task in self.access_tasks.filter(
+                RequestTask.status == PrivacyRequestStatus.complete,
+                RequestTask.collection_address.notin_(
+                    [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+                ),
+            ):
+                final_results[task.collection_address] = task.get_decoded_access_data()
 
-        return final_results
+            return final_results
+
+        # TODO Remove this alongside deprecated DSR 2.0
+        # We will no longer be pulling access results from the cache, but off of Request Tasks instead
+        cache: FidesopsRedis = get_cache()
+        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__access_request")
+        # extract request id to return a map of address:value
+        number_of_leading_strings_to_exclude = 2
+        return {
+            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+            for k, v in value_dict.items()
+        }
 
     def save_filtered_access_results(
         self, db: Session, results: Dict[str, Dict[str, List[Row]]]

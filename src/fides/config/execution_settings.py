@@ -52,6 +52,10 @@ class ExecutionSettings(FidesSettings):
         default=30,
         description="Seconds between polling for Privacy Requests that should change state",
     )
+    use_dsr_3_0: bool = Field(
+        default=False,
+        description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
+    )
 
     class Config:
         env_prefix = ENV_PREFIX

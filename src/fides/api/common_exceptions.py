@@ -143,6 +143,10 @@ class NotSupportedForCollection(BaseException):
     """The given action is not supported for this type of collection"""
 
 
+class PrivacyRequestExit(BaseException):
+    """Privacy request exiting processing waiting on subtasks to complete"""
+
+
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
