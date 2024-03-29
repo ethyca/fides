@@ -1487,6 +1487,20 @@ describe("Consent i18n", () => {
         testTcfModalLocalization(modal);
       });
     });
+    describe("when user selects their own locale", () => {
+      it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_tcf.json",
+          options: { tcfEnabled: true },
+        });
+        cy.get("#fides-banner").should("be.visible");
+        cy.getByTestId(`fides-i18n-option-${SPANISH_LOCALE}`).focus();
+        cy.get(`.fides-i18n-menu`).focused().click();
+        testTcfBannerLocalization(SPANISH_TCF_BANNER);
+        testTcfModalLocalization(SPANISH_TCF_MODAL);
+      });
+    });
   });
 
   describe.skip("when localizing privacy_center components", () => {});
