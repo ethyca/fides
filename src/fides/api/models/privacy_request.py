@@ -516,6 +516,16 @@ class PrivacyRequest(
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
 
+    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
+        """
+        Fetch the collection -> data use map cached for this privacy request
+        """
+        cache: FidesopsRedis = get_cache()
+        value_dict: Optional[
+            Dict[str, Optional[Dict[str, Set[str]]]]
+        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        return list(value_dict.values())[0] if value_dict else None
+
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()

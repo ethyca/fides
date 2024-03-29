@@ -5,7 +5,7 @@ import os
 import secrets
 import zipfile
 from io import BytesIO
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional, Set
 
 import pandas as pd
 from boto3 import Session
@@ -13,6 +13,7 @@ from botocore.exceptions import ClientError, ParamValidationError
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
+from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import (
     ResponseFormat,
@@ -133,6 +134,8 @@ def upload_to_s3(  # pylint: disable=R0913
     resp_format: str,
     privacy_request: PrivacyRequest,
     auth_method: S3AuthMethod,
+    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
+    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of {}", file_key)
@@ -171,6 +174,8 @@ def upload_to_local(
     file_key: str,
     privacy_request: PrivacyRequest,
     resp_format: str = ResponseFormat.json.value,
+    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
+    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads access request data to a local folder - for testing/demo purposes only"""
     if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
