@@ -27,7 +27,7 @@ from fides.api.models.privacy_request import (
     can_run_checkpoint,
 )
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
-from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.service.connectors.manual_connector import ManualAction
 from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
@@ -1186,3 +1186,20 @@ class TestConsentRequestCustomFieldFunctions:
             },
         )
         assert consent_request.get_persisted_custom_privacy_request_fields() == {}
+
+
+class TestPrivacyRequestCustomIdentities:
+    def test_persist_custom_identities(self, db, privacy_request):
+        privacy_request.persist_identity(
+            db=db,
+            identity={
+                "customer_id": LabeledIdentity(label="Custom ID", value=123),
+                "account_id": LabeledIdentity(label="Account ID", value="456"),
+            },
+        )
+        assert privacy_request.get_persisted_identity_map() == {
+            "email": {"label": "Email", "value": "test@example.com"},
+            "phone_number": {"label": "Phone number", "value": "+12345678910"},
+            "customer_id": {"label": "Custom ID", "value": 123},
+            "account_id": {"label": "Account ID", "value": "456"},
+        }

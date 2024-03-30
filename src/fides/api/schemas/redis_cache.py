@@ -1,10 +1,12 @@
 import uuid
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
-from pydantic import EmailStr, Extra, StrictInt, StrictStr, validator
+from pydantic import EmailStr, Extra, Field, StrictInt, StrictStr, validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
+
+MultiValue = Union[Union[StrictInt, StrictStr], List[Union[StrictInt, StrictStr]]]
 
 
 class IdentityBase(FidesSchema):
@@ -19,20 +21,41 @@ class IdentityBase(FidesSchema):
         extra = Extra.forbid
 
 
+class LabeledIdentity(FidesSchema):
+    """
+    An identity value with its accompanying UI label
+    """
+
+    label: str
+    value: MultiValue
+
+
 class Identity(IdentityBase):
     """Some PII grouping pertaining to a human"""
 
     # These are repeated so we can continue to forbid extra fields
-    phone_number: Optional[PhoneNumber] = None
-    email: Optional[EmailStr] = None
-    ga_client_id: Optional[str] = None
-    ljt_readerID: Optional[str] = None
-    fides_user_device_id: Optional[str] = None
+    phone_number: Optional[PhoneNumber] = Field(None, title="Phone number")
+    email: Optional[EmailStr] = Field(None, title="Email")
+    ga_client_id: Optional[str] = Field(None, title="GA client ID")
+    ljt_readerID: Optional[str] = Field(None, title="LJT reader ID")
+    fides_user_device_id: Optional[str] = Field(None, title="Fides user device ID")
 
     class Config:
-        """Only allow phone_number, and email."""
+        """Allows extra fields to be provided but they must have a value of type LabeledIdentity."""
 
-        extra = Extra.forbid
+        extra = Extra.allow
+
+    def __init__(self, **data: Any):
+        for field, value in data.items():
+            if field not in self.__fields__:
+                if isinstance(value, dict) and "label" in value and "value" in value:
+                    data[field] = LabeledIdentity(**value)
+                else:
+                    raise ValueError(
+                        f'Custom identity "{field}" must be an instance of LabeledIdentity '
+                        '(e.g. {"label": "Field label", "value": "123"})'
+                    )
+        super().__init__(**data)
 
     @validator("fides_user_device_id")
     @classmethod
@@ -43,10 +66,26 @@ class Identity(IdentityBase):
         uuid.UUID(v, version=4)
         return v
 
+    def dict(self):
+        d = super().dict()
+        for key, value in self.__dict__.items():
+            if isinstance(value, LabeledIdentity):
+                d[key] = value.value
+            else:
+                d[key] = value
+        return d
 
-CustomPrivacyRequestFieldValue = Union[
-    Union[StrictInt, StrictStr], List[Union[StrictInt, StrictStr]]
-]
+    def labeled_dict(self):
+        d = super().dict()
+        for key, value in self.__dict__.items():
+            if isinstance(value, LabeledIdentity):
+                d[key] = value.dict()
+            else:
+                d[key] = {
+                    "label": self.__fields__[key].field_info.title,
+                    "value": value,
+                }
+        return d
 
 
 class CustomPrivacyRequestField(FidesSchema):
@@ -54,4 +93,4 @@ class CustomPrivacyRequestField(FidesSchema):
 
     label: str
     # use StrictInt and StrictStr to avoid type coercion and maintain the original types
-    value: CustomPrivacyRequestFieldValue
+    value: MultiValue

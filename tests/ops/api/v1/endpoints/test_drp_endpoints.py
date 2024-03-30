@@ -99,9 +99,9 @@ class TestCreateDrpPrivacyRequest:
             identity_attribute="email",
         )
         assert cache.get(fidesops_identity_key) == identity["email"]
-        persisted_identity = pr.get_persisted_identity()
-        assert persisted_identity.email == TEST_EMAIL
-        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
+        persisted_identity_values = pr.get_persisted_identity_values()
+        assert persisted_identity_values["email"] == TEST_EMAIL
+        assert persisted_identity_values["phone_number"] == TEST_PHONE_NUMBER
 
         pr.delete(db=db)
         assert run_access_request_mock.called
