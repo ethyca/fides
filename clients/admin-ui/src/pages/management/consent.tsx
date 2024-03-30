@@ -236,7 +236,7 @@ const ConsentConfigPage: NextPage = () => {
                   <Flex alignItems="center" marginBottom={2}>
                     <Switch
                       size="sm"
-                      colorScheme="purple"
+                      colorScheme="complimentary"
                       isChecked={isOverrideEnabled}
                       onChange={handleOverrideOnChange}
                       isDisabled={isPatchConfigSettingsLoading}

@@ -1090,7 +1090,7 @@ export const CustomSwitch = ({
         }
       }}
       onBlur={field.onBlur}
-      colorScheme="purple"
+      colorScheme="complimentary"
       mr={2}
       data-testid={`input-${field.name}`}
       disabled={isDisabled}

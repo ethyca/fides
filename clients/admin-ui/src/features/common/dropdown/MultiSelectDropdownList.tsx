@@ -79,7 +79,7 @@ const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
       {/* MenuItems are not rendered unless Menu is open */}
       <Box maxH="360px" overflow="auto">
         <CheckboxGroup
-          colorScheme="purple"
+          colorScheme="complimentary"
           defaultValue={defaultValues}
           onChange={handleChange}
         >

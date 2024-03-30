@@ -1,0 +1,32 @@
+{
+  "name": "@fidesui/react-theme",
+  "sideEffects": false,
+  "version": "0.1.1",
+  "description": "FidesUI React theme object",
+  "source": "src/index.tsx",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "watch": "rollup -c -w",
+    "build": "rollup -c",
+    "check": "tsc --noEmit"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "dependencies": {
+    "@chakra-ui/react": "^1.8.0",
+    "@chakra-ui/utils": "^1.10.2"
+  },
+  "peerDependencies": {
+    "@chakra-ui/system": "^1.10.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}

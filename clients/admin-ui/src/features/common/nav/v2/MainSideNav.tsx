@@ -34,7 +34,7 @@ import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
 import { INDEX_ROUTE } from "./routes";
 
 const LINK_HOVER_BACKGROUND_COLOR = "#28303F";
-const LINK_ACTIVE_BACKGROUND_COLOR = "#7745F0";
+const LINK_ACTIVE_BACKGROUND_COLOR = "complimentary.500";
 const LINK_COLOR = "#CBD5E0";
 const NAV_BACKGROUND_COLOR = "#191D27";
 const NAV_WIDTH = "200px";
