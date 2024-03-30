@@ -82,7 +82,7 @@ class TestSaaSQueryConfig:
         ]
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
-        ]
+        ].to_mock_execution_node()
 
         # static path with single query param
         config = SaaSQueryConfig(
@@ -179,7 +179,7 @@ class TestSaaSQueryConfig:
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
-        ]
+        ].to_mock_execution_node()
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
@@ -216,7 +216,7 @@ class TestSaaSQueryConfig:
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
-        ]
+        ].to_mock_execution_node()
         update_request = endpoints["member"].requests.update
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
@@ -270,10 +270,10 @@ class TestSaaSQueryConfig:
         update_request = endpoints["member"].requests.update
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
-        ]
+        ].to_mock_execution_node()
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
-        ]
+        ].to_mock_execution_node()
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
@@ -329,7 +329,7 @@ class TestSaaSQueryConfig:
         endpoints = saas_config.top_level_endpoint_dict
         customer = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "customer")
-        ]
+        ].to_mock_execution_node()
 
         # update with multidimensional urlcoding
         # omit read-only fields and fields not defined in the dataset
@@ -641,7 +641,7 @@ class TestSaaSQueryConfig:
 
         internal_information = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "internal_information")
-        ]
+        ].to_mock_execution_node()
 
         config = SaaSQueryConfig(
             internal_information,

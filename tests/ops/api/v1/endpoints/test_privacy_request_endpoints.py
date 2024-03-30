@@ -1955,9 +1955,9 @@ class TestRequestPreview:
     def test_request_preview_all(
         self,
         dataset_config_preview,
-        manual_dataset_config,
-        integration_manual_config,
+        mongo_connection_config,
         postgres_example_test_dataset_config,
+        mongo_dataset_config,
         api_client: TestClient,
         url,
         generate_auth_header,
@@ -1977,23 +1977,15 @@ class TestRequestPreview:
             == "SELECT email,id FROM subscriptions WHERE email = ?"
         )
 
-        assert next(
-            response["query"]
-            for response in response_body
-            if response["collectionAddress"]["dataset"] == "manual_input"
-            if response["collectionAddress"]["collection"] == "filing_cabinet"
-        ) == {
-            "locators": {"customer_id": ["?", "?"]},
-            "get": ["authorized_user", "customer_id", "id", "payment_card_id"],
-            "update": None,
-        }
-
-        assert next(
-            response["query"]
-            for response in response_body
-            if response["collectionAddress"]["dataset"] == "manual_input"
-            if response["collectionAddress"]["collection"] == "storage_unit"
-        ) == {"locators": {"email": ["?"]}, "get": ["box_id", "email"], "update": None}
+        assert (
+            next(
+                response["query"]
+                for response in response_body
+                if response["collectionAddress"]["dataset"] == "mongo_test"
+                if response["collectionAddress"]["collection"] == "employee"
+            )
+            == "db.mongo_test.employee.find({'$or': [{'id': {'$in': [?, ?]}}, {'email': ?}]}, {'_id': 1, 'email': 1, 'id': 1, 'name': 1})"
+        )
 
 
 class TestApprovePrivacyRequest:

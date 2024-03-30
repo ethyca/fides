@@ -192,10 +192,8 @@ def test_halts_proceeding_if_cancelled(
 @mock.patch(
     "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_access_request"
-)
-@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
@@ -237,10 +235,8 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 @mock.patch(
     "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_access_request"
-)
-@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
 def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
@@ -1787,9 +1783,7 @@ class TestRunPrivacyRequestRunsWebhooks:
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_access_request"
-)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_privacy_request_log_failure(
     _,
@@ -2089,7 +2083,9 @@ class TestPrivacyRequestsManualWebhooks:
         assert not mock_upload.called
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.erasure_runner"
+    )
     def test_manual_input_required_for_erasure_only_policies(
         self,
         mock_erasure,
