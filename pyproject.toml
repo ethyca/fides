@@ -50,6 +50,7 @@ module = [
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
+  "networkx.*",
   "okta.*",
   "pandas.*",
   "plotly.*",

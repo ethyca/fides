@@ -15,24 +15,21 @@ from fides.api.graph.config import (
     CollectionAddress,
 )
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.graph.traversal import (
+    Traversal,
+    TraversalNode,
+    _format_traversal_details_for_save,
+)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.policy import ActionType
-from fides.api.task.graph_task import (
-    EMPTY_REQUEST_TASK,
-    GraphTask,
-    _format_traversal_details_for_save,
-)
+from fides.api.task.graph_task import EMPTY_REQUEST_TASK, GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
 
-"""These are deprecated functions that support running DSR's in sequence Dask in-memory 
-
-Supported for a limited time.
-"""
+# These are deprecated functions that support running DSR's in sequence Dask in-memory
+# Supported for a limited time.
 
 
 dask.config.set(scheduler="threads")
@@ -78,7 +75,7 @@ def format_data_use_map_for_caching(
        <collection2>: {"data_use_1"},
     }
     """
-    resp = {}
+    resp: Dict[str, Set[str]] = {}
     connection_config_mapping: Dict[str, ConnectionConfig] = {
         connection_config.key: connection_config
         for connection_config in connection_configs
@@ -217,10 +214,9 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
             resources.privacy_request_task = tn.to_mock_request_task()
             data[tn.address] = GraphTask(resources)
 
-    # We store the end nodes from the traversal for analytics purposes
-    # but we generate a separate erasure_end_nodes list for the actual erasure traversal
     env: Dict[CollectionAddress, GraphTask] = {}
-    access_end_nodes = traversal.traverse(env, collect_tasks_fn)
+    # Modifies env in place
+    traversal.traverse(env, collect_tasks_fn)
     erasure_end_nodes = list(graph.nodes.keys())
 
     def termination_fn(*dependent_values: int) -> Dict[str, int]:

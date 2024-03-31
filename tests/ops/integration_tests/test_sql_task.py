@@ -23,9 +23,8 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_runners import erasure_runner, access_runner
+from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 
@@ -992,15 +991,19 @@ class TestRetrievingData:
         )
 
         assert [] == connector.retrieve_data(
-            execution_node, Policy(), privacy_request, RequestTask(),{}
+            execution_node, Policy(), privacy_request, RequestTask(), {}
         )
 
         assert [] == connector.retrieve_data(
-            execution_node, Policy(), privacy_request, RequestTask(),{"bad_key": ["test"]}
+            execution_node,
+            Policy(),
+            privacy_request,
+            RequestTask(),
+            {"bad_key": ["test"]},
         )
 
         assert [] == connector.retrieve_data(
-            execution_node, Policy(), privacy_request, RequestTask(),{"email": [None]}
+            execution_node, Policy(), privacy_request, RequestTask(), {"email": [None]}
         )
 
         assert [] == connector.retrieve_data(

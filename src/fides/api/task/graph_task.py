@@ -5,7 +5,7 @@ import traceback
 from abc import ABC
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -29,11 +29,7 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import (
-    Traversal,
-    TraversalNode,
-    _format_traversal_details_for_save,
-)
+from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -126,7 +122,7 @@ def retry(
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
                     # TODO revisit this
-                    return
+                    return None
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
                     self.request_task.rows_masked = 0
@@ -191,7 +187,7 @@ def retry(
 
 
 def mark_current_and_downstream_nodes_as_failed(
-    privacy_request_task: Optional[RequestTask], db: Session
+    privacy_request_task: RequestTask, db: Session
 ) -> None:
     """
     If the current node fails, mark it and *every descendant that can be reached by the current node*

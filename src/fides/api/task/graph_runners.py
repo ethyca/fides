@@ -1,6 +1,5 @@
 from typing import Any, Dict, List
 
-from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestExit
@@ -18,6 +17,7 @@ from fides.api.task.deprecated_graph_task import (
     run_consent_request_deprecated,
     run_erasure_request_deprecated,
 )
+from fides.api.util.collection_util import Row
 from fides.config import CONFIG
 
 
@@ -28,7 +28,7 @@ def access_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-):
+) -> Dict[str, List[Row]]:
     """Access runner that temporarily supports running Access Request with DSR 3.0  2.0.
     DSR 2.0 will be going away"""
     if CONFIG.execution.use_dsr_3_0:
@@ -59,7 +59,7 @@ def erasure_runner(
     identity: Dict[str, Any],
     access_request_data: Dict[str, List[Row]],
     session: Session,
-):
+) -> Dict[str, int]:
     """Erasure runner that temporarily supports running Erasure DAGs with DSR 3.0 or 2.0.
     DSR 2.0 will be going away"""
     if CONFIG.execution.use_dsr_3_0:
@@ -89,7 +89,7 @@ def consent_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-):
+) -> Dict[str, bool]:
     """Consent runner that temporarily supports running Consent DAGs with DSR 3.0 or 2.0.
     DSR 2.0 will be going away"""
     if CONFIG.execution.use_dsr_3_0:

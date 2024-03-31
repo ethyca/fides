@@ -154,6 +154,8 @@ class TraversalNode(Contextualizable):
         return {LoggerContextKeys.collection: self.node.collection.name}
 
     def to_mock_request_task(self) -> RequestTask:
+        """Converts a portion of the TraversalNode into a RequestTask - used in building
+        dry run queries or for supporting Deprecated DSR 2.0"""
         collection_data = json.loads(self.node.collection.json())
         # Mock a RequestTask object in memory
         return RequestTask(
@@ -166,7 +168,10 @@ class TraversalNode(Contextualizable):
             ),
         )
 
-    def to_mock_execution_node(self):
+    def to_mock_execution_node(self) -> ExecutionNode:
+        """Converts a TraversalNode into an ExecutionNode - used for supporting DSR 2.0, to convert
+        Traversal Nodes into the Execution Node format which is needed for executing the graph in
+         DSR 3.0"""
         request_task: RequestTask = self.to_mock_request_task()
         return ExecutionNode(request_task)
 

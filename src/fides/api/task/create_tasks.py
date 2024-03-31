@@ -27,7 +27,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
     completed_statuses,
 )
-from fides.api.schemas.policy import ActionType, Policy
+from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_tasks import (
     run_access_node,
