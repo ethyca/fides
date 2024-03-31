@@ -7,7 +7,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
@@ -50,7 +50,7 @@ async def test_braintree_access_request_task(
     merged_graph = braintree_dataset_config.get_graph()
     graph = DatasetGraph(*[merged_graph, braintree_postgres_dataset_config.get_graph()])
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -111,7 +111,7 @@ async def test_braintree_erasure_request_task(
     merged_graph = braintree_dataset_config.get_graph()
     graph = DatasetGraph(*[merged_graph, braintree_postgres_dataset_config.get_graph()])
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -129,7 +129,7 @@ async def test_braintree_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

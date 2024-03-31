@@ -30,7 +30,7 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
@@ -114,7 +114,7 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        access_results = await graph_task.run_access_request(
+        access_results = access_runner(
             privacy_request,
             access_policy,
             dataset_graph,
@@ -195,7 +195,7 @@ class ConnectorRunner:
             {"data_use": "marketing.advertising", "opt_in": True}
         ]
         privacy_request.save(self.db)
-        opt_in = await graph_task.run_consent_request(
+        opt_in = consent_runner(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -208,7 +208,7 @@ class ConnectorRunner:
             {"data_use": "marketing.advertising", "opt_in": False}
         ]
         privacy_request.save(self.db)
-        opt_out = await graph_task.run_consent_request(
+        opt_out = consent_runner(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -241,7 +241,7 @@ class ConnectorRunner:
         privacy_request.cache_identity(identity)
 
         _privacy_preference_history(self.db, privacy_request, identities, opt_in=True)
-        opt_in = await graph_task.run_consent_request(
+        opt_in = consent_runner(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -251,7 +251,7 @@ class ConnectorRunner:
         )
 
         _privacy_preference_history(self.db, privacy_request, identities, opt_in=False)
-        opt_out = await graph_task.run_consent_request(
+        opt_out = consent_runner(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -291,7 +291,7 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        access_results = await graph_task.run_access_request(
+        access_results = access_runner(
             privacy_request,
             access_policy,
             dataset_graph,
@@ -306,7 +306,7 @@ class ConnectorRunner:
                 access_results[f"{fides_key}:{collection['name']}"]
             ), f"No rows returned for collection '{collection['name']}'"
 
-        erasure_results = await graph_task.run_erasure(
+        erasure_results = erasure_runner(
             privacy_request,
             erasure_policy,
             dataset_graph,

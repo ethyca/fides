@@ -6,10 +6,8 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
-from fides.config import CONFIG
+from fides.api.task.graph_runners import access_runner
 from tests.ops.graph.graph_test_util import assert_rows_match
-from tests.ops.test_helpers.dataset_utils import update_dataset
 
 
 @pytest.mark.integration_saas
@@ -42,7 +40,7 @@ async def test_slack_enterprise_access_request_task(
     merged_graph = slack_enterprise_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,

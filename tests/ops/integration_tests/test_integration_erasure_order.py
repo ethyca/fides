@@ -17,7 +17,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.collection_util import Row
 from fides.config import get_config
@@ -86,7 +86,7 @@ async def test_saas_erasure_order_request_task(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -113,7 +113,7 @@ async def test_saas_erasure_order_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner(
         privacy_request,
         erasure_policy_complete_mask,
         graph,
@@ -185,7 +185,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -213,7 +213,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
     CONFIG.execution.masking_strict = False
 
     with pytest.raises(TraversalError) as exc:
-        await graph_task.run_erasure(
+        erasure_runner(
             privacy_request,
             erasure_policy_complete_mask,
             graph,
@@ -255,7 +255,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     merged_graph = saas_erasure_order_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -292,7 +292,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     mock_mask_data.side_effect = side_effect
 
     with pytest.raises(Exception):
-        await graph_task.run_erasure(
+        erasure_runner(
             privacy_request,
             erasure_policy_complete_mask,
             graph,
@@ -307,7 +307,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
         lambda node, policy, privacy_request, rows, input_data: 1
     )
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner(
         privacy_request,
         erasure_policy_complete_mask,
         graph,

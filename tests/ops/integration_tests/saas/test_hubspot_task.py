@@ -6,8 +6,8 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
@@ -46,7 +46,7 @@ async def test_hubspot_access_request_task(
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -151,7 +151,7 @@ async def test_hubspot_erasure_request_task(
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request, policy, graph, [connection_config_hubspot], identity_kwargs, db
     )
 
@@ -168,7 +168,7 @@ async def test_hubspot_erasure_request_task(
 
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow delete
-    x = await graph_task.run_erasure(
+    x = erasure_runner(
         privacy_request,
         erasure_policy_string_rewrite_name_and_email,
         graph,

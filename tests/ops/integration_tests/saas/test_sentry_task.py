@@ -1,5 +1,4 @@
 import random
-import time
 from typing import Any, Dict, List, Optional
 
 import pytest
@@ -9,8 +8,8 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
@@ -46,7 +45,7 @@ async def test_sentry_access_request_task(
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -297,7 +296,7 @@ async def test_sentry_erasure_request_task(
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         graph,
@@ -378,7 +377,7 @@ async def test_sentry_erasure_request_task(
 
     assert v[f"{dataset_name}:issues"][0]["assignedTo"]["email"] == erasure_email
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner(
         privacy_request,
         policy,
         graph,

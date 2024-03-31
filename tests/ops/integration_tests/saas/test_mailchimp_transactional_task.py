@@ -18,7 +18,7 @@ from fides.api.service.connectors import SaaSConnector, get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import consent_runner
 
 
 @pytest.mark.integration_saas
@@ -52,7 +52,7 @@ async def test_mailchimp_transactional_consent_request_task_old_workflow(
 
     dataset_name = "mailchimp_transactional_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -134,7 +134,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request.cache_identity(identity)
 
-    await graph_task.run_consent_request(
+    consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -173,7 +173,7 @@ async def test_no_prepared_request_fired_without_consent_preferences_old_workflo
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request.cache_identity(identity)
 
-    await graph_task.run_consent_request(
+    consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -224,7 +224,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
 
     dataset_name = "mailchimp_transactional_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -323,7 +323,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request_with_consent_policy.cache_identity(identity)
 
-    await graph_task.run_consent_request(
+    consent_runner(
         privacy_request_with_consent_policy,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -377,7 +377,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
 
     dataset_name = "mailchimp_transactional_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -460,7 +460,7 @@ async def test_mailchimp_transactional_consent_request_task_error(
     dataset_name = "mailchimp_transactional_instance"
 
     with pytest.raises(Exception):
-        await graph_task.run_consent_request(
+        consent_runner(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([mailchimp_transactional_dataset_config]),

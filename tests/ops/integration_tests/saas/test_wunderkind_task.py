@@ -16,7 +16,7 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import consent_runner
 
 
 @pytest.mark.integration_saas
@@ -49,7 +49,7 @@ async def test_wunderkind_consent_request_task_old_workflow(
 
     dataset_name = "wunderkind_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -106,7 +106,7 @@ async def test_wunderkind_consent_prepared_requests_old_workflow(
     identity = Identity(**{"email": wunderkind_identity_email})
     privacy_request.cache_identity(identity)
 
-    await graph_task.run_consent_request(
+    consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -162,7 +162,7 @@ async def test_wunderkind_consent_request_task_new_workflow(
 
     dataset_name = "wunderkind_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -249,7 +249,7 @@ async def test_wunderkind_errored_logging_new_workflow(
     dataset_name = "wunderkind_instance"
 
     with pytest.raises(Exception):
-        await graph_task.run_consent_request(
+        consent_runner(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -312,7 +312,7 @@ async def test_wunderkind_consent_prepared_requests_new_workflow(
     identity = Identity(**{"email": wunderkind_identity_email})
     privacy_request.cache_identity(identity)
 
-    await graph_task.run_consent_request(
+    consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -361,7 +361,7 @@ async def test_wunderkind_skipped_new_workflow(
 
     dataset_name = "wunderkind_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),

@@ -16,7 +16,7 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import consent_runner
 
 
 @pytest.mark.integration_saas
@@ -51,7 +51,7 @@ async def test_google_analytics_consent_request_task_old_workflow(
 
     dataset_name = "google_analytics_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -109,7 +109,7 @@ async def test_google_analytics_consent_prepared_requests_old_workflow(
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
 
-    await graph_task.run_consent_request(
+    consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -154,7 +154,7 @@ async def test_google_analytics_no_ga_client_id_old_workflow(
     )
     dataset_name = "google_analytics_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -191,7 +191,7 @@ async def test_google_analytics_no_ga_client_id_new_workflow(
 
     dataset_name = "google_analytics_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config_no_secrets]),
@@ -270,7 +270,7 @@ async def test_google_analytics_consent_request_task_new_workflow(
 
     dataset_name = "google_analytics_instance"
 
-    v = await graph_task.run_consent_request(
+    v = consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -362,7 +362,7 @@ async def test_google_analytics_consent_request_task_new_errored_workflow(
     privacy_request.cache_identity(identity)
 
     with pytest.raises(Exception):
-        await graph_task.run_consent_request(
+        consent_runner(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -427,7 +427,7 @@ async def test_google_analytics_consent_prepared_requests_new_workflow(
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
 
-    await graph_task.run_consent_request(
+    consent_runner(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),

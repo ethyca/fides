@@ -25,7 +25,7 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterRequest,
     RateLimiterTimeoutException,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
@@ -245,7 +245,7 @@ async def test_rate_limiter_full_integration(
     # create call log spy and execute request
     spy = call_log_spy(Session.send)
     with mock.patch.object(Session, "send", spy):
-        v = await graph_task.run_access_request(
+        v = access_runner(
             privacy_request,
             policy,
             graph,
