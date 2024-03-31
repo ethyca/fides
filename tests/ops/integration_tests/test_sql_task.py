@@ -21,10 +21,11 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.service.connectors import get_connector
 from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_runners import erasure_runner, access_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 
@@ -78,7 +79,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
 
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(id=str(uuid4()))
-    await graph_task.run_access_request(
+    access_runner(
         privacy_request,
         policy,
         graph,
@@ -86,7 +87,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
         {"email": seed_email},
         db,
     )
-    v = await graph_task.run_erasure(
+    v = erasure_runner(
         privacy_request,
         policy,
         graph,
@@ -177,7 +178,7 @@ async def test_composite_key_erasure(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = await graph_task.run_access_request(
+    access_request_data = access_runner(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -192,7 +193,7 @@ async def test_composite_key_erasure(
     assert composite_pk_test["customer_id"] == 1
 
     # erasure
-    erasure = await graph_task.run_erasure(
+    erasure = erasure_runner(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -210,7 +211,7 @@ async def test_composite_key_erasure(
     # re-run access request. Description has been
     # nullified here.
     privacy_request = PrivacyRequest(id=str(uuid4()))
-    access_request_data = await graph_task.run_access_request(
+    access_request_data = access_runner(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -243,7 +244,7 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
     field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(id=str(uuid4()))
-    await graph_task.run_access_request(
+    access_runner(
         privacy_request,
         policy,
         graph,
@@ -251,7 +252,7 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
         {"email": seed_email},
         db,
     )
-    v = await graph_task.run_erasure(
+    v = erasure_runner(
         privacy_request,
         policy,
         graph,
@@ -280,7 +281,7 @@ async def test_postgres_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),
@@ -377,7 +378,7 @@ async def test_postgres_privacy_requests_against_non_default_schema(
     )
     graph = DatasetGraph(dataset)
 
-    access_results = await graph_task.run_access_request(
+    access_results = access_runner(
         privacy_request,
         policy,
         graph,
@@ -416,7 +417,7 @@ async def test_postgres_privacy_requests_against_non_default_schema(
     # Update data category on customer name
     field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
 
-    erasure_results = await graph_task.run_erasure(
+    erasure_results = erasure_runner(
         privacy_request,
         erasure_policy,
         graph,
@@ -452,7 +453,7 @@ async def test_mssql_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         integration_db_graph("my_mssql_db_1"),
@@ -539,7 +540,7 @@ async def test_mysql_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         integration_db_graph("my_mysql_db_1"),
@@ -626,7 +627,7 @@ async def test_mariadb_access_request_task(
 ) -> None:
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         integration_db_graph("my_maria_db_1"),
@@ -739,7 +740,7 @@ async def test_filter_on_data_categories(
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
-    access_request_results = await graph_task.run_access_request(
+    access_request_results = access_runner(
         privacy_request,
         policy,
         dataset_graph,
@@ -892,7 +893,7 @@ async def test_access_erasure_type_conversion(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = await graph_task.run_access_request(
+    access_request_data = access_runner(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -908,7 +909,7 @@ async def test_access_erasure_type_conversion(
     assert link["id"] == "1"
 
     # erasure
-    erasure = await graph_task.run_erasure(
+    erasure = erasure_runner(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -932,24 +933,22 @@ class TestRetrievingData:
         return get_connector(integration_postgres_config)
 
     @pytest.fixture
-    def traversal_node(self, example_datasets, integration_postgres_config):
+    def execution_node(self, example_datasets, integration_postgres_config):
         dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         node = Node(graph, graph.collections[1])  # customer collection
         traversal_node = TraversalNode(node)
-        return traversal_node
+        return traversal_node.to_mock_execution_node()
 
-    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
-        mock_incoming_edges: Mock,
         privacy_request,
         db,
         connector,
-        traversal_node,
+        execution_node,
         postgres_integration_db,
     ):
-        mock_incoming_edges.return_value = {
+        execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
                 FieldAddress("postgres_example_test_dataset", "customer", "email"),
@@ -957,9 +956,10 @@ class TestRetrievingData:
         }
 
         results = connector.retrieve_data(
-            traversal_node,
+            execution_node,
             Policy(),
             privacy_request,
+            RequestTask(),
             {"email": ["customer-1@example.com"]},
         )
         assert len(results) is 1
@@ -973,16 +973,14 @@ class TestRetrievingData:
             }
         ]
 
-    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
-        mock_incoming_edges: Mock,
         privacy_request,
         db,
         connector,
-        traversal_node,
+        execution_node,
     ):
-        mock_incoming_edges.return_value = {
+        execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
                 FieldAddress("postgres_example_test_dataset", "customer", "email"),
@@ -990,47 +988,46 @@ class TestRetrievingData:
         }
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": []}
+            execution_node, Policy(), privacy_request, RequestTask(), {"email": []}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {}
+            execution_node, Policy(), privacy_request, RequestTask(),{}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"bad_key": ["test"]}
+            execution_node, Policy(), privacy_request, RequestTask(),{"bad_key": ["test"]}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": [None]}
+            execution_node, Policy(), privacy_request, RequestTask(),{"email": [None]}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": None}
+            execution_node, Policy(), privacy_request, RequestTask(), {"email": None}
         )
 
-    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
-        mock_incoming_edges: Mock,
         db,
         privacy_request,
         connection_config,
         example_datasets,
         connector,
-        traversal_node,
+        execution_node,
         postgres_integration_db,
     ):
-        mock_incoming_edges.return_value = {
+        execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
                 FieldAddress("postgres_example_test_dataset", "customer", "email"),
             )
         }
         results = connector.retrieve_data(
-            traversal_node,
+            execution_node,
             Policy(),
             privacy_request,
+            RequestTask(),
             {"email": ["customer_not_in_dataset@example.com"]},
         )
         assert results == []
@@ -1064,7 +1061,7 @@ class TestRetryIntegration:
 
         # Call run_access_request with an email that isn't in the database
         with pytest.raises(Exception) as exc:
-            await graph_task.run_access_request(
+            access_runner(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,
@@ -1117,7 +1114,7 @@ class TestRetryIntegration:
 
         # Call run_erasure with an email that isn't in the database
         with pytest.raises(Exception):
-            await graph_task.run_erasure(
+            erasure_runner(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,
@@ -1172,7 +1169,7 @@ async def test_timescale_access_request_task(
     database_name = "my_timescale_db_1"
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
-    v = await graph_task.run_access_request(
+    v = access_runner(
         privacy_request,
         policy,
         integration_db_graph(database_name),
@@ -1341,7 +1338,7 @@ async def test_timescale_erasure_request_task(
         ],
     }
 
-    v = await graph_task.run_erasure(
+    v = erasure_runner(
         privacy_request,
         erasure_policy,
         graph,
@@ -1412,7 +1409,7 @@ async def test_timescale_query_and_mask_hypertable(
     dataset.collections.append(onsite_personnel_collection)
     graph = DatasetGraph(dataset)
 
-    access_results = await graph_task.run_access_request(
+    access_results = access_runner(
         privacy_request,
         policy,
         graph,
@@ -1439,7 +1436,7 @@ async def test_timescale_query_and_mask_hypertable(
     ).data_categories = ["user.contact.email"]
 
     # Run an erasure on the hypertable targeting the responsible field
-    v = await graph_task.run_erasure(
+    v = erasure_runner(
         privacy_request,
         erasure_policy,
         graph,

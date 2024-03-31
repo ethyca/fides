@@ -23,7 +23,7 @@ from fides.api.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
@@ -154,7 +154,7 @@ class TestDeleteCollection:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await graph_task.run_access_request(
+        results = access_runner(
             privacy_request,
             policy,
             dataset_graph,
@@ -196,7 +196,6 @@ class TestDeleteCollection:
         integration_mongodb_config,
         mongo_postgres_dataset_graph,
         example_datasets,
-        run_privacy_request_task,
     ) -> None:
         """Remove secrets to make privacy request fail, then delete the connection config. Build a graph
         that does not contain the deleted dataset config and re-run."""
@@ -209,7 +208,7 @@ class TestDeleteCollection:
         )
 
         with pytest.raises(ValidationError):
-            await graph_task.run_access_request(
+            access_runner(
                 privacy_request,
                 policy,
                 mongo_postgres_dataset_graph,
@@ -243,7 +242,7 @@ class TestDeleteCollection:
         )
         postgres_only_dataset_graph = DatasetGraph(*[graph])
 
-        results = await graph_task.run_access_request(
+        results = access_runner(
             privacy_request,
             policy,
             postgres_only_dataset_graph,
@@ -338,7 +337,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await graph_task.run_access_request(
+        results = access_runner(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -423,7 +422,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await graph_task.run_access_request(
+        results = access_runner(
             privacy_request,
             policy,
             dataset_graph,
@@ -476,7 +475,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         )
 
         with pytest.raises(ValidationError):
-            await graph_task.run_access_request(
+            access_runner(
                 privacy_request,
                 policy,
                 mongo_postgres_dataset_graph,
@@ -504,7 +503,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         integration_mongodb_config.disabled = True
         integration_mongodb_config.save(db)
 
-        results = await graph_task.run_access_request(
+        results = access_runner(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -629,7 +628,7 @@ class TestSkipMarkedCollections:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await graph_task.run_access_request(
+        results = access_runner(
             privacy_request,
             policy,
             postgres_graph,
@@ -661,7 +660,7 @@ class TestSkipMarkedCollections:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = await graph_task.run_access_request(
+        results = access_runner(
             privacy_request,
             policy,
             postgres_graph,
@@ -695,7 +694,7 @@ class TestSkipMarkedCollections:
                 skipped_collection_name="address",
             )
 
-            await graph_task.run_access_request(
+            access_runner(
                 privacy_request,
                 policy,
                 postgres_graph,
@@ -728,7 +727,7 @@ async def test_restart_graph_from_failure(
 
     # Attempt to run the graph; execution will stop when we reach one of the mongo nodes
     with pytest.raises(Exception) as exc:
-        await graph_task.run_access_request(
+        access_runner(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -760,46 +759,20 @@ async def test_restart_graph_from_failure(
     ]
     assert privacy_request.get_failed_checkpoint_details() == CheckpointActionRequired(
         step=CurrentStep.access,
-        collection=CollectionAddress("mongo_test", "customer_details"),
     )
 
     # Reset secrets
     integration_mongodb_config.secrets = saved_secrets
     integration_mongodb_config.save(db)
 
-    # Rerun access request using cached results
-    with mock.patch("fides.api.task.graph_task.fideslog_graph_rerun") as mock_log_event:
-        await graph_task.run_access_request(
-            privacy_request,
-            policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
-            db,
-        )
-
-        # Assert analytics event created - before and after graph on rerun did not change
-        analytics_event = mock_log_event.call_args.args[0]
-        assert analytics_event.docker is True
-        assert analytics_event.event == "rerun_access_graph"
-        assert analytics_event.event_created_at is not None
-        assert analytics_event.extra_data == {
-            "prev_collection_count": 20,
-            "curr_collection_count": 20,
-            "added_collection_count": 0,
-            "removed_collection_count": 0,
-            "added_edge_count": 0,
-            "removed_edge_count": 0,
-            "already_processed_access_collection_count": 5,
-            "already_processed_erasure_collection_count": 0,
-            "skipped_added_edge_count": 0,
-            "privacy_request": privacy_request.id,
-        }
-
-        assert analytics_event.error is None
-        assert analytics_event.status_code is None
-        assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
+    access_runner(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+        db,
+    )
 
     assert (
         db.query(ExecutionLog)
@@ -861,7 +834,7 @@ async def test_restart_graph_from_failure_during_erasure(
     )
 
     # Run access portion like normal
-    await graph_task.run_access_request(
+    access_runner(
         privacy_request,
         policy,
         mongo_postgres_dataset_graph,
@@ -877,7 +850,7 @@ async def test_restart_graph_from_failure_during_erasure(
 
     # Attempt to run the erasure graph; execution will stop when we reach one of the mongo nodes
     with pytest.raises(Exception) as exc:
-        await graph_task.run_erasure(
+        erasure_runner(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -896,40 +869,15 @@ async def test_restart_graph_from_failure_during_erasure(
     integration_postgres_config.secrets = saved_secrets
     integration_postgres_config.save(db)
 
-    # Rerun erasure portion of request using cached results
-    with mock.patch("fides.api.task.graph_task.fideslog_graph_rerun") as mock_log_event:
-        await graph_task.run_erasure(
-            privacy_request,
-            policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
-            get_cached_data_for_erasures(privacy_request.id),
-            db,
-        )
-
-        # Assert analytics event created - before and after graph on rerun did not change
-        analytics_event = mock_log_event.call_args.args[0]
-        assert analytics_event.docker is True
-        assert analytics_event.event == "rerun_erasure_graph"
-        assert analytics_event.event_created_at is not None
-        assert analytics_event.extra_data == {
-            "prev_collection_count": 20,
-            "curr_collection_count": 20,
-            "added_collection_count": 0,
-            "removed_collection_count": 0,
-            "added_edge_count": 0,
-            "removed_edge_count": 0,
-            "already_processed_access_collection_count": 20,
-            "already_processed_erasure_collection_count": 9,
-            "skipped_added_edge_count": 0,
-            "privacy_request": privacy_request.id,
-        }
-
-        assert analytics_event.error is None
-        assert analytics_event.status_code is None
-        assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
+    erasure_runner(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
 
     assert (
         db.query(ExecutionLog)

@@ -6,7 +6,11 @@ from fides.api.models.connectionconfig import ActionType
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.task import graph_task
-from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.task.graph_runners import access_runner, erasure_runner
+from fides.api.task.graph_task import (
+    filter_by_enabled_actions,
+    get_cached_data_for_erasures,
+)
 from tests.ops.integration_tests.saas.connector_runner import dataset_config
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
@@ -31,20 +35,15 @@ class TestEnabledActions:
 
     @pytest.mark.asyncio
     async def test_access_disabled(
-        self,
-        db,
-        policy,
-        integration_postgres_config,
-        dataset_graph,
+        self, db, policy, integration_postgres_config, dataset_graph, privacy_request
     ) -> None:
         """Disable the access request for one connection config and verify the access results"""
 
         # disable the access action type for Postgres
         integration_postgres_config.enabled_actions = [ActionType.erasure]
         integration_postgres_config.save(db)
-        privacy_request = PrivacyRequest(id="test_disable_postgres_access")
 
-        access_results = await graph_task.run_access_request(
+        access_runner(
             privacy_request,
             policy,
             dataset_graph,
@@ -52,8 +51,12 @@ class TestEnabledActions:
             {"email": "customer-1@example.com"},
             db,
         )
+        raw_access_results = privacy_request.get_raw_access_results()
+        filtered_access_results = filter_by_enabled_actions(
+            raw_access_results, [integration_postgres_config]
+        )
 
-        assert access_results == {}
+        assert filtered_access_results == {}
 
     @pytest.mark.asyncio
     async def test_erasure_disabled(
@@ -71,7 +74,7 @@ class TestEnabledActions:
         integration_postgres_config.save(db)
         privacy_request = PrivacyRequest(id="test_disable_postgres_erasure")
 
-        access_results = await graph_task.run_access_request(
+        access_results = access_runner(
             privacy_request,
             policy,
             dataset_graph,
@@ -86,7 +89,7 @@ class TestEnabledActions:
             postgres_dataset,
         }
 
-        erasure_results = await graph_task.run_erasure(
+        erasure_results = erasure_runner(
             privacy_request,
             erasure_policy,
             dataset_graph,
