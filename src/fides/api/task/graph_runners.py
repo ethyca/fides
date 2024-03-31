@@ -6,7 +6,9 @@ from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import (
+    PrivacyRequest,
+)
 from fides.api.task.create_tasks import (
     run_access_request,
     run_consent_request,

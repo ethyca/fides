@@ -39,6 +39,7 @@ from ..task.traversal_data import (
     integration_db_graph,
     str_converter,
 )
+from ...conftest import test_access_runner
 
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -272,15 +273,23 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_postgres_access_request_task(
     db,
     policy,
     integration_postgres_config,
     postgres_integration_db,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
-    privacy_request = PrivacyRequest(id=str(uuid4()))
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = access_runner(
+    v = test_access_runner(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),

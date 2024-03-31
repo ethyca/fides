@@ -17,6 +17,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -25,8 +26,15 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.ctl_session import sync_engine
+from fides.api.graph.config import TERMINATOR_ADDRESS
+from fides.api.graph.graph import DatasetGraph
 from fides.api.main import app
-from fides.api.models.privacy_request import generate_request_callback_jwe
+from fides.api.models.privacy_request import (
+    generate_request_callback_jwe,
+    RequestTask,
+    completed_statuses,
+    exited_statuses,
+)
 from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import (
@@ -37,6 +45,9 @@ from fides.api.oauth.roles import (
     VIEWER_AND_APPROVER,
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.task.create_tasks import run_access_request
+from fides.api.task.deprecated_graph_task import run_access_request_deprecated
+from fides.api.task.graph_runners import access_runner
 from fides.api.util.cache import get_cache
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
@@ -623,6 +634,38 @@ def run_privacy_request_task(celery_session_app):
     yield celery_session_app.tasks[
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request"
     ]
+
+
+def test_access_runner(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    session: Session,
+):
+    """
+    This fixture is the version of the run_privacy_request task that is
+    registered to the `celery_app` fixture which uses the virtualised `celery_worker`
+    """
+
+    def wait_for_access_terminator_completion(db, pr):
+        terminator = pr.access_tasks.filter(
+            RequestTask.collection_address == TERMINATOR_ADDRESS.value
+        ).first()
+        assert terminator
+        while terminator.status not in exited_statuses:
+            db.refresh(pr)
+
+    try:
+        # DSR 2.0
+        return access_runner(
+            privacy_request, policy, graph, connection_configs, identity, session
+        )
+    except PrivacyRequestExit:
+        # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
+        wait_for_access_terminator_completion(session, privacy_request)
+        return privacy_request.get_raw_access_results()
 
 
 @pytest.fixture(autouse=True, scope="session")

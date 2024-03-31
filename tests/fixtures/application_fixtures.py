@@ -2982,3 +2982,19 @@ def served_notice_history(
     )
     yield pref_1
     pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
+def use_dsr_3_0():
+    original_value: int = CONFIG.execution.use_dsr_3_0
+    CONFIG.execution.use_dsr_3_0 = True
+    yield CONFIG
+    CONFIG.execution.use_dsr_3_0 = original_value
+
+
+@pytest.fixture(scope="function")
+def use_dsr_2_0():
+    original_value: int = CONFIG.execution.use_dsr_3_0
+    CONFIG.execution.use_dsr_3_0 = False
+    yield CONFIG
+    CONFIG.execution.use_dsr_3_0 = original_value
