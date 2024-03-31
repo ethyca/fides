@@ -53,10 +53,10 @@ class TestNode:
 
     def test_node_contains_field(self) -> None:
         node = graph.nodes[CollectionAddress("s1", "t1")]
-        assert node.contains_field(lambda f: f.name == "f3")
-        assert node.contains_field(lambda f: f.name == "f6") is False
-        assert node.contains_field(lambda f: f.primary_key)
-        assert node.contains_field(lambda f: f.identity == "ssn")
+        assert node.collection.contains_field(lambda f: f.name == "f3")
+        assert node.collection.contains_field(lambda f: f.name == "f6") is False
+        assert node.collection.contains_field(lambda f: f.primary_key)
+        assert node.collection.contains_field(lambda f: f.identity == "ssn")
 
 
 def test_retry_decorator(privacy_request, policy, db):

@@ -47,16 +47,6 @@ class Node:
     def __hash__(self) -> int:
         return hash(self.address)
 
-    def contains_field(self, func: Callable[[Field], bool]) -> bool:
-        """True if any field in this collection matches the condition of the callable
-
-        Currently used to assert at least one field in the collection contains a primary
-        key before erasing
-
-        TODO remove and repoint tests
-        """
-        return any(self.collection.recursively_collect_matches(func))
-
 
 class Edge:
     """A graph link uniquely defined by a pair of keys and a direction from f1->f2.
