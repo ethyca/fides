@@ -296,7 +296,7 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
         />
       ) : null}
-      {!!formConfig.modal_link_label?.included && (
+      {formConfig.modal_link_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.modal_link_label`}
           id={`translations.${translationIndex}.modal_link_label`}
