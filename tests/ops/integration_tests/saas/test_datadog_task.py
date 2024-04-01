@@ -36,7 +36,7 @@ async def test_datadog_access_request_task_with_email(
     identity_value = datadog_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = datadog_connection_config.get_saas_config().fides_key
     merged_graph = datadog_dataset_config.get_graph()
@@ -98,7 +98,7 @@ async def test_datadog_access_request_task_with_phone_number(
     identity_value = datadog_identity_phone_number
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = datadog_connection_config.get_saas_config().fides_key
     merged_graph = datadog_dataset_config.get_graph()

@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
+    MaskingSecretsExpired,
     PrivacyRequestPaused,
 )
 from fides.api.graph.config import CollectionAddress, FieldPath
@@ -276,6 +277,100 @@ def test_resume_privacy_request_from_erasure(
     assert mock_email_dispatch.call_count == 1
 
 
+@pytest.mark.parametrize(
+    "policy_fixture, expected_status",
+    [
+        ("erasure_policy", PrivacyRequestStatus.complete),
+        ("erasure_policy_aes", PrivacyRequestStatus.error),
+    ],
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch(
+    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+)
+@mock.patch(
+    "fides.api.service.privacy_request.request_runner_service.run_access_request"
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+def test_resume_privacy_request_from_erasure_with_expired_masking_secrets(
+    run_erasure,
+    run_access,
+    run_webhooks,
+    mock_email_dispatch,
+    db: Session,
+    privacy_request: PrivacyRequest,
+    run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
+    policy_fixture,
+    expected_status,
+    request,
+) -> None:
+    """
+    Verifies that resuming a privacy request from the erasure step will result in an error status
+    if the given policy requires masking secrets and they have expired from the cache.
+    """
+
+    policy = request.getfixturevalue(policy_fixture)
+    privacy_request.policy = policy
+    privacy_request.save(db)
+
+    run_privacy_request_task.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=CurrentStep.erasure.value,
+    ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+
+    db.refresh(privacy_request)
+    assert privacy_request.status == expected_status
+
+
+@pytest.mark.parametrize(
+    "policy_fixture, expected_status",
+    [
+        ("erasure_policy", PrivacyRequestStatus.complete),
+        ("erasure_policy_aes", PrivacyRequestStatus.complete),
+    ],
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch(
+    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+)
+@mock.patch(
+    "fides.api.service.privacy_request.request_runner_service.run_access_request"
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
+def test_resume_privacy_request_from_erasure_with_available_masking_secrets(
+    run_erasure,
+    run_access,
+    run_webhooks,
+    mock_email_dispatch,
+    db: Session,
+    privacy_request: PrivacyRequest,
+    run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
+    policy_fixture,
+    expected_status,
+    request,
+) -> None:
+    """
+    Verifies that resuming a privacy request from the erasure step will complete if the masking secrets
+    are still in the cache or not needed for the given policy.
+    """
+
+    policy = request.getfixturevalue(policy_fixture)
+    privacy_request.policy = policy
+    privacy_request.save(db)
+
+    privacy_request.cache_masking_secrets(policy.generate_masking_secrets())
+
+    run_privacy_request_task.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=CurrentStep.erasure.value,
+    ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+
+    db.refresh(privacy_request)
+    assert privacy_request.status == expected_status
+
+
 def get_privacy_request_results(
     db,
     policy,
@@ -299,30 +394,11 @@ def get_privacy_request_results(
         except AttributeError:
             pass
     privacy_request = PrivacyRequest.create(db=db, data=kwargs)
-    privacy_request.cache_identity(privacy_request_data["identity"])
-    privacy_request.cache_custom_privacy_request_fields(
-        privacy_request_data.get("custom_privacy_request_fields", None)
-    )
+    privacy_request.persist_identity(db, privacy_request_data["identity"])
     if "encryption_key" in privacy_request_data:
-        privacy_request.cache_encryption(privacy_request_data["encryption_key"])
+        privacy_request.encryption_key = privacy_request_data["encryption_key"]
 
-    erasure_rules: List[Rule] = policy.get_rules_for_action(
-        action_type=ActionType.erasure
-    )
-    unique_masking_strategies_by_name: Set[str] = set()
-    for rule in erasure_rules:
-        strategy_name: str = rule.masking_strategy["strategy"]
-        configuration: MaskingConfiguration = rule.masking_strategy["configuration"]
-        if strategy_name in unique_masking_strategies_by_name:
-            continue
-        unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
-        if masking_strategy.secrets_required():
-            masking_secrets: List[
-                MaskingSecretCache
-            ] = masking_strategy.generate_secrets_for_cache()
-            for masking_secret in masking_secrets:
-                privacy_request.cache_masking_secret(masking_secret)
+    privacy_request.cache_masking_secrets(policy.generate_masking_secrets())
 
     run_privacy_request_task.delay(privacy_request.id).get(
         timeout=task_timeout,
@@ -2257,7 +2333,7 @@ class TestConsentEmailStep:
         run_privacy_request_task,
     ):
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_request_with_consent_policy.persist_identity(db, identity)
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
@@ -2283,7 +2359,7 @@ class TestConsentEmailStep:
         privacy_preference_history,
     ):
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_request_with_consent_policy.persist_identity(db, identity)
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
@@ -2409,7 +2485,7 @@ class TestConsentEmailStep:
         privacy_preference_history_us_ca_provide.save(db)
 
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_request_with_consent_policy.persist_identity(db, identity)
 
         run_privacy_request_task.delay(
             privacy_request_id=privacy_request_with_consent_policy.id,

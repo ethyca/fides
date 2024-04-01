@@ -153,7 +153,11 @@ class TestSaasConnector:
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_input_values(
-        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+        self,
+        mock_send: Mock,
+        db: Session,
+        saas_example_config,
+        saas_example_connection_config,
     ):
         """
         Verifies that a row is returned if the request is provided
@@ -179,8 +183,9 @@ class TestSaasConnector:
         connector: SaaSConnector = get_connector(saas_example_connection_config)
 
         # this request requires the email identity in the filter postprocessor so we include it here
-        privacy_request = PrivacyRequest(id="123")
-        privacy_request.cache_identity(Identity(email="test@example.com"))
+        privacy_request = PrivacyRequest(id="123", status=PrivacyRequestStatus.pending)
+        privacy_request.save(db=db)
+        privacy_request.persist_identity(db, Identity(email="test@example.com"))
 
         assert connector.retrieve_data(
             traversal_node,
@@ -188,6 +193,8 @@ class TestSaasConnector:
             privacy_request,
             {"fidesops_grouped_inputs": [], "conversation_id": ["456"]},
         ) == [{"id": "123", "from_email": "test@example.com"}]
+
+        privacy_request.delete(db=db)
 
     def test_missing_input_values(
         self, saas_example_config, saas_example_connection_config

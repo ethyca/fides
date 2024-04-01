@@ -46,7 +46,7 @@ async def test_fullstory_access_request_task(
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
 
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = fullstory_connection_config.get_saas_config().fides_key
     merged_graph = fullstory_dataset_config.get_graph()
@@ -103,7 +103,7 @@ async def test_fullstory_erasure_request_task(
     identity_value = fullstory_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = fullstory_connection_config.get_saas_config().fides_key
     merged_graph = fullstory_dataset_config.get_graph()

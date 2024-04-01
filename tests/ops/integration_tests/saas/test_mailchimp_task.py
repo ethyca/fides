@@ -33,7 +33,7 @@ async def test_mailchimp_access_request_task(
         id=f"test_mailchimp_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": mailchimp_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = mailchimp_connection_config.get_saas_config().fides_key
     merged_graph = mailchimp_dataset_config.get_graph()
@@ -113,7 +113,7 @@ async def test_mailchimp_erasure_request_task(
         id=f"test_mailchimp_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": mailchimp_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
 
     dataset_name = mailchimp_connection_config.get_saas_config().fides_key
     merged_graph = mailchimp_dataset_config.get_graph()

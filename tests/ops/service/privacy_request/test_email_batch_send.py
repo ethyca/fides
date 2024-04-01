@@ -22,27 +22,29 @@ from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
-from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.config import get_config
-from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
+from tests.fixtures.application_fixtures import (
+    _create_privacy_request_for_policy,
+    _create_privacy_request_for_policy_no_identities,
+)
 
 CONFIG = get_config()
 
 
-def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
+def persist_identity_and_consent_preferences(privacy_request, db, reader_id):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
     privacy_request.consent_preferences = [
         Consent(data_use="marketing.advertising", opt_in=False).dict()
     ]
     privacy_request.save(db)
 
 
-def cache_identity_and_privacy_preferences(
+def persist_identity_and_privacy_preferences(
     privacy_request, db, reader_id, privacy_preference_history
 ):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db)
 
@@ -81,7 +83,7 @@ def third_privacy_request_awaiting_erasure_email_send(
     db: Session, erasure_policy: Policy
 ) -> PrivacyRequest:
     """Add a third erasure privacy request w/ no identity in this state for these tests"""
-    privacy_request = _create_privacy_request_for_policy(
+    privacy_request = _create_privacy_request_for_policy_no_identities(
         db,
         erasure_policy,
     )
@@ -157,10 +159,11 @@ class TestConsentEmailBatchSend:
         self,
         requeue_privacy_requests,
         send_single_consent_email,
+        db,
         privacy_request_awaiting_consent_email_send,
     ) -> None:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_awaiting_consent_email_send.cache_identity(identity)
+        privacy_request_awaiting_consent_email_send.persist_identity(db, identity)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
@@ -184,7 +187,7 @@ class TestConsentEmailBatchSend:
                 db=db, service_type=CONFIG.notifications.notification_service_type
             )
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_awaiting_consent_email_send.cache_identity(identity)
+        privacy_request_awaiting_consent_email_send.persist_identity(db, identity)
         privacy_request_awaiting_consent_email_send.consent_preferences = [
             Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
@@ -229,7 +232,7 @@ class TestConsentEmailBatchSend:
                 db=db, service_type=CONFIG.notifications.notification_service_type
             )
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
-        privacy_request_awaiting_consent_email_send.cache_identity(identity)
+        privacy_request_awaiting_consent_email_send.persist_identity(db, identity)
         # This preference matches on data use
         privacy_preference_history.privacy_request_id = (
             privacy_request_awaiting_consent_email_send.id
@@ -295,7 +298,7 @@ class TestConsentEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         sovrn_email_connection_config,
     ) -> None:
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             privacy_request_awaiting_consent_email_send, db, "12345"
         )
         exit_state = send_email_batch.delay().get()
@@ -367,7 +370,7 @@ class TestConsentEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         generic_consent_email_connection_config,
     ) -> None:
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             privacy_request_awaiting_consent_email_send, db, "12345"
         )
         exit_state = send_email_batch.delay().get()
@@ -443,7 +446,7 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config.system_id = system.id
         sovrn_email_connection_config.save(db)
 
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -501,7 +504,7 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config.save(db)
 
         # This preference matches on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -509,7 +512,7 @@ class TestConsentEmailBatchSend:
         )
 
         # This preference does not match on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -630,7 +633,7 @@ class TestConsentEmailBatchSend:
         generic_consent_email_connection_config.save(db)
 
         # This preference matches on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -638,7 +641,7 @@ class TestConsentEmailBatchSend:
         )
 
         # This preference does not match on data use
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
@@ -751,10 +754,10 @@ class TestConsentEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         sovrn_email_connection_config,
     ) -> None:
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             privacy_request_awaiting_consent_email_send, db, "12345"
         )
-        cache_identity_and_consent_preferences(
+        persist_identity_and_consent_preferences(
             second_privacy_request_awaiting_consent_email_send, db, "abcde"
         )
         exit_state = send_email_batch.delay().get()
@@ -819,13 +822,13 @@ class TestConsentEmailBatchSend:
         privacy_preference_history,
         privacy_preference_history_us_ca_provide,
     ) -> None:
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
             db,
             "12345",
             privacy_preference_history,
         )
-        cache_identity_and_privacy_preferences(
+        persist_identity_and_privacy_preferences(
             second_privacy_request_awaiting_consent_email_send,
             db,
             "abcde",
@@ -948,7 +951,7 @@ class TestErasureEmailBatchSend:
                 db=db, service_type=CONFIG.notifications.notification_service_type
             )
         identity = Identity(email="customer_1#@example.com")
-        privacy_request_awaiting_erasure_email_send.cache_identity(identity)
+        privacy_request_awaiting_erasure_email_send.persist_identity(db, identity)
         privacy_request_awaiting_erasure_email_send.save(db)
 
         exit_state = send_email_batch.delay().get()
@@ -988,12 +991,6 @@ class TestErasureEmailBatchSend:
         queued for a consent email doesn't trigger an erasure email.
         """
         # third_privacy_request_awaiting_erasure_email_send has no identities
-        cache = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=third_privacy_request_awaiting_erasure_email_send.id
-        )
-        for key in all_keys:
-            cache.delete(key)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
@@ -1079,12 +1076,6 @@ class TestErasureEmailBatchSend:
         queued for a consent email doesn't trigger an erasure email.
         """
         # third_privacy_request_awaiting_erasure_email_send has no identities
-        cache = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=third_privacy_request_awaiting_erasure_email_send.id
-        )
-        for key in all_keys:
-            cache.delete(key)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete

@@ -37,7 +37,7 @@ async def test_slack_enterprise_access_request_task(
     identity_value = slack_enterprise_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = Identity(**identity_kwargs)
-    privacy_request.cache_identity(identity)
+    privacy_request.persist_identity(db, identity)
     dataset_name = slack_enterprise_connection_config.get_saas_config().fides_key
     merged_graph = slack_enterprise_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)

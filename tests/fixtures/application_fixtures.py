@@ -1264,14 +1264,53 @@ def _create_privacy_request_for_policy(
         db=db,
         data=data,
     )
-    identity_kwargs = {"email": email_identity}
-    pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
         identity=Identity(
             email=email_identity,
             phone_number="+12345678910",
         ),
+    )
+    return pr
+
+
+def _create_privacy_request_for_policy_no_identities(
+    db: Session,
+    policy: Policy,
+    status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
+    email_identity: Optional[str] = "test@example.com",
+) -> PrivacyRequest:
+    data = {
+        "external_id": f"ext-{str(uuid4())}",
+        "requested_at": datetime(
+            2018,
+            12,
+            31,
+            hour=2,
+            minute=30,
+            second=23,
+            microsecond=916482,
+            tzinfo=timezone.utc,
+        ),
+        "status": status,
+        "origin": f"https://example.com/",
+        "policy_id": policy.id,
+        "client_id": policy.client_id,
+    }
+    if status != PrivacyRequestStatus.pending:
+        data["started_processing_at"] = datetime(
+            2019,
+            1,
+            1,
+            hour=1,
+            minute=45,
+            second=55,
+            microsecond=393185,
+            tzinfo=timezone.utc,
+        )
+    pr = PrivacyRequest.create(
+        db=db,
+        data=data,
     )
     return pr
 
@@ -1435,7 +1474,6 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
         },
     )
     identity_kwargs = {"email": "email@example.com"}
-    pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
         identity=Identity(**identity_kwargs),
