@@ -58,10 +58,10 @@ class TestIdentitySchema:
             customer_id={"label": "Customer ID", "value": "123"},
         )
         assert identity.labeled_dict() == {
-            "phone_number": {"label": "Phone number", "value": None},
-            "email": {"label": "Email", "value": "user@example.com"},
-            "ga_client_id": {"label": "GA client ID", "value": None},
-            "ljt_readerID": {"label": "LJT reader ID", "value": None},
-            "fides_user_device_id": {"label": "Fides user device ID", "value": None},
+            "phone_number": None,
+            "email": "user@example.com",
+            "ga_client_id": None,
+            "ljt_readerID": None,
+            "fides_user_device_id": None,
             "customer_id": {"label": "Customer ID", "value": "123"},
         }

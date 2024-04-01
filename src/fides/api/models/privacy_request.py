@@ -378,11 +378,7 @@ class PrivacyRequest(
                 self.id,
             )
 
-    def persist_identity(
-        self,
-        db: Session,
-        identity: Identity,
-    ) -> None:
+    def persist_identity(self, db: Session, identity: Identity) -> None:
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
         blind indexing for later searching and audit purposes.
@@ -460,27 +456,6 @@ class PrivacyRequest(
                 value,  # type:ignore
             )
         return schema
-
-    def get_persisted_identity_map(self) -> Dict[str, Any]:
-        """
-        Retrieves persisted identity fields from the DB.
-        """
-        return {
-            field.field_name: {
-                "label": field.field_label,
-                "value": field.encrypted_value["value"],
-            }
-            for field in self.provided_identities  # type: ignore[attr-defined]
-        }
-
-    def get_persisted_identity_values(self) -> Dict[str, Any]:
-        """
-        Retrieves persisted identity fields from the DB.
-        """
-        return {
-            field.field_name: field.encrypted_value["value"]
-            for field in self.provided_identities  # type: ignore[attr-defined]
-        }
 
     def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
         return {

@@ -89,7 +89,7 @@ class FidesConnector(BaseConnector[FidesClient]):
     ) -> List[Row]:
         """Execute access request and fetch access data from remote Fides"""
         identity_data = {
-            **privacy_request.get_persisted_identity_map(),
+            **privacy_request.get_persisted_identity().labeled_dict(),
             **privacy_request.get_cached_identity_data(),
         }
         if not identity_data:
@@ -140,7 +140,7 @@ class FidesConnector(BaseConnector[FidesClient]):
     ) -> int:
         """Execute an erasure request on remote fides"""
         identity_data = {
-            **privacy_request.get_persisted_identity_map(),
+            **privacy_request.get_persisted_identity().labeled_dict(),
             **privacy_request.get_cached_identity_data(),
         }
         if not identity_data:
