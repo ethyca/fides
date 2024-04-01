@@ -346,7 +346,10 @@ class PrivacyRequest(
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
             if value is not None:
-                cache.set_with_autoexpire(get_identity_cache_key(self.id, key), value)
+                cache.set_with_autoexpire(
+                    get_identity_cache_key(self.id, key),
+                    value,
+                )
 
     def cache_custom_privacy_request_fields(
         self,
@@ -391,10 +394,11 @@ class PrivacyRequest(
         identity_dict = identity.dict()
         for key, value in identity_dict.items():
             if value is not None:
-                label = None
                 if isinstance(value, LabeledIdentity):
                     value = value.value
                     label = value.label
+                else:
+                    label = None
 
                 hashed_value = ProvidedIdentity.hash_value(value)
                 provided_identity_data = {
@@ -405,7 +409,7 @@ class PrivacyRequest(
                     "hashed_value": hashed_value,
                 }
 
-                if label:
+                if label is not None:
                     provided_identity_data["field_label"] = label
 
                 ProvidedIdentity.create(
@@ -442,17 +446,20 @@ class PrivacyRequest(
             )
 
     def get_persisted_identity(self) -> Identity:
-        identity = Identity()
+        """
+        Retrieves persisted identity fields from the DB.
+        """
+        schema = Identity()
         for field in self.provided_identities:  # type: ignore[attr-defined]
             value = field.encrypted_value.get("value")
             if field.field_label:
                 value = LabeledIdentity(label=field.field_label, value=value)
             setattr(
-                identity,
+                schema,
                 field.field_name,  # type:ignore
                 value,  # type:ignore
             )
-        return identity
+        return schema
 
     def get_persisted_identity_map(self) -> Dict[str, Any]:
         """

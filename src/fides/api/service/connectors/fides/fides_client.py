@@ -100,10 +100,7 @@ class FidesClient:
         return req
 
     def create_privacy_request(
-        self,
-        external_id: Optional[str],
-        identity: Identity,
-        policy_key: str,
+        self, external_id: Optional[str], identity: Identity, policy_key: str
     ) -> str:
         """
         Create privacy request on remote fides by hitting privacy request endpoint

@@ -1180,11 +1180,11 @@ def _send_privacy_request_review_message_to_user(
         kwargs={
             "message_meta": FidesopsMessage(
                 action_type=action_type,
-                body_params=(
-                    RequestReviewDenyBodyParams(rejection_reason=rejection_reason)
-                    if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
-                    else None
-                ),
+                body_params=RequestReviewDenyBodyParams(
+                    rejection_reason=rejection_reason
+                )
+                if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
+                else None,
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
