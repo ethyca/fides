@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import EmailStr, Extra, Field, StrictInt, StrictStr, validator
+from pydantic import EmailStr, Extra, StrictInt, StrictStr, validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
