@@ -40,6 +40,7 @@ The types of changes are:
 - Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
 - Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
 - Show a "systems displayed" count on datamap map & table reporting page [#4752](https://github.com/ethyca/fides/pull/4752)
+- Change default Canada Privacy Experience Config in migration to reference generic `ca` region [#4762](https://github.com/ethyca/fides/pull/4762) 
 
 ### Fixed
 
