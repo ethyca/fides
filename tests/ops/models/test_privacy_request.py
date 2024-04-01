@@ -256,7 +256,9 @@ def test_delete_privacy_request_removes_cached_data(
         privacy_request_id=privacy_request.id,
         identity_attribute=identity_attribute,
     )
-    assert cache.get(key) == identity_value
+    assert (
+        privacy_request.get_cached_identity_data()[identity_attribute] == identity_value
+    )
     privacy_request.delete(db)
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None

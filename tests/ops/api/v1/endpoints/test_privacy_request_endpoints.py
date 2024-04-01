@@ -443,7 +443,6 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -458,11 +457,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute=list(identity.keys())[0],
-        )
-        assert cache.get(key) == list(identity.values())[0]
+        assert pr.get_cached_identity_data() == identity
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -4865,11 +4860,7 @@ class TestCreatePrivacyRequestAuthenticated:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute=list(identity.keys())[0],
-        )
-        assert cache.get(key) == list(identity.values())[0]
+        assert pr.get_cached_identity_data() == identity
         assert run_access_request_mock.called
 
     @mock.patch(
