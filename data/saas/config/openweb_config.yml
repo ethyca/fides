@@ -1,0 +1,59 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: OpenWeb
+  type: openweb
+  description: A sample schema representing the OpenWeb integration for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/openweb
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      label: Domain (default www.spot.im)
+      default_value: www.spot.im
+    - name: api_key
+      label: SSO Authentication Token
+      description: Value of the OpenWeb SSO Authentication token. This can be found in your OpenWeb admni GUI by going to 'Settings' then navigate to the Authenticaiton Tokens.
+    # - name: primary_key
+    #   label: The 
+    #   default_value: testuser
+
+  external_references:
+    - name: openweb_user_id
+      label: Reference to OpenWeb user id
+      description: The dataset reference to the primary_key which maps to the desired user.
+
+  client_config:
+    protocol: https
+    host: www.spot.im
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: x-spotim-sso-access-token
+            value: <api_key>
+
+  test_request:
+    method: GET
+    path: /api/sso/v1/user/<openweb_user_id>
+    param_values:
+      - name: openweb_user_id
+        connector_param: openweb_user_id
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          request_override: openweb_user_read
+          param_values:
+            - name: user_id
+              reference:
+                - openweb_user_id
+        delete:
+          method: POST
+          path: /api/sso/v1/user/<openweb_user_id>
+          param_values:
+            - name: openweb_user_id
+              references:
+                - dataset: <instance_fides_key>
+                field: user.id
+                direction: from
