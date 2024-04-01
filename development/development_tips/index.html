@@ -1170,7 +1170,7 @@ You should also import your model in <code>src/fides/api/db/base.py</code> so it
     <span class="k">raise</span> <span class="n">SomeException</span><span class="p">(</span><span class="s2">&quot;a message&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="general-debugging-pdb">General debugging -- pdb</h2>
-<p>The project uses <code>pdb</code> for debugging as a <code>dev-requirement</code>. You can set breakpoints with <code>pdb</code> in much the same way you'd set them using <code>debugger</code> in Javascript. Insert <code>import pdb; pdb.set_trace()</code> into the line where you want the breakpoint to set, then run your Python code.</p>
+<p>The project uses <code>pdb</code> for debugging as a <code>dev-requirement</code>. You can set breakpoints with <code>pdb</code> in much the same way you'd set them using <code>debugger</code> in JavaScript. Insert <code>import pdb; pdb.set_trace()</code> into the line where you want the breakpoint to set, then run your Python code.</p>
 <h2 id="docker">Docker</h2>
 <p>As a <strong>last resort</strong> you may need to tear <em>everything</em> down in Docker and rebuild. The following commands will achieve that, but be warned that rebuild times can be long!</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>nox<span class="w"> </span>-s<span class="w"> </span>clean

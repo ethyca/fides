@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.32.0"
+    "version": "2.33.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13195,7 +13195,8 @@
       "CustomPrivacyRequestField": {
         "title": "CustomPrivacyRequestField",
         "required": [
-          "label"
+          "label",
+          "value"
         ],
         "type": "object",
         "properties": {
@@ -13204,7 +13205,28 @@
             "type": "string"
           },
           "value": {
-            "title": "Value"
+            "title": "Value",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         "description": "Schema for custom privacy request fields."
