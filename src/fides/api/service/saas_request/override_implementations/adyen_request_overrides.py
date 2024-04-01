@@ -1,7 +1,7 @@
-'''Notes for this particular override
+"""Notes for this particular override
 For more details consult the Adyen documentation for their Data Protection API
 The gist is that like some other vendors we do not get an email directly for this integration. The data protection endpoint in this case has two main requirements, called merchantAccount and pspReference.
-'''
+"""
 
 from typing import Any, Dict, List
 
@@ -14,6 +14,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
+
 
 @register("adyen_user_read", [SaaSRequestType.READ])
 def adyen_user_read(

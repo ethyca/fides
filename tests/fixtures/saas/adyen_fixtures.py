@@ -1,4 +1,4 @@
-'''Notes on the particulars for this Adyen integration
+"""Notes on the particulars for this Adyen integration
 In this case, we aren't passing an identity email as Adyen's data protection endpoint requires a different value, the pspReference value which will be provided to us by our customer. 
 The pspReference value itself will be provided by the customer
 For reference this is the name of the value in the Adyen API data erasure endpoint
@@ -6,7 +6,7 @@ While we have hardcoded a value in this instance, it should be fairly straight-f
 Naming considerations
 adyen_external_references() & adyen_erasure_external_references()
 both will need to use naming consistent with that in the config.yml 
-'''
+"""
 from typing import Any, Dict, Generator
 
 import pydash
@@ -19,6 +19,7 @@ from tests.ops.integration_tests.saas.connector_runner import (
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("adyen")
+
 
 @pytest.fixture(scope="session")
 def adyen_secrets(saas_config) -> Dict[str, Any]:
@@ -36,17 +37,21 @@ def adyen_secrets(saas_config) -> Dict[str, Any]:
         # add the rest of your secrets here
     }
 
+
 @pytest.fixture
 def adyen_erasure_identity_email() -> str:
     return generate_random_email()
+
 
 @pytest.fixture
 def adyen_external_references() -> Dict[str, Any]:
     return {"adyen_user_id": "852617375522786K"}
 
+
 @pytest.fixture
 def adyen_erasure_external_references() -> Dict[str, Any]:
     return {"adyen_user_id": "852617375522786K"}
+
 
 @pytest.fixture
 def adyen_runner(
