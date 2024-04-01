@@ -343,12 +343,17 @@ class PrivacyRequest(
     def cache_identity(self, identity: Identity) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
-        identity_dict: Dict[str, Any] = dict(identity)
+
+        if isinstance(identity, dict):
+            identity = Identity(**identity)
+
+        identity_dict: Dict[str, Any] = identity.labeled_dict()
+
         for key, value in identity_dict.items():
             if value is not None:
                 cache.set_with_autoexpire(
                     get_identity_cache_key(self.id, key),
-                    value,
+                    FidesopsRedis.encode_obj(value),
                 )
 
     def cache_custom_privacy_request_fields(
@@ -550,7 +555,12 @@ class PrivacyRequest(
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
+        result = {}
+        for key in keys:
+            value = cache.get(key)
+            if value:
+                result[key.split("-")[-1]] = json.loads(value)
+        return result
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""

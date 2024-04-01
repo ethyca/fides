@@ -1199,6 +1199,19 @@ class TestConsentRequestCustomFieldFunctions:
 
 
 class TestPrivacyRequestCustomIdentities:
+    def test_cache_custom_identities(self, privacy_request):
+        privacy_request.cache_identity(
+            identity={
+                "customer_id": LabeledIdentity(label="Custom ID", value=123),
+                "account_id": LabeledIdentity(label="Account ID", value="456"),
+            },
+        )
+        assert privacy_request.get_cached_identity_data() == {
+            "email": "test@example.com",
+            "customer_id": {"label": "Custom ID", "value": 123},
+            "account_id": {"label": "Account ID", "value": "456"},
+        }
+
     def test_persist_custom_identities(self, db, privacy_request):
         privacy_request.persist_identity(
             db=db,
