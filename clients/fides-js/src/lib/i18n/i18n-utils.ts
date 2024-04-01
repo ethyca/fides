@@ -68,6 +68,7 @@ function extractMessagesFromExperienceConfig(
     "reject_button_label",
     "save_button_label",
     "title",
+    "modal_link_label",
   ] as const;
   if (experienceConfig.translations) {
     experienceConfig.translations.forEach(

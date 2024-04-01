@@ -418,6 +418,7 @@ export type ExperienceConfig = {
   dismissable?: boolean;
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
+  modal_link_label?: string;
 
   /**
    * List of regions that apply to this ExperienceConfig.
