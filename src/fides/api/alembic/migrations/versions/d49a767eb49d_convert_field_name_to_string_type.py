@@ -24,6 +24,7 @@ def upgrade():
         type_=sa.String(),
         existing_nullable=False,
     )
+    op.execute("DROP TYPE providedidentitytype")
     op.add_column(
         "providedidentity", sa.Column("field_label", sa.String(), nullable=True)
     )
@@ -31,6 +32,9 @@ def upgrade():
 
 def downgrade():
     op.drop_column("providedidentity", "field_label")
+    op.execute(
+        "CREATE TYPE providedidentitytype AS ENUM('email', 'phone_number', 'ga_client_id', 'ljt_readerID', 'fides_user_device_id')"
+    )
     op.alter_column(
         "providedidentity",
         "field_name",
