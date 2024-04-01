@@ -441,10 +441,10 @@ export const initialize = async ({
               modalLinkText = i18n.t("exp.modal_link_label");
             }
           } else {
-            const defaultLocale = i18n.getDefaultLocale();
+            const defaultTranslation = i18n.getDefaultLocale();
             const defaultLocaleLabel =
-              window.Fides.experience?.experience_config?.translations.find(
-                (t) => t.language === defaultLocale
+              effectiveExperience?.experience_config?.translations.find(
+                (t) => t.language === defaultTranslation
               );
             if (defaultLocaleLabel?.modal_link_label) {
               modalLinkText = defaultLocaleLabel.modal_link_label;
