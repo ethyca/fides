@@ -16,7 +16,7 @@ const defaultTranslation: ExperienceTranslation = {
   description: "Description",
   privacy_policy_link_label: "",
   privacy_policy_url: "",
-  trigger_link_label: "",
+  modal_link_label: "",
   privacy_preferences_link_label: "Privacy preferences",
   reject_button_label: "Reject All",
   save_button_label: "Save",

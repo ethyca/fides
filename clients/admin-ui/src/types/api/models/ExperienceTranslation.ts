@@ -60,5 +60,5 @@ export type ExperienceTranslation = {
   /**
    * Custom link/button trigger label
    */
-  trigger_link_label?: string;
+  modal_link_label?: string;
 };
