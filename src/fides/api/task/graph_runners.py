@@ -6,9 +6,7 @@ from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.task.create_tasks import (
     run_access_request,
     run_consent_request,
@@ -33,9 +31,22 @@ def access_runner(
 ) -> Dict[str, List[Row]]:
     """Access runner that temporarily supports running Access Request with DSR 3.0  2.0.
     DSR 2.0 will be going away"""
-    if CONFIG.execution.use_dsr_3_0:
+    use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
+
+    prev_results = privacy_request.get_raw_access_results()
+
+    if privacy_request.access_tasks.count() and not use_dsr_3_0:
+        # If we've previously processed this Privacy Request using DSR 3.0, continue doing so
+        use_dsr_3_0 = True
+
+    elif prev_results and use_dsr_3_0:
+        # If we've previously tried to process this Privacy Request using DSR 2.0, continue doing so
+        use_dsr_3_0 = False
+
+    if use_dsr_3_0:
         run_access_request(
             privacy_request=privacy_request,
+            policy=policy,
             graph=graph,
             connection_configs=connection_configs,
             identity=identity,
@@ -67,8 +78,6 @@ def erasure_runner(
     if CONFIG.execution.use_dsr_3_0:
         run_erasure_request(
             privacy_request=privacy_request,
-            graph=graph,
-            identity=identity,
             session=session,
         )
         raise PrivacyRequestExit()

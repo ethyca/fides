@@ -30,10 +30,10 @@ from fides.api.graph.config import TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.main import app
 from fides.api.models.privacy_request import (
-    generate_request_callback_jwe,
     RequestTask,
     completed_statuses,
     exited_statuses,
+    generate_request_callback_jwe,
 )
 from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
@@ -636,6 +636,15 @@ def run_privacy_request_task(celery_session_app):
     ]
 
 
+def wait_for_access_terminator_completion(db, pr):
+    terminator = pr.access_tasks.filter(
+        RequestTask.collection_address == TERMINATOR_ADDRESS.value
+    ).first()
+    assert terminator
+    while terminator.status not in exited_statuses:
+        db.refresh(pr)
+
+
 def test_access_runner(
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -648,15 +657,6 @@ def test_access_runner(
     This fixture is the version of the run_privacy_request task that is
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
-
-    def wait_for_access_terminator_completion(db, pr):
-        terminator = pr.access_tasks.filter(
-            RequestTask.collection_address == TERMINATOR_ADDRESS.value
-        ).first()
-        assert terminator
-        while terminator.status not in exited_statuses:
-            db.refresh(pr)
-
     try:
         # DSR 2.0
         return access_runner(

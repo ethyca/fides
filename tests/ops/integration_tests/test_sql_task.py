@@ -28,6 +28,7 @@ from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 
+from ...conftest import test_access_runner
 from ..graph.graph_test_util import (
     assert_rows_match,
     erasure_policy,
@@ -39,7 +40,6 @@ from ..task.traversal_data import (
     integration_db_graph,
     str_converter,
 )
-from ...conftest import test_access_runner
 
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",

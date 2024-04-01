@@ -478,7 +478,6 @@ def run_privacy_request(
 
         except PrivacyRequestExit as exc:
             # Privacy Request Exiting awaiting asynchronous processing
-            _log_warning(exc, CONFIG.dev_mode)
             return
 
         except BaseException as exc:  # pylint: disable=broad-except

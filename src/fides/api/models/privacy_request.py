@@ -1657,13 +1657,16 @@ class RequestTask(Base):
 
     @property
     def is_root_task(self) -> bool:
+        """Convenience helper for asserting whether the task is a root task"""
         return self.request_task_address == ROOT_COLLECTION_ADDRESS
 
     @property
     def is_terminator_task(self) -> bool:
+        """Convenience helper for asserting whether the task is a terminator task"""
         return self.request_task_address == TERMINATOR_ADDRESS
 
     def get_decoded_access_data(self) -> List[Row]:
+        """ "Decode json.loads using custom decoder"""
         return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
 
     def get_decoded_data_for_erasures(self) -> List[Row]:
