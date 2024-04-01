@@ -59,6 +59,7 @@ export const ConsentButtons = ({
                 data-testid={`fides-i18n-option-${lang.locale}`}
                 onClick={() => handleLocaleSelect(lang.locale)}
                 isActive={currentLocale === lang.locale}
+                title={lang.label_en}
               >
                 {lang.label_original}
               </MenuItem>
