@@ -211,7 +211,7 @@ def create_privacy_request_authenticated(
 
 def _send_privacy_request_receipt_message_to_user(
     policy: Optional[Policy],
-    to_identity: Optional[Dict[str, Any]],
+    to_identity: Optional[Identity],
     service_type: Optional[str],
 ) -> None:
     """Helper function to send request receipt message to the user"""
@@ -241,7 +241,7 @@ def _send_privacy_request_receipt_message_to_user(
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
             "service_type": service_type,
-            "to_identity": to_identity,
+            "to_identity": to_identity.dict(),
         },
     )
 
@@ -286,7 +286,7 @@ def privacy_request_csv_download(
             [
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
-                pr.get_persisted_identity_values(),
+                pr.get_persisted_identity().dict(),
                 pr.get_persisted_custom_privacy_request_fields(),
                 pr.created_at,
                 pr.reviewed_by,
@@ -609,7 +609,7 @@ def get_request_status(
 
     for item in paginated.items:  # type: ignore
         if include_identities:
-            item.identity = item.get_persisted_identity_map()
+            item.identity = item.get_persisted_identity().dict()
 
         if include_custom_privacy_request_fields:
             item.custom_privacy_request_fields = (
@@ -1180,11 +1180,11 @@ def _send_privacy_request_review_message_to_user(
         kwargs={
             "message_meta": FidesopsMessage(
                 action_type=action_type,
-                body_params=RequestReviewDenyBodyParams(
-                    rejection_reason=rejection_reason
-                )
-                if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
-                else None,
+                body_params=(
+                    RequestReviewDenyBodyParams(rejection_reason=rejection_reason)
+                    if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
+                    else None
+                ),
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
@@ -1221,7 +1221,7 @@ def verify_identification_code(
         if config_proxy.notifications.send_request_receipt_notification:
             _send_privacy_request_receipt_message_to_user(
                 policy,
-                privacy_request.get_persisted_identity_values(),
+                privacy_request.get_persisted_identity(),
                 config_proxy.notifications.notification_service_type,
             )
     except IdentityVerificationException as exc:
@@ -1728,7 +1728,7 @@ def create_privacy_request_func(
         "consent_preferences",
     ]
     for privacy_request_data in data:
-        if not any(privacy_request_data.identity.values()):
+        if not any(privacy_request_data.identity.dict().values()):
             logger.warning(
                 "Create failed for privacy request with no identity provided"
             )

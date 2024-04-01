@@ -60,7 +60,12 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
-from fides.api.schemas.redis_cache import Identity, IdentityBase, MultiValue
+from fides.api.schemas.redis_cache import (
+    Identity,
+    IdentityBase,
+    LabeledIdentity,
+    MultiValue,
+)
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     CustomJSONEncoder,
@@ -383,20 +388,29 @@ class PrivacyRequest(
         if isinstance(identity, dict):
             identity = Identity(**identity)
 
-        identity_dict = identity.labeled_dict()
-        for key, labeled_identity in identity_dict.items():
-            if labeled_identity["value"] is not None:
-                hashed_value = ProvidedIdentity.hash_value(labeled_identity["value"])
+        identity_dict = identity.dict()
+        for key, value in identity_dict.items():
+            if value is not None:
+                label = None
+                if isinstance(value, LabeledIdentity):
+                    value = value.value
+                    label = value.label
+
+                hashed_value = ProvidedIdentity.hash_value(value)
+                provided_identity_data = {
+                    "privacy_request_id": self.id,
+                    "field_name": key,
+                    # We don't need to manually encrypt this field, it's done at the ORM level
+                    "encrypted_value": {"value": value},
+                    "hashed_value": hashed_value,
+                }
+
+                if label:
+                    provided_identity_data["field_label"] = label
+
                 ProvidedIdentity.create(
                     db=db,
-                    data={
-                        "privacy_request_id": self.id,
-                        "field_name": key,
-                        "field_label": labeled_identity["label"],
-                        # We don't need to manually encrypt this field, it's done at the ORM level
-                        "encrypted_value": {"value": labeled_identity["value"]},
-                        "hashed_value": hashed_value,
-                    },
+                    data=provided_identity_data,
                 )
 
     def persist_custom_privacy_request_fields(
@@ -427,6 +441,19 @@ class PrivacyRequest(
                 self.id,
             )
 
+    def get_persisted_identity(self) -> Identity:
+        identity = Identity()
+        for field in self.provided_identities:  # type: ignore[attr-defined]
+            value = field.encrypted_value.get("value")
+            if field.field_label:
+                value = LabeledIdentity(label=field.field_label, value=value)
+            setattr(
+                identity,
+                field.field_name,  # type:ignore
+                value,  # type:ignore
+            )
+        return identity
+
     def get_persisted_identity_map(self) -> Dict[str, Any]:
         """
         Retrieves persisted identity fields from the DB.
@@ -436,7 +463,7 @@ class PrivacyRequest(
                 "label": field.field_label,
                 "value": field.encrypted_value["value"],
             }
-            for field in self.provided_identities
+            for field in self.provided_identities  # type: ignore[attr-defined]
         }
 
     def get_persisted_identity_values(self) -> Dict[str, Any]:
@@ -445,7 +472,7 @@ class PrivacyRequest(
         """
         return {
             field.field_name: field.encrypted_value["value"]
-            for field in self.provided_identities
+            for field in self.provided_identities  # type: ignore[attr-defined]
         }
 
     def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
@@ -1107,6 +1134,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
 
     def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
+
         identity = Identity()
         if any(
             [
@@ -1116,11 +1144,16 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         ):
             return identity
 
+        value = self.encrypted_value.get("value")  # type:ignore
+        if self.field_label:
+            value = LabeledIdentity(label=self.field_label, value=value)
+
         setattr(
             identity,
-            self.field_name.value,  # type:ignore
-            self.encrypted_value.get("value"),  # type:ignore
+            self.field_name,  # type:ignore
+            value,  # type:ignore
         )
+
         return identity
 
 

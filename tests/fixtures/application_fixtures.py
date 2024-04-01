@@ -2124,6 +2124,23 @@ def empty_provided_identity(db):
 
 
 @pytest.fixture(scope="function")
+def custom_provided_identity(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "customer_id",
+        "field_label": "Customer ID",
+        "hashed_value": ProvidedIdentity.hash_value("123"),
+        "encrypted_value": {"value": "123"},
+    }
+    provided_identity = ProvidedIdentity.create(
+        db,
+        data=provided_identity_data,
+    )
+    yield provided_identity
+    provided_identity.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def provided_identity_value():
     return "test@email.com"
 

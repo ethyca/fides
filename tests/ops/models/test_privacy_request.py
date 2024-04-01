@@ -51,6 +51,16 @@ def test_blank_provided_identity_to_identity(
     assert identity.email is None
 
 
+def test_custom_provided_identity_to_identity(
+    custom_provided_identity: ProvidedIdentity,
+) -> None:
+    identity = custom_provided_identity.as_identity_schema()
+    assert identity.customer_id == LabeledIdentity(
+        label=custom_provided_identity.field_label,
+        value=custom_provided_identity.encrypted_value.get("value"),
+    )
+
+
 def test_privacy_request(
     db: Session,
     policy: Policy,
@@ -1197,9 +1207,9 @@ class TestPrivacyRequestCustomIdentities:
                 "account_id": LabeledIdentity(label="Account ID", value="456"),
             },
         )
-        assert privacy_request.get_persisted_identity_map() == {
-            "email": {"label": "Email", "value": "test@example.com"},
-            "phone_number": {"label": "Phone number", "value": "+12345678910"},
-            "customer_id": {"label": "Custom ID", "value": 123},
-            "account_id": {"label": "Account ID", "value": "456"},
-        }
+        assert privacy_request.get_persisted_identity() == Identity(
+            email="test@example.com",
+            phone_number="+12345678910",
+            customer_id=LabeledIdentity(label="Custom ID", value=123),
+            account_id=LabeledIdentity(label="Account ID", value="456"),
+        )

@@ -1048,15 +1048,13 @@ class TestSaveConsent:
             consent_request.privacy_request_id is not None
         ), "PrivacyRequest queued to propagate consent preferences cached on ConsentRequest"
 
-        persisted_identity_values = (
-            consent_request.privacy_request.get_persisted_identity_values()
-        )
-        assert persisted_identity_values["email"] == "test@email.com", (
+        identity = consent_request.privacy_request.get_persisted_identity()
+        assert identity.email == "test@email.com", (
             "Identity pulled from Consent Provided Identity and used to "
             "create a Privacy Request provided identity "
         )
-        assert persisted_identity_values.get("phone_number", None) is None
-        assert persisted_identity_values["ga_client_id"] == "test_ga_client_id", (
+        assert identity.phone_number is None
+        assert identity.ga_client_id == "test_ga_client_id", (
             "Browser identity pulled from Consent Provided Identity and persisted "
             "to a Privacy Request provided identity"
         )

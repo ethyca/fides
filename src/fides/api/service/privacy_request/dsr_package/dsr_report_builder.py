@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.redis_cache import Identity
 from fides.api.util.storage_util import storage_json_encoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
@@ -190,9 +191,9 @@ def _map_privacy_request(privacy_request: PrivacyRequest) -> Dict[str, Any]:
     action_type: Optional[ActionType] = privacy_request.policy.get_action_type()
     if action_type:
         request_data["type"] = action_type.value
-    identity: Dict[str, Any] = privacy_request.get_persisted_identity_values()
-    if identity.get("email", None):
-        request_data["email"] = identity.get("email")
+    identity: Identity = privacy_request.get_persisted_identity()
+    if identity.email:
+        request_data["email"] = identity.email
     if privacy_request.requested_at:
         request_data["requested_at"] = privacy_request.requested_at.strftime(
             "%m/%d/%Y %H:%M %Z"

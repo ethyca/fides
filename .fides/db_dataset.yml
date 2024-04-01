@@ -1356,6 +1356,8 @@ dataset:
       data_categories: [user.contact, user.unique_id]
     - name: field_name
       data_categories: [system.operations]
+    - name: field_label
+      data_categories: [system.operations]
     - name: hashed_value
       data_categories: [user.contact, user.unique_id]
     - name: id

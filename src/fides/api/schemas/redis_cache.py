@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import EmailStr, Extra, Field, StrictInt, StrictStr, validator
 
@@ -48,7 +48,9 @@ class Identity(IdentityBase):
     def __init__(self, **data: Any):
         for field, value in data.items():
             if field not in self.__fields__:
-                if isinstance(value, dict) and "label" in value and "value" in value:
+                if isinstance(value, LabeledIdentity):
+                    data[field] = value
+                elif isinstance(value, dict) and "label" in value and "value" in value:
                     data[field] = LabeledIdentity(**value)
                 else:
                     raise ValueError(
@@ -66,8 +68,8 @@ class Identity(IdentityBase):
         uuid.UUID(v, version=4)
         return v
 
-    def dict(self):
-        d = super().dict()
+    def dict(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        d = super().dict(*args, **kwargs)
         for key, value in self.__dict__.items():
             if isinstance(value, LabeledIdentity):
                 d[key] = value.value
@@ -75,7 +77,7 @@ class Identity(IdentityBase):
                 d[key] = value
         return d
 
-    def labeled_dict(self):
+    def labeled_dict(self) -> Dict[str, Any]:
         d = super().dict()
         for key, value in self.__dict__.items():
             if isinstance(value, LabeledIdentity):
