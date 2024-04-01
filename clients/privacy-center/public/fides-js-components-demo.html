@@ -204,6 +204,13 @@
         background-color: #eee;
         padding: 16px;
       }
+      #fides-modal-link {
+        border: none;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+        text-decoration: underline;
+      }
     </style>
   </head>
 
@@ -232,7 +239,7 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <a id="fides-modal-link">Manage Consent</a>
+      <button id="fides-modal-link"></button>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>
@@ -263,6 +270,10 @@
           null,
           2
         );
+
+        // Display the fides configured modal link label (if any).
+        document.getElementById("fides-modal-link").textContent =
+          Fides.getModalLinkLabel();
 
         // Pretty-print the fides experience config object and add it to the page.
         document.getElementById("consent-experience").textContent =

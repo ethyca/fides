@@ -519,6 +519,7 @@ export type ExperienceConfigTranslation = {
   banner_description?: string;
   description?: string;
   privacy_experience_config_history_id: string;
+  modal_link_label?: string;
 };
 
 export type Cookies = {

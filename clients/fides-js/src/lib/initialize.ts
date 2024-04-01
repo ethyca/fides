@@ -1,6 +1,7 @@
 import { ContainerNode } from "preact";
 
 import {
+  DEFAULT_MODAL_LINK_LABEL,
   I18n,
   initializeI18n,
   selectBestExperienceConfigTranslation,
@@ -335,6 +336,8 @@ export const initialize = async ({
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
+  let getModalLinkLabel: FidesGlobal["getModalLinkLabel"] = () =>
+    DEFAULT_MODAL_LINK_LABEL;
 
   if (shouldInitOverlay) {
     if (!validateOptions(options)) {
@@ -430,6 +433,26 @@ export const initialize = async ({
           overrides?.experienceTranslationOverrides
         );
 
+        // Provide the modal link label function to the client based on the current locale unless specified via props.
+        getModalLinkLabel = (props) => {
+          let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
+          if (!props?.disableLocalization) {
+            if (i18n.t("exp.modal_link_label") !== "exp.modal_link_label") {
+              modalLinkText = i18n.t("exp.modal_link_label");
+            }
+          } else {
+            const defaultLocale = i18n.getDefaultLocale();
+            const defaultLocaleLabel =
+              window.Fides.experience?.experience_config?.translations.find(
+                (t) => t.language === defaultLocale
+              );
+            if (defaultLocaleLabel?.modal_link_label) {
+              modalLinkText = defaultLocaleLabel.modal_link_label;
+            }
+          }
+          return modalLinkText;
+        };
+
         // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({
           options,
@@ -482,5 +505,6 @@ export const initialize = async ({
     geolocation,
     options,
     initialized: true,
+    getModalLinkLabel,
   };
 };
