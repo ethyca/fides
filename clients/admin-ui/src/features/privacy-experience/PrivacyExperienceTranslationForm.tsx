@@ -182,7 +182,7 @@ const PrivacyExperienceTranslationForm = ({
           : "Edit experience text"}
       </Heading>
       {isOOB ? <OOBTranslationNotice languageName={translation.name} /> : null}
-      {translationsEnabled ? (
+      {translationsEnabled && (
         <>
           <CustomSwitch
             name={`translations.${translationIndex}.is_default`}
@@ -204,7 +204,7 @@ const PrivacyExperienceTranslationForm = ({
             handleConfirm={() => setNewDefaultTranslation(translationIndex)}
           />
         </>
-      ) : null}
+      )}
 
       <CustomTextInput
         name={`translations.${translationIndex}.title`}
@@ -221,24 +221,24 @@ const PrivacyExperienceTranslationForm = ({
         variant="stacked"
       />
       {values.component === ComponentType.BANNER_AND_MODAL ||
-      values.component === ComponentType.TCF_OVERLAY ? (
-        <>
-          <CustomTextInput
-            name={`translations.${translationIndex}.banner_title`}
-            id={`translations.${translationIndex}.banner_title`}
-            label="Banner title (optional)"
-            tooltip="A separate title for the banner (defaults to main title)"
-            variant="stacked"
-          />
-          <CustomTextArea
-            name={`translations.${translationIndex}.banner_description`}
-            id={`translations.${translationIndex}.banner_description`}
-            label="Banner description (optional)"
-            tooltip="A separate description for the banner (defaults to main description)"
-            variant="stacked"
-          />
-        </>
-      ) : null}
+        (values.component === ComponentType.TCF_OVERLAY && (
+          <>
+            <CustomTextInput
+              name={`translations.${translationIndex}.banner_title`}
+              id={`translations.${translationIndex}.banner_title`}
+              label="Banner title (optional)"
+              tooltip="A separate title for the banner (defaults to main title)"
+              variant="stacked"
+            />
+            <CustomTextArea
+              name={`translations.${translationIndex}.banner_description`}
+              id={`translations.${translationIndex}.banner_description`}
+              label="Banner description (optional)"
+              tooltip="A separate description for the banner (defaults to main description)"
+              variant="stacked"
+            />
+          </>
+        ))}
       <CustomTextInput
         name={`translations.${translationIndex}.accept_button_label`}
         id={`translations.${translationIndex}.accept_button_label`}
@@ -253,7 +253,7 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
-      {formConfig.privacy_preferences_link_label?.included ? (
+      {formConfig.privacy_preferences_link_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_preferences_link_label`}
           id={`translations.${translationIndex}.privacy_preferences_link_label`}
@@ -261,8 +261,8 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
           isRequired={formConfig.privacy_preferences_link_label?.required}
         />
-      ) : null}
-      {formConfig.save_button_label?.included ? (
+      )}
+      {formConfig.save_button_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.save_button_label`}
           id={`translations.${translationIndex}.save_button_label`}
@@ -270,8 +270,8 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
           isRequired={formConfig.save_button_label.required}
         />
-      ) : null}
-      {formConfig.acknowledge_button_label?.included ? (
+      )}
+      {formConfig.acknowledge_button_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.acknowledge_button_label`}
           id={`translations.${translationIndex}.acknowledge_button_label`}
@@ -279,23 +279,23 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
           isRequired={formConfig.acknowledge_button_label.required}
         />
-      ) : null}
-      {formConfig.privacy_policy_link_label?.included ? (
+      )}
+      {formConfig.privacy_policy_link_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_policy_link_label`}
           id={`translations.${translationIndex}.privacy_policy_link_label`}
           label="Privacy policy link label (optional)"
           variant="stacked"
         />
-      ) : null}
-      {formConfig.privacy_policy_url?.included ? (
+      )}
+      {formConfig.privacy_policy_url?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_policy_url`}
           id={`translations.${translationIndex}.privacy_policy_url`}
           label="Privacy policy link URL (optional)"
           variant="stacked"
         />
-      ) : null}
+      )}
       {formConfig.modal_link_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.modal_link_label`}
