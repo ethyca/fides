@@ -3,12 +3,13 @@ import {
   stubPlus,
   stubPrivacyNoticesCrud,
   stubTaxonomyEntities,
+  stubTranslationConfig,
 } from "cypress/support/stubs";
 
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const ESSENTIAL_NOTICE_ID = "pri_a92477b0-5157-4608-acdc-39283a442f29";
+const ESSENTIAL_NOTICE_ID = "pri_a518b4d0-9cbc-48b1-94dc-2fe911537b8e";
 
 describe("Privacy notices", () => {
   beforeEach(() => {
@@ -91,8 +92,8 @@ describe("Privacy notices", () => {
         "Essential",
         "Functional",
         "Analytics",
-        "Advertising",
-        "Data Sales",
+        "Marketing",
+        "Data Sales and Sharing",
       ].forEach((name) => {
         cy.get("table").contains("tr", name);
       });
@@ -186,7 +187,7 @@ describe("Privacy notices", () => {
           });
         // Disabled and has no applicable systems
         cy.get("table")
-          .contains("tr", "Advertising")
+          .contains("tr", "Marketing")
           .within(() => {
             cy.getByTestId("status-badge").contains("inactive");
           });
@@ -307,6 +308,7 @@ describe("Privacy notices", () => {
     });
 
     it("can create a new privacy notice", () => {
+      stubTranslationConfig(true);
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.getByTestId("new-privacy-notice-page");
       const notice = {
@@ -380,6 +382,23 @@ describe("Privacy notices", () => {
 
       // can still edit the notice key field to be something else
       cy.getByTestId("input-notice_key").clear().type("custom_key");
+    });
+  });
+
+  describe("translation interface", () => {
+    it("shows the translation interface when translations are enabled", () => {
+      stubLanguages();
+      stubTranslationConfig(true);
+      cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
+      cy.wait("@getTranslationConfig");
+      cy.getByTestId("add-language-btn").should("exist");
+    });
+
+    it("doesn't show the translation interface when translations are disabled", () => {
+      stubTranslationConfig(false);
+      cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
+      cy.wait("@getTranslationConfig");
+      cy.getByTestId("add-language-btn").should("not.exist");
     });
   });
 });

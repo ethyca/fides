@@ -31,7 +31,7 @@ export const defaultTranslations: ExperienceTranslationCreate[] = [
     accept_button_label: "Accept",
     reject_button_label: "Reject",
     save_button_label: "Save",
-    acknowledge_button_label: "Ok",
+    acknowledge_button_label: "OK",
     privacy_preferences_link_label: "Privacy Preferences",
   },
 ];
@@ -121,6 +121,7 @@ export const getTranslationFormFields = (
       reject_button_label: { included: true, required: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
+      modal_link_label: { included: true },
     };
   }
   if (component === ComponentType.MODAL) {
@@ -134,6 +135,7 @@ export const getTranslationFormFields = (
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
       privacy_preferences_link_label: { included: true },
+      modal_link_label: { included: true },
     };
   }
 
@@ -150,6 +152,7 @@ export const getTranslationFormFields = (
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
       privacy_preferences_link_label: { included: true, required: true },
+      modal_link_label: { included: true },
     };
   }
   // For TCF overlay / default
@@ -163,5 +166,6 @@ export const getTranslationFormFields = (
     privacy_policy_link_label: { included: true },
     privacy_policy_url: { included: true },
     privacy_preferences_link_label: { included: true, required: true },
+    modal_link_label: { included: true },
   };
 };

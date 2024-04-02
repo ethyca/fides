@@ -3,7 +3,10 @@ import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import ConfigurePrivacyExperience from "~/features/privacy-experience/ConfigurePrivacyExperience";
-import { useGetExperienceConfigByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
+import {
+  useGetAvailableConfigTranslationsQuery,
+  useGetExperienceConfigByIdQuery,
+} from "~/features/privacy-experience/privacy-experience.slice";
 
 const PrivacyExperienceDetailPage = () => {
   const router = useRouter();
@@ -16,6 +19,8 @@ const PrivacyExperienceDetailPage = () => {
   }
 
   const { data, isLoading } = useGetExperienceConfigByIdQuery(experienceId);
+  const { data: availableTranslations } =
+    useGetAvailableConfigTranslationsQuery(experienceId);
 
   if (isLoading) {
     return (
@@ -37,7 +42,10 @@ const PrivacyExperienceDetailPage = () => {
 
   return (
     <Layout title={`Privacy experience ${data.component}`} padded={false}>
-      <ConfigurePrivacyExperience passedInExperience={data} />
+      <ConfigurePrivacyExperience
+        passedInExperience={data}
+        passedInTranslations={availableTranslations}
+      />
     </Layout>
   );
 };

@@ -21,6 +21,8 @@ import {
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { MinimalPrivacyExperience, Property, PropertyType } from "~/types/api";
 
+import DeletePropertyModal from "./DeletePropertyModal";
+
 interface Props {
   property?: Property;
   handleSubmit: (values: FormValues) => Promise<void>;
@@ -56,6 +58,7 @@ const ExperiencesFormSection = () => {
         values={values.experiences ?? []}
         setValues={(newValues) => setFieldValue("experiences", newValues)}
         draggable
+        baseTestId="experience"
       />
     </FormSection>
   );
@@ -125,26 +128,43 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
               </FormSection>
             </Box>
           )}
-          <Flex justifyContent="right" width="100%" paddingTop={2}>
-            <Button
-              size="sm"
-              type="submit"
-              variant="outline"
-              isLoading={false}
-              mr={3}
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              type="submit"
-              colorScheme="primary"
-              isDisabled={isSubmitting || !dirty || !isValid}
-              isLoading={isSubmitting}
-            >
-              Save
-            </Button>
+          <Flex justifyContent="space-between" width="100%" paddingTop={2}>
+            {property && (
+              <DeletePropertyModal
+                property={property}
+                triggerComponent={
+                  <Button
+                    data-testid="delete-property-button"
+                    size="sm"
+                    variant="outline"
+                    isLoading={false}
+                    mr={3}
+                  >
+                    Delete
+                  </Button>
+                }
+              />
+            )}
+            <Flex justifyContent="right" width="100%" paddingTop={2}>
+              <Button
+                size="sm"
+                variant="outline"
+                isLoading={false}
+                mr={3}
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                type="submit"
+                colorScheme="primary"
+                isDisabled={isSubmitting || !dirty || !isValid}
+                isLoading={isSubmitting}
+              >
+                Save
+              </Button>
+            </Flex>
           </Flex>
         </Form>
       )}

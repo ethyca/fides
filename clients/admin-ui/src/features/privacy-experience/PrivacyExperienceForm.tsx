@@ -1,4 +1,5 @@
 import {
+  ArrowForwardIcon,
   Box,
   Button,
   ButtonGroup,
@@ -70,7 +71,7 @@ export const PrivacyExperienceConfigColumnLayout = ({
   children: React.ReactNode;
 }) => (
   <Flex direction="column" minH="full" w="25%" borderRight="1px solid #DEE5EE">
-    <Flex direction="column" h="full" overflowY="scroll" px={4}>
+    <Flex direction="column" h="full" overflowY="auto" px={4}>
       <Flex direction="column" gap={4} w="full" pb={4}>
         {children}
       </Flex>
@@ -81,10 +82,14 @@ export const PrivacyExperienceConfigColumnLayout = ({
 
 export const PrivacyExperienceForm = ({
   allPrivacyNotices,
+  translationsEnabled,
   onSelectTranslation,
+  onCreateTranslation,
 }: {
   allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[];
+  translationsEnabled?: boolean;
   onSelectTranslation: (t: ExperienceTranslation) => void;
+  onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
 }) => {
   const router = useRouter();
 
@@ -207,6 +212,7 @@ export const PrivacyExperienceForm = ({
         setValues={(newValues) => setFieldValue("properties", newValues)}
         draggable
         maxHeight={100}
+        baseTestId="property"
       />
       <Divider />
       {values.component !== ComponentType.TCF_OVERLAY ? (
@@ -223,6 +229,7 @@ export const PrivacyExperienceForm = ({
             }
             getItemLabel={getPrivacyNoticeName}
             draggable
+            baseTestId="privacy-notice"
           />
           <Divider />
         </>
@@ -238,36 +245,51 @@ export const PrivacyExperienceForm = ({
         setValues={(newValues) => setFieldValue("regions", newValues)}
         getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
         draggable
+        baseTestId="location"
       />
-      <ScrollableList
-        label="Languages for this experience"
-        addButtonLabel="Add language"
-        values={values.translations ?? []}
-        setValues={(newValues) => setFieldValue("translations", newValues)}
-        idField="language"
-        canDeleteItem={(item) => !item.is_default}
-        allItems={allLanguages
-          .slice()
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map((lang) => ({
-            language: lang.id as SupportedLanguage,
-            is_default: false,
-          }))}
-        getItemLabel={getTranslationDisplayName}
-        createNewValue={(opt) => ({
-          language: opt.value as SupportedLanguage,
-          is_default: false,
-        })}
-        onRowClick={onSelectTranslation}
-        selectOnAdd
-        draggable
-      />
-      <CustomSwitch
-        name="auto_detect_language"
-        id="auto_detect_language"
-        label="Auto detect language"
-        variant="stacked"
-      />
+      {translationsEnabled ? (
+        <>
+          <ScrollableList
+            label="Languages for this experience"
+            addButtonLabel="Add language"
+            values={values.translations ?? []}
+            setValues={(newValues) => setFieldValue("translations", newValues)}
+            idField="language"
+            canDeleteItem={(item) => !item.is_default}
+            allItems={allLanguages
+              .slice()
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((lang) => ({
+                language: lang.id as SupportedLanguage,
+                is_default: false,
+              }))}
+            getItemLabel={getTranslationDisplayName}
+            createNewValue={(opt) =>
+              onCreateTranslation(opt.value as SupportedLanguage)
+            }
+            onRowClick={onSelectTranslation}
+            selectOnAdd
+            draggable
+            baseTestId="language"
+          />
+          <CustomSwitch
+            name="auto_detect_language"
+            id="auto_detect_language"
+            label="Auto detect language"
+            variant="stacked"
+          />
+        </>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          rightIcon={<ArrowForwardIcon />}
+          onClick={() => onSelectTranslation(values.translations![0])}
+          data-testid="edit-experience-btn"
+        >
+          Edit experience text
+        </Button>
+      )}
     </PrivacyExperienceConfigColumnLayout>
   );
 };

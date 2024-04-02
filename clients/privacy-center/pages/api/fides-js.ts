@@ -164,7 +164,6 @@ export default async function handler(
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       fidesString,
-      fidesPreviewMode: environment.settings.FIDES_PREVIEW_MODE,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
       fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
@@ -172,6 +171,7 @@ export default async function handler(
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
       base64Cookie: environment.settings.BASE_64_COOKIE,
+      fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

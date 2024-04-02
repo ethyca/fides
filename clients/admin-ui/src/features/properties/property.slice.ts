@@ -54,6 +54,13 @@ export const propertiesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Property", "Privacy Experience Configs"],
     }),
+    deleteProperty: builder.mutation<Property, string>({
+      query: (id) => ({
+        url: `plus/property/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Property", "Privacy Experience Configs"],
+    }),
   }),
 });
 
@@ -62,6 +69,7 @@ export const {
   useGetPropertyByIdQuery,
   useCreatePropertyMutation,
   useUpdatePropertyMutation,
+  useDeletePropertyMutation,
 } = propertiesApi;
 
 export const propertySlice = createSlice({

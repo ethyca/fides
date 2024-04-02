@@ -4,11 +4,11 @@ from fideslang.validation import FidesValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.location_regulation_selections import (
     DeprecatedNoticeRegion,
     PrivacyNoticeRegion,
 )
-from fides.api.models.privacy_experience import ExperienceNotices
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,

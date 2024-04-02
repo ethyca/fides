@@ -31,21 +31,17 @@ import {
   selectPageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
+import { OOBTranslationNotice } from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
+import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import {
+  NoticeTranslation,
   NoticeTranslationCreate,
   PrivacyNoticeCreation,
   SupportedLanguage,
 } from "~/types/api";
 
-const TranslationFormBlock = ({
-  index,
-  name,
-}: {
-  index: number;
-  name: string;
-}) => (
-  <Flex direction="column" gap={6}>
-    <Heading size="sm">Edit {name} translation</Heading>
+const NoticeFormFields = ({ index }: { index: number }) => (
+  <>
     <CustomTextInput
       autoFocus={index !== 0}
       name={`translations.${index}.title`}
@@ -57,6 +53,22 @@ const TranslationFormBlock = ({
       label="Privacy notice displayed to the user"
       variant="stacked"
     />
+  </>
+);
+
+const TranslationFormBlock = ({
+  index,
+  name,
+  isOOB,
+}: {
+  index: number;
+  name: string;
+  isOOB?: boolean;
+}) => (
+  <Flex direction="column" gap={6}>
+    <Heading size="sm">Edit {name} translation</Heading>
+    {isOOB ? <OOBTranslationNotice languageName={name} /> : null}
+    <NoticeFormFields index={index} />
   </Flex>
 );
 
@@ -94,12 +106,23 @@ const TranslationTabButton = ({
   </Flex>
 );
 
-const PrivacyNoticeTranslationForm = () => {
+const PrivacyNoticeTranslationForm = ({
+  availableTranslations,
+}: {
+  availableTranslations?: NoticeTranslation[];
+}) => {
   const { values, setFieldValue } = useFormikContext<PrivacyNoticeCreation>();
 
   const [isSelectingLanguage, setIsSelectingLanguage] =
     useState<boolean>(false);
+  const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
   const [tabIndex, setTabIndex] = useState<number>(0);
+
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const translationsEnabled =
+    appConfig?.plus_consent_settings?.enable_translations;
 
   const languagePage = useAppSelector(selectPage);
   const languagePageSize = useAppSelector(selectPageSize);
@@ -114,10 +137,19 @@ const PrivacyNoticeTranslationForm = () => {
         (translation) => translation.language !== lang.id
       )
     )
-    .map((lang) => ({ label: lang.name, value: lang.id }));
+    .map((lang) => ({ label: lang.name, value: lang.id as SupportedLanguage }));
 
-  const handleLanguageSelected = (language: string) => {
-    const newTranslation: NoticeTranslationCreate = {
+  const handleTabSelected = (index: number) => {
+    setTabIndex(index);
+    setTranslationIsOOB(false);
+  };
+
+  const handleCreateLanguage = (language: SupportedLanguage) => {
+    const availableTranslation = availableTranslations?.find(
+      (translation) => translation.language === language
+    );
+    setTranslationIsOOB(!!availableTranslation);
+    const newTranslation = availableTranslation ?? {
       language: language as SupportedLanguage,
       title: "",
       description: "",
@@ -142,11 +174,19 @@ const PrivacyNoticeTranslationForm = () => {
   const getLanguageDisplayName = (lang: SupportedLanguage) =>
     allLanguages.find((language) => language.id === lang)?.name ?? lang;
 
+  if (!translationsEnabled) {
+    return (
+      <FormSection title="Notice text">
+        <NoticeFormFields index={0} />
+      </FormSection>
+    );
+  }
+
   return (
     <FormSection title="Localizations">
       <Tabs
         index={tabIndex}
-        onChange={setTabIndex}
+        onChange={handleTabSelected}
         as={HStack}
         spacing={8}
         align="start"
@@ -183,7 +223,7 @@ const PrivacyNoticeTranslationForm = () => {
                 chakraStyles={SELECT_STYLES}
                 size="sm"
                 options={languageOptions}
-                onChange={(e: any) => handleLanguageSelected(e.value)}
+                onChange={(e: any) => handleCreateLanguage(e.value)}
                 autoFocus
                 classNamePrefix="select-language"
                 menuPlacement="auto"
@@ -213,6 +253,7 @@ const PrivacyNoticeTranslationForm = () => {
                     <TranslationFormBlock
                       index={idx}
                       name={getLanguageDisplayName(translation.language)}
+                      isOOB={translationIsOOB}
                     />
                   </TabPanel>
                 ))}

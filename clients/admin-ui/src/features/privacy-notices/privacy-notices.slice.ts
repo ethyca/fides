@@ -4,6 +4,7 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   LimitedPrivacyNoticeResponseSchema,
+  NoticeTranslation,
   Page_LimitedPrivacyNoticeResponseSchema_,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
@@ -87,6 +88,15 @@ const privacyNoticesApi = baseApi.injectEndpoints({
         ],
       }
     ),
+    getAvailableNoticeTranslations: build.query<
+      Array<NoticeTranslation>,
+      string
+    >({
+      query: (id) => ({
+        url: `privacy-notice/${id}/available_translations`,
+      }),
+      providesTags: () => ["Privacy Notice Translations"],
+    }),
     postPrivacyNotice: build.mutation<
       PrivacyNoticeResponse[],
       PrivacyNoticeCreation
@@ -107,6 +117,7 @@ export const {
   useLimitedPatchPrivacyNoticesMutation,
   useGetPrivacyNoticeByIdQuery,
   useLazyGetPrivacyNoticeByIdQuery,
+  useGetAvailableNoticeTranslationsQuery,
   usePostPrivacyNoticeMutation,
 } = privacyNoticesApi;
 

@@ -5,7 +5,7 @@ on:
     types: [released]
 
 jobs:
-  fidesctl-plus:
+  fidesplus:
     runs-on: ubuntu-latest
     steps:
       - name: Send Repository Dispatch Event
@@ -13,10 +13,10 @@ jobs:
         with:
           client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'
           event-type: new-fides-release
-          repository: ethyca/fidesctl-plus
+          repository: ethyca/fidesplus
           token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
 
-  fidesops-plus:
+  fidesdocs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Repository Dispatch Event
@@ -24,7 +24,7 @@ jobs:
         with:
           client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'
           event-type: new-fides-release
-          repository: ethyca/fidesops-plus
+          repository: ethyca/fidesdocs
           token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
 
   fides-helm:

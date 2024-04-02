@@ -9,11 +9,9 @@ import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGra
 import { useTableInstance } from "~/features/datamap/datamap-table/hooks/";
 import SettingsBar from "~/features/datamap/SettingsBar";
 
-import { useFeatures } from "../common/features";
 import { selectIsGettingStarted, selectIsMapOpen } from "./datamap.slice";
 import DatamapTable from "./datamap-table/DatamapTable";
 import GetStarted from "./GetStarted";
-import GVLDatamapNotice from "./GVLDatamapNotice";
 
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
@@ -69,7 +67,6 @@ const Datamap = () => {
     selectedSystemId,
     resetSelectedSystemId,
   } = useHome();
-  const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading } = useTableInstance();
   if (isLoading) {
     return (
@@ -84,38 +81,35 @@ const Datamap = () => {
   }
 
   return (
-    <>
-      {isTcfEnabled ? <GVLDatamapNotice /> : null}
-      <Flex direction="column" height="100%">
-        <Box marginBottom={3} marginRight={10}>
-          <SettingsBar />
-        </Box>
-        <Flex
-          position="relative"
-          flex={1}
-          direction="row"
-          overflow="auto"
-          borderWidth="1px"
-          borderStyle="solid"
-          borderColor="gray.200"
-        >
-          {isMapOpen ? (
-            <Box flex={1} minWidth="50%" maxWidth="100%">
-              <SpatialDatamap setSelectedSystemId={setSelectedSystemId} />
-            </Box>
-          ) : null}
-          {!isMapOpen ? (
-            <Box flex={1} minWidth="50%" maxWidth="100%">
-              <DatamapTable setSelectedSystemId={setSelectedSystemId} />
-            </Box>
-          ) : null}
-          <DatamapDrawer
-            selectedSystemId={selectedSystemId}
-            resetSelectedSystemId={resetSelectedSystemId}
-          />
-        </Flex>
+    <Flex direction="column" height="100%">
+      <Box marginBottom={3} marginRight={10}>
+        <SettingsBar />
+      </Box>
+      <Flex
+        position="relative"
+        flex={1}
+        direction="row"
+        overflow="auto"
+        borderWidth="1px"
+        borderStyle="solid"
+        borderColor="gray.200"
+      >
+        {isMapOpen ? (
+          <Box flex={1} minWidth="50%" maxWidth="100%">
+            <SpatialDatamap setSelectedSystemId={setSelectedSystemId} />
+          </Box>
+        ) : null}
+        {!isMapOpen ? (
+          <Box flex={1} minWidth="50%" maxWidth="100%">
+            <DatamapTable setSelectedSystemId={setSelectedSystemId} />
+          </Box>
+        ) : null}
+        <DatamapDrawer
+          selectedSystemId={selectedSystemId}
+          resetSelectedSystemId={resetSelectedSystemId}
+        />
       </Flex>
-    </>
+    </Flex>
   );
 };
 

@@ -2,7 +2,7 @@ import {
   ConsentMethod,
   ConsentOptionCreate,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
@@ -18,7 +18,7 @@ import { TcfSavePreferences } from "./tcf/types";
  * Helper function to transform save prefs and call API
  */
 async function savePreferencesApi(
-  options: FidesOptions,
+  options: FidesInitOptions,
   cookie: FidesCookie,
   experience: PrivacyExperience,
   consentMethod: ConsentMethod,
@@ -80,7 +80,7 @@ export const updateConsentPreferences = async ({
   privacyExperienceConfigHistoryId?: string;
   experience: PrivacyExperience;
   consentMethod: ConsentMethod;
-  options: FidesOptions;
+  options: FidesInitOptions;
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
@@ -88,10 +88,6 @@ export const updateConsentPreferences = async ({
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
-  if (options.fidesPreviewMode) {
-    // Shouldn't be hit in preview mode, but just in case, we ensure we never write a Fides Cookie
-    return;
-  }
   // Collect any "extra" details that should be recorded on the cookie & event
   const extraDetails: FidesEventExtraDetails = { consentMethod };
 
