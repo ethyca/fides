@@ -54,6 +54,7 @@ export interface PrivacyCenterSettings {
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
   FIDES_JS_BASE_URL: string; // A base URL to a directory of fides.js scripts
+  CUSTOM_OPTIONS_PATH: string | null; // (optional) A custom path to fetch FidesOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
   ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
@@ -84,6 +85,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_STRING"
   | "IS_FORCED_TCF"
   | "FIDES_JS_BASE_URL"
+  | "CUSTOM_OPTIONS_PATH"
   | "PREVENT_DISMISSAL"
   | "ALLOW_HTML_DESCRIPTION"
   | "BASE_64_COOKIE"
@@ -352,6 +354,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_JS_BASE_URL:
         process.env.FIDES_PRIVACY_CENTER__FIDES_JS_BASE_URL ||
         "http://localhost:3000",
+      CUSTOM_OPTIONS_PATH: process.env.FIDES_PRIVACY_CENTER__CUSTOM_OPTIONS_PATH || null,
       PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
         ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
         : false,
@@ -393,6 +396,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_STRING: settings.FIDES_STRING,
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
       FIDES_JS_BASE_URL: settings.FIDES_JS_BASE_URL,
+      CUSTOM_OPTIONS_PATH: settings.CUSTOM_OPTIONS_PATH,
       PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
       ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
       BASE_64_COOKIE: settings.BASE_64_COOKIE,
