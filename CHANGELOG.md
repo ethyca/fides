@@ -18,7 +18,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.33.0...main)
 
 ### Fixed
+
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
+- Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
 
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
 
@@ -40,6 +42,7 @@ The types of changes are:
 - Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
 - Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
 - Show a "systems displayed" count on datamap map & table reporting page [#4752](https://github.com/ethyca/fides/pull/4752)
+- Change default Canada Privacy Experience Config in migration to reference generic `ca` region [#4762](https://github.com/ethyca/fides/pull/4762) 
 
 ### Fixed
 
