@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import EmailStr, Extra, StrictInt, StrictStr, validator
+from pydantic import EmailStr, Extra, Field, StrictInt, StrictStr, validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
@@ -34,11 +34,11 @@ class Identity(IdentityBase):
     """Some PII grouping pertaining to a human"""
 
     # These are repeated so we can continue to forbid extra fields
-    phone_number: Optional[PhoneNumber] = None
-    email: Optional[EmailStr] = None
-    ga_client_id: Optional[str] = None
-    ljt_readerID: Optional[str] = None
-    fides_user_device_id: Optional[str] = None
+    phone_number: Optional[PhoneNumber] = Field(None, title="Phone number")
+    email: Optional[EmailStr] = Field(None, title="Email")
+    ga_client_id: Optional[str] = Field(None, title="GA client ID")
+    ljt_readerID: Optional[str] = Field(None, title="LJT reader ID")
+    fides_user_device_id: Optional[str] = Field(None, title="Fides user device ID")
 
     class Config:
         """Allows extra fields to be provided but they must have a value of type LabeledIdentity."""
@@ -80,16 +80,25 @@ class Identity(IdentityBase):
                 d[key] = value
         return d
 
-    def labeled_dict(self) -> Dict[str, Any]:
-        """
-        Returns a dictionary that preserves the labels for all custom/labeled identities.
-        """
-        d = super().dict()
+    def labeled_dict(
+        self, include_default_labels: Optional[bool] = False
+    ) -> Dict[str, Any]:
+        """Returns a dictionary that preserves the labels for all custom/labeled identities."""
+        d = {}
         for key, value in self.__dict__.items():
-            if isinstance(value, LabeledIdentity):
-                d[key] = value.dict()
+            if key in self.__fields__:
+                if include_default_labels:
+                    d[key] = {
+                        "label": self.__fields__[key].field_info.title,
+                        "value": value,
+                    }
+                else:
+                    d[key] = value
             else:
-                d[key] = value
+                if isinstance(value, LabeledIdentity):
+                    d[key] = value.dict()
+                else:
+                    d[key] = value
         return d
 
 

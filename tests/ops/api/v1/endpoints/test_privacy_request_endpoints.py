@@ -920,9 +920,10 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
-        assert (
-            resp["items"][0]["identity"]
-            == succeeded_privacy_request.get_persisted_identity()
+        assert resp["items"][0][
+            "identity"
+        ] == succeeded_privacy_request.get_persisted_identity().labeled_dict(
+            include_default_labels=True
         )
 
         assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key

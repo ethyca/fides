@@ -392,12 +392,12 @@ class PrivacyRequest(
         if isinstance(identity, dict):
             identity = Identity(**identity)
 
-        identity_dict = identity.dict()
+        identity_dict = identity.labeled_dict()
         for key, value in identity_dict.items():
             if value is not None:
-                if isinstance(value, LabeledIdentity):
-                    value = value.value
-                    label = value.label
+                if isinstance(value, dict):
+                    label = value["label"]
+                    value = value["value"]
                 else:
                     label = None
 

@@ -65,3 +65,17 @@ class TestIdentitySchema:
             "fides_user_device_id": None,
             "customer_id": {"label": "Customer ID", "value": "123"},
         }
+
+    def test_identity_labeled_dict_include_default_labels(self):
+        identity = Identity(
+            email="user@example.com",
+            customer_id={"label": "Customer ID", "value": "123"},
+        )
+        assert identity.labeled_dict(include_default_labels=True) == {
+            "phone_number": {"label": "Phone number", "value": None},
+            "email": {"label": "Email", "value": "user@example.com"},
+            "ga_client_id": {"label": "GA client ID", "value": None},
+            "ljt_readerID": {"label": "LJT reader ID", "value": None},
+            "fides_user_device_id": {"label": "Fides user device ID", "value": None},
+            "customer_id": {"label": "Customer ID", "value": "123"},
+        }
