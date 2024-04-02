@@ -23,7 +23,7 @@ saas_config:
 
   external_references:
     - name: adyen_user_id
-      label: pspReference
+      label: PSP reference
       description: The dataset reference to the PSP reference of the original payment authorization which maps to the desired user.
 
   client_config:
