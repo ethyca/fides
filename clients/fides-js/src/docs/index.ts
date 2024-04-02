@@ -41,13 +41,13 @@
  * Therefore, all the types in src/docs should be considered part of FidesJS'
  * *official* developer API, so treat them with care!
  *
- * You can also use the tag to intentionally leave specific
- * properties/comments/etc. undocumented; this can be useful for 
+ * You can also use the "internal" tag to intentionally leave specific
+ * properties/comments/etc. undocumented; this can be useful for internal-only
  * types for developers contributing directly to FidesJS, but that shouldn't be
- * included in the generic developer documentation. This comment itself is a
- * good example of that!
+ * included in the generic developer documentation.
  */
 
+// Export all the types from files in src/docs directory
 export * from "./fides";
 export * from "./fides-event";
 export * from "./fides-options";
