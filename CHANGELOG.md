@@ -30,6 +30,7 @@ The types of changes are:
 - Added language switching support to the FidesJS UI based on configured translations [#4737](https://github.com/ethyca/fides/pull/4737)
 - Added ability to override some experience language and primary color [#4743](https://github.com/ethyca/fides/pull/4743)
 - Generate FidesJS SDK Reference Docs from tsdoc comments [#4736](https://github.com/ethyca/fides/pull/4736)
+- Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
 
 ### Changed
 
