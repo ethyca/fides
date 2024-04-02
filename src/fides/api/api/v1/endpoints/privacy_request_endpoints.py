@@ -109,8 +109,8 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.task.create_tasks import log_task_queued
-from fides.api.task.execute_tasks import (
+from fides.api.task.create_request_tasks import log_task_queued
+from fides.api.task.execute_request_tasks import (
     run_access_node,
     run_consent_node,
     run_erasure_node,

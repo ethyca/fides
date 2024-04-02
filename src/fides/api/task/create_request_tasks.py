@@ -7,6 +7,7 @@ from loguru import logger
 from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
 
+from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -18,7 +19,7 @@ from fides.api.graph.traversal import (
     ARTIFICIAL_NODES,
     Traversal,
     TraversalNode,
-    _format_traversal_details_for_save,
+    format_traversal_details_for_save,
 )
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
@@ -31,7 +32,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
-from fides.api.task.execute_tasks import (
+from fides.api.task.execute_request_tasks import (
     run_access_node,
     run_consent_node,
     run_erasure_node,
@@ -94,6 +95,8 @@ def _evaluate_erasure_dependencies(
             end_nodes.remove(collection)
     # this task will execute after the collections in `erase_after` or
     # execute at the beginning by linking it to the root node
+    if len(erase_after):
+        erase_after.add(ROOT_COLLECTION_ADDRESS)
     return erase_after if len(erase_after) else {ROOT_COLLECTION_ADDRESS}
 
 
@@ -129,7 +132,9 @@ def build_erasure_networkx_digraph(
     except NetworkXNoCycle:
         logger.info("No cycles found as expected")
     else:
-        raise Exception("Cycles found in erasure DAG")
+        raise TraversalError(
+            f"The values for the `erase_after` fields created a cycle in the DAG."
+        )
 
     return networkx_graph
 
@@ -206,7 +211,7 @@ def base_task_data(
         if node == ROOT_COLLECTION_ADDRESS
         else ExecutionLogStatus.pending,
         "collection": collection_representation,
-        "traversal_details": _format_traversal_details_for_save(node, traversal_nodes),
+        "traversal_details": format_traversal_details_for_save(node, traversal_nodes),
     }
 
 
@@ -317,17 +322,17 @@ def _get_data_for_erasures(
 
         # Select upstream inputs of this node for things like email connectors, which
         # don't retrieve data directly
-        input_tasks: Query = session.query(RequestTask).filter(
-            RequestTask.privacy_request_id == privacy_request.id,
-            RequestTask.action_type == ActionType.access,
-            RequestTask.collection_address.in_(
-                corresponding_access_task.upstream_tasks or []
-            ),
-            RequestTask.status == ExecutionLogStatus.complete,
-        )
         traversal_details = TraversalDetails.parse_obj(
             request_task.traversal_details or {}
         )
+
+        input_tasks: Query = session.query(RequestTask).filter(
+            RequestTask.privacy_request_id == privacy_request.id,
+            RequestTask.action_type == ActionType.access,
+            RequestTask.collection_address.in_(traversal_details.input_keys or []),
+            RequestTask.status == ExecutionLogStatus.complete,
+        )
+
         input_keys = [
             CollectionAddress.from_string(input_key)
             for input_key in traversal_details.input_keys
@@ -460,18 +465,23 @@ def run_access_request(
         end_nodes: List[CollectionAddress] = traversal.traverse(
             traversal_nodes, collect_tasks_fn
         )
-        ready_tasks = persist_new_access_request_tasks(
+        # Save Access Request Tasks to the database
+        ready_tasks: List[RequestTask] = persist_new_access_request_tasks(
             session, privacy_request, traversal, traversal_nodes, end_nodes, graph
         )
         if (
             policy.get_rules_for_action(action_type=ActionType.erasure)
             and not privacy_request.erasure_tasks.count()
         ):
+            # If applicable, go ahead and save Erasure Request Tasks to the Database.
+            # These erasure tasks aren't ready to run until the access graph is completed
+            # in full, but this makes sure the nodes in the graphs match.
             erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
             persist_initial_erasure_request_tasks(
                 session, privacy_request, traversal_nodes, erasure_end_nodes, graph
             )
 
+        # cache a map of collections -> data uses for the output package of access requests
         privacy_request.cache_data_use_map(
             format_data_use_map_for_caching(
                 {
@@ -556,7 +566,7 @@ def get_existing_ready_tasks(
     of creating new ones
     """
     ready: List[RequestTask] = []
-    request_tasks = privacy_request.get_tasks_by_action(action_type)
+    request_tasks: Query = privacy_request.get_tasks_by_action(action_type)
     if request_tasks.count():
         incomplete_tasks: Query = request_tasks.filter(
             RequestTask.status.notin_(completed_statuses)

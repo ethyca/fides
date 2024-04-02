@@ -1,0 +1,46 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: SaaS Erasure Order Dataset
+    description: A sample dataset for testing
+    collections:
+      - name: orders
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+              primary_key: True
+      - name: refunds
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+              primary_key: True
+      - name: labels
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+              primary_key: True
+      - name: orders_to_refunds
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+              primary_key: True
+      - name: refunds_to_orders
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+              primary_key: True
+      - name: products
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer

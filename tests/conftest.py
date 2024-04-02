@@ -45,7 +45,7 @@ from fides.api.oauth.roles import (
     VIEWER_AND_APPROVER,
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
-from fides.api.task.create_tasks import run_access_request
+from fides.api.task.create_request_tasks import run_access_request
 from fides.api.task.deprecated_graph_task import run_access_request_deprecated
 from fides.api.task.graph_runners import access_runner
 from fides.api.util.cache import get_cache

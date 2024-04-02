@@ -18,7 +18,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import (
     Traversal,
     TraversalNode,
-    _format_traversal_details_for_save,
+    format_traversal_details_for_save,
 )
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
@@ -131,7 +131,7 @@ def run_access_request_deprecated(
                 dataset_name=tn.node.address.dataset,
                 collection_name=tn.node.address.collection,
                 collection=collection_data,
-                traversal_details=_format_traversal_details_for_save(
+                traversal_details=format_traversal_details_for_save(
                     tn.node.address, {tn.node.address: tn}
                 ),
             )
@@ -315,7 +315,7 @@ def run_consent_request_deprecated(  # pylint: disable = too-many-arguments
             dataset_name=traversal_node.node.address.dataset,
             collection_name=traversal_node.node.address.collection,
             collection=collection_data,
-            traversal_details=_format_traversal_details_for_save(
+            traversal_details=format_traversal_details_for_save(
                 traversal_node.node.address,
                 {traversal_node.node.address: traversal_node},
             ),

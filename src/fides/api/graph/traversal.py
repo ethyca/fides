@@ -163,7 +163,7 @@ class TraversalNode(Contextualizable):
             dataset_name=self.node.address.dataset,
             collection_name=self.node.address.collection,
             collection=collection_data,
-            traversal_details=_format_traversal_details_for_save(
+            traversal_details=format_traversal_details_for_save(
                 self.node.address, {self.node.address: self}
             ),
         )
@@ -389,7 +389,7 @@ class Traversal:
         return end_nodes
 
 
-def _format_traversal_details_for_save(
+def format_traversal_details_for_save(
     node: CollectionAddress, env: Dict[CollectionAddress, TraversalNode]
 ) -> Dict:
     """Format selected TraversalNode details in a way they can be saved in the database.
