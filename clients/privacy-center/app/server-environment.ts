@@ -354,7 +354,8 @@ export const loadPrivacyCenterEnvironment =
       FIDES_JS_BASE_URL:
         process.env.FIDES_PRIVACY_CENTER__FIDES_JS_BASE_URL ||
         "http://localhost:3000",
-      CUSTOM_OPTIONS_PATH: process.env.FIDES_PRIVACY_CENTER__CUSTOM_OPTIONS_PATH || null,
+      CUSTOM_OPTIONS_PATH:
+        process.env.FIDES_PRIVACY_CENTER__CUSTOM_OPTIONS_PATH || null,
       PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
         ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
         : false,
