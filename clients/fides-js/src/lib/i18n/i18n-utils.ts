@@ -629,7 +629,7 @@ export function setupI18n(): I18n {
 export const localizeModalLinkText = (
   disableLocalization: boolean,
   i18n: I18n,
-  effectiveExperience: Partial<PrivacyExperience>
+  effectiveExperience?: Partial<PrivacyExperience>
 ): string => {
   let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
   if (!disableLocalization) {
