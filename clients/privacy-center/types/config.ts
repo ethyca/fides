@@ -1,10 +1,19 @@
 import { ConsentValue } from "fides-js";
 
-export type IdentityInputs = {
-  name?: string;
+type DefaultIdentities = {
   email?: string;
   phone?: string;
 };
+
+type CustomIdentity = {
+  label: string;
+};
+
+type CustomIdentities = {
+  [key: string]: CustomIdentity;
+};
+
+export type IdentityInputs = DefaultIdentities & CustomIdentities;
 
 export type CustomPrivacyRequestFields = Record<
   string,
