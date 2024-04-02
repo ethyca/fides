@@ -176,9 +176,9 @@ rollupOptions.push({
   plugins: [dts()],
   output: [
     {
-      file: `dist/fides-types.d.ts`
+      file: `dist/fides-types.d.ts`,
     },
-  ]
+  ],
 });
 
 export default rollupOptions;
