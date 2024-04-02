@@ -18,7 +18,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.33.0...main)
 
 ### Fixed
+
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
+- Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
 
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
 
