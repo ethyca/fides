@@ -55,6 +55,8 @@ dataset:
               read_only: True
           - name: default_source
             data_categories: [system.operations]
+            fidesops_meta:
+              read_only: True
           - name: delinquent
             data_categories: [system.operations]
             fidesops_meta:

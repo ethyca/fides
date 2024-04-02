@@ -244,9 +244,6 @@ saas_config:
         delete:
           method: DELETE
           path: /v1/customers/<customer_id>/sources/<card_id>
-          headers:
-            - name: Content-Type
-              value: application/x-www-form-urlencoded
           param_values:
             - name: customer_id
               references:

@@ -1200,8 +1200,8 @@ async def test_stripe_erasure_request_task(
         headers=headers,
         params={"object": "card"},
     )
-    card = response.json()["data"][0]
-    assert card["name"] == "MASKED"
+    cards = response.json()["data"]
+    assert cards == []
 
     # payment method
     response = requests.get(
