@@ -94,11 +94,8 @@ class TestCreateDrpPrivacyRequest:
             identity_attribute="identity",
         )
         assert cache.get(identity_key) == encoded_identity
-        fidesops_identity_key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="email",
-        )
-        assert pr.get_cached_identity_data()[fidesops_identity_key] == identity["email"]
+        assert pr.get_cached_identity_data()["email"] == identity["email"]
+
         persisted_identity = pr.get_persisted_identity()
         assert persisted_identity.email == TEST_EMAIL
         assert persisted_identity.phone_number == TEST_PHONE_NUMBER
