@@ -1,6 +1,5 @@
 import {
   ComponentType,
-  EmptyExperience,
   ExperienceConfig,
   ExperienceConfigTranslation,
   FidesExperienceTranslationOverrides,
@@ -630,7 +629,7 @@ export function setupI18n(): I18n {
 export const localizeModalLinkText = (
   disableLocalization: boolean,
   i18n: I18n,
-  effectiveExperience: PrivacyExperience | EmptyExperience | undefined
+  effectiveExperience: Partial<PrivacyExperience>
 ): string => {
   let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
   if (!disableLocalization) {
@@ -638,13 +637,13 @@ export const localizeModalLinkText = (
       modalLinkText = i18n.t("exp.modal_link_label");
     }
   } else {
-    const defaultTranslation = i18n.getDefaultLocale();
-    const defaultLocaleLabel =
+    const defaultLocale = i18n.getDefaultLocale();
+    const defaultTranslation =
       effectiveExperience?.experience_config?.translations.find(
-        (t) => t.language === defaultTranslation
+        (t) => t.language === defaultLocale
       );
-    if (defaultLocaleLabel?.modal_link_label) {
-      modalLinkText = defaultLocaleLabel.modal_link_label;
+    if (defaultTranslation?.modal_link_label) {
+      modalLinkText = defaultTranslation.modal_link_label;
     }
   }
   return modalLinkText;
