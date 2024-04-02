@@ -18,7 +18,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.33.0...main)
 
 ### Fixed
+
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
+- Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
 
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
 
@@ -30,6 +32,7 @@ The types of changes are:
 - Added language switching support to the FidesJS UI based on configured translations [#4737](https://github.com/ethyca/fides/pull/4737)
 - Added ability to override some experience language and primary color [#4743](https://github.com/ethyca/fides/pull/4743)
 - Generate FidesJS SDK Reference Docs from tsdoc comments [#4736](https://github.com/ethyca/fides/pull/4736)
+- Added erasure support for Iterable [#4695](https://github.com/ethyca/fides/pull/4695)
 
 ### Changed
 
