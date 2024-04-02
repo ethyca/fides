@@ -673,9 +673,7 @@ dataset:
                   - name: cvc_check
                     data_categories: [system.operations]
               - name: country
-                data_categories: [user.contact.address.country]
-                fidesops_meta:
-                  data_type: string
+                data_categories: [system.operations]
               - name: exp_month
                 data_categories: [system.operations]
               - name: exp_year
