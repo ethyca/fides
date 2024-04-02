@@ -1,5 +1,6 @@
 import {
   ComponentType,
+  EmptyExperience,
   ExperienceConfig,
   ExperienceConfigTranslation,
   FidesExperienceTranslationOverrides,
@@ -16,7 +17,11 @@ import type {
   MessageDescriptor,
   Language,
 } from "./index";
-import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_REGEX,
+  DEFAULT_MODAL_LINK_LABEL,
+} from "./i18n-constants";
 import { STATIC_MESSAGES, LOCALE_LANGUAGE_MAP } from "./locales";
 import { GVLTranslations } from "../tcf/types";
 
@@ -617,3 +622,30 @@ export function setupI18n(): I18n {
     },
   };
 }
+
+/**
+ * Determines the appropriate modal link text based on
+ * localization settings and language translations.
+ */
+export const localizeModalLinkText = (
+  disableLocalization: boolean,
+  i18n: I18n,
+  effectiveExperience: PrivacyExperience | EmptyExperience | undefined
+): string => {
+  let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
+  if (!disableLocalization) {
+    if (i18n.t("exp.modal_link_label") !== "exp.modal_link_label") {
+      modalLinkText = i18n.t("exp.modal_link_label");
+    }
+  } else {
+    const defaultTranslation = i18n.getDefaultLocale();
+    const defaultLocaleLabel =
+      effectiveExperience?.experience_config?.translations.find(
+        (t) => t.language === defaultTranslation
+      );
+    if (defaultLocaleLabel?.modal_link_label) {
+      modalLinkText = defaultLocaleLabel.modal_link_label;
+    }
+  }
+  return modalLinkText;
+};

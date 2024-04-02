@@ -4,6 +4,7 @@ import {
   DEFAULT_MODAL_LINK_LABEL,
   I18n,
   initializeI18n,
+  localizeModalLinkText,
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
   setupI18n,
@@ -434,24 +435,12 @@ export const initialize = async ({
         );
 
         // Provide the modal link label function to the client based on the current locale unless specified via props.
-        getModalLinkLabel = (props) => {
-          let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
-          if (!props?.disableLocalization) {
-            if (i18n.t("exp.modal_link_label") !== "exp.modal_link_label") {
-              modalLinkText = i18n.t("exp.modal_link_label");
-            }
-          } else {
-            const defaultTranslation = i18n.getDefaultLocale();
-            const defaultLocaleLabel =
-              effectiveExperience?.experience_config?.translations.find(
-                (t) => t.language === defaultTranslation
-              );
-            if (defaultLocaleLabel?.modal_link_label) {
-              modalLinkText = defaultLocaleLabel.modal_link_label;
-            }
-          }
-          return modalLinkText;
-        };
+        getModalLinkLabel = (props) =>
+          localizeModalLinkText(
+            !!props?.disableLocalization,
+            i18n,
+            effectiveExperience
+          );
 
         // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({
