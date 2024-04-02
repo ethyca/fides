@@ -21,7 +21,6 @@ export const ConsentButtons = ({
   isMobile,
   includePrivacyPolicy,
   saveOnly = false,
-  includeLanguageSelector,
   options,
 }: {
   i18n: I18n;
@@ -33,10 +32,9 @@ export const ConsentButtons = ({
   options: FidesInitOptions;
   includePrivacyPolicy?: boolean;
   saveOnly?: boolean;
-  includeLanguageSelector?: boolean;
 }) => (
   <div id="fides-button-group" tabIndex={-1}>
-    {includeLanguageSelector && i18n.availableLanguages?.length > 1 && (
+    {i18n.availableLanguages?.length > 1 && (
       <LanguageSelector i18n={i18n} options={options} />
     )}
     {!!onManagePreferencesClick && (
@@ -164,7 +162,6 @@ export const NoticeConsentButtons = ({
       isMobile={isMobile}
       includePrivacyPolicy={!isInModal}
       saveOnly={saveOnly}
-      includeLanguageSelector={!isInModal}
       options={options}
     />
   );

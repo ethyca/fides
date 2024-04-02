@@ -18,7 +18,6 @@ interface TcfConsentButtonProps {
   firstButton?: VNode;
   isMobile: boolean;
   includePrivacyPolicy?: boolean;
-  includeLanguageSelector?: boolean;
 }
 
 const getAllIds = (modelList: TcfModels) => {
@@ -36,7 +35,6 @@ export const TcfConsentButtons = ({
   firstButton,
   isMobile,
   includePrivacyPolicy,
-  includeLanguageSelector,
   options,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
@@ -83,7 +81,6 @@ export const TcfConsentButtons = ({
       firstButton={firstButton}
       isMobile={isMobile}
       includePrivacyPolicy={includePrivacyPolicy}
-      includeLanguageSelector={includeLanguageSelector}
       options={options}
     />
   );

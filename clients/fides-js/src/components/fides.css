@@ -1070,6 +1070,11 @@ div.fides-i18n-pseudo-button {
 .fides-i18n-menu {
   position: relative;
 }
+.fides-modal-container .fides-i18n-menu {
+  position: absolute;
+  bottom: var(--fides-overlay-padding);
+  left: var(--fides-overlay-padding);
+}
 
 div.fides-i18n-pseudo-button {
   /* looks like a button, but for a11y reasons don't actually make it a button (not focusable) */

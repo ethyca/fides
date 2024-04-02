@@ -363,7 +363,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 }}
                 isMobile={isMobile}
                 includePrivacyPolicy
-                includeLanguageSelector
                 options={options}
               />
             )}
