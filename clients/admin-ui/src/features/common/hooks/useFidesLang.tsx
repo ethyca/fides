@@ -15,7 +15,7 @@ import {
 } from "~/features/taxonomy";
 
 const useFidesLang = () => {
-  const { dataUses, dataCategories, dataSubjects } = fetchData();
+  const { dataUses, dataCategories, dataSubjects, isLoading } = useData();
 
   const getTopLevelKey = (fidesLangKey: string) => {
     return fidesLangKey.split(".")[0];
@@ -100,18 +100,22 @@ const useFidesLang = () => {
     getDataSubjects,
     getDataSubjectByKey,
     getDataSubjectDisplayName,
+    isLoading,
   };
 };
 
-const fetchData = () => {
-  useGetAllDataUsesQuery();
+const useData = () => {
+  const { isLoading: isLoadingDataUses } = useGetAllDataUsesQuery();
   const dataUses = useAppSelector(selectDataUses);
-  useGetAllDataSubjectsQuery();
-  const dataSubjects = useAppSelector(selectDataSubjects);
-  useGetAllDataCategoriesQuery();
+  const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
   const dataCategories = useAppSelector(selectDataCategories);
+  const { isLoading: isLoadingDataSubjects } = useGetAllDataSubjectsQuery();
+  const dataSubjects = useAppSelector(selectDataSubjects);
 
-  return { dataUses, dataSubjects, dataCategories };
+  const isLoading =
+    isLoadingDataUses || isLoadingDataCategories || isLoadingDataSubjects;
+
+  return { dataUses, dataSubjects, dataCategories, isLoading };
 };
 
 export default useFidesLang;
