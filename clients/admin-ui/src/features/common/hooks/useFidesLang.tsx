@@ -17,12 +17,16 @@ import {
 const useFidesLang = () => {
   const { dataUses, dataCategories, dataSubjects } = fetchData();
 
-  /* 
-    Data Generic: used for Data Uses, Data Categories and Data Subjects 
-  */
   const getTopLevelKey = (fidesLangKey: string) => {
     return fidesLangKey.split(".")[0];
   };
+
+  /**
+   * getDataDisplayName
+   * Used to convert a fideslang key for Data Use or Data Category into
+   * a human-readable name with hierarchy. eg. functional.storage -> "Functional: Local Data Storage"
+   * Data subjects has their own simpler function (getDataSubjectDisplayName) below.
+   */
   const getDataDisplayName = (
     fidesLangKey: string,
     getDataFunction: (fidesLangKey: string) =>
@@ -31,7 +35,7 @@ const useFidesLang = () => {
           name?: string;
         }
       | undefined
-  ) => {
+  ): string | ReactNode => {
     const data = getDataFunction(fidesLangKey);
     if (!data) {
       // Fallback to return key without changes
