@@ -50,6 +50,8 @@
   --fides-overlay-badge-border-radius: 4px;
   /* Select */
   --fides-overlay-select-border-color: #e2e8f0;
+  /* Language Button */
+  --fides-overlay-language-button-border-radius: 4px;
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
@@ -64,6 +66,7 @@
   --fides-overlay-padding: 24px;
   --fides-overlay-button-border-radius: 6px;
   --fides-overlay-button-padding: 8px 16px;
+  --fides-overlay-link-padding: 4px 3px;
   --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
@@ -479,6 +482,14 @@ div#fides-banner-inner .fides-privacy-policy {
   margin-bottom: var(--fides-overlay-padding);
   color: var(--fides-overlay-primary-color);
   font-family: var(--fides-overlay-font-family);
+}
+
+div#fides-banner-inner .fides-privacy-policy,
+button.fides-banner-button.fides-manage-preferences-button,
+div.fides-i18n-pseudo-button {
+  margin: 0;
+  line-height: 1;
+  padding: var(--fides-overlay-link-padding);
 }
 
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
@@ -1063,7 +1074,13 @@ div#fides-banner-inner .fides-privacy-policy {
 div.fides-i18n-pseudo-button {
   /* looks like a button, but for a11y reasons don't actually make it a button (not focusable) */
   cursor: pointer;
-  height: 1.5rem;
+  height: var(--fides-overlay-font-size-body);
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
 }
 
 .fides-i18n-popover {
@@ -1076,13 +1093,21 @@ div.fides-i18n-pseudo-button {
   flex-direction: column;
   gap: 1px;
   max-height: 7rem;
-  transition: height 0.2s;
+  transition: height 0.5s;
 }
 @media screen and (max-width: 768px) {
   .fides-i18n-popover {
     bottom: auto;
     top: 100%;
   }
+}
+
+.fides-i18n-menu:hover .fides-i18n-pseudo-button {
+  background-color: var(--fides-overlay-hover-color);
+  border-radius: var(--fides-overlay-language-button-border-radius);
+}
+.fides-i18n-menu:hover .fides-i18n-pseudo-button .fides-i18n-caret {
+  transform: rotate(180deg);
 }
 
 .fides-i18n-menu:hover .fides-i18n-popover,
