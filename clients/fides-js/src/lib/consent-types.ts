@@ -418,6 +418,7 @@ export type ExperienceConfig = {
   dismissable?: boolean;
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
+  modal_link_label?: string;
 
   /**
    * List of regions that apply to this ExperienceConfig.
@@ -519,6 +520,7 @@ export type ExperienceConfigTranslation = {
   banner_description?: string;
   description?: string;
   privacy_experience_config_history_id: string;
+  modal_link_label?: string;
 };
 
 export type Cookies = {
