@@ -2,8 +2,9 @@
  * Defines the list of FidesEvent names. See {@link FidesEvent} for details on each!
  *
  * NOTE: We mark this type @private to exclude it from the generated SDK
- * documentation, since it's mostly just noise - the list of events on {@link
- * FidesEvent} provides a good reference.
+ * documentation, since it's mostly just noise there - the list of events on
+ * {@link FidesEvent} provides a good reference. But when coding, it's still
+ * useful to have this union type around!
  * 
  * @private
  */
