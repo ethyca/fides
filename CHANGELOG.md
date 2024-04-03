@@ -21,6 +21,9 @@ The types of changes are:
 - Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
 - Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
 
+### Changed
+- Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
+
 ### Fixed
 
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
