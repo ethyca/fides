@@ -34,7 +34,7 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.cryptography.cryptographic_util import hash_with_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
@@ -60,9 +60,14 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
-from fides.api.schemas.redis_cache import Identity, IdentityBase
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestFieldValue,
+    Identity,
+    IdentityBase,
+)
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
+    CustomJSONEncoder,
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
@@ -76,6 +81,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
+from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.config import CONFIG
 
@@ -181,7 +187,9 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     )
 
 
-class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
+class PrivacyRequest(
+    IdentityVerificationMixin, Contextualizable, Base
+):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
@@ -361,7 +369,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 if item is not None:
                     cache.set_with_autoexpire(
                         get_custom_privacy_request_field_cache_key(self.id, key),
-                        item.value,
+                        json.dumps(item.value, cls=CustomJSONEncoder),
                     )
         else:
             logger.info(
@@ -530,7 +538,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         prefix = f"id-{self.id}-custom-privacy-request-field-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
+        result = {}
+        for key in keys:
+            value = cache.get(key)
+            if value:
+                result[key.split("-")[-1]] = json.loads(value)
+        return result
 
     def get_results(self) -> Dict[str, Any]:
         """Retrieves all cached identity data associated with this Privacy Request"""
@@ -950,6 +963,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             db=db, data={"message_sent": False, "privacy_request_id": self.id}
         )
 
+    def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+        return {LoggerContextKeys.privacy_request_id: self.id}
+
 
 class PrivacyRequestError(Base):
     """The DB ORM model to track PrivacyRequests error message status."""
@@ -1105,6 +1121,10 @@ class CustomPrivacyRequestField(Base):
         PrivacyRequest,
         backref="custom_fields",
     )
+
+    consent_request_id = Column(String, ForeignKey("consentrequest.id"))
+    consent_request = relationship("ConsentRequest", back_populates="custom_fields")
+
     field_name = Column(
         String,
         index=False,
@@ -1136,16 +1156,23 @@ class CustomPrivacyRequestField(Base):
     @classmethod
     def hash_value(
         cls,
-        value: str,
+        value: CustomPrivacyRequestFieldValue,
         encoding: str = "UTF-8",
-    ) -> str:
-        """Utility function to hash the value with a generated salt"""
-        salt = generate_salt()
-        hashed_value = hash_with_salt(
-            value.encode(encoding),
-            salt.encode(encoding),
-        )
-        return hashed_value
+    ) -> Union[str, List[str]]:
+        """Utility function to hash the value(s) with a generated salt"""
+
+        def hash_single_value(value: Union[str, int]) -> str:
+            SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+            value_str = str(value)
+            hashed_value = hash_with_salt(
+                value_str.encode(encoding),
+                SALT.encode(encoding),
+            )
+            return hashed_value
+
+        if isinstance(value, list):
+            return [hash_single_value(item) for item in value]
+        return hash_single_value(value)
 
 
 class Consent(Base):
@@ -1190,6 +1217,10 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         back_populates="consent_request",
     )
 
+    custom_fields = relationship(
+        CustomPrivacyRequestField, back_populates="consent_request"
+    )
+
     preferences = Column(
         MutableList.as_mutable(JSONB),
         nullable=True,
@@ -1222,6 +1253,45 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         self._verify_identity(provided_code=provided_code)
         self.identity_verified_at = datetime.utcnow()
         self.save(db)
+
+    def persist_custom_privacy_request_fields(
+        self,
+        db: Session,
+        custom_privacy_request_fields: Optional[
+            Dict[str, CustomPrivacyRequestFieldSchema]
+        ],
+    ) -> None:
+        if not custom_privacy_request_fields:
+            return
+
+        if CONFIG.execution.allow_custom_privacy_request_field_collection:
+            for key, item in custom_privacy_request_fields.items():
+                if item.value:
+                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
+                    CustomPrivacyRequestField.create(
+                        db=db,
+                        data={
+                            "consent_request_id": self.id,
+                            "field_name": key,
+                            "field_label": item.label,
+                            "encrypted_value": {"value": item.value},
+                            "hashed_value": hashed_value,
+                        },
+                    )
+        else:
+            logger.info(
+                "Custom fields provided in consent request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
+                self.id,
+            )
+
+    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
+        return {
+            field.field_name: {
+                "label": field.field_label,
+                "value": field.encrypted_value["value"],
+            }
+            for field in self.custom_fields  # type: ignore[attr-defined]
+        }
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

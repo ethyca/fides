@@ -20,15 +20,6 @@ CONSENT_REQUEST_PREFERENCES_WITH_ID = (
 
 CONSENT_REQUEST_VERIFY = "/consent-request/{consent_request_id}/verify"
 
-# Privacy Preference URLs
-CONSENT_REQUEST_NOTICES_SERVED = "/consent-request/{consent_request_id}/notices-served"
-NOTICES_SERVED = "/notices-served"
-
-# Reporting endpoints - have records for *all* users
-HISTORICAL_PRIVACY_PREFERENCES_REPORT = "/historical-privacy-preferences"
-CURRENT_PRIVACY_PREFERENCES_REPORT = "/current-privacy-preferences"
-
-
 # Oauth Client URLs
 TOKEN = "/oauth/token"
 CLIENT = "/oauth/client"
@@ -75,16 +66,6 @@ MESSAGING_TEST = "/messaging/config/test"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
-# Privacy Experience Config URLs
-EXPERIENCE_CONFIG = "/experience-config"
-EXPERIENCE_CONFIG_DETAIL = "/experience-config/{experience_config_id}"
-
-
-# Privacy Notice URLs
-PRIVACY_NOTICE = "/privacy-notice"
-PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
-PRIVACY_NOTICE_BY_DATA_USE = "/privacy-notice-by-data-use"
-
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
@@ -111,10 +92,6 @@ PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
 PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
     "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
-
-# Purpose URLs
-PURPOSES = "/purposes"
-
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"

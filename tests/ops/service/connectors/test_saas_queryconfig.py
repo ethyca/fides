@@ -7,12 +7,13 @@ import pytest
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
 from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
@@ -622,6 +623,7 @@ class TestSaaSQueryConfig:
         mock_identity_data: Mock,
         mock_custom_privacy_request_fields: Mock,
         policy,
+        consent_policy,
         erasure_policy_string_rewrite,
         combined_traversal,
         saas_example_connection_config,
@@ -630,7 +632,10 @@ class TestSaaSQueryConfig:
         mock_custom_privacy_request_fields.return_value = {
             "first_name": "John",
             "last_name": "Doe",
+            "subscriber_ids": ["123", "456"],
+            "account_ids": [123, 456],
         }
+        connector = SaaSConnector(saas_example_connection_config)
         saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
@@ -652,6 +657,8 @@ class TestSaaSQueryConfig:
                 CUSTOM_PRIVACY_REQUEST_FIELDS: {
                     "first_name": "John",
                     "last_name": "Doe",
+                    "subscriber_ids": ["123", "456"],
+                    "account_ids": [123, 456],
                 },
             },
             policy,
@@ -663,17 +670,42 @@ class TestSaaSQueryConfig:
         assert json.loads(read_request.body) == {
             "last_name": "Doe",
             "order_id": None,
+            "subscriber_ids": ["123", "456"],
+            "account_ids": [123, 456],
         }
 
         update_request: SaaSRequestParams = config.generate_update_stmt(
             {}, erasure_policy_string_rewrite, privacy_request
         )
-        update_request.method == HTTPMethod.POST.value
+        assert update_request.method == HTTPMethod.POST.value
         assert update_request.path == "/v1/internal/"
         assert update_request.query_params == {}
         assert json.loads(update_request.body) == {
-            "user_info": {"first_name": "John", "last_name": "Doe"}
+            "user_info": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "subscriber_ids": ["123", "456"],
+                "account_ids": [123, 456],
+            }
         }
+
+        opt_in_request: SaaSRequest = config.generate_consent_stmt(
+            consent_policy,
+            privacy_request,
+            connector._get_consent_requests_by_preference(True)[0],
+        )
+        assert opt_in_request.method == HTTPMethod.POST.value
+        assert opt_in_request.path == "/allowlists/add"
+        assert json.loads(opt_in_request.body) == {"first_name": "John"}
+
+        opt_out_request: SaaSRequest = config.generate_consent_stmt(
+            consent_policy,
+            privacy_request,
+            connector._get_consent_requests_by_preference(False)[0],
+        )
+        assert opt_out_request.method == HTTPMethod.POST.value
+        assert opt_out_request.path == "/allowlists/delete"
+        assert json.loads(opt_out_request.body) == {"first_name": "John"}
 
 
 class TestGenerateProductList:

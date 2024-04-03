@@ -1,7 +1,7 @@
 import { Box, Flex, Heading, Text } from "@fidesui/react";
 import React from "react";
 
-import FixedLayout from "~/features/common/FixedLayout";
+import Layout from "~/features/common/Layout";
 import { ConsentManagementTable } from "~/features/configure-consent/ConsentManagementTable";
 
 type Props = {
@@ -53,19 +53,13 @@ const ConfigureConsentPage = () => {
 };
 
 const ConfigureConsentPage = () => (
-  <FixedLayout
-    title="Configure consent"
-    mainProps={{
-      padding: "40px",
-      paddingRight: "48px",
-    }}
-  >
+  <Layout title="Configure consent">
     <ConsentMetadata
       title="Manage your vendors"
       description="Use the table below to manage your vendors. Modify the legal basis for a vendor if permitted and view and group your views by applying different filters"
     />
     <ConsentManagementTable />
-  </FixedLayout>
+  </Layout>
 );
 
 export default ConfigureConsentPage;

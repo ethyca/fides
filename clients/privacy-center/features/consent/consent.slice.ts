@@ -12,11 +12,12 @@ import {
   ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
-  SavePrivacyPreferencesResponse,
+  PreferencesSaved,
   RecordConsentServedRequest,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
+  Consent,
 } from "~/types/api";
 import { selectSettings } from "../common/settings.slice";
 
@@ -80,7 +81,7 @@ export const consentApi = baseApi.injectEndpoints({
       providesTags: ["Privacy Experience"],
     }),
     updatePrivacyPreferences: build.mutation<
-      SavePrivacyPreferencesResponse,
+      PreferencesSaved,
       { id: string; body: PrivacyPreferencesRequest }
     >({
       query: ({ id, body }) => ({
@@ -163,7 +164,7 @@ export const consentSlice = createSlice({
       { payload }: PayloadAction<ConsentPreferences>
     ) {
       const consentPreferences = payload.consent ?? [];
-      consentPreferences.forEach((consent) => {
+      consentPreferences.forEach((consent: Consent) => {
         draftState.fidesKeyToConsent[consent.data_use] = consent.opt_in;
         draftState.persistedFidesKeyToConsent[consent.data_use] =
           consent.opt_in;

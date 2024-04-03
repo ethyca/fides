@@ -218,6 +218,86 @@ class TestCreatePrivacyRequest:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    def test_create_privacy_request_stores_multivalue_custom_fields(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        allow_custom_privacy_request_field_collection_enabled,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_CUSTOM_FIELDS = {
+            "first_name": {"label": "First name", "value": "John"},
+            "subscriber_ids": {"label": "Subscriber IDs", "value": ["123", "456"]},
+            "account_ids": {"label": "Account IDs", "value": [123, 456]},
+        }
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                },
+                "custom_privacy_request_fields": TEST_CUSTOM_FIELDS,
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        persisted_custom_privacy_request_fields = (
+            pr.get_persisted_custom_privacy_request_fields()
+        )
+        assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_create_privacy_request_links_existing_custom_fields(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        allow_custom_privacy_request_field_collection_enabled,
+        provided_identity_and_consent_request_with_custom_fields,
+    ):
+        CONSENT_REQUEST_ID = provided_identity_and_consent_request_with_custom_fields.id
+        TEST_EMAIL = "test@example.com"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                },
+                "consent_request_id": CONSENT_REQUEST_ID,
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        for custom_field in pr.custom_fields:
+            assert custom_field.consent_request_id == CONSENT_REQUEST_ID
+            assert custom_field.privacy_request_id == pr.id
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_create_privacy_request_require_manual_approval(
         self,
         run_access_request_mock,

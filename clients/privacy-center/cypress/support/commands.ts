@@ -58,7 +58,11 @@ Cypress.Commands.add("overrideSettings", (settings) => {
 
 Cypress.Commands.add(
   "visitConsentDemo",
-  (options?: FidesConfig, queryParams?: any, windowParams?: any) => {
+  (
+    options?: FidesConfig,
+    queryParams?: Cypress.VisitOptions["qs"],
+    windowParams?: any
+  ) => {
     const visitOptions: Partial<VisitOptions> = {
       onBeforeLoad: (win) => {
         // eslint-disable-next-line no-param-reassign
@@ -187,7 +191,7 @@ declare global {
        */
       visitConsentDemo(
         options?: FidesConfig,
-        queryParams?: any,
+        queryParams?: Cypress.VisitOptions["qs"],
         windowParams?: any
       ): Chainable<any>;
       /**

@@ -1,117 +1,259 @@
-import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
-import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
-import Restrict, { useHasPermission } from "common/Restrict";
-import { DateCell, FidesTable } from "common/table";
-import EmptyTableState from "common/table/EmptyTableState";
+/* eslint-disable react/no-unstable-nested-components */
+import { Button, Flex, HStack, Text, VStack } from "@fidesui/react";
+import {
+  ColumnDef,
+  createColumnHelper,
+  getCoreRowModel,
+  getExpandedRowModel,
+  getGroupedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  DefaultCell,
+  DefaultHeaderCell,
+  FidesTableV2,
+  GroupCountBadgeCell,
+  PaginationBar,
+  TableActionBar,
+  TableSkeletonLoader,
+  useServerSidePagination,
+} from "common/table/v2";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { useMemo } from "react";
-import { Column } from "react-table";
+import { useEffect, useMemo } from "react";
 
-import { useAppSelector } from "~/app/hooks";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import CustomAssetUploadButton from "~/features/custom-assets/CustomAssetUploadButton";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   ComponentCell,
   EnablePrivacyExperienceCell,
-  LocationCell,
 } from "~/features/privacy-experience/cells";
+import JavaScriptTag from "~/features/privacy-experience/JavaScriptTag";
+import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
+import { getRegions } from "~/features/privacy-notices/cells";
 import {
-  selectAllExperienceConfigs,
-  selectPage,
-  selectPageSize,
-  useGetAllExperienceConfigsQuery,
-} from "~/features/privacy-experience/privacy-experience.slice";
-import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
-import { CustomAssetType } from "~/types/api/models/CustomAssetType";
+  CustomAssetType,
+  ExperienceConfigListViewResponse,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
-import JavaScriptTag from "./JavaScriptTag";
+const emptyExperienceResponse = {
+  items: [],
+  total: 0,
+  page: 1,
+  size: 25,
+  pages: 1,
+};
 
-const PrivacyExperiencesTable = () => {
+const EmptyTableExperience = () => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    borderRadius="base"
+    maxW="70%"
+    data-testid="empty-state"
+    alignSelf="center"
+    margin="auto"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        No privacy experiences found.
+      </Text>
+      <Text fontSize="sm">
+        Click &quot;Create new experience&quot; to add your first privacy
+        experience to Fides.
+      </Text>
+    </VStack>
+    <NextLink href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}>
+      <Button
+        size="xs"
+        colorScheme="primary"
+        data-testid="add-privacy-experience-btn"
+      >
+        Create new experience
+      </Button>
+    </NextLink>
+  </VStack>
+);
+const columnHelper = createColumnHelper<ExperienceConfigListViewResponse>();
+
+export const PrivacyExperiencesTable = () => {
+  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const router = useRouter();
-  // Subscribe to get all privacy experiences
-  const page = useAppSelector(selectPage);
-  const pageSize = useAppSelector(selectPageSize);
-  const { isLoading } = useGetAllExperienceConfigsQuery({
-    page,
-    size: pageSize,
-  });
-  const privacyExperiences = useAppSelector(selectAllExperienceConfigs);
+
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
-  const handleRowClick = ({ id }: ExperienceConfigResponse) => {
+
+  const {
+    PAGE_SIZES,
+    pageSize,
+    setPageSize,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    startRange,
+    endRange,
+    pageIndex,
+    setTotalPages,
+  } = useServerSidePagination();
+
+  const {
+    isFetching,
+    isLoading,
+    data: experiences,
+  } = useGetAllExperienceConfigsQuery({
+    page: pageIndex,
+    size: pageSize,
+  });
+
+  const {
+    items: data,
+    total: totalRows,
+    pages: totalPages,
+  } = useMemo(() => experiences || emptyExperienceResponse, [experiences]);
+
+  useEffect(() => {
+    setTotalPages(totalPages);
+  }, [totalPages, setTotalPages]);
+
+  const privacyExperienceColumns: ColumnDef<
+    ExperienceConfigListViewResponse,
+    any
+  >[] = useMemo(
+    () =>
+      [
+        columnHelper.accessor((row) => row.name, {
+          id: "name",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => <DefaultHeaderCell value="Title" {...props} />,
+        }),
+        columnHelper.accessor((row) => row.component, {
+          id: "component",
+          cell: (props) => ComponentCell(props.getValue()),
+          header: (props) => <DefaultHeaderCell value="Component" {...props} />,
+        }),
+        columnHelper.accessor((row) => row.regions, {
+          id: "regions",
+          cell: (props) => (
+            <GroupCountBadgeCell
+              suffix="Locations"
+              value={getRegions(props.getValue())}
+              {...props}
+            />
+          ),
+          header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
+          meta: {
+            displayText: "Locations",
+            showHeaderMenu: true,
+          },
+        }),
+        columnHelper.accessor(
+          (row) => row.properties.map((property) => property.name),
+          {
+            id: "properties",
+            cell: (props) => (
+              <GroupCountBadgeCell
+                suffix="Properties"
+                value={props.getValue()}
+                {...props}
+              />
+            ),
+            header: (props) => (
+              <DefaultHeaderCell value="Properties" {...props} />
+            ),
+            meta: {
+              displayText: "Properties",
+              showHeaderMenu: true,
+            },
+          }
+        ),
+        columnHelper.accessor((row) => row.updated_at, {
+          id: "updated_at",
+          cell: (props) => (
+            <DefaultCell value={new Date(props.getValue()).toDateString()} />
+          ),
+          header: (props) => (
+            <DefaultHeaderCell value="Last update" {...props} />
+          ),
+        }),
+        userCanUpdate &&
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: (props) => EnablePrivacyExperienceCell(props),
+            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+          }),
+      ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
+    [userCanUpdate]
+  );
+
+  const tableInstance = useReactTable<ExperienceConfigListViewResponse>({
+    getCoreRowModel: getCoreRowModel(),
+    getGroupedRowModel: getGroupedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    columns: privacyExperienceColumns,
+    manualPagination: true,
+    data,
+    state: {
+      expanded: true,
+    },
+  });
+
+  const onRowClick = ({ id }: ExperienceConfigListViewResponse) => {
     if (userCanUpdate) {
       router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
     }
   };
 
-  const columns: Column<ExperienceConfigResponse>[] = useMemo(
-    () => [
-      { Header: "Location", accessor: "regions", Cell: LocationCell },
-      {
-        Header: "Component",
-        accessor: "component",
-        Cell: ComponentCell,
-      },
-      { Header: "Last update", accessor: "updated_at", Cell: DateCell },
-      {
-        Header: "Enable",
-        accessor: "disabled",
-        disabled: !userCanUpdate,
-        Cell: EnablePrivacyExperienceCell,
-      },
-    ],
-    [userCanUpdate]
-  );
-
-  if (isLoading) {
-    return (
-      <Flex height="100%" justifyContent="center" alignItems="center">
-        <Spinner />
-      </Flex>
-    );
-  }
-
-  if (privacyExperiences.length === 0) {
-    return (
-      <EmptyTableState
-        title="To start configuring consent, please first add data uses"
-        description="It looks like you have not yet added any data uses to the system. Fides
-        relies on how you use data in your organization to provide intelligent
-        recommendations and pre-built templates for privacy notices you may need
-        to display to your users. To get started with privacy notices, first add
-        your data uses to systems on your data map."
-        button={
-          <Button
-            size="sm"
-            variant="outline"
-            fontWeight="semibold"
-            minWidth="auto"
-          >
-            <NextLink href={SYSTEM_ROUTE}>Set up data uses</NextLink>
-          </Button>
-        }
-      />
-    );
+  if (isLoading || isLoadingHealthCheck) {
+    return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
   return (
-    <Stack spacing={3} width="70%">
-      <Box alignSelf="end">
-        <JavaScriptTag />
-        <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
-          <CustomAssetUploadButton
-            assetType={CustomAssetType.CUSTOM_FIDES_CSS}
-          />
-        </Restrict>
-      </Box>
-      <FidesTable<ExperienceConfigResponse>
-        columns={columns}
-        data={privacyExperiences}
-        onRowClick={userCanUpdate ? handleRowClick : undefined}
-      />
-    </Stack>
+    <div>
+      <Flex flex={1} direction="column" overflow="auto">
+        {userCanUpdate && (
+          <TableActionBar>
+            <HStack alignItems="center" spacing={4}>
+              <JavaScriptTag />
+              <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
+                <CustomAssetUploadButton
+                  assetType={CustomAssetType.CUSTOM_FIDES_CSS}
+                />
+              </Restrict>
+            </HStack>
+            <NextLink href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}>
+              <Button
+                size="xs"
+                colorScheme="primary"
+                data-testid="add-privacy-experience-btn"
+              >
+                Create new experience
+              </Button>
+            </NextLink>
+          </TableActionBar>
+        )}
+        <FidesTableV2
+          tableInstance={tableInstance}
+          onRowClick={userCanUpdate ? onRowClick : undefined}
+          emptyTableNotice={<EmptyTableExperience />}
+        />
+        <PaginationBar
+          totalRows={totalRows}
+          pageSizes={PAGE_SIZES}
+          setPageSize={setPageSize}
+          onPreviousPageClick={onPreviousPageClick}
+          isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+          onNextPageClick={onNextPageClick}
+          isNextPageDisabled={isNextPageDisabled || isFetching}
+          startRange={startRange}
+          endRange={endRange}
+        />
+      </Flex>
+    </div>
   );
 };
-
-export default PrivacyExperiencesTable;

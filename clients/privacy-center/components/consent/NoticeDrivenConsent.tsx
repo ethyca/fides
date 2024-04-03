@@ -1,7 +1,7 @@
 import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  CookieKeyConsent,
+  NoticeConsent,
   getConsentContext,
   getOrMakeFidesCookie,
   removeCookiesFromBrowser,
@@ -53,13 +53,16 @@ export const resolveConsentValue = (
   const gpcEnabled =
     !!notice.has_gpc_flag &&
     context.globalPrivacyControl === true &&
-    !noticeHasConsentInCookie(notice as PrivacyNoticeWithPreference, cookie);
+    !noticeHasConsentInCookie(
+      notice as PrivacyNoticeWithPreference,
+      cookie.consent
+    );
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
   const preferenceExistsInCookie = noticeHasConsentInCookie(
     notice as PrivacyNoticeWithPreference,
-    cookie
+    cookie.consent
   );
   if (preferenceExistsInCookie) {
     return transformConsentToFidesUserPreference(
@@ -72,7 +75,7 @@ export const resolveConsentValue = (
   return notice.default_preference;
 };
 
-const NoticeDrivenConsent = () => {
+const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const router = useRouter();
   const toast = useToast();
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -101,9 +104,11 @@ const NoticeDrivenConsent = () => {
           cookie
         );
         if (pref) {
-          newPreferences[notice.privacy_notice_history_id] = pref;
+          // todo- set to default language, extract into helper util fn to keep this logic centralized.
+          newPreferences[notice.translations[0].privacy_notice_history_id] =
+            pref;
         } else {
-          newPreferences[notice.privacy_notice_history_id] =
+          newPreferences[notice.translations[0].privacy_notice_history_id] =
             UserConsentPreference.OPT_OUT;
         }
       });
@@ -127,9 +132,14 @@ const NoticeDrivenConsent = () => {
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
-          privacy_experience_id: experience?.id,
+          // TODO (PROD-1748): pass in specific language shown in UI
+          privacy_experience_config_history_id:
+            experience?.experience_config?.translations[0]
+              .privacy_experience_config_history_id,
+          // TODO (PROD-1748): pass in specific language shown in UI
           privacy_notice_history_ids: experience.privacy_notices.map(
-            (p) => p.privacy_notice_history_id
+            // @ts-ignore
+            (p: PrivacyNotice) => p.translations[0].privacy_notice_history_id
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
           user_geography: region,
@@ -154,7 +164,8 @@ const NoticeDrivenConsent = () => {
     }
 
     return notices.map((notice) => {
-      const preference = draftPreferences[notice.privacy_notice_history_id];
+      const preference =
+        draftPreferences[notice.translations[0].privacy_notice_history_id];
       const value = transformUserPreferenceToBoolean(preference);
       const gpcStatus = getGpcStatusFromNotice({
         value,
@@ -164,9 +175,9 @@ const NoticeDrivenConsent = () => {
 
       return {
         name: notice.name || "",
-        description: notice.description || "",
+        description: notice.translations[0].description || "",
         id: notice.id,
-        historyId: notice.privacy_notice_history_id,
+        historyId: notice.translations[0].privacy_notice_history_id,
         highlight: false,
         url: undefined,
         value,
@@ -193,7 +204,8 @@ const NoticeDrivenConsent = () => {
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
         const notice = notices.find(
-          (n) => n.privacy_notice_history_id === historyKey
+          // TODO (PROD-1748): pass in specific language shown in UI
+          (n) => n.translations[0].privacy_notice_history_id === historyKey
         );
         return { historyKey, preference, notice };
       }
@@ -218,7 +230,10 @@ const NoticeDrivenConsent = () => {
       browser_identity: browserIdentities,
       preferences,
       user_geography: region,
-      privacy_experience_id: experience?.id,
+      // TODO (PROD-1748): pass in specific language shown in UI
+      privacy_experience_config_history_id:
+        experience?.experience_config?.translations[0]
+          .privacy_experience_config_history_id,
       method: ConsentMethod.SAVE,
       code: verificationCode,
       served_notice_history_id: servedNotice?.served_notice_history_id,
@@ -250,11 +265,11 @@ const NoticeDrivenConsent = () => {
         transformUserPreferenceToBoolean(preference.preference),
       ])
     );
-    const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeKeyMap);
-    window.Fides.consent = consentCookieKey;
-    const updatedCookie = { ...cookie, consent: consentCookieKey };
+    const noticeConsent: NoticeConsent = Object.fromEntries(noticeKeyMap);
+    window.Fides.consent = noticeConsent;
+    const updatedCookie = { ...cookie, consent: noticeConsent };
     updatedCookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
-    saveFidesCookie(updatedCookie);
+    saveFidesCookie(updatedCookie, base64Cookie);
     toast({
       title: "Your consent preferences have been saved",
       ...SuccessToastOptions,
@@ -306,7 +321,9 @@ const NoticeDrivenConsent = () => {
       <SaveCancel
         onSave={handleSave}
         onCancel={handleCancel}
-        saveLabel={experience?.experience_config?.save_button_label}
+        saveLabel={
+          experience?.experience_config?.translations[0]?.save_button_label
+        }
         justifyContent="center"
       />
       <PrivacyPolicyLink alignSelf="center" experience={experience} />

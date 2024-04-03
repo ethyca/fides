@@ -1,6 +1,8 @@
-import { GPPSettings } from "./gpp/types";
+import type { Fides, FidesOptions } from "../docs";
+import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
+  GVLTranslations,
   TCFFeatureRecord,
   TCFFeatureSave,
   TCFPurposeConsentRecord,
@@ -15,7 +17,10 @@ import type {
   TCFVendorRelationships,
   TCFVendorSave,
 } from "./tcf/types";
-import { TcfCookieConsent } from "./tcf/types";
+import { TcfOtherConsent } from "./tcf/types";
+import type { gtm } from "../integrations/gtm";
+import type { meta } from "../integrations/meta";
+import type { shopify } from "../integrations/shopify";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -28,11 +33,17 @@ export interface FidesConfig {
   experience?: PrivacyExperience | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
-  // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
-  options: FidesOptions;
+  // Global options for this Fides.js instance
+  options: FidesInitOptions;
 }
 
-export type FidesOptions = {
+/**
+ * Defines all the options supported by `Fides.init()`. Many of these are
+ * effectively constants that aren't meant to be set at runtime by customers,
+ * but we do allow _some_ of them to be overriden via query params / cookie
+ * values / window object. See the {@link FidesOptions} docs for details.
+ */
+export interface FidesInitOptions {
   // Whether or not debug log statements should be enabled
   debug: boolean;
 
@@ -89,7 +100,7 @@ export type FidesOptions = {
   // Base URL for directory of fides.js scripts
   fidesJsBaseUrl: string;
 
-  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
+  // A custom path to fetch FidesOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;
 
   // Prevents the banner and modal from being dismissed
@@ -97,28 +108,62 @@ export type FidesOptions = {
 
   // Allows providing rich HTML descriptions
   allowHTMLDescription: boolean | null;
-};
+
+  // Encodes cookie as base64 on top of the default JSON string
+  base64Cookie: boolean;
+
+  // Allows specifying the preferred locale used for translations
+  fidesLocale?: string;
+
+  // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
+  fidesPrimaryColor: string | null;
+}
 
 /**
- * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
+ * Defines the exact interface used for the `Fides` global object. Note that we
+ * extend the documented `Fides` interface here to provide some narrower, more
+ * specific types. This is mostly for legacy purposes, but also since we want to
+ * ensure that the documented interface isn't overly specific in areas we may
+ * need to change.
+ */
+export interface FidesGlobal extends Fides {
+  consent: NoticeConsent;
+  experience?: PrivacyExperience | EmptyExperience;
+  geolocation?: UserGeolocation;
+  fides_string?: string | undefined;
+  options: FidesInitOptions;
+  fides_meta: FidesJSMeta;
+  tcf_consent: TcfOtherConsent;
+  saved_consent: NoticeConsent;
+  gtm: typeof gtm;
+  identity: FidesJSIdentity;
+  init: (config: FidesConfig) => Promise<void>;
+  initialized: boolean;
+  meta: typeof meta;
+  shopify: typeof shopify;
+  showModal: () => void;
+}
+
+/**
+ * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
  * {
  *   "data_sales": false,
  *   "analytics": true,
  *   ...
  * }
  */
-export type CookieKeyConsent = {
-  [cookieKey: string]: boolean | undefined;
-};
+export type NoticeConsent = Record<string, boolean>;
+
 /**
- * Store the user's identity values on the cookie, e.g.
+ * Store the user's identity values, e.g.
  * {
  *   "fides_user_device_id": "1234-",
  *   "email": "jane@example.com",
  *   ...
  * }
  */
-export type CookieIdentity = Record<string, string>;
+export type FidesJSIdentity = Record<string, string>;
+
 /**
  * Store metadata about the cookie itself, e.g.
  * {
@@ -127,20 +172,20 @@ export type CookieIdentity = Record<string, string>;
  *   ...
  * }
  */
-export type CookieMeta = Record<string, string>;
+export type FidesJSMeta = Record<string, string>;
 
 export interface FidesCookie {
-  consent: CookieKeyConsent;
-  identity: CookieIdentity;
-  fides_meta: CookieMeta;
+  consent: NoticeConsent;
+  identity: FidesJSIdentity;
+  fides_meta: FidesJSMeta;
   fides_string?: string;
-  tcf_consent: TcfCookieConsent;
+  tcf_consent: TcfOtherConsent;
   tcf_version_hash?: ExperienceMeta["version_hash"];
 }
 
 export type GetPreferencesFnResp = {
   // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
-  consent?: CookieKeyConsent;
+  consent?: NoticeConsent;
   // Overrides the value for Fides.fides_string for the user’s TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
   fides_string?: string;
   // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
@@ -158,7 +203,7 @@ export type FidesApiOptions = {
    */
   savePreferencesFn?: (
     consentMethod: ConsentMethod,
-    consent: CookieKeyConsent,
+    consent: NoticeConsent,
     fides_string: string | undefined,
     experience: PrivacyExperience
   ) => Promise<void>;
@@ -193,9 +238,16 @@ export class SaveConsentPreference {
 
   notice: PrivacyNotice;
 
-  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
+  noticeHistoryId?: string;
+
+  constructor(
+    notice: PrivacyNotice,
+    consentPreference: UserConsentPreference,
+    noticeHistoryId?: string
+  ) {
     this.notice = notice;
     this.consentPreference = consentPreference;
+    this.noticeHistoryId = noticeHistoryId;
   }
 }
 
@@ -309,15 +361,20 @@ export type ExperienceMeta = {
   reject_all_fides_mobile_data?: TCMobileData;
 };
 
+/**
+ * Expected API response for a PrivacyExperience
+ *
+ * NOTE: This type is slightly-edited version of the autogenerated
+ * "PrivacyExperienceResponse" type, to either tighten or relax the types in
+ * FidesJS as needed by the client-code, so these types should be updated with care!
+ */
 export type PrivacyExperience = {
-  region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
-  component?: ComponentType;
-  experience_config?: ExperienceConfig;
   id: string;
   created_at: string;
   updated_at: string;
-  show_banner?: boolean;
-  privacy_notices?: Array<PrivacyNoticeWithPreference>;
+  region: string; // NOTE: uses a generic string instead of a region enum, as this changes often
+  component?: ComponentType;
+  gpp_settings?: GPPSettings; // NOTE: uses our client-side GPPSettings type
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -329,19 +386,130 @@ export type PrivacyExperience = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
-  gvl?: GVLJson;
+
+  /**
+   * @deprecated For backwards compatibility purposes, whether the Experience should show a banner.
+   */
+  show_banner?: boolean;
+  /**
+   * The Privacy Notices associated with this experience, if applicable
+   */
+  privacy_notices?: Array<PrivacyNoticeWithPreference>; // NOTE: uses our client-side PrivacyNoticeWithPreference type
+  /**
+   * The Experience Config and its translations
+   */
+  experience_config?: ExperienceConfig; // NOTE: uses our client-side ExperienceConfig type
+  gvl?: GVLJson; // NOTE: uses our client-side GVLJson type
+  gvl_translations?: GVLTranslations;
   meta?: ExperienceMeta;
-  gpp_settings?: GPPSettings;
 };
 
+/**
+ * Expected API response for an ExperienceConfig
+ *
+ * NOTE: This type is slightly-edited version of the autogenerated
+ * "ExperienceConfigResponseNoNotices" type, to either tighten or relax the
+ * types in FidesJS as needed by the client-code, so these types should be
+ * updated with care!
+ */
 export type ExperienceConfig = {
+  name?: string;
+  disabled?: boolean;
+  dismissable?: boolean;
+  allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
+  modal_link_label?: string;
+
+  /**
+   * List of regions that apply to this ExperienceConfig.
+   *
+   * NOTE: we modify this type on the client to be an array of strings instead
+   * of region enums, as those will change often. We also mark it as an optional
+   * array, even though the API provides it, since we want to avoid relying on
+   * these regions on the client.
+   */
+  regions?: Array<string>;
+  id: string;
+  created_at: string;
+  updated_at: string;
+  component: ComponentType;
+
+  /**
+   * List of all available translations for this ExperienceConfig
+   *
+   * NOTE: edited to be a *required* field on the client-side types for
+   * simplicity, since the API actually guarantees this will always be present.
+   * This also uses our client-side ExperienceConfigTranslation type.
+   */
+  translations: Array<ExperienceConfigTranslation>;
+
+  /**
+   * @deprecated see fields on translations instead
+   */
+  language?: string; // NOTE: uses a generic string instead of a language enum, as this changes often
+  /**
+   * @deprecated see fields on translations instead
+   */
+  accept_button_label?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  acknowledge_button_label?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  banner_title?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  is_default?: boolean;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  privacy_policy_link_label?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  privacy_policy_url?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  privacy_preferences_link_label?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  reject_button_label?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  save_button_label?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  title?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  banner_description?: string;
+  /**
+   * @deprecated see fields on translations instead
+   */
+  description?: string;
+};
+
+/**
+ * Expected API response for an ExperienceConfigTranslation
+ *
+ * NOTE: This type is slightly-edited version of the autogenerated
+ * "ExperienceTranslationResponse" type, to either tighten or relax the
+ * types in FidesJS as needed by the client-code, so these types should be
+ * updated with care!
+ */
+export type ExperienceConfigTranslation = {
+  language: string; // NOTE: uses a generic string instead of a language enum, as this changes often
   accept_button_label?: string;
   acknowledge_button_label?: string;
-  banner_description?: string;
-  banner_enabled?: BannerEnabled;
   banner_title?: string;
-  description?: string;
-  disabled?: boolean;
   is_default?: boolean;
   privacy_policy_link_label?: string;
   privacy_policy_url?: string;
@@ -349,13 +517,10 @@ export type ExperienceConfig = {
   reject_button_label?: string;
   save_button_label?: string;
   title?: string;
-  id: string;
-  component: ComponentType;
-  experience_config_history_id: string;
-  version: number;
-  created_at: string;
-  updated_at: string;
-  regions: Array<string>;
+  banner_description?: string;
+  description?: string;
+  privacy_experience_config_history_id: string;
+  modal_link_label?: string;
 };
 
 export type Cookies = {
@@ -364,28 +529,61 @@ export type Cookies = {
   domain?: string;
 };
 
+export enum PrivacyNoticeFramework {
+  GPP_US_NATIONAL = "gpp_us_national",
+  GPP_US_STATE = "gpp_us_state",
+}
+
+/**
+ * Expected API response for a PrivacyNotice
+ *
+ * NOTE: This type is slightly-edited version of the autogenerated
+ * "PrivacyNoticeResponse" type to either tighten or relax the types in FidesJS
+ * as needed by the client-code, but we try to be as close as possible to the
+ * API types!
+ */
 export type PrivacyNotice = {
   name?: string;
-  notice_key: string;
-  description?: string;
+  notice_key: string; // NOTE: edited to be *required* on the client for simplicity (since the API actually guarantees this!)
   internal_description?: string;
-  origin?: string;
-  regions?: Array<string>;
   consent_mechanism?: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
   has_gpc_flag?: boolean;
-  displayed_in_privacy_center?: boolean;
-  displayed_in_overlay?: boolean;
-  displayed_in_api?: boolean;
+  framework?: PrivacyNoticeFramework;
+  default_preference?: UserConsentPreference;
   id: string;
+  origin?: string;
   created_at: string;
   updated_at: string;
-  version: number;
-  privacy_notice_history_id: string;
   cookies: Array<Cookies>;
-  default_preference: UserConsentPreference;
+  systems_applicable?: boolean;
+
+  /**
+   * List of all available translations for this PrivacyNotice
+   *
+   * NOTE: edited to be a *required* field on the client-side types for
+   * simplicity, since the API actually guarantees this will always be present.
+   * This also uses our client-side PrivacyNoticeTranslation type.
+   */
+  translations: Array<PrivacyNoticeTranslation>;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
+};
+
+/**
+ * Expected API response for a PrivacyNoticeTranslation
+ *
+ * NOTE: This type is slightly-edited version of the autogenerated
+ * "NoticeTranslationResponse" type to either tighten or relax the types in
+ * FidesJS as needed by the client-code, but we try to be as close as possible
+ * to the API types!
+ */
+export type PrivacyNoticeTranslation = {
+  language: string; // NOTE: uses a generic string instead of a language enum, as this changes often
+  title?: string;
+  description?: string;
+  privacy_notice_history_id: string;
 };
 
 // This type is exclusively used on front-end
@@ -410,10 +608,15 @@ export enum UserConsentPreference {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
   ACKNOWLEDGE = "acknowledge",
+  TCF = "tcf",
 }
 
+// NOTE: This (and most enums!) could reasonably be replaced by string union
+// types in Typescript and would be a bit easier to handle...
 export enum ComponentType {
-  OVERLAY = "overlay",
+  OVERLAY = "overlay", // deprecated, replaced by BANNER_AND_MODAL
+  BANNER_AND_MODAL = "banner_and_modal",
+  MODAL = "modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
 }
@@ -431,27 +634,54 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-export type OverrideOptions = {
-  fides_string: string;
-  fides_disable_save_api: boolean;
-  fides_disable_banner: boolean;
-  fides_embed: boolean;
-  fides_tcf_gdpr_applies: boolean;
+/**
+ * Re-export the FidesOptions interface from src/docs; mostly for convenience as
+ * a lot of code wants to import from this consent-types.ts file!
+ */
+export { FidesOptions };
+
+export type OverrideExperienceTranslations = {
+  fides_title: string;
+  fides_description: string;
+  fides_privacy_policy_url: string;
+  fides_override_language: string;
 };
 
-export type FidesOptionsOverrides = Pick<
-  FidesOptions,
+/**
+ * Select the subset of FidesInitOptions that can be overriden at runtime using
+ * one of the customer-provided FidesOptions properties above. There's a 1:1
+ * correspondence here, but note that we use snake_case for the runtime options
+ * and then convert to camelCase variables for the `Fides.init({ options })`
+ * invocation itself.
+ */
+export type FidesInitOptionsOverrides = Pick<
+  FidesInitOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
   | "fidesEmbed"
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
+  | "fidesLocale"
+  | "fidesPrimaryColor"
 >;
 
-export type FidesOverrides = {
-  optionsOverrides: Partial<FidesOptionsOverrides>;
-  consentPrefsOverrides: GetPreferencesFnResp | null;
+export type FidesExperienceTranslationOverrides = {
+  title: string;
+  description: string;
+  privacy_policy_url: string;
+  override_language: string;
 };
+
+export type FidesOverrides = {
+  optionsOverrides: Partial<FidesInitOptionsOverrides>;
+  consentPrefsOverrides: GetPreferencesFnResp | null;
+  experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides>;
+};
+
+export enum OverrideType {
+  OPTIONS = "options",
+  EXPERIENCE_TRANSLATION = "language",
+}
 
 export enum ButtonType {
   PRIMARY = "primary",
@@ -484,7 +714,11 @@ export type PrivacyPreferencesRequest = {
   system_consent_preferences?: Array<TCFVendorSave>;
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   policy_key?: string;
+  /**
+   * @deprecated has no effect; use privacy_experience_config_history_id instead!
+   */
   privacy_experience_id?: string;
+  privacy_experience_config_history_id?: string;
   user_geography?: string;
   method?: ConsentMethod;
   served_notice_history_id?: string;
@@ -520,7 +754,8 @@ export enum GpcStatus {
 
 // Consent reporting
 export enum ServingComponent {
-  OVERLAY = "overlay",
+  OVERLAY = "overlay", // deprecated, use "modal" instead
+  MODAL = "modal",
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
@@ -542,10 +777,14 @@ export type RecordConsentServedRequest = {
   tcf_special_features?: Array<number>;
   tcf_system_consents?: Array<string>;
   tcf_system_legitimate_interests?: Array<string>;
+  /**
+   * @deprecated has no effect; use privacy_experience_config_history_id instead!
+   */
   privacy_experience_id?: string;
+  privacy_experience_config_history_id?: string;
   user_geography?: string;
   acknowledge_mode?: boolean;
-  serving_component: ServingComponent;
+  serving_component: string; // NOTE: uses a generic string instead of an enum
 };
 
 /**

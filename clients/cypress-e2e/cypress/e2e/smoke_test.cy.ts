@@ -99,13 +99,13 @@ describe("Smoke test", () => {
     cy.login();
 
     // Postgres
-    cy.getByTestId("View systems-nav-link").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_postgresql_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
 
     // Mongo
-    cy.getByTestId("View systems-nav-link").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_customer_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
@@ -117,6 +117,8 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
 
@@ -155,6 +157,8 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {

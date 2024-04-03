@@ -87,11 +87,11 @@ const EmptyTableNotice = () => (
     mt={6}
     p={10}
     spacing={4}
-    boxShadow="md"
     borderRadius="base"
     maxW="70%"
     data-testid="no-results-notice"
     alignSelf="center"
+    margin="auto"
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
@@ -174,9 +174,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             onChange={row.getToggleSelectedHandler()}
           />
         ),
-        meta: {
-          width: "55px",
-        },
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -189,9 +186,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
         enableColumnFilter: isTcfEnabled,
         filterFn: "arrIncludesSome",
-        meta: {
-          width: "80px",
-        },
       }),
     ],
     [allRowsLinkedToSystem, systemText, isTcfEnabled]
@@ -218,7 +212,13 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       pagination: {
         pageSize: PAGE_SIZES[0],
       },
+      columnSizing: {
+        select: 0,
+        vendor_id: 0,
+      },
     },
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
   });
 
   useEffect(() => {
@@ -416,6 +416,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           }
           return undefined;
         }}
+        emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}
@@ -428,7 +429,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         startRange={startRange}
         endRange={endRange}
       />
-      {totalRows === 0 ? <EmptyTableNotice /> : null}
     </Flex>
   );
 };

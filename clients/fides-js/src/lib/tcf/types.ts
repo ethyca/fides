@@ -45,10 +45,7 @@ export type TCFPurposeConsentRecord = {
   illustrations: Array<string>;
   data_uses: Array<string>;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  current_preference?: UserConsentPreference; // NOTE: added on the client-side
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };
@@ -60,10 +57,7 @@ export type TCFPurposeLegitimateInterestsRecord = {
   illustrations: Array<string>;
   data_uses: Array<string>;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  current_preference?: UserConsentPreference; // NOTE: added on the client-side
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };
@@ -81,10 +75,7 @@ export type TCFSpecialPurposeRecord = {
   illustrations: Array<string>;
   data_uses: Array<string>;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  current_preference?: UserConsentPreference; // NOTE: added on the client-side
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
   legal_bases?: Array<string>;
@@ -98,10 +89,7 @@ export type TCFSpecialPurposeSave = {
 // Features
 export type TCFFeatureRecord = {
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  current_preference?: UserConsentPreference; // NOTE: added on the client-side
   id: number;
   name: string;
   description: string;
@@ -120,10 +108,7 @@ export type TCFSpecialFeatureRecord = {
   name: string;
   description: string;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  current_preference?: UserConsentPreference; // NOTE: added on the client-side
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };
@@ -140,10 +125,7 @@ export type TCFVendorConsentRecord = {
   name?: string;
   description?: string;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  current_preference?: UserConsentPreference; // NOTE: added on the client-side
   purpose_consents?: Array<EmbeddedPurpose>;
 };
 
@@ -153,10 +135,7 @@ export type TCFVendorLegitimateInterestsRecord = {
   name?: string;
   description?: string;
   default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  current_preference?: UserConsentPreference; // NOTE: added on the client-side
   purpose_legitimate_interests?: Array<EmbeddedPurpose>;
 };
 
@@ -225,16 +204,14 @@ export type TcfModelsRecord =
   | TCFVendorConsentRecord
   | TCFVendorLegitimateInterestsRecord;
 
-export type TcfCookieKeyConsent = {
-  [id: string | number]: boolean | undefined;
-};
+export type TcfSystemsConsent = Record<string | number, boolean>;
 
-export interface TcfCookieConsent {
-  system_consent_preferences?: TcfCookieKeyConsent;
-  system_legitimate_interests_preferences?: TcfCookieKeyConsent;
+export interface TcfOtherConsent {
+  system_consent_preferences?: TcfSystemsConsent;
+  system_legitimate_interests_preferences?: TcfSystemsConsent;
 }
 
-export type TcfModelType = keyof TcfCookieConsent;
+export type TcfModelType = keyof TcfOtherConsent;
 
 export interface EnabledIds {
   purposesConsent: string[];
@@ -266,13 +243,31 @@ export type GVLJson = Pick<
   | "vendorListVersion"
   | "tcfPolicyVersion"
   | "lastUpdated"
-  | "stacks"
   | "purposes"
   | "specialPurposes"
   | "features"
   | "specialFeatures"
   | "vendors"
+  | "stacks"
+  | "dataCategories"
 >;
+
+// GVL translations are a subset of the GVL (basically, no vendors)
+export type GVLTranslationJson = Pick<
+  GVLJson,
+  | "gvlSpecificationVersion"
+  | "vendorListVersion"
+  | "tcfPolicyVersion"
+  | "lastUpdated"
+  | "purposes"
+  | "specialPurposes"
+  | "features"
+  | "specialFeatures"
+  | "stacks"
+  | "dataCategories"
+>;
+
+export type GVLTranslations = Record<string, GVLTranslationJson>;
 
 // GVL types—we should be able to get these from the library at some point,
 // but since they are on GVL 2.2, the types aren't quite right for GVL 3.

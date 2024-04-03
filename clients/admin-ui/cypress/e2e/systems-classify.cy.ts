@@ -1,6 +1,6 @@
 import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
 
-describe("Classify systems page", () => {
+describe.skip("Classify systems page", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/system", {

@@ -1,15 +1,22 @@
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
   Badge,
   Box,
   Checkbox,
   CheckboxProps,
   Flex,
+  Switch,
   Text,
+  useDisclosure,
+  useToast,
+  WarningIcon,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
-import { FC, ReactNode } from "react";
+import { ChangeEvent, FC } from "react";
+
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { errorToastParams } from "~/features/common/toast";
+import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
   value,
@@ -17,7 +24,13 @@ export const DefaultCell = ({
   value: string | undefined | number | boolean;
 }) => (
   <Flex alignItems="center" height="100%">
-    <Text fontSize="xs" lineHeight={4} fontWeight="normal">
+    <Text
+      fontSize="xs"
+      lineHeight={4}
+      fontWeight="normal"
+      overflow="hidden"
+      textOverflow="ellipsis"
+    >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>
   </Flex>
@@ -55,33 +68,44 @@ export const BadgeCell = ({
 export const GroupCountBadgeCell = ({
   value,
   suffix,
-  expand,
+  isDisplayAll,
 }: {
   value: string[] | string | undefined;
   suffix?: string;
-  expand: boolean;
+  isDisplayAll?: boolean;
 }) => {
   let badges = null;
-  if (Array.isArray(value) || !value) {
-    badges = expand ? (
-      // @ts-ignore
-      value.map((d) => (
-        <Box px={1} key={d}>
+  if (!value) {
+    return <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>;
+  }
+  if (Array.isArray(value)) {
+    // If there's only one value, always display it
+    if (value.length === 1) {
+      badges = <FidesBadge>{value}</FidesBadge>;
+    }
+    // Expanded case, list every value as a badge
+    else if (isDisplayAll && value.length > 0) {
+      badges = value.map((d) => (
+        <Box key={d} mr={2}>
           <FidesBadge>{d}</FidesBadge>
         </Box>
-      ))
-    ) : (
-      <FidesBadge>
-        {value ? value.length : 0}
-        {suffix ? ` ${suffix}` : null}
-      </FidesBadge>
-    );
+      ));
+    }
+    // Collapsed case, summarize the values in one badge
+    else {
+      badges = (
+        <FidesBadge>
+          {value.length}
+          {suffix ? ` ${suffix}` : null}
+        </FidesBadge>
+      );
+    }
   } else {
     badges = <FidesBadge>{value}</FidesBadge>;
   }
 
   return (
-    <Flex alignItems="center" height="100%" mr="2">
+    <Flex alignItems="center" height="100%" mr="2" overflowX="hidden">
       {badges}
     </Flex>
   );
@@ -106,32 +130,70 @@ type DefaultHeaderCellProps<T, V> = {
 
 export const DefaultHeaderCell = <T,>({
   value,
-  column,
 }: DefaultHeaderCellProps<
   T,
   string | number | string[] | undefined | boolean
->) => {
-  let sortIcon: ReactNode = null;
-  if (column.getIsSorted()) {
-    sortIcon =
-      column.getAutoSortDir() === "desc" ? (
-        <ArrowDownIcon color="gray.500" />
-      ) : (
-        <ArrowUpIcon color="gray.500" />
-      );
-  }
+>) => (
+  <Text fontSize="xs" lineHeight={9} fontWeight="medium">
+    {value}
+  </Text>
+);
+
+type EnableCellProps = {
+  value: boolean;
+  onToggle: (data: boolean) => Promise<RTKResult>;
+  title: string;
+  message: string;
+  isDisabled?: boolean;
+};
+
+export const EnableCell = ({
+  value,
+  onToggle,
+  title,
+  message,
+  isDisabled,
+}: EnableCellProps) => {
+  const modal = useDisclosure();
+  const toast = useToast();
+  const handlePatch = async ({ enable }: { enable: boolean }) => {
+    const result = await onToggle(enable);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    }
+  };
+
+  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
+    const { checked } = event.target;
+    if (checked) {
+      await handlePatch({ enable: true });
+    } else {
+      modal.onOpen();
+    }
+  };
 
   return (
-    <Text
-      _hover={{ backgroundColor: "gray.100" }}
-      fontSize="xs"
-      lineHeight={4}
-      fontWeight="medium"
-      pr={sortIcon ? 0 : 3.5}
-      onClick={column.getToggleSortingHandler()}
-    >
-      {value}
-      {sortIcon}
-    </Text>
+    <>
+      <Switch
+        colorScheme="complimentary"
+        isChecked={!value}
+        data-testid="toggle-switch"
+        disabled={isDisabled}
+        onChange={handleToggle}
+      />
+      <ConfirmationModal
+        isOpen={modal.isOpen}
+        onClose={modal.onClose}
+        onConfirm={() => {
+          handlePatch({ enable: false });
+          modal.onClose();
+        }}
+        title={title}
+        message={<Text color="gray.500">{message}</Text>}
+        continueButtonText="Confirm"
+        isCentered
+        icon={<WarningIcon color="orange.100" />}
+      />
+    </>
   );
 };

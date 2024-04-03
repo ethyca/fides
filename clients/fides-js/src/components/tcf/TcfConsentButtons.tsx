@@ -1,16 +1,24 @@
 import { VNode, h } from "preact";
 
-import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
+import {
+  ConsentMethod,
+  FidesInitOptions,
+  PrivacyExperience,
+} from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
 import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
+import { I18n } from "../../lib/i18n";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;
+  i18n: I18n;
+  options: FidesInitOptions;
   onManagePreferencesClick?: () => void;
   onSave: (consentMethod: ConsentMethod, keys: EnabledIds) => void;
   firstButton?: VNode;
   isMobile: boolean;
   includePrivacyPolicy?: boolean;
+  includeLanguageSelector?: boolean;
 }
 
 const getAllIds = (modelList: TcfModels) => {
@@ -22,11 +30,14 @@ const getAllIds = (modelList: TcfModels) => {
 
 export const TcfConsentButtons = ({
   experience,
+  i18n,
   onManagePreferencesClick,
   onSave,
   firstButton,
   isMobile,
   includePrivacyPolicy,
+  includeLanguageSelector,
+  options,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
@@ -65,13 +76,15 @@ export const TcfConsentButtons = ({
 
   return (
     <ConsentButtons
-      experienceConfig={experience.experience_config}
+      i18n={i18n}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
       isMobile={isMobile}
       includePrivacyPolicy={includePrivacyPolicy}
+      includeLanguageSelector={includeLanguageSelector}
+      options={options}
     />
   );
 };

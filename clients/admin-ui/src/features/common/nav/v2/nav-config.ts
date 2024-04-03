@@ -35,23 +35,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Data map",
+    title: "Data inventory",
     routes: [
       {
-        title: "Reporting",
-        path: routes.REPORTING_DATAMAP_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
-        requiresFlag: "datamapReportingPage",
-      },
-      {
-        title: "View map",
+        title: "Data lineage",
         path: routes.DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
       {
-        title: "View systems",
+        title: "Systems & vendors",
         path: routes.SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
@@ -69,10 +62,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Classify systems",
-        path: routes.CLASSIFY_SYSTEMS_ROUTE,
+        title: "Reporting",
+        path: routes.REPORTING_DATAMAP_ROUTE,
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        requiresFlag: "datamapReportingPage",
       },
     ],
   },
@@ -82,7 +76,10 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
-        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
+        scopes: [
+          ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+        ],
       },
       {
         title: "Connection manager",
@@ -101,19 +98,25 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Consent",
     routes: [
       {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
+      {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
       {
-        title: "Privacy notices",
+        title: "Notices",
         path: routes.PRIVACY_NOTICES_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
       {
-        title: "Privacy experience",
+        title: "Experiences",
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
@@ -157,7 +160,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
-        requiresFlag: "locationRegulationConfiguration",
       },
       {
         title: "Regulations",
@@ -167,7 +169,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
-        requiresFlag: "locationRegulationConfiguration",
       },
       {
         title: "Taxonomy",
@@ -193,7 +194,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
-        title: "Domain records",
+        title: "Domain verification",
         path: routes.DOMAIN_RECORDS_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: true,
@@ -201,7 +202,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
       {
         title: "Domains",
-        path: routes.CORS_CONFIGURATION_ROUTE,
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [
@@ -211,7 +212,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
       {
         title: "Consent",
-        path: routes.GLOABL_CONSENT_CONFIG_ROUTE,
+        path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [

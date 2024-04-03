@@ -1,14 +1,15 @@
 import { ComponentChildren, VNode, h, Fragment } from "preact";
 import type { HTMLAttributes } from "react";
-import { ExperienceConfig } from "../lib/consent-types";
+
+import { getConsentContext } from "../lib/consent-context";
+import type { I18n } from "../lib/i18n";
 
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
-import { getConsentContext } from "../lib/consent-context";
 
 export interface ConsentContentProps {
-  title: HTMLAttributes<HTMLHeadingElement>;
-  experience: ExperienceConfig;
+  titleProps: HTMLAttributes<HTMLHeadingElement>;
+  i18n: I18n;
   children: ComponentChildren;
   className?: string;
   onVendorPageClick?: () => void;
@@ -16,14 +17,18 @@ export interface ConsentContentProps {
 }
 
 const ConsentModal = ({
-  title,
+  titleProps,
   className,
-  experience,
+  i18n,
   renderModalFooter,
   children,
   onVendorPageClick,
 }: ConsentContentProps) => {
-  const showGpcBadge = getConsentContext().globalPrivacyControl;
+  const title = i18n.t("exp.title");
+  const description = i18n.t("exp.description");
+  const showGpcInfo = getConsentContext().globalPrivacyControl;
+  const gpcTitle = i18n.t("static.gpc.title");
+  const gpcDescription = i18n.t("static.gpc.description");
 
   return (
     <Fragment>
@@ -35,10 +40,10 @@ const ConsentModal = ({
         <div className="fides-modal-body">
           <div
             data-testid="fides-modal-title"
-            {...title}
+            {...titleProps}
             className="fides-modal-title"
           >
-            {experience.title}
+            {title}
           </div>
           <p
             data-testid="fides-modal-description"
@@ -46,11 +51,13 @@ const ConsentModal = ({
           >
             <ExperienceDescription
               onVendorPageClick={onVendorPageClick}
-              description={experience.description}
+              description={description}
               allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>
-          {showGpcBadge && <GpcInfo />}
+          {showGpcInfo && (
+            <GpcInfo title={gpcTitle} description={gpcDescription} />
+          )}
           {children}
         </div>
       </div>
