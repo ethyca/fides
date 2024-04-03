@@ -1,8 +1,5 @@
 import copy
 from datetime import datetime
-from unittest import mock
-from unittest.mock import Mock
-from uuid import uuid4
 
 import pytest
 from bson import ObjectId
@@ -19,13 +16,12 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import RequestTask
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 
+from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
     combined_mongo_postgresql_graph,
@@ -38,74 +34,96 @@ empty_policy = Policy()
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_combined_erasure_task(
     db,
-    mongo_inserts,
     postgres_inserts,
     integration_mongodb_config,
     integration_postgres_config,
     integration_mongodb_connector,
+    privacy_request_with_erasure_policy,
+    privacy_request,
+    mongo_inserts,
+    dsr_version,
+    request,
 ):
     """Includes examples of mongo nested and array erasures"""
-    policy = erasure_policy("A", "B")
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    policy = erasure_policy(db, "user.name", "user.contact")
     seed_email = postgres_inserts["customer"][0]["email"]
-    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
+    privacy_request_with_erasure_policy.policy_id = policy.id
+    privacy_request_with_erasure_policy.save(db)
+
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
 
     field([postgres_dataset], "postgres_example", "address", "city").data_categories = [
-        "A"
+        "user.name"
     ]
     field(
         [postgres_dataset], "postgres_example", "address", "state"
-    ).data_categories = ["B"]
+    ).data_categories = ["user.contact"]
     field([postgres_dataset], "postgres_example", "address", "zip").data_categories = [
-        "C"
+        "user.email"
     ]
     field(
         [postgres_dataset], "postgres_example", "customer", "name"
-    ).data_categories = ["A"]
-    field([mongo_dataset], "mongo_test", "address", "city").data_categories = ["A"]
-    field([mongo_dataset], "mongo_test", "address", "state").data_categories = ["B"]
-    field([mongo_dataset], "mongo_test", "address", "zip").data_categories = ["C"]
+    ).data_categories = ["user.name"]
+    field([mongo_dataset], "mongo_test", "address", "city").data_categories = [
+        "user.name"
+    ]
+    field([mongo_dataset], "mongo_test", "address", "state").data_categories = [
+        "user.contact"
+    ]
+    field([mongo_dataset], "mongo_test", "address", "zip").data_categories = [
+        "user.email"
+    ]
     field(
         [mongo_dataset], "mongo_test", "customer_details", "workplace_info", "position"
-    ).data_categories = ["A"]
+    ).data_categories = ["user.name"]
     field(
         [mongo_dataset], "mongo_test", "customer_details", "emergency_contacts", "phone"
-    ).data_categories = ["B"]
+    ).data_categories = ["user.contact"]
     field(
         [mongo_dataset], "mongo_test", "customer_details", "children"
-    ).data_categories = ["B"]
+    ).data_categories = ["user.contact"]
     field(
         [mongo_dataset], "mongo_test", "internal_customer_profile", "derived_interests"
-    ).data_categories = ["B"]
-    field([mongo_dataset], "mongo_test", "employee", "email").data_categories = ["B"]
+    ).data_categories = ["user.contact"]
+    field([mongo_dataset], "mongo_test", "employee", "email").data_categories = [
+        "user.contact"
+    ]
     field(
         [mongo_dataset],
         "mongo_test",
         "customer_feedback",
         "customer_information",
         "phone",
-    ).data_categories = ["A"]
+    ).data_categories = ["user.name"]
 
     field(
         [mongo_dataset], "mongo_test", "conversations", "thread", "chat_name"
-    ).data_categories = ["B"]
+    ).data_categories = ["user.contact"]
     field(
         [mongo_dataset],
         "mongo_test",
         "flights",
         "passenger_information",
         "passenger_ids",
-    ).data_categories = ["A"]
-    field([mongo_dataset], "mongo_test", "aircraft", "planes").data_categories = ["A"]
+    ).data_categories = ["user.name"]
+    field([mongo_dataset], "mongo_test", "aircraft", "planes").data_categories = [
+        "user.name"
+    ]
 
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    access_runner(
-        privacy_request,
+    access_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         graph,
         [integration_mongodb_config, integration_postgres_config],
@@ -113,13 +131,13 @@ async def test_combined_erasure_task(
         db,
     )
 
-    x = erasure_runner(
-        privacy_request,
+    x = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 
@@ -140,8 +158,7 @@ async def test_combined_erasure_task(
         "mongo_test:rewards": 0,
     }
 
-    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
-    rerun_access = access_runner(
+    rerun_access = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -250,34 +267,50 @@ async def test_combined_erasure_task(
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
-    policy = erasure_policy("A", "B")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+async def test_mongo_erasure_task(
+    db,
+    mongo_inserts,
+    integration_mongodb_config,
+    dsr_version,
+    request,
+    privacy_request_with_erasure_policy,
+):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    policy = erasure_policy(db, "user.name", "user.contact")
     seed_email = mongo_inserts["customer"][0]["email"]
-    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
+    privacy_request_with_erasure_policy.policy_id = policy.id
+    privacy_request_with_erasure_policy.save(db)
 
     dataset, graph = integration_db_mongo_graph(
         "mongo_test", integration_mongodb_config.key
     )
-    field([dataset], "mongo_test", "address", "city").data_categories = ["A"]
-    field([dataset], "mongo_test", "address", "state").data_categories = ["B"]
-    field([dataset], "mongo_test", "address", "zip").data_categories = ["C"]
-    field([dataset], "mongo_test", "customer", "name").data_categories = ["A"]
+    field([dataset], "mongo_test", "address", "city").data_categories = ["user.name"]
+    field([dataset], "mongo_test", "address", "state").data_categories = [
+        "user.contact"
+    ]
+    field([dataset], "mongo_test", "address", "zip").data_categories = ["user.email"]
+    field([dataset], "mongo_test", "customer", "name").data_categories = ["user.name"]
 
-    access_runner(
-        privacy_request,
+    access_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         graph,
         [integration_mongodb_config],
         {"email": seed_email},
         db,
     )
-    v = erasure_runner(
-        privacy_request,
+    v = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         graph,
         [integration_mongodb_config],
         {"email": seed_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
     assert v == {
@@ -291,12 +324,20 @@ async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config)
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_dask_mongo_task(
-    db, integration_mongodb_config: ConnectionConfig
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+async def test_access_mongo_task(
+    db,
+    integration_mongodb_config: ConnectionConfig,
+    dsr_version,
+    privacy_request,
+    request,
 ) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         empty_policy,
         integration_db_graph("mongo_test", integration_mongodb_config.key),
@@ -331,9 +372,15 @@ async def test_dask_mongo_task(
 async def test_composite_key_erasure(
     db,
     integration_mongodb_config: ConnectionConfig,
+    mongo_inserts,
+    privacy_request,
+    privacy_request_with_erasure_policy,
+    use_dsr_3_0,
 ) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    policy = erasure_policy("A")
+    policy = erasure_policy(db, "user.name")
+    privacy_request_with_erasure_policy.policy_id = policy.id
+    privacy_request_with_erasure_policy.save(db)
+
     customer = Collection(
         name="customer",
         fields=[
@@ -362,7 +409,7 @@ async def test_composite_key_erasure(
             ScalarField(
                 name="description",
                 data_type_converter=StringTypeConverter(),
-                data_categories=["A"],
+                data_categories=["user.name"],
             ),
             ScalarField(
                 name="customer_id",
@@ -378,8 +425,8 @@ async def test_composite_key_erasure(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = access_runner(
-        privacy_request,
+    access_request_data = access_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_mongodb_config],
@@ -394,13 +441,13 @@ async def test_composite_key_erasure(
     assert composite_pk_test["customer_id"] == 1
 
     # erasure
-    erasure = erasure_runner(
-        privacy_request,
+    erasure = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 
@@ -408,8 +455,8 @@ async def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    access_request_data = access_runner(
+
+    access_request_data = access_runner_tester(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -427,12 +474,18 @@ async def test_composite_key_erasure(
 async def test_access_erasure_type_conversion(
     db,
     integration_mongodb_config: ConnectionConfig,
+    privacy_request_with_erasure_policy,
+    use_dsr_3_0,
 ) -> None:
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee foreign_id field, which is an object_id stored as a string, and
     converting it into an object_id to query against the type_link_test._id field."""
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    policy = erasure_policy("A")
+
+    policy = erasure_policy(db, "user.name")
+
+    privacy_request_with_erasure_policy.policy_id = policy.id
+    privacy_request_with_erasure_policy.save(db)
+
     employee = Collection(
         name="employee",
         fields=[
@@ -461,7 +514,7 @@ async def test_access_erasure_type_conversion(
             ScalarField(
                 name="name",
                 data_type_converter=StringTypeConverter(),
-                data_categories=["A"],
+                data_categories=["user.name"],
             ),
             ScalarField(name="key", data_type_converter=IntTypeConverter()),
         ],
@@ -473,8 +526,8 @@ async def test_access_erasure_type_conversion(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = access_runner(
-        privacy_request,
+    access_request_data = access_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_mongodb_config],
@@ -489,13 +542,13 @@ async def test_access_erasure_type_conversion(
     assert link["_id"] == ObjectId("000000000000000000000001")
 
     # erasure
-    erasure = erasure_runner(
-        privacy_request,
+    erasure = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 
@@ -504,6 +557,10 @@ async def test_access_erasure_type_conversion(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_object_querying_mongo(
     db,
     privacy_request,
@@ -511,7 +568,10 @@ async def test_object_querying_mongo(
     policy,
     integration_mongodb_config,
     integration_postgres_config,
+    dsr_version,
+    request,
 ):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     postgres_config = copy.copy(integration_postgres_config)
 
     dataset_postgres = Dataset(**example_datasets[0])
@@ -522,7 +582,7 @@ async def test_object_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = access_runner(
+    access_request_results = access_runner_tester(
         privacy_request,
         policy,
         dataset_graph,
@@ -604,16 +664,19 @@ async def test_object_querying_mongo(
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_get_cached_data_for_erasures(
-    integration_postgres_config, integration_mongodb_config, policy, db
+    integration_postgres_config,
+    integration_mongodb_config,
+    policy,
+    db,
+    use_dsr_2_0,
+    privacy_request,
 ) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    access_request_results = access_runner(
+    access_request_results = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -647,6 +710,61 @@ async def test_get_cached_data_for_erasures(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_get_saved_data_for_erasures_3_0(
+    integration_postgres_config,
+    integration_mongodb_config,
+    policy,
+    db,
+    use_dsr_3_0,
+    privacy_request,
+) -> None:
+    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
+        integration_postgres_config, integration_mongodb_config
+    )
+    graph = DatasetGraph(mongo_dataset, postgres_dataset)
+
+    access_runner_tester(
+        privacy_request,
+        policy,
+        graph,
+        [integration_mongodb_config, integration_postgres_config],
+        {"email": "customer-1@example.com"},
+        db,
+    )
+
+    conversations_task = privacy_request.access_tasks.filter(
+        RequestTask.collection_address == "mongo_test:conversations"
+    ).first()
+
+    # Assert access task saved data in erasure format, that will be copied over to the erasure
+    # nodes of the same name
+    assert conversations_task.get_decoded_data_for_erasures()[0]["thread"] == [
+        {
+            "comment": "com_0001",
+            "message": "hello, testing in-flight chat feature",
+            "chat_name": "John C",
+            "ccn": "123456789",
+        },
+        "FIDESOPS_DO_NOT_MASK",
+    ]
+
+    # The access request results are filtered on array data, because it was an entrypoint into the node.
+    assert conversations_task.get_decoded_access_data()[0]["thread"] == [
+        {
+            "comment": "com_0001",
+            "message": "hello, testing in-flight chat feature",
+            "chat_name": "John C",
+            "ccn": "123456789",
+        }
+    ]
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_return_all_elements_config_access_request(
     db,
     privacy_request,
@@ -655,6 +773,8 @@ async def test_return_all_elements_config_access_request(
     integration_mongodb_config,
     integration_postgres_config,
     integration_mongodb_connector,
+    dsr_version,
+    request,
 ):
     """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
     queried data and used to locate data in other collections
@@ -662,6 +782,8 @@ async def test_return_all_elements_config_access_request(
     mongo_test:internal_customer_profile.customer_identifiers.derived_phone field and mongo_test:rewards.owner field
     have return_all_elements set to True
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     postgres_config = copy.copy(integration_postgres_config)
 
     dataset_postgres = Dataset(**example_datasets[0])
@@ -672,7 +794,7 @@ async def test_return_all_elements_config_access_request(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = access_runner(
+    access_request_results = access_runner_tester(
         privacy_request,
         policy,
         dataset_graph,
@@ -700,6 +822,10 @@ async def test_return_all_elements_config_access_request(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_return_all_elements_config_erasure(
     db,
     mongo_inserts,
@@ -707,32 +833,38 @@ async def test_return_all_elements_config_erasure(
     integration_mongodb_config,
     integration_postgres_config,
     integration_mongodb_connector,
+    dsr_version,
+    request,
+    privacy_request,
 ):
     """Includes examples of mongo nested and array erasures"""
-    policy = erasure_policy("A", "B")
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
+    policy = erasure_policy(db, "user.name", "user.contact")
+    privacy_request.policy_id = policy.id
+    privacy_request.save(db)
+
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
 
     field(
         [mongo_dataset], "mongo_test", "rewards", "owner", "phone"
-    ).data_categories = ["A"]
+    ).data_categories = ["user.name"]
     field(
         [mongo_dataset],
         "mongo_test",
         "internal_customer_profile",
         "customer_identifiers",
         "derived_phone",
-    ).data_categories = ["B"]
+    ).data_categories = ["user.contact"]
 
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
     seed_email = postgres_inserts["customer"][0]["email"]
     seed_phone = mongo_inserts["rewards"][0]["owner"][0]["phone"]
 
-    access_runner(
+    access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -741,7 +873,7 @@ async def test_return_all_elements_config_erasure(
         db,
     )
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -777,14 +909,23 @@ async def test_return_all_elements_config_erasure(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_array_querying_mongo(
     db,
     privacy_request,
+    privacy_request_status_pending,
     example_datasets,
     policy,
     integration_mongodb_config,
     integration_postgres_config,
+    dsr_version,
+    request,
 ):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     postgres_config = copy.copy(integration_postgres_config)
 
     dataset_postgres = Dataset(**example_datasets[0])
@@ -795,7 +936,7 @@ async def test_array_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = access_runner(
+    access_request_results = access_runner_tester(
         privacy_request,
         policy,
         dataset_graph,
@@ -922,18 +1063,17 @@ async def test_array_querying_mongo(
         dataset_name="mongo_test", collection_name="conversations", status="complete"
     )
     assert conversation_logs.count() == 1
-    assert conversation_logs[0].fields_affected == [
-        {
-            "path": "mongo_test:conversations:thread.chat_name",
-            "field_name": "thread.chat_name",
-            "data_categories": ["user.name"],
-        },
-        {
-            "path": "mongo_test:conversations:thread.ccn",
-            "field_name": "thread.ccn",
-            "data_categories": ["user.financial.bank_account"],
-        },
-    ]
+    assert {
+        "path": "mongo_test:conversations:thread.chat_name",
+        "field_name": "thread.chat_name",
+        "data_categories": ["user.name"],
+    } in conversation_logs[0].fields_affected
+
+    assert {
+        "path": "mongo_test:conversations:thread.ccn",
+        "field_name": "thread.ccn",
+        "data_categories": ["user.financial.bank_account"],
+    } in conversation_logs[0].fields_affected
 
     # Integer field mongo_test:flights.plane used to locate only matching elem in mongo_test:aircraft:planes array field
     assert access_request_results["mongo_test:aircraft"][0]["planes"] == ["30005"]
@@ -1041,9 +1181,8 @@ async def test_array_querying_mongo(
     ]
 
     # Run again with different email
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
-    access_request_results = access_runner(
-        privacy_request,
+    access_request_results = access_runner_tester(
+        privacy_request_status_pending,
         policy,
         dataset_graph,
         [postgres_config, integration_mongodb_config],

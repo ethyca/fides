@@ -1514,7 +1514,7 @@ async def test_timescale_erasure_request_task(
     v = access_runner_tester(
         privacy_request_with_erasure_policy,
         erasure_policy,
-        integration_db_graph(database_name),
+        graph,
         [timescale_connection_config],
         {"email": "customer-1@example.com"},
         db,
@@ -1573,7 +1573,6 @@ async def test_timescale_erasure_request_task(
 )
 async def test_timescale_query_and_mask_hypertable(
     db,
-    policy,
     erasure_policy,
     timescale_connection_config,
     timescale_integration_db,
@@ -1613,7 +1612,7 @@ async def test_timescale_query_and_mask_hypertable(
 
     access_results = access_runner_tester(
         privacy_request_with_erasure_policy,
-        policy,
+        erasure_policy,
         graph,
         [timescale_connection_config],
         {"email": "employee-1@example.com"},
