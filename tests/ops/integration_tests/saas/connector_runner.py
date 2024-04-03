@@ -311,6 +311,8 @@ class ConnectorRunner:
                 assert len(
                     access_results[f"{fides_key}:{collection['name']}"]
                 ), f"No rows returned for collection '{collection['name']}'"
+        else:
+            access_results = {}
 
         erasure_results = await graph_task.run_erasure(
             privacy_request,
@@ -322,7 +324,7 @@ class ConnectorRunner:
             self.db,
         )
 
-        return access_results or {}, erasure_results
+        return access_results, erasure_results
 
 
 def _config(connector_type: str) -> Dict[str, Any]:
