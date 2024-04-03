@@ -6,7 +6,8 @@ import type { Locale, Messages, Language } from "..";
  *
  * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
  * 1) Add the static import of the new ./{locale}/messages.json file
- * 2) Add the locale to the LOCALES object below
+ * 2) Add the locale to the STATIC_MESSAGES object below
+ * 3) Add the locale to the LOCALE_LANGUAGE_MAP object below
  */
 import ar from "./ar/messages.json";
 import bg from "./bg/messages.json";

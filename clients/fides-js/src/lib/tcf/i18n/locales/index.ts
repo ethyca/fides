@@ -6,7 +6,7 @@ import type { Locale, Messages } from "../../../i18n";
  *
  * NOTE: This process isn't automatic. To add a new static locale, follow these steps:
  * 1) Add the static import of the new ./{locale}/messages-tcf.json file
- * 2) Add the locale to the LOCALES object below
+ * 2) Add the locale to the STATIC_MESSAGES_TCF object below
  */
 import ar from "./ar/messages-tcf.json";
 import bg from "./bg/messages-tcf.json";

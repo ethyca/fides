@@ -38,6 +38,7 @@ import {
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
 import { defaultShowModal } from "./lib/consent-utils";
+import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 
 declare global {
   interface Window {
@@ -184,6 +185,7 @@ _Fides = {
   meta,
   shopify,
   showModal: defaultShowModal,
+  getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
 };
 
 if (typeof window !== "undefined") {

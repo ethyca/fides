@@ -40,6 +40,7 @@ existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 - [fides\_string](Fides.md#fides_string)
 - [initialized](Fides.md#initialized)
 - [showModal](Fides.md#showmodal)
+- [getModalLinkLabel](Fides.md#getmodallinklabel)
 - [gtm](Fides.md#gtm)
 - [init](Fides.md#init)
 
@@ -183,6 +184,54 @@ function myCustomShowModalFunction() {
 ##### Returns
 
 `void`
+
+___
+
+### getModalLinkLabel
+
+• **getModalLinkLabel**: (`options?`: \{ `disableLocalization`: `boolean`  }) => `string`
+
+The modal's "Trigger link label" text can be customized, per regulation, for each language defined in the `experience`.
+
+Use this function to get the label in the appropriate language for the user's current locale.
+To always return in the default language only, pass the `disableLocalization` option as `true`.
+
+**`Example`**
+
+Getting the link text in the user's current locale (eg. Spanish):
+```ts
+console.log(Fides.getModalLinkLabel()); // "Tus preferencias de privacidad"
+```
+
+Getting the link text in the default locale to match other links on the page:
+```ts
+console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
+```
+
+**`Example`**
+
+Applying the link text to a custom modal link element:
+```html
+<button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
+<script>
+ document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+</script>
+```
+
+#### Type declaration
+
+▸ (`options?`): `string`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `options?` | `Object` |
+| `options.disableLocalization` | `boolean` |
+
+##### Returns
+
+`string`
 
 ___
 
