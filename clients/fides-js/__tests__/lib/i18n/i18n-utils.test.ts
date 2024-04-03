@@ -7,6 +7,7 @@ import {
 } from "~/fides";
 import {
   DEFAULT_LOCALE,
+  DEFAULT_MODAL_LINK_LABEL,
   LOCALE_REGEX,
   detectUserLocale,
   extractDefaultLocaleFromExperience,
@@ -20,6 +21,7 @@ import {
   setupI18n,
   selectBestExperienceConfigTranslation,
   areLocalesEqual,
+  localizeModalLinkText,
 } from "~/lib/i18n";
 import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
@@ -44,6 +46,37 @@ describe("i18n-utils", () => {
   let mockAvailableLanguages: Language[] = [
     { locale: "en", label_en: "English", label_original: "English" },
     { locale: "es", label_en: "Spanish", label_original: "Español" },
+  ];
+  const mockI18nCatalogLoad = [
+    {
+      "exp.accept_button_label": "Accept Test",
+      "exp.acknowledge_button_label": "Acknowledge Test",
+      "exp.banner_description": "Banner Description Test",
+      "exp.banner_title": "Banner Title Test",
+      "exp.description": "Description Test",
+      "exp.modal_link_label": "Link Label Test",
+      "exp.privacy_policy_link_label": "Privacy Policy Test",
+      "exp.privacy_policy_url": "https://privacy.example.com/",
+      "exp.privacy_preferences_link_label": "Manage Preferences Test",
+      "exp.reject_button_label": "Reject Test",
+      "exp.save_button_label": "Save Test",
+      "exp.title": "Title Test",
+    },
+    {
+      "exp.accept_button_label": "Aceptar Prueba",
+      "exp.acknowledge_button_label": "Reconocer Prueba",
+      "exp.banner_description": "Descripción del Banner de Prueba",
+      "exp.banner_title": "Título del Banner de Prueba",
+      "exp.description": "Descripción de la Prueba",
+      "exp.modal_link_label": "Prueba de etiqueta",
+      "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
+      "exp.privacy_policy_url": "https://privacy.example.com/es",
+      "exp.privacy_preferences_link_label":
+        "Administrar Preferencias de Prueba",
+      "exp.reject_button_label": "Rechazar Prueba",
+      "exp.save_button_label": "Guardar Prueba",
+      "exp.title": "Título de la Prueba",
+    },
   ];
 
   const mockI18n = {
@@ -73,10 +106,16 @@ describe("i18n-utils", () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
 
-    t: jest.fn(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (idOrDescriptor: string | MessageDescriptor): string => "mock translate"
-    ),
+    t: jest.fn((idOrDescriptor: string | MessageDescriptor): string => {
+      switch (mockCurrentLocale) {
+        case "en":
+          return "mock translation";
+        case "es":
+          return "traducción simulada";
+        default:
+          return idOrDescriptor.toString();
+      }
+    }),
   };
 
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
@@ -231,33 +270,8 @@ describe("i18n-utils", () => {
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(updatedLocales).toEqual(["en", "es"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      expect(mockI18n.load).toHaveBeenCalledWith("en", {
-        "exp.accept_button_label": "Accept Test",
-        "exp.acknowledge_button_label": "Acknowledge Test",
-        "exp.banner_description": "Banner Description Test",
-        "exp.banner_title": "Banner Title Test",
-        "exp.description": "Description Test",
-        "exp.privacy_policy_link_label": "Privacy Policy Test",
-        "exp.privacy_policy_url": "https://privacy.example.com/",
-        "exp.privacy_preferences_link_label": "Manage Preferences Test",
-        "exp.reject_button_label": "Reject Test",
-        "exp.save_button_label": "Save Test",
-        "exp.title": "Title Test",
-      });
-      expect(mockI18n.load).toHaveBeenCalledWith("es", {
-        "exp.accept_button_label": "Aceptar Prueba",
-        "exp.acknowledge_button_label": "Reconocer Prueba",
-        "exp.banner_description": "Descripción del Banner de Prueba",
-        "exp.banner_title": "Título del Banner de Prueba",
-        "exp.description": "Descripción de la Prueba",
-        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
-        "exp.privacy_policy_url": "https://privacy.example.com/es",
-        "exp.privacy_preferences_link_label":
-          "Administrar Preferencias de Prueba",
-        "exp.reject_button_label": "Rechazar Prueba",
-        "exp.save_button_label": "Guardar Prueba",
-        "exp.title": "Título de la Prueba",
-      });
+      expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", mockI18nCatalogLoad[1]);
     });
 
     it("handles nulls and empty strings in API responses", () => {
@@ -297,19 +311,7 @@ describe("i18n-utils", () => {
       const EXPECTED_NUM_TRANSLATIONS = 1;
       expect(updatedLocales).toEqual(["en"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      expect(mockI18n.load).toHaveBeenCalledWith("en", {
-        "exp.accept_button_label": "Accept Test",
-        "exp.acknowledge_button_label": "Acknowledge Test",
-        "exp.banner_description": "Banner Description Test",
-        "exp.banner_title": "Banner Title Test",
-        "exp.description": "Description Test",
-        "exp.privacy_policy_link_label": "Privacy Policy Test",
-        "exp.privacy_policy_url": "https://privacy.example.com/",
-        "exp.privacy_preferences_link_label": "Manage Preferences Test",
-        "exp.reject_button_label": "Reject Test",
-        "exp.save_button_label": "Save Test",
-        "exp.title": "Title Test",
-      });
+      expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
     });
 
     it("sets overrides experience_config translations when no locale match", () => {
@@ -329,33 +331,15 @@ describe("i18n-utils", () => {
       expect(updatedLocales).toEqual(["en", "es"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
       expect(mockI18n.load).toHaveBeenCalledWith("en", {
-        "exp.accept_button_label": "Accept Test",
-        "exp.acknowledge_button_label": "Acknowledge Test",
-        "exp.banner_description": "Banner Description Test",
-        "exp.banner_title": "Banner Title Test",
-        "exp.description": experienceTranslationOverrides.description,
-        "exp.privacy_policy_link_label": "Privacy Policy Test",
-        "exp.privacy_policy_url":
-          experienceTranslationOverrides.privacy_policy_url,
-        "exp.privacy_preferences_link_label": "Manage Preferences Test",
-        "exp.reject_button_label": "Reject Test",
-        "exp.save_button_label": "Save Test",
-        "exp.title": experienceTranslationOverrides.title,
+        ...mockI18nCatalogLoad[0],
+        ...{
+          "exp.description": experienceTranslationOverrides.description,
+          "exp.privacy_policy_url":
+            experienceTranslationOverrides.privacy_policy_url,
+          "exp.title": experienceTranslationOverrides.title,
+        },
       });
-      expect(mockI18n.load).toHaveBeenCalledWith("es", {
-        "exp.accept_button_label": "Aceptar Prueba",
-        "exp.acknowledge_button_label": "Reconocer Prueba",
-        "exp.banner_description": "Descripción del Banner de Prueba",
-        "exp.banner_title": "Título del Banner de Prueba",
-        "exp.description": "Descripción de la Prueba",
-        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
-        "exp.privacy_policy_url": "https://privacy.example.com/es",
-        "exp.privacy_preferences_link_label":
-          "Administrar Preferencias de Prueba",
-        "exp.reject_button_label": "Rechazar Prueba",
-        "exp.save_button_label": "Guardar Prueba",
-        "exp.title": "Título de la Prueba",
-      });
+      expect(mockI18n.load).toHaveBeenCalledWith("es", mockI18nCatalogLoad[1]);
     });
 
     it("does not set overrides experience_config translations when no locale match", () => {
@@ -374,33 +358,8 @@ describe("i18n-utils", () => {
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(updatedLocales).toEqual(["en", "es"]);
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      expect(mockI18n.load).toHaveBeenCalledWith("en", {
-        "exp.accept_button_label": "Accept Test",
-        "exp.acknowledge_button_label": "Acknowledge Test",
-        "exp.banner_description": "Banner Description Test",
-        "exp.banner_title": "Banner Title Test",
-        "exp.description": "Description Test",
-        "exp.privacy_policy_link_label": "Privacy Policy Test",
-        "exp.privacy_policy_url": "https://privacy.example.com/",
-        "exp.privacy_preferences_link_label": "Manage Preferences Test",
-        "exp.reject_button_label": "Reject Test",
-        "exp.save_button_label": "Save Test",
-        "exp.title": "Title Test",
-      });
-      expect(mockI18n.load).toHaveBeenCalledWith("es", {
-        "exp.accept_button_label": "Aceptar Prueba",
-        "exp.acknowledge_button_label": "Reconocer Prueba",
-        "exp.banner_description": "Descripción del Banner de Prueba",
-        "exp.banner_title": "Título del Banner de Prueba",
-        "exp.description": "Descripción de la Prueba",
-        "exp.privacy_policy_link_label": "Política de Privacidad de Prueba",
-        "exp.privacy_policy_url": "https://privacy.example.com/es",
-        "exp.privacy_preferences_link_label":
-          "Administrar Preferencias de Prueba",
-        "exp.reject_button_label": "Rechazar Prueba",
-        "exp.save_button_label": "Guardar Prueba",
-        "exp.title": "Título de la Prueba",
-      });
+      expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", mockI18nCatalogLoad[1]);
     });
 
     describe("when loading from a tcf_overlay experience", () => {
@@ -903,6 +862,42 @@ describe("i18n-utils", () => {
       expect(getCurrentLocale(testI18n)).toEqual("en");
       testI18n.activate("es");
       expect(getCurrentLocale(testI18n)).toEqual("es");
+    });
+  });
+
+  describe("localizeModalLinkText", () => {
+    it("should return the localized label when localization is not disabled", () => {
+      mockI18n.activate("es");
+      const result = localizeModalLinkText(false, mockI18n, mockExperience);
+      expect(result).toBe("traducción simulada");
+    });
+
+    it("should return the default label when localization is not disabled and no matching locale is found", () => {
+      mockI18n.activate("fr");
+      const result = localizeModalLinkText(false, mockI18n, mockExperience);
+      expect(result).toBe(DEFAULT_MODAL_LINK_LABEL);
+    });
+
+    it("should return the default locale label when localization is disabled and no matching locale is found", () => {
+      mockI18n.activate("en");
+      mockI18n.getDefaultLocale.mockReturnValue("fr");
+      mockI18n.getDefaultLocale.mockReturnValue(DEFAULT_LOCALE);
+      const result = localizeModalLinkText(true, mockI18n, mockExperience);
+      expect(result).toBe("Link Label Test");
+    });
+
+    it("should return the label for the default locale when localization is disabled and a matching locale is found", () => {
+      mockI18n.activate("en");
+      mockI18n.getDefaultLocale.mockReturnValue("es");
+      const result = localizeModalLinkText(true, mockI18n, mockExperience);
+      expect(result).toBe("Prueba de etiqueta");
+    });
+
+    it("should return the default label when localization is disabled and no matching locale is found", () => {
+      mockI18n.activate("en");
+      mockI18n.getDefaultLocale.mockReturnValue("fr");
+      const result = localizeModalLinkText(true, mockI18n, mockExperience);
+      expect(result).toBe(DEFAULT_MODAL_LINK_LABEL);
     });
   });
 

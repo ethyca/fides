@@ -15,10 +15,21 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.33.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.33.1...main)
+
+### Added
+- Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
+- Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
 
 ### Fixed
+
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
+- Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
+
+## [2.33.1](https://github.com/ethyca/fides/compare/2.33.0...2.33.1)
+
+### Added
+- Adds CUSTOM_OPTIONS_PATH to Privacy Center env vars [#4769](https://github.com/ethyca/fides/pull/4769)
 
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
 
@@ -30,6 +41,8 @@ The types of changes are:
 - Added language switching support to the FidesJS UI based on configured translations [#4737](https://github.com/ethyca/fides/pull/4737)
 - Added ability to override some experience language and primary color [#4743](https://github.com/ethyca/fides/pull/4743)
 - Generate FidesJS SDK Reference Docs from tsdoc comments [#4736](https://github.com/ethyca/fides/pull/4736)
+- Added erasure support for Adyen [#4735](https://github.com/ethyca/fides/pull/4735)
+- Added erasure support for Iterable [#4695](https://github.com/ethyca/fides/pull/4695)
 
 ### Changed
 

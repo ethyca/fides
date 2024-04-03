@@ -61,4 +61,8 @@ export type ExperienceTranslationResponse = {
    * The versioned artifact of the translation and its Experience Config. Should be supplied when saving privacy preferences for additional context.
    */
   privacy_experience_config_history_id: string;
+  /**
+   * label to be provided to getModalLinkLabel
+   */
+  modal_link_label?: string;
 };
