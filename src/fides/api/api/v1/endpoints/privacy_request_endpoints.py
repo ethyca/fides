@@ -48,7 +48,7 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph import DatasetGraph, Node
+from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -92,7 +92,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
-    RowCountRequest,
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity

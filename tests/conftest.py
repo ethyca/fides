@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
@@ -9,6 +10,7 @@ from uuid import uuid4
 import pytest
 import requests
 import yaml
+from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
@@ -636,13 +638,26 @@ def run_privacy_request_task(celery_session_app):
     ]
 
 
-def wait_for_access_terminator_completion(db, pr):
-    terminator = pr.access_tasks.filter(
-        RequestTask.collection_address == TERMINATOR_ADDRESS.value
-    ).first()
-    assert terminator
-    while terminator.status not in exited_statuses:
-        db.refresh(pr)
+def wait_for_terminator_completion(
+    db: Session, pr: PrivacyRequest, action_type: ActionType
+):
+    def all_tasks_have_run(tasks: Query) -> bool:
+        return all(tsk.status in exited_statuses for tsk in tasks)
+
+    db.commit()
+    counter = 0
+    while not all_tasks_have_run(
+        (
+            db.query(RequestTask).filter(
+                RequestTask.privacy_request_id == pr.id,
+                RequestTask.action_type == action_type,
+            )
+        )
+    ):
+        time.sleep(1)
+        counter += 1
+        if counter == 5:
+            raise Exception()
 
 
 def test_access_runner(
@@ -664,7 +679,7 @@ def test_access_runner(
         )
     except PrivacyRequestExit:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
-        wait_for_access_terminator_completion(session, privacy_request)
+        wait_for_terminator_completion(session, privacy_request, ActionType.access)
         return privacy_request.get_raw_access_results()
 
 

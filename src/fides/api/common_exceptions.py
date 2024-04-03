@@ -163,6 +163,10 @@ class RequestTaskNotFound(BaseException):
     """Privacy Request Task Not Found"""
 
 
+class UpstreamTasksNotReady(BaseException):
+    """Privacy Request Task awaiting upstream tasks"""
+
+
 class NoCachedManualWebhookEntry(BaseException):
     """No manual data exists for this webhook on the given privacy request."""
 

@@ -8,6 +8,7 @@ from fides.api.common_exceptions import (
     PrivacyRequestNotFound,
     RequestTaskNotFound,
     ResumeTaskException,
+    UpstreamTasksNotReady,
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -75,8 +76,11 @@ def collect_task_resources(
 def run_prerequisite_task_checks(
     session: Session, privacy_request_id: str, privacy_request_task_id: str
 ) -> Tuple[PrivacyRequest, RequestTask, Query]:
-    """Verify privacy request and task request exist and upstream tasks are complete and return resources
-    for use in executing task"""
+    """
+    Upfront checks for seeing if we can run a Request Task
+
+    Returns resources for use in executing a task
+    """
     privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
         db=session, object_id=privacy_request_id
     )
@@ -96,16 +100,19 @@ def run_prerequisite_task_checks(
 
     assert request_task  # For mypy
     upstream_results: Query = session.query(RequestTask).filter(False)
+    # Only bother running this if the current task body needs to run
     if request_task.status == ExecutionLogStatus.pending:
         upstream_results = session.query(RequestTask).filter(
             RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.status.in_(completed_statuses),
             RequestTask.action_type == request_task.action_type,
             RequestTask.collection_address.in_(request_task.upstream_tasks or []),
         )
 
-        if not upstream_results.count() == len(request_task.upstream_tasks or []):
-            raise RequestTaskNotFound(
+        if not all(
+            upstream_task.status in completed_statuses
+            for upstream_task in upstream_results
+        ) or not upstream_results.count() == len(request_task.upstream_tasks):
+            raise UpstreamTasksNotReady(
                 f"Cannot start {request_task.action_type} task {request_task.collection_address}. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
             )
 
@@ -145,7 +152,7 @@ def create_graph_task(session: Session, request_task: RequestTask) -> GraphTask:
         mark_current_and_downstream_nodes_as_failed(request_task, session)
 
         raise ResumeTaskException(
-            f"Cannot resume task. Error hydrating task from database: {request_task.privacy_request_id}, Request Task {request_task.id}"
+            f"Cannot resume task. Error hydrating task from database: Request Task {request_task.id} for Privacy Request {request_task.privacy_request_id}"
         )
 
     return graph_task
@@ -179,7 +186,7 @@ def can_run_task_body(
     request_task: RequestTask,
 ) -> bool:
     """Return true if we can execute the task body. We should skip if the task is already
-    complete or we've reached a terminator node"""
+    complete or this is a root/terminator node"""
     if request_task.status in completed_statuses:
         logger_method(request_task)(
             "Skipping already-completed {} task {}. Privacy Request: {}, Request Task {}",
@@ -216,7 +223,7 @@ def queue_downstream_tasks(
 
     If we've reached the terminator task, restart the privacy request from the appropriate checkpoint.
     """
-    pending_downstream: Query = request_task.pending_downstream_tasks(session)
+    pending_downstream: Query = request_task.get_pending_downstream_tasks(session)
     for downstream_task in pending_downstream:
         if downstream_task.upstream_tasks_complete(session):
             logger_method(downstream_task)(
@@ -273,6 +280,8 @@ def run_access_node(
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
             graph_task: GraphTask = create_graph_task(session, request_task)
+            # Currently, upstream tasks and "input keys" (which are built by data dependencies)
+            # are the same, but they may not be the same in the future.
             ordered_upstream_tasks: List[
                 Optional[RequestTask]
             ] = order_tasks_by_input_key(

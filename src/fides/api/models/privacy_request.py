@@ -1036,6 +1036,20 @@ class PrivacyRequest(
         assert root  # for mypy
         return root
 
+    def get_terminate_task_by_action(self, action: ActionType) -> RequestTask:
+        """Get the terminate task for a specific action"""
+        terminate: RequestTask = (
+            self.get_tasks_by_action(action)
+            .filter(RequestTask.collection_address == TERMINATOR_ADDRESS.value)
+            .first()
+        )
+        if not terminate:
+            raise Exception(
+                f"Expected {action.value.capitalize()} terminate node cannot be found on privacy request {self.id} "
+            )
+        assert terminate  # for mypy
+        return terminate
+
     def get_raw_access_results(self) -> Dict[str, List[Row]]:
         """Retrieve the *raw* access data saved on the individual access nodes
 
@@ -1666,27 +1680,22 @@ class RequestTask(Base):
         return self.request_task_address == TERMINATOR_ADDRESS
 
     def get_decoded_access_data(self) -> List[Row]:
-        """ "Decode json.loads using custom decoder"""
+        """Decode the collected access data"""
         return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
 
     def get_decoded_data_for_erasures(self) -> List[Row]:
+        """Decode the erasure data needed to build masking requests"""
         return json.loads(self.data_for_erasures or "[]", object_hook=_custom_decoder)
 
     def get_decoded_erasure_input_data(self) -> List[List[Row]]:
+        """Decode the access data dependencies for the current task for use in erasures where
+        the access node doesn't collect its own data"""
         return json.loads(self.erasure_input_data or "[]", object_hook=_custom_decoder)
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
         """Helper method to update a task's status"""
         self.status = status
         self.save(db)
-
-    def mark_pending_if_error(self, db: Session) -> bool:
-        """If task is errored, reset to pending and return whether the reset occurred"""
-        if self.status == ExecutionLogStatus.error:
-            self.update_status(db, ExecutionLogStatus.pending)
-            self.save(db)
-            return True
-        return False
 
     def get_tasks_with_same_action_type(
         self, db: Session, collection_address_str: str
@@ -1698,18 +1707,13 @@ class RequestTask(Base):
             RequestTask.collection_address == collection_address_str,
         )
 
-    def all_downstream_tasks(self, db: Session) -> Query:
+    def get_pending_downstream_tasks(self, db: Session) -> Query:
         """Returns the immediate downstream task objects that are still pending"""
         return db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.action_type == self.action_type,
             RequestTask.collection_address.in_(self.downstream_tasks or []),
-        )
-
-    def pending_downstream_tasks(self, db: Session) -> Query:
-        """Returns the immediate downstream task objects that are still pending"""
-        return self.all_downstream_tasks(db).filter(
-            RequestTask.status == ExecutionLogStatus.pending
+            RequestTask.status == ExecutionLogStatus.pending,
         )
 
     def upstream_tasks_complete(self, db: Session) -> bool:

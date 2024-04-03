@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -11,7 +11,6 @@ from fides.api.graph.config import (
     Collection,
     CollectionAddress,
     EdgeDirection,
-    Field,
     FieldAddress,
     FieldPath,
     GraphDataset,

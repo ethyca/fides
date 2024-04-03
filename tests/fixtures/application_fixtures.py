@@ -16,6 +16,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
 from fides.api.common_exceptions import SystemManagerException
+from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -24,7 +25,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.messaging import MessagingConfig
@@ -60,6 +61,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
+    RequestTask,
 )
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
@@ -1284,6 +1286,53 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     )
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def request_task(db: Session, privacy_request) -> RequestTask:
+    root_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.access,
+            "status": "complete",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__ROOT__:__ROOT__",
+            "dataset_name": "__ROOT__",
+            "collection_name": "__ROOT__",
+            "upstream_tasks": [],
+            "downstream_tasks": ["test_dataset:test_collection"],
+        },
+    )
+    request_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.access,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "test_dataset:test_collection",
+            "dataset_name": "test_dataset",
+            "collection_name": "test_collection",
+            "upstream_tasks": ["__ROOT__:__ROOT__"],
+            "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+        },
+    )
+    end_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.access,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__TERMINATE__:__TERMINATE__",
+            "dataset_name": "__TERMINATE__",
+            "collection_name": "__TERMINATE__",
+            "upstream_tasks": ["test_dataset:test_collection"],
+            "downstream_tasks": [],
+        },
+    )
+    yield request_task
+    end_task.delete(db)
+    request_task.delete(db)
+    root_task.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -2998,3 +3047,25 @@ def use_dsr_2_0():
     CONFIG.execution.use_dsr_3_0 = False
     yield CONFIG
     CONFIG.execution.use_dsr_3_0 = original_value
+
+
+@pytest.fixture()
+def postgres_dataset_graph(example_datasets, integration_postgres_config):
+    dataset_postgres = Dataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+
+    dataset_graph = DatasetGraph(*[graph])
+    return dataset_graph
+
+
+@pytest.fixture()
+def postgres_and_mongo_dataset_graph(
+    example_datasets, integration_postgres_config, integration_mongodb_config
+):
+    dataset_postgres = Dataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    dataset_mongo = Dataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(
+        dataset_mongo, integration_mongodb_config.key
+    )
+    return DatasetGraph(*[graph, mongo_graph])

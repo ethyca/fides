@@ -107,7 +107,11 @@ def build_erasure_networkx_digraph(
     """
     Builds a networkx graph of erasure nodes to get consistent formatting of nodes, regardless of whether node is real or artificial.
 
-    In addition, a major benefit is adding in "erase_after" dependencies that aren't captured in traversal.traverse
+    Erasure graphs are different from access graphs, in that we've queried all the data we need upfront in the access
+    graphs, so the nodes can in theory run entirely in parallel, except for the "erase_after" dependencies.
+
+    We tack on the "erase_after" dependencies here that aren't captured in traversal.traverse.
+
     """
     networkx_graph = networkx.DiGraph()
     networkx_graph.add_nodes_from(traversal_nodes.keys())
@@ -133,7 +137,7 @@ def build_erasure_networkx_digraph(
         logger.info("No cycles found as expected")
     else:
         raise TraversalError(
-            f"The values for the `erase_after` fields created a cycle in the DAG."
+            "The values for the `erase_after` fields created a cycle in the DAG."
         )
 
     return networkx_graph
@@ -183,8 +187,8 @@ def base_task_data(
     node: CollectionAddress,
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
 ) -> Dict:
-    """Build a dictionary of common RequestTask attributes that are shared between
-    access, consent, and erasures"""
+    """Build a dictionary of common RequestTask attributes that are shared for building
+    access, consent, and erasure tasks"""
     collection_representation: Optional[Dict] = None
     if node not in ARTIFICIAL_NODES:
         # Save a representation of the collection that can be re-hydrated later
@@ -320,12 +324,13 @@ def _get_data_for_erasures(
         # queries we need the original data in the appropriate indices
         retrieved_task_data = corresponding_access_task.get_decoded_data_for_erasures()
 
-        # Select upstream inputs of this node for things like email connectors, which
-        # don't retrieve data directly
         traversal_details = TraversalDetails.parse_obj(
             request_task.traversal_details or {}
         )
 
+        # Select tasks from input keys (which are built based on data depenendencies), rather than upstream
+        # tasks here.  We want the access data that was fed into the node of the same name.  This is
+        # for things like email erasure nodes, where the access node of the same name didn't fetch results.
         input_tasks: Query = session.query(RequestTask).filter(
             RequestTask.privacy_request_id == privacy_request.id,
             RequestTask.action_type == ActionType.access,
@@ -338,11 +343,11 @@ def _get_data_for_erasures(
             for input_key in traversal_details.input_keys
         ]
 
-        ordered_upstream_tasks: List[Optional[RequestTask]] = _order_tasks_by_input_key(
-            input_keys, input_tasks
-        )
+        ordered_access_tasks_by_input_key: List[
+            Optional[RequestTask]
+        ] = _order_tasks_by_input_key(input_keys, input_tasks)
 
-        for input_data in ordered_upstream_tasks or []:
+        for input_data in ordered_access_tasks_by_input_key or []:
             combined_input_data.append(
                 input_data.get_decoded_data_for_erasures() or [] if input_data else []
             )
@@ -469,6 +474,7 @@ def run_access_request(
         ready_tasks: List[RequestTask] = persist_new_access_request_tasks(
             session, privacy_request, traversal, traversal_nodes, end_nodes, graph
         )
+
         if (
             policy.get_rules_for_action(action_type=ActionType.erasure)
             and not privacy_request.erasure_tasks.count()
@@ -571,16 +577,18 @@ def get_existing_ready_tasks(
         incomplete_tasks: Query = request_tasks.filter(
             RequestTask.status.notin_(completed_statuses)
         )
+
         for task in incomplete_tasks:
             if task.upstream_tasks_complete(session):
                 task.update_status(session, ExecutionLogStatus.pending)
                 ready.append(task)
             elif task.status == ExecutionLogStatus.error:
+                # Important to reset errored status to pending so it can be rerun
                 task.update_status(session, ExecutionLogStatus.pending)
 
         if ready:
             logger.info(
-                "Found existing {} task(s) read to reprocess: {}. Privacy Request: {}",
+                "Found existing {} task(s) ready to reprocess: {}. Privacy Request: {}",
                 action_type.value,
                 [t.collection_address for t in ready],
                 privacy_request.id,

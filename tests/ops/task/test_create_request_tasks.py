@@ -1,4 +1,6 @@
 from datetime import datetime
+from unittest import mock
+from unittest.mock import MagicMock
 
 import pytest
 from fideslang import Dataset
@@ -7,18 +9,27 @@ from fides.api.common_exceptions import TraversalError
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.privacy_request import ExecutionLogStatus, RequestTask
+from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+    RequestTask,
+)
 from fides.api.schemas.policy import ActionType
+from fides.api.service.connectors import MongoDBConnector
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
+    get_existing_ready_tasks,
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
     persist_new_consent_request_tasks,
+    run_access_request,
+    run_erasure_request,
     update_erasure_tasks_with_access_data,
 )
 from fides.api.task.execute_request_tasks import run_access_node
 from fides.api.task.graph_task import build_consent_dataset_graph
-from tests.conftest import wait_for_access_terminator_completion
+from fides.config import CONFIG
+from tests.conftest import wait_for_terminator_completion
 
 payment_card_serialized_collection = {
     "name": "payment_card",
@@ -131,14 +142,31 @@ payment_card_serialized_traversal_details = {
     "dataset_connection_key": "postgres_example",
 }
 
-
-@pytest.fixture()
-def postgres_dataset_graph(example_datasets, integration_postgres_config):
-    dataset_postgres = Dataset(**example_datasets[0])
-    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-
-    dataset_graph = DatasetGraph(*[graph])
-    return dataset_graph
+# Expected statuses when mongo db credentials are bad
+errored_postgres_mongo_task_statuses = {
+    "__ROOT__:__ROOT__": "complete",
+    "postgres_example_test_dataset:customer": "complete",
+    "postgres_example_test_dataset:employee": "complete",
+    "postgres_example_test_dataset:report": "complete",
+    "postgres_example_test_dataset:visit": "complete",
+    "mongo_test:customer_feedback": "error",
+    "mongo_test:customer_details": "error",
+    "postgres_example_test_dataset:orders": "complete",
+    "postgres_example_test_dataset:login": "complete",
+    "postgres_example_test_dataset:payment_card": "complete",
+    "postgres_example_test_dataset:service_request": "complete",
+    "mongo_test:internal_customer_profile": "error",
+    "mongo_test:flights": "error",
+    "mongo_test:conversations": "error",
+    "postgres_example_test_dataset:order_item": "complete",
+    "postgres_example_test_dataset:address": "complete",
+    "mongo_test:rewards": "error",
+    "mongo_test:aircraft": "error",
+    "mongo_test:employee": "error",
+    "mongo_test:payment_card": "error",
+    "postgres_example_test_dataset:product": "complete",
+    "__TERMINATE__:__TERMINATE__": "error",
+}
 
 
 class TestPersistAccessRequestTasks:
@@ -196,9 +224,10 @@ class TestPersistAccessRequestTasks:
         assert not root_task.is_terminator_task
 
         # Assert key details on terminator task
-        terminator_task = privacy_request.access_tasks.filter(
-            RequestTask.collection_address == "__TERMINATE__:__TERMINATE__"
-        ).first()
+        terminator_task = privacy_request.get_terminate_task_by_action(
+            ActionType.access
+        )
+
         assert terminator_task.action_type == ActionType.access
         assert terminator_task.collection_name == "__TERMINATE__"
         assert terminator_task.dataset_name == "__TERMINATE__"
@@ -251,6 +280,119 @@ class TestPersistAccessRequestTasks:
         assert not payment_card_task.is_root_task
         assert not payment_card_task.is_terminator_task
 
+    def test_persist_access_tasks_with_object_fields_in_collection(
+        self, db, privacy_request, postgres_and_mongo_dataset_graph
+    ):
+        identity = {"email": "customer-1@example.com"}
+
+        traversal: Traversal = Traversal(postgres_and_mongo_dataset_graph, identity)
+        traversal_nodes = {}
+        end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
+
+        ready_tasks = persist_new_access_request_tasks(
+            db,
+            privacy_request,
+            traversal,
+            traversal_nodes,
+            end_nodes,
+            postgres_and_mongo_dataset_graph,
+        )
+        assert len(ready_tasks) == 1
+
+        customer_profile = privacy_request.access_tasks.filter(
+            RequestTask.collection_address == "mongo_test:internal_customer_profile"
+        ).first()
+
+        # Object fields serialized correctly
+        assert customer_profile.collection == {
+            "name": "internal_customer_profile",
+            "after": [],
+            "fields": [
+                {
+                    "name": "_id",
+                    "length": None,
+                    "identity": None,
+                    "is_array": False,
+                    "read_only": None,
+                    "references": [],
+                    "primary_key": True,
+                    "data_categories": ["system.operations"],
+                    "data_type_converter": "object_id",
+                    "return_all_elements": None,
+                },
+                {
+                    "name": "customer_identifiers",
+                    "fields": {
+                        "internal_id": {
+                            "name": "internal_id",
+                            "length": None,
+                            "identity": None,
+                            "is_array": False,
+                            "read_only": None,
+                            "references": [
+                                [
+                                    "mongo_test:customer_feedback:customer_information.internal_customer_id",
+                                    "from",
+                                ]
+                            ],
+                            "primary_key": False,
+                            "data_categories": None,
+                            "data_type_converter": "string",
+                            "return_all_elements": None,
+                        },
+                        "derived_phone": {
+                            "name": "derived_phone",
+                            "length": None,
+                            "identity": "phone_number",
+                            "is_array": True,
+                            "read_only": None,
+                            "references": [],
+                            "primary_key": False,
+                            "data_categories": ["user"],
+                            "data_type_converter": "string",
+                            "return_all_elements": True,
+                        },
+                        "derived_emails": {
+                            "name": "derived_emails",
+                            "length": None,
+                            "identity": "email",
+                            "is_array": True,
+                            "read_only": None,
+                            "references": [],
+                            "primary_key": False,
+                            "data_categories": ["user"],
+                            "data_type_converter": "string",
+                            "return_all_elements": None,
+                        },
+                    },
+                    "length": None,
+                    "identity": None,
+                    "is_array": False,
+                    "read_only": None,
+                    "references": [],
+                    "primary_key": False,
+                    "data_categories": None,
+                    "data_type_converter": "object",
+                    "return_all_elements": None,
+                },
+                {
+                    "name": "derived_interests",
+                    "length": None,
+                    "identity": None,
+                    "is_array": True,
+                    "read_only": None,
+                    "references": [],
+                    "primary_key": False,
+                    "data_categories": ["user"],
+                    "data_type_converter": "string",
+                    "return_all_elements": None,
+                },
+            ],
+            "erase_after": [],
+            "grouped_inputs": [],
+            "skip_processing": False,
+        }
+
 
 class TestPersistErasureRequestTasks:
     def test_persist_initial_erasure_request_tasks(
@@ -281,9 +423,7 @@ class TestPersistErasureRequestTasks:
 
         assert privacy_request.erasure_tasks.count() == 13
 
-        root_task = privacy_request.erasure_tasks.filter(
-            RequestTask.collection_address == "__ROOT__:__ROOT__"
-        ).first()
+        root_task = privacy_request.get_root_task_by_action(ActionType.erasure)
         assert root_task.action_type == ActionType.erasure
         assert root_task.privacy_request_id == privacy_request.id
         assert root_task.collection_address == "__ROOT__:__ROOT__"
@@ -322,9 +462,9 @@ class TestPersistErasureRequestTasks:
         assert not root_task.is_terminator_task
 
         # Assert key details on terminator task
-        terminator_task = privacy_request.erasure_tasks.filter(
-            RequestTask.collection_address == "__TERMINATE__:__TERMINATE__"
-        ).first()
+        terminator_task = privacy_request.get_terminate_task_by_action(
+            ActionType.erasure
+        )
         assert terminator_task.action_type == ActionType.erasure
         assert terminator_task.collection_name == "__TERMINATE__"
         assert terminator_task.dataset_name == "__TERMINATE__"
@@ -405,7 +545,7 @@ class TestPersistErasureRequestTasks:
         )
 
         run_access_node.delay(privacy_request.id, ready_tasks[0].id)
-        wait_for_access_terminator_completion(db, privacy_request)
+        wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
         update_erasure_tasks_with_access_data(db, privacy_request)
         payment_card_task = privacy_request.erasure_tasks.filter(
@@ -448,6 +588,103 @@ class TestPersistErasureRequestTasks:
         ]
         assert payment_card_task.status == ExecutionLogStatus.pending
 
+        address_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "postgres_example_test_dataset:address"
+        ).first()
+        # Inputs for decoded erasure input data are in the same order as the input keys
+        assert address_task.get_decoded_erasure_input_data() == [
+            [
+                {  # From upstream customer collection
+                    "address_id": 1,
+                    "created": datetime(2020, 4, 1, 11, 47, 42),
+                    "email": "customer-1@example.com",
+                    "id": 1,
+                    "name": "John Customer",
+                }
+            ],
+            [],  # From upstream employee collection, no results
+            [  # From upstream orders collection
+                {"customer_id": 1, "id": "ord_aaa-aaa", "shipping_address_id": 2},
+                {"customer_id": 1, "id": "ord_ccc-ccc", "shipping_address_id": 1},
+                {"customer_id": 1, "id": "ord_ddd-ddd", "shipping_address_id": 1},
+            ],
+            [
+                {  # From upstream payment card collection
+                    "billing_address_id": 1,
+                    "ccn": 123456789,
+                    "code": 321,
+                    "customer_id": 1,
+                    "id": "pay_aaa-aaa",
+                    "name": "Example Card 1",
+                    "preferred": True,
+                }
+            ],
+        ]
+        assert address_task.traversal_details["input_keys"] == [
+            "postgres_example_test_dataset:customer",
+            "postgres_example_test_dataset:employee",
+            "postgres_example_test_dataset:orders",
+            "postgres_example_test_dataset:payment_card",
+        ]
+
+    @pytest.mark.timeout(5)
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration_mongodb
+    def test_update_erasure_tasks_with_placeholder_access_data(
+        self, db, privacy_request, postgres_and_mongo_dataset_graph
+    ):
+        """Test that erasure tasks are updated with the corresponding erasure data collected
+        from the access task"""
+        identity = {"email": "customer-1@example.com"}
+        traversal: Traversal = Traversal(postgres_and_mongo_dataset_graph, identity)
+
+        traversal_nodes = {}
+        access_end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
+        erasure_end_nodes = list(postgres_and_mongo_dataset_graph.nodes.keys())
+
+        ready_tasks = persist_new_access_request_tasks(
+            db,
+            privacy_request,
+            traversal,
+            traversal_nodes,
+            access_end_nodes,
+            postgres_and_mongo_dataset_graph,
+        )
+
+        persist_initial_erasure_request_tasks(
+            db,
+            privacy_request,
+            traversal_nodes,
+            erasure_end_nodes,
+            postgres_and_mongo_dataset_graph,
+        )
+
+        run_access_node.delay(privacy_request.id, ready_tasks[0].id)
+        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+
+        update_erasure_tasks_with_access_data(db, privacy_request)
+
+        conversations_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "mongo_test:conversations"
+        ).first()
+        # Erasure format may save array elements to denote what elements should not be masked while preserving original index
+        assert conversations_task.get_decoded_data_for_erasures()[1]["thread"] == [
+            {
+                "comment": "com_0003",
+                "message": "can I borrow your headphones?",
+                "chat_name": "John C",
+                "ccn": "123456789",
+            },
+            "FIDESOPS_DO_NOT_MASK",
+            {
+                "comment": "com_0005",
+                "message": "did you bring anything to read?",
+                "chat_name": "John C",
+                "ccn": "123456789",
+            },
+            "FIDESOPS_DO_NOT_MASK",
+        ]
+
     def test_erase_after_upstream_and_downstream_tasks(
         self,
         db,
@@ -489,42 +726,41 @@ class TestPersistErasureRequestTasks:
         assert orders_task.downstream_tasks == ["saas_erasure_order_instance:labels"]
         # Data dependencies are still from the root node
         assert orders_task.traversal_details["input_keys"] == ["__ROOT__:__ROOT__"]
-        assert orders_task.collection == {
-            "name": "orders",
-            "after": [],
-            "fields": [
-                {
-                    "name": "id",
-                    "length": None,
-                    "identity": None,
-                    "is_array": False,
-                    "read_only": None,
-                    "references": [],
-                    "primary_key": True,
-                    "data_categories": ["system.operations"],
-                    "data_type_converter": "integer",
-                    "return_all_elements": None,
-                },
-                {
-                    "name": "email",
-                    "length": None,
-                    "identity": "email",
-                    "is_array": False,
-                    "read_only": None,
-                    "references": [],
-                    "primary_key": False,
-                    "data_categories": None,
-                    "data_type_converter": "None",
-                    "return_all_elements": None,
-                },
-            ],
-            "erase_after": [
-                "saas_erasure_order_instance:orders_to_refunds",
-                "saas_erasure_order_instance:refunds_to_orders",
-                "__ROOT__:__ROOT__",
-            ],
-            "grouped_inputs": [],
-            "skip_processing": False,
+        serialized_collection = orders_task.collection
+        assert serialized_collection["name"] == "orders"
+        assert len(serialized_collection["fields"]) == 2
+        assert serialized_collection["fields"] == [
+            {
+                "name": "id",
+                "length": None,
+                "identity": None,
+                "is_array": False,
+                "read_only": None,
+                "references": [],
+                "primary_key": True,
+                "data_categories": ["system.operations"],
+                "data_type_converter": "integer",
+                "return_all_elements": None,
+            },
+            {
+                "name": "email",
+                "length": None,
+                "identity": "email",
+                "is_array": False,
+                "read_only": None,
+                "references": [],
+                "primary_key": False,
+                "data_categories": None,
+                "data_type_converter": "None",
+                "return_all_elements": None,
+            },
+        ]
+        assert not serialized_collection["skip_processing"]
+        assert serialized_collection["grouped_inputs"] == []
+        assert set(serialized_collection["erase_after"]) == {
+            "saas_erasure_order_instance:orders_to_refunds",
+            "saas_erasure_order_instance:refunds_to_orders",
+            "__ROOT__:__ROOT__",
         }
 
         refunds_task = privacy_request.erasure_tasks.filter(
@@ -559,9 +795,6 @@ class TestPersistErasureRequestTasks:
         assert orders_to_refunds.traversal_details["input_keys"] == [
             "saas_erasure_order_instance:orders"
         ]
-        import pdb
-
-        pdb.set_trace()
         assert orders_to_refunds.upstream_tasks == ["__ROOT__:__ROOT__"]
         assert orders_to_refunds.downstream_tasks == [
             "saas_erasure_order_instance:orders",
@@ -663,9 +896,10 @@ class TestPersistConsentRequestTasks:
         assert root_task.status == ExecutionLogStatus.complete
         assert root_task.access_data == '[{"ga_client_id": "test_id"}]'
         assert root_task.get_decoded_access_data() == [{"ga_client_id": "test_id"}]
-        terminator_task = privacy_request.consent_tasks.filter(
-            RequestTask.collection_address == "__TERMINATE__:__TERMINATE__",
-        ).first()
+        terminator_task = privacy_request.get_terminate_task_by_action(
+            ActionType.consent
+        )
+
         assert terminator_task.is_terminator_task
         assert terminator_task.action_type == ActionType.consent
         assert terminator_task.upstream_tasks == [
@@ -682,7 +916,7 @@ class TestPersistConsentRequestTasks:
         assert not ga_task.is_root_task
         assert not ga_task.is_terminator_task
         assert ga_task.action_type == ActionType.consent
-        # Consent nodes have no data dependencies - they just hvae the root upstream
+        # Consent nodes have no data dependencies - they just have the root upstream
         # and the terminate node downstream
         assert ga_task.upstream_tasks == ["__ROOT__:__ROOT__"]
         assert ga_task.downstream_tasks == ["__TERMINATE__:__TERMINATE__"]
@@ -704,3 +938,505 @@ class TestPersistConsentRequestTasks:
             "outgoing_edges": [],
             "dataset_connection_key": "google_analytics_instance",
         }
+
+
+class TestGetExistingReadyTasks:
+    def test_no_request_tasks(self, privacy_request, db):
+        assert get_existing_ready_tasks(db, privacy_request, ActionType.access) == []
+
+    def test_task_should_be_same_action_type(self, privacy_request, db):
+        rt = RequestTask.create(
+            db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset:collection",
+                "collection_name": "collection",
+                "dataset_name": "dataset",
+                "action_type": ActionType.erasure,
+                "status": "pending",
+            },
+        )
+        assert get_existing_ready_tasks(db, privacy_request, ActionType.access) == []
+        rt.delete(db)
+
+    def test_task_must_be_incomplete(self, privacy_request, db):
+        rt = RequestTask.create(
+            db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset:collection",
+                "collection_name": "collection",
+                "dataset_name": "dataset",
+                "action_type": ActionType.erasure,
+                "status": "complete",
+            },
+        )
+        assert get_existing_ready_tasks(db, privacy_request, ActionType.access) == []
+        rt.delete(db)
+
+    def test_task_needs_to_have_upstream_complete(self, privacy_request, db):
+        upstream = RequestTask.create(
+            db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset:other_collection",
+                "collection_name": "other_collection",
+                "dataset_name": "dataset",
+                "action_type": ActionType.access,
+                "status": "pending",
+                "upstream_tasks": [],
+            },
+        )
+        rt = RequestTask.create(
+            db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset:collection",
+                "collection_name": "collection",
+                "dataset_name": "dataset",
+                "action_type": ActionType.access,
+                "status": "pending",
+                "upstream_tasks": [upstream.collection_address],
+            },
+        )
+        # rt is not ready but upstream is
+        assert get_existing_ready_tasks(db, privacy_request, ActionType.access) == [
+            upstream
+        ]
+        rt.delete(db)
+
+    def test_error_status_is_marked_as_pending(self, privacy_request, db):
+        upstream = RequestTask.create(
+            db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset:other_collection",
+                "collection_name": "other_collection",
+                "dataset_name": "dataset",
+                "action_type": ActionType.access,
+                "status": "pending",
+                "upstream_tasks": [],
+            },
+        )
+        rt = RequestTask.create(
+            db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset:collection",
+                "collection_name": "collection",
+                "dataset_name": "dataset",
+                "action_type": ActionType.access,
+                "status": "error",
+                "upstream_tasks": [upstream.collection_address],
+            },
+        )
+        # rt is not ready but upstream is
+        assert get_existing_ready_tasks(db, privacy_request, ActionType.access) == [
+            upstream
+        ]
+        db.refresh(rt)
+        # The current "errored" task is marked as pending, even if its upstream
+        # tasks aren't ready
+        assert rt.status == ExecutionLogStatus.pending
+        upstream.delete(db)
+        rt.delete(db)
+
+    def test_ready_tasks(self, privacy_request, db):
+        rt = RequestTask.create(
+            db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset:collection",
+                "collection_name": "collection",
+                "dataset_name": "dataset",
+                "action_type": ActionType.access,
+                "status": "pending",
+            },
+        )
+        assert get_existing_ready_tasks(db, privacy_request, ActionType.access) == [rt]
+
+
+class TestRunAccessRequestWithRequestTasks:
+    @pytest.mark.timeout(5)
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration_mongodb
+    def test_run_access_request(
+        self,
+        db,
+        privacy_request,
+        policy,
+        postgres_and_mongo_dataset_graph,
+        integration_mongodb_config,
+        integration_postgres_config,
+    ):
+        run_access_request(
+            privacy_request,
+            policy,
+            postgres_and_mongo_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+
+        assert privacy_request.access_tasks.count() == 22
+        assert privacy_request.erasure_tasks.count() == 0
+
+        all_access_tasks = privacy_request.access_tasks.all()
+
+        assert {t.collection_address for t in all_access_tasks} == {
+            "__ROOT__:__ROOT__",
+            "postgres_example_test_dataset:customer",
+            "postgres_example_test_dataset:employee",
+            "postgres_example_test_dataset:report",
+            "postgres_example_test_dataset:visit",
+            "mongo_test:customer_feedback",
+            "postgres_example_test_dataset:payment_card",
+            "postgres_example_test_dataset:login",
+            "mongo_test:customer_details",
+            "postgres_example_test_dataset:orders",
+            "postgres_example_test_dataset:service_request",
+            "mongo_test:internal_customer_profile",
+            "mongo_test:conversations",
+            "mongo_test:flights",
+            "postgres_example_test_dataset:address",
+            "postgres_example_test_dataset:order_item",
+            "mongo_test:rewards",
+            "mongo_test:payment_card",
+            "mongo_test:employee",
+            "mongo_test:aircraft",
+            "postgres_example_test_dataset:product",
+            "__TERMINATE__:__TERMINATE__",
+        }
+        assert all(t.status == ExecutionLogStatus.complete for t in all_access_tasks)
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+        raw_access_results = privacy_request.get_raw_access_results()
+        # Two addresses being found tests that our input_keys are working properly
+        assert raw_access_results["postgres_example_test_dataset:address"] == [
+            {
+                "city": "Exampletown",
+                "house": 123,
+                "id": 1,
+                "state": "NY",
+                "street": "Example Street",
+                "zip": "12345",
+            },
+            {
+                "city": "Exampletown",
+                "house": 4,
+                "id": 2,
+                "state": "NY",
+                "street": "Example Lane",
+                "zip": "12321",
+            },
+        ]
+
+        customer_details = raw_access_results["mongo_test:customer_details"][0]
+        assert customer_details["customer_id"] == 1.0
+        assert customer_details["gender"] == "male"
+        assert customer_details["birthday"] == datetime(1988, 1, 10, 0, 0)
+        assert customer_details["workplace_info"] == {
+            "employer": "Mountain Baking Company",
+            "position": "Chief Strategist",
+            "direct_reports": ["Robbie Margo", "Sully Hunter"],
+        }
+        assert customer_details["emergency_contacts"] == [
+            {
+                "name": "June Customer",
+                "relationship": "mother",
+                "phone": "444-444-4444",
+            },
+            {
+                "name": "Josh Customer",
+                "relationship": "brother",
+                "phone": "111-111-111",
+            },
+        ]
+        assert customer_details["children"] == [
+            "Christopher Customer",
+            "Courtney Customer",
+        ]
+
+    @pytest.mark.timeout(5)
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration_mongodb
+    def test_run_access_request_with_error(
+        self,
+        db,
+        privacy_request,
+        policy,
+        postgres_and_mongo_dataset_graph,
+        integration_mongodb_config,
+        integration_postgres_config,
+    ):
+        # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
+        saved_secrets = integration_mongodb_config.secrets
+        integration_mongodb_config.secrets = {}
+        integration_mongodb_config.save(db)
+
+        run_access_request(
+            privacy_request,
+            policy,
+            postgres_and_mongo_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+
+        assert privacy_request.access_tasks.count() == 22
+        assert privacy_request.erasure_tasks.count() == 0
+
+        postgres_customer_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_address == "postgres_example_test_dataset:address"
+        ).first()
+        customer_task_updated = postgres_customer_task.updated_at
+
+        mongo_flights_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_address == "mongo_test:flights"
+        ).first()
+        mongo_flights_task_updated = mongo_flights_task.updated_at
+
+        # Mongo tasks are marked as error but the postgres tasks are still
+        # able to complete.
+        task_statuses = {
+            request_task.collection_address: request_task.status.value
+            for request_task in privacy_request.access_tasks
+        }
+        assert task_statuses == errored_postgres_mongo_task_statuses
+
+        integration_mongodb_config.secrets = saved_secrets
+        integration_mongodb_config.save(db)
+
+        run_access_request(
+            privacy_request,
+            policy,
+            postgres_and_mongo_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+
+        # No new tasks were created - we just updated the statuses of the old ones
+        assert privacy_request.access_tasks.count() == 22
+        assert privacy_request.erasure_tasks.count() == 0
+
+        assert all(
+            t.status == ExecutionLogStatus.complete
+            for t in privacy_request.access_tasks
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+        # These results are not yet filtered by data category
+        raw_results = privacy_request.get_raw_access_results()
+
+        # Selected postgres results - retrieved first pass
+        customer_info = raw_results["postgres_example_test_dataset:customer"][0]
+        assert customer_info == {
+            "address_id": 1,
+            "created": datetime(2020, 4, 1, 11, 47, 42),
+            "email": "customer-1@example.com",
+            "id": 1,
+            "name": "John Customer",
+        }
+        # Existing task was unchanged on re-run because it was already completed
+        db.refresh(postgres_customer_task)
+        assert postgres_customer_task.updated_at == customer_task_updated
+
+        # Selected Mongo results - retrieved second pass
+        flight_info = raw_results["mongo_test:flights"][0]
+        assert flight_info["passenger_information"] == {
+            "passenger_ids": ["A111-11111"],
+            "full_name": "John Customer",
+        }
+        assert flight_info["flight_no"] == "AA230"
+        assert flight_info["pilots"] == ["1", "2"]
+        # Existing task was modified
+        db.refresh(mongo_flights_task)
+        assert mongo_flights_task.updated_at > mongo_flights_task_updated
+
+
+class TestRunErasureRequestWithRequestTasks:
+    @pytest.mark.timeout(15)
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration_mongodb
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.queue_privacy_request"
+    )
+    def test_run_erasure_request(
+        self,
+        mock_queue_request,  # Otherwise run_access_request would queue the privacy request and run the erasure prematurely
+        db,
+        privacy_request_with_erasure_policy,
+        erasure_policy,
+        postgres_and_mongo_dataset_graph,
+        integration_mongodb_config,
+        integration_postgres_config,
+    ):
+        """Large test handling access and erasure with a failed erasure step
+
+        This can only run once because it is destructive
+        """
+        CONFIG.execution.task_retry_count = 0
+        CONFIG.execution.task_retry_delay = 0.1
+        CONFIG.execution.task_retry_backoff = 0.01
+        p = mock.patch(
+            "fides.api.service.connectors.MongoDBConnector.mask_data",
+            new=MagicMock(side_effect=Exception("Key Error")),
+        )
+        p.start()
+
+        assert privacy_request_with_erasure_policy.access_tasks.count() == 0
+        assert privacy_request_with_erasure_policy.erasure_tasks.count() == 0
+
+        run_access_request(
+            privacy_request_with_erasure_policy,
+            erasure_policy,
+            postgres_and_mongo_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+        wait_for_terminator_completion(
+            db, privacy_request_with_erasure_policy, ActionType.access
+        )
+        assert privacy_request_with_erasure_policy.access_tasks.count() == 22
+        # These were created preemptively alongside the access request tasks so they match
+        assert privacy_request_with_erasure_policy.erasure_tasks.count() == 22
+
+        # Run erasure portion first time, but it is expected to fail because
+        # Mongo connector is not working
+        run_erasure_request(privacy_request_with_erasure_policy, db)
+        wait_for_terminator_completion(
+            db, privacy_request_with_erasure_policy, ActionType.erasure
+        )
+
+        postgres_customer_task = (
+            privacy_request_with_erasure_policy.erasure_tasks.filter(
+                RequestTask.collection_address
+                == "postgres_example_test_dataset:address"
+            ).first()
+        )
+        customer_task_updated = postgres_customer_task.updated_at
+
+        mongo_flights_task = privacy_request_with_erasure_policy.erasure_tasks.filter(
+            RequestTask.collection_address == "mongo_test:flights"
+        ).first()
+        mongo_flights_task_updated = mongo_flights_task.updated_at
+
+        # Mongo tasks are marked as error but the postgres tasks are still
+        # able to complete.
+        db.refresh(privacy_request_with_erasure_policy)
+        task_statuses = {
+            request_task.collection_address: request_task.status.value
+            for request_task in privacy_request_with_erasure_policy.erasure_tasks
+        }
+        assert task_statuses == errored_postgres_mongo_task_statuses
+
+        # Stop mocking MongoDBConnector.mask_data
+        p.stop()
+
+        # Run erasure one more time
+        run_erasure_request(privacy_request_with_erasure_policy, db)
+        wait_for_terminator_completion(
+            db, privacy_request_with_erasure_policy, ActionType.erasure
+        )
+
+        assert all(
+            t.status == ExecutionLogStatus.complete
+            for t in privacy_request_with_erasure_policy.erasure_tasks
+        )
+        rows_masked = {
+            t.collection_address: t.rows_masked
+            for t in privacy_request_with_erasure_policy.erasure_tasks
+        }
+
+        # Existing completed task was not touched on Run #2
+        db.refresh(postgres_customer_task)
+        assert postgres_customer_task.updated_at == customer_task_updated
+
+        # Existing error task was modified on run #2
+        db.refresh(mongo_flights_task)
+        assert mongo_flights_task.updated_at > mongo_flights_task_updated
+
+        # No new tasks were created
+        assert privacy_request_with_erasure_policy.erasure_tasks.count() == 22
+
+        assert rows_masked == {
+            "__ROOT__:__ROOT__": None,
+            "postgres_example_test_dataset:visit": 0,
+            "postgres_example_test_dataset:report": 0,
+            "mongo_test:employee": 2,
+            "postgres_example_test_dataset:service_request": 0,
+            "mongo_test:customer_feedback": 0,
+            "mongo_test:internal_customer_profile": 0,
+            "postgres_example_test_dataset:customer": 1,
+            "postgres_example_test_dataset:employee": 0,
+            "mongo_test:rewards": 0,
+            "postgres_example_test_dataset:orders": 0,
+            "mongo_test:customer_details": 1,
+            "postgres_example_test_dataset:login": 0,
+            "postgres_example_test_dataset:address": 0,
+            "postgres_example_test_dataset:payment_card": 0,
+            "postgres_example_test_dataset:order_item": 0,
+            "mongo_test:flights": 1,
+            "mongo_test:conversations": 2,
+            "postgres_example_test_dataset:product": 0,
+            "mongo_test:aircraft": 0,
+            "mongo_test:payment_card": 0,
+            "__TERMINATE__:__TERMINATE__": None,
+        }
+
+        # Remove request tasks and re-run access request
+        db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == privacy_request_with_erasure_policy.id
+        ).delete()
+        run_access_request(
+            privacy_request_with_erasure_policy,
+            erasure_policy,
+            postgres_and_mongo_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+        wait_for_terminator_completion(
+            db, privacy_request_with_erasure_policy, ActionType.access
+        )
+        raw_access_results = (
+            privacy_request_with_erasure_policy.get_raw_access_results()
+        )
+        # erasure policy targeted names with null rewrite strategy
+        assert (
+            raw_access_results["postgres_example_test_dataset:customer"][0]["name"]
+            is None
+        )
+        assert (
+            raw_access_results["mongo_test:conversations"][0]["thread"][0]["chat_name"]
+            is None
+        )
+        assert (
+            raw_access_results["mongo_test:conversations"][1]["thread"][0]["chat_name"]
+            is None
+        )
+        assert (
+            raw_access_results["mongo_test:conversations"][1]["thread"][1]["chat_name"]
+            is None
+        )
+        assert raw_access_results["mongo_test:employee"][0]["name"] is None
+        assert raw_access_results["mongo_test:employee"][1]["name"] is None
+        assert raw_access_results["mongo_test:customer_details"][0]["workplace_info"][
+            "direct_reports"
+        ] == [None, None]
+        assert not raw_access_results["mongo_test:customer_details"][0][
+            "emergency_contacts"
+        ][0]["name"]
+        assert not raw_access_results["mongo_test:customer_details"][0][
+            "emergency_contacts"
+        ][1]["name"]
+        assert not raw_access_results["mongo_test:flights"][0]["passenger_information"][
+            "full_name"
+        ]

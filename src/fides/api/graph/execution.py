@@ -20,8 +20,7 @@ class ExecutionNode:
     """Node for *executing* a task. This node only has knowledge of itself and its incoming and outgoing edges
 
     After we build the graph, we save details to RequestTasks in the database that are hydrated here to execute an individual
-    node without rebuilding the graph
-
+    node without rebuilding the graph with traversal.traverse
     """
 
     def __init__(self, request_task: RequestTask):
@@ -42,7 +41,7 @@ class ExecutionNode:
         }
         self.outgoing_edges: Set[Edge] = {
             Edge(FieldAddress.from_string(edge[0]), FieldAddress.from_string(edge[1]))
-            for edge in traversal_details.incoming_edges
+            for edge in traversal_details.outgoing_edges
         }
         self.connection_key: FidesKey = FidesKey(
             traversal_details.dataset_connection_key
