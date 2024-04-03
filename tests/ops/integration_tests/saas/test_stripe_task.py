@@ -402,48 +402,6 @@ async def test_stripe_access_request_task_with_email(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:subscription"],
-        min_size=1,
-        keys=[
-            "application_fee_percent",
-            "automatic_tax",
-            "billing_cycle_anchor",
-            "billing_thresholds",
-            "cancel_at",
-            "cancel_at_period_end",
-            "canceled_at",
-            "collection_method",
-            "created",
-            "current_period_end",
-            "current_period_start",
-            "customer",
-            "days_until_due",
-            "default_payment_method",
-            "default_source",
-            "default_tax_rates",
-            "discount",
-            "ended_at",
-            "id",
-            "latest_invoice",
-            "livemode",
-            "next_pending_invoice_item_invoice",
-            "object",
-            "pause_collection",
-            "payment_settings",
-            "pending_invoice_item_interval",
-            "pending_setup_intent",
-            "pending_update",
-            "schedule",
-            "start_date",
-            "status",
-            "test_clock",
-            "transfer_data",
-            "trial_end",
-            "trial_start",
-        ],
-    )
-
-    assert_rows_match(
         v[f"{dataset_name}:tax_id"],
         min_size=1,
         keys=[

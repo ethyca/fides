@@ -293,26 +293,24 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
+        access_results = await graph_task.run_access_request(
+            privacy_request,
+            access_policy,
+            dataset_graph,
+            connection_config_list,
+            identities,
+            self.db,
+        )
+
         if (
             ActionType.access
             in SaaSConfig(**self.connection_config.saas_config).supported_actions
         ):
-            access_results = await graph_task.run_access_request(
-                privacy_request,
-                access_policy,
-                dataset_graph,
-                connection_config_list,
-                identities,
-                self.db,
-            )
-
             # verify we returned at least one row for each collection in the dataset
             for collection in self.dataset["collections"]:
                 assert len(
                     access_results[f"{fides_key}:{collection['name']}"]
                 ), f"No rows returned for collection '{collection['name']}'"
-        else:
-            access_results = {}
 
         erasure_results = await graph_task.run_erasure(
             privacy_request,
