@@ -16,7 +16,11 @@ import type {
   MessageDescriptor,
   Language,
 } from "./index";
-import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_REGEX,
+  DEFAULT_MODAL_LINK_LABEL,
+} from "./i18n-constants";
 import { STATIC_MESSAGES, LOCALE_LANGUAGE_MAP } from "./locales";
 import { GVLTranslations } from "../tcf/types";
 
@@ -68,6 +72,7 @@ function extractMessagesFromExperienceConfig(
     "reject_button_label",
     "save_button_label",
     "title",
+    "modal_link_label",
   ] as const;
   if (experienceConfig.translations) {
     experienceConfig.translations.forEach(
@@ -616,3 +621,30 @@ export function setupI18n(): I18n {
     },
   };
 }
+
+/**
+ * Determines the appropriate modal link text based on
+ * localization settings and language translations.
+ */
+export const localizeModalLinkText = (
+  disableLocalization: boolean,
+  i18n: I18n,
+  effectiveExperience?: Partial<PrivacyExperience>
+): string => {
+  let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
+  if (!disableLocalization) {
+    if (i18n.t("exp.modal_link_label") !== "exp.modal_link_label") {
+      modalLinkText = i18n.t("exp.modal_link_label");
+    }
+  } else {
+    const defaultLocale = i18n.getDefaultLocale();
+    const defaultTranslation =
+      effectiveExperience?.experience_config?.translations.find(
+        (t) => t.language === defaultLocale
+      );
+    if (defaultTranslation?.modal_link_label) {
+      modalLinkText = defaultTranslation.modal_link_label;
+    }
+  }
+  return modalLinkText;
+};

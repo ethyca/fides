@@ -1,13 +1,13 @@
 /**
  * Once FidesJS is initialized, it exports this global object to `window.Fides`
  * as the main API to integrate into your web applications.
- * 
+ *
  * You can then use `Fides` in your JavaScript code to check the user's current
  * consent preferences (e.g. `if (Fides.consent.marketing) { ... }`), enable
  * FidesJS integrations (e.g. `Fides.gtm()`), programmaticaly show the FidesJS
  * UI (e.g. `Fides.showModal()`) and more. See the full list of properties below
  * for details.
- * 
+ *
  * NOTE: FidesJS will need to be downloaded, executed, and initialized before
  * the `Fides` object is available. Therefore, your code should check for the
  * existence of Fides *or* subscribe to the global `FidesInitialized` event (see
@@ -36,16 +36,16 @@ export interface Fides {
    * - key: the applicable Fides `notice_key` (e.g. `data_sales_and_sharing`, `analytics`)
    * - value: `true` or `false`, depending on whether or not the current user
    * has consented to the notice
-   * 
+   *
    * Note that FidesJS will automatically set default consent preferences based
    * on the type of notice - so, for example a typical "opt-in" analytics notice
    * will be given a default value of `false`. This allows writing very simple
    * (and readable!) code to check a user's consent preferences.
-   * 
+   *
    * The specific keys provided in the `Fides.consent` property are determined
    * based on your Fides configuration, and are provided to the browser based on
    * the user's location, property ID, etc.
-   * 
+   *
    * @example
    * A `Fides.consent` value showing the user has opted-out of data sales & sharing:
    * ```ts
@@ -53,7 +53,7 @@ export interface Fides {
    *   "data_sales_and_sharing": false
    * }
    * ```
-   * 
+   *
    * @example
    * A `Fides.consent` value showing the user has opted-in to analytics, but not marketing:
    * ```ts
@@ -69,7 +69,7 @@ export interface Fides {
    * User's current consent string(s) combined into a single value. Currently,
    * this is used by FidesJS to store IAB consent strings from various
    * frameworks such as TCF, GPP, and Google's "Additional Consent" string.
-   * 
+   *
    * @example
    * Example `fides_string` showing a combination of:
    * - IAB TC string: `CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA`
@@ -77,14 +77,14 @@ export interface Fides {
    * ```ts
    * console.log(Fides.fides_string); // CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70
    * ```
-   * 
+   *
    */
   fides_string?: string;
 
   /**
    * Whether or not FidesJS has finished initialization and has loaded the
    * current user's experience, consent preferences, etc.
-   * 
+   *
    * NOTE: To be notified when initialization has completed, you can subscribe
    * to the `FidesInitialized` event. See {@link FidesEvent} for details.
    */
@@ -116,7 +116,7 @@ export interface Fides {
    *   Your Privacy Choices
    * </button>
    * ```
-   * 
+   *
    * Another option, using a custom link element instead:
    * ```html
    * <a role="button" class="my-custom-show-modal" onclick="Fides.showModal()">
@@ -150,6 +150,34 @@ export interface Fides {
   showModal: () => void;
 
   /**
+   * The modal's "Trigger link label" text can be customized, per regulation, for each language defined in the `experience`.
+   *
+   * Use this function to get the label in the appropriate language for the user's current locale.
+   * To always return in the default language only, pass the `disableLocalization` option as `true`.
+   *
+   * @example
+   * Getting the link text in the user's current locale (eg. Spanish):
+   * ```ts
+   * console.log(Fides.getModalLinkLabel()); // "Tus preferencias de privacidad"
+   * ```
+   *
+   * Getting the link text in the default locale to match other links on the page:
+   * ```ts
+   * console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
+   * ```
+   *
+   * @example
+   * Applying the link text to a custom modal link element:
+   * ```html
+   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
+   * <script>
+   *  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+   * </script>
+   * ```
+   */
+  getModalLinkLabel: (options?: { disableLocalization: boolean }) => string;
+
+  /**
    * Enable the Google Tag Manager (GTM) integration. This should be called
    * immediately after FidesJS is included, and once enabled, FidesJS will
    * automatically push all {@link FidesEvent} events to the GTM data layer as
@@ -181,7 +209,7 @@ export interface Fides {
   init: (config: any) => Promise<void>;
 
   /**
-   * NOTE: The properties below are all marked @private, despite being exported
+   * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid
    * customers getting too comfortable with accessing them.
@@ -190,49 +218,49 @@ export interface Fides {
   /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
    * 
-   * @private
+   * @internal
    */
   fides_meta: Record<any, any>;
 
   /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
-   * 
-   * @private
+   *
+   * @internal
    */
   identity: Record<string, string>;
 
   /**
-   * @private
+   * @internal
    */
   experience?: any;
 
   /**
-   * @private
+   * @internal
    */
   geolocation?: any;
 
   /**
-   * @private
+   * @internal
    */
   options: any;
 
   /**
-   * @private
+   * @internal
    */
   tcf_consent: any;
 
   /**
-   * @private
+   * @internal
    */
   saved_consent: Record<string, boolean>;
 
   /**
-   * @private
+   * @internal
    */
   meta: (options: any) => void;
 
   /**
-   * @private
+   * @internal
    */
   shopify: (options: any) => void;
-};
+}

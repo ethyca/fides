@@ -16,6 +16,7 @@ const defaultTranslation: ExperienceTranslation = {
   description: "Description",
   privacy_policy_link_label: "",
   privacy_policy_url: "",
+  modal_link_label: "",
   privacy_preferences_link_label: "Privacy preferences",
   reject_button_label: "Reject All",
   save_button_label: "Save",
@@ -78,7 +79,9 @@ export const buildBaseConfig = (
   },
 });
 
-// fill in any empty strings in a translation with the defaults above
+/**
+ * fill in any empty strings in a translation with the defaults from `buildBaseConfig`
+ */
 export const translationOrDefault = (
   translation: ExperienceTranslation
 ): ExperienceTranslation => {
