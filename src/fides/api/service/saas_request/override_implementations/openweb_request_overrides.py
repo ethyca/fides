@@ -16,7 +16,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 
 @register("openweb_user_read", [SaaSRequestType.READ])
-def adyen_user_read(
+def openweb_user_read(
     client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,

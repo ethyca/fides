@@ -13,14 +13,17 @@ saas_config:
     - name: api_key
       label: SSO Authentication Token
       description: Value of the OpenWeb SSO Authentication token. This can be found in your OpenWeb admni GUI by going to 'Settings' then navigate to the Authenticaiton Tokens.
+    - name: x_spot_id
+      label: Your SPOT_ID, the unique OpenWeb identifier for your property. You can determine your this by logging into your Admin Dashboard. Then, copy your Spot ID from the URL. The value will show up like this example - https://admin.spot.im/spot/{SPOT_ID}/... 
+
     # - name: primary_key
     #   label: The 
     #   default_value: testuser
 
   external_references:
-    - name: openweb_user_id
-      label: Reference to OpenWeb user id
-      description: The dataset reference to the primary_key which maps to the desired user.
+    - name: <primary_key>
+      label: Primary key determined from read request.
+      description: Fix this
 
   client_config:
     protocol: https
@@ -34,20 +37,21 @@ saas_config:
 
   test_request:
     method: GET
-    path: /api/sso/v1/user/<openweb_user_id>
+    path: /api/sso/v1/user/<primary_key>
     param_values:
-      - name: openweb_user_id
-        connector_param: openweb_user_id
+      - name: primary_key
+        connector_param: primary_key
 
   endpoints:
     - name: user
       requests:
         read:
-          request_override: openweb_user_read
+          method: GET
+          path: /api/sso/v1/user/<primary_key>
+          data_path: user
           param_values:
-            - name: user_id
-              reference:
-                - openweb_user_id
+            - name: primary_key
+              connector_param: primary_key
         delete:
           method: POST
           path: /api/sso/v1/user/<openweb_user_id>

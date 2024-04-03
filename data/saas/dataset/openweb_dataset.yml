@@ -5,7 +5,7 @@ dataset:
     collections:
       - name: user
         fields:
-          - name: id
+          - name: primary_key
             data_categories: [system.operations]
             fidesops_meta:
               primary_key: True
@@ -39,13 +39,7 @@ dataset:
             fidesops_meta:
               data_type: 'string[]'
           - name: image_url
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: email
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: email_verified
             data_categories: [system.operations]
             fidesops_meta:
