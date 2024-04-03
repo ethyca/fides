@@ -165,6 +165,71 @@ async def test_square_access_request_task_by_phone_number(
 @pytest.mark.integration_saas
 @pytest.mark.integration_square
 @pytest.mark.asyncio
+async def test_square_access_request_task_with_multiple_identities(
+    db,
+    policy,
+    square_connection_config,
+    square_dataset_config,
+    square_identity_email,
+    square_identity_phone_number,
+) -> None:
+    """Full access request based on the Square SaaS config"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_square_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(
+        **{"email": square_identity_email, "phone_number": square_identity_phone_number}
+    )
+    privacy_request.cache_identity(identity)
+
+    dataset_name = square_connection_config.get_saas_config().fides_key
+    merged_graph = square_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [square_connection_config],
+        {"email": square_identity_email, "phone_number": square_identity_phone_number},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:customer"],
+        min_size=1,
+        keys=[
+            "id",
+            "created_at",
+            "updated_at",
+            "given_name",
+            "family_name",
+            "nickname",
+            "email_address",
+            "address",
+            "phone_number",
+            "company_name",
+            "preferences",
+            "creation_source",
+            "birthday",
+            "segment_ids",
+            "version",
+        ],
+    )
+
+    # verify we only returned data for our identity phone number
+    for customer in v[f"{dataset_name}:customer"]:
+        assert customer["phone_number"] == square_identity_phone_number
+        assert customer["email_address"] == square_identity_email
+
+    # verify orders aren't duplicated since we are looking up the customer by two different identities
+    assert len(v[f"{dataset_name}:orders"]) == 2
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_square
+@pytest.mark.asyncio
 async def test_square_erasure_request_task(
     db,
     policy,

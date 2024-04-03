@@ -11,6 +11,7 @@ from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
+from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -51,8 +52,10 @@ from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
     NodeInput,
     Row,
-    append,
+    append_unique,
     extract_key_for_address,
+    make_immutable,
+    make_mutable,
     partition,
 )
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
@@ -323,7 +326,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 len(data),
             )
 
-        output: Dict[str, List[Any]] = {FIDESOPS_GROUPED_INPUTS: []}
+        output: Dict[str, Set] = {FIDESOPS_GROUPED_INPUTS: OrderedSet()}
 
         (
             independent_field_mappings,
@@ -355,7 +358,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                         row=row, target_path=foreign_field_path
                     )
                     if new_values:
-                        append(output, local_field_path.string_path, new_values)
+                        append_unique(output, local_field_path.string_path, new_values)
 
                 # Separately group together dependent inputs if applicable
                 if dependent_field_mappings[collection_address]:
@@ -376,8 +379,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                             dependent_field_mappings=dependent_field_mappings,
                         )
 
-                    output[FIDESOPS_GROUPED_INPUTS].append(grouped_data)
-        return output
+                    output[FIDESOPS_GROUPED_INPUTS].append(make_immutable(grouped_data))
+
+        return make_mutable(output)
 
     def update_status(
         self,
