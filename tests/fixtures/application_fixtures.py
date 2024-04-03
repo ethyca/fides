@@ -3050,9 +3050,9 @@ def use_dsr_2_0():
 
 
 @pytest.fixture()
-def postgres_dataset_graph(example_datasets, integration_postgres_config):
+def postgres_dataset_graph(example_datasets, connection_config):
     dataset_postgres = Dataset(**example_datasets[0])
-    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
 
     dataset_graph = DatasetGraph(*[graph])
     return dataset_graph
@@ -3060,12 +3060,10 @@ def postgres_dataset_graph(example_datasets, integration_postgres_config):
 
 @pytest.fixture()
 def postgres_and_mongo_dataset_graph(
-    example_datasets, integration_postgres_config, integration_mongodb_config
+    example_datasets, connection_config, mongo_connection_config
 ):
     dataset_postgres = Dataset(**example_datasets[0])
-    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
     dataset_mongo = Dataset(**example_datasets[1])
-    mongo_graph = convert_dataset_to_graph(
-        dataset_mongo, integration_mongodb_config.key
-    )
+    mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_connection_config.key)
     return DatasetGraph(*[graph, mongo_graph])

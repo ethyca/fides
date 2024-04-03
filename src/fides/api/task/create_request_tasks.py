@@ -452,6 +452,7 @@ def run_access_request(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
+    queue_privacy_request: bool = True,
 ) -> List[RequestTask]:
     """
     Build the "access" graph, add its tasks to the database and queue the root task.
@@ -500,7 +501,7 @@ def run_access_request(
 
     for task in ready_tasks:
         log_task_queued(task)
-        run_access_node.delay(privacy_request.id, task.id)
+        run_access_node.delay(privacy_request.id, task.id, queue_privacy_request)
 
     return ready_tasks
 
@@ -508,6 +509,7 @@ def run_access_request(
 def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     session: Session,
+    queue_privacy_request: bool = True,
 ) -> List[RequestTask]:
     """
     Build the "erasure" graph, add its tasks to the database and queue the root task.
@@ -521,7 +523,7 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
 
     for task in ready_tasks:
         log_task_queued(task)
-        run_erasure_node.delay(privacy_request.id, task.id)
+        run_erasure_node.delay(privacy_request.id, task.id, queue_privacy_request)
     return ready_tasks
 
 
@@ -530,6 +532,7 @@ def run_consent_request(  # pylint: disable = too-many-arguments
     graph: DatasetGraph,
     identity: Dict[str, Any],
     session: Session,
+    queue_privacy_request: bool = True,
 ) -> List[RequestTask]:
     """
     Build the "consent" graph, add its tasks to the database and queue the root task.
@@ -560,7 +563,7 @@ def run_consent_request(  # pylint: disable = too-many-arguments
 
     for task in ready_tasks:
         log_task_queued(task)
-        run_consent_node.delay(privacy_request.id, task.id)
+        run_consent_node.delay(privacy_request.id, task.id, queue_privacy_request)
     return ready_tasks
 
 

@@ -15,7 +15,6 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.schemas.policy import ActionType
-from fides.api.service.connectors import MongoDBConnector
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     get_existing_ready_tasks,
@@ -139,7 +138,7 @@ payment_card_serialized_traversal_details = {
             "postgres_example_test_dataset:address:id",
         ]
     ],
-    "dataset_connection_key": "postgres_example",
+    "dataset_connection_key": "my_postgres_db_1",
 }
 
 # Expected statuses when mongo db credentials are bad
@@ -514,18 +513,23 @@ class TestPersistErasureRequestTasks:
         assert not payment_card_task.is_terminator_task
 
     @pytest.mark.timeout(5)
+    @pytest.mark.integration
     @pytest.mark.integration_postgres
     def test_update_erasure_tasks_with_access_data(
-        self, db, privacy_request, postgres_dataset_graph
+        self, db, privacy_request, example_datasets, integration_postgres_config
     ):
         """Test that erasure tasks are updated with the corresponding erasure data collected
         from the access task"""
+        dataset = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+
         identity = {"email": "customer-1@example.com"}
-        traversal: Traversal = Traversal(postgres_dataset_graph, identity)
+        traversal: Traversal = Traversal(dataset_graph, identity)
 
         traversal_nodes = {}
         access_end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
-        erasure_end_nodes = list(postgres_dataset_graph.nodes.keys())
+        erasure_end_nodes = list(dataset_graph.nodes.keys())
 
         ready_tasks = persist_new_access_request_tasks(
             db,
@@ -533,7 +537,7 @@ class TestPersistErasureRequestTasks:
             traversal,
             traversal_nodes,
             access_end_nodes,
-            postgres_dataset_graph,
+            dataset_graph,
         )
 
         persist_initial_erasure_request_tasks(
@@ -541,10 +545,12 @@ class TestPersistErasureRequestTasks:
             privacy_request,
             traversal_nodes,
             erasure_end_nodes,
-            postgres_dataset_graph,
+            dataset_graph,
         )
 
-        run_access_node.delay(privacy_request.id, ready_tasks[0].id)
+        run_access_node.delay(
+            privacy_request.id, ready_tasks[0].id, queue_privacy_request=False
+        )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
         update_erasure_tasks_with_access_data(db, privacy_request)
@@ -631,16 +637,30 @@ class TestPersistErasureRequestTasks:
     @pytest.mark.integration_postgres
     @pytest.mark.integration_mongodb
     def test_update_erasure_tasks_with_placeholder_access_data(
-        self, db, privacy_request, postgres_and_mongo_dataset_graph
+        self,
+        db,
+        privacy_request,
+        integration_postgres_config,
+        integration_mongodb_config,
+        example_datasets,
     ):
         """Test that erasure tasks are updated with the corresponding erasure data collected
         from the access task"""
+        dataset_postgres = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = Dataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
         identity = {"email": "customer-1@example.com"}
-        traversal: Traversal = Traversal(postgres_and_mongo_dataset_graph, identity)
+        traversal: Traversal = Traversal(dataset_graph, identity)
 
         traversal_nodes = {}
         access_end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
-        erasure_end_nodes = list(postgres_and_mongo_dataset_graph.nodes.keys())
+        erasure_end_nodes = list(dataset_graph.nodes.keys())
 
         ready_tasks = persist_new_access_request_tasks(
             db,
@@ -648,7 +668,7 @@ class TestPersistErasureRequestTasks:
             traversal,
             traversal_nodes,
             access_end_nodes,
-            postgres_and_mongo_dataset_graph,
+            dataset_graph,
         )
 
         persist_initial_erasure_request_tasks(
@@ -656,10 +676,12 @@ class TestPersistErasureRequestTasks:
             privacy_request,
             traversal_nodes,
             erasure_end_nodes,
-            postgres_and_mongo_dataset_graph,
+            dataset_graph,
         )
 
-        run_access_node.delay(privacy_request.id, ready_tasks[0].id)
+        run_access_node.delay(
+            privacy_request.id, ready_tasks[0].id, queue_privacy_request=False
+        )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
         update_erasure_tasks_with_access_data(db, privacy_request)
@@ -1065,17 +1087,29 @@ class TestRunAccessRequestWithRequestTasks:
         db,
         privacy_request,
         policy,
-        postgres_and_mongo_dataset_graph,
+        example_datasets,
+        postgres_integration_db,
         integration_mongodb_config,
         integration_postgres_config,
     ):
+        dataset_postgres = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = Dataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
         run_access_request(
             privacy_request,
             policy,
-            postgres_and_mongo_dataset_graph,
+            dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             db,
+            queue_privacy_request=False,
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -1167,10 +1201,20 @@ class TestRunAccessRequestWithRequestTasks:
         db,
         privacy_request,
         policy,
-        postgres_and_mongo_dataset_graph,
+        example_datasets,
         integration_mongodb_config,
         integration_postgres_config,
     ):
+        dataset_postgres = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = Dataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
         # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
         saved_secrets = integration_mongodb_config.secrets
         integration_mongodb_config.secrets = {}
@@ -1179,10 +1223,11 @@ class TestRunAccessRequestWithRequestTasks:
         run_access_request(
             privacy_request,
             policy,
-            postgres_and_mongo_dataset_graph,
+            dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             db,
+            queue_privacy_request=False,
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -1213,10 +1258,11 @@ class TestRunAccessRequestWithRequestTasks:
         run_access_request(
             privacy_request,
             policy,
-            postgres_and_mongo_dataset_graph,
+            dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             db,
+            queue_privacy_request=False,
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -1273,7 +1319,8 @@ class TestRunErasureRequestWithRequestTasks:
         db,
         privacy_request_with_erasure_policy,
         erasure_policy,
-        postgres_and_mongo_dataset_graph,
+        example_datasets,
+        postgres_integration_db,
         integration_mongodb_config,
         integration_postgres_config,
     ):
@@ -1281,6 +1328,16 @@ class TestRunErasureRequestWithRequestTasks:
 
         This can only run once because it is destructive
         """
+        dataset_postgres = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = Dataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
         CONFIG.execution.task_retry_count = 0
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
@@ -1296,10 +1353,11 @@ class TestRunErasureRequestWithRequestTasks:
         run_access_request(
             privacy_request_with_erasure_policy,
             erasure_policy,
-            postgres_and_mongo_dataset_graph,
+            dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             db,
+            queue_privacy_request=False,
         )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.access
@@ -1310,7 +1368,9 @@ class TestRunErasureRequestWithRequestTasks:
 
         # Run erasure portion first time, but it is expected to fail because
         # Mongo connector is not working
-        run_erasure_request(privacy_request_with_erasure_policy, db)
+        run_erasure_request(
+            privacy_request_with_erasure_policy, db, queue_privacy_request=False
+        )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.erasure
         )
@@ -1341,7 +1401,9 @@ class TestRunErasureRequestWithRequestTasks:
         p.stop()
 
         # Run erasure one more time
-        run_erasure_request(privacy_request_with_erasure_policy, db)
+        run_erasure_request(
+            privacy_request_with_erasure_policy, db, queue_privacy_request=False
+        )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.erasure
         )
@@ -1398,10 +1460,11 @@ class TestRunErasureRequestWithRequestTasks:
         run_access_request(
             privacy_request_with_erasure_policy,
             erasure_policy,
-            postgres_and_mongo_dataset_graph,
+            dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             db,
+            queue_privacy_request=False,
         )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.access

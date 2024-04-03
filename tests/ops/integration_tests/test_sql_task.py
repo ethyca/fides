@@ -28,7 +28,7 @@ from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 
-from ...conftest import test_access_runner
+from ...conftest import access_runner_tester
 from ..graph.graph_test_util import (
     assert_rows_match,
     erasure_policy,
@@ -289,7 +289,7 @@ async def test_postgres_access_request_task(
 ) -> None:
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = test_access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),

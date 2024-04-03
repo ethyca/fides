@@ -294,8 +294,8 @@ class ConnectorRunner:
         dataset_graph = DatasetGraph(*graph_list)
 
         if (
-                ActionType.access
-                in SaaSConfig(**self.connection_config.saas_config).supported_actions
+            ActionType.access
+            in SaaSConfig(**self.connection_config.saas_config).supported_actions
         ):
             access_results = access_runner(
                 privacy_request,

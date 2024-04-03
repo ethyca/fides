@@ -396,6 +396,7 @@ def run_privacy_request(
                     connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
+                    queue_privacy_request=True,
                 )
 
             # Upload Access Results CHECKPOINT
@@ -438,6 +439,7 @@ def run_privacy_request(
                     identity=identity_data,
                     access_request_data=raw_access_results,
                     session=session,
+                    queue_privacy_request=True,
                 )
 
             # Finalize Erasure CHECKPOINT
@@ -461,6 +463,7 @@ def run_privacy_request(
                     connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
+                    queue_privacy_request=True,
                 )
 
             # Finalize Consent CHECKPOINT

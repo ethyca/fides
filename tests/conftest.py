@@ -660,7 +660,7 @@ def wait_for_terminator_completion(
             raise Exception()
 
 
-def test_access_runner(
+def access_runner_tester(
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -675,7 +675,13 @@ def test_access_runner(
     try:
         # DSR 2.0
         return access_runner(
-            privacy_request, policy, graph, connection_configs, identity, session
+            privacy_request,
+            policy,
+            graph,
+            connection_configs,
+            identity,
+            session,
+            queue_privacy_request=False,
         )
     except PrivacyRequestExit:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
