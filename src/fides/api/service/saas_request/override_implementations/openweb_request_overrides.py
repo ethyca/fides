@@ -15,7 +15,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 
-@register("adyen_user_read", [SaaSRequestType.READ])
+@register("openweb_user_read", [SaaSRequestType.READ])
 def adyen_user_read(
     client: AuthenticatedClient,
     node: TraversalNode,
@@ -24,8 +24,8 @@ def adyen_user_read(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
-    adyen_user_ids = input_data.get("user_id", [])
+    openweb_user_ids = input_data.get("user_id", [])
     results = []
-    for adyen_user_id in adyen_user_ids:
-        results.append({"psp_reference": adyen_user_id})
+    for openweb_user_id in openweb_user_ids:
+        results.append({"primary_key": openweb_user_id})
     return results

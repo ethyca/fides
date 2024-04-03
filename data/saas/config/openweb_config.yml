@@ -52,8 +52,8 @@ saas_config:
           method: POST
           path: /api/sso/v1/user/<openweb_user_id>
           param_values:
-            - name: openweb_user_id
+            - name: primary_key
               references:
                 - dataset: <instance_fides_key>
-                field: user.id
+                field: user.primary_key
                 direction: from

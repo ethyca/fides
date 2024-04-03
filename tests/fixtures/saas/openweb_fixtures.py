@@ -49,9 +49,11 @@ def openweb_erasure_external_references() -> Dict[str, Any]:
 def openweb_erasure_data(
     openweb_erasure_identity_email: str,
 ) -> Generator:
+    '''
     # create the data needed for erasure tests here
+    #### can we put the logic here to send out a request to the register user endpoint to create a random user to use? For the primary key value we need we can use any random string of alpha-numeric characters
     yield {}
-
+    '''
 
 @pytest.fixture
 def openweb_runner(
