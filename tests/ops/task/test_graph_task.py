@@ -500,18 +500,22 @@ class TestBuildAffectedFieldLogs:
         ]
         dataset = postgres_order_node.node.dataset
 
-        field([dataset], "postgres", "Order", "customer_id").data_categories = ["A"]
-        field([dataset], "postgres", "Order", "shipping_address_id").data_categories = [
-            "B"
+        field([dataset], "postgres", "Order", "customer_id").data_categories = [
+            "user.name"
         ]
-        field([dataset], "postgres", "Order", "order_id").data_categories = ["B"]
+        field([dataset], "postgres", "Order", "shipping_address_id").data_categories = [
+            "system.operations"
+        ]
+        field([dataset], "postgres", "Order", "order_id").data_categories = [
+            "system.operations"
+        ]
         field([dataset], "postgres", "Order", "billing_address_id").data_categories = [
-            "C"
+            "user.contact"
         ]
         return postgres_order_node
 
-    def test_build_affected_field_logs(self, node_fixture):
-        policy = erasure_policy("A", "B")
+    def test_build_affected_field_logs(self, db, node_fixture):
+        policy = erasure_policy(db, "user.name", "system.operations")
 
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node, policy, action_type=ActionType.erasure
@@ -522,22 +526,24 @@ class TestBuildAffectedFieldLogs:
             {
                 "path": "postgres:Order:customer_id",
                 "field_name": "customer_id",
-                "data_categories": ["A"],
+                "data_categories": ["user.name"],
             },
             {
                 "path": "postgres:Order:order_id",
                 "field_name": "order_id",
-                "data_categories": ["B"],
+                "data_categories": ["system.operations"],
             },
             {
                 "path": "postgres:Order:shipping_address_id",
                 "field_name": "shipping_address_id",
-                "data_categories": ["B"],
+                "data_categories": ["system.operations"],
             },
         ]
 
-    def test_build_affected_field_logs_no_data_categories_on_policy(self, node_fixture):
-        no_categories_policy = erasure_policy()
+    def test_build_affected_field_logs_no_data_categories_on_policy(
+        self, db, node_fixture
+    ):
+        no_categories_policy = erasure_policy(db)
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node,
             no_categories_policy,
@@ -546,8 +552,10 @@ class TestBuildAffectedFieldLogs:
         # No data categories specified on policy, so no fields affected
         assert formatted_for_logs == []
 
-    def test_build_affected_field_logs_no_matching_data_categories(self, node_fixture):
-        d_categories_policy = erasure_policy("D")
+    def test_build_affected_field_logs_no_matching_data_categories(
+        self, db, node_fixture
+    ):
+        d_categories_policy = erasure_policy(db, "user.demographic")
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node,
             d_categories_policy,
@@ -557,9 +565,9 @@ class TestBuildAffectedFieldLogs:
         assert formatted_for_logs == []
 
     def test_build_affected_field_logs_no_data_categories_for_action_type(
-        self, node_fixture
+        self, db, node_fixture
     ):
-        policy = erasure_policy("A", "B")
+        policy = erasure_policy(db, "user.name", "system.operations")
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node,
             policy,
@@ -568,38 +576,43 @@ class TestBuildAffectedFieldLogs:
         # We only have data categories specified on an erasure policy, and we're looking for access action type
         assert formatted_for_logs == []
 
-    def test_multiple_rules_targeting_same_field(self, node_fixture):
-        policy = erasure_policy("A")
+    def test_multiple_rules_targeting_same_field(self, db, node_fixture):
+        policy = erasure_policy(db, "user.name")
 
-        policy.rules = [
-            Rule(
-                action_type=ActionType.erasure,
-                targets=[RuleTarget(data_category="A")],
-                masking_strategy={
-                    "strategy": "null_rewrite",
-                    "configuration": {},
-                },
-            ),
-            Rule(
-                action_type=ActionType.erasure,
-                targets=[RuleTarget(data_category="A")],
-                masking_strategy={
-                    "strategy": "null_rewrite",
-                    "configuration": {},
-                },
-            ),
-        ]
+        rule_1 = Rule(
+            action_type=ActionType.erasure,
+            targets=[RuleTarget(data_category="user.name")],
+            masking_strategy={
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+            policy_id=policy.id,
+        )
+
+        target_1 = RuleTarget(data_category="user.name", rule_id=rule_1.id)
+
+        rule_2 = Rule(
+            action_type=ActionType.erasure,
+            targets=[RuleTarget(data_category="user.name")],
+            masking_strategy={
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+            policy_id=policy.id,
+        )
+
+        target_2 = RuleTarget(data_category="user.name", rule_id=rule_2.id)
 
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node, policy, action_type=ActionType.erasure
         )
 
-        # No duplication of the matching customer_id field, even though multiple rules targeted data category A
+        # No duplication of the matching customer_id field, even though multiple rules targeted data category user.name
         assert formatted_for_logs == [
             {
                 "path": "postgres:Order:customer_id",
                 "field_name": "customer_id",
-                "data_categories": ["A"],
+                "data_categories": ["user.name"],
             }
         ]
 

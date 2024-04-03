@@ -1078,6 +1078,22 @@ class PrivacyRequest(
             for k, v in value_dict.items()
         }
 
+    def get_raw_masking_counts(self) -> Dict[str, int]:
+        """For parity, return the rows masked for an erasure request"""
+        if self.erasure_tasks.count():
+            return {
+                t.collection_address: t.rows_masked
+                for t in self.erasure_tasks
+                if not t.is_root_task and not t.is_terminator_task
+            }
+
+        # TODO Remove this alongside deprecated DSR 2.0
+        cache: FidesopsRedis = get_cache()
+        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__erasure_request")
+        # extract request id to return a map of address:value
+        number_of_leading_strings_to_exclude = 2
+        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
+
     def save_filtered_access_results(
         self, db: Session, results: Dict[str, Dict[str, List[Row]]]
     ) -> None:

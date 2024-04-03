@@ -15,9 +15,8 @@ secrets = get_secrets("iterable")
 @pytest.fixture(scope="session")
 def iterable_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "iterable.domain")
-        or secrets["domain"],
-        "api_key": pydash.get(saas_config, "iterable.api_key") or  secrets["api_key"],
+        "domain": pydash.get(saas_config, "iterable.domain") or secrets["domain"],
+        "api_key": pydash.get(saas_config, "iterable.api_key") or secrets["api_key"],
     }
 
 

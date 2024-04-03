@@ -634,6 +634,7 @@ class TestPersistErasureRequestTasks:
         ]
 
     @pytest.mark.timeout(5)
+    @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.integration_mongodb
     def test_update_erasure_tasks_with_placeholder_access_data(
@@ -1080,6 +1081,7 @@ class TestGetExistingReadyTasks:
 
 class TestRunAccessRequestWithRequestTasks:
     @pytest.mark.timeout(5)
+    @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.integration_mongodb
     def test_run_access_request(
@@ -1194,6 +1196,7 @@ class TestRunAccessRequestWithRequestTasks:
         ]
 
     @pytest.mark.timeout(5)
+    @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.integration_mongodb
     def test_run_access_request_with_error(
@@ -1308,6 +1311,7 @@ class TestRunAccessRequestWithRequestTasks:
 
 class TestRunErasureRequestWithRequestTasks:
     @pytest.mark.timeout(15)
+    @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.integration_mongodb
     @mock.patch(
@@ -1412,10 +1416,8 @@ class TestRunErasureRequestWithRequestTasks:
             t.status == ExecutionLogStatus.complete
             for t in privacy_request_with_erasure_policy.erasure_tasks
         )
-        rows_masked = {
-            t.collection_address: t.rows_masked
-            for t in privacy_request_with_erasure_policy.erasure_tasks
-        }
+
+        rows_masked = privacy_request_with_erasure_policy.get_raw_masking_counts()
 
         # Existing completed task was not touched on Run #2
         db.refresh(postgres_customer_task)

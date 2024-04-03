@@ -49,8 +49,9 @@ from fides.api.oauth.roles import (
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.task.create_request_tasks import run_access_request
 from fides.api.task.deprecated_graph_task import run_access_request_deprecated
-from fides.api.task.graph_runners import access_runner
+from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.util.cache import get_cache
+from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
@@ -669,11 +670,9 @@ def access_runner_tester(
     session: Session,
 ):
     """
-    This fixture is the version of the run_privacy_request task that is
-    registered to the `celery_app` fixture which uses the virtualised `celery_worker`
+    Function for testing the access request for both DSR 2.0 and DSR 3.0
     """
     try:
-        # DSR 2.0
         return access_runner(
             privacy_request,
             policy,
@@ -681,12 +680,41 @@ def access_runner_tester(
             connection_configs,
             identity,
             session,
-            queue_privacy_request=False,
+            queue_privacy_request=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
         wait_for_terminator_completion(session, privacy_request, ActionType.access)
         return privacy_request.get_raw_access_results()
+
+
+def erasure_runner_tester(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    access_request_data: Dict[str, List[Row]],
+    session: Session,
+):
+    """
+    Function for testing the erasure runner for both DSR 2.0 and DSR 3.0
+    """
+    try:
+        return erasure_runner(
+            privacy_request,
+            policy,
+            graph,
+            connection_configs,
+            identity,
+            access_request_data,
+            session,
+            queue_privacy_request=False,
+        )
+    except PrivacyRequestExit as exc:
+        # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
+        wait_for_terminator_completion(session, privacy_request, ActionType.erasure)
+        return privacy_request.get_raw_masking_counts()
 
 
 @pytest.fixture(autouse=True, scope="session")

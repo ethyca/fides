@@ -66,16 +66,16 @@ class TestEnabledActions:
         erasure_policy,
         integration_postgres_config,
         dataset_graph,
+        privacy_request_with_erasure_policy,
     ) -> None:
         """Disable the erasure request for one connection config and verify the erasure results"""
 
         # disable the erasure action type for Postgres
         integration_postgres_config.enabled_actions = [ActionType.access]
         integration_postgres_config.save(db)
-        privacy_request = PrivacyRequest(id="test_disable_postgres_erasure")
 
         access_results = access_runner(
-            privacy_request,
+            privacy_request_with_erasure_policy,
             policy,
             dataset_graph,
             [integration_postgres_config],
@@ -90,12 +90,12 @@ class TestEnabledActions:
         }
 
         erasure_results = erasure_runner(
-            privacy_request,
+            privacy_request_with_erasure_policy,
             erasure_policy,
             dataset_graph,
             [integration_postgres_config],
             {"email": "customer-1@example.com"},
-            get_cached_data_for_erasures(privacy_request.id),
+            get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
             db,
         )
 

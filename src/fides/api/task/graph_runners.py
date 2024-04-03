@@ -28,7 +28,7 @@ def access_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-    queue_privacy_request: bool,
+    queue_privacy_request: bool = True,
 ) -> Dict[str, List[Row]]:
     """Access runner that temporarily supports running Access Request with DSR 3.0  2.0.
     DSR 2.0 will be going away"""
@@ -74,7 +74,7 @@ def erasure_runner(
     identity: Dict[str, Any],
     access_request_data: Dict[str, List[Row]],
     session: Session,
-    queue_privacy_request: bool,
+    queue_privacy_request: bool = True,
 ) -> Dict[str, int]:
     """Erasure runner that temporarily supports running Erasure DAGs with DSR 3.0 or 2.0.
     DSR 2.0 will be going away"""
@@ -104,7 +104,7 @@ def consent_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-    queue_privacy_request: bool,
+    queue_privacy_request: bool = True,
 ) -> Dict[str, bool]:
     """Consent runner that temporarily supports running Consent DAGs with DSR 3.0 or 2.0.
     DSR 2.0 will be going away"""
