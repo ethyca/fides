@@ -13,6 +13,12 @@
       "status": "pending",
       "external_id": null,
       "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "custom_privacy_request_fields": {
+        "account_id": { "label": "Account ID", "value": 1 },
+        "user_id": { "label": "User ID", "value": "123" },
+        "subscription_ids": { "label": "Subscription IDs", "value": [1, 2, 3] },
+        "loyalty_ids": { "label": "Loyalty IDs", "value": ["abc", "def"] }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
