@@ -1,48 +1,9 @@
 /**
- * Fides.js: Javascript library for Fides (https://github.com/ethyca/fides)
+ * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
  *
- * This JS module provides easy access to interact with Fides from a webpage, including the ability to:
- * - initialize the page with default consent options (e.g. opt-out of advertising cookies, opt-in to analytics, etc.)
- * - read/write the current user's consent preferences to their browser as a cookie
- * - push the current user's consent preferences to other systems via integrations (Google Tag Manager, Meta, etc.)
+ * This is the primary entry point for the fides.js module.
  *
- * See https://fid.es for more information!
- *
- * Basic usage of this module in an HTML page is:
- * ```
- * <script src="https://privacy.{company}.com/fides.js"></script>
- * <script>
- *   window.Fides.init({
- *     consent: {
- *       options: [{
- *         cookieKeys: ["data_sales"],
- *         default: true,
- *         fidesDataUseKey: "advertising"
- *       }]
- *     },
- *     experience: {},
- *     geolocation: {},
- *     options: {
- *           debug: true,
- *           isDisabled: false,
- *           isGeolocationEnabled: false,
- *           geolocationApiUrl: "",
- *           overlayParentId: null,
- *           modalLinkId: null,
- *           privacyCenterUrl: "http://localhost:3000"
- *         }
- *   });
- * </script>
- * ```
- *
- * ...and later:
- * ```
- * <script>
- *   // Query user consent preferences
- *   if (window.Fides.consent.data_sales) {
- *     // ...enable advertising scripts
- *   }
- * ```
+ * See the overall package docs in ./docs/README.md for more!
  */
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
@@ -53,13 +14,16 @@ import {
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
-  CookieKeyConsent,
   FidesConfig,
   FidesCookie,
-  FidesOptionsOverrides,
+  FidesExperienceTranslationOverrides,
+  FidesGlobal,
+  FidesInitOptionsOverrides,
+  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  OverrideOptions,
+  NoticeConsent,
+  OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -69,24 +33,23 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
-  getOptionsOverrides,
+  getOverridesByType,
 } from "./lib/initialize";
-import type { Fides } from "./lib/initialize";
-
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
-import { debugLog } from "./lib/consent-utils";
+import { defaultShowModal } from "./lib/consent-utils";
+import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 
 declare global {
   interface Window {
-    Fides: Fides;
-    fides_overrides: OverrideOptions;
+    Fides: FidesGlobal;
+    fides_overrides: FidesOptions;
   }
 }
 
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _Fides: Fides;
+let _Fides: FidesGlobal;
 
 const updateExperience = (
   cookie: FidesCookie,
@@ -114,14 +77,23 @@ const updateExperience = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesOptionsOverrides> =
-    getOptionsOverrides(config);
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
+    getOverridesByType<Partial<FidesInitOptionsOverrides>>(
+      OverrideType.OPTIONS,
+      config
+    );
+  const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
+      OverrideType.EXPERIENCE_TRANSLATION,
+      config
+    );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
+    experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrides.optionsOverrides };
@@ -132,7 +104,7 @@ const init = async (config: FidesConfig) => {
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
-  const savedConsent: CookieKeyConsent = {
+  const savedConsent: NoticeConsent = {
     ...cookie.consent,
   };
 
@@ -165,18 +137,12 @@ const init = async (config: FidesConfig) => {
         debug,
         isExperienceClientSideFetched
       ),
+    overrides,
   });
   Object.assign(_Fides, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-};
-
-export const defaultShowModal = () => {
-  debugLog(
-    window.Fides.options.debug,
-    "The current experience does not support displaying a modal."
-  );
 };
 
 // The global Fides object; this is bound to window.Fides if available
@@ -207,6 +173,7 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
+    fidesPrimaryColor: null,
   },
   fides_meta: {},
   identity: {},
@@ -218,6 +185,7 @@ _Fides = {
   meta,
   shopify,
   showModal: defaultShowModal,
+  getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
 };
 
 if (typeof window !== "undefined") {
@@ -225,7 +193,6 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
-export * from "./components";
 export * from "./services/api";
 export * from "./services/external/geolocation";
 export * from "./lib/consent";

@@ -1,15 +1,22 @@
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
   Badge,
   Box,
   Checkbox,
   CheckboxProps,
   Flex,
+  Switch,
   Text,
+  useDisclosure,
+  useToast,
+  WarningIcon,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
-import { FC, ReactNode } from "react";
+import { ChangeEvent, FC } from "react";
+
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { errorToastParams } from "~/features/common/toast";
+import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
   value,
@@ -123,32 +130,70 @@ type DefaultHeaderCellProps<T, V> = {
 
 export const DefaultHeaderCell = <T,>({
   value,
-  column,
 }: DefaultHeaderCellProps<
   T,
   string | number | string[] | undefined | boolean
->) => {
-  let sortIcon: ReactNode = null;
-  if (column.getIsSorted()) {
-    sortIcon =
-      column.getAutoSortDir() === "desc" ? (
-        <ArrowDownIcon color="gray.500" />
-      ) : (
-        <ArrowUpIcon color="gray.500" />
-      );
-  }
+>) => (
+  <Text fontSize="xs" lineHeight={9} fontWeight="medium">
+    {value}
+  </Text>
+);
+
+type EnableCellProps = {
+  value: boolean;
+  onToggle: (data: boolean) => Promise<RTKResult>;
+  title: string;
+  message: string;
+  isDisabled?: boolean;
+};
+
+export const EnableCell = ({
+  value,
+  onToggle,
+  title,
+  message,
+  isDisabled,
+}: EnableCellProps) => {
+  const modal = useDisclosure();
+  const toast = useToast();
+  const handlePatch = async ({ enable }: { enable: boolean }) => {
+    const result = await onToggle(enable);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    }
+  };
+
+  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
+    const { checked } = event.target;
+    if (checked) {
+      await handlePatch({ enable: true });
+    } else {
+      modal.onOpen();
+    }
+  };
 
   return (
-    <Text
-      _hover={{ backgroundColor: "gray.100" }}
-      fontSize="xs"
-      lineHeight={4}
-      fontWeight="medium"
-      pr={sortIcon ? 0 : 3.5}
-      onClick={column.getToggleSortingHandler()}
-    >
-      {value}
-      {sortIcon}
-    </Text>
+    <>
+      <Switch
+        colorScheme="complimentary"
+        isChecked={!value}
+        data-testid="toggle-switch"
+        disabled={isDisabled}
+        onChange={handleToggle}
+      />
+      <ConfirmationModal
+        isOpen={modal.isOpen}
+        onClose={modal.onClose}
+        onConfirm={() => {
+          handlePatch({ enable: false });
+          modal.onClose();
+        }}
+        title={title}
+        message={<Text color="gray.500">{message}</Text>}
+        continueButtonText="Confirm"
+        isCentered
+        icon={<WarningIcon color="orange.100" />}
+      />
+    </>
   );
 };

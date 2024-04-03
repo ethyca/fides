@@ -37,7 +37,7 @@ const ConsentDescription = () => {
   }
   return (
     <Text {...TEXT_PROPS} data-testid="consent-description">
-      {experience?.experience_config?.description}
+      {experience?.experience_config?.translations[0]?.description}
     </Text>
   );
 };

@@ -102,7 +102,14 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                     {item.label}:
                   </Text>
                   <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-                    <PII data={item.value} revealPII={revealPII} />
+                    <PII
+                      data={
+                        Array.isArray(item.value)
+                          ? item.value.join(", ")
+                          : item.value
+                      }
+                      revealPII={revealPII}
+                    />
                   </Text>
                   <Tag
                     color="white"
