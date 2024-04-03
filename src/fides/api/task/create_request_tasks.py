@@ -42,7 +42,7 @@ from fides.api.util.collection_util import Row
 
 
 def build_access_networkx_digraph(
-    env: Dict[CollectionAddress, TraversalNode],
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
     end_nodes: List[CollectionAddress],
     traversal: Traversal,
 ) -> networkx.DiGraph:
@@ -53,7 +53,7 @@ def build_access_networkx_digraph(
     node to more easily mark downstream nodes as failed if the current node fails.
     """
     networkx_graph = networkx.DiGraph()
-    networkx_graph.add_nodes_from(env.keys())
+    networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
     # The first nodes visited are the nodes that only need identity data.
@@ -66,7 +66,7 @@ def build_access_networkx_digraph(
     ]:
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node)
 
-    for collection_address, traversal_node in env.items():
+    for collection_address, traversal_node in traversal_nodes.items():
         for child in traversal_node.children:
             # For every node, add a downstream edge to its children
             # that were calculated in traversal.traverse
@@ -76,6 +76,7 @@ def build_access_networkx_digraph(
         # Connect the end nodes, those that have no downstream dependencies, to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
+    add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
 
 
@@ -101,7 +102,7 @@ def _evaluate_erasure_dependencies(
 
 
 def build_erasure_networkx_digraph(
-    traversal_nodes: Dict[CollectionAddress, Any],
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
     end_nodes: List[CollectionAddress],
 ) -> networkx.DiGraph:
     """
@@ -140,7 +141,19 @@ def build_erasure_networkx_digraph(
             "The values for the `erase_after` fields created a cycle in the DAG."
         )
 
+    add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
+
+
+def add_edge_if_no_nodes(
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
+    networkx_graph: networkx.DiGraph,
+):
+    """Handle edge case of there are no traversal nodes in the graph at all
+    Just connect the root node to the terminator node
+    """
+    if not traversal_nodes.items():
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS)
 
 
 def build_consent_networkx_digraph(
@@ -159,6 +172,7 @@ def build_consent_networkx_digraph(
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, collection_address)
         networkx_graph.add_edge(collection_address, TERMINATOR_ADDRESS)
 
+    add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
 
 
