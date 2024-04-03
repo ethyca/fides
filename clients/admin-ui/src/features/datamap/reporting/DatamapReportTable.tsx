@@ -899,7 +899,12 @@ export const DatamapReportTable = () => {
       // Tack on the custom field columns to the end
       ...customFieldColumns,
     ],
-    [customFieldColumns, isLoadingFidesLang]
+    [
+      customFieldColumns,
+      getDataUseDisplayName,
+      getDataSubjectDisplayName,
+      getDataCategoryDisplayName,
+    ]
   );
 
   const {

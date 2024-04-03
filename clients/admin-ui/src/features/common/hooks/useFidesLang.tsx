@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { find } from "lodash";
 import { ReactNode } from "react";
+
 import { useAppSelector } from "~/app/hooks";
 import {
   selectDataSubjects,
@@ -17,9 +19,7 @@ import {
 const useFidesLang = () => {
   const { dataUses, dataCategories, dataSubjects, isLoading } = useData();
 
-  const getTopLevelKey = (fidesLangKey: string) => {
-    return fidesLangKey.split(".")[0];
-  };
+  const getTopLevelKey = (fidesLangKey: string) => fidesLangKey.split(".")[0];
 
   /**
    * getDataDisplayName

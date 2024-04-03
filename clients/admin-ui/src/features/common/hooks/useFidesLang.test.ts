@@ -1,5 +1,6 @@
-import useFidesLang from "./useFidesLang";
 import ReactDomServer from "react-dom/server";
+
+import useFidesLang from "./useFidesLang";
 
 describe("Fides Language Helper Hook", () => {
   const {
@@ -63,58 +64,48 @@ describe("Fides Language Helper Hook", () => {
 });
 
 // Mock Data
-jest.mock("~/features/data-use/data-use.slice", () => {
-  return {
-    useGetAllDataUsesQuery: jest.fn().mockReturnValue({ isLoading: false }),
-    selectDataUses: jest.fn().mockReturnValue([
-      {
-        fides_key: "analytics",
-        name: "Analytics",
-        parent_key: null,
-      },
-      {
-        fides_key: "analytics.reporting",
-        name: "Analytics for Reporting",
-        parent_key: "analytics",
-      },
-    ]),
-  };
-});
+jest.mock("~/features/data-use/data-use.slice", () => ({
+  useGetAllDataUsesQuery: jest.fn().mockReturnValue({ isLoading: false }),
+  selectDataUses: jest.fn().mockReturnValue([
+    {
+      fides_key: "analytics",
+      name: "Analytics",
+      parent_key: null,
+    },
+    {
+      fides_key: "analytics.reporting",
+      name: "Analytics for Reporting",
+      parent_key: "analytics",
+    },
+  ]),
+}));
 
-jest.mock("~/features/taxonomy", () => {
-  return {
-    useGetAllDataCategoriesQuery: jest
-      .fn()
-      .mockReturnValue({ isLoading: false }),
-    selectDataCategories: jest.fn().mockReturnValue([
-      {
-        fides_key: "system",
-        name: "System Data",
-        parent_key: null,
-      },
-      {
-        fides_key: "system.authentication",
-        name: "Authentication Data",
-        parent_key: "system",
-      },
-    ]),
-  };
-});
+jest.mock("~/features/taxonomy", () => ({
+  useGetAllDataCategoriesQuery: jest.fn().mockReturnValue({ isLoading: false }),
+  selectDataCategories: jest.fn().mockReturnValue([
+    {
+      fides_key: "system",
+      name: "System Data",
+      parent_key: null,
+    },
+    {
+      fides_key: "system.authentication",
+      name: "Authentication Data",
+      parent_key: "system",
+    },
+  ]),
+}));
 
-jest.mock("~/features/data-subjects/data-subject.slice", () => {
-  return {
-    useGetAllDataSubjectsQuery: jest.fn().mockReturnValue({ isLoading: false }),
-    selectDataSubjects: jest.fn().mockReturnValue([
-      {
-        fides_key: "citizen_voter",
-        name: "Citizen Voter",
-      },
-    ]),
-  };
-});
+jest.mock("~/features/data-subjects/data-subject.slice", () => ({
+  useGetAllDataSubjectsQuery: jest.fn().mockReturnValue({ isLoading: false }),
+  selectDataSubjects: jest.fn().mockReturnValue([
+    {
+      fides_key: "citizen_voter",
+      name: "Citizen Voter",
+    },
+  ]),
+}));
 
-jest.mock("~/app/hooks", () => {
-  return {
-    useAppSelector: jest.fn().mockImplementation((f) => f()),
-  };
-});
+jest.mock("~/app/hooks", () => ({
+  useAppSelector: jest.fn().mockImplementation((f) => f()),
+}));
