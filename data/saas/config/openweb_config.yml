@@ -27,7 +27,7 @@ saas_config:
 
   client_config:
     protocol: https
-    host: www.spot.im
+    host: <domain>
     authentication:
       strategy: api_key
       configuration:
@@ -54,7 +54,7 @@ saas_config:
               connector_param: primary_key
         delete:
           method: POST
-          path: /api/sso/v1/user/<openweb_user_id>
+          path: /api/sso/v1/user/<primary_key>
           param_values:
             - name: primary_key
               references:

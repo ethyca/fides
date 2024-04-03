@@ -30,8 +30,8 @@ def openweb_secrets(saas_config) -> Dict[str, Any]:
         or secrets["domain"],
         "api_key": pydash.get(saas_config, "openweb.api_key")
         or secrets["api_key"],
-        "api_key": pydash.get(saas_config, "openweb.api_key")
-        or secrets["api_key"],
+        "x_spot_id": pydash.get(saas_config, "openweb.api_key")
+        or secrets["x_spot_id"]
         # add the rest of your secrets here
     }
 
