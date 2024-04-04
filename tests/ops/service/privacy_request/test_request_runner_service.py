@@ -396,6 +396,8 @@ def test_upload_access_results_has_data_category_field_mapping(
     Ensure we are passing along a correctly populated data_category_field_mapping to the 'upload' function
     that publishes the access request output.
     """
+    upload_mock.return_value = "http://www.data-download-url"
+
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     customer_email = "customer-1@example.com"
@@ -467,6 +469,8 @@ def test_upload_access_results_has_data_use_map(
     Ensure we are passing along a correctly populated data_use_map to the 'upload' function
     that publishes the access request output.
     """
+    upload_mock.return_value = "http://www.data-download-url"
+
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     customer_email = "customer-1@example.com"
@@ -542,14 +546,14 @@ def test_create_and_process_access_request_postgres(
         data,
     )
 
-    results = pr.get_results()
+    results = pr.get_raw_access_results()
     assert len(results.keys()) == 11
 
     for key in results.keys():
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+    result_key_prefix = f"postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -622,7 +626,7 @@ def test_create_and_process_access_request_with_valid_skipped_collection(
 
     assert "login" not in results.keys()
 
-    result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+    result_key_prefix = f"postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -1005,7 +1009,7 @@ def test_create_and_process_access_request_saas_hubspot(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__hubspot_instance:"
+    result_key_prefix = f"hubspot_instance:"
     contacts_key = result_key_prefix + "contacts"
     assert results[contacts_key][0]["properties"]["email"] == customer_email
 
@@ -1530,9 +1534,9 @@ def test_create_and_process_access_request_snowflake(
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
-    results = pr.get_results()
+    results = pr.get_raw_access_results()
     customer_table_key = (
-        f"EN_{pr.id}__access_request__snowflake_example_test_dataset:customer"
+        f"snowflake_example_test_dataset:customer"
     )
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
@@ -1668,16 +1672,16 @@ def test_create_and_process_access_request_redshift(
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
-    results = pr.get_results()
+    results = pr.get_raw_access_results()
     customer_table_key = (
-        f"EN_{pr.id}__access_request__redshift_example_test_dataset:customer"
+        f"redshift_example_test_dataset:customer"
     )
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
 
     address_table_key = (
-        f"EN_{pr.id}__access_request__redshift_example_test_dataset:address"
+        f"redshift_example_test_dataset:address"
     )
 
     city = redshift_resources["city"]
@@ -1803,14 +1807,14 @@ def test_create_and_process_access_request_bigquery(
     )
     results = pr.get_results()
     customer_table_key = (
-        f"EN_{pr.id}__access_request__bigquery_example_test_dataset:customer"
+        f"bigquery_example_test_dataset:customer"
     )
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
 
     address_table_key = (
-        f"EN_{pr.id}__access_request__bigquery_example_test_dataset:address"
+        f"bigquery_example_test_dataset:address"
     )
 
     city = bigquery_resources["city"]
@@ -2394,6 +2398,7 @@ class TestPrivacyRequestsManualWebhooks:
         request,
         cached_access_input,
     ):
+        mock_upload.return_value = "http://www.data-download-url"
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         run_privacy_request_task.delay(privacy_request_requires_input.id).get(
@@ -2425,6 +2430,7 @@ class TestPrivacyRequestsManualWebhooks:
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
+        mock_upload.return_value = "http://www.data-download-url"
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         privacy_request_requires_input.cache_manual_webhook_access_input(
@@ -2462,6 +2468,7 @@ class TestPrivacyRequestsManualWebhooks:
         dsr_version,
         request,
     ):
+        mock_upload.return_value = "http://www.data-download-url"
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         privacy_request_requires_input.cache_manual_webhook_access_input(

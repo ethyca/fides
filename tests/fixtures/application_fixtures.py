@@ -175,6 +175,7 @@ def mock_upload_logic() -> Generator:
     with mock.patch(
         "fides.api.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
+        _fixture.return_value = "http://www.data-download-url"
         yield _fixture
 
 
