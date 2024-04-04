@@ -45,7 +45,7 @@ def openweb_external_references() -> Dict[str, Any]:
 '''
 @pytest.fixture
 def openweb_erasure_external_references() -> Dict[str, Any]:
-    random_pkv = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
+    random_pkv = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(6))
     return {"primary_key": random_pkv}
 
 @pytest.fixture
