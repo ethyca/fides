@@ -55,7 +55,7 @@ const ApprovePrivacyRequestModal = ({
             {Object.entries(identity)
               .filter(([, { value }]) => value !== null)
               .map(([key, { value, label }]) => (
-                <ListItem>
+                <ListItem key={key}>
                   <Flex key={key} alignItems="flex-start">
                     <Text
                       mr={2}

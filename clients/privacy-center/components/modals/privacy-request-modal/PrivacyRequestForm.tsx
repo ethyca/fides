@@ -76,9 +76,8 @@ const usePrivacyRequestForm = ({
           const value = values[key] || null;
           if (typeof field === "string") {
             return [key, value];
-          } else {
-            return [key, { label: field.label, value }];
           }
+          return [key, { label: field.label, value }];
         })
       );
 
