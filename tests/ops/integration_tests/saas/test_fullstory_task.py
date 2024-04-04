@@ -14,7 +14,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
-@pytest.mark.skip("API keys are temporary for free accounts")
+@pytest.mark.skip(reason="API keys are temporary for free accounts")
 @pytest.mark.integration_saas
 def test_fullstory_connection_test(
     fullstory_connection_config,
@@ -22,7 +22,7 @@ def test_fullstory_connection_test(
     get_connector(fullstory_connection_config).test_connection()
 
 
-@pytest.mark.skip("API keys are temporary for free accounts")
+@pytest.mark.skip(reason="API keys are temporary for free accounts")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 async def test_fullstory_access_request_task(
@@ -74,7 +74,7 @@ async def test_fullstory_access_request_task(
     )
 
 
-@pytest.mark.skip("API keys are temporary for free accounts")
+@pytest.mark.skip(reason="API keys are temporary for free accounts")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 async def test_fullstory_erasure_request_task(

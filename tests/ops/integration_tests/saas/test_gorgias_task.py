@@ -154,7 +154,7 @@ async def test_gorgias_access_request_task(
         assert ticket["customer"]["id"] == user_id
 
 
-@pytest.mark.skip("Pending account resolution")
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 async def test_gorgias_erasure_request_task(
