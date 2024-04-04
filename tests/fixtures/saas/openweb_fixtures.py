@@ -50,7 +50,7 @@ def openweb_erasure_external_references() -> Dict[str, Any]:
 
 @pytest.fixture
 def openweb_create_erasure_data(
-    # openweb_erasure_identity_email: str,
+    openweb_erasure_external_references,
     openweb_secrets
     ) -> Generator:
     '''
@@ -60,10 +60,11 @@ def openweb_create_erasure_data(
     '''
     base_url = f"https://{openweb_secrets['domain']}"
     spot_id_val = {openweb_secrets['x_spot_id']}  
-    random_pkv = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
+
     headers = {
         'x-spotim-sso-access-token': openweb_secrets['api_key']
     }
+    random_pkv = openweb_erasure_external_references["primary_key"]
     totalurl = base_url + "/api/sso/v1/user?primary_key=" + random_pkv + "&spot_id=" + spot_id_val + "&username=" + random_pkv
     
     
@@ -87,7 +88,7 @@ def openweb_runner(
     db,
     cache,
     openweb_secrets,
-    # openweb_external_references,
+    #openweb_external_references,
     openweb_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(

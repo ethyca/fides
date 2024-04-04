@@ -34,7 +34,8 @@ saas_config:
 
   test_request:
     method: GET
-    path: /api/sso/v1/user/deleteme9999
+    # normally we would not hardcode a value here, however, we won't know the value ahead of time, and we only need to verify the SSO token is valid. This call will return a 404 if the 'primary_key' is not found. A 401 will be returned if the SSO token is invalid.
+    path: /api/sso/v1/user/thisisatestonly
     param_values:
       - name: primary_key
         connector_param: primary_key
@@ -43,26 +44,19 @@ saas_config:
     - name: user
       requests:
         read:
-          requeset_override: openweb_user_read
+          method: GET
+          path: /api/sso/v1/user/<user_id>
+          data_path: user
           param_values:
-            - name: primary_key
+            - name: user_id
               references:
-                - dateset: <instance_fides_key>
-                  field: user.primary_key
-                  direction: from
-        # read:
-        #   method: GET
-        #   path: /api/sso/v1/user/<primary_key>
-        #   data_path: user
-        #   param_values:
-        #     - name: primary_key
-        #       connector_param: primary_key
+                - primary_key
         delete:
           method: POST
-          path: /api/sso/v1/user/<primary_key>
+          path: /api/sso/v1/user/<primary_key
           param_values:
             - name: primary_key
               references:
                 - dataset: <instance_fides_key>
-                field: user.primary_key
-                direction: from
+                  field: user.primary_key
+                  direction: from

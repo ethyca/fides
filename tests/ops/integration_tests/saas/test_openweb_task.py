@@ -8,7 +8,6 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 class TestOpenWebConnector:
     def test_connection(self, openweb_runner: ConnectorRunner):
         openweb_runner.test_connection()
-        
 
     # async def test_access_request(
     #     self, openweb_runner: ConnectorRunner, policy, openweb_identity_email: str
@@ -21,9 +20,9 @@ class TestOpenWebConnector:
         self,
         openweb_runner: ConnectorRunner,
         policy: Policy,
-
+        openweb_erasure_identity_email,
         erasure_policy_string_rewrite: Policy,
-        openweb_erasure_identity_email: str,
+        openweb_create_erasure_data,
     ):
         (
             # access_results,
