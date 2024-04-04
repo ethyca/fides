@@ -60,6 +60,7 @@ from fides.api.task.graph_runners import access_runner, consent_runner, erasure_
 from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
+    get_cached_data_for_erasures,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -266,6 +267,10 @@ def upload_access_results(  # pylint: disable=R0912
             privacy_request.status = PrivacyRequestStatus.error
     # Save the results we uploaded to the user for later retrieval
     privacy_request.save_filtered_access_results(session, rule_filtered_results)
+    # Saving access request URL's on the privacy request in case DSR 3.0
+    # exits processing before the email is sent
+    privacy_request.access_result_urls = {"access_result_urls": download_urls}
+    privacy_request.save(session)
     return download_urls
 
 
@@ -408,13 +413,10 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.upload_access,
                 from_checkpoint=resume_step,
             ):
-                # TODO Remove - for debugging purposes
-                logger.info(f"Unfiltered access results {raw_access_results}")
-
                 filtered_access_results = filter_by_enabled_actions(
                     raw_access_results, connection_configs
                 )
-                access_result_urls = upload_access_results(
+                upload_access_results(
                     session,
                     policy,
                     filtered_access_results,
@@ -437,7 +439,9 @@ def run_privacy_request(
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
-                    access_request_data=raw_access_results,
+                    access_request_data=get_cached_data_for_erasures(
+                        privacy_request.id
+                    ),
                     session=session,
                     queue_privacy_request=True,
                 )
@@ -528,6 +532,9 @@ def run_privacy_request(
             action_type=ActionType.consent
         ):
             try:
+                access_result_urls: List[str] = (
+                    privacy_request.access_result_urls or {}
+                ).get("access_result_urls")
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
                 )

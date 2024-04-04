@@ -302,6 +302,16 @@ class PrivacyRequest(
         ),
     )
 
+    # Encrypted filtered access results saved for later retrieval
+    access_result_urls = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+        StringEncryptedType(
+            type_in=JSONTypeOverride,
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[property] = None

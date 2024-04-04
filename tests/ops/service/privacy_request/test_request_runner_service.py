@@ -719,7 +719,7 @@ def test_create_and_process_access_request_mssql(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__mssql_example_test_dataset:"
+    result_key_prefix = f"mssql_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -772,7 +772,7 @@ def test_create_and_process_access_request_mysql(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__mysql_example_test_dataset:"
+    result_key_prefix = f"mysql_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -826,7 +826,7 @@ def test_create_and_process_access_request_mariadb(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__mariadb_example_test_dataset:"
+    result_key_prefix = "mariadb_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -881,7 +881,7 @@ def test_create_and_process_access_request_saas_mailchimp(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__mailchimp_instance:"
+    result_key_prefix = f"mailchimp_instance:"
     member_key = result_key_prefix + "member"
     assert results[member_key][0]["email_address"] == customer_email
 
@@ -1644,7 +1644,12 @@ def redshift_resources(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 def test_create_and_process_access_request_redshift(
-    redshift_resources, db, cache, policy, run_privacy_request_task,     dsr_version,
+    redshift_resources,
+    db,
+    cache,
+    policy,
+    run_privacy_request_task,
+    dsr_version,
     request,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -2740,7 +2745,12 @@ class TestConsentEmailStep:
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
     def test_needs_batch_email_send_new_workflow(
-        self, db, privacy_request_with_consent_policy, privacy_preference_history, dsr_version, request,
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        privacy_preference_history,
+        dsr_version,
+        request,
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 

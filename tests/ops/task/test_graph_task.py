@@ -521,8 +521,8 @@ class TestBuildAffectedFieldLogs:
             node_fixture.node, policy, action_type=ActionType.erasure
         )
 
-        # Only fields for data categories A and B which were specified on the Policy, made it to the logs for this node
-        assert formatted_for_logs == [
+        # Only fields for data categories user.name and system.operations which were specified on the Policy, made it to the logs for this node
+        assert sorted(formatted_for_logs, key=lambda d: d["field_name"]) == [
             {
                 "path": "postgres:Order:customer_id",
                 "field_name": "customer_id",
