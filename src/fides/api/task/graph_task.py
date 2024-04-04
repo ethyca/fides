@@ -326,7 +326,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 len(data),
             )
 
-        output: Dict[str, Set] = {FIDESOPS_GROUPED_INPUTS: OrderedSet()}
+        output: Dict[str, OrderedSet] = {FIDESOPS_GROUPED_INPUTS: OrderedSet()}
 
         (
             independent_field_mappings,
@@ -379,7 +379,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                             dependent_field_mappings=dependent_field_mappings,
                         )
 
-                    output[FIDESOPS_GROUPED_INPUTS].append(make_immutable(grouped_data))
+                    output[FIDESOPS_GROUPED_INPUTS].add(make_immutable(grouped_data))
 
         return make_mutable(output)
 

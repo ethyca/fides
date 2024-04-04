@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, TypeVar, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Union
 
 import immutables
 from ordered_set import OrderedSet
@@ -12,24 +12,22 @@ Row = Dict[str, Any]
 FIDESOPS_DO_NOT_MASK_INDEX = "FIDESOPS_DO_NOT_MASK"
 
 
-def make_immutable(obj):
+def make_immutable(obj: Any) -> Any:
     if isinstance(obj, dict):
         return immutables.Map(
             {key: make_immutable(value) for key, value in obj.items()}
         )
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return tuple(make_immutable(item) for item in obj)
-    else:
-        return obj
+    return obj
 
 
-def make_mutable(obj):
+def make_mutable(obj: Any) -> Any:
     if isinstance(obj, (dict, immutables.Map)):
         return {key: make_mutable(value) for key, value in obj.items()}
-    elif isinstance(obj, (tuple, OrderedSet)):
+    if isinstance(obj, (tuple, OrderedSet)):
         return [make_mutable(item) for item in obj]
-    else:
-        return obj
+    return obj
 
 
 def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
@@ -61,7 +59,7 @@ def append(d: Dict[T, List[U]], key: T, value: U) -> None:
             d[key] = value if isinstance(value, list) else [value]
 
 
-def append_unique(d: Dict[T, Set[U]], key: T, value: Union[U, List[U]]) -> None:
+def append_unique(d: Dict[T, OrderedSet[U]], key: T, value: Union[U, List[U]]) -> None:
     """Append to values stored under a dictionary key.
 
     append_unique({}, "A", 1) sets dict to {"A": {1}}

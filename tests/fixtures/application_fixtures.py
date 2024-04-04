@@ -1920,6 +1920,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/email_dataset.yml",
         "data/dataset/remote_fides_example_test_dataset.yml",
         "data/dataset/dynamodb_example_test_dataset.yml",
+        "data/dataset/postgres_example_test_extended_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
