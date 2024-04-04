@@ -526,7 +526,7 @@ class TestPersistErasureRequestTasks:
         )
 
         run_access_node.delay(
-            privacy_request.id, ready_tasks[0].id, queue_privacy_request=False
+            privacy_request.id, ready_tasks[0].id, privacy_request_proceed=False
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -660,7 +660,7 @@ class TestPersistErasureRequestTasks:
         )
 
         run_access_node.delay(
-            privacy_request.id, ready_tasks[0].id, queue_privacy_request=False
+            privacy_request.id, ready_tasks[0].id, privacy_request_proceed=False
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -1089,7 +1089,7 @@ class TestRunAccessRequestWithRequestTasks:
             [integration_postgres_config, integration_mongodb_config],
             identity,
             db,
-            queue_privacy_request=False,
+            privacy_request_proceed=True,
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -1161,7 +1161,6 @@ class TestRunAccessRequestWithRequestTasks:
         policy,
         mongo_inserts,
         postgres_inserts,
-        example_datasets,
         integration_mongodb_config,
         integration_postgres_config,
     ):
@@ -1185,7 +1184,7 @@ class TestRunAccessRequestWithRequestTasks:
             [integration_postgres_config, integration_mongodb_config],
             {"email": mongo_inserts["customer"][0]["email"]},
             db,
-            queue_privacy_request=False,
+            privacy_request_proceed=True,
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -1237,7 +1236,7 @@ class TestRunAccessRequestWithRequestTasks:
             [integration_postgres_config, integration_mongodb_config],
             {"email": mongo_inserts["customer"][0]["email"]},
             db,
-            queue_privacy_request=False,
+            privacy_request_proceed=True,
         )
         wait_for_terminator_completion(db, privacy_request, ActionType.access)
 
@@ -1256,9 +1255,6 @@ class TestRunAccessRequestWithRequestTasks:
         raw_results = privacy_request.get_raw_access_results()
 
         # Selected postgres results - retrieved first pass
-        import pdb
-
-        pdb.set_trace()
         customer_info = raw_results["postgres_example:customer"][0]
         assert customer_info["id"] == 10000
         assert customer_info["email"] == "test_one@example.com"
@@ -1286,12 +1282,8 @@ class TestRunErasureRequestWithRequestTasks:
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.integration_mongodb
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.queue_privacy_request"
-    )
     def test_run_erasure_request(
         self,
-        mock_queue_request,  # Otherwise run_access_request would queue the privacy request and run the erasure prematurely
         db,
         mongo_inserts,
         postgres_inserts,
@@ -1361,7 +1353,7 @@ class TestRunErasureRequestWithRequestTasks:
             [integration_postgres_config, integration_mongodb_config],
             identity,
             db,
-            queue_privacy_request=False,
+            privacy_request_proceed=False,
         )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.access
@@ -1373,7 +1365,7 @@ class TestRunErasureRequestWithRequestTasks:
         # Run erasure portion first time, but it is expected to fail because
         # Mongo connector is not working
         run_erasure_request(
-            privacy_request_with_erasure_policy, db, queue_privacy_request=False
+            privacy_request_with_erasure_policy, db, privacy_request_proceed=False
         )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.erasure
@@ -1422,7 +1414,7 @@ class TestRunErasureRequestWithRequestTasks:
 
         # Run erasure one more time
         run_erasure_request(
-            privacy_request_with_erasure_policy, db, queue_privacy_request=False
+            privacy_request_with_erasure_policy, db, privacy_request_proceed=False
         )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.erasure
@@ -1474,7 +1466,7 @@ class TestRunErasureRequestWithRequestTasks:
             [integration_postgres_config, integration_mongodb_config],
             identity,
             db,
-            queue_privacy_request=False,
+            privacy_request_proceed=False,
         )
         wait_for_terminator_completion(
             db, privacy_request_with_erasure_policy, ActionType.access

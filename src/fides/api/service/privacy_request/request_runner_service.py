@@ -401,7 +401,7 @@ def run_privacy_request(
                     connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
-                    queue_privacy_request=True,
+                    privacy_request_proceed=True,  # Should always be True unless we're testing
                 )
 
             # Upload Access Results CHECKPOINT
@@ -443,7 +443,7 @@ def run_privacy_request(
                         privacy_request.id
                     ),
                     session=session,
-                    queue_privacy_request=True,
+                    privacy_request_proceed=True,  # Should always be True unless we're testing
                 )
 
             # Finalize Erasure CHECKPOINT
@@ -467,7 +467,7 @@ def run_privacy_request(
                     connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
-                    queue_privacy_request=True,
+                    privacy_request_proceed=True,  # Should always be True unless we're testing
                 )
 
             # Finalize Consent CHECKPOINT

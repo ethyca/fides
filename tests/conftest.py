@@ -680,7 +680,7 @@ def access_runner_tester(
             connection_configs,
             identity,
             session,
-            queue_privacy_request=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+            privacy_request_proceed=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
@@ -709,7 +709,7 @@ def erasure_runner_tester(
             identity,
             access_request_data,
             session,
-            queue_privacy_request=False,
+            privacy_request_proceed=False,
         )
     except PrivacyRequestExit as exc:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
@@ -736,7 +736,7 @@ def consent_runner_tester(
             connection_configs,
             identity,
             session,
-            queue_privacy_request=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+            privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish

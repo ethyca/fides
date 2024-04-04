@@ -218,7 +218,7 @@ def queue_downstream_tasks(
     privacy_request: PrivacyRequest,
     run_node_function: Task,
     next_step: CurrentStep,
-    queue_privacy_request: bool,
+    privacy_request_proceed: bool,
 ) -> None:
     """Queue downstream tasks of the current node **if** the downstream task has all its upstream tasks completed.
 
@@ -239,7 +239,7 @@ def queue_downstream_tasks(
             run_node_function.delay(
                 privacy_request_id=privacy_request.id,
                 privacy_request_task_id=downstream_task.id,
-                queue_privacy_request=queue_privacy_request,
+                privacy_request_proceed=privacy_request_proceed,
             )
         else:
             logger.debug(
@@ -261,7 +261,8 @@ def queue_downstream_tasks(
             queue_privacy_request,
         )
 
-        if queue_privacy_request:  # For Testing, this could be set to False,
+        logger.info(f"Queue privacy request {privacy_request_proceed}")
+        if privacy_request_proceed:  # For Testing, this could be set to False,
             queue_privacy_request(
                 privacy_request_id=privacy_request.id,
                 from_step=next_step.value,
@@ -274,7 +275,7 @@ def run_access_node(
     self: DatabaseTask,
     privacy_request_id: str,
     privacy_request_task_id: str,
-    queue_privacy_request: bool = True,
+    privacy_request_proceed: bool = True,
 ) -> None:
     """Run an individual task in the access graph"""
     with self.get_new_session() as session:
@@ -309,7 +310,7 @@ def run_access_node(
             privacy_request,
             run_access_node,
             CurrentStep.upload_access,
-            queue_privacy_request,
+            privacy_request_proceed,
         )
         return
 
@@ -319,7 +320,7 @@ def run_erasure_node(
     self: DatabaseTask,
     privacy_request_id: str,
     privacy_request_task_id: str,
-    queue_privacy_request: bool = True,
+    privacy_request_proceed: bool = True,
 ) -> None:
     """Run an individual task in the erasure graph"""
     with self.get_new_session() as session:
@@ -352,7 +353,7 @@ def run_erasure_node(
             privacy_request,
             run_erasure_node,
             CurrentStep.finalize_erasure,
-            queue_privacy_request,
+            privacy_request_proceed,
         )
         return
 
@@ -362,7 +363,7 @@ def run_consent_node(
     self: DatabaseTask,
     privacy_request_id: str,
     privacy_request_task_id: str,
-    queue_privacy_request: bool = True,
+    privacy_request_proceed: bool = True,
 ) -> None:
     """Run an individual task in the consent graph"""
     with self.get_new_session() as session:
@@ -390,6 +391,6 @@ def run_consent_node(
             privacy_request,
             run_consent_node,
             CurrentStep.finalize_consent,
-            queue_privacy_request,
+            privacy_request_proceed,
         )
         return

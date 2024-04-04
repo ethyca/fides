@@ -1,4 +1,4 @@
-import uuid
+from datetime import datetime
 from typing import Optional
 from unittest import mock
 
@@ -23,7 +23,6 @@ from fides.api.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
 )
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
@@ -76,7 +75,7 @@ class TestDeleteCollection:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
         """
-        customer_email = "customer-1@example.com"
+        customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
@@ -166,7 +165,7 @@ class TestDeleteCollection:
             policy,
             dataset_graph,
             [integration_postgres_config, mongo_connection_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
         assert any(
@@ -225,7 +224,7 @@ class TestDeleteCollection:
                     policy,
                     mongo_postgres_dataset_graph,
                     [integration_postgres_config, integration_mongodb_config],
-                    {"email": "customer-1@example.com"},
+                    {"email": "customer-4@example.com"},
                     db,
                 )
 
@@ -253,7 +252,7 @@ class TestDeleteCollection:
                 policy,
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-1@example.com"},
+                {"email": "customer-4@example.com"},
                 db,
             )
             customer_detail_logs = db.query(ExecutionLog).filter_by(
@@ -287,7 +286,7 @@ class TestDeleteCollection:
             policy,
             postgres_only_dataset_graph,
             [integration_postgres_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
 
@@ -357,7 +356,7 @@ class TestDeleteCollection:
         run_privacy_request_task,
     ) -> None:
         """Delete the connection config on a completed request leaves execution logs untouched"""
-        customer_email = "customer-1@example.com"
+        customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
@@ -409,7 +408,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             policy,
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
         assert all(
@@ -499,7 +498,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             policy,
             dataset_graph,
             [integration_postgres_config, mongo_connection_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
         assert not any(
@@ -557,7 +556,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
                     policy,
                     mongo_postgres_dataset_graph,
                     [integration_postgres_config, integration_mongodb_config],
-                    {"email": "customer-1@example.com"},
+                    {"email": "customer-4@example.com"},
                     db,
                 )
 
@@ -583,7 +582,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
                 policy,
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-1@example.com"},
+                {"email": "customer-4@example.com"},
                 db,
             )
 
@@ -616,7 +615,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             policy,
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
 
@@ -700,7 +699,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         request,
     ) -> None:
         """Disabling the connection config on a completed request leaves execution logs untouched"""
-        customer_email = "customer-1@example.com"
+        customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
@@ -774,7 +773,7 @@ class TestSkipMarkedCollections:
             policy,
             postgres_graph,
             [integration_postgres_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
 
@@ -810,7 +809,7 @@ class TestSkipMarkedCollections:
             policy,
             postgres_graph,
             [integration_postgres_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
 
@@ -849,7 +848,7 @@ class TestSkipMarkedCollections:
                     policy,
                     postgres_graph,
                     [integration_postgres_config],
-                    {"email": "customer-1@example.com"},
+                    {"email": "customer-4@example.com"},
                     db,
                 )
             )
@@ -888,7 +887,7 @@ async def test_restart_graph_from_failure(
                 policy,
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-1@example.com"},
+                {"email": "customer-4@example.com"},
                 db,
             )
         assert exc.value.__class__ == ValidationError
@@ -919,7 +918,7 @@ async def test_restart_graph_from_failure(
             policy,
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             db,
         )
         # Multiple mongo level nodes attempted to run in DSR 3.0 before failing and blocking downstream nodes
@@ -955,7 +954,7 @@ async def test_restart_graph_from_failure(
         policy,
         mongo_postgres_dataset_graph,
         [integration_postgres_config, integration_mongodb_config],
-        {"email": "customer-1@example.com"},
+        {"email": "customer-4@example.com"},
         db,
     )
 
@@ -1007,7 +1006,6 @@ async def test_restart_graph_from_failure(
 async def test_restart_graph_from_failure_during_erasure(
     db,
     erasure_policy,
-    example_datasets,
     integration_postgres_config,
     integration_mongodb_config,
     mongo_postgres_dataset_graph,
@@ -1028,22 +1026,31 @@ async def test_restart_graph_from_failure_during_erasure(
         erasure_policy,
         mongo_postgres_dataset_graph,
         [integration_postgres_config, integration_mongodb_config],
-        {"email": "customer-1@example.com"},
+        {"email": "customer-4@example.com"},
         db,
     )
+    assert [("access", "in_processing"), ("access", "complete")] == [
+        (c.action_type.value, c.status.value)
+        for c in db.query(ExecutionLog)
+        .filter_by(
+            privacy_request_id=privacy_request_with_erasure_policy.id,
+            collection_name="address",
+        )
+        .order_by(ExecutionLog.created_at)
+        .all()
+    ]
 
-    # Temporarily remove the secrets from the postgres connection to prevent execution from occurring
-    # DSR 3.0 doesn't look at just the configs passed in, it queries all configs, so we are updating
-    # all postgres configs here accordingly
     saved_secrets = {}
-    for config in db.query(ConnectionConfig).filter(
+    for cc in db.query(ConnectionConfig).filter(
         ConnectionConfig.connection_type == ConnectionType.postgres
     ):
-        saved_secrets[config.key] = config.secrets.copy()
-        config.secrets = {}
-        config.save(db)
+        saved_secrets[cc.key] = cc.secrets.copy()
+        cc.secrets = None
+        cc.created_at = datetime.now()
+        cc.save(db)
+    db.commit()
 
-    # Attempt to run the erasure graph; execution will stop when we reach one of the mongo nodes
+    # Attempt to run the erasure graph; execution will stop when we reach one of the postgres nodes
     if dsr_version == "use_dsr_2_0":
         with pytest.raises(Exception) as exc:
             erasure_runner_tester(
@@ -1051,7 +1058,7 @@ async def test_restart_graph_from_failure_during_erasure(
                 erasure_policy,
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-1@example.com"},
+                {"email": "customer-4@example.com"},
                 get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
                 db,
             )
@@ -1068,10 +1075,20 @@ async def test_restart_graph_from_failure_during_erasure(
             erasure_policy,
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
+            {"email": "customer-4@example.com"},
             get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
             db,
         )
+        assert ["in_processing", "complete", "in_processing", "error"] == [
+            c.status.value
+            for c in db.query(ExecutionLog)
+            .filter_by(
+                privacy_request_id=privacy_request_with_erasure_policy.id,
+                collection_name="address",
+            )
+            .order_by(ExecutionLog.created_at)
+            .all()
+        ]
 
     for config in db.query(ConnectionConfig).filter(
         ConnectionConfig.connection_type == ConnectionType.postgres
@@ -1084,7 +1101,7 @@ async def test_restart_graph_from_failure_during_erasure(
         erasure_policy,
         mongo_postgres_dataset_graph,
         [integration_postgres_config, integration_mongodb_config],
-        {"email": "customer-1@example.com"},
+        {"email": "customer-4@example.com"},
         get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
