@@ -44,7 +44,7 @@ async def test_unbounce_access_request_task(
     merged_graph = unbounce_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -120,7 +120,7 @@ async def test_unbounce_erasure_request_task(
     merged_graph = unbounce_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -163,7 +163,7 @@ async def test_unbounce_erasure_request_task(
         ],
     )
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

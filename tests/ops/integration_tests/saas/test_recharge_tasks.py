@@ -42,7 +42,7 @@ async def test_recharge_access_request_task(
     dataset_name = recharge_connection_config.get_saas_config().fides_key
     merged_graph = recharge_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -149,7 +149,7 @@ async def test_recharge_erasure_request_task(
 
     merged_graph = recharge_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -231,7 +231,7 @@ async def test_recharge_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_complete_mask,
         graph,

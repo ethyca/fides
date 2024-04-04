@@ -41,7 +41,7 @@ async def test_shippo_access_request_task(
     merged_graph = shippo_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,

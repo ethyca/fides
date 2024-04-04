@@ -42,7 +42,7 @@ async def test_sendgrid_access_request_task(
     merged_graph = sendgrid_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -102,7 +102,7 @@ async def test_sendgrid_erasure_request_task(
     graph = DatasetGraph(merged_graph)
 
     # access our erasure identity
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -137,7 +137,7 @@ async def test_sendgrid_erasure_request_task(
     )
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow delete
-    erasure = erasure_runner(
+    erasure = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

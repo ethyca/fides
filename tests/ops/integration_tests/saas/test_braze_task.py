@@ -6,9 +6,9 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.fixtures.saas.braze_fixtures import _user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
@@ -45,7 +45,7 @@ async def test_braze_access_request_task_with_email(
     merged_graph = braze_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -119,7 +119,7 @@ async def test_braze_access_request_task_with_phone_number(
     merged_graph = braze_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -181,7 +181,7 @@ async def test_braze_erasure_request_task(
     merged_graph = braze_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -211,7 +211,7 @@ async def test_braze_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite_name_and_email,
         graph,

@@ -32,7 +32,6 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
@@ -93,6 +92,8 @@ class ConnectorRunner:
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
     ) -> Dict[str, List[Row]]:
+        from tests.conftest import access_runner_tester
+
         """Access request for a given access policy and identities"""
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
@@ -116,7 +117,7 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        access_results = access_runner(
+        access_results = access_runner_tester(
             privacy_request,
             access_policy,
             dataset_graph,
@@ -186,6 +187,8 @@ class ConnectorRunner:
         """
         Consent requests using consent preferences on the privacy request (old workflow)
         """
+        from tests.conftest import consent_runner_tester
+
         privacy_request = PrivacyRequest(
             id=f"test_{self.connection_config.key}_old_consent_request_{random.randint(0, 1000)}",
             status=PrivacyRequestStatus.pending,
@@ -197,7 +200,7 @@ class ConnectorRunner:
             {"data_use": "marketing.advertising", "opt_in": True}
         ]
         privacy_request.save(self.db)
-        opt_in = consent_runner(
+        opt_in = consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -210,7 +213,7 @@ class ConnectorRunner:
             {"data_use": "marketing.advertising", "opt_in": False}
         ]
         privacy_request.save(self.db)
-        opt_out = consent_runner(
+        opt_out = consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -230,6 +233,8 @@ class ConnectorRunner:
         """
         Consent requests using privacy preference history (new workflow)
         """
+        from tests.conftest import consent_runner_tester
+
         privacy_request = PrivacyRequest(
             id=(
                 privacy_request_id
@@ -243,7 +248,7 @@ class ConnectorRunner:
         privacy_request.cache_identity(identity)
 
         _privacy_preference_history(self.db, privacy_request, identities, opt_in=True)
-        opt_in = consent_runner(
+        opt_in = consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -253,7 +258,7 @@ class ConnectorRunner:
         )
 
         _privacy_preference_history(self.db, privacy_request, identities, opt_in=False)
-        opt_out = consent_runner(
+        opt_out = consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([self.dataset_config]),
@@ -271,6 +276,8 @@ class ConnectorRunner:
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
     ) -> Tuple[Dict, Dict]:
+        from tests.conftest import access_runner_tester, erasure_runner_tester
+
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
             id=(
@@ -297,7 +304,7 @@ class ConnectorRunner:
             ActionType.access
             in SaaSConfig(**self.connection_config.saas_config).supported_actions
         ):
-            access_results = access_runner(
+            access_results = access_runner_tester(
                 privacy_request,
                 access_policy,
                 dataset_graph,
@@ -312,7 +319,7 @@ class ConnectorRunner:
                     access_results[f"{fides_key}:{collection['name']}"]
                 ), f"No rows returned for collection '{collection['name']}'"
 
-        erasure_results = erasure_runner(
+        erasure_results = erasure_runner_tester(
             privacy_request,
             erasure_policy,
             dataset_graph,

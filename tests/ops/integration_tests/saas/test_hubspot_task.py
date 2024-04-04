@@ -46,7 +46,7 @@ async def test_hubspot_access_request_task(
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -151,7 +151,7 @@ async def test_hubspot_erasure_request_task(
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request, policy, graph, [connection_config_hubspot], identity_kwargs, db
     )
 
@@ -168,7 +168,7 @@ async def test_hubspot_erasure_request_task(
 
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow delete
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite_name_and_email,
         graph,

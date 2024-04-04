@@ -7,8 +7,6 @@ from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
-    PrivacyRequest,
-    PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
@@ -16,7 +14,7 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task.graph_runners import consent_runner
+from tests.conftest import consent_runner_tester
 
 
 @pytest.mark.integration_saas
@@ -32,26 +30,35 @@ def test_google_analytics_connection_test(
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_google_analytics_consent_request_task_old_workflow(
     db,
     consent_policy,
     google_analytics_connection_config,
     google_analytics_dataset_config,
     google_analytics_client_id,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full consent request based on the Google Analytics SaaS config"""
+    privacy_request.consent_preferences = [
+        {"data_use": "marketing.advertising", "opt_in": False}
+    ]
+    privacy_request.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
 
     dataset_name = "google_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -91,6 +98,10 @@ async def test_google_analytics_consent_request_task_old_workflow(
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_google_analytics_consent_prepared_requests_old_workflow(
     mocked_client_send,
     db,
@@ -98,18 +109,22 @@ async def test_google_analytics_consent_prepared_requests_old_workflow(
     google_analytics_connection_config,
     google_analytics_dataset_config,
     google_analytics_client_id,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
-    )
+    privacy_request.consent_preferences = [
+        {"data_use": "marketing.advertising", "opt_in": False}
+    ]
+    privacy_request.save(db)
 
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -135,26 +150,35 @@ async def test_google_analytics_consent_prepared_requests_old_workflow(
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_google_analytics_no_ga_client_id_old_workflow(
     mocked_client_send,
     db,
     consent_policy,
     google_analytics_connection_config,
     google_analytics_dataset_config,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Test that the google analytics connector does not fail if there is no ga_client_id
     We skip the request because it is marked as skip_missing_param_values=True.
 
     We won't always have this piece of identity data.
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
-    )
+    privacy_request.consent_preferences = [
+        {"data_use": "marketing.advertising", "opt_in": False}
+    ]
+    privacy_request.save(db)
+
     dataset_name = "google_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -173,6 +197,10 @@ async def test_google_analytics_no_ga_client_id_old_workflow(
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_google_analytics_no_ga_client_id_new_workflow(
     mocked_client_send,
     db,
@@ -180,18 +208,20 @@ async def test_google_analytics_no_ga_client_id_new_workflow(
     google_analytics_connection_config_without_secrets,
     google_analytics_dataset_config_no_secrets,
     privacy_preference_history,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Test google analytics connector skips instead of fails if identity missing."""
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     privacy_request.save(db)
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
 
     dataset_name = "google_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config_no_secrets]),
@@ -238,6 +268,10 @@ async def test_google_analytics_no_ga_client_id_new_workflow(
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_google_analytics_consent_request_task_new_workflow(
     db,
     consent_policy,
@@ -247,15 +281,17 @@ async def test_google_analytics_consent_request_task_new_workflow(
     privacy_preference_history,
     privacy_preference_history_us_ca_provide,
     system,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full consent request based on the Google Analytics SaaS config
     for the new workflow where we save preferences w.r.t. privacy notices"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     google_analytics_connection_config.system_id = system.id
     google_analytics_connection_config.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
     privacy_request.save(db)
     # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
@@ -270,7 +306,7 @@ async def test_google_analytics_consent_request_task_new_workflow(
 
     dataset_name = "google_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -324,6 +360,10 @@ async def test_google_analytics_consent_request_task_new_workflow(
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_google_analytics_consent_request_task_new_errored_workflow(
     mocked_client_send,
     db,
@@ -334,21 +374,21 @@ async def test_google_analytics_consent_request_task_new_errored_workflow(
     privacy_preference_history,
     privacy_preference_history_us_ca_provide,
     system,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Testing errored Google Analytics SaaS config
     for the new workflow where we save preferences w.r.t. privacy notices
 
     Assert logging created appropriately
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     mocked_client_send.side_effect = Exception("KeyError")
 
     google_analytics_connection_config.system_id = system.id
     google_analytics_connection_config.save(db)
-
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
 
     # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
@@ -362,7 +402,7 @@ async def test_google_analytics_consent_request_task_new_errored_workflow(
     privacy_request.cache_identity(identity)
 
     with pytest.raises(Exception):
-        consent_runner(
+        consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([google_analytics_dataset_config]),
@@ -405,6 +445,10 @@ async def test_google_analytics_consent_request_task_new_errored_workflow(
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_google_analytics_consent_prepared_requests_new_workflow(
     mocked_client_send,
     db,
@@ -413,13 +457,15 @@ async def test_google_analytics_consent_prepared_requests_new_workflow(
     google_analytics_dataset_config,
     google_analytics_client_id,
     privacy_preference_history,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request
     for the new workflow
     """
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     privacy_request.save(db)
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
@@ -427,7 +473,7 @@ async def test_google_analytics_consent_prepared_requests_new_workflow(
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),

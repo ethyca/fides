@@ -51,7 +51,7 @@ async def test_universal_analytics_consent_request_task_old_workflow(
 
     dataset_name = "universal_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([universal_analytics_dataset_config]),
@@ -109,7 +109,7 @@ async def test_universal_analytics_consent_prepared_requests_old_workflow(
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([universal_analytics_dataset_config]),
@@ -154,7 +154,7 @@ async def test_universal_analytics_no_ga_client_id_old_workflow(
     )
     dataset_name = "universal_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([universal_analytics_dataset_config]),
@@ -205,7 +205,7 @@ async def test_universal_analytics_no_ga_client_id_new_workflow(
 
     dataset_name = "universal_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph(
@@ -284,7 +284,7 @@ async def test_universal_analytics_consent_request_task_new_workflow(
 
     dataset_name = "universal_analytics_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([universal_analytics_dataset_config]),
@@ -377,7 +377,7 @@ async def test_universal_analytics_consent_request_task_new_errored_workflow(
     dataset_name = "universal_analytics_instance"
 
     with pytest.raises(Exception):
-        consent_runner(
+        consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([universal_analytics_dataset_config]),
@@ -441,7 +441,7 @@ async def test_universal_analytics_consent_prepared_requests_new_workflow(
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([universal_analytics_dataset_config]),

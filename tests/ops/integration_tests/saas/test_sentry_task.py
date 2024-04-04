@@ -45,7 +45,7 @@ async def test_sentry_access_request_task(
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -296,7 +296,7 @@ async def test_sentry_erasure_request_task(
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -377,7 +377,7 @@ async def test_sentry_erasure_request_task(
 
     assert v[f"{dataset_name}:issues"][0]["assignedTo"]["email"] == erasure_email
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         policy,
         graph,

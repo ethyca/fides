@@ -9,6 +9,7 @@ from fides.api.service.connectors import get_connector
 from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -43,7 +44,7 @@ async def test_domo_access_request_task(
     merged_graph = domo_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -99,7 +100,7 @@ async def test_domo_erasure_request_task(
     merged_graph = domo_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -131,7 +132,7 @@ async def test_domo_erasure_request_task(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite_name_and_email,
         graph,

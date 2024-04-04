@@ -48,7 +48,7 @@ async def test_twilio_conversations_access_request_task(
     merged_graph = twilio_conversations_dataset_config.get_graph()
     graph = DatasetGraph(*[merged_graph, twilio_postgres_dataset_config.get_graph()])
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -168,7 +168,7 @@ async def test_twilio_conversations_erasure_request_task(
     merged_graph = twilio_conversations_dataset_config.get_graph()
     graph = DatasetGraph(*[merged_graph, twilio_postgres_dataset_config.get_graph()])
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -261,7 +261,7 @@ async def test_twilio_conversations_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

@@ -40,7 +40,7 @@ async def test_slack_enterprise_access_request_task(
     merged_graph = slack_enterprise_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,

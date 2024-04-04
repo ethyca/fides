@@ -43,7 +43,7 @@ async def test_yotpo_loyalty_access_request_task_with_email(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -107,7 +107,7 @@ async def test_yotpo_loyalty_access_request_task_with_phone_number(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -180,7 +180,7 @@ async def test_yotpo_loyalty_erasure_request_task(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -218,7 +218,7 @@ async def test_yotpo_loyalty_erasure_request_task(
         ],
     )
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

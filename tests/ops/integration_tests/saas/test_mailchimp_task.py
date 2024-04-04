@@ -39,7 +39,7 @@ async def test_mailchimp_access_request_task(
     merged_graph = mailchimp_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -119,7 +119,7 @@ async def test_mailchimp_erasure_request_task(
     merged_graph = mailchimp_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    access_runner(
+    access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -128,7 +128,7 @@ async def test_mailchimp_erasure_request_task(
         db,
     )
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

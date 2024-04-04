@@ -43,7 +43,7 @@ async def test_stripe_access_request_task_with_email(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -662,7 +662,7 @@ async def test_stripe_access_request_task_with_phone_number(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -729,7 +729,7 @@ async def test_stripe_erasure_request_task(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -1150,7 +1150,7 @@ async def test_stripe_erasure_request_task(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

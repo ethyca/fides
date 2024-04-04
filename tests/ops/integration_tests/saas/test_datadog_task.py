@@ -6,7 +6,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner
+from tests.conftest import access_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -41,7 +41,7 @@ async def test_datadog_access_request_task_with_email(
     dataset_name = datadog_connection_config.get_saas_config().fides_key
     merged_graph = datadog_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -103,7 +103,7 @@ async def test_datadog_access_request_task_with_phone_number(
     dataset_name = datadog_connection_config.get_saas_config().fides_key
     merged_graph = datadog_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,

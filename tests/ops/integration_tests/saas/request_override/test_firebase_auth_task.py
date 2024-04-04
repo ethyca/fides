@@ -37,7 +37,7 @@ async def test_firebase_auth_access_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -121,7 +121,7 @@ async def test_firebase_auth_access_request_non_existent_users(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
     # just ensure we don't error out here
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -166,7 +166,7 @@ async def test_firebase_auth_access_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -247,7 +247,7 @@ async def test_firebase_auth_update_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -268,7 +268,7 @@ async def test_firebase_auth_update_request(
         ],
     )
 
-    erasure_runner(
+    erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -337,7 +337,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -358,7 +358,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
         ],
     )
 
-    erasure_runner(
+    erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -424,7 +424,7 @@ async def test_firebase_auth_delete_request(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -448,7 +448,7 @@ async def test_firebase_auth_delete_request(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -496,7 +496,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -520,7 +520,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

@@ -9,6 +9,7 @@ from fides.api.service.connectors import get_connector
 from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -23,18 +24,23 @@ def test_rollbar_connection_test(rollbar_connection_config) -> None:
 @pytest.mark.integration_saas
 @pytest.mark.integration_rollbar
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_rollbar_access_request_task(
     db,
     policy,
     rollbar_connection_config,
     rollbar_dataset_config,
     rollbar_identity_email,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
     """Full access request based on the Rollbar SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_rollbar_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": rollbar_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -42,7 +48,7 @@ async def test_rollbar_access_request_task(
     merged_graph = rollbar_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -93,6 +99,10 @@ async def test_rollbar_access_request_task(
 @pytest.mark.integration_saas
 @pytest.mark.integration_rollbar
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_rollbar_erasure_request_task(
     db,
     policy,
@@ -102,12 +112,13 @@ async def test_rollbar_erasure_request_task(
     rollbar_erasure_identity_email,
     rollbar_erasure_data,
     rollbar_test_client,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
     """Full erasure request based on the Rollbar SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_rollbar_erasure_request_task_{random.randint(0, 1000)}"
-    )
     identity_kwargs = {"email": rollbar_erasure_identity_email}
 
     identity = Identity(**identity_kwargs)
@@ -116,7 +127,7 @@ async def test_rollbar_erasure_request_task(
     dataset_name = rollbar_connection_config.get_saas_config().fides_key
     merged_graph = rollbar_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = access_runner(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -160,7 +171,7 @@ async def test_rollbar_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = erasure_runner(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
