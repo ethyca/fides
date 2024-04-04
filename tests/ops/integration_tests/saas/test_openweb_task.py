@@ -25,7 +25,7 @@ class TestOpenWebConnector:
         openweb_erasure_data,
     ):
         (
-            access_results,
+            # access_results,
             erasure_results,
         ) = await openweb_runner.non_strict_erasure_request(
             access_policy=policy,

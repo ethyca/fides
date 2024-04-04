@@ -1,6 +1,6 @@
 '''Notes for this particular override
 For more details consult the OpenWeb documentation for their Data Protection API
-The gist is that like some other vendors we do not get an email directly for this integration. This means the override is required in this case. The Endpoint speaks of this value as the <primary_key>, we are going to refer to it here as openweb_user_id
+The gist is that like some other vendors we do not get an email directly for this integration. This means the override is required in this case. The Endpoint speaks of this value as the <primary_key>, we are going to refer to it here as openweb_primary_key
 '''
 
 from typing import Any, Dict, List
@@ -24,8 +24,8 @@ def openweb_user_read(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
-    openweb_user_ids = input_data.get("user_id", [])
+    openweb_primary_keys = input_data.get("primary_key", [])
     results = []
-    for openweb_user_id in openweb_user_ids:
-        results.append({"primary_key": openweb_user_id})
+    for openweb_primary_key in openweb_primary_keys:
+        results.append({"primary_key": openweb_primary_key})
     return results

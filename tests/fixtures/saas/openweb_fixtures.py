@@ -30,8 +30,8 @@ def openweb_secrets(saas_config) -> Dict[str, Any]:
         or secrets["domain"],
         "api_key": pydash.get(saas_config, "openweb.api_key")
         or secrets["api_key"],
-        "x_spot_id": pydash.get(saas_config, "openweb.api_key")
-        or secrets["x_spot_id"]
+        "x_spot_id": pydash.get(saas_config, "openweb.x_spot_id")
+        or secrets["x_spot_id"],
         # add the rest of your secrets here
     }
 
@@ -43,33 +43,31 @@ def openweb_secrets(saas_config) -> Dict[str, Any]:
 #     )
 
 
-@pytest.fixture
-def openweb_erasure_identity_email() -> str:
-    return generate_random_email()
+# @pytest.fixture
+# def openweb_erasure_identity_email() -> str:
+#     return generate_random_email()
 
 # we do need a means of creating a random 'primay_key' and using that for the erasure request. THere is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved 
-@pytest.fixture
-def openweb_external_references() -> Dict[str, Any]:
-    return {"primary_key": "deletemetest"}
+# @pytest.fixture
+# def openweb_external_references() -> Dict[str, Any]:
+#     return {"primary_key": "deletemetestwds"}
 
 
-@pytest.fixture
-def openweb_erasure_external_references() -> Dict[str, Any]:
-    return {"primary_key": "deletemetest"}
+# @pytest.fixture
+# def openweb_erasure_external_references() -> Dict[str, Any]:
+#     return {"primary_key": "deletemetestwrr"}
 
 @pytest.fixture
 def openweb_create_erasure_data(
-    openweb_erasure_identity_email: str,
+    # openweb_erasure_identity_email: str,
     openweb_secrets
     ) -> Generator:
-    
     '''
     Create the data needed for erasure tests here
 
     In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well
     '''
     base_url = f"https://{openweb_secrets['domain']}"
-    # primary_key_val = {openweb_secrets['api_key']} 
     spot_id_val = {openweb_secrets['x_spot_id']}  
     random_pkv = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
     headers = {
@@ -90,7 +88,7 @@ def openweb_create_erasure_data(
     # member_riid = create_member_response.json()['recordData']['records'][0]
 
     # I'm not sure I need to return anything in this case?
-    # yield primary_key_val
+   # yield random_pkv
 
 
 @pytest.fixture
@@ -98,14 +96,14 @@ def openweb_runner(
     db,
     cache,
     openweb_secrets,
-    openweb_external_references,
-    openweb_erasure_external_references,
+    # openweb_external_references,
+    # openweb_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "openweb",
         openweb_secrets,
-        external_references=openweb_external_references,
-        erasure_external_references=openweb_erasure_external_references,
+        # external_references=openweb_external_references,
+        # erasure_external_references=openweb_erasure_external_references,
     )
