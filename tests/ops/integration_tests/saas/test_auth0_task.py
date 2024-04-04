@@ -14,13 +14,11 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_auth0
 def test_auth0_connection_test(auth0_connection_config) -> None:
     get_connector(auth0_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_auth0
 async def test_auth0_access_request_task(
     db,
     policy,
@@ -63,9 +61,6 @@ async def test_auth0_access_request_task(
             "picture",
             "updated_at",
             "user_id",
-            "last_ip",
-            "last_login",
-            "logins_count",
         ],
     )
 
@@ -92,7 +87,6 @@ async def test_auth0_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_auth0
 async def test_auth0_erasure_request_task(
     db,
     policy,

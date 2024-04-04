@@ -33,30 +33,30 @@ from fides.api.util.saas_util import (
 
 
 @pytest.fixture
-def zendesk_config() -> Dict[str, Any]:
+def stripe_config() -> Dict[str, Any]:
     return load_config_with_replacement(
-        "data/saas/config/zendesk_config.yml",
+        "data/saas/config/stripe_config.yml",
         "<instance_fides_key>",
-        "zendesk_instance",
+        "stripe_instance",
     )
 
 
 @pytest.fixture
-def zendesk_dataset() -> Dict[str, Any]:
+def stripe_dataset() -> Dict[str, Any]:
     return load_dataset_with_replacement(
-        "data/saas/dataset/zendesk_dataset.yml",
+        "data/saas/dataset/stripe_dataset.yml",
         "<instance_fides_key>",
-        "zendesk_instance",
+        "stripe_instance",
     )[0]
 
 
 @pytest.fixture(scope="function")
-def zendesk_connection_config(
+def stripe_connection_config(
     db: session,
-    zendesk_config,
-    zendesk_secrets,
+    stripe_config,
+    stripe_secrets,
 ) -> Generator:
-    fides_key = zendesk_config["fides_key"]
+    fides_key = stripe_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -64,8 +64,8 @@ def zendesk_connection_config(
             "name": fides_key,
             "connection_type": ConnectionType.saas,
             "access": AccessLevel.write,
-            "secrets": zendesk_secrets,
-            "saas_config": zendesk_config,
+            "secrets": stripe_secrets,
+            "saas_config": stripe_config,
         },
     )
     yield connection_config
@@ -73,22 +73,22 @@ def zendesk_connection_config(
 
 
 @pytest.fixture
-def zendesk_dataset_config(
+def stripe_dataset_config(
     db: Session,
-    zendesk_connection_config: ConnectionConfig,
-    zendesk_dataset: Dict[str, Any],
+    stripe_connection_config: ConnectionConfig,
+    stripe_dataset: Dict[str, Any],
 ) -> Generator:
-    fides_key = zendesk_dataset["fides_key"]
-    zendesk_connection_config.name = fides_key
-    zendesk_connection_config.key = fides_key
-    zendesk_connection_config.save(db=db)
+    fides_key = stripe_dataset["fides_key"]
+    stripe_connection_config.name = fides_key
+    stripe_connection_config.key = fides_key
+    stripe_connection_config.save(db=db)
 
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, zendesk_dataset)
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, stripe_dataset)
 
     dataset = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": zendesk_connection_config.id,
+            "connection_config_id": stripe_connection_config.id,
             "fides_key": fides_key,
             "ctl_dataset_id": ctl_dataset.id,
         },
@@ -219,27 +219,26 @@ def test_limiter_times_out_when_bucket_full() -> None:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_zendesk
 @pytest.mark.asyncio
 async def test_rate_limiter_full_integration(
     db,
     policy,
-    zendesk_connection_config,
-    zendesk_dataset_config,
-    zendesk_identity_email,
+    stripe_connection_config,
+    stripe_dataset_config,
+    stripe_identity_email,
 ) -> None:
-    """Test rate limiter by creating privacy request to Zendesk and setting a rate limit"""
+    """Test rate limiter by creating privacy request to Stripe and setting a rate limit"""
     rate_limit = 1
     rate_limit_config = {"limits": [{"rate": rate_limit, "period": "second"}]}
-    zendesk_connection_config.saas_config["rate_limit_config"] = rate_limit_config
+    stripe_connection_config.saas_config["rate_limit_config"] = rate_limit_config
 
-    # set up privacy requer to Zendesk
+    # set up privacy request to Stripe
     privacy_request = PrivacyRequest(
-        id=f"test_zendesk_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = Identity(**{"email": zendesk_identity_email})
+    identity = Identity(**{"email": stripe_identity_email})
     privacy_request.cache_identity(identity)
-    merged_graph = zendesk_dataset_config.get_graph()
+    merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
     # create call log spy and execute request
@@ -249,8 +248,8 @@ async def test_rate_limiter_full_integration(
             privacy_request,
             policy,
             graph,
-            [zendesk_connection_config],
-            {"email": zendesk_identity_email},
+            [stripe_connection_config],
+            {"email": stripe_identity_email},
             db,
         )
 

@@ -15,14 +15,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
-@pytest.mark.integration_salesforce
 def test_salesforce_connection_test(salesforce_connection_config) -> None:
     get_connector(salesforce_connection_config).test_connection()
 
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
-@pytest.mark.integration_salesforce
 @pytest.mark.asyncio
 async def test_salesforce_access_request_task_by_email(
     policy,
@@ -371,7 +369,6 @@ async def test_salesforce_access_request_task_by_email(
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
-@pytest.mark.integration_salesforce
 @pytest.mark.asyncio
 async def test_salesforce_access_request_task_by_phone_number(
     policy,
@@ -718,7 +715,6 @@ async def test_salesforce_access_request_task_by_phone_number(
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
-@pytest.mark.integration_salesforce
 @pytest.mark.asyncio
 async def test_salesforce_erasure_request_task(
     db,

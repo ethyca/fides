@@ -15,13 +15,11 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_sendgrid
 def test_sendgrid_connection_test(sendgrid_connection_config) -> None:
     get_connector(sendgrid_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_sendgrid
 @pytest.mark.asyncio
 async def test_sendgrid_access_request_task(
     db,
@@ -77,7 +75,6 @@ async def test_sendgrid_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_sendgrid
 @pytest.mark.asyncio
 async def test_sendgrid_erasure_request_task(
     db,

@@ -842,7 +842,6 @@ def test_create_and_process_access_request_mariadb(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",
@@ -896,7 +895,6 @@ def test_create_and_process_access_request_saas_mailchimp(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",
@@ -966,7 +964,6 @@ def test_create_and_process_erasure_request_saas(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_hubspot
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",
@@ -2479,7 +2476,6 @@ class TestPrivacyRequestsManualWebhooks:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 def test_build_consent_dataset_graph(
     postgres_example_test_dataset_config_read_access,
     mysql_example_test_dataset_config,

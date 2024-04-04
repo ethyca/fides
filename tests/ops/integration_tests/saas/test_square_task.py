@@ -14,13 +14,11 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_square
 def test_square_connection_test(square_connection_config) -> None:
     get_connector(square_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_square
 @pytest.mark.asyncio
 async def test_square_access_request_task_by_email(
     db,
@@ -104,7 +102,6 @@ async def test_square_access_request_task_by_email(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_square
 @pytest.mark.asyncio
 async def test_square_access_request_task_by_phone_number(
     db,
@@ -163,7 +160,6 @@ async def test_square_access_request_task_by_phone_number(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_square
 @pytest.mark.asyncio
 async def test_square_erasure_request_task(
     db,

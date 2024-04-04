@@ -14,7 +14,6 @@ from tests.conftest import consent_runner_tester
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_wunderkind
 def test_wunderkind_connection_test(
     wunderkind_connection_config,
 ) -> None:
@@ -22,7 +21,6 @@ def test_wunderkind_connection_test(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
@@ -87,7 +85,6 @@ async def test_wunderkind_consent_request_task_old_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 @pytest.mark.parametrize(
@@ -138,7 +135,6 @@ async def test_wunderkind_consent_prepared_requests_old_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
@@ -226,7 +222,6 @@ async def test_wunderkind_consent_request_task_new_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 @pytest.mark.parametrize(
@@ -317,7 +312,6 @@ async def test_wunderkind_errored_logging_new_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 @pytest.mark.parametrize(
@@ -367,7 +361,6 @@ async def test_wunderkind_consent_prepared_requests_new_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",

@@ -16,13 +16,11 @@ CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_yotpo
 def test_yotpo_loyalty_connection_test(yotpo_loyalty_connection_config) -> None:
     get_connector(yotpo_loyalty_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_yotpo
 @pytest.mark.asyncio
 async def test_yotpo_loyalty_access_request_task_with_email(
     db,
@@ -86,7 +84,6 @@ async def test_yotpo_loyalty_access_request_task_with_email(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_yotpo
 @pytest.mark.asyncio
 async def test_yotpo_loyalty_access_request_task_with_phone_number(
     db,
@@ -153,7 +150,6 @@ async def test_yotpo_loyalty_access_request_task_with_phone_number(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_yotpo
 @pytest.mark.asyncio
 async def test_yotpo_loyalty_erasure_request_task(
     db,

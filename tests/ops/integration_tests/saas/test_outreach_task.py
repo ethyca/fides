@@ -15,14 +15,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
-@pytest.mark.integration_outreach
 def test_outreach_connection_test(outreach_connection_config) -> None:
     get_connector(outreach_connection_config).test_connection()
 
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
-@pytest.mark.integration_outreach
 @pytest.mark.asyncio
 async def test_outreach_access_request_task(
     db,
@@ -96,7 +94,6 @@ async def test_outreach_access_request_task(
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
-@pytest.mark.integration_outreach
 @pytest.mark.asyncio
 async def test_outreach_erasure_request_task(
     db,

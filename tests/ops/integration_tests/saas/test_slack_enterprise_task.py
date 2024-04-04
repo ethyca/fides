@@ -6,18 +6,15 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_slack
 def test_slack_enterprise_connection_test(slack_enterprise_connection_config) -> None:
     get_connector(slack_enterprise_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_slack
 @pytest.mark.asyncio
 async def test_slack_enterprise_access_request_task(
     db,

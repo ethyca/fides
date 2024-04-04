@@ -11,13 +11,11 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_datadog
 def test_datadog_connection_test(datadog_connection_config) -> None:
     get_connector(datadog_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_datadog
 @pytest.mark.asyncio
 async def test_datadog_access_request_task_with_email(
     db,
@@ -78,7 +76,6 @@ async def test_datadog_access_request_task_with_email(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_datadog
 @pytest.mark.asyncio
 async def test_datadog_access_request_task_with_phone_number(
     db,

@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_friendbuy_nextgen
 def test_friendbuy_nextgen_connection_test(
     friendbuy_nextgen_connection_config,
 ) -> None:
@@ -26,7 +25,6 @@ def test_friendbuy_nextgen_connection_test(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_friendbuy_nextgen
 @pytest.mark.asyncio
 async def test_friendbuy_nextgen_access_request_task(
     db,
@@ -79,9 +77,8 @@ async def test_friendbuy_nextgen_access_request_task(
     )
 
 
-@pytest.mark.skip("Temporarily disabled test")
+@pytest.mark.skip(reason="Temporarily disabled test")
 @pytest.mark.integration_saas
-@pytest.mark.integration_friendbuy_nextgen
 @pytest.mark.asyncio
 async def test_friendbuy_nextgen_erasure_request_task(
     db,
