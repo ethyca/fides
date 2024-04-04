@@ -36,6 +36,7 @@ saas_config:
     method: GET
     # normally we would not hardcode a value here, however, we won't know the value ahead of time, and we only need to verify the SSO token is valid. This call will return a 404 if the 'primary_key' is not found. A 401 will be returned if the SSO token is invalid.
     path: /api/sso/v1/user/thisisatestonly
+    ignore_errors: [404]
     param_values:
       - name: primary_key
         connector_param: primary_key
