@@ -22,13 +22,14 @@ class TestOpenWebConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         openweb_erasure_identity_email: str,
-        openweb_erasure_data,
     ):
         (
             # access_results,
+            _,
             erasure_results,
         ) = await openweb_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
-            identities={"email": openweb_erasure_identity_email},
+            # identities={"email": openweb_erasure_identity_email},
         )
+        assert erasure_results == {"openweb_instance:user": 1}

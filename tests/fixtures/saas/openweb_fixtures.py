@@ -70,7 +70,7 @@ def openweb_create_erasure_data(
     ## "https://www.spot.im/api/sso/v1/user?primary_key=88deletemetest&spot_id=sp_XJw6mJCV&user_name=88deletemetest"
 
     create_user_response = requests.request("POST", totalurl, headers=headers)
-
+    '''
     # example to follow 
     # create__response = requests.post(
     #     url=f"{base_url}/rest/api/v1.3/lists/{openweb_secrets['test_list']}/members", json=member_body, headers=headers
@@ -80,7 +80,7 @@ def openweb_create_erasure_data(
 
     # I'm not sure I need to return anything in this case?
    # yield random_pkv
-
+    '''
 
 @pytest.fixture
 def openweb_runner(
