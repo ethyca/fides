@@ -14,13 +14,11 @@ CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_shippo
 def test_shippo_connection_test(shippo_connection_config) -> None:
     get_connector(shippo_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_shippo
 @pytest.mark.asyncio
 async def test_shippo_access_request_task(
     db,
