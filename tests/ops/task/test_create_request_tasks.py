@@ -1431,7 +1431,6 @@ class TestRunErasureRequestWithRequestTasks:
         assert privacy_request_with_erasure_policy.erasure_tasks.count() == 22
 
         assert rows_masked == {
-            "__ROOT__:__ROOT__": None,
             "postgres_example_test_dataset:visit": 0,
             "postgres_example_test_dataset:report": 0,
             "mongo_test:employee": 2,
@@ -1452,7 +1451,6 @@ class TestRunErasureRequestWithRequestTasks:
             "postgres_example_test_dataset:product": 0,
             "mongo_test:aircraft": 0,
             "mongo_test:payment_card": 0,
-            "__TERMINATE__:__TERMINATE__": None,
         }
 
         # Remove request tasks and re-run access request
