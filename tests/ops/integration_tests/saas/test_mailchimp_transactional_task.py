@@ -22,7 +22,6 @@ from fides.api.task import graph_task
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 def test_mailchimp_transactional_connection_test(
     mailchimp_transactional_connection_config,
 ) -> None:
@@ -30,7 +29,6 @@ def test_mailchimp_transactional_connection_test(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
 async def test_mailchimp_transactional_consent_request_task_old_workflow(
@@ -113,7 +111,6 @@ async def test_mailchimp_transactional_consent_request_task_old_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
@@ -153,7 +150,6 @@ async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_no_prepared_request_fired_without_consent_preferences_old_workflow(
@@ -186,7 +182,6 @@ async def test_no_prepared_request_fired_without_consent_preferences_old_workflo
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
 async def test_mailchimp_transactional_consent_request_task_new_workflow(
@@ -300,7 +295,6 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
@@ -349,7 +343,6 @@ async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
 async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped(
@@ -420,7 +413,6 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")

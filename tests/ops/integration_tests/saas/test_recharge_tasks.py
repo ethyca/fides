@@ -13,13 +13,11 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_recharge
 def test_recharge_connection_test(recharge_connection_config) -> None:
     get_connector(recharge_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_recharge
 @pytest.mark.asyncio
 async def test_recharge_access_request_task(
     db,
@@ -124,7 +122,6 @@ async def test_recharge_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_recharge
 @pytest.mark.asyncio
 async def test_recharge_erasure_request_task(
     db,

@@ -64,6 +64,7 @@ export type ExperienceConfigResponseNoNotices = {
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string;
+  modal_link_label?: string;
   name?: string;
   disabled?: boolean;
   dismissable?: boolean;

@@ -3,11 +3,11 @@ import random
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
-from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
+from tests.ops.graph.graph_test_util import assert_rows_match
 
 """
 Integration-level tests to validate the SaaS request override functionality by

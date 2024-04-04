@@ -25,7 +25,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
@@ -300,11 +302,15 @@ class ConnectorRunner:
             self.db,
         )
 
-        # verify we returned at least one row for each collection in the dataset
-        for collection in self.dataset["collections"]:
-            assert len(
-                access_results[f"{fides_key}:{collection['name']}"]
-            ), f"No rows returned for collection '{collection['name']}'"
+        if (
+            ActionType.access
+            in SaaSConfig(**self.connection_config.saas_config).supported_actions
+        ):
+            # verify we returned at least one row for each collection in the dataset
+            for collection in self.dataset["collections"]:
+                assert len(
+                    access_results[f"{fides_key}:{collection['name']}"]
+                ), f"No rows returned for collection '{collection['name']}'"
 
         erasure_results = await graph_task.run_erasure(
             privacy_request,

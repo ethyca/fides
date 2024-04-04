@@ -106,6 +106,7 @@ describe("Privacy Requests", () => {
         cy.contains("Request ID").parent().contains(/pri_/);
         cy.getByTestId("request-status-badge").contains("New");
       });
+      cy.getByTestId("pii-toggle").click();
     });
 
     it("allows approving a new request", () => {

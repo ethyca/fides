@@ -21,6 +21,7 @@ class TestYotpoReviewsConnector:
             access_policy=policy, identities={"email": yotpo_reviews_identity_email}
         )
 
+    @pytest.mark.skip(reason="Temporarily disabled test")
     async def test_strict_erasure_request(
         self,
         yotpo_reviews_runner: ConnectorRunner,

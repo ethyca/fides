@@ -18,14 +18,12 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
-@pytest.mark.integration_sentry
 def test_sentry_connection_test(sentry_connection_config) -> None:
     get_connector(sentry_connection_config).test_connection()
 
 
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
-@pytest.mark.integration_sentry
 @pytest.mark.asyncio
 async def test_sentry_access_request_task(
     db,
@@ -273,7 +271,6 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
 
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
-@pytest.mark.integration_sentry
 @pytest.mark.asyncio
 async def test_sentry_erasure_request_task(
     db, policy, sentry_connection_config, sentry_dataset_config
