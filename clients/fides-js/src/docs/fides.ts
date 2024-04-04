@@ -209,7 +209,7 @@ export interface Fides {
   init: (config: any) => Promise<void>;
 
   /**
-   * NOTE: The properties below are all marked @private, despite being exported
+   * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid
    * customers getting too comfortable with accessing them.
@@ -217,50 +217,50 @@ export interface Fides {
 
   /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
-   *
-   * @private
+   * 
+   * @internal
    */
   fides_meta: Record<any, any>;
 
   /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
    *
-   * @private
+   * @internal
    */
   identity: Record<string, string>;
 
   /**
-   * @private
+   * @internal
    */
   experience?: any;
 
   /**
-   * @private
+   * @internal
    */
   geolocation?: any;
 
   /**
-   * @private
+   * @internal
    */
   options: any;
 
   /**
-   * @private
+   * @internal
    */
   tcf_consent: any;
 
   /**
-   * @private
+   * @internal
    */
   saved_consent: Record<string, boolean>;
 
   /**
-   * @private
+   * @internal
    */
   meta: (options: any) => void;
 
   /**
-   * @private
+   * @internal
    */
   shopify: (options: any) => void;
 }
