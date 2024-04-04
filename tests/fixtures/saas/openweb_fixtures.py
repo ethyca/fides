@@ -9,15 +9,6 @@ from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
 )
-# from fides.api.cryptography import cryptographic_util
-# from fides.api.db import session
-# from fides.api.models.connectionconfig import (
-#     AccessLevel,
-#     ConnectionConfig,
-#     ConnectionType,
-# )
-
-
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("openweb")
@@ -43,19 +34,19 @@ def openweb_secrets(saas_config) -> Dict[str, Any]:
 #     )
 
 
-# @pytest.fixture
-# def openweb_erasure_identity_email() -> str:
-#     return generate_random_email()
-
-# we do need a means of creating a random 'primay_key' and using that for the erasure request. THere is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved 
-# @pytest.fixture
-# def openweb_external_references() -> Dict[str, Any]:
-#     return {"primary_key": "deletemetestwds"}
-
-
-# @pytest.fixture
-# def openweb_erasure_external_references() -> Dict[str, Any]:
-#     return {"primary_key": "deletemetestwrr"}
+@pytest.fixture
+def openweb_erasure_identity_email() -> str:
+    return generate_random_email()
+'''
+we do need a means of creating a random 'primay_key' and using that for the erasure request. THere is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman
+@pytest.fixture
+def openweb_external_references() -> Dict[str, Any]:
+    return {"primary_key": "deletemetestwds"}
+'''
+@pytest.fixture
+def openweb_erasure_external_references() -> Dict[str, Any]:
+    random_pkv = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
+    return {"primary_key": random_pkv}
 
 @pytest.fixture
 def openweb_create_erasure_data(
@@ -97,7 +88,7 @@ def openweb_runner(
     cache,
     openweb_secrets,
     # openweb_external_references,
-    # openweb_erasure_external_references,
+    openweb_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
@@ -105,5 +96,5 @@ def openweb_runner(
         "openweb",
         openweb_secrets,
         # external_references=openweb_external_references,
-        # erasure_external_references=openweb_erasure_external_references,
+        erasure_external_references=openweb_erasure_external_references,
     )
