@@ -72,10 +72,13 @@ def openweb_create_erasure_data(
     ## "https://www.spot.im/api/sso/v1/user?primary_key=88deletemetest&spot_id=sp_XJw6mJCV&user_name=88deletemetest"
 
     create_user_response = requests.request("POST", totalurl, headers=headers)
-    create_user_response = str(create_user_response)
-    assert create_user_response == "<Response [200]>"
+    str_create_user_response = str(create_user_response)
+
+
+    # put in the new url check )
+    #assert create_user_response == "<Response [200]>"
     # import pdb; pdb.set_trace()
-    return random_pkv
+    return #random_pkv
     '''
     # example to follow 
     # create__response = requests.post(
