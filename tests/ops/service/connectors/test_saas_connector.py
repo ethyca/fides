@@ -354,7 +354,6 @@ class TestSaasConnector:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_segment
 class TestSaaSConnectorMethods:
     def test_client_config_set_depending_on_state(
         self, db: Session, segment_connection_config, segment_dataset_config
@@ -400,7 +399,6 @@ class TestSaaSConnectorMethods:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 class TestConsentRequests:
     def test_get_consent_requests_by_preference(
         self, mailchimp_transactional_connection_config

@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_braintree
 def test_braintree_connection_test(
     braintree_connection_config,
 ) -> None:
@@ -24,7 +23,6 @@ def test_braintree_connection_test(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_braintree
 @pytest.mark.asyncio
 async def test_braintree_access_request_task(
     db,
@@ -82,7 +80,6 @@ async def test_braintree_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_braintree
 @pytest.mark.asyncio
 async def test_braintree_erasure_request_task(
     db,

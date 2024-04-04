@@ -7,11 +7,7 @@ from requests import Response
 from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.util.logger_context_utils import ErrorGroup
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CREATE
-from fides.common.api.v1.urn_registry import (
-    CONSENT_REQUEST,
-    PRIVACY_REQUESTS,
-    V1_URL_PREFIX,
-)
+from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
 
@@ -115,7 +111,6 @@ class TestPrivacyRequestLogging:
             "privacy_request_id": privacy_request["id"],
             "method": "DELETE",
             "url": f"https://api.typeform.com/rtbf/{typeform_secrets['account_id']}/responses",
-            "body": '["test@email.com"]\n',
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }
@@ -151,7 +146,6 @@ class TestPrivacyRequestLogging:
             "privacy_request_id": "123",
             "method": "POST",
             "url": "https://a.klaviyo.com/api/profile-suppression-bulk-delete-jobs/",
-            "body": '{\n  "data": {\n    "type": "profile-suppression-bulk-delete-job",\n    "attributes": {\n      "profiles": {\n        "data": [\n          {\n            "type": "profile",\n            "attributes": {\n              "email": "test@email.com"\n            }\n          }\n        ]\n      }\n    }\n  }\n}\n',
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }
