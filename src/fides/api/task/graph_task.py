@@ -148,6 +148,7 @@ def retry(
                         self.execution_node.address,
                         self.resources.request.id,
                     )
+                    self.request_task.consent_success = False
                     self.log_skipped(action_type, exc)
                     for pref in self.resources.request.privacy_preferences:
                         # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
@@ -662,6 +663,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.error,
             )
+            self.request_task.consent_success = False
             return False
 
         output: bool = self.connector.run_consent_request(

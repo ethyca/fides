@@ -1104,6 +1104,16 @@ class PrivacyRequest(
         number_of_leading_strings_to_exclude = 2
         return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
 
+    def get_consent_results(self) -> Dict[str, int]:
+        """For parity, return consent_successes"""
+        if self.consent_tasks.count():
+            return {
+                t.collection_address: t.consent_success
+                for t in self.consent_tasks
+                if not t.is_root_task and not t.is_terminator_task
+            }
+        return {}
+
     def save_filtered_access_results(
         self, db: Session, results: Dict[str, Dict[str, List[Row]]]
     ) -> None:

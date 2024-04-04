@@ -49,7 +49,7 @@ from fides.api.oauth.roles import (
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.task.create_request_tasks import run_access_request
 from fides.api.task.deprecated_graph_task import run_access_request_deprecated
-from fides.api.task.graph_runners import access_runner, erasure_runner
+from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
@@ -715,6 +715,33 @@ def erasure_runner_tester(
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
         wait_for_terminator_completion(session, privacy_request, ActionType.erasure)
         return privacy_request.get_raw_masking_counts()
+
+
+def consent_runner_tester(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    session: Session,
+):
+    """
+    Function for testing the consent request for both DSR 2.0 and DSR 3.0
+    """
+    try:
+        return consent_runner(
+            privacy_request,
+            policy,
+            graph,
+            connection_configs,
+            identity,
+            session,
+            queue_privacy_request=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+        )
+    except PrivacyRequestExit:
+        # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
+        wait_for_terminator_completion(session, privacy_request, ActionType.consent)
+        return privacy_request.get_consent_results()
 
 
 @pytest.fixture(autouse=True, scope="session")

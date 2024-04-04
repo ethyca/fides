@@ -1,6 +1,5 @@
 import json
 from unittest import mock
-from uuid import uuid4
 
 import pytest
 
@@ -8,8 +7,7 @@ from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
-    PrivacyRequest,
-    PrivacyRequestStatus,
+    RequestTask,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import SaaSRequest
@@ -18,7 +16,7 @@ from fides.api.service.connectors import SaaSConnector, get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task.graph_runners import consent_runner
+from tests.conftest import consent_runner_tester
 
 
 @pytest.mark.integration_saas
@@ -33,26 +31,34 @@ def test_mailchimp_transactional_connection_test(
 @pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mailchimp_transactional_consent_request_task_old_workflow(
     db,
     consent_policy,
     mailchimp_transactional_connection_config,
     mailchimp_transactional_dataset_config,
     mailchimp_transactional_identity_email,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full consent request based on the Mailchimp Transactional (Mandrill) SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
-    )
+    privacy_request.consent_preferences = [
+        {"data_use": "marketing.advertising", "opt_in": False}
+    ]
+    privacy_request.save(db)
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = "mailchimp_transactional_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -116,6 +122,10 @@ async def test_mailchimp_transactional_consent_request_task_old_workflow(
 @pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
     mocked_client_send,
     db,
@@ -123,18 +133,22 @@ async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
     mailchimp_transactional_connection_config,
     mailchimp_transactional_dataset_config,
     mailchimp_transactional_identity_email,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
-    )
+    privacy_request.consent_preferences = [
+        {"data_use": "marketing.advertising", "opt_in": False}
+    ]
+    privacy_request.save(db)
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -156,6 +170,10 @@ async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
 @pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_no_prepared_request_fired_without_consent_preferences_old_workflow(
     mocked_client_send,
     db,
@@ -163,17 +181,17 @@ async def test_no_prepared_request_fired_without_consent_preferences_old_workflo
     mailchimp_transactional_connection_config,
     mailchimp_transactional_dataset_config,
     mailchimp_transactional_identity_email,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request"""
-
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -189,6 +207,10 @@ async def test_no_prepared_request_fired_without_consent_preferences_old_workflo
 @pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mailchimp_transactional_consent_request_task_new_workflow(
     db,
     consent_policy,
@@ -197,20 +219,21 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
     mailchimp_transactional_identity_email,
     privacy_preference_history,
     privacy_preference_history_us_ca_provide,
+    privacy_request,
     system,
+    dsr_version,
+    request,
 ) -> None:
     """Full consent request based on the Mailchimp Transactional (Mandrill) SaaS config
     with new workflow where preferences are saved w.r.t privacy notices
 
     Assert that only relevant preferences get "complete" log, others get "skipped"
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     mailchimp_transactional_connection_config.system_id = system.id
     mailchimp_transactional_connection_config.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
     # This preference is relevant on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
@@ -224,7 +247,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
 
     dataset_name = "mailchimp_transactional_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -303,6 +326,10 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
 @pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
     mocked_client_send,
     db,
@@ -312,8 +339,11 @@ async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
     mailchimp_transactional_identity_email,
     privacy_preference_history,
     privacy_request_with_consent_policy,
+    dsr_version,
+    request,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     privacy_preference_history.privacy_request_id = (
         privacy_request_with_consent_policy.id
@@ -323,7 +353,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request_with_consent_policy.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request_with_consent_policy,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -352,6 +382,10 @@ async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
 @pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped(
     db,
     consent_policy,
@@ -360,15 +394,16 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
     mailchimp_transactional_identity_email,
     system,
     privacy_preference_history_us_ca_provide,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Test privacy notice/data use system mismatch causes the request to be skipped"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     mailchimp_transactional_connection_config.system_id = system.id
     mailchimp_transactional_connection_config.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
     privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
     privacy_preference_history_us_ca_provide.save(db=db)
 
@@ -377,7 +412,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
 
     dataset_name = "mailchimp_transactional_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -385,7 +420,6 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
         {"email": mailchimp_transactional_identity_email},
         db,
     )
-
     assert v == {
         f"{dataset_name}:{dataset_name}": False
     }, "graph has one node, and request skipped"
@@ -424,6 +458,10 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mailchimp_transactional_consent_request_task_error(
     mocked_client_send,
     db,
@@ -434,18 +472,19 @@ async def test_mailchimp_transactional_consent_request_task_error(
     system,
     privacy_preference_history,
     privacy_preference_history_us_ca_provide,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Assert logging is correctly created for privacy preferences on errored request
     Assert case when some privacy preferences were relevant but not all.
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     mocked_client_send.side_effect = Exception("KeyError")
     mailchimp_transactional_connection_config.system_id = system.id
     mailchimp_transactional_connection_config.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
     # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
@@ -459,8 +498,18 @@ async def test_mailchimp_transactional_consent_request_task_error(
 
     dataset_name = "mailchimp_transactional_instance"
 
-    with pytest.raises(Exception):
-        consent_runner(
+    if dsr_version == "use_dsr_2_0":
+        with pytest.raises(Exception):
+            consent_runner_tester(
+                privacy_request,
+                consent_policy,
+                build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
+                [mailchimp_transactional_connection_config],
+                {"email": mailchimp_transactional_identity_email},
+                db,
+            )
+    else:
+        consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
@@ -468,6 +517,11 @@ async def test_mailchimp_transactional_consent_request_task_error(
             {"email": mailchimp_transactional_identity_email},
             db,
         )
+        rt = privacy_request.consent_tasks.filter(
+            RequestTask.collection_address
+            == "mailchimp_transactional_instance:mailchimp_transactional_instance"
+        ).first()
+        assert rt.status == ExecutionLogStatus.error  # Matches status of Execution Log
 
     execution_logs = db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id
