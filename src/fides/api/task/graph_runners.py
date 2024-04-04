@@ -34,15 +34,17 @@ def access_runner(
     DSR 2.0 will be going away"""
     use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
 
-    prev_results = privacy_request.get_raw_access_results()
-
-    if privacy_request.access_tasks.count() and not use_dsr_3_0:
-        # If we've previously processed this Privacy Request using DSR 3.0, continue doing so
-        use_dsr_3_0 = True
-
-    elif prev_results and use_dsr_3_0:
-        # If we've previously tried to process this Privacy Request using DSR 2.0, continue doing so
-        use_dsr_3_0 = False
+    # TODO figure out better logic for how to reprocess privacy requests that were
+    # already run on one scheduler, on the same scheduler
+    # prev_results = privacy_request.get_raw_access_results()
+    #
+    # if privacy_request.access_tasks.count() and not use_dsr_3_0:
+    #     # If we've previously processed this Privacy Request using DSR 3.0, continue doing so
+    #     use_dsr_3_0 = True
+    #
+    # elif prev_results and use_dsr_3_0 and not privacy_request.access_tasks.count():
+    #     # If we've previously tried to process this Privacy Request using DSR 2.0, continue doing so
+    #     use_dsr_3_0 = False
 
     if use_dsr_3_0:
         run_access_request(
