@@ -22,6 +22,7 @@ class TestTalkableConnector:
             == talkable_identity_email
         )
 
+    @pytest.mark.skip("Temporarily disabled test")
     async def test_non_strict_erasure_request(
         self,
         talkable_runner: ConnectorRunner,

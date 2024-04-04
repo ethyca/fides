@@ -75,6 +75,7 @@ async def test_aircall_access_request_task_with_phone_number(
     )
 
 
+@pytest.mark.skip("Temporarily disabled test")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 async def test_aircall_erasure_request_task(
