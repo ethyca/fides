@@ -27,10 +27,10 @@ import {
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
-import type { Fides } from "./lib/initialize";
 import type {
-  CookieKeyConsent,
-  OverrideOptions,
+  FidesGlobal,
+  FidesOptions,
+  NoticeConsent,
   PrivacyNoticeWithPreference,
 } from "./lib/consent-types";
 import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
@@ -44,10 +44,10 @@ const CMP_VERSION = 1;
 
 declare global {
   interface Window {
-    Fides: Fides;
+    Fides: FidesGlobal;
     config: {
       // DEFER (PROD-1243): support a configurable "custom options" path
-      tc_info: OverrideOptions;
+      tc_info: FidesOptions;
     };
     __gpp?: GppFunction;
     __gppLocator?: Window;
@@ -57,13 +57,13 @@ declare global {
 /**
  * Special GPP util method to determine if user has existing prefs, including those on the cookie or fides string.
  * Specifically, this method does not consider legacy consent has an existing pref, since they aren't relevant for GPP.
- * @param savedConsent: CookieKeyConsent | undefined
+ * @param savedConsent: NoticeConsent | undefined
  * @param fides_string: string | undefined
  * @param notices: Array<PrivacyNoticeWithPreference> | undefined
  * @return boolean
  */
 const userHasExistingPrefs = (
-  savedConsent: CookieKeyConsent | undefined,
+  savedConsent: NoticeConsent | undefined,
   fides_string: string | undefined,
   notices: Array<PrivacyNoticeWithPreference> | undefined
 ): boolean => {
@@ -191,7 +191,9 @@ export const initializeGppCmpApi = () => {
         cmpApi,
         experience,
       });
-      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      if (sectionsChanged.length) {
+        cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      }
     }
   });
 

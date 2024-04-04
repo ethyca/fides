@@ -4,6 +4,7 @@ import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
 import { OverlayProps } from "../components/types";
+import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
 const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
@@ -14,11 +15,12 @@ const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
  * (see the type definition of FidesOptions for what options are available)
  */
 export const initOverlay = async ({
+  options,
   experience,
+  i18n,
   fidesRegionString,
   cookie,
   savedConsent,
-  options,
   renderOverlay,
 }: OverlayProps & {
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
@@ -57,18 +59,46 @@ export const initOverlay = async ({
           document.body.prepend(parentElem);
         }
       }
+      // update CSS variables based on configured primary color
+      if (options.fidesPrimaryColor) {
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-color",
+          options.fidesPrimaryColor
+        );
+        const lighterPrimaryColor: string = generateLighterColor(
+          options.fidesPrimaryColor,
+          ColorFormat.HEX,
+          1
+        );
+        const lightestPrimaryColor: string = generateLighterColor(
+          options.fidesPrimaryColor,
+          ColorFormat.HEX,
+          2
+        );
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-button-background-hover-color",
+          lighterPrimaryColor
+        );
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-active-disabled-color",
+          lightestPrimaryColor
+        );
+      }
 
       if (
-        experience.component === ComponentType.OVERLAY ||
-        experience.component === ComponentType.TCF_OVERLAY
+        experience.experience_config?.component === ComponentType.MODAL ||
+        experience.experience_config?.component ===
+          ComponentType.BANNER_AND_MODAL ||
+        experience.experience_config?.component === ComponentType.TCF_OVERLAY
       ) {
         // Render the Overlay to the DOM!
         renderOverlay(
           {
+            options,
             experience,
+            i18n,
             fidesRegionString,
             cookie,
-            options,
             savedConsent,
           },
           parentElem

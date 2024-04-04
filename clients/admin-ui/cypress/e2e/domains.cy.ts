@@ -76,11 +76,12 @@ describe("Domains page", () => {
             "have.value",
             "http://localhost"
           );
-          cy.getByTestId("input-config_cors_origin_regex").should(
-            "have.value",
-            "https://.*\\.example\\.com"
-          );
         });
+
+        cy.getByTestId("input-config_cors_origin_regex").should(
+          "have.value",
+          "https://.*\\.example\\.com"
+        );
       });
     });
 
