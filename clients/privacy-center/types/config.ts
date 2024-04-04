@@ -9,11 +9,8 @@ type CustomIdentity = {
   label: string;
 };
 
-type CustomIdentities = {
-  [key: string]: CustomIdentity;
-};
-
-export type IdentityInputs = DefaultIdentities & CustomIdentities;
+export type IdentityInputs = DefaultIdentities &
+  (Record<string, CustomIdentity> | {});
 
 export type CustomPrivacyRequestFields = Record<
   string,

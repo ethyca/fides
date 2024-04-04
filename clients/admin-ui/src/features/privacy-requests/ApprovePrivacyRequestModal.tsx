@@ -52,32 +52,31 @@ const ApprovePrivacyRequestModal = ({
             Are you sure you want to approve this privacy request?
           </Text>
           <UnorderedList>
-            {identity.email && (
-              <ListItem>
-                <Flex alignItems="flex-start">
-                  <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-                    Email:
-                  </Text>
-                  <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-                    {identity.email} (
-                    {identityVerifiedAt ? "Verified" : "Unverified"})
-                  </Text>
-                </Flex>
-              </ListItem>
-            )}
-            {identity.phone_number && (
-              <ListItem>
-                <Flex alignItems="flex-start">
-                  <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-                    Phone Number:
-                  </Text>
-                  <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-                    {identity.phone_number} (
-                    {identityVerifiedAt ? "Verified" : "Unverified"})
-                  </Text>
-                </Flex>
-              </ListItem>
-            )}
+            {Object.entries(identity)
+              .filter(([, { value }]) => value !== null)
+              .map(([key, { value, label }]) => (
+                <ListItem>
+                  <Flex key={key} alignItems="flex-start">
+                    <Text
+                      mr={2}
+                      fontSize="sm"
+                      color="gray.900"
+                      fontWeight="500"
+                    >
+                      {label}:
+                    </Text>
+                    <Text
+                      color="gray.600"
+                      fontWeight="500"
+                      fontSize="sm"
+                      mr={2}
+                    >
+                      {value}
+                    </Text>
+                    ({identityVerifiedAt ? "Verified" : "Unverified"})
+                  </Flex>
+                </ListItem>
+              ))}
             {customPrivacyRequestFields &&
               Object.entries(customPrivacyRequestFields)
                 .filter(([, item]) => item.value)

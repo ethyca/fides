@@ -74,9 +74,11 @@ const usePrivacyRequestForm = ({
       const identityInputValues = Object.fromEntries(
         Object.entries(action.identity_inputs ?? {}).map(([key, field]) => {
           const value = values[key] || null;
-          return field.label
-            ? [key, { label: field.label, value }]
-            : [key, value];
+          if (typeof field === "string") {
+            return [key, value];
+          } else {
+            return [key, { label: field.label, value }];
+          }
         })
       );
 
@@ -90,7 +92,8 @@ const usePrivacyRequestForm = ({
               value: field.hidden ? field.default_value : values[key] || null,
             },
           ])
-          .filter(([, field]) => field.value !== null)
+          // @ts-ignore
+          .filter(([, { value }]) => value !== null)
       );
 
       const body = [
@@ -283,41 +286,41 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             </Text>
           ))}
           <Stack>
-            {Object.entries(identityInputs)
-              .filter(([, field]) => !field.hidden)
-              .map(([key, item]) => (
-                <FormControl
-                  key={key}
-                  id={key}
-                  isInvalid={touched[key] && Boolean(errors[key])}
-                  isRequired={item.required !== false}
-                >
-                  <FormLabel fontSize="sm">
-                    {item.label || key[0].toUpperCase() + key.slice(1)}
-                  </FormLabel>
-                  {key === "phone" ? (
-                    <PhoneInput
-                      id={key}
-                      name={key}
-                      onChange={(value) => {
-                        setFieldValue(key, value, true);
-                      }}
-                      onBlur={handleBlur}
-                      value={values[key]}
-                    />
-                  ) : (
-                    <Input
-                      id={key}
-                      name={key}
-                      focusBorderColor="primary.500"
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      value={values[key]}
-                    />
-                  )}
-                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
-                </FormControl>
-              ))}
+            {Object.entries(identityInputs).map(([key, item]) => (
+              <FormControl
+                key={key}
+                id={key}
+                isInvalid={touched[key] && Boolean(errors[key])}
+                isRequired
+              >
+                <FormLabel fontSize="sm">
+                  {typeof item === "string"
+                    ? key[0].toUpperCase() + key.slice(1)
+                    : item.label}
+                </FormLabel>
+                {key === "phone" ? (
+                  <PhoneInput
+                    id={key}
+                    name={key}
+                    onChange={(value) => {
+                      setFieldValue(key, value, true);
+                    }}
+                    onBlur={handleBlur}
+                    value={values[key]}
+                  />
+                ) : (
+                  <Input
+                    id={key}
+                    name={key}
+                    focusBorderColor="primary.500"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values[key]}
+                  />
+                )}
+                <FormErrorMessage>{errors[key]}</FormErrorMessage>
+              </FormControl>
+            ))}
             {Object.entries(customPrivacyRequestFields)
               .filter(([, field]) => !field.hidden)
               .map(([key, item]) => (
