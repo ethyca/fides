@@ -15,7 +15,7 @@ class TestOpenWebConnector:
     #     access_results = await openweb_runner.access_request(
     #         access_policy=policy, identities={"email": openweb_identity_email}
     #     )
-
+    import pdb; pdb.set_trace()
     async def test_non_strict_erasure_request(
         self,
         openweb_runner: ConnectorRunner,
@@ -33,5 +33,4 @@ class TestOpenWebConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": openweb_erasure_identity_email},
         )
-        print(openweb_create_erasure_data)
         assert erasure_results == {"openweb_instance:user": 1}

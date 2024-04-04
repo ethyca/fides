@@ -74,6 +74,8 @@ def openweb_create_erasure_data(
     create_user_response = requests.request("POST", totalurl, headers=headers)
     create_user_response = str(create_user_response)
     assert create_user_response == "<Response [200]>"
+    # import pdb; pdb.set_trace()
+    return random_pkv
     '''
     # example to follow 
     # create__response = requests.post(
