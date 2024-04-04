@@ -1228,7 +1228,9 @@ class TestRetryIntegration:
                     CollectionAddress(log.dataset_name, log.collection_name).value,
                     log.status.value,
                 )
-                for log in execution_logs.order_by("created_at")
+                for log in execution_logs.order_by(
+                    ExecutionLog.collection_name, ExecutionLog.created_at
+                )
             ] == [
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "retrying"),

@@ -1535,9 +1535,7 @@ def test_create_and_process_access_request_snowflake(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_raw_access_results()
-    customer_table_key = (
-        f"snowflake_example_test_dataset:customer"
-    )
+    customer_table_key = f"snowflake_example_test_dataset:customer"
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
@@ -1673,16 +1671,12 @@ def test_create_and_process_access_request_redshift(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_raw_access_results()
-    customer_table_key = (
-        f"redshift_example_test_dataset:customer"
-    )
+    customer_table_key = f"redshift_example_test_dataset:customer"
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
 
-    address_table_key = (
-        f"redshift_example_test_dataset:address"
-    )
+    address_table_key = f"redshift_example_test_dataset:address"
 
     city = redshift_resources["city"]
     state = redshift_resources["state"]
@@ -1806,16 +1800,12 @@ def test_create_and_process_access_request_bigquery(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
-    customer_table_key = (
-        f"bigquery_example_test_dataset:customer"
-    )
+    customer_table_key = f"bigquery_example_test_dataset:customer"
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
 
-    address_table_key = (
-        f"bigquery_example_test_dataset:address"
-    )
+    address_table_key = f"bigquery_example_test_dataset:address"
 
     city = bigquery_resources["city"]
     state = bigquery_resources["state"]
