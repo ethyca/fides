@@ -1,22 +1,16 @@
 from unittest import mock
-from uuid import uuid4
 
 import pytest
 
 from fides.api.models.policy import ActionType
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
-from fides.api.task.graph_runners import consent_runner
+from tests.conftest import consent_runner_tester
 
 
 @pytest.mark.integration_saas
@@ -30,26 +24,34 @@ def test_wunderkind_connection_test(
 @pytest.mark.integration_saas
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_wunderkind_consent_request_task_old_workflow(
     db,
     consent_policy,
     wunderkind_connection_config,
     wunderkind_dataset_config,
     wunderkind_identity_email,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full consent request based on the Wunderkind SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
-    )
+    privacy_request.consent_preferences = [
+        {"data_use": "marketing.advertising", "opt_in": False}
+    ]
+    privacy_request.save(db)
 
     identity = Identity(**{"email": wunderkind_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = "wunderkind_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -88,6 +90,10 @@ async def test_wunderkind_consent_request_task_old_workflow(
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_wunderkind_consent_prepared_requests_old_workflow(
     mocked_client_send,
     db,
@@ -95,18 +101,22 @@ async def test_wunderkind_consent_prepared_requests_old_workflow(
     wunderkind_connection_config,
     wunderkind_dataset_config,
     wunderkind_identity_email,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()),
-        consent_preferences=[{"data_use": "marketing.advertising", "opt_in": False}],
-    )
+    privacy_request.consent_preferences = [
+        {"data_use": "marketing.advertising", "opt_in": False}
+    ]
+    privacy_request.save(db)
 
     identity = Identity(**{"email": wunderkind_identity_email})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -130,6 +140,10 @@ async def test_wunderkind_consent_prepared_requests_old_workflow(
 @pytest.mark.integration_saas
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_wunderkind_consent_request_task_new_workflow(
     db,
     consent_policy,
@@ -139,16 +153,16 @@ async def test_wunderkind_consent_request_task_new_workflow(
     privacy_preference_history,
     privacy_preference_history_us_ca_provide,
     system,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
     """Full consent request based on the Wunderkind SaaS config and new workflow"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     wunderkind_connection_config.system_id = system.id
     wunderkind_connection_config.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
     # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
@@ -162,7 +176,7 @@ async def test_wunderkind_consent_request_task_new_workflow(
 
     dataset_name = "wunderkind_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -215,6 +229,10 @@ async def test_wunderkind_consent_request_task_new_workflow(
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_wunderkind_errored_logging_new_workflow(
     mocked_client_send,
     db,
@@ -225,16 +243,17 @@ async def test_wunderkind_errored_logging_new_workflow(
     privacy_preference_history,
     privacy_preference_history_us_ca_provide,
     system,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
     """Test wunderkind errors have proper logs created"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     mocked_client_send.side_effect = Exception("KeyError")
     wunderkind_connection_config.system_id = system.id
     wunderkind_connection_config.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
     # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
@@ -248,8 +267,18 @@ async def test_wunderkind_errored_logging_new_workflow(
 
     dataset_name = "wunderkind_instance"
 
-    with pytest.raises(Exception):
-        consent_runner(
+    if dsr_version == "use_dsr_2_0":
+        with pytest.raises(Exception):
+            consent_runner_tester(
+                privacy_request,
+                consent_policy,
+                build_consent_dataset_graph([wunderkind_dataset_config]),
+                [wunderkind_connection_config],
+                {"email": wunderkind_identity_email},
+                db,
+            )
+    else:
+        consent_runner_tester(
             privacy_request,
             consent_policy,
             build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -291,6 +320,10 @@ async def test_wunderkind_errored_logging_new_workflow(
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_wunderkind_consent_prepared_requests_new_workflow(
     mocked_client_send,
     db,
@@ -299,20 +332,20 @@ async def test_wunderkind_consent_prepared_requests_new_workflow(
     wunderkind_dataset_config,
     wunderkind_identity_email,
     privacy_preference_history,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
 
     identity = Identity(**{"email": wunderkind_identity_email})
     privacy_request.cache_identity(identity)
 
-    consent_runner(
+    consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
@@ -336,6 +369,10 @@ async def test_wunderkind_consent_prepared_requests_new_workflow(
 @pytest.mark.integration_saas
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_wunderkind_skipped_new_workflow(
     db,
     consent_policy,
@@ -344,15 +381,16 @@ async def test_wunderkind_skipped_new_workflow(
     wunderkind_identity_email,
     system,
     privacy_preference_history_us_ca_provide,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
     """Data use mismatch between notice and system should cause request to not fire"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     wunderkind_connection_config.system_id = system.id
     wunderkind_connection_config.save(db)
 
-    privacy_request = PrivacyRequest(
-        id=str(uuid4()), status=PrivacyRequestStatus.pending
-    )
-    privacy_request.save(db)
     privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
     privacy_preference_history_us_ca_provide.save(db=db)
 
@@ -361,7 +399,7 @@ async def test_wunderkind_skipped_new_workflow(
 
     dataset_name = "wunderkind_instance"
 
-    v = consent_runner(
+    v = consent_runner_tester(
         privacy_request,
         consent_policy,
         build_consent_dataset_graph([wunderkind_dataset_config]),
