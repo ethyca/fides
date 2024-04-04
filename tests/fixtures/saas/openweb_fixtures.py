@@ -65,18 +65,16 @@ def openweb_create_erasure_data(
         'x-spotim-sso-access-token': openweb_secrets['api_key']
     }
     random_pkv = openweb_erasure_external_references["primary_key"]
-    # random_pkv = str(random_pkv)
-    # base_url = str(base_url)
     spot_id_val = str(spot_id_val)
-
     totalurl = base_url + "/api/sso/v1/user?primary_key=" + random_pkv + "&spot_id=" + spot_id_val + "&username=" + random_pkv
     
     
     ## "https://www.spot.im/api/sso/v1/user?primary_key=88deletemetest&spot_id=sp_XJw6mJCV&user_name=88deletemetest"
 
     create_user_response = requests.request("POST", totalurl, headers=headers)
-    print(create_user_response)
-    assert create_user_response.status_code == 200
+    create_user_response = str(create_user_response)
+    import pdb; pdb.set_trace()
+    assert create_user_response == "<Response [200]>"
     '''
     # example to follow 
     # create__response = requests.post(
