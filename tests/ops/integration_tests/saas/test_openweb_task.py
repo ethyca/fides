@@ -31,6 +31,7 @@ class TestOpenWebConnector:
         ) = await openweb_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
-            # identities={"email": openweb_erasure_identity_email},
+            identities={"email": openweb_erasure_identity_email},
         )
+        print(openweb_create_erasure_data)
         assert erasure_results == {"openweb_instance:user": 1}
