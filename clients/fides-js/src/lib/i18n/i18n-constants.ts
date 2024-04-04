@@ -6,6 +6,11 @@ import type { Locale } from "./index";
 export const DEFAULT_LOCALE: Locale = "en";
 
 /**
+ * Default modal link label to use when no other label is provided
+ */
+export const DEFAULT_MODAL_LINK_LABEL = "Manage preferences";
+
+/**
  * General-purpose regex used to validate a locale, as defined in RFC-5646
  * (see https://datatracker.ietf.org/doc/html/rfc5646)
  *
