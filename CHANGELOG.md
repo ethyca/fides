@@ -23,10 +23,13 @@ The types of changes are:
 
 ### Changed
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
+- Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
 
 ### Fixed
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
 - Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
+- Fixed issue when loading the privacy request detail page [#4775](https://github.com/ethyca/fides/pull/4775)
+- Fixed connection test for Aircall [#4756](https://github.com/ethyca/fides/pull/4756/pull)
 
 ### Developer Experience
 - Build a `fides-types.d.ts` type declaration file to include alongside our FidesJS developer docs [#4772](https://github.com/ethyca/fides/pull/4772)

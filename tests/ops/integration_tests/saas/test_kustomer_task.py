@@ -16,13 +16,11 @@ CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_kustomer
 def test_kustomer_connection_test(kustomer_connection_config) -> None:
     get_connector(kustomer_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_kustomer
 @pytest.mark.asyncio
 async def test_kustomer_access_request_task_with_email(
     db,
@@ -66,7 +64,6 @@ async def test_kustomer_access_request_task_with_email(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_kustomer
 @pytest.mark.asyncio
 async def test_kustomer_access_request_task_with_non_existent_email(
     db,
@@ -101,7 +98,6 @@ async def test_kustomer_access_request_task_with_non_existent_email(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_kustomer
 @pytest.mark.asyncio
 async def test_kustomer_access_request_task_with_phone_number(
     db,
@@ -145,7 +141,6 @@ async def test_kustomer_access_request_task_with_phone_number(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_kustomer
 @pytest.mark.asyncio
 async def test_kustomer_erasure_request_task(
     db,
@@ -215,7 +210,6 @@ async def test_kustomer_erasure_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_kustomer
 @pytest.mark.asyncio
 async def test_kustomer_erasure_request_task_non_existent_email(
     db,

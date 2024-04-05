@@ -15,14 +15,14 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 CONFIG = get_config()
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
-@pytest.mark.integration_vend
 def test_vend_connection_test(vend_connection_config) -> None:
     get_connector(vend_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
-@pytest.mark.integration_vend
 @pytest.mark.asyncio
 async def test_vend_access_request_task(
     db,
@@ -153,8 +153,8 @@ async def test_vend_access_request_task(
         assert sale["customer_id"] == customer_id
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
-@pytest.mark.integration_vend
 @pytest.mark.asyncio
 async def test_vend_erasure_request_task(
     db,

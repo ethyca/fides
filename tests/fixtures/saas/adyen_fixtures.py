@@ -7,7 +7,8 @@ Naming considerations
 adyen_external_references() & adyen_erasure_external_references()
 both will need to use naming consistent with that in the config.yml 
 """
-from typing import Any, Dict, Generator
+
+from typing import Any, Dict
 
 import pydash
 import pytest
@@ -27,14 +28,12 @@ def adyen_secrets(saas_config) -> Dict[str, Any]:
         "domain_management": pydash.get(saas_config, "adyen.domain_management")
         or secrets["domain_management"],
         "domain_ca": pydash.get(saas_config, "adyen.domain_ca") or secrets["domain_ca"],
-        "api_key": pydash.get(saas_config, "adyen.api_key") or secrets["adyen.api_key"],
+        "api_key": pydash.get(saas_config, "adyen.api_key") or secrets["api_key"],
         "merchant_account": pydash.get(saas_config, "adyen.merchant_account")
-        or secrets["adyen.merchant_account"],
+        or secrets["merchant_account"],
         "psp_reference": pydash.get(saas_config, "adyen.psp_reference")
-        or secrets["adyen.pspReference"],
-        "adyen_user_id": pydash.get(saas_config, "adyen.user_id")
-        or secrets["adyen.user_id"],
-        # add the rest of your secrets here
+        or secrets["psp_reference"],
+        "adyen_user_id": pydash.get(saas_config, "adyen.user_id") or secrets["user_id"],
     }
 
 

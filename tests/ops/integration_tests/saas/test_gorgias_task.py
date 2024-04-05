@@ -16,13 +16,11 @@ CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_gorgias
 def test_gorgias_connection_test(gorgias_connection_config) -> None:
     get_connector(gorgias_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_gorgias
 @pytest.mark.asyncio
 async def test_gorgias_access_request_task(
     db,
@@ -156,8 +154,8 @@ async def test_gorgias_access_request_task(
         assert ticket["customer"]["id"] == user_id
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
-@pytest.mark.integration_gorgias
 @pytest.mark.asyncio
 async def test_gorgias_erasure_request_task(
     db,

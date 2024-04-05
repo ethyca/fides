@@ -1095,7 +1095,6 @@ class TestMongoConnectionPutSecretsAPI:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 class TestSaaSConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(
@@ -1200,20 +1199,17 @@ class TestSaaSConnectionPutSecretsAPI:
         mailchimp_connection_config,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        # extra fields should be ignored
         payload = {**mailchimp_connection_config.secrets, "extra": "junk"}
         resp = api_client.put(
             url,
             headers=auth_header,
             json=payload,
         )
-        assert resp.status_code == 422
-
-        body = json.loads(resp.text)
-        assert body["detail"][0]["msg"] == "extra fields not permitted"
+        assert resp.status_code == 200
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 class TestSaaSConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
     def url(
@@ -1328,7 +1324,6 @@ class TestSaaSConnectionTestSecretsAPI:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 class TestSaasConnectorIntegration:
     def test_saas_connector(
         self, db: Session, mailchimp_connection_config, mailchimp_dataset_config
