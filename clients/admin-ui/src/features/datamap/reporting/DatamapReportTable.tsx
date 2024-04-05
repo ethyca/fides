@@ -29,10 +29,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import _ from "lodash";
+import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
@@ -209,6 +210,13 @@ export const DatamapReportTable = () => {
     onDataSubjectChange,
   } = useDatamapReportFilters();
 
+  const {
+    getDataUseDisplayName,
+    getDataCategoryDisplayName,
+    getDataSubjectDisplayName,
+    isLoading: isLoadingFidesLang,
+  } = useTaxonomies();
+
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
     [dataUseOptions]
@@ -356,13 +364,20 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: COLUMN_IDS.DATA_USE,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data uses"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+          return (
+            <GroupCountBadgeCell
+              suffix="data uses"
+              value={
+                isArray(value)
+                  ? map(value, getDataUseDisplayName)
+                  : getDataUseDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           displayText: "Data use",
@@ -370,13 +385,21 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_categories, {
         id: COLUMN_IDS.DATA_CATEGORY,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data categories"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="data categories"
+              value={
+                isArray(value)
+                  ? map(value, getDataCategoryDisplayName)
+                  : getDataCategoryDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
@@ -387,13 +410,21 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_subjects, {
         id: COLUMN_IDS.DATA_SUBJECT,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data subjects"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="data subjects"
+              value={
+                isArray(value)
+                  ? map(value, getDataSubjectDisplayName)
+                  : getDataSubjectDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => (
           <DefaultHeaderCell value="Data subject" {...props} />
         ),
@@ -868,7 +899,12 @@ export const DatamapReportTable = () => {
       // Tack on the custom field columns to the end
       ...customFieldColumns,
     ],
-    [customFieldColumns]
+    [
+      customFieldColumns,
+      getDataUseDisplayName,
+      getDataSubjectDisplayName,
+      getDataCategoryDisplayName,
+    ]
   );
 
   const {
@@ -913,7 +949,7 @@ export const DatamapReportTable = () => {
     }
   };
 
-  if (isReportLoading || isLoadingHealthCheck) {
+  if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
