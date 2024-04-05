@@ -11,7 +11,7 @@ import {
   WarningIcon,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
-import { ChangeEvent, FC } from "react";
+import { ChangeEvent, FC, ReactNode } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -70,7 +70,7 @@ export const GroupCountBadgeCell = ({
   suffix,
   isDisplayAll,
 }: {
-  value: string[] | string | undefined;
+  value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
   isDisplayAll?: boolean;
 }) => {
