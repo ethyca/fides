@@ -33,7 +33,7 @@ import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import useFidesLang from "~/features/common/hooks/useFidesLang";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
@@ -215,7 +215,7 @@ export const DatamapReportTable = () => {
     getDataCategoryDisplayName,
     getDataSubjectDisplayName,
     isLoading: isLoadingFidesLang,
-  } = useFidesLang();
+  } = useTaxonomies();
 
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),

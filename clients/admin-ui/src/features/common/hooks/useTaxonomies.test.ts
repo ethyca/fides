@@ -1,13 +1,13 @@
 import ReactDomServer from "react-dom/server";
 
-import useFidesLang from "./useFidesLang";
+import useTaxonomies from "./useTaxonomies";
 
 describe("Fides Language Helper Hook", () => {
   const {
     getDataUseDisplayName,
     getDataCategoryDisplayName,
     getDataSubjectDisplayName,
-  } = useFidesLang();
+  } = useTaxonomies();
 
   describe("getDataUseDisplayName ", () => {
     it("returns just the data use name in bold if it's a top-level name", () => {

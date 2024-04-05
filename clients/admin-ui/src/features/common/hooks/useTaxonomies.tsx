@@ -16,7 +16,7 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy";
 
-const useFidesLang = () => {
+const useTaxonomies = () => {
   const { dataUses, dataCategories, dataSubjects, isLoading } = useData();
 
   const getTopLevelKey = (fidesLangKey: string) => fidesLangKey.split(".")[0];
@@ -118,4 +118,4 @@ const useData = () => {
   return { dataUses, dataSubjects, dataCategories, isLoading };
 };
 
-export default useFidesLang;
+export default useTaxonomies;
