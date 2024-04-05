@@ -100,8 +100,8 @@ const ApprovePrivacyRequestModal = ({
                         {Array.isArray(item.value)
                           ? item.value.join(", ")
                           : item.value}{" "}
-                        (Unverified)
                       </Text>
+                      (Unverified)
                     </Flex>
                   </ListItem>
                 ))}
