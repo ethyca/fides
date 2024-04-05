@@ -4,10 +4,7 @@ from uuid import uuid4
 import pytest
 
 from fides.api.models.policy import ActionType
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-)
+from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors import get_connector
