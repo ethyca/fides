@@ -4,6 +4,7 @@ import pydash
 import pytest
 import random
 import string
+import time
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -45,7 +46,7 @@ def openweb_external_references() -> Dict[str, Any]:
 '''
 @pytest.fixture
 def openweb_erasure_external_references() -> Dict[str, Any]:
-    random_pkv = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(6))
+    random_pkv = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10))
     return {"primary_key": random_pkv}
 
 @pytest.fixture
@@ -58,25 +59,33 @@ def openweb_create_erasure_data(
 
     In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well
     '''
-    base_url = f"https://{openweb_secrets['domain']}"
-    spot_id_val = {openweb_secrets['x_spot_id']}  
-
-    headers = {
+    x = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+   #baseurl = "https://www.spot.im/api/sso/v1/user?primary_key="
+    pkval = x
+    base_url = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user?primary_key="
+    spot_id = "&spot_id=" + openweb_secrets['x_spot_id'] 
+    un = "&user_name="+pkval
+    total_url = base_url + pkval + spot_id + un
+    headers_add_user = {
         'x-spotim-sso-access-token': openweb_secrets['api_key']
     }
-    random_pkv = openweb_erasure_external_references["primary_key"]
-    spot_id_val = str(spot_id_val)
-    totalurl = base_url + "/api/sso/v1/user?primary_key=" + random_pkv + "&spot_id=" + spot_id_val + "&username=" + random_pkv
-    
-    
-    ## "https://www.spot.im/api/sso/v1/user?primary_key=88deletemetest&spot_id=sp_XJw6mJCV&user_name=88deletemetest"
+    response_add_user = requests.request("POST", total_url, headers=headers_add_user)
+    print(response_add_user.status_code)
 
-    create_user_response = requests.request("POST", totalurl, headers=headers)
-    str_create_user_response = str(create_user_response)
+    check_url = base_url + pkval
+    headers_check_user = {
+        'content-type':'application/json',
+        'x-spotim-sso-access-token': openweb_secrets['api_key']
+    }
 
 
-    # put in the new url check )
-    #assert create_user_response == "<Response [200]>"
+    time.sleep(5)
+
+    response_check_user = requests.request("GET", check_url, headers=headers_check_user)
+    print("add user \n", total_url, "\n", "chk user \n", check_url )
+    print(response_check_user.status_code)
+    #base_url = f"https://{openweb_secrets['domain']}"
+    #spot_id_val = {openweb_secrets['x_spot_id']}  
     # import pdb; pdb.set_trace()
     return #random_pkv
     '''
