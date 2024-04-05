@@ -4,6 +4,7 @@ sample project at src/fides/data/sample_project.
 
 See load_samples() in seed.py for usage.
 """
+
 from typing import Dict, List, Optional, TextIO
 
 import yaml
@@ -106,20 +107,19 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
                 [SampleConnection.parse_obj(e) for e in connections]
             )
 
-    # Disable any connections whose "secrets" dict has empty values
+    # Exclude any connections whose "secrets" dict has empty values
+    valid_connections = []
     for connection in sample_connections:
-        # If there are no secrets at all, disable!
+        # If there are no secrets at all, skip this connection
         if not connection.secrets:
-            connection.disabled = True
             continue
 
-        # If any of the secret values are missing, disable!
-        for _, value in dict(connection.secrets).items():
-            if not value or value == "":
-                connection.disabled = True
+        # Check if all secret values are present and non-empty
+        if all(value and value != "" for value in connection.secrets.values()):
+            valid_connections.append(connection)
 
-    # Exclude any disabled connections from the final results
-    return [e for e in sample_connections if not e.disabled]
+    # Exclude any invalid connections from the final results
+    return valid_connections
 
 
 def load_sample_yaml_file(file: TextIO, expand_vars: bool = True) -> Dict:
