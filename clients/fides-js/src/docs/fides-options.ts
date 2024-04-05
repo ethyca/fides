@@ -97,9 +97,9 @@ export interface FidesOptions {
 
   /**
    * TODO (PROD-1887): Add docs for using this option. Once added, remove the
-   * @private tag and rebuild!
+   * @internal tag and rebuild!
    * 
-   * @private
+   * @internal
    */
   fides_primary_color: string;
 
