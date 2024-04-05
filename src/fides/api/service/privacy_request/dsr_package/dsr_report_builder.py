@@ -11,7 +11,6 @@ from jinja2 import Environment, FileSystemLoader
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.redis_cache import Identity
 from fides.api.util.storage_util import storage_json_encoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
@@ -186,7 +185,7 @@ class DsrReportBuilder:
 
 def _map_privacy_request(privacy_request: PrivacyRequest) -> Dict[str, Any]:
     """Creates a map with a subset of values from the privacy request"""
-    request_data = {}
+    request_data: Dict[str, Any] = {}
     request_data["id"] = privacy_request.id
 
     action_type: Optional[ActionType] = privacy_request.policy.get_action_type()
