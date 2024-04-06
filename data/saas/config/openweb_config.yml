@@ -12,7 +12,7 @@ saas_config:
       default_value: www.spot.im
     - name: api_key
       label: SSO Authentication Token
-      description: Value of the OpenWeb SSO Authentication token. This can be found in your OpenWeb admni GUI by going to 'Settings' then navigate to the Authenticaiton Tokens.
+      description: Value of the OpenWeb SSO Authentication token. This can be found in your OpenWeb admin GUI by going to 'Settings' then navigate to the Authentication Tokens.
       sensitive: True
     - name: x_spot_id
       label: Your SPOT_ID, the unique OpenWeb identifier for your property. You can determine your this by logging into your Admin Dashboard. Then, copy your Spot ID from the URL. The value will show up like this example - https://admin.spot.im/spot/{SPOT_ID}/... 
