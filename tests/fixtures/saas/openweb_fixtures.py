@@ -59,7 +59,7 @@ def openweb_create_erasure_data(
 
     In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well
     '''
-    
+
     x = openweb_erasure_external_references['primary_key']
    #baseurl = "https://www.spot.im/api/sso/v1/user?primary_key="
     pkval = x
@@ -67,24 +67,38 @@ def openweb_create_erasure_data(
     spot_id = "&spot_id=" + openweb_secrets['x_spot_id'] 
     un = "&user_name="+pkval
     total_url = base_url + pkval + spot_id + un
+    payload = {}
     headers_add_user = {
         'x-spotim-sso-access-token': openweb_secrets['api_key']
     }
-    response_add_user = requests.request("POST", total_url, headers=headers_add_user)
-    print(response_add_user.status_code)
+    response_add_user = requests.request("POST", total_url, headers=headers_add_user,data=payload)
+    print(response_add_user.content, " text ")
+    print(response_add_user.url, " url")
+    print("")
+    #print(response_add_user.request, " request itself")
+    print(response_add_user.headers, " headers")
+    print(response_add_user.status_code, " status code")
+    print(" ***************************************************")
 
     check_url = base_url + pkval
-    headers_check_user = {
-        'content-type':'application/json',
-        'x-spotim-sso-access-token': openweb_secrets['api_key']
-    }
+    # headers_check_user = {
+    #    # 'content-type':'application/json',
+    #     'x-spotim-sso-access-token': openweb_secrets['api_key']
+    # }
 
 
     time.sleep(10)
-
-    response_check_user = requests.request("GET", check_url, headers=headers_check_user)
+    payload = {}
+    response_check_user = requests.request("GET", check_url, headers=headers_add_user, data=payload)
     print("add user \n", total_url, "\n", "chk user \n", check_url )
-    print(response_check_user.status_code)
+    print(response_check_user.status_code, " status code")
+    print(response_check_user.text, " text ")
+    print(response_check_user.url, " url")
+    print("")
+    print(response_check_user.request, " request itself \n")
+    print(response_check_user.reason, " reason \n")
+    print(response_check_user.headers, " headers \n")
+    print(" ***************************************************")
     #base_url = f"https://{openweb_secrets['domain']}"
     #spot_id_val = {openweb_secrets['x_spot_id']}  
     # import pdb; pdb.set_trace()
