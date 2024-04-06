@@ -54,7 +54,7 @@ saas_config:
                 - primary_key
         delete:
           method: POST
-          path: /api/sso/v1/user/<primary_key
+          path: /api/sso/v1/user/<primary_key>
           param_values:
             - name: primary_key
               references:

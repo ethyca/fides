@@ -59,7 +59,8 @@ def openweb_create_erasure_data(
 
     In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well
     '''
-    x = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+    
+    x = openweb_erasure_external_references['primary_key']
    #baseurl = "https://www.spot.im/api/sso/v1/user?primary_key="
     pkval = x
     base_url = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user?primary_key="
@@ -79,7 +80,7 @@ def openweb_create_erasure_data(
     }
 
 
-    time.sleep(5)
+    time.sleep(10)
 
     response_check_user = requests.request("GET", check_url, headers=headers_check_user)
     print("add user \n", total_url, "\n", "chk user \n", check_url )
@@ -87,7 +88,7 @@ def openweb_create_erasure_data(
     #base_url = f"https://{openweb_secrets['domain']}"
     #spot_id_val = {openweb_secrets['x_spot_id']}  
     # import pdb; pdb.set_trace()
-    return #random_pkv
+    return pkval
     '''
     # example to follow 
     # create__response = requests.post(
