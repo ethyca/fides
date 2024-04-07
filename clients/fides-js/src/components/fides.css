@@ -38,7 +38,6 @@
   --fides-overlay-link-font-color: var(--fides-overlay-font-color-dark);
   /* Switches */
   --fides-overlay-primary-active-color: var(--fides-overlay-primary-color);
-  --fides-overlay-primary-active-disabled-color: #bda4f7;
   --fides-overlay-inactive-color: #e2e8f0;
   --fides-overlay-inactive-font-color: #a0aec0;
   --fides-overlay-disabled-color: #e1e7ee;
@@ -580,7 +579,7 @@ div.fides-i18n-pseudo-button {
   background-color: var(--fides-overlay-disabled-color);
 }
 .fides-toggle .fides-toggle-input:disabled:checked + .fides-toggle-display {
-  background-color: var(--fides-overlay-primary-active-disabled-color);
+  background-color: var(--fides-overlay-disabled-color);
 }
 
 /* Focus ring when using keyboard */
