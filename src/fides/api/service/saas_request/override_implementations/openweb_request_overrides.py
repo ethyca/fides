@@ -1,7 +1,7 @@
-'''Notes for this particular override
+"""Notes for this particular override
 For more details consult the OpenWeb documentation for their Data Protection API
 The gist is that like some other vendors we do not get an email directly for this integration. This means the override is required in this case. The Endpoint speaks of this value as the <primary_key>, we are going to refer to it here as openweb_primary_key
-'''
+"""
 
 from typing import Any, Dict, List
 
@@ -14,6 +14,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
+
 
 @register("openweb_user_read", [SaaSRequestType.READ])
 def openweb_user_read(
