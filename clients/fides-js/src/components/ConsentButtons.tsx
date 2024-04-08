@@ -23,6 +23,7 @@ export const ConsentButtons = ({
   includePrivacyPolicy,
   saveOnly = false,
   options,
+  isInModal,
 }: {
   i18n: I18n;
   onManagePreferencesClick?: () => void;
@@ -51,7 +52,7 @@ export const ConsentButtons = ({
     {includePrivacyPolicy && <PrivacyPolicyLink i18n={i18n} />}
     <div
       className={
-        firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
+        isInModal ? "fides-modal-button-group" : "fides-banner-button-group"
       }
     >
       {firstButton}

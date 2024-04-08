@@ -79,6 +79,7 @@ export const TcfConsentButtons = ({
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
+      isInModal
       isMobile={isMobile}
       includePrivacyPolicy={includePrivacyPolicy}
       options={options}
