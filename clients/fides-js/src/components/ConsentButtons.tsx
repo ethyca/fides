@@ -11,6 +11,7 @@ import {
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import type { I18n } from "../lib/i18n";
 import LanguageSelector from "../components/LanguageSelector";
+import { FIDES_A11Y_CONSTANTS } from "../lib/consent-constants";
 
 export const ConsentButtons = ({
   i18n,
@@ -33,7 +34,7 @@ export const ConsentButtons = ({
   includePrivacyPolicy?: boolean;
   saveOnly?: boolean;
 }) => (
-  <div id="fides-button-group" tabIndex={-1}>
+  <div id={FIDES_A11Y_CONSTANTS.FIDES_BUTTON_GROUP_ID} tabIndex={-1}>
     {i18n.availableLanguages?.length > 1 && (
       <LanguageSelector i18n={i18n} options={options} />
     )}

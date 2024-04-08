@@ -103,3 +103,7 @@ export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
     validationRegex: LOCALE_REGEX,
   },
 ];
+
+export const FIDES_A11Y_CONSTANTS = {
+  FIDES_BUTTON_GROUP_ID: "fides-button-group",
+};
