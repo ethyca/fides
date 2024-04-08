@@ -4,7 +4,7 @@ import pydash
 import pytest
 import random
 import string
-import time
+
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -13,7 +13,6 @@ from tests.ops.integration_tests.saas.connector_runner import (
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("openweb")
-
 
 @pytest.fixture(scope="session")
 def openweb_secrets(saas_config) -> Dict[str, Any]:
@@ -27,22 +26,11 @@ def openweb_secrets(saas_config) -> Dict[str, Any]:
         # add the rest of your secrets here
     }
 
-
-# @pytest.fixture(scope="session")
-# def openweb_identity_email(saas_config) -> str:
-#     return (
-#         pydash.get(saas_config, "openweb.identity_email") or secrets["identity_email"]
-#     )
-
-
 @pytest.fixture
 def openweb_erasure_identity_email() -> str:
     return generate_random_email()
 '''
-we do need a means of creating a random 'primay_key' and using that for the erasure request. THere is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman
-@pytest.fixture
-def openweb_external_references() -> Dict[str, Any]:
-    return {"primary_key": "deletemetestwds"}
+we do need a means of creating a random 'primay_key' and using that for the erasure request. THere is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman.
 '''
 @pytest.fixture
 def openweb_erasure_external_references() -> Dict[str, Any]:
@@ -57,21 +45,21 @@ def openweb_create_erasure_data(
     '''
     Create the data needed for erasure tests here
 
-    In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well
+    In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well.
     '''
-
     x = openweb_erasure_external_references['primary_key']
-   #baseurl = "https://www.spot.im/api/sso/v1/user?primary_key="
     primary_key_val = x
-    base_url = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user?primary_key="
+    add_user_prep = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user?primary_key="
+    check_user_prep = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user/"
     spot_id = "&spot_id=" + openweb_secrets['x_spot_id'] 
     user_name = "&user_name=" + primary_key_val
-    url = base_url + primary_key_val + spot_id + user_name
+    add_user_url = add_user_prep + primary_key_val + spot_id + user_name
+    check_user_url = check_user_prep + primary_key_val
     payload = {}
     headers = {
         'x-spotim-sso-access-token': openweb_secrets['api_key']
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("POST", add_user_url, headers=headers, data=payload)
     assert response.ok
     ''' Debugging
     print(response_add_user.content, " content ")
@@ -84,18 +72,9 @@ def openweb_create_erasure_data(
     print(response_add_user.status_code, " status code")
     print(" ***************************************************")
     '''
-    url = base_url + primary_key_val
-    ''' Debugging
-    # headers_check_user = {
-    #    # 'content-type':'application/json',
-    #     'x-spotim-sso-access-token': openweb_secrets['api_key']
-    # }
-
-
-    # time.sleep(10)
-    '''
-    payload = {}
-    response = requests.request("GET", url, headers=headers, data=payload)
+    check_user_url = check_user_url
+    print("check user \n", check_user_url )
+    response = requests.request("GET", check_user_url, headers=headers)
     '''Debugging
     print("add user \n", total_url, "\n", "chk user \n", check_url )
     print(response_check_user.status_code, " status code")
@@ -113,15 +92,7 @@ def openweb_create_erasure_data(
     # import pdb; pdb.set_trace()
     return pkval
     '''
-    # example to follow 
-    # create__response = requests.post(
-    #     url=f"{base_url}/rest/api/v1.3/lists/{openweb_secrets['test_list']}/members", json=member_body, headers=headers
-    # )
     assert response.ok
-    # member_riid = create_member_response.json()['recordData']['records'][0]
-
-    # I'm not sure I need to return anything in this case?
-   # yield random_pkv
 
 @pytest.fixture
 def openweb_runner(

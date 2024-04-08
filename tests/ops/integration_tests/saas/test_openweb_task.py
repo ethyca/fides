@@ -9,13 +9,6 @@ class TestOpenWebConnector:
     def test_connection(self, openweb_runner: ConnectorRunner):
         openweb_runner.test_connection()
 
-    # async def test_access_request(
-    #     self, openweb_runner: ConnectorRunner, policy, openweb_identity_email: str
-    # ):
-    #     access_results = await openweb_runner.access_request(
-    #         access_policy=policy, identities={"email": openweb_identity_email}
-    #     )
-
     async def test_non_strict_erasure_request(
         self,
         openweb_runner: ConnectorRunner,
@@ -26,7 +19,6 @@ class TestOpenWebConnector:
         
     ):
         (
-            # access_results,
             _,
             erasure_results,
         ) = await openweb_runner.non_strict_erasure_request(
