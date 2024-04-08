@@ -32,7 +32,9 @@ def openweb_erasure_identity_email() -> str:
 
 
 """
-we do need a means of creating a random 'primay_key' and using that for the erasure request. THere is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman.
+we do need a means of creating a random 'primay_key' and using that for the erasure request. There is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman.
+
+Note: We leverage the predictable response to a known, non-existent value to the endpoint we use for our test connection, hence the acceptable 404.
 """
 
 
