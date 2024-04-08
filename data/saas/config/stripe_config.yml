@@ -243,6 +243,7 @@ saas_config:
               field: id
         delete:
           method: DELETE
+          ignore_errors: [404] # ignore errors if the card no longer exists
           path: /v1/customers/<customer_id>/sources/<card_id>
           param_values:
             - name: customer_id
