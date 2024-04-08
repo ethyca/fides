@@ -129,6 +129,7 @@ class ExperienceTranslationBase:
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
+    modal_link_label = Column(String)
     reject_button_label = Column(String)
     save_button_label = Column(String)
     title = Column(String)

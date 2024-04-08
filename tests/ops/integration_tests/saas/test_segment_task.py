@@ -15,14 +15,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
-@pytest.mark.integration_segment
 def test_segment_connection_test(segment_connection_config) -> None:
     get_connector(segment_connection_config).test_connection()
 
 
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
-@pytest.mark.integration_segment
 @pytest.mark.asyncio
 async def test_segment_access_request_task(
     db,
@@ -148,7 +146,6 @@ async def test_segment_access_request_task(
 
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
-@pytest.mark.integration_segment
 @pytest.mark.asyncio
 async def test_segment_erasure_request_task(
     db,

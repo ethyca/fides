@@ -9,7 +9,7 @@ class TestStatsigEnterpriseConnector:
     def test_connection(self, statsig_enterprise_runner: ConnectorRunner):
         statsig_enterprise_runner.test_connection()
 
-    @pytest.mark.skip("Enterprise account only")
+    @pytest.mark.skip(reason="Enterprise account only")
     async def test_non_strict_erasure_request(
         self,
         statsig_enterprise_runner: ConnectorRunner,
