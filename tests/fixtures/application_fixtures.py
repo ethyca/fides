@@ -2442,6 +2442,7 @@ def experience_config_banner_and_modal(db: Session) -> Generator:
                     "banner_title": "Manage Your Consent",
                     "description": "On this page you can opt in and out of these data uses cases",
                     "privacy_preferences_link_label": "Manage preferences",
+                    "modal_link_label": "Manage my consent preferences",
                     "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                     "privacy_policy_url": "https://example.com/privacy",
                     "reject_button_label": "Reject all",
@@ -2472,6 +2473,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
                 {
                     "language": "en",
                     "privacy_preferences_link_label": "Manage preferences",
+                    "modal_link_label": "Manage my consent preferences",
                     "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                     "privacy_policy_url": "https://example.com/privacy",
                     "reject_button_label": "Reject all",
