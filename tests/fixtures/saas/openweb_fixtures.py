@@ -47,8 +47,7 @@ def openweb_create_erasure_data(
 
     In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well.
     '''
-    x = openweb_erasure_external_references['primary_key']
-    primary_key_val = x
+    primary_key_val = openweb_erasure_external_references['primary_key']
     spot_id = "&spot_id=" + openweb_secrets['x_spot_id'] 
     user_name = "&user_name=" + primary_key_val
     add_user_url = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user?primary_key=" + primary_key_val + spot_id + user_name
