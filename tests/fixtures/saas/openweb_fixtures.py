@@ -72,7 +72,6 @@ def openweb_create_erasure_data(
     print(response_add_user.status_code, " status code")
     print(" ***************************************************")
     '''
-    check_user_url = check_user_url
     print("check user \n", check_user_url )
     response = requests.request("GET", check_user_url, headers=headers)
     '''Debugging
@@ -87,7 +86,6 @@ def openweb_create_erasure_data(
     print(response_check_user.reason, " reason \n")
     # print(response_check_user.headers, " headers \n")
     print(" ***************************************************")
-    #base_url = f"https://{openweb_secrets['domain']}"
     #spot_id_val = {openweb_secrets['x_spot_id']}  
     # import pdb; pdb.set_trace()
     return pkval
