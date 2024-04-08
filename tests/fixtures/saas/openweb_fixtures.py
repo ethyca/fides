@@ -69,10 +69,11 @@ def openweb_create_erasure_data(
     print(response_add_user.status_code, " status code")
     print(" ***************************************************")
     '''
-    print("add user  \n", add_user_url)
-    print("check user \n", check_user_url )
+
     response = requests.request("GET", check_user_url, headers=headers)
     '''Debugging
+    print("add user  \n", add_user_url)
+    print("check user \n", check_user_url )
     print("add user \n", total_url, "\n", "chk user \n", check_url )
     print(response_check_user.status_code, " status code")
     print(response_check_user.content, " content ")
@@ -95,7 +96,6 @@ def openweb_runner(
     db,
     cache,
     openweb_secrets,
-    #openweb_external_references,
     openweb_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
@@ -103,6 +103,5 @@ def openweb_runner(
         cache,
         "openweb",
         openweb_secrets,
-        # external_references=openweb_external_references,
         erasure_external_references=openweb_erasure_external_references,
     )
