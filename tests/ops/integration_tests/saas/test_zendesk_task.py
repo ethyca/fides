@@ -10,12 +10,20 @@ class TestZendeskConnector:
     def test_connection(self, zendesk_runner: ConnectorRunner):
         zendesk_runner.test_connection()
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_access_request(
         self,
+        dsr_version,
+        request,
         zendesk_runner: ConnectorRunner,
         policy: Policy,
         zendesk_identity_email: str,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         access_results = await zendesk_runner.access_request(
             access_policy=policy, identities={"email": zendesk_identity_email}
         )
@@ -38,8 +46,14 @@ class TestZendeskConnector:
         for ticket_comment in access_results["zendesk_instance:ticket_comments"]:
             assert ticket_comment["author_id"] == user_id
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_non_strict_erasure_request(
         self,
+        dsr_version,
+        request,
         zendesk_runner: ConnectorRunner,
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
@@ -47,6 +61,8 @@ class TestZendeskConnector:
         zendesk_erasure_data,
         zendesk_client,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         (
             access_results,
             erasure_results,

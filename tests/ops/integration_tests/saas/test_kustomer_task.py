@@ -4,12 +4,11 @@ import pytest
 import requests
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import get_config
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
@@ -22,18 +21,23 @@ def test_kustomer_connection_test(kustomer_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_kustomer_access_request_task_with_email(
     db,
     policy,
     kustomer_connection_config,
     kustomer_dataset_config,
     kustomer_identity_email,
+    privacy_request,
+    request,
+    dsr_version,
 ) -> None:
     """Full access request based on the Kustomer SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_kustomer_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": kustomer_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -65,18 +69,23 @@ async def test_kustomer_access_request_task_with_email(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_kustomer_access_request_task_with_non_existent_email(
     db,
     policy,
     kustomer_connection_config,
     kustomer_dataset_config,
+    privacy_request,
+    dsr_version,
+    request,
     kustomer_non_existent_identity_email,
 ) -> None:
     """Access request that returns a 404 but succeeds"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_kustomer_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": kustomer_non_existent_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -99,18 +108,23 @@ async def test_kustomer_access_request_task_with_non_existent_email(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_kustomer_access_request_task_with_phone_number(
     db,
     policy,
     kustomer_connection_config,
     kustomer_dataset_config,
     kustomer_identity_phone_number,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full access request based on the Kustomer SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_kustomer_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"phone_number": kustomer_identity_phone_number})
     privacy_request.cache_identity(identity)
 
@@ -142,23 +156,30 @@ async def test_kustomer_access_request_task_with_phone_number(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_kustomer_erasure_request_task(
     db,
-    policy,
     erasure_policy_string_rewrite,
     kustomer_connection_config,
     kustomer_dataset_config,
     kustomer_erasure_identity_email,
     kustomer_create_erasure_data,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full erasure request based on the Kustomer SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
 
-    privacy_request = PrivacyRequest(
-        id=f"test_kustomer_erasure_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": kustomer_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -168,7 +189,7 @@ async def test_kustomer_erasure_request_task(
 
     v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [kustomer_connection_config],
         {"email": kustomer_erasure_identity_email},
@@ -211,29 +232,45 @@ async def test_kustomer_erasure_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_kustomer_erasure_request_task_non_existent_email(
     db,
-    policy,
+    privacy_request,
     erasure_policy_string_rewrite,
     kustomer_connection_config,
     kustomer_dataset_config,
     kustomer_non_existent_identity_email,
     kustomer_create_erasure_data,
+    dsr_version,
+    request,
 ) -> None:
     """Full erasure request based on the Kustomer SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
 
-    privacy_request = PrivacyRequest(
-        id=f"test_kustomer_erasure_request_task_non_existent_email{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
+
     identity = Identity(**{"email": kustomer_non_existent_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = kustomer_connection_config.get_saas_config().fides_key
     merged_graph = kustomer_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
+
+    v = access_runner_tester(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [kustomer_connection_config],
+        {"email": kustomer_non_existent_identity_email},
+        db,
+    )
 
     x = erasure_runner_tester(
         privacy_request,

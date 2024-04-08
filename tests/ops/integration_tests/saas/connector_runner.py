@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy.orm import Session
 
 from fides.api.cryptography import cryptographic_util
-from fides.api.graph.config import GraphDataset, CollectionAddress
+from fides.api.graph.config import CollectionAddress, GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import (
@@ -22,11 +22,11 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
-    ExecutionLogStatus,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
@@ -38,11 +38,11 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
-    persist_new_access_request_tasks,
     persist_initial_erasure_request_tasks,
+    persist_new_access_request_tasks,
 )
 from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.api.util.cache import FidesopsRedis, CustomJSONEncoder
+from fides.api.util.cache import CustomJSONEncoder, FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import (
     load_config_with_replacement,
@@ -105,14 +105,17 @@ class ConnectorRunner:
 
         """Access request for a given access policy and identities"""
         fides_key = self.connection_config.key
-        privacy_request = PrivacyRequest(
-            id=(
-                privacy_request_id
-                or f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
-            )
+        privacy_request = create_privacy_request_with_policy_rules(
+            access_policy, None, privacy_request_id
         )
+
         identity = Identity(**identities)
         privacy_request.cache_identity(identity)
+
+        graph_list = [self.dataset_config.get_graph()]
+        connection_config_list = [self.connection_config]
+        _process_external_references(self.db, graph_list, connection_config_list)
+        dataset_graph = DatasetGraph(*graph_list)
 
         # cache external dataset data
         if self.external_references:
@@ -120,11 +123,15 @@ class ConnectorRunner:
                 f"{privacy_request.id}__access_request__{self.connector_type}_external_dataset:{self.connector_type}_external_collection",
                 [self.external_references],
             )
-
-        graph_list = [self.dataset_config.get_graph()]
-        connection_config_list = [self.connection_config]
-        _process_external_references(self.db, graph_list, connection_config_list)
-        dataset_graph = DatasetGraph(*graph_list)
+            if CONFIG.execution.use_dsr_3_0:
+                mock_external_results_3_0(
+                    privacy_request,
+                    dataset_graph,
+                    identities,
+                    self.connector_type,
+                    self.external_references,
+                    is_erasure=False,
+                )
 
         access_results = access_runner_tester(
             privacy_request,
@@ -198,10 +205,10 @@ class ConnectorRunner:
         """
         from tests.conftest import consent_runner_tester
 
-        privacy_request = PrivacyRequest(
-            id=f"test_{self.connection_config.key}_old_consent_request_{random.randint(0, 1000)}",
-            status=PrivacyRequestStatus.pending,
+        privacy_request = create_privacy_request_with_policy_rules(
+            consent_policy, None, None
         )
+
         identity = Identity(**identities)
         privacy_request.cache_identity(identity)
 
@@ -244,13 +251,10 @@ class ConnectorRunner:
         """
         from tests.conftest import consent_runner_tester
 
-        privacy_request = PrivacyRequest(
-            id=(
-                privacy_request_id
-                or f"test_{self.connection_config.key}_new_consent_request_{random.randint(0, 1000)}"
-            ),
-            status=PrivacyRequestStatus.pending,
+        privacy_request = create_privacy_request_with_policy_rules(
+            consent_policy, None, None
         )
+
         privacy_request.save(self.db)
 
         identity = Identity(**identities)
@@ -315,6 +319,7 @@ class ConnectorRunner:
                     identities,
                     self.connector_type,
                     self.erasure_external_references,
+                    is_erasure=True,
                 )
 
         access_results = access_runner_tester(
@@ -351,8 +356,8 @@ class ConnectorRunner:
 
 def create_privacy_request_with_policy_rules(
     access_or_consent_policy: Policy,
-    erasure_policy: Optional[Policy],
-    privacy_request_id: Optional[str],
+    erasure_policy: Optional[Policy] = None,
+    privacy_request_id: Optional[str] = None,
 ) -> PrivacyRequest:
     """
     Consolidate the policy rules into a single Policy and then set this policy on a created Privacy Request.
@@ -575,14 +580,13 @@ def mock_external_results_3_0(
     dataset_graph: DatasetGraph,
     identities: Dict[str, Any],
     connector_type: ConnectionType,
-    erasure_external_references: Dict[str, Any],
+    external_references: Dict[str, Any],
+    is_erasure: bool,
 ):
     """
     Mock external results for DSR 3.0 by going ahead and building the Request Tasks up front and caching the
     external results on the appropriate external Request Task
     """
-    # DSR 3.0 looks at results on the RequestTask, not the cache.  To mock external references we need to build
-    # the appropriate Request Tasks and add the erasure_external_references to the external Request Task
     session = Session.object_session(privacy_request)
     traversal: Traversal = Traversal(dataset_graph, identities)
     traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
@@ -602,15 +606,16 @@ def mock_external_results_3_0(
         == f"{connector_type}_external_dataset:{connector_type}_external_collection"
     ).first()
     external_request_task.access_data = json.dumps(
-        [erasure_external_references], cls=CustomJSONEncoder
+        [external_references], cls=CustomJSONEncoder
     )
     external_request_task.data_for_erasures = json.dumps(
-        [erasure_external_references], cls=CustomJSONEncoder
+        [external_references], cls=CustomJSONEncoder
     )
     external_request_task.save(session)
     external_request_task.update_status(session, ExecutionLogStatus.complete)
     erasure_end_nodes: List[CollectionAddress] = list(dataset_graph.nodes.keys())
-    # Further, erasure tasks are built when access tasks are created so the graphs match
-    persist_initial_erasure_request_tasks(
-        session, privacy_request, traversal_nodes, erasure_end_nodes, dataset_graph
-    )
+    # Further, erasure tasks are typically built when access tasks are created so the graphs match
+    if is_erasure:
+        persist_initial_erasure_request_tasks(
+            session, privacy_request, traversal_nodes, erasure_end_nodes, dataset_graph
+        )

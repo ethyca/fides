@@ -1,9 +1,6 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from tests.conftest import access_runner_tester
@@ -17,19 +14,24 @@ def test_datadog_connection_test(datadog_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_datadog_access_request_task_with_email(
     db,
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     datadog_connection_config,
     datadog_dataset_config,
     datadog_identity_email,
     datadog_access_data,
 ) -> None:
     """Full access request based on the Datadog SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_datadog_access_request_task_{random.randint(0, 1000)}"
-    )
     identity_attribute = "email"
     identity_value = datadog_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -77,9 +79,16 @@ async def test_datadog_access_request_task_with_email(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_datadog_access_request_task_with_phone_number(
     db,
+    dsr_version,
+    request,
     policy,
+    privacy_request,
     datadog_connection_config,
     datadog_dataset_config,
     datadog_identity_email,
@@ -87,10 +96,8 @@ async def test_datadog_access_request_task_with_phone_number(
     datadog_access_data,
 ) -> None:
     """Full access request based on the Datadog SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_datadog_access_request_task_{random.randint(0, 1000)}"
-    )
     identity_attribute = "phone_number"
     identity_value = datadog_identity_phone_number
     identity_kwargs = {identity_attribute: identity_value}

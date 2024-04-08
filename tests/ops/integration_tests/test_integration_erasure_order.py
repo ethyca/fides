@@ -70,13 +70,14 @@ def delete_no_op(
 async def test_saas_erasure_order_request_task(
     db,
     policy,
+    privacy_request,
     erasure_policy_complete_mask,
     saas_erasure_order_connection_config,
     saas_erasure_order_dataset_config,
 ) -> None:
-    privacy_request = PrivacyRequest(
-        id=f"test_saas_erasure_order_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_complete_mask.id
+    privacy_request.save(db)
+
     identity_attribute = "email"
     identity_value = "test@ethyca.com"
     identity_kwargs = {identity_attribute: identity_value}
@@ -89,7 +90,7 @@ async def test_saas_erasure_order_request_task(
 
     v = access_runner(
         privacy_request,
-        policy,
+        erasure_policy_complete_mask,
         graph,
         [saas_erasure_order_connection_config],
         {"email": "test@ethyca.com"},
@@ -159,15 +160,15 @@ async def test_saas_erasure_order_request_task(
 @pytest.mark.asyncio
 async def test_saas_erasure_order_request_task_with_cycle(
     db,
-    policy,
+    privacy_request,
     erasure_policy_complete_mask,
     saas_erasure_order_config,
     saas_erasure_order_connection_config,
     saas_erasure_order_dataset_config,
 ) -> None:
-    privacy_request = PrivacyRequest(
-        id=f"test_saas_erasure_order_request_task_with_cycle_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_complete_mask.id
+    privacy_request.save(db)
+
     identity_attribute = "email"
     identity_value = "test@ethyca.com"
     identity_kwargs = {identity_attribute: identity_value}
@@ -188,7 +189,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
 
     v = access_runner(
         privacy_request,
-        policy,
+        erasure_policy_complete_mask,
         graph,
         [saas_erasure_order_connection_config],
         {"email": "test@ethyca.com"},

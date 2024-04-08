@@ -3,13 +3,11 @@ import random
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
-from tests.conftest import access_runner_tester
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 

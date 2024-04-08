@@ -10,15 +10,32 @@ class TestOneSignalConnector:
     def test_connection(self, onesignal_runner: ConnectorRunner):
         onesignal_runner.test_connection()
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_access_request(
-        self, onesignal_runner: ConnectorRunner, policy, onesignal_identity_email: str
+        self,
+        onesignal_runner: ConnectorRunner,
+        policy,
+        dsr_version,
+        request,
+        onesignal_identity_email: str,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         access_results = await onesignal_runner.access_request(
             access_policy=policy, identities={"email": onesignal_identity_email}
         )
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_non_strict_erasure_request(
         self,
+        dsr_version,
+        request,
         onesignal_runner: ConnectorRunner,
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
@@ -26,6 +43,8 @@ class TestOneSignalConnector:
         onesignal_erasure_data,
         onesignal_client,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         player_id = onesignal_erasure_data
         (
             access_results,

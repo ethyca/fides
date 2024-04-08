@@ -1,17 +1,15 @@
 import logging
-import random
 from time import sleep
 
 import pytest
 import requests
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 logger = logging.getLogger(__name__)
@@ -28,9 +26,16 @@ def test_friendbuy_connection_test(
 @pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_friendbuy_access_request_task(
     db,
+    dsr_version,
+    request,
     policy,
+    privacy_request,
     friendbuy_connection_config,
     friendbuy_dataset_config,
     friendbuy_identity_email,
@@ -39,9 +44,8 @@ async def test_friendbuy_access_request_task(
     friendbuy_postgres_db,
 ) -> None:
     """Full access request based on the Friendbuy Conversations SaaS config"""
-    privacy_request = PrivacyRequest(
-        id=f"test_friendbuy_access_request_task_{random.randint(0, 1000)}"
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     identity_attribute = "email"
     identity_value = friendbuy_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -83,9 +87,15 @@ async def test_friendbuy_access_request_task(
 @pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_friendbuy_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
+    privacy_request,
     friendbuy_connection_config,
     friendbuy_dataset_config,
     connection_config,
@@ -96,10 +106,11 @@ async def test_friendbuy_erasure_request_task(
     friendbuy_postgres_erasure_db,
 ) -> None:
     """Full erasure request based on the Friendbuy SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_friendbuy_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
+
     identity_attribute = "email"
     identity_value = friendbuy_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -112,7 +123,7 @@ async def test_friendbuy_erasure_request_task(
 
     v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [friendbuy_connection_config, connection_config],
         {"email": friendbuy_erasure_identity_email},

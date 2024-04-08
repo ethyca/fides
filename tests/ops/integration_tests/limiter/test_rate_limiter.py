@@ -223,6 +223,7 @@ def test_limiter_times_out_when_bucket_full() -> None:
 async def test_rate_limiter_full_integration(
     db,
     policy,
+    privacy_request,
     stripe_connection_config,
     stripe_dataset_config,
     stripe_identity_email,
@@ -233,9 +234,7 @@ async def test_rate_limiter_full_integration(
     stripe_connection_config.saas_config["rate_limit_config"] = rate_limit_config
 
     # set up privacy request to Stripe
-    privacy_request = PrivacyRequest(
-        id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
-    )
+
     identity = Identity(**{"email": stripe_identity_email})
     privacy_request.cache_identity(identity)
     merged_graph = stripe_dataset_config.get_graph()

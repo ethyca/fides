@@ -6,6 +6,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
+from tests.conftest import access_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -16,18 +17,23 @@ def test_slack_enterprise_connection_test(slack_enterprise_connection_config) ->
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_slack_enterprise_access_request_task(
     db,
     policy,
+    privacy_request,
+    dsr_version,
+    request,
     slack_enterprise_connection_config,
     slack_enterprise_dataset_config,
     slack_enterprise_identity_email,
 ) -> None:
     """Full access request based on the Slack Enterprise SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_slack_enterprise_access_request_task_{random.randint(0, 1000)}"
-    )
     identity_attribute = "email"
     identity_value = slack_enterprise_identity_email
     identity_kwargs = {identity_attribute: identity_value}

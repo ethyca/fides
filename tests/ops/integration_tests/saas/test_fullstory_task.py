@@ -3,12 +3,11 @@ import random
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.fixtures.saas.fullstory_fixtures import FullstoryTestClient, user_updated
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
@@ -25,9 +24,16 @@ def test_fullstory_connection_test(
 @pytest.mark.skip(reason="API keys are temporary for free accounts")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_fullstory_access_request_task(
     db,
+    dsr_version,
+    request,
     policy,
+    privacy_request,
     fullstory_connection_config,
     fullstory_dataset_config,
     fullstory_identity_email,
@@ -36,9 +42,8 @@ async def test_fullstory_access_request_task(
     fullstory_postgres_db,
 ) -> None:
     """Full access request based on the Fullstory SaaS config"""
-    privacy_request = PrivacyRequest(
-        id=f"test_fullstory_access_request_task_{random.randint(0, 1000)}"
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     identity_attribute = "email"
     identity_value = fullstory_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -77,12 +82,18 @@ async def test_fullstory_access_request_task(
 @pytest.mark.skip(reason="API keys are temporary for free accounts")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_fullstory_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
     fullstory_connection_config,
     fullstory_dataset_config,
     connection_config,
+    privacy_request,
     fullstory_postgres_erasure_db,
     fullstory_postgres_dataset_config,
     erasure_policy_string_rewrite,
@@ -92,10 +103,8 @@ async def test_fullstory_erasure_request_task(
     fullstory_test_client: FullstoryTestClient,
 ) -> None:
     """Full erasure request based on the Fullstory SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_fullstory_access_request_task_{random.randint(0, 1000)}"
-    )
     identity_attribute = "email"
     identity_value = fullstory_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -108,7 +117,7 @@ async def test_fullstory_erasure_request_task(
 
     v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [fullstory_connection_config, connection_config],
         {"email": fullstory_erasure_identity_email},

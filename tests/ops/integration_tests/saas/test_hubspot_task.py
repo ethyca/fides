@@ -3,13 +3,12 @@ import random
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
@@ -22,18 +21,23 @@ def test_hubspot_connection_test(connection_config_hubspot) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_hubspot_access_request_task(
     db,
+    dsr_version,
+    request,
     policy,
     connection_config_hubspot,
     dataset_config_hubspot,
     hubspot_identity_email,
+    privacy_request,
 ) -> None:
     """Full access request based on the Hubspot SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_hubspot_access_request_task_{random.randint(0, 1000)}"
-    )
     identity_attribute = "email"
     identity_value = hubspot_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -124,9 +128,15 @@ async def test_hubspot_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_hubspot_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
+    privacy_request,
     erasure_policy_string_rewrite_name_and_email,
     connection_config_hubspot,
     dataset_config_hubspot,
@@ -135,10 +145,12 @@ async def test_hubspot_erasure_request_task(
     hubspot_test_client: HubspotTestClient,
 ) -> None:
     """Full erasure request based on the Hubspot SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    privacy_request.policy_id = erasure_policy_string_rewrite_name_and_email.id
+    privacy_request.save(db)
     contact_id, user_id = hubspot_erasure_data
-    privacy_request = PrivacyRequest(
-        id=f"test_hubspot_erasure_request_task_{random.randint(0, 1000)}"
-    )
+
     identity_attribute = "email"
     identity_kwargs = {identity_attribute: (hubspot_erasure_identity_email)}
     identity = Identity(**identity_kwargs)
@@ -149,7 +161,12 @@ async def test_hubspot_erasure_request_task(
     graph = DatasetGraph(merged_graph)
 
     v = access_runner_tester(
-        privacy_request, policy, graph, [connection_config_hubspot], identity_kwargs, db
+        privacy_request,
+        erasure_policy_string_rewrite_name_and_email,
+        graph,
+        [connection_config_hubspot],
+        identity_kwargs,
+        db,
     )
 
     assert_rows_match(

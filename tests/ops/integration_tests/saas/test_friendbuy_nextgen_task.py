@@ -5,10 +5,8 @@ from time import sleep
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.conftest import access_runner_tester, erasure_runner_tester
@@ -26,18 +24,24 @@ def test_friendbuy_nextgen_connection_test(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_friendbuy_nextgen_access_request_task(
     db,
+    dsr_version,
+    request,
     policy,
+    privacy_request,
     friendbuy_nextgen_connection_config,
     friendbuy_nextgen_dataset_config,
     friendbuy_nextgen_identity_email,
     connection_config,
 ) -> None:
     """Full access request based on the Friendbuy Nextgen Conversations SaaS config"""
-    privacy_request = PrivacyRequest(
-        id=f"test_friendbuy_nextgen_access_request_task_{random.randint(0, 1000)}"
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     identity_attribute = "email"
     identity_value = friendbuy_nextgen_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -80,9 +84,15 @@ async def test_friendbuy_nextgen_access_request_task(
 @pytest.mark.skip(reason="Temporarily disabled test")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_friendbuy_nextgen_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
+    privacy_request,
     friendbuy_nextgen_connection_config,
     friendbuy_nextgen_dataset_config,
     connection_config,
@@ -91,10 +101,11 @@ async def test_friendbuy_nextgen_erasure_request_task(
     friendbuy_nextgen_erasure_data,
 ) -> None:
     """Full erasure request based on the Friendbuy Nextgen SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_friendbuy_nextgen_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
+
     identity_attribute = "email"
     identity_value = friendbuy_nextgen_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -110,7 +121,7 @@ async def test_friendbuy_nextgen_erasure_request_task(
     sleep(30)
     v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [friendbuy_nextgen_connection_config, connection_config],
         {"email": friendbuy_nextgen_erasure_identity_email},

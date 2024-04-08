@@ -2,7 +2,6 @@ import copy
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
-from uuid import uuid4
 
 import pytest
 from fideslang import Dataset

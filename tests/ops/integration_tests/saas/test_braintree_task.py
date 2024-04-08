@@ -4,7 +4,6 @@ import random
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task.graph_task import get_cached_data_for_erasures
@@ -24,20 +23,26 @@ def test_braintree_connection_test(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_braintree_access_request_task(
     db,
     policy,
+    dsr_version,
+    request,
     braintree_connection_config,
     braintree_dataset_config,
     braintree_identity_email,
     connection_config,
+    privacy_request,
     braintree_postgres_dataset_config,
     braintree_postgres_db,
 ) -> None:
     """Full access request based on the Braintree Conversations SaaS config"""
-    privacy_request = PrivacyRequest(
-        id=f"test_braintree_access_request_task_{random.randint(0, 1000)}"
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     identity_attribute = "email"
     identity_value = braintree_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -81,9 +86,15 @@ async def test_braintree_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_braintree_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
+    privacy_request,
     braintree_connection_config,
     braintree_dataset_config,
     connection_config,
@@ -94,10 +105,11 @@ async def test_braintree_erasure_request_task(
     braintree_postgres_erasure_db,
 ) -> None:
     """Full erasure request based on the Braintree SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_braintree_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
+
     identity_attribute = "email"
     identity_value = braintree_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -110,7 +122,7 @@ async def test_braintree_erasure_request_task(
 
     v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [braintree_connection_config, connection_config],
         {"email": braintree_erasure_identity_email},

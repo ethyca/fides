@@ -1,5 +1,4 @@
 from unittest import mock
-from uuid import uuid4
 
 import pytest
 
