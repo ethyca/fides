@@ -49,12 +49,10 @@ def openweb_create_erasure_data(
     '''
     x = openweb_erasure_external_references['primary_key']
     primary_key_val = x
-    add_user_prep = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user?primary_key="
-    check_user_prep = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user/"
     spot_id = "&spot_id=" + openweb_secrets['x_spot_id'] 
     user_name = "&user_name=" + primary_key_val
-    add_user_url = add_user_prep + primary_key_val + spot_id + user_name
-    check_user_url = check_user_prep + primary_key_val
+    add_user_url = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user?primary_key=" + primary_key_val + spot_id + user_name
+    check_user_url = "https://" + openweb_secrets['domain'] + "/api/sso/v1/user/" +  primary_key_val
     payload = {}
     headers = {
         'x-spotim-sso-access-token': openweb_secrets['api_key']
@@ -72,6 +70,7 @@ def openweb_create_erasure_data(
     print(response_add_user.status_code, " status code")
     print(" ***************************************************")
     '''
+    print("add user  \n", add_user_url)
     print("check user \n", check_user_url )
     response = requests.request("GET", check_user_url, headers=headers)
     '''Debugging
