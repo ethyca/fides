@@ -26,12 +26,6 @@ def openweb_secrets(saas_config) -> Dict[str, Any]:
 def openweb_erasure_identity_email() -> str:
     return generate_random_email()
 
-""" Some notes on decisions made here
-we do need a means of creating a random 'primay_key' and using that for the erasure request. There is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman.
-
-Note: We leverage the predictable response to a known, non-existent value to the endpoint we use for our test connection, hence the acceptable 404.
-"""
-
 @pytest.fixture
 def openweb_erasure_external_references() -> Dict[str, Any]:
     random_pkv = "".join(
@@ -44,9 +38,8 @@ def openweb_erasure_external_references() -> Dict[str, Any]:
 def openweb_create_erasure_data(
     openweb_erasure_external_references, openweb_secrets
 ) -> Generator:
-    """
-    Create the data needed for erasure tests here
-    In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well.
+    """Notes on the data generated here for the erasure request
+    In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well. We made a little helper up there in the openweb_erasure_external_references to create a string we can use to create a user so our erasure test will pass when it has something to delete. We put in a check to ensure we get a pass on a check to ensure the user got made.
     """
     primary_key_val = openweb_erasure_external_references["primary_key"]
     spot_id = "&spot_id=" + openweb_secrets["x_spot_id"]
@@ -66,36 +59,7 @@ def openweb_create_erasure_data(
     headers = {"x-spotim-sso-access-token": openweb_secrets["api_key"]}
     response = requests.request("POST", add_user_url, headers=headers, data=payload)
     assert response.ok
-    """ Debugging
-    print(response_add_user.content, " content ")
-    print(response_add_user.json(), " json ")
-    print(response_add_user.text, " text ")
-    print(response_add_user.url, " url")
-    print("")
-    print(response_add_user.request, " request itself")
-    print(response_add_user.headers, " headers")
-    print(response_add_user.status_code, " status code")
-    print(" ***************************************************")
-    """
     response = requests.request("GET", check_user_url, headers=headers)
-    """ Debugging
-    print("add user  \n", add_user_url)
-    print("check user \n", check_user_url )
-    print("add user \n", total_url, "\n", "chk user \n", check_url )
-    print(response_check_user.status_code, " status code")
-    print(response_check_user.content, " content ")
-    print(response_check_user.json(), " json ")
-    print(response_check_user.text, " text")
-    print(response_check_user.url, " url")
-    print("")
-    print(response_check_user.request, " request itself \n")
-    print(response_check_user.reason, " reason \n")
-    print(response_check_user.headers, " headers \n")
-    print(" Break Break Break")
-    spot_id_val = {openweb_secrets['x_spot_id']}  
-    import pdb; pdb.set_trace()
-    return pkval
-    """
     assert response.ok
 
 @pytest.fixture
