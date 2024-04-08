@@ -5,15 +5,12 @@ import pytest
 import random
 import string
 
-
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
 )
 from tests.ops.test_helpers.vault_client import get_secrets
-
 secrets = get_secrets("openweb")
-
 
 @pytest.fixture(scope="session")
 def openweb_secrets(saas_config) -> Dict[str, Any]:
@@ -25,18 +22,15 @@ def openweb_secrets(saas_config) -> Dict[str, Any]:
         # add the rest of your secrets here
     }
 
-
 @pytest.fixture
 def openweb_erasure_identity_email() -> str:
     return generate_random_email()
-
 
 """ Some notes on decisions made here
 we do need a means of creating a random 'primay_key' and using that for the erasure request. There is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman.
 
 Note: We leverage the predictable response to a known, non-existent value to the endpoint we use for our test connection, hence the acceptable 404.
 """
-
 
 @pytest.fixture
 def openweb_erasure_external_references() -> Dict[str, Any]:
@@ -45,7 +39,6 @@ def openweb_erasure_external_references() -> Dict[str, Any]:
         for _ in range(10)
     )
     return {"primary_key": random_pkv}
-
 
 @pytest.fixture
 def openweb_create_erasure_data(
@@ -84,7 +77,6 @@ def openweb_create_erasure_data(
     print(response_add_user.status_code, " status code")
     print(" ***************************************************")
     """
-
     response = requests.request("GET", check_user_url, headers=headers)
     """ Debugging
     print("add user  \n", add_user_url)
@@ -105,7 +97,6 @@ def openweb_create_erasure_data(
     return pkval
     """
     assert response.ok
-
 
 @pytest.fixture
 def openweb_runner(
