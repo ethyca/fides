@@ -6,7 +6,7 @@ from pydantic import EmailStr, Extra, Field, StrictInt, StrictStr, validator
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
 
-MultiValue = Union[Union[StrictInt, StrictStr], List[Union[StrictInt, StrictStr]]]
+MultiValue = Union[StrictInt, StrictStr, List[Union[StrictInt, StrictStr]]]
 
 
 class IdentityBase(FidesSchema):

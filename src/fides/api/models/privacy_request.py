@@ -396,8 +396,13 @@ class PrivacyRequest(
         for key, value in identity_dict.items():
             if value is not None:
                 if isinstance(value, dict):
-                    label = value["label"]
-                    value = value["value"]
+                    if "label" in value and "value" in value:
+                        label = value["label"]
+                        value = value["value"]
+                    else:
+                        raise RuntimeError(
+                            f"Programming error: unexpected dict value '{value}' found in an Identity's `labeled_dict()`!"
+                        )
                 else:
                     label = None
 
@@ -450,17 +455,13 @@ class PrivacyRequest(
         """
         Retrieves persisted identity fields from the DB.
         """
-        schema = Identity()
+        schema_dict = {}
         for field in self.provided_identities:  # type: ignore[attr-defined]
             value = field.encrypted_value.get("value")
             if field.field_label:
                 value = LabeledIdentity(label=field.field_label, value=value)
-            setattr(
-                schema,
-                field.field_name,  # type:ignore
-                value,  # type:ignore
-            )
-        return schema
+            schema_dict[field.field_name] = value
+        return Identity(**schema_dict)
 
     def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
         return {
@@ -1127,26 +1128,20 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
 
-        identity = Identity()
+        identity_dict = {}
         if any(
             [
                 not self.field_name,
                 not self.encrypted_value,
             ]
         ):
-            return identity
+            return Identity()
 
         value = self.encrypted_value.get("value")  # type:ignore
         if self.field_label:
             value = LabeledIdentity(label=self.field_label, value=value)
-
-        setattr(
-            identity,
-            self.field_name,  # type:ignore
-            value,  # type:ignore
-        )
-
-        return identity
+        identity_dict[self.field_name] = value
+        return Identity(**identity_dict)
 
 
 class CustomPrivacyRequestField(Base):

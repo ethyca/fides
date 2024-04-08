@@ -13,6 +13,11 @@ FIDESOPS_DO_NOT_MASK_INDEX = "FIDESOPS_DO_NOT_MASK"
 
 
 def make_immutable(obj: Any) -> Any:
+    """
+    Recursively converts a mutable object into an immutable version.
+    Dictionaries are converted to immutable `Map`s from the `immutables` library,
+    lists are converted to tuples, and other objects are returned unchanged.
+    """
     if isinstance(obj, dict):
         return immutables.Map(
             {key: make_immutable(value) for key, value in obj.items()}
@@ -23,6 +28,11 @@ def make_immutable(obj: Any) -> Any:
 
 
 def make_mutable(obj: Any) -> Any:
+    """
+    Recursively converts an immutable object into a mutable version.
+    `Map`s from the `immutables` library and dictionaries are converted to mutable dictionaries,
+    tuples and `OrderedSet`s are converted to lists, and other objects are returned unchanged.
+    """
     if isinstance(obj, (dict, immutables.Map)):
         return {key: make_mutable(value) for key, value in obj.items()}
     if isinstance(obj, (tuple, OrderedSet)):

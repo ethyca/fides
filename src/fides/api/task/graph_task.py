@@ -308,8 +308,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
          table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}, "y": [4, 5]}]
            where table1.x => self.id,
-           table1.y=> self.name,
-           table2.x=>self.id
+           table1.y => self.name,
+           table2.x => self.id
            table3.z.a => self.contact.address
            table3.y => self.contact.email
          becomes
@@ -317,6 +317,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
          If there are dependent fields from one collection into another, they are separated out as follows:
          {fidesops_grouped_inputs: [{"organization_id": 1, "project_id": "math}, {"organization_id": 5, "project_id": "science"}]
+
+         The output dictionary is constructed with deduplicated values for each key, ensuring that the value lists
+         and the fides_grouped_input list contain only unique elements.
         """
         if not len(data) == len(self.input_keys):
             logger.warning(
