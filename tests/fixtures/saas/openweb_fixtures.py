@@ -84,7 +84,7 @@ def openweb_create_erasure_data(
     print(response_check_user.request, " request itself \n")
     print(response_check_user.reason, " reason \n")
     # print(response_check_user.headers, " headers \n")
-    print(" ***************************************************")
+    print(" Break Break Break")
     #spot_id_val = {openweb_secrets['x_spot_id']}  
     # import pdb; pdb.set_trace()
     return pkval
