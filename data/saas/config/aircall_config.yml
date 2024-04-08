@@ -4,7 +4,7 @@ saas_config:
   type: aircall
   description: A sample schema representing the Aircall connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/aircall
-  version: 0.1.2
+  version: 0.1.3
 
   connector_params:
     - name: domain
@@ -29,7 +29,7 @@ saas_config:
 
   test_request:
     method: GET
-    path: /v1/company/
+    path: /v1/company
 
   endpoints:
     - name: contact

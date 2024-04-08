@@ -114,6 +114,9 @@ const SCRIPTS = [
  */
 const rollupOptions = [];
 
+/**
+ * For each of our entrypoint scripts, build .js, .mjs, and .d.ts outputs
+ */
 SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   const js = {
     input: `src/${name}.ts`,
@@ -162,6 +165,20 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   };
 
   rollupOptions.push(...[js, mjs, declaration]);
+});
+
+/**
+ * In addition to our regular built outputs (like fides.js!) also generate a
+ * fides-types.d.ts file from  our documented types for external use.
+ */
+rollupOptions.push({
+  input: `src/docs/index.ts`,
+  plugins: [dts()],
+  output: [
+    {
+      file: `dist/fides-types.d.ts`,
+    },
+  ],
 });
 
 export default rollupOptions;

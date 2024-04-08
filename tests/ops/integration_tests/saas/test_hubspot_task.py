@@ -16,13 +16,11 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_hubspot
 def test_hubspot_connection_test(connection_config_hubspot) -> None:
     get_connector(connection_config_hubspot).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_hubspot
 @pytest.mark.asyncio
 async def test_hubspot_access_request_task(
     db,
@@ -125,7 +123,6 @@ async def test_hubspot_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_hubspot
 @pytest.mark.asyncio
 async def test_hubspot_erasure_request_task(
     db,

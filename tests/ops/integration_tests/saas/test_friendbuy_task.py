@@ -17,16 +17,16 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
-@pytest.mark.integration_friendbuy
 def test_friendbuy_connection_test(
     friendbuy_connection_config,
 ) -> None:
     get_connector(friendbuy_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
-@pytest.mark.integration_friendbuy
 @pytest.mark.asyncio
 async def test_friendbuy_access_request_task(
     db,
@@ -80,8 +80,8 @@ async def test_friendbuy_access_request_task(
     )
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
-@pytest.mark.integration_friendbuy
 @pytest.mark.asyncio
 async def test_friendbuy_erasure_request_task(
     db,

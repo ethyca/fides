@@ -22,10 +22,18 @@ The types of changes are:
 - Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
 - Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
 
-### Fixed
+### Changed
+- Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
+- Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
 
+### Fixed
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
 - Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
+- Fixed issue when loading the privacy request detail page [#4775](https://github.com/ethyca/fides/pull/4775)
+- Fixed connection test for Aircall [#4756](https://github.com/ethyca/fides/pull/4756/pull)
+
+### Developer Experience
+- Build a `fides-types.d.ts` type declaration file to include alongside our FidesJS developer docs [#4772](https://github.com/ethyca/fides/pull/4772)
 
 ## [2.33.1](https://github.com/ethyca/fides/compare/2.33.0...2.33.1)
 
@@ -53,7 +61,7 @@ The types of changes are:
 - Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
 - Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
 - Show a "systems displayed" count on datamap map & table reporting page [#4752](https://github.com/ethyca/fides/pull/4752)
-- Change default Canada Privacy Experience Config in migration to reference generic `ca` region [#4762](https://github.com/ethyca/fides/pull/4762) 
+- Change default Canada Privacy Experience Config in migration to reference generic `ca` region [#4762](https://github.com/ethyca/fides/pull/4762)
 
 ### Fixed
 
