@@ -329,6 +329,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 len(data),
             )
 
+        # the ordered set is just to have a consistent output for testing, the order is not needed otherwise
         output: Dict[str, OrderedSet] = {FIDESOPS_GROUPED_INPUTS: OrderedSet()}
 
         (
