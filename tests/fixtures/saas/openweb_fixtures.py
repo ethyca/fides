@@ -31,7 +31,7 @@ def openweb_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-"""
+""" Some notes on decisions made here
 we do need a means of creating a random 'primay_key' and using that for the erasure request. There is a difference in how the endpoint responds when sent an invalid (or already used) primary_key. A saved example of each is in postman.
 
 Note: We leverage the predictable response to a known, non-existent value to the endpoint we use for our test connection, hence the acceptable 404.
@@ -53,7 +53,6 @@ def openweb_create_erasure_data(
 ) -> Generator:
     """
     Create the data needed for erasure tests here
-
     In this case we need to ensure that a user exists that can be deleted. We also need to ensure we reference the user we used here for the delete request as well.
     """
     primary_key_val = openweb_erasure_external_references["primary_key"]
@@ -80,29 +79,29 @@ def openweb_create_erasure_data(
     print(response_add_user.text, " text ")
     print(response_add_user.url, " url")
     print("")
-    #print(response_add_user.request, " request itself")
-    # print(response_add_user.headers, " headers")
+    print(response_add_user.request, " request itself")
+    print(response_add_user.headers, " headers")
     print(response_add_user.status_code, " status code")
     print(" ***************************************************")
     """
 
     response = requests.request("GET", check_user_url, headers=headers)
-    """Debugging
+    """ Debugging
     print("add user  \n", add_user_url)
     print("check user \n", check_user_url )
     print("add user \n", total_url, "\n", "chk user \n", check_url )
     print(response_check_user.status_code, " status code")
     print(response_check_user.content, " content ")
-    # print(response_check_user.json(), " json ")
+    print(response_check_user.json(), " json ")
     print(response_check_user.text, " text")
     print(response_check_user.url, " url")
     print("")
     print(response_check_user.request, " request itself \n")
     print(response_check_user.reason, " reason \n")
-    # print(response_check_user.headers, " headers \n")
+    print(response_check_user.headers, " headers \n")
     print(" Break Break Break")
-    #spot_id_val = {openweb_secrets['x_spot_id']}  
-    # import pdb; pdb.set_trace()
+    spot_id_val = {openweb_secrets['x_spot_id']}  
+    import pdb; pdb.set_trace()
     return pkval
     """
     assert response.ok

@@ -25,9 +25,7 @@ class TestOpenWebConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": openweb_erasure_identity_email},
         )
-        import pdb
 
-        pdb.set_trace()
         assert erasure_results == {
             "openweb_instance:user": 1,
             "openweb_external_dataset:openweb_external_collection": 0,
