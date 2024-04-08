@@ -19,7 +19,7 @@ import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
-import { PrivacyRequestOption } from "~/types/config";
+import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
 import { defaultIdentityInput } from "~/constants";
 import { PhoneInput } from "~/components/phone-input";
 import { ModalViews } from "~/components/modals/types";
@@ -198,6 +198,17 @@ const usePrivacyRequestForm = ({
           }
           return true;
         }
+      ),
+      ...Object.fromEntries(
+        Object.entries(identityInputs)
+          .filter(([key]) => key !== "email" && key !== "phone")
+          .map(([key, value]) => {
+            const customIdentity = value as CustomIdentity;
+            return [
+              key,
+              Yup.string().required(`${customIdentity.label} is required`),
+            ];
+          })
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)

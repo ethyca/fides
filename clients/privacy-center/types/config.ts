@@ -5,7 +5,7 @@ type DefaultIdentities = {
   phone?: string;
 };
 
-type CustomIdentity = {
+export type CustomIdentity = {
   label: string;
 };
 
