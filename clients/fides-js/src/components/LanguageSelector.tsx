@@ -17,9 +17,7 @@ const LanguageSelector = ({ i18n, options }: LanguageSelectorProps) => {
     if (locale !== i18n.locale) {
       i18n.activate(locale);
       setCurrentLocale(locale);
-      document
-        .getElementById(FIDES_A11Y_CONSTANTS.FIDES_BUTTON_GROUP_ID)
-        ?.focus();
+      document.getElementById(FIDES_A11Y_CONSTANTS.FIDES_REFOCUS_EL)?.focus();
       debugLog(options.debug, `Fides locale updated to ${locale}`);
     }
   };

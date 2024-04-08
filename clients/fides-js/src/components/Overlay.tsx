@@ -28,6 +28,7 @@ import ConsentModal from "./ConsentModal";
 import ConsentContent from "./ConsentContent";
 import "./fides.css";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
+import { FIDES_A11Y_CONSTANTS } from "../lib/consent-constants";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -191,7 +192,7 @@ const Overlay: FunctionComponent<Props> = ({
   }
 
   return (
-    <div>
+    <div id={FIDES_A11Y_CONSTANTS.FIDES_REFOCUS_EL} tabIndex={-1}>
       {showBanner && bannerIsOpen && isUiBlocking && (
         <div className="fides-modal-overlay" />
       )}

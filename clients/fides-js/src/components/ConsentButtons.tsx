@@ -11,7 +11,6 @@ import {
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import type { I18n } from "../lib/i18n";
 import LanguageSelector from "../components/LanguageSelector";
-import { FIDES_A11Y_CONSTANTS } from "../lib/consent-constants";
 
 export const ConsentButtons = ({
   i18n,
@@ -34,8 +33,9 @@ export const ConsentButtons = ({
   options: FidesInitOptions;
   includePrivacyPolicy?: boolean;
   saveOnly?: boolean;
+  isInModal?: boolean;
 }) => (
-  <div id={FIDES_A11Y_CONSTANTS.FIDES_BUTTON_GROUP_ID} tabIndex={-1}>
+  <div id="fides-button-group">
     {i18n.availableLanguages?.length > 1 && (
       <LanguageSelector i18n={i18n} options={options} />
     )}
@@ -151,6 +151,7 @@ export const NoticeConsentButtons = ({
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
+      isInModal={isInModal}
       firstButton={
         isInModal ? (
           <Button

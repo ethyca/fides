@@ -105,5 +105,5 @@ export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
 ];
 
 export const FIDES_A11Y_CONSTANTS = {
-  FIDES_BUTTON_GROUP_ID: "fides-button-group",
+  FIDES_REFOCUS_EL: "fides-refocus-el",
 };
