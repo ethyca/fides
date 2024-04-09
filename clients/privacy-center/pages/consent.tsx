@@ -35,8 +35,8 @@ import {
   useSettings,
 } from "~/features/common/settings.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import { useI18n } from "~/common/i18nContext";
 import { initializeI18n, setupI18n } from "fides-js";
+import useI18n from "~/common/hooks/useI18n";
 
 const Consent: NextPage = () => {
   const settings = useSettings();

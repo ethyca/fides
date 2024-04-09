@@ -1,7 +1,7 @@
 import { Heading } from "@fidesui/react";
 import { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
-import { useI18n } from "~/common/i18nContext";
+import useI18n from "~/common/hooks/useI18n";
 import { useConfig } from "~/features/common/config.slice";
 import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 import { selectPrivacyExperience } from "~/features/consent/consent.slice";

@@ -14,6 +14,7 @@ import {
   PrivacyNoticeWithPreference,
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
+  selectBestExperienceConfigTranslation,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -36,12 +37,12 @@ import { useRouter } from "next/router";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
-import { useI18n } from "~/common/i18nContext";
 import { selectBestNoticeTranslation } from "fides-js";
 import { useLocalStorage } from "~/common/hooks";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
+import useI18n from "~/common/hooks/useI18n";
 
 // DEFER(fides#3505): Use the fides-js version of this function
 export const resolveConsentValue = (
@@ -131,14 +132,21 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   useEffect(() => {
     if (experience && experience.privacy_notices) {
+      const experienceConfigTransalation =
+        selectBestExperienceConfigTranslation(
+          i18n,
+          experience.experience_config!
+        );
+      const privacyExperienceConfigHistoryId =
+        experienceConfigTransalation?.privacy_experience_config_history_id;
+
       updateNoticesServedMutationTrigger({
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
           // TODO (PROD-1748): pass in specific language shown in UI
           privacy_experience_config_history_id:
-            experience?.experience_config?.translations[0]
-              .privacy_experience_config_history_id,
+            privacyExperienceConfigHistoryId,
           // TODO (PROD-1748): pass in specific language shown in UI
           privacy_notice_history_ids: experience.privacy_notices.map(
             // @ts-ignore
@@ -155,6 +163,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     experience,
     browserIdentities,
     region,
+    i18n,
   ]);
 
   const items = useMemo(() => {
