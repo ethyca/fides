@@ -104,6 +104,4 @@ export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
   },
 ];
 
-export const FIDES_A11Y_CONSTANTS = {
-  FIDES_REFOCUS_EL: "fides-refocus-el",
-};
+export const FIDES_OVERLAY_WRAPPER = "fides-overlay-wrapper";

@@ -3,7 +3,7 @@ import { I18n } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { debugLog, FidesInitOptions } from "../fides";
 import MenuItem from "./MenuItem";
-import { FIDES_A11Y_CONSTANTS } from "../lib/consent-constants";
+import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 
 interface LanguageSelectorProps {
   i18n: I18n;
@@ -17,7 +17,7 @@ const LanguageSelector = ({ i18n, options }: LanguageSelectorProps) => {
     if (locale !== i18n.locale) {
       i18n.activate(locale);
       setCurrentLocale(locale);
-      document.getElementById(FIDES_A11Y_CONSTANTS.FIDES_REFOCUS_EL)?.focus();
+      document.getElementById(FIDES_OVERLAY_WRAPPER)?.focus();
       debugLog(options.debug, `Fides locale updated to ${locale}`);
     }
   };
