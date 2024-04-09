@@ -27,6 +27,7 @@ import { loadConfig } from "~/features/common/config.slice";
 import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
+import { I18nProvider } from "~/common/i18nContext";
 
 interface PrivacyCenterProps {
   serverEnvironment?: PrivacyCenterEnvironment;
@@ -90,15 +91,17 @@ const PrivacyCenterApp = ({
   return (
     <SafeHydrate>
       <Provider store={store}>
-        <PersistGate persistor={persistor}>
-          <ChakraProvider theme={theme}>
-            <ErrorBoundary fallbackRender={Error}>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </ErrorBoundary>
-          </ChakraProvider>
-        </PersistGate>
+        <I18nProvider>
+          <PersistGate persistor={persistor}>
+            <ChakraProvider theme={theme}>
+              <ErrorBoundary fallbackRender={Error}>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </ErrorBoundary>
+            </ChakraProvider>
+          </PersistGate>
+        </I18nProvider>
       </Provider>
     </SafeHydrate>
   );

@@ -1,8 +1,8 @@
 import { Box, Text, TextProps } from "@fidesui/react";
 import { useAppSelector } from "~/app/hooks";
+import { useI18n } from "~/common/i18nContext";
 import { useConfig } from "~/features/common/config.slice";
 import { selectIsNoticeDriven } from "~/features/common/settings.slice";
-import { selectPrivacyExperience } from "~/features/consent/consent.slice";
 
 const TEXT_PROPS: TextProps = {
   fontSize: ["small", "medium"],
@@ -15,7 +15,7 @@ const TEXT_PROPS: TextProps = {
 const ConsentDescription = () => {
   const config = useConfig();
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
-  const experience = useAppSelector(selectPrivacyExperience);
+  const { i18n } = useI18n();
 
   if (!isNoticeDriven) {
     return (
@@ -37,7 +37,7 @@ const ConsentDescription = () => {
   }
   return (
     <Text {...TEXT_PROPS} data-testid="consent-description">
-      {experience?.experience_config?.translations[0]?.description}
+      {i18n.t("exp.description")}
     </Text>
   );
 };

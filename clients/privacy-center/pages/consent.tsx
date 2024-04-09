@@ -19,6 +19,7 @@ import {
 } from "~/features/common/config.slice";
 import {
   selectPersistedFidesKeyToConsent,
+  selectPrivacyExperience,
   updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
@@ -34,6 +35,8 @@ import {
   useSettings,
 } from "~/features/common/settings.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import { useI18n } from "~/common/i18nContext";
+import { initializeI18n, setupI18n } from "fides-js";
 
 const Consent: NextPage = () => {
   const settings = useSettings();
@@ -51,6 +54,7 @@ const Consent: NextPage = () => {
     () => config.consent?.page.consentOptions ?? [],
     [config]
   );
+  const { setI18nInstance } = useI18n();
   useSubscribeToPrivacyExperienceQuery();
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
@@ -213,6 +217,30 @@ const Consent: NextPage = () => {
     toastError,
     redirectToIndex,
   ]);
+
+  /**
+   * Initialize internalization library.
+   */
+  const experience = useAppSelector(selectPrivacyExperience);
+  useEffect(() => {
+    if (!experience) {
+      return;
+    }
+
+    const i18n = setupI18n();
+
+    initializeI18n(
+      i18n,
+      window?.navigator,
+      experience,
+      {
+        debug: true,
+      },
+      {}
+    );
+
+    setI18nInstance(i18n);
+  }, [experience, setI18nInstance]);
 
   return (
     <Stack as="main" align="center" data-testid="consent">

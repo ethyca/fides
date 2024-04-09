@@ -203,3 +203,4 @@ export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
+export * from "./lib/i18n";

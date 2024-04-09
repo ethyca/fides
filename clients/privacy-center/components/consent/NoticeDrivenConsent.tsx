@@ -36,6 +36,8 @@ import { useRouter } from "next/router";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { useI18n } from "~/common/i18nContext";
+import { selectBestNoticeTranslation } from "fides-js";
 import { useLocalStorage } from "~/common/hooks";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
@@ -87,6 +89,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
   const region = useAppSelector(selectUserRegion);
+  const { i18n } = useI18n();
 
   const browserIdentities = useMemo(() => {
     const identities = inspectForBrowserIdentities();
@@ -173,6 +176,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         consentContext,
       });
 
+      const bestTranslation = selectBestNoticeTranslation(
+        i18n,
+        notice as PrivacyNotice
+      );
+
       return {
         name: notice.name || "",
         description: notice.translations[0].description || "",
@@ -183,9 +191,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         value,
         gpcStatus,
         disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+        bestTranslation,
       };
     });
-  }, [consentContext, experience, draftPreferences]);
+  }, [consentContext, experience, draftPreferences, i18n]);
 
   const handleCancel = () => {
     router.push("/");
@@ -301,13 +310,14 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
             ...{ [historyId]: pref },
           });
         };
+
         return (
           <React.Fragment key={id}>
             {index > 0 ? <Divider /> : null}
             <ConsentItem
               id={id}
-              name={name}
-              description={description}
+              name={item.bestTranslation?.title}
+              description={item.bestTranslation?.description}
               highlight={highlight}
               url={url}
               value={item.value}
@@ -321,9 +331,6 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       <SaveCancel
         onSave={handleSave}
         onCancel={handleCancel}
-        saveLabel={
-          experience?.experience_config?.translations[0]?.save_button_label
-        }
         justifyContent="center"
       />
       <PrivacyPolicyLink alignSelf="center" experience={experience} />
