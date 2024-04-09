@@ -16,7 +16,7 @@ from fides.api.util.collection_util import partition
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 
 
-class ExecutionNode:
+class ExecutionNode:  # pylint: disable=too-many-instance-attributes
     """Node for *executing* a task. This node only has knowledge of itself and its incoming and outgoing edges
 
     After we build the graph, we save details to RequestTasks in the database that are hydrated here to execute an individual

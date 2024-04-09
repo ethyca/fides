@@ -89,9 +89,9 @@ class TestCustomPrivacyRequestFields:
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_access(
         self,
+        mock_send,
         dsr_version,
         request,
-        mock_send,
         db: Session,
         policy: Policy,
         run_privacy_request_task,

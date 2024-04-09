@@ -83,7 +83,7 @@ def format_data_use_map_for_caching(
     for collection_addr, connection_key in connection_key_mapping.items():
         connection_config = connection_config_mapping.get(connection_key, None)
         if not connection_config or not connection_config.system:
-            resp[collection_addr.value] = {}
+            resp[collection_addr.value] = set()
             continue
         data_uses: Set[str] = System.get_data_uses(
             [connection_config.system], include_parents=False

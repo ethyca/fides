@@ -536,7 +536,7 @@ class Collection(BaseModel):
                 field_address: str = reference[0]
                 edge_direction: Optional[str] = reference[1]
                 converted_references.append(
-                    (FieldAddress.from_string(field_address), edge_direction)
+                    (FieldAddress.from_string(field_address), edge_direction)  # type: ignore
                 )
 
             data_type_converter = get_data_type_converter(
@@ -556,6 +556,7 @@ class Collection(BaseModel):
                 converted.references = converted_references
                 converted.data_type_converter = data_type_converter
                 return converted
+
             converted = ScalarField.parse_obj(serialized_field)
             converted.references = converted_references
             converted.data_type_converter = data_type_converter
@@ -583,7 +584,9 @@ class Collection(BaseModel):
         arbitrary_types_allowed = True
         # For running Collection.json()
         json_encoders = {
-            Set: lambda val: list(val),
+            Set: lambda val: list(  # pylint: disable=unhashable-member,unnecessary-lambda
+                val
+            ),
             DataTypeConverter: lambda dtc: dtc.name if dtc.name else None,
             FieldAddress: lambda fa: fa.value,
             CollectionAddress: lambda ca: ca.value,

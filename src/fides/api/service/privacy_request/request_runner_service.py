@@ -385,7 +385,6 @@ def run_privacy_request(
             fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
                 connection_configs
             )
-            access_result_urls: List[str] = []
 
             # Access CHECKPOINT
             if (
@@ -416,7 +415,7 @@ def run_privacy_request(
                 filtered_access_results = filter_by_enabled_actions(
                     raw_access_results, connection_configs
                 )
-                upload_access_results(
+                access_result_urls: List[str] = upload_access_results(
                     session,
                     policy,
                     filtered_access_results,
@@ -483,8 +482,8 @@ def run_privacy_request(
             _log_warning(exc, CONFIG.dev_mode)
             return
 
-        except PrivacyRequestExit as exc:
-            # Privacy Request Exiting awaiting asynchronous processing
+        except PrivacyRequestExit:
+            # Privacy Request Exiting awaiting request task processing
             return
 
         except BaseException as exc:  # pylint: disable=broad-except
@@ -532,9 +531,13 @@ def run_privacy_request(
             action_type=ActionType.consent
         ):
             try:
-                access_result_urls: List[str] = (
-                    privacy_request.access_result_urls or {}
-                ).get("access_result_urls")
+                if not access_result_urls:
+                    # For DSR 3.0, if request has both access and erasure rules, this needs to be fetched
+                    # from the database because the Privacy Request would have exited
+                    # processing and lost access to the access_result_urls in memory
+                    access_result_urls = (privacy_request.access_result_urls or {}).get(
+                        "access_result_urls", []
+                    )
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
                 )

@@ -319,7 +319,7 @@ class PrivacyRequest(
 
     request_tasks: RelationshipProperty[AppenderQuery] = relationship(
         "RequestTask",
-        backref="privacy_request",
+        back_populates="privacy_request",
         lazy="dynamic",
         order_by="RequestTask.created_at",
     )
@@ -1034,7 +1034,7 @@ class PrivacyRequest(
 
     def get_root_task_by_action(self, action: ActionType) -> RequestTask:
         """Get the root tasks for a specific action"""
-        root: RequestTask = (
+        root: Optional[RequestTask] = (
             self.get_tasks_by_action(action)
             .filter(RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value)
             .first()
@@ -1048,7 +1048,7 @@ class PrivacyRequest(
 
     def get_terminate_task_by_action(self, action: ActionType) -> RequestTask:
         """Get the terminate task for a specific action"""
-        terminate: RequestTask = (
+        terminate: Optional[RequestTask] = (
             self.get_tasks_by_action(action)
             .filter(RequestTask.collection_address == TERMINATOR_ADDRESS.value)
             .first()
@@ -1060,7 +1060,7 @@ class PrivacyRequest(
         assert terminate  # for mypy
         return terminate
 
-    def get_raw_access_results(self) -> Dict[str, List[Row]]:
+    def get_raw_access_results(self) -> Dict[str, Optional[List[Row]]]:
         """Retrieve the *raw* access data saved on the individual access nodes
 
         These shouldn't be returned to the user - they are not filtered by data category
@@ -1699,6 +1699,12 @@ class RequestTask(Base):
     collection = Column(MutableDict.as_mutable(JSONB))
     # Stores key details from traversal.traverse in the format of TraversalDetails
     traversal_details = Column(MutableDict.as_mutable(JSONB))
+
+    privacy_request: RelationshipProperty[PrivacyRequest] = relationship(
+        "PrivacyRequest",
+        back_populates="request_tasks",
+        uselist=False,
+    )
 
     @property
     def request_task_address(self) -> CollectionAddress:

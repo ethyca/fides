@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
 import sqlalchemy
+from celery import Task
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -45,8 +46,8 @@ from fides.api.common_exceptions import (
     PrivacyRequestNotFound,
     RequestTaskNotFound,
     TraversalError,
-    ValidationError,
     UpstreamTasksNotReady,
+    ValidationError,
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -62,7 +63,6 @@ from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
     ExecutionLog,
-    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
@@ -138,10 +138,10 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.common.api.v1.urn_registry import (
+    PRIVACY_REQUEST_ACCESS_DATA,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
-    PRIVACY_REQUEST_ACCESS_DATA,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
@@ -149,7 +149,6 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
-    PRIVACY_REQUEST_TASK_CALLBACK,
     PRIVACY_REQUEST_TASK_QUEUE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
@@ -1900,7 +1899,7 @@ def queue_task_manually(
     return {"task_queued": True}
 
 
-def task_function(request_task: RequestTask) -> Callable:
+def task_function(request_task: RequestTask) -> Task:
     mapping = {
         ActionType.access: run_access_node,
         ActionType.erasure: run_erasure_node,

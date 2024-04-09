@@ -29,10 +29,6 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_erasure_email(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,

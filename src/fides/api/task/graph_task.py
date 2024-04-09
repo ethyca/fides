@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     ActionDisabled,
-    AwaitingTaskCallback,
     CollectionDisabled,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
@@ -108,25 +107,14 @@ def retry(
                     )
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
-                    # TODO revisit this
                     raise
-                except AwaitingTaskCallback as ex:
-                    traceback.print_exc()
-                    logger.warning(
-                        "{} task {} exiting - awaiting callback. Privacy Request: {}, Request Task {}.",
-                        method_name.capitalize(),
-                        self.execution_node.address,
-                        self.request_task.privacy_request_id,
-                        self.request_task.id,
-                    )
-                    self.log_paused(action_type, ex)
-                    # Re-raise to stop privacy request execution on pause.
-                    # TODO revisit this
-                    return None
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
                     self.request_task.rows_masked = 0
                     self.log_end(action_type, ex=None, success_override_msg=exc)
+                    self.resources.cache_erasure(
+                        f"{self.traversal_node.address.value}", 0
+                    )  # Cache that the erasure was performed in case we need to restart for DSR 2.0
                     return 0
                 except (
                     CollectionDisabled,
@@ -176,11 +164,12 @@ def retry(
                 self.resources.request,
                 self.connector.configuration,
             )
-            # TODO Remove with deprecating DSR 2.0
             if not self.request_task.id:
+                # TODO Remove with deprecating DSR 2.0
                 # Re-raise to stop privacy request execution on failure for
                 # deprecated DSR 2.0 sequential execution
                 raise raised_ex  # type: ignore
+            return default_return
 
         return result
 

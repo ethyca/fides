@@ -20,7 +20,6 @@ from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import (
-    AwaitingTaskCallback,
     ConnectionException,
     SSHTunnelConfigNotFoundException,
 )

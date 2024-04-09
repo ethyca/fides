@@ -75,6 +75,7 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
+    PRIVACY_REQUEST_ACCESS_DATA,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
@@ -85,14 +86,13 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_TASK_QUEUE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
-    V1_URL_PREFIX,
     REQUEST_TASKS,
-    PRIVACY_REQUEST_ACCESS_DATA,
-    PRIVACY_REQUEST_TASK_QUEUE,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import field

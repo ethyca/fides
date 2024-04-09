@@ -111,7 +111,7 @@ def run_prerequisite_task_checks(
         if not all(
             upstream_task.status in completed_statuses
             for upstream_task in upstream_results
-        ) or not upstream_results.count() == len(request_task.upstream_tasks):
+        ) or not upstream_results.count() == len(request_task.upstream_tasks or []):
             raise UpstreamTasksNotReady(
                 f"Cannot start {request_task.action_type} task {request_task.collection_address}. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
             )

@@ -148,9 +148,11 @@ def build_erasure_networkx_digraph(
 def add_edge_if_no_nodes(
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
     networkx_graph: networkx.DiGraph,
-):
-    """Handle edge case of there are no traversal nodes in the graph at all
-    Just connect the root node to the terminator node
+) -> None:
+    """
+    Adds an edge from the root node to the terminator node, altering the networkx_graph in-place.
+
+    Handle edge case of there are no traversal nodes in the graph at all
     """
     if not traversal_nodes.items():
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS)
@@ -473,10 +475,12 @@ def run_access_request(
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
-    ready_tasks: List[RequestTask] = get_existing_ready_tasks(
-        session, privacy_request, ActionType.access
-    )
-    if not privacy_request.access_tasks.count():
+
+    if privacy_request.access_tasks.count():
+        ready_tasks: List[RequestTask] = get_existing_ready_tasks(
+            session, privacy_request, ActionType.access
+        )
+    else:
         logger.info("Building access graph for {}", privacy_request.id)
         traversal: Traversal = Traversal(graph, identity)
 
@@ -486,7 +490,7 @@ def run_access_request(
             traversal_nodes, collect_tasks_fn
         )
         # Save Access Request Tasks to the database
-        ready_tasks: List[RequestTask] = persist_new_access_request_tasks(
+        ready_tasks = persist_new_access_request_tasks(
             session, privacy_request, traversal, traversal_nodes, end_nodes, graph
         )
 
@@ -559,10 +563,12 @@ def run_consent_request(  # pylint: disable = too-many-arguments
     The DatasetGraph passed in is expected to have one Node per Dataset.  That Node is expected to carry out requests
     for the Dataset as a whole.
     """
-    ready_tasks: List[RequestTask] = get_existing_ready_tasks(
-        session, privacy_request, ActionType.consent
-    )
-    if not privacy_request.consent_tasks.count():
+
+    if privacy_request.consent_tasks.count():
+        ready_tasks: List[RequestTask] = get_existing_ready_tasks(
+            session, privacy_request, ActionType.consent
+        )
+    else:
         logger.info("Building consent graph for {}", privacy_request.id)
         traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
         # Unlike erasure and access graphs, we don't call traversal.traverse, but build a simpler
