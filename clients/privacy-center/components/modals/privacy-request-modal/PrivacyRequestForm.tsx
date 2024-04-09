@@ -35,6 +35,14 @@ type FormValues = {
   [key: string]: any;
 };
 
+/**
+ *
+ * @param value
+ * @returns Default to null if the value is undefined or an empty string
+ */
+const fallbackNull = (value: any) =>
+  value === undefined || value === "" ? null : value;
+
 const usePrivacyRequestForm = ({
   onClose,
   action,
@@ -73,7 +81,7 @@ const usePrivacyRequestForm = ({
       // extract identity input values
       const identityInputValues = Object.fromEntries(
         Object.entries(action.identity_inputs ?? {}).map(([key, field]) => {
-          const value = values[key] ?? null;
+          const value = fallbackNull(values[key]);
           if (typeof field === "string") {
             return [key, value];
           }
@@ -88,7 +96,9 @@ const usePrivacyRequestForm = ({
             key,
             {
               label: field.label,
-              value: field.hidden ? field.default_value : values[key] ?? null,
+              value: field.hidden
+                ? field.default_value
+                : fallbackNull(values[key]),
             },
           ])
           // @ts-ignore
