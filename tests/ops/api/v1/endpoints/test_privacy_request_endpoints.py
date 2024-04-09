@@ -38,6 +38,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestError,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
+    RequestTask,
 )
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
@@ -91,6 +92,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
     REQUEST_TASKS,
     PRIVACY_REQUEST_ACCESS_DATA,
+    PRIVACY_REQUEST_TASK_QUEUE,
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import field
@@ -5150,3 +5152,147 @@ class TestGetAccessData:
         assert pr.access_result_urls["access_result_urls"] == [
             "http://www.data-download-url"
         ]
+
+
+class TestQueueTask:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request, request_task) -> str:
+        return V1_URL_PREFIX + PRIVACY_REQUEST_TASK_QUEUE.format(
+            privacy_request_id=privacy_request.id, task_id=request_task.id
+        )
+
+    def test_queue_request_task_unauthenticated(self, api_client: TestClient, url):
+        response = api_client.post(url, headers={})
+        assert 401 == response.status_code
+
+    def test_queue_request_task_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_queue_request_task_privacy_request_not_found(
+        self, api_client: TestClient, generate_auth_header, url, request_task
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_TASK_QUEUE.format(
+            privacy_request_id="adsf", task_id=request_task.id
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 404 == response.status_code
+
+    def test_queue_request_task_privacy_request_completed(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_request,
+        request_task,
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Request failed. Cannot run access task {request_task.id} for privacy request {privacy_request.id} of status complete"
+        )
+
+    def test_queue_request_task_already_completed(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        request_task,
+        privacy_request,
+    ):
+        request_task.status = ExecutionLogStatus.complete
+        request_task.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Request failed. Cannot run access task {request_task.id} for privacy request {privacy_request.id} with status complete"
+        )
+
+    def test_queue_request_task_upstream_incomplete(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        request_task,
+        privacy_request,
+    ):
+        root_task = privacy_request.get_root_task_by_action(ActionType.access)
+        root_task.status = ExecutionLogStatus.pending
+        root_task.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Cannot start access task test_dataset:test_collection. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
+        )
+
+    @pytest.mark.usefixtures("request_task")
+    def test_queue_erasure_task_when_access_step_is_unfinished(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request,
+    ):
+        root_erasure_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.erasure,
+                "status": "pending",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "__ROOT__:__ROOT__",
+                "dataset_name": "__ROOT__",
+                "collection_name": "__ROOT__",
+                "upstream_tasks": [],
+                "downstream_tasks": ["test_dataset:test_collection"],
+            },
+        )
+
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_TASK_QUEUE.format(
+            privacy_request_id=privacy_request.id, task_id=root_erasure_task.id
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Request failed. Cannot run erasure task {root_erasure_task.id} when access tasks haven't completed."
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.run_access_node.delay"
+    )
+    def test_queue_request_task(
+        self,
+        run_access_node_mock,
+        privacy_request,
+        request_task,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert run_access_node_mock.called
+        run_access_node_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            privacy_request_task_id=request_task.id,
+        )
+        assert response.json() == {"task_queued": True}

@@ -46,6 +46,7 @@ from fides.api.common_exceptions import (
     RequestTaskNotFound,
     TraversalError,
     ValidationError,
+    UpstreamTasksNotReady,
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -1838,15 +1839,14 @@ def get_access_data(
     ],
     response_model=Dict,
 )
-def queue_task(
+def queue_task_manually(
     privacy_request_id: str,
     task_id: str,
     *,
     db: Session = Depends(deps.get_db),
 ) -> Dict:
     """
-    Queue a privacy request from a specific task if applicable
-
+    Manually a privacy request from a specific task if applicable
     """
     try:
         privacy_request, request_task, _ = run_prerequisite_task_checks(
@@ -1857,28 +1857,32 @@ def queue_task(
             status_code=HTTP_404_NOT_FOUND,
             detail=str(exc),
         )
+    except UpstreamTasksNotReady as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
 
     if privacy_request.status != PrivacyRequestStatus.in_processing:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} with privacy request of status {request_task.status.value}",
+            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} for privacy request {privacy_request.id} of status {privacy_request.status.value}",
         )
 
     if request_task.status in completed_statuses:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} with completed status {request_task.status.value}",
+            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} for privacy request {privacy_request.id} with status {request_task.status.value}",
         )
 
-    if (
-        request_task.action_type == ActionType.access
-        and privacy_request.erasure_tasks.first()
+    if request_task.action_type == ActionType.erasure and not all(
+        pr.status in completed_statuses for pr in privacy_request.access_tasks
     ):
-        # Shouldn't be possible -
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot run {request_task.action_type.value} access task {request_task.id} after erasure checkpoint has started.",
+            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} when access tasks haven't completed.",
         )
+    # TODO prevent re-running access task after erasure section has started
 
     logger.info(
         "Manual task call received for {} task {} {}",
@@ -1889,7 +1893,9 @@ def queue_task(
 
     # Requeuing the particular task now that the callback is received
     log_task_queued(request_task)
-    task_function(request_task).delay(privacy_request.id, request_task.id)
+    task_function(request_task).delay(
+        privacy_request_id=privacy_request.id, privacy_request_task_id=request_task.id
+    )
 
     return {"task_queued": True}
 
