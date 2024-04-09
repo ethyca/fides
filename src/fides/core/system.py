@@ -25,6 +25,8 @@ def generate_redshift_systems(
 
     client = aws_connector.get_aws_client(service="redshift", aws_config=aws_config)
     describe_clusters = aws_connector.describe_redshift_clusters(client=client)
+    if not describe_clusters:
+        return []
     redshift_systems = aws_connector.create_redshift_systems(
         describe_clusters=describe_clusters, organization_key=organization_key
     )

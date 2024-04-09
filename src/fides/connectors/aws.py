@@ -1,4 +1,5 @@
 """Module that adds interactions with aws"""
+
 from functools import update_wrapper
 from typing import Any, Callable, Dict, List, Optional
 
@@ -11,6 +12,7 @@ from fideslang.models import (
     System,
     SystemMetadata,
 )
+from loguru import logger
 
 from fides.connectors.models import (
     AWSConfig,
@@ -48,6 +50,11 @@ def handle_common_aws_errors(func: Callable) -> Callable:
                 "SignatureDoesNotMatch",
             ]:
                 raise ConnectorAuthFailureException(error.response["Error"]["Message"])
+            elif error.response["Error"]["Code"] in [
+                "AccessDenied",
+            ]:
+                logger.warning(error.response["Error"]["Message"])
+                return
             raise ConnectorFailureException(error.response["Error"]["Message"])
 
     return update_wrapper(wrapper_func, func)
