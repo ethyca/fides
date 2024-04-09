@@ -1,4 +1,3 @@
-import random
 from time import sleep
 
 import pytest

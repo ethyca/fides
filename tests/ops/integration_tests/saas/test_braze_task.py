@@ -1,5 +1,3 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph

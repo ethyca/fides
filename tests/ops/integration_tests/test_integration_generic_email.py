@@ -21,14 +21,24 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_erasure_email(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
+    dsr_version,
+    request,
     erasure_policy,
     generic_erasure_email_connection_config,
     run_privacy_request_task,
@@ -40,6 +50,7 @@ async def test_erasure_email(
     Verify the privacy request is set to "awaiting email send" and that one email
     is sent when the send_email_batch job is executed manually
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     pr = get_privacy_request_results(
         db,
@@ -91,10 +102,16 @@ async def test_erasure_email(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_erasure_email_no_messaging_config(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
+    dsr_version,
+    request,
     erasure_policy,
     generic_erasure_email_connection_config,
     run_privacy_request_task,
@@ -105,6 +122,7 @@ async def test_erasure_email_no_messaging_config(
     Verify the privacy request is set to "awaiting email send" and that the
     email fails to send because of the missing messaging config.
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     pr = get_privacy_request_results(
         db,
@@ -134,8 +152,14 @@ async def test_erasure_email_no_messaging_config(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_erasure_email_no_write_permissions(
     db,
+    dsr_version,
+    request,
     erasure_policy,
     generic_erasure_email_connection_config,
     run_privacy_request_task,
@@ -145,6 +169,7 @@ async def test_erasure_email_no_write_permissions(
     Run an erasure privacy request with only a generic erasure email connector.
     Verify we don't send an email for a connector with read-only access.
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     generic_erasure_email_connection_config.update(
         db=db,
@@ -172,8 +197,14 @@ async def test_erasure_email_no_write_permissions(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_erasure_email_no_updates_needed(
     db,
+    dsr_version,
+    request,
     policy,
     generic_erasure_email_connection_config,
     run_privacy_request_task,
@@ -184,6 +215,7 @@ async def test_erasure_email_no_updates_needed(
     Verify the privacy request is set to "complete" because this is
     an access request and no erasures are needed.
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     pr = get_privacy_request_results(
         db,
@@ -210,10 +242,16 @@ async def test_erasure_email_no_updates_needed(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_erasure_email_disabled_connector(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
+    dsr_version,
+    request,
     erasure_policy,
     generic_erasure_email_connection_config,
     run_privacy_request_task,
@@ -225,6 +263,7 @@ async def test_erasure_email_disabled_connector(
     Verify the privacy request is set to "awaiting email send" and that one email
     is sent when the send_email_batch job is executed manually
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     generic_erasure_email_connection_config.update(
         db=db,
@@ -255,10 +294,16 @@ async def test_erasure_email_disabled_connector(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_erasure_email_unsupported_identity(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
+    dsr_version,
+    request,
     erasure_policy,
     generic_erasure_email_connection_config,
     run_privacy_request_task,
@@ -269,6 +314,7 @@ async def test_erasure_email_unsupported_identity(
     Run an erasure privacy request with only a generic erasure email connector.
     Verify the privacy request is set to "complete" because the provided identities are not supported.
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     pr = get_privacy_request_results(
         db,

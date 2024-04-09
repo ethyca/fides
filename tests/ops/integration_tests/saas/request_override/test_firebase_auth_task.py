@@ -5,7 +5,6 @@ from firebase_admin import auth
 from firebase_admin.auth import UserNotFoundError, UserRecord
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.saas_request.override_implementations.firebase_auth_request_overrides import (
     firebase_auth_user_delete,
@@ -670,7 +669,6 @@ async def test_firebase_auth_user_delete_function_with_phone_number_identity(
     db,
     dsr_version,
     request,
-    policy,
     privacy_request,
     firebase_auth_connection_config,
     firebase_auth_dataset_config,

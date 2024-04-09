@@ -1,5 +1,3 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
@@ -145,7 +143,7 @@ async def test_recharge_erasure_request_task(
 ) -> None:
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request.policy_id = erasure_policy_complete_mask
+    privacy_request.policy_id = erasure_policy_complete_mask.id
     privacy_request.save(db)
 
     identity_attribute = "email"

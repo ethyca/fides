@@ -102,15 +102,23 @@ class TestEnabledActions:
         assert erasure_results == {}
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_access_disabled_for_manual_webhook_integrations(
         self,
         db,
+        dsr_version,
+        request,
         policy,
         integration_postgres_config,
         integration_manual_webhook_config,
         access_manual_webhook,
         run_privacy_request_task,
     ) -> None:
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         pr = get_privacy_request_results(
             db,
             policy,
@@ -145,9 +153,15 @@ class TestEnabledActions:
         assert pr.status == PrivacyRequestStatus.complete
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_erasure_disabled_for_manual_webhook_integrations(
         self,
         db,
+        dsr_version,
+        request,
         policy,
         erasure_policy,
         integration_postgres_config,
@@ -155,6 +169,8 @@ class TestEnabledActions:
         access_manual_webhook,
         run_privacy_request_task,
     ) -> None:
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         pr = get_privacy_request_results(
             db,
             erasure_policy,

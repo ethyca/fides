@@ -115,7 +115,7 @@ async def test_unbounce_erasure_request_task(
     """Full erasure request based on the Unbounce SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request.policy_id = erasure_policy_string_rewrite
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)
 
     masking_strict = CONFIG.execution.masking_strict
