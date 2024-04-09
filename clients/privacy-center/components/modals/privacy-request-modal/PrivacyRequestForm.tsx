@@ -73,7 +73,7 @@ const usePrivacyRequestForm = ({
       // extract identity input values
       const identityInputValues = Object.fromEntries(
         Object.entries(action.identity_inputs ?? {}).map(([key, field]) => {
-          const value = values[key] || null;
+          const value = values[key] ?? null;
           if (typeof field === "string") {
             return [key, value];
           }
@@ -88,7 +88,7 @@ const usePrivacyRequestForm = ({
             key,
             {
               label: field.label,
-              value: field.hidden ? field.default_value : values[key] || null,
+              value: field.hidden ? field.default_value : values[key] ?? null,
             },
           ])
           // @ts-ignore
