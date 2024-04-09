@@ -40,20 +40,6 @@ describe("Fides-js GPP extension", () => {
       });
     });
   };
-  /**
-   * TODO (PROD-1439): remove this workaround by fixing GPP initialization!
-   *
-   * Our current GPP extension waits until the very end of the FidesJS
-   * initialize() method to register, but not during the getInitialFides() phase
-   * used to immediately setup Fides for returning users. This means the tests
-   * below for returning users all fail - to workaround this and get the test
-   * passing for now, we add an ugly delay before we check for GPP in this function.
-   */
-  const workaroundGppInitializationDelayBug = () => {
-    /* eslint-disable-next-line cypress/no-unnecessary-waiting */
-    cy.wait(200);
-    cy.get("@FidesInitialized").should("have.been.calledTwice");
-  };
 
   beforeEach(() => {
     cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
@@ -206,9 +192,6 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        workaroundGppInitializationDelayBug();
-
         cy.get("@FidesUIShown").should("not.have.been.called");
         // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events
         // 3 and 4 yet.
@@ -308,9 +291,6 @@ describe("Fides-js GPP extension", () => {
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        workaroundGppInitializationDelayBug();
-
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
@@ -546,9 +526,6 @@ describe("Fides-js GPP extension", () => {
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
         visitDemoWithGPP({});
         cy.waitUntilFidesInitialized().then(() => {
-          // TODO(PROD-1439): remove this workaround
-          workaroundGppInitializationDelayBug();
-
           cy.get("@FidesUIShown").should("not.have.been.called");
 
           cy.window().then((win) => {
@@ -639,9 +616,6 @@ describe("Fides-js GPP extension", () => {
           },
         });
         cy.waitUntilFidesInitialized().then(() => {
-          // TODO(PROD-1439): remove this workaround
-          workaroundGppInitializationDelayBug();
-
           cy.get("@FidesUIShown").should("not.have.been.called");
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));

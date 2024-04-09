@@ -15,6 +15,10 @@
           : "./lib/fides.js";
         document.write('<script src="' + src + '"><\/script>');
       })();
+      (function () {
+        if (window.fidesConfig?.experience?.gpp_settings?.enabled)
+          document.write('<script src="./lib/fides-ext-gpp.js"><\/script>');
+      })();
       var deleteCookie = function () {
         document.cookie =
           "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
