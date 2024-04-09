@@ -1,4 +1,5 @@
 import { VNode, h } from "preact";
+import { HTMLAttributes } from "preact/compat";
 
 import { Attributes } from "../lib/a11y-dialog";
 import type { I18n } from "../lib/i18n";
@@ -23,10 +24,9 @@ const ConsentModal = ({
   const { container, overlay, dialog, title, closeButton } = attributes;
 
   return (
-    // @ts-ignore A11yDialog ref obj type isn't quite the same
     <div
       data-testid="consent-modal"
-      {...container}
+      {...(container as Partial<HTMLAttributes<HTMLDivElement>>)}
       className="fides-modal-container"
     >
       <div {...overlay} className="fides-modal-overlay" />

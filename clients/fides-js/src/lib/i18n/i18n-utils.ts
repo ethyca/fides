@@ -497,6 +497,13 @@ export function initializeI18n(
   const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
     availableLocales.includes(lang.locale)
   );
+  // move default locale first
+  const indexOfDefault = availableLanguages.findIndex(
+    (lang) => lang.locale === i18n.getDefaultLocale()
+  );
+  if (indexOfDefault > 0) {
+    availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);
+  }
   i18n.setAvailableLanguages(availableLanguages);
   debugLog(
     options?.debug,
