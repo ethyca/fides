@@ -1105,10 +1105,10 @@ class PrivacyRequest(
         return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
 
     def get_consent_results(self) -> Dict[str, int]:
-        """For parity, return consent_successes"""
+        """For parity, return consent sent"""
         if self.consent_tasks.count():
             return {
-                t.collection_address: t.consent_success
+                t.collection_address: t.consent_sent
                 for t in self.consent_tasks
                 if not t.is_root_task and not t.is_terminator_task
             }
@@ -1689,8 +1689,9 @@ class RequestTask(Base):
 
     # Written after an erasure is completed
     rows_masked = Column(Integer)
-    # Written after a consent request is completed
-    consent_success = Column(Boolean)
+    # Written after a consent request is completed - not all consent
+    # connectors will end up sending a request
+    consent_sent = Column(Boolean)
     # Written after a callback is completed
     callback_succeeded = Column(Boolean)
 
