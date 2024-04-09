@@ -34,7 +34,6 @@ from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
-    ManualAction,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
@@ -53,7 +52,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
-from fides.api.task import graph_task
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import (
@@ -91,8 +89,15 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
+    REQUEST_TASKS,
+    PRIVACY_REQUEST_ACCESS_DATA,
 )
 from fides.config import CONFIG
+from tests.ops.graph.graph_test_util import field
+from tests.ops.service.privacy_request.test_request_runner_service import (
+    get_privacy_request_results,
+)
+from tests.ops.task.traversal_data import integration_db_dataset
 
 page_size = Params().size
 
@@ -4915,3 +4920,233 @@ class TestCreatePrivacyRequestErrorNotification:
         response = api_client.put(url, json=data, headers=auth_header)
         assert response.status_code == 200
         assert response.json() == data
+
+
+class TestPrivacyRequestTasksList:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request) -> str:
+        return V1_URL_PREFIX + REQUEST_TASKS.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_get_request_tasks_unauthenticated(self, api_client: TestClient, url):
+        response = api_client.get(url, headers={})
+        assert 401 == response.status_code
+
+    def test_get_request_tasks_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_no_tasks(self, api_client, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        assert response.json() == []
+
+    def test_get_request_tasks(
+        self, api_client: TestClient, generate_auth_header, url, request_task
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert len(response.json()) == 3
+        resp = response.json()
+        root_response = resp[0]
+        assert root_response["collection_address"] == "__ROOT__:__ROOT__"
+        assert resp[1]["collection_address"] == "test_dataset:test_collection"
+        assert resp[2]["collection_address"] == "__TERMINATE__:__TERMINATE__"
+
+        assert root_response["upstream_tasks"] == []
+        assert root_response["downstream_tasks"] == ["test_dataset:test_collection"]
+        assert root_response["status"] == "complete"
+        assert root_response["action_type"] == "access"
+
+        # No DSR data is returned in the response
+        assert set(root_response.keys()) == {
+            "id",
+            "collection_address",
+            "status",
+            "created_at",
+            "updated_at",
+            "upstream_tasks",
+            "downstream_tasks",
+            "action_type",
+        }
+
+
+class TestGetAccessData:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request) -> str:
+        return V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_DATA.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_get_access_data_unauthenticated(self, api_client: TestClient, url):
+        response = api_client.get(url, headers={})
+        assert 401 == response.status_code
+
+    def test_get_access_data_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_access_data_erasure_request(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request_with_erasure_policy,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_DATA.format(
+            privacy_request_id=privacy_request_with_erasure_policy.id
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Cannot retrieve access data for {privacy_request_with_erasure_policy.id}. This is not an access request."
+        )
+
+    def test_incomplete_access_request(
+        self, api_client: TestClient, generate_auth_header, privacy_request, url
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Cannot retrieve access data for incomplete request {privacy_request.id}."
+        )
+
+    def test_no_results_saved(
+        self, db, api_client: TestClient, generate_auth_header, privacy_request
+    ):
+        """Handle if no data is present - either for a privacy request pre-dating
+        this feature, or the data has been removed after a ttl date"""
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_DATA.format(
+            privacy_request_id=privacy_request.id
+        )
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json() == {}
+
+    def test_show_access_results(
+        self, db, api_client: TestClient, generate_auth_header, privacy_request, url
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+        privacy_request.save_filtered_access_results(
+            db,
+            results={
+                "test_rule_key": {
+                    "dataset:collection": [
+                        {"address_id": 1, "test_address": "1002 Test Town"}
+                    ]
+                }
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json() == {
+            "test_rule_key": {
+                "dataset:collection": [
+                    {"address_id": 1, "test_address": "1002 Test Town"}
+                ]
+            }
+        }
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    def test_show_access_results_end_to_end(
+        self,
+        mock_dispatch_message,
+        postgres_example_test_dataset_config,
+        postgres_inserts,
+        policy,
+        dsr_version,
+        run_privacy_request_task,
+        request,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """Test end-to-end saving access results on PrivacyRequest.filtered_final_upload and resurfacing under this endpoint"""
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+        seed_email = postgres_inserts["customer"][0]["email"]
+
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": seed_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_DATA.format(
+            privacy_request_id=pr.id
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        # Assert access results are saved by rule key -
+        assert list(response.json().keys()) == ["access_request_rule"]
+
+        # Assert decrypting/decoding selected access results
+        access_request_rule = response.json()["access_request_rule"]
+        assert set(access_request_rule.keys()) == {
+            "postgres_example_test_dataset:customer",
+            "postgres_example_test_dataset:orders",
+            "postgres_example_test_dataset:address",
+        }
+
+        assert (
+            access_request_rule["postgres_example_test_dataset:customer"][0]["id"]
+            == 10000
+        )
+        assert (
+            access_request_rule["postgres_example_test_dataset:customer"][0]["email"]
+            == seed_email
+        )
+
+        assert (
+            access_request_rule["postgres_example_test_dataset:orders"][0][
+                "customer_id"
+            ]
+            == 10000
+        )
+        assert len(access_request_rule["postgres_example_test_dataset:address"]) == 2
+
+        db.refresh(pr)
+        # While we're here, asserting the access result urls are saved at the same time
+        # in case this is both an access and erasure request for DSR 3.0, so we have
+        # access result urls saved
+        assert pr.access_result_urls["access_result_urls"] == [
+            "http://www.data-download-url"
+        ]
