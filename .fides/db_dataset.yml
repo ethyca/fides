@@ -1144,6 +1144,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_policy_link_label
       data_categories: [ system.operations ]
+    - name: modal_link_label
+      data_categories: [ system.operations ]
     - name: privacy_policy_url
       data_categories: [ system.operations ]
     - name: privacy_preferences_link_label
@@ -1964,6 +1966,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_policy_link_label
       data_categories: [system.operations]
+    - name: modal_link_label
+      data_categories: [ system.operations ]
     - name: privacy_policy_url
       data_categories: [system.operations]
     - name: privacy_preferences_link_label
