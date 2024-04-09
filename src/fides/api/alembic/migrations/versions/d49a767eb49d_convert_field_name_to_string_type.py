@@ -1,7 +1,7 @@
 """convert field_name to string type
 
 Revision ID: d49a767eb49d
-Revises: 7799269e7078
+Revises: e4023342ebbb
 Create Date: 2024-03-26 04:35:22.358246
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d49a767eb49d"
-down_revision = "7799269e7078"
+down_revision = "e4023342ebbb"
 branch_labels = None
 depends_on = None
 
