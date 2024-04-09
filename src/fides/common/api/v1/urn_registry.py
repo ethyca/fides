@@ -78,9 +78,6 @@ PRIVACY_REQUEST_ACCESS_DATA = "/privacy-request/{privacy_request_id}/access_resu
 PRIVACY_REQUEST_TASK_QUEUE = (
     "/privacy-request/{privacy_request_id}/tasks/{task_id}/queue"
 )
-PRIVACY_REQUEST_TASK_CALLBACK = (
-    "/privacy-request/{privacy_request_id}/tasks/{task_id}/callback"
-)
 
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"

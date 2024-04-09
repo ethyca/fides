@@ -217,7 +217,8 @@ class FieldAddress:
 
     @staticmethod
     def from_string(field_address_string: str) -> FieldAddress:
-        """Create a Field Address from a string"""
+        """Creates a Field Address from a string - especially useful for instantiating
+        Fields in Collections that are built from data in RequestTask.collection"""
         try:
             split_string = field_address_string.split(":")
             dataset = split_string[0]
@@ -227,7 +228,7 @@ class FieldAddress:
             return FieldAddress(dataset, collection, *split_fields)
         except Exception:
             raise FidesopsException(
-                f"'{field_address_string}' is not a valid collection address"
+                f"'{field_address_string}' is not a valid field address"
             )
 
     def __eq__(self, other: object) -> bool:
@@ -237,9 +238,6 @@ class FieldAddress:
 
     def __hash__(self) -> int:
         return hash(self.value)
-
-    def __str__(self) -> str:
-        return self.value
 
     def __repr__(self) -> str:
         return self.value
@@ -275,10 +273,6 @@ class Field(BaseModel, ABC):
         """for pydantic incorporation of custom non-pydantic types"""
 
         arbitrary_types_allowed = True
-        json_encoders = {
-            FieldAddress: lambda fa: fa.value,
-            DataTypeConverter: lambda dtc: dtc.name,
-        }
 
     @abstractmethod
     def cast(self, value: Any) -> Optional[Any]:
@@ -518,9 +512,9 @@ class Collection(BaseModel):
         return any(self.recursively_collect_matches(func))
 
     @classmethod
-    def parse_from_task(cls, data: Dict) -> Collection:
+    def parse_from_request_task(cls, data: Dict) -> Collection:
         """
-        Take raw collection data saved on RequestTask.collection and convert it back into a Collection.
+        Take raw collection data saved on RequestTask.collection and converts it back into a Collection.
 
         See Config > json_encoders for some of the fields that needed special handling for serialization for
         database storage.
@@ -528,7 +522,7 @@ class Collection(BaseModel):
         data = data.copy()
 
         def build_field(serialized_field: dict) -> Field:
-            # Convert serialized references into expected format on Collection
+            """Convert a serialized field on RequestTask.collection.fields into a Field"""
             converted_references: List[
                 Tuple[FieldAddress, Optional[EdgeDirection]]
             ] = []
@@ -539,7 +533,7 @@ class Collection(BaseModel):
                     (FieldAddress.from_string(field_address), edge_direction)  # type: ignore
                 )
 
-            data_type_converter = get_data_type_converter(
+            data_type_converter: DataTypeConverter = get_data_type_converter(
                 serialized_field.pop("data_type_converter")
             )
 
@@ -582,7 +576,8 @@ class Collection(BaseModel):
         """for pydantic incorporation of custom non-pydantic types"""
 
         arbitrary_types_allowed = True
-        # For running Collection.json()
+        # This supports running Collection.json() to serialize less standard
+        # types so it can be saved to the database under RequestTask.collection
         json_encoders = {
             Set: lambda val: list(  # pylint: disable=unhashable-member,unnecessary-lambda
                 val

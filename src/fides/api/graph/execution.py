@@ -25,7 +25,7 @@ class ExecutionNode:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self, request_task: RequestTask):
         assert request_task.collection  # For mypy
-        self.collection: Collection = Collection.parse_from_task(
+        self.collection: Collection = Collection.parse_from_request_task(
             request_task.collection
         )
         self.address: CollectionAddress = CollectionAddress.from_string(

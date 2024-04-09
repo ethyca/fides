@@ -151,10 +151,6 @@ class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
 
-class AwaitingTaskCallback(BaseException):
-    """Task awaiting callback"""
-
-
 class PrivacyRequestNotFound(BaseException):
     """Privacy Request Not Found"""
 
