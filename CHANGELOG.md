@@ -26,6 +26,7 @@ The types of changes are:
 ### Changed
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
 - Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
+- Changed GPP extension to be pre-bundled in appropriate circumstances, as opposed to another fetch [#4780](https://github.com/ethyca/fides/pull/4780)
 
 ### Fixed
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
