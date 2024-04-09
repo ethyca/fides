@@ -103,7 +103,7 @@ export const initOverlay = async ({
           },
           parentElem
         );
-        debugLog(options.debug, "Fides overlay is now showing!");
+        debugLog(options.debug, "Fides overlay is now in the DOM!");
       }
       return await Promise.resolve();
     } catch (e) {
