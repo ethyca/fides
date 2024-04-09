@@ -49,7 +49,6 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { setupExtensions } from "./extensions";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
@@ -476,11 +475,6 @@ export const initialize = async ({
       }
     }
   }
-
-  // Call extensions
-  // DEFER(PROD#1439): This is likely too late for the GPP stub.
-  // We should move stub code out to the base package and call it right away instead.
-  await setupExtensions({ options, experience: effectiveExperience });
 
   // return an object with the updated Fides values
   return {
