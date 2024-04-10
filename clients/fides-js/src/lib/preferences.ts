@@ -58,9 +58,9 @@ async function savePreferencesApi(
 /**
  * Updates the user's consent preferences, going through the following steps:
  * 1. Update the cookie object based on new preferences
- * 2. Update the window.Fides object
- * 3. Save preferences to the `fides_consent` cookie in the browser
- * 4. Save preferences to Fides API or a custom function (`savePreferencesFn`)
+ * 2. Save preferences to the `fides_consent` cookie in the browser
+ * 3. Save preferences to Fides API or a custom function (`savePreferencesFn`)
+ * 4. Update the window.Fides object
  * 5. Remove any cookies from notices that were opted-out from the browser
  * 6. Dispatch a "FidesUpdated" event
  */
@@ -96,18 +96,12 @@ export const updateConsentPreferences = async ({
   Object.assign(cookie, updatedCookie);
   Object.assign(cookie.fides_meta, extraDetails); // save extra details to meta (i.e. consentMethod)
 
-  // 2. Update the window.Fides object
-  debugLog(options.debug, "Updating window.Fides");
-  window.Fides.consent = cookie.consent;
-  window.Fides.fides_string = cookie.fides_string;
-  window.Fides.tcf_consent = cookie.tcf_consent;
-
-  // 3. Save preferences to the cookie in the browser
+  // 2. Save preferences to the cookie in the browser
   debugLog(options.debug, "Saving preferences to cookie");
   saveFidesCookie(cookie, options.base64Cookie);
   window.Fides.saved_consent = cookie.consent;
 
-  // 4. Save preferences to API (if not disabled)
+  // 3. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {
     try {
       await savePreferencesApi(
@@ -129,6 +123,12 @@ export const updateConsentPreferences = async ({
       );
     }
   }
+
+  // 4. Update the window.Fides object
+  debugLog(options.debug, "Updating window.Fides");
+  window.Fides.consent = cookie.consent;
+  window.Fides.fides_string = cookie.fides_string;
+  window.Fides.tcf_consent = cookie.tcf_consent;
 
   // 5. Remove cookies associated with notices that were opted-out from the browser
   if (consentPreferencesToSave) {
