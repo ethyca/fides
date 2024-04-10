@@ -10,6 +10,10 @@ from fides.api.service.privacy_request.email_batch_service import (
 from fides.api.service.privacy_request.request_runner_service import (
     initiate_paused_privacy_request_followup,
 )
+from fides.api.service.privacy_request.request_service import (
+    DSR_DATA_REMOVAL,
+    initiate_scheduled_dsr_data_removal,
+)
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.config import get_config
 
@@ -42,6 +46,26 @@ def test_initiate_batch_email_send() -> None:
 
     assert job.trigger.fields[5].name == "hour"
     assert str(job.trigger.fields[5].expressions[0]) == "12"
+
+    assert type(job.trigger.timezone).__name__ == "US/Eastern"
+
+    CONFIG.test_mode = True
+
+
+def test_initiate_scheduled_dsr_data_removal() -> None:
+    CONFIG.test_mode = False
+
+    initiate_scheduled_dsr_data_removal()
+    assert scheduler.running
+    job = scheduler.get_job(job_id=DSR_DATA_REMOVAL)
+    assert job is not None
+    assert isinstance(job.trigger, CronTrigger)
+
+    assert job.trigger.fields[4].name == "day_of_week"
+    assert str(job.trigger.fields[4].expressions[0]) == "mon"
+
+    assert job.trigger.fields[5].name == "hour"
+    assert str(job.trigger.fields[5].expressions[0]) == "10"
 
     assert type(job.trigger.timezone).__name__ == "US/Eastern"
 

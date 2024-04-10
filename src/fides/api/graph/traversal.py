@@ -91,14 +91,6 @@ class TraversalNode(Contextualizable):
             for _, self_field_path, child_field_path in tuples
         }
 
-    @property
-    def query_field_paths(self) -> Set[FieldPath]:
-        """
-        All of the possible field paths that we can query for possible filter values.
-        These are field paths that are the ends of incoming edges.
-        """
-        return {edge.f2.field_path for edge in self.incoming_edges()}
-
     def incoming_edges_by_collection(self) -> Dict[CollectionAddress, List[Edge]]:
         return partition(self.incoming_edges(), lambda e: e.f1.collection_address())
 
@@ -112,6 +104,8 @@ class TraversalNode(Contextualizable):
     def can_run_given(self, remaining_node_keys: Set[CollectionAddress]) -> bool:
         """True if finished_node_keys covers all the nodes that this traversal_node is waiting for.  If
         all nodes this traversal_node is waiting for have finished, it's ok for this traversal_node to run.
+
+        NOTE: "After" functionality may not work as expected.
         """
         if self.node.collection.after.intersection(
             remaining_node_keys
@@ -291,8 +285,6 @@ class Traversal:
 
         Returns a list of termination traversal_node addresses so that we can take action on completed
         traversal.
-
-
 
         We define the root traversal_node as a traversal_node whose children are any nodes that have identity (seed)
         data.

@@ -13,6 +13,7 @@ from sqlalchemy.sql.elements import TextClause
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
     exited_statuses,
@@ -153,9 +154,9 @@ async def poll_server_for_completion(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
+def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
     """
-    Mark a privacy request as errored if all of its tasks have run but some have errored.
+    Mark a privacy request as errored if all of its Request Tasks have run but some have errored.
     """
     with self.get_new_session() as db:
         logger.info("Polling for errored privacy requests")
@@ -166,25 +167,31 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
         )
 
         def some_errored(tasks: Query) -> bool:
-            return all(tsk.status in exited_statuses for tsk in tasks)
+            """All statuses have exited and at least one is errored"""
+            statuses: List[ExecutionLogStatus] = [tsk.status for tsk in tasks]
+            all_exited = all(status in exited_statuses for status in statuses)
+            return all_exited and ExecutionLogStatus.error in statuses
 
+        marked_as_errored: Set[str] = set()
         for pr in in_progress_privacy_requests.all():
             if pr.consent_tasks.count():
                 # Consent propagation tasks - these are not created until access and erasure steps are complete.
                 if some_errored(pr.consent_tasks):
                     logger.info(f"Marking consent step of {pr.id} as error")
                     pr.error_processing(db)
+                    marked_as_errored.add(pr.id)
 
-            elif pr.erasure_tasks.count():
-                # These are not created until access tasks are created.
+            if pr.erasure_tasks.count():
                 if some_errored(pr.erasure_tasks):
                     logger.info(f"Marking erasure step of {pr.id} as error")
                     pr.error_processing(db)
+                    marked_as_errored.add(pr.id)
 
-            elif pr.access_tasks.count():
+            if pr.access_tasks.count():
                 if some_errored(pr.access_tasks):
                     logger.info(f"Marking access step of {pr.id} as error")
                     pr.error_processing(db)
+                    marked_as_errored.add(pr.id)
 
         # Schedule itself when this is finished
         scheduler.add_job(
@@ -193,6 +200,8 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> None:
             next_run_time=datetime.now()
             + timedelta(seconds=CONFIG.execution.state_polling_interval),
         )
+
+        return marked_as_errored
 
 
 def initiate_scheduled_dsr_data_removal() -> None:
@@ -228,6 +237,7 @@ def remove_saved_customer_data(self: DatabaseTask) -> None:
     with self.get_new_session() as db:
         logger.info("Running DSR Data Removal Task to cleanup obsolete user data")
 
+        # Remove old request tasks which potentially contain encrypted PII
         remove_dsr_data: TextClause = text(
             """
             DELETE FROM requesttask
@@ -246,4 +256,25 @@ def remove_saved_customer_data(self: DatabaseTask) -> None:
                 ),
             },
         )
+
+        # Remove columns from old privacyrequests that potentially contain encrypted PII
+        # or URL's that contain encrypted PII.
+        remove_data_from_privacy_request: TextClause = text(
+            """
+            UPDATE privacyrequest
+            SET filtered_final_upload = null, access_result_urls = null
+            WHERE privacyrequest.updated_at < :ttl
+            AND privacyrequest.status = 'complete';
+            """
+        )
+
+        db.execute(
+            remove_data_from_privacy_request,
+            {
+                "ttl": (
+                    datetime.now() - timedelta(seconds=CONFIG.redis.default_ttl_seconds)
+                ),
+            },
+        )
+
         db.commit()

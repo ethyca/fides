@@ -282,7 +282,8 @@ async def setup_server() -> None:
         async_scheduler.start()
 
     initiate_scheduled_batch_email_send()
-    scheduler.add_job(poll_for_exited_privacy_request_tasks)
+    if not CONFIG.test_mode:
+        scheduler.add_job(poll_for_exited_privacy_request_tasks)
     initiate_scheduled_dsr_data_removal()
 
     logger.debug("Sending startup analytics events...")

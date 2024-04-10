@@ -1331,6 +1331,63 @@ def request_task(db: Session, privacy_request) -> RequestTask:
         },
     )
     yield request_task
+
+    try:
+        end_task.delete(db).delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        request_task.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        root_task.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_request_task(db: Session, privacy_request) -> RequestTask:
+    root_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.erasure,
+            "status": "complete",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__ROOT__:__ROOT__",
+            "dataset_name": "__ROOT__",
+            "collection_name": "__ROOT__",
+            "upstream_tasks": [],
+            "downstream_tasks": ["test_dataset:test_collection"],
+        },
+    )
+    request_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.erasure,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "test_dataset:test_collection",
+            "dataset_name": "test_dataset",
+            "collection_name": "test_collection",
+            "upstream_tasks": ["__ROOT__:__ROOT__"],
+            "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+        },
+    )
+    end_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.erasure,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__TERMINATE__:__TERMINATE__",
+            "dataset_name": "__TERMINATE__",
+            "collection_name": "__TERMINATE__",
+            "upstream_tasks": ["test_dataset:test_collection"],
+            "downstream_tasks": [],
+        },
+    )
+    yield request_task
     end_task.delete(db)
     request_task.delete(db)
     root_task.delete(db)

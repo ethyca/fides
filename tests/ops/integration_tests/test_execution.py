@@ -65,9 +65,15 @@ class TestDeleteCollection:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     def test_delete_collection_before_new_request(
         self,
         db,
+        dsr_version,
+        request,
         policy,
         read_connection_config,
         run_privacy_request_task,
@@ -75,6 +81,8 @@ class TestDeleteCollection:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
         """
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -348,14 +356,22 @@ class TestDeleteCollection:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     def test_delete_connection_config_on_completed_request(
         self,
         db,
+        dsr_version,
+        request,
         policy,
         read_connection_config,
         run_privacy_request_task,
     ) -> None:
         """Delete the connection config on a completed request leaves execution logs untouched"""
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -699,6 +715,8 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         request,
     ) -> None:
         """Disabling the connection config on a completed request leaves execution logs untouched"""
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
