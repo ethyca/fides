@@ -67,7 +67,6 @@ def upgrade():
         ),
         sa.Column("rows_masked", sa.Integer(), nullable=True),
         sa.Column("consent_sent", sa.Boolean(), nullable=True),
-        sa.Column("callback_succeeded", sa.Boolean(), nullable=True),
         sa.Column("collection", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column(
             "traversal_details", postgresql.JSONB(astext_type=sa.Text()), nullable=True

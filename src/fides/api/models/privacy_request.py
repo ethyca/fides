@@ -1692,8 +1692,6 @@ class RequestTask(Base):
     # Written after a consent request is completed - not all consent
     # connectors will end up sending a request
     consent_sent = Column(Boolean)
-    # Written after a callback is completed
-    callback_succeeded = Column(Boolean)
 
     # Stores a serialized collection that can be transformed back into a Collection to help
     # execute the current task

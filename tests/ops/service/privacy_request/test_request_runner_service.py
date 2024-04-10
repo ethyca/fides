@@ -2035,12 +2035,12 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
     @pytest.mark.parametrize(
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
     )
     def test_email_complete_send_erasure(
         self,

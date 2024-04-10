@@ -824,7 +824,9 @@ class TestFormatDataUseMapForCaching:
                 [
                     "connection_config_no_system"
                 ],  # connection config no system, no data uses
-                {"postgres_example_subscriptions_dataset_no_system:subscriptions": {}},
+                {
+                    "postgres_example_subscriptions_dataset_no_system:subscriptions": set()
+                },
             ),
             (
                 [
@@ -853,7 +855,7 @@ class TestFormatDataUseMapForCaching:
                     "connection_config_system_multiple_decs",
                 ],
                 {
-                    "postgres_example_subscriptions_dataset_no_system:subscriptions": {},
+                    "postgres_example_subscriptions_dataset_no_system:subscriptions": set(),
                     "postgres_example_subscriptions_dataset_multiple_decs:subscriptions": {
                         "marketing.advertising",
                         "third_party_sharing",

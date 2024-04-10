@@ -404,6 +404,7 @@ def run_privacy_request(
                 )
 
             # Upload Access Results CHECKPOINT
+            access_result_urls: List[str] = []
             raw_access_results: Dict = privacy_request.get_raw_access_results()
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
@@ -415,7 +416,7 @@ def run_privacy_request(
                 filtered_access_results = filter_by_enabled_actions(
                     raw_access_results, connection_configs
                 )
-                access_result_urls: List[str] = upload_access_results(
+                access_result_urls = upload_access_results(
                     session,
                     policy,
                     filtered_access_results,
