@@ -336,7 +336,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
-      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
+      renderBanner={({ isEmbedded, isOpen, onClose, onSave, onManagePreferencesClick }) => {
         const goToVendorTab = () => {
           onManagePreferencesClick();
           setActiveTabIndex(2);
@@ -346,6 +346,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             i18n={i18n}
             dismissable={isDismissable}
             bannerIsOpen={isOpen}
+            isEmbedded={isEmbedded}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
               onClose();

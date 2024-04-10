@@ -253,7 +253,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
-      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
+      renderBanner={({ isEmbedded, isOpen, onClose, onSave, onManagePreferencesClick }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}
           dismissable={isDismissable}
@@ -263,6 +263,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             handleDismiss();
           }}
           i18n={i18n}
+          isEmbedded={isEmbedded}
           renderButtonGroup={({ isMobile }) => (
             <NoticeConsentButtons
               experience={experience}

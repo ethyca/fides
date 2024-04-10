@@ -74,10 +74,13 @@
 }
 
 div#fides-overlay {
-  font-family: var(--fides-overlay-font-family);
-  font-size: var(--fides-overlay-font-size-body);
   z-index: 1000;
   position: fixed;
+}
+
+.fides-banner, .fides-modal-container {
+  font-family: var(--fides-overlay-font-family);
+  font-size: var(--fides-overlay-font-size-body);
   white-space: pre-line;
 
   /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
@@ -94,7 +97,7 @@ div#fides-overlay {
   display: inline;
 }
 
-div#fides-banner-container {
+div#fides-banner-container:not(.fides-embedded) {
   position: fixed;
   z-index: 1;
   width: 100%;
@@ -122,6 +125,10 @@ div#fides-banner {
   border-top: 1px solid var(--fides-overlay-primary-color);
 }
 
+.fides-embedded div#fides-banner {
+  border: none;
+}
+
 div#fides-banner-inner {
   width: 100%;
 }
@@ -131,9 +138,16 @@ div#fides-banner-container.fides-banner-bottom {
   left: 0;
 }
 
+div#fides-banner-container.fides-banner-hidden {
+  visibility: hidden;
+}
+
+div#fides-banner-container.fides-banner-hidden.fides-embedded {
+  display: none;
+}
+
 div#fides-banner-container.fides-banner-bottom.fides-banner-hidden {
   transform: translateY(150%);
-  visibility: hidden;
 }
 
 div#fides-banner-container.fides-banner-top {
@@ -143,7 +157,6 @@ div#fides-banner-container.fides-banner-top {
 
 div#fides-banner-container.fides-banner-top.fides-banner-hidden {
   transform: translateY(-150%);
-  visibility: hidden;
 }
 
 div#fides-banner-inner div#fides-button-group {
@@ -463,6 +476,10 @@ div#fides-banner .fides-close-button {
 
 .fides-close-button:hover {
   background: var(--fides-overlay-hover-color);
+}
+
+.fides-embedded .fides-close-button {
+  display: none !important;
 }
 
 .fides-modal-notices {
