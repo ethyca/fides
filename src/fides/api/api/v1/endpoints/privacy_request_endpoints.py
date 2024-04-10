@@ -60,6 +60,7 @@ from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
     CheckpointActionRequired,
     ConsentRequest,
     ExecutionLog,
@@ -69,7 +70,6 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
     RequestTask,
-    completed_statuses,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
@@ -1870,14 +1870,15 @@ def queue_task_manually(
             detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} for privacy request {privacy_request.id} of status {privacy_request.status.value}",
         )
 
-    if request_task.status in completed_statuses:
+    if request_task.status in COMPLETED_EXECUTION_LOG_STATUSES:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} for privacy request {privacy_request.id} with status {request_task.status.value}",
         )
 
     if request_task.action_type == ActionType.erasure and not all(
-        pr.status in completed_statuses for pr in privacy_request.access_tasks
+        pr.status in COMPLETED_EXECUTION_LOG_STATUSES
+        for pr in privacy_request.access_tasks
     ):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

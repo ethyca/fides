@@ -543,24 +543,6 @@ class PrivacyRequest(
         res: AsyncResult = AsyncResult(task_id)
         return res
 
-    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
-        """
-        Cache a dict of collections traversed in the privacy request
-        mapped to their associated data uses
-        """
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
-
-    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
-        """
-        Fetch the collection -> data use map cached for this privacy request
-        """
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[Dict[str, Set[str]]]]
-        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        return list(value_dict.values())[0] if value_dict else None
-
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
@@ -578,6 +560,24 @@ class PrivacyRequest(
                         get_drp_request_body_cache_key(self.id, key),
                         value,
                     )
+
+    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
+        """
+        Cache a dict of collections traversed in the privacy request
+        mapped to their associated data uses
+        """
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
+
+    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
+        """
+        Fetch the collection -> data use map cached for this privacy request
+        """
+        cache: FidesopsRedis = get_cache()
+        value_dict: Optional[
+            Dict[str, Optional[Dict[str, Set[str]]]]
+        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        return list(value_dict.values())[0] if value_dict else None
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
         """Sets the encryption key in the Fides app cache if provided"""
@@ -1051,6 +1051,8 @@ class PrivacyRequest(
         )
 
     def get_tasks_by_action(self, action: ActionType) -> Query:
+        """Convenience helper to get RequestTasks of a certain action type for the given
+        privacy request"""
         if action == ActionType.access:
             return self.access_tasks
 
@@ -1095,6 +1097,7 @@ class PrivacyRequest(
 
         These shouldn't be returned to the user - they are not filtered by data category
         """
+        # For DSR 3.0, pull these off of the RequestTask.access_data fields
         if self.access_tasks.count():
             final_results: Dict = {}
             for task in self.access_tasks.filter(
@@ -1107,7 +1110,7 @@ class PrivacyRequest(
 
             return final_results
 
-        # TODO Remove this alongside deprecated DSR 2.0
+        # TODO Remove when we stop support for DSR 2.0
         # We will no longer be pulling access results from the cache, but off of Request Tasks instead
         cache: FidesopsRedis = get_cache()
         value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__access_request")
@@ -1119,15 +1122,20 @@ class PrivacyRequest(
         }
 
     def get_raw_masking_counts(self) -> Dict[str, int]:
-        """For parity, return the rows masked for an erasure request"""
+        """For parity, return the rows masked for an erasure request
+
+        This is largely just used for testing
+        """
         if self.erasure_tasks.count():
             return {
                 t.collection_address: t.rows_masked
-                for t in self.erasure_tasks
+                for t in self.erasure_tasks.filter(
+                    RequestTask.status == ExecutionLogStatus.complete
+                )
                 if not t.is_root_task and not t.is_terminator_task
             }
 
-        # TODO Remove this alongside deprecated DSR 2.0
+        # TODO Remove when we stop support for DSR 2.0
         cache: FidesopsRedis = get_cache()
         value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__erasure_request")
         # extract request id to return a map of address:value
@@ -1135,13 +1143,20 @@ class PrivacyRequest(
         return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
 
     def get_consent_results(self) -> Dict[str, int]:
-        """For parity, return consent sent"""
+        """For parity, return whether a consent request was sent for third
+        party consent propagation
+
+        This is largely just used for testing
+        """
         if self.consent_tasks.count():
             return {
                 t.collection_address: t.consent_sent
-                for t in self.consent_tasks
+                for t in self.consent_tasks.filter(
+                    RequestTask.status == ExecutionLogStatus.complete
+                )
                 if not t.is_root_task and not t.is_terminator_task
             }
+        # DSR 2.0 does not cache the results so nothing to do here
         return {}
 
     def save_filtered_access_results(
@@ -1561,11 +1576,14 @@ class ExecutionLogStatus(EnumType):
     skipped = "skipped"
 
 
-completed_statuses = [ExecutionLogStatus.complete, ExecutionLogStatus.skipped]
-exited_statuses = [
+COMPLETED_EXECUTION_LOG_STATUSES = [
+    ExecutionLogStatus.complete,
     ExecutionLogStatus.skipped,
+]
+EXITED_EXECUTION_LOG_STATUSES = [
     ExecutionLogStatus.complete,
     ExecutionLogStatus.error,
+    ExecutionLogStatus.skipped,
 ]
 
 
@@ -1802,6 +1820,6 @@ class RequestTask(Base):
         )
 
         return all(
-            upstream_task.status in completed_statuses
+            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
             for upstream_task in upstream_tasks
         )

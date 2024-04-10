@@ -13,10 +13,10 @@ from sqlalchemy.sql.elements import TextClause
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
+    EXITED_EXECUTION_LOG_STATUSES,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
-    exited_statuses,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
@@ -169,7 +169,9 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
         def some_errored(tasks: Query) -> bool:
             """All statuses have exited and at least one is errored"""
             statuses: List[ExecutionLogStatus] = [tsk.status for tsk in tasks]
-            all_exited = all(status in exited_statuses for status in statuses)
+            all_exited = all(
+                status in EXITED_EXECUTION_LOG_STATUSES for status in statuses
+            )
             return all_exited and ExecutionLogStatus.error in statuses
 
         marked_as_errored: Set[str] = set()

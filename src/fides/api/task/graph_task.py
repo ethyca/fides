@@ -168,7 +168,7 @@ def retry(
                 self.connector.configuration,
             )
             if not self.request_task.id:
-                # TODO Remove with deprecating DSR 2.0
+                # TODO Remove when we stop support for DSR 2.0
                 # Re-raise to stop privacy request execution on failure for
                 # deprecated DSR 2.0 sequential execution
                 raise raised_ex  # type: ignore
@@ -500,15 +500,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 row, query_paths=post_processed_node_input_data, delete_elements=False
             )
 
-        # For performing erasures later, save results with matching array elements preserved
-        # TODO Remove conditional check alongside deprecating DSR 2.0. For DSR 3.0, we want to store
-        # data for erasures on the Privacy Request
+        # For DSR 3.0, save data to build masking requests.
+        # Results saved with matching array elements preserved
         if self.request_task.id:
             self.request_task.data_for_erasures = json.dumps(
                 placeholder_output, cls=CustomJSONEncoder
             )
 
-        # TODO Remove alongside deprecating DSR 2.0.
+        # TODO Remove when we stop support for DSR 2.0
+        # Save data to build masking requests for DSR 2.0
+        # Results saved with matching array elements preserved
         self.resources.cache_results_with_placeholders(
             f"access_request__{self.key}", placeholder_output
         )
@@ -520,10 +521,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             filter_element_match(row, post_processed_node_input_data)
+
         if self.request_task.id:
+            # Saves access results for DSR 3.0
             self.request_task.access_data = json.dumps(output, cls=CustomJSONEncoder)
 
-        # TODO Remove alongside deprecating DSR 2.0.
+        # TODO Remove when we stop support for DSR 2.0
         self.resources.cache_object(f"access_request__{self.key}", output)
 
         # Return filtered rows with non-matched array data removed.
@@ -579,7 +582,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self,
         retrieved_data: List[Row],
         inputs: List[List[Row]],
-        *erasure_prereqs: int,  # REMOVE WITH DSR 2.0 Deprecation
+        *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0
     ) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
@@ -592,7 +595,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             if self.request_task.id:
                 self.request_task.rows_masked = 0  # Saved as part of update_status
 
-            # TODO Remove alongside deprecating DSR 2.0.
+            # TODO Remove when we stop support for DSR 2.0
             self.resources.cache_erasure(
                 f"{self.key}", 0
             )  # Cache that the erasure was performed in case we need to restart
@@ -612,7 +615,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             if self.request_task.id:
                 self.request_task.rows_masked = 0  # Saved as part of update_status
 
-            # TODO Remove alongside deprecating DSR 2.0.
+            # TODO Remove when we stop support for DSR 2.0
             self.resources.cache_erasure(
                 f"{self.key}", 0
             )  # Cache that the erasure was performed in case we need to restart
@@ -638,7 +641,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             formatted_input_data,
         )
         self.request_task.rows_masked = output  # Saved as part of update_status
-        # TODO Remove alongside deprecating DSR 2.0.
+        # TODO Remove when we stop support for DSR 2.0
         self.resources.cache_erasure(
             f"{self.key}", output
         )  # Cache that the erasure was performed in case we need to restart

@@ -32,9 +32,9 @@ from fides.api.graph.config import TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.main import app
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
+    EXITED_EXECUTION_LOG_STATUSES,
     RequestTask,
-    completed_statuses,
-    exited_statuses,
     generate_request_callback_jwe,
 )
 from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
@@ -643,7 +643,7 @@ def wait_for_terminator_completion(
     db: Session, pr: PrivacyRequest, action_type: ActionType
 ):
     def all_tasks_have_run(tasks: Query) -> bool:
-        return all(tsk.status in exited_statuses for tsk in tasks)
+        return all(tsk.status in EXITED_EXECUTION_LOG_STATUSES for tsk in tasks)
 
     db.commit()
     counter = 0

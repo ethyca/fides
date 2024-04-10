@@ -19,11 +19,11 @@ from fides.api.graph.traversal import ARTIFICIAL_NODES, Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
     TraversalDetails,
-    completed_statuses,
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
@@ -598,7 +598,7 @@ def get_existing_ready_tasks(
     request_tasks: Query = privacy_request.get_tasks_by_action(action_type)
     if request_tasks.count():
         incomplete_tasks: Query = request_tasks.filter(
-            RequestTask.status.notin_(completed_statuses)
+            RequestTask.status.notin_(COMPLETED_EXECUTION_LOG_STATUSES)
         )
 
         for task in incomplete_tasks:

@@ -30,7 +30,7 @@ def access_runner(
     session: Session,
     privacy_request_proceed: bool = True,
 ) -> Dict[str, List[Row]]:
-    """Access runner that temporarily supports running Access Request with DSR 3.0  2.0.
+    """Access runner that temporarily supports running Access Request with DSR 3.0.
     DSR 2.0 will be going away"""
     use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
 

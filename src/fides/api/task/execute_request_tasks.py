@@ -14,11 +14,11 @@ from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
-    completed_statuses,
 )
 from fides.api.task.graph_task import (
     GraphTask,
@@ -109,7 +109,7 @@ def run_prerequisite_task_checks(
         )
 
         if not all(
-            upstream_task.status in completed_statuses
+            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
             for upstream_task in upstream_results
         ) or not upstream_results.count() == len(request_task.upstream_tasks or []):
             raise UpstreamTasksNotReady(
@@ -187,7 +187,7 @@ def can_run_task_body(
 ) -> bool:
     """Return true if we can execute the task body. We should skip if the task is already
     complete or this is a root/terminator node"""
-    if request_task.status in completed_statuses:
+    if request_task.status in COMPLETED_EXECUTION_LOG_STATUSES:
         logger_method(request_task)(
             "Skipping already-completed {} task {}. Privacy Request: {}, Request Task {}",
             request_task.action_type.value,
