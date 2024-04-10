@@ -4,18 +4,21 @@ import useI18n from "~/common/hooks/useI18n";
 const SaveCancel = ({
   onSave,
   onCancel,
+  saveLabel,
+  cancelLabel,
   ...props
 }: {
   onSave: () => void;
   onCancel: () => void;
   saveLabel?: string;
+  cancelLabel?: string;
 } & StackProps) => {
   const { i18n } = useI18n();
 
   return (
     <Stack direction="row" justifyContent="flex-start" width="full" {...props}>
       <Button size="sm" variant="outline" onClick={onCancel}>
-        Cancel
+        {cancelLabel || "←"}
       </Button>
       <Button
         bg="primary.800"
@@ -26,7 +29,7 @@ const SaveCancel = ({
         onClick={onSave}
         data-testid="save-btn"
       >
-        {i18n.t("exp.save_button_label")}
+        {saveLabel || i18n.t("exp.save_button_label")}
       </Button>
     </Stack>
   );

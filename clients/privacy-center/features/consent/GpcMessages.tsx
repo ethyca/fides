@@ -8,6 +8,7 @@ import {
   WarningTwoIcon,
 } from "@fidesui/react";
 import { GpcStatus } from "fides-js";
+import useI18n from "~/common/hooks/useI18n";
 
 const BADGE_COLORS = {
   [GpcStatus.NONE]: undefined,
@@ -65,37 +66,30 @@ export const GpcInfo = ({ status }: { status: GpcStatus }) => {
   return null;
 };
 
-export const GpcBanner = () => (
-  <Stack
-    border="1px solid"
-    borderColor="blue.400"
-    borderRadius="lg"
-    background="gray.100"
-    padding={4}
-    spacing={1}
-    lineHeight={5}
-    data-testid="gpc-banner"
-  >
-    <Stack direction="row">
-      <WarningTwoIcon color="blue.400" />
-      <Text fontSize="sm" fontWeight="bold">
-        Global Privacy Control detected
-      </Text>
-    </Stack>
+export const GpcBanner = () => {
+  const { i18n } = useI18n();
 
-    <Box paddingLeft={6}>
-      <Text fontSize="sm">
-        We recognized that you have enabled your browser&apos;s{" "}
-        <Link
-          href="https://globalprivacycontrol.org"
-          isExternal
-          color="complimentary.500"
-        >
-          Global Privacy Control
-        </Link>
-        . You have been opted out of data sales and sharing use cases as a
-        result.
-      </Text>
-    </Box>
-  </Stack>
-);
+  return (
+    <Stack
+      border="1px solid"
+      borderColor="blue.400"
+      borderRadius="lg"
+      background="gray.100"
+      padding={4}
+      spacing={1}
+      lineHeight={5}
+      data-testid="gpc-banner"
+    >
+      <Stack direction="row">
+        <WarningTwoIcon color="blue.400" />
+        <Text fontSize="sm" fontWeight="bold">
+          {i18n.t("static.gpc.title")}
+        </Text>
+      </Stack>
+
+      <Box paddingLeft={6}>
+        <Text fontSize="sm">{i18n.t("static.gpc.description")}</Text>
+      </Box>
+    </Stack>
+  );
+};

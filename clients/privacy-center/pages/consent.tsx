@@ -8,6 +8,9 @@ import {
   getConsentContext,
   saveFidesCookie,
   getOrMakeFidesCookie,
+  loadMessagesFromFiles,
+  initializeI18n,
+  setupI18n,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
@@ -35,7 +38,6 @@ import {
   useSettings,
 } from "~/features/common/settings.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import { initializeI18n, setupI18n } from "fides-js";
 import useI18n from "~/common/hooks/useI18n";
 
 const Consent: NextPage = () => {
@@ -222,12 +224,25 @@ const Consent: NextPage = () => {
    * Initialize internalization library.
    */
   const experience = useAppSelector(selectPrivacyExperience);
+  const { IS_OVERLAY_ENABLED } = settings;
+  const isConfigDrivenConsent = !IS_OVERLAY_ENABLED;
   useEffect(() => {
-    if (!experience) {
+    const i18n = setupI18n();
+
+    // 1. Config driven consent
+    if (isConfigDrivenConsent) {
+      // If we're in config driven consent then
+      // still load the static messages in order to have default english
+      // messages available
+      loadMessagesFromFiles(i18n);
+      setI18nInstance(i18n);
       return;
     }
 
-    const i18n = setupI18n();
+    // 2. Notice driven consent
+    if (!experience) {
+      return;
+    }
 
     initializeI18n(
       i18n,

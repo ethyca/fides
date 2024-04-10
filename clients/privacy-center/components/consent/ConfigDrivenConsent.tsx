@@ -201,7 +201,12 @@ const ConfigDrivenConsent = ({
           </React.Fragment>
         );
       })}
-      <SaveCancel onSave={saveUserConsentOptions} onCancel={handleCancel} />
+      <SaveCancel
+        onSave={saveUserConsentOptions}
+        onCancel={handleCancel}
+        cancelLabel="Cancel"
+        saveLabel="Save"
+      />
     </Stack>
   );
 };
