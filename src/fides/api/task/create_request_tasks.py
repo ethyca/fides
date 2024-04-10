@@ -471,7 +471,7 @@ def run_access_request(
     privacy_request_proceed: bool = True,
 ) -> List[RequestTask]:
     """
-    Build the "access" graph, add its tasks to the database and queue the root task.
+    DSR 3.0: Build the "access" graph, add its tasks to the database and queue the root task.
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
@@ -530,7 +530,7 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request_proceed: bool = True,
 ) -> List[RequestTask]:
     """
-    Build the "erasure" graph, add its tasks to the database and queue the root task.
+    DSR 3.0: Build the "erasure" graph, add its tasks to the database and queue the root task.
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
@@ -553,7 +553,7 @@ def run_consent_request(  # pylint: disable = too-many-arguments
     privacy_request_proceed: bool = True,
 ) -> List[RequestTask]:
     """
-    Build the "consent" graph, add its tasks to the database and queue the root task.
+    DSR 3.0: Build the "consent" graph, add its tasks to the database and queue the root task.
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
 

@@ -28,10 +28,13 @@ def access_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-    privacy_request_proceed: bool = True,
+    privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
 ) -> Dict[str, List[Row]]:
-    """Access runner that temporarily supports running Access Request with DSR 3.0.
-    DSR 2.0 will be going away"""
+    """
+    Access runner that temporarily supports running Access Requests with either DSR 3.0 or DSR 2.0
+
+    DSR 2.0 will be going away
+    """
     use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
 
     # TODO figure out better logic for how to reprocess privacy requests that were
@@ -76,10 +79,12 @@ def erasure_runner(
     identity: Dict[str, Any],
     access_request_data: Dict[str, List[Row]],
     session: Session,
-    privacy_request_proceed: bool = True,
+    privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
 ) -> Dict[str, int]:
     """Erasure runner that temporarily supports running Erasure DAGs with DSR 3.0 or 2.0.
-    DSR 2.0 will be going away"""
+
+    DSR 2.0 will be going away
+    """
     if CONFIG.execution.use_dsr_3_0:
         run_erasure_request(
             privacy_request=privacy_request,
@@ -106,9 +111,10 @@ def consent_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-    privacy_request_proceed: bool = True,
+    privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
 ) -> Dict[str, bool]:
     """Consent runner that temporarily supports running Consent DAGs with DSR 3.0 or 2.0.
+
     DSR 2.0 will be going away"""
     if CONFIG.execution.use_dsr_3_0:
         run_consent_request(

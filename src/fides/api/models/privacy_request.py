@@ -1655,7 +1655,8 @@ class RequestTask(Base):
     )  # List of collection address strings
     all_descendant_tasks = Column(
         MutableList.as_mutable(JSONB)
-    )  # All tasks that can be reached by the current task
+    )  # All tasks that can be reached by the current task.  This is useful when this task fails,
+    # and we can mark every single one of these as failed.
 
     # Raw data retrieved from an access request is stored here.  This contains all of the data
     # we retrieved, needed for downstream tasks, but hasn't been filtered by data category

@@ -487,7 +487,9 @@ def run_privacy_request(
             return
 
         except PrivacyRequestExit:
-            # Privacy Request Exiting awaiting request task processing
+            # Privacy Request Exiting awaiting sub task processing (Request Tasks)
+            # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
+            # Request Tasks have been built.
             return
 
         except BaseException as exc:  # pylint: disable=broad-except

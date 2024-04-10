@@ -26,7 +26,10 @@ DEFAULT_POLLING_INTERVAL: int = 30
 
 
 class FidesConnector(BaseConnector[FidesClient]):
-    """A connector that forwards requests to other Fides instances"""
+    """A connector that forwards requests to other Fides instances
+
+    This has not been updated to work with DSR 3.0 and is assumed to break.
+    """
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
