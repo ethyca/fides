@@ -1920,6 +1920,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/email_dataset.yml",
         "data/dataset/remote_fides_example_test_dataset.yml",
         "data/dataset/dynamodb_example_test_dataset.yml",
+        "data/dataset/postgres_example_test_extended_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -2121,6 +2122,23 @@ def empty_provided_identity(db):
     provided_identity = ProvidedIdentity.create(db, data={"field_name": "email"})
     yield provided_identity
     provided_identity.delete(db)
+
+
+@pytest.fixture(scope="function")
+def custom_provided_identity(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "customer_id",
+        "field_label": "Customer ID",
+        "hashed_value": ProvidedIdentity.hash_value("123"),
+        "encrypted_value": {"value": "123"},
+    }
+    provided_identity = ProvidedIdentity.create(
+        db,
+        data=provided_identity_data,
+    )
+    yield provided_identity
+    provided_identity.delete(db=db)
 
 
 @pytest.fixture(scope="function")
