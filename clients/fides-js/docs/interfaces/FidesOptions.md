@@ -81,6 +81,10 @@ To use the `fides_embed` option, ensure that a DOM element with
 `id="fides-embed-container"` exists on the page, which FidesJS will then
 use as the parent element to render within.
 
+Before version 2.34 only the consent modal was embedded while the banner was
+not shown at all, but since that version both will be embedded. To get the
+previous behavior also set `fides_disable_banner` to `true`.
+
 NOTE: If you're using a JavaScript framework (e.g. React), ensure that you
 do not re-render the parent `<div>` element, as this could remove the
 FidesJS UI fully from the page!
