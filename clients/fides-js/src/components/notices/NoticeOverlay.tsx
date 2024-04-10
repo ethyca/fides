@@ -253,7 +253,13 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
-      renderBanner={({ isEmbedded, isOpen, onClose, onSave, onManagePreferencesClick }) => (
+      renderBanner={({
+        isEmbedded,
+        isOpen,
+        onClose,
+        onSave,
+        onManagePreferencesClick,
+      }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}
           dismissable={isDismissable}

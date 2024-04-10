@@ -78,7 +78,8 @@ div#fides-overlay {
   position: fixed;
 }
 
-.fides-banner, .fides-modal-container {
+.fides-banner,
+.fides-modal-container {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   white-space: pre-line;
