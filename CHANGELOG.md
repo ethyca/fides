@@ -21,7 +21,7 @@ The types of changes are:
 - Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
 - Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
 - Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
-
+- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 ### Changed
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
 - Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
