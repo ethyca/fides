@@ -105,14 +105,6 @@ class ExecutionNode:  # pylint: disable=too-many-instance-attributes
 
         return field_map(lambda string_path: True), field_map(lambda string_path: False)
 
-    def contains_field(self, func: Callable[[Field], bool]) -> bool:
-        """True if any field in this collection matches the condition of the callable
-
-        Currently used to assert at least one field in the collection contains a primary
-        key before erasing
-        """
-        return any(self.collection.recursively_collect_matches(func))
-
     def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
         """
         Return a filtered list of key/value sets of data items that are both in

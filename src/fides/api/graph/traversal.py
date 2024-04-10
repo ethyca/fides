@@ -153,6 +153,26 @@ class TraversalNode(Contextualizable):
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
         return {LoggerContextKeys.collection: self.node.collection.name}
 
+    def format_traversal_details_for_save(self) -> Dict:
+        """Convert key traversal details from the TraversalNode for save on the RequestTask.
+
+        The RequestTask will be retrieved from the database and the traversal details
+        used to build the ExecutionNode for DSR 3.0.
+        """
+
+        connection_key: FidesKey = self.node.dataset.connection_key
+
+        return TraversalDetails(
+            dataset_connection_key=connection_key,
+            incoming_edges=[
+                [edge.f1.value, edge.f2.value] for edge in self.incoming_edges()
+            ],
+            outgoing_edges=[
+                [edge.f1.value, edge.f2.value] for edge in self.outgoing_edges()
+            ],
+            input_keys=[tn.value for tn in self.input_keys()],
+        ).dict()
+
     def to_mock_request_task(self) -> RequestTask:
         """Converts a portion of the TraversalNode into a RequestTask - used in building
         dry run queries or for supporting Deprecated DSR 2.0"""
@@ -163,15 +183,16 @@ class TraversalNode(Contextualizable):
             dataset_name=self.node.address.dataset,
             collection_name=self.node.address.collection,
             collection=collection_data,
-            traversal_details=format_traversal_details_for_save(
-                self.node.address, {self.node.address: self}
-            ),
+            traversal_details=self.format_traversal_details_for_save(),
         )
 
     def to_mock_execution_node(self) -> ExecutionNode:
         """Converts a TraversalNode into an ExecutionNode - used for supporting DSR 2.0, to convert
         Traversal Nodes into the Execution Node format which is needed for executing the graph in
-         DSR 3.0"""
+        DSR 3.0
+
+        DSR 3.0 on the other hand, creates ExecutionNodes from data on the RequestTask.
+        """
         request_task: RequestTask = self.to_mock_request_task()
         return ExecutionNode(request_task)
 
@@ -387,28 +408,3 @@ class Traversal:
         if environment:
             logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes
-
-
-def format_traversal_details_for_save(
-    node: CollectionAddress, env: Dict[CollectionAddress, TraversalNode]
-) -> Dict:
-    """Format selected TraversalNode details in a way they can be saved in the database.
-
-    This will let us execute the node when ready without having to reconstruct the traversal node later.
-    """
-    if node in ARTIFICIAL_NODES:
-        return {}
-
-    traversal_node: TraversalNode = env[node]
-    connection_key: FidesKey = traversal_node.node.dataset.connection_key
-
-    return TraversalDetails(
-        dataset_connection_key=connection_key,
-        incoming_edges=[
-            [edge.f1.value, edge.f2.value] for edge in traversal_node.incoming_edges()
-        ],
-        outgoing_edges=[
-            [edge.f1.value, edge.f2.value] for edge in traversal_node.outgoing_edges()
-        ],
-        input_keys=[tn.value for tn in traversal_node.input_keys()],
-    ).dict()

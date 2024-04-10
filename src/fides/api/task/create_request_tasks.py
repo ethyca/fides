@@ -15,12 +15,7 @@ from fides.api.graph.config import (
     FieldAddress,
 )
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import (
-    ARTIFICIAL_NODES,
-    Traversal,
-    TraversalNode,
-    format_traversal_details_for_save,
-)
+from fides.api.graph.traversal import ARTIFICIAL_NODES, Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -206,12 +201,17 @@ def base_task_data(
     """Build a dictionary of common RequestTask attributes that are shared for building
     access, consent, and erasure tasks"""
     collection_representation: Optional[Dict] = None
+    traversal_details = {}
+
     if node not in ARTIFICIAL_NODES:
         # Save a representation of the collection that can be re-hydrated later
         # when executing the node
         collection_representation = json.loads(
             dataset_graph.nodes[node].collection.json()
         )
+        # Saves traversal details based on data dependencies like incoming edges
+        # and input keys, also useful for building the Execution Node
+        traversal_details = traversal_nodes[node].format_traversal_details_for_save()
 
     return {
         "privacy_request_id": privacy_request.id,
@@ -231,7 +231,7 @@ def base_task_data(
         if node == ROOT_COLLECTION_ADDRESS
         else ExecutionLogStatus.pending,
         "collection": collection_representation,
-        "traversal_details": format_traversal_details_for_save(node, traversal_nodes),
+        "traversal_details": traversal_details,
     }
 
 

@@ -12,6 +12,7 @@ from fides.api.graph.config import (
     Collection,
     CollectionAddress,
     FieldAddress,
+    FieldPath,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
@@ -313,6 +314,88 @@ class TestExecutionNode:
             "query",
             "organization_slug",
         }
+
+    def test_query_field_paths(self, address_execution_node, employee_execution_node):
+        assert address_execution_node.query_field_paths == {
+            FieldPath(
+                "id",
+            )
+        }
+        assert employee_execution_node.query_field_paths == {
+            FieldPath("email"),
+        }
+
+    def test_dependent_identity_fields(self, address_execution_node):
+        assert not address_execution_node.dependent_identity_fields
+
+        # Edit node to add a grouped field that also is an identity field
+        address_execution_node.grouped_fields = {
+            address_execution_node.collection.fields[0].name
+        }
+        address_execution_node.collection.fields[0].identity = "email"
+        assert address_execution_node.dependent_identity_fields
+
+    def test_build_incoming_field_path_maps(self, address_execution_node):
+        """Light test of most common path, the first tuple"""
+        field_path_maps = address_execution_node.build_incoming_field_path_maps()[0]
+
+        assert field_path_maps[
+            CollectionAddress("postgres_example_test_dataset", "employee")
+        ] == [
+            (
+                FieldPath(
+                    "address_id",
+                ),
+                FieldPath(
+                    "id",
+                ),
+            )
+        ]
+        assert field_path_maps[
+            CollectionAddress("postgres_example_test_dataset", "customer")
+        ] == [
+            (
+                FieldPath(
+                    "address_id",
+                ),
+                FieldPath(
+                    "id",
+                ),
+            )
+        ]
+        assert field_path_maps[
+            CollectionAddress("postgres_example_test_dataset", "orders")
+        ] == [
+            (
+                FieldPath(
+                    "shipping_address_id",
+                ),
+                FieldPath(
+                    "id",
+                ),
+            )
+        ]
+        assert field_path_maps[
+            CollectionAddress("postgres_example_test_dataset", "payment_card")
+        ] == [
+            (
+                FieldPath(
+                    "billing_address_id",
+                ),
+                FieldPath(
+                    "id",
+                ),
+            )
+        ]
+
+    def test_typed_filtered_values(self, address_execution_node):
+        assert address_execution_node.typed_filtered_values({"id": [1, 2]}) == {
+            "id": [1, 2]
+        }
+        assert (
+            address_execution_node.typed_filtered_values({"non_existent_id": [1, 2]})
+            == {}
+        )
 
 
 class TestCanRunTaskBody:

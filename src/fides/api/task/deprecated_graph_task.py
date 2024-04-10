@@ -15,11 +15,7 @@ from fides.api.graph.config import (
     CollectionAddress,
 )
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import (
-    Traversal,
-    TraversalNode,
-    format_traversal_details_for_save,
-)
+from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -131,9 +127,7 @@ def run_access_request_deprecated(
                 dataset_name=tn.node.address.dataset,
                 collection_name=tn.node.address.collection,
                 collection=collection_data,
-                traversal_details=format_traversal_details_for_save(
-                    tn.node.address, {tn.node.address: tn}
-                ),
+                traversal_details=tn.format_traversal_details_for_save(),
             )
             data[tn.address] = GraphTask(resources)
 
@@ -315,10 +309,7 @@ def run_consent_request_deprecated(  # pylint: disable = too-many-arguments
             dataset_name=traversal_node.node.address.dataset,
             collection_name=traversal_node.node.address.collection,
             collection=collection_data,
-            traversal_details=format_traversal_details_for_save(
-                traversal_node.node.address,
-                {traversal_node.node.address: traversal_node},
-            ),
+            traversal_details=traversal_node.format_traversal_details_for_save(),
         )
         task = GraphTask(resources)
         dsk[col_address] = (task.consent_request, identity)

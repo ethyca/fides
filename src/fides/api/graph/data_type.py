@@ -198,9 +198,10 @@ def is_valid_data_type(type_name: str) -> bool:
 
 
 def get_data_type_converter(type_name: Optional[str]) -> DataTypeConverter:
-    """Return the matching type converter. If an empty string or None is passed in
+    """Return the matching type converter. If an empty string or None or string None is passed in
     will return the No-op converter, so the converter will never be set to 'None'.
-    On an illegal key will raise a KeyError."""
+
+    Only an illegal key will raise a KeyError."""
     if not type_name or type_name == "None":
         return DataType.no_op.value
     return DataType[type_name].value
