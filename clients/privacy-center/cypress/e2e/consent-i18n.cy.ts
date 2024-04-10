@@ -6,7 +6,7 @@ import {
   PrivacyNotice,
 } from "fides-js";
 import { Locale } from "~/../fides-js/src/lib/i18n";
-import { TEST_OVERRIDE_WINDOW_PATH } from "~/cypress/support/constants";
+import { TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
 import { stubConfig } from "../support/stubs";
 
 /**
@@ -734,7 +734,9 @@ describe("Consent i18n", () => {
           fixture: "experience_banner_modal.json",
         });
         cy.get("#fides-banner").should("be.visible");
-        cy.getByTestId(`fides-i18n-option-${SPANISH_LOCALE}`).focus();
+        cy.get(
+          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
+        ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
         testBannerLanguageMenu(SPANISH_LOCALE);
         testBannerLocalization(SPANISH_BANNER);
@@ -750,7 +752,9 @@ describe("Consent i18n", () => {
           queryParams: { fides_locale: SPANISH_LOCALE },
         });
         cy.get("#fides-banner").should("be.visible");
-        cy.getByTestId(`fides-i18n-option-${ENGLISH_LOCALE}`).focus();
+        cy.get(
+          `#fides-banner [data-testid='fides-i18n-option-${ENGLISH_LOCALE}']`
+        ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
         testBannerLanguageMenu(ENGLISH_LOCALE);
         testBannerLocalization(ENGLISH_BANNER);
@@ -1495,7 +1499,9 @@ describe("Consent i18n", () => {
           options: { tcfEnabled: true },
         });
         cy.get("#fides-banner").should("be.visible");
-        cy.getByTestId(`fides-i18n-option-${SPANISH_LOCALE}`).focus();
+        cy.get(
+          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
+        ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
         testTcfBannerLocalization(SPANISH_TCF_BANNER);
         testTcfModalLocalization(SPANISH_TCF_MODAL);
