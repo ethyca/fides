@@ -15,6 +15,7 @@ from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import DatasetCollection as FideslangDatasetCollection
 from pydantic import BaseModel
+from pygtrie import StringTrie
 from sqlalchemy import BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
@@ -47,6 +48,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.util.taxonomy_utils import find_undeclared_categories
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -447,18 +449,19 @@ class System(Base, FidesBase):
         Returns a set of data categories defined on the system's datasets
         that are not associated with any data use (privacy declaration).
         """
+
         privacy_declaration_data_categories = set()
         for privacy_declaration in self.privacy_declarations:
             privacy_declaration_data_categories.update(
                 privacy_declaration.data_categories
             )
+
         system_dataset_data_categories = set()
         for dataset in self.datasets:
             system_dataset_data_categories.update(dataset.field_data_categories)
-        return list(
-            system_dataset_data_categories.difference(
-                privacy_declaration_data_categories
-            )
+
+        return find_undeclared_categories(
+            system_dataset_data_categories, privacy_declaration_data_categories
         )
 
 
@@ -561,10 +564,18 @@ class PrivacyDeclaration(Base):
         Aggregates a unique set of data categories across the collections in the associated datasets and
         returns the data categories that are not associated directly on the privacy declaration.
         """
+
+        # all data categories from the datasets
         dataset_data_categories = set()
         for dataset in self.datasets:
             dataset_data_categories.update(dataset.field_data_categories)
-        return list(dataset_data_categories.difference(self.data_categories))
+
+        # all data categories specified directly on the privacy declaration
+        declared_data_categories = set()
+        for category in self.data_categories:
+            declared_data_categories.update(category)
+
+        return find_undeclared_categories(dataset_data_categories, self.data_categories)
 
     async def get_purpose_legal_basis_override(self) -> Optional[str]:
         """
