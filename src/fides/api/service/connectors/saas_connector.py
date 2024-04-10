@@ -192,7 +192,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # 1) If a collection can be retrieved by using different identities such as email or phone number
         # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
         #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
-        read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
+        read_requests: List[SaaSRequest] = query_config.get_read_requests()
         delete_request: Optional[
             SaaSRequest
         ] = query_config.get_erasure_request_by_action("delete")

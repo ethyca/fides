@@ -201,7 +201,10 @@ def get_fides_user_device_id_provided_identity(
     return ProvidedIdentity.filter(
         db=db,
         conditions=(
-            (ProvidedIdentity.field_name == ProvidedIdentityType.fides_user_device_id)
+            (
+                ProvidedIdentity.field_name
+                == ProvidedIdentityType.fides_user_device_id.value
+            )
             & (
                 ProvidedIdentity.hashed_value
                 == ProvidedIdentity.hash_value(fides_user_device_id)
