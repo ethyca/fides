@@ -571,10 +571,10 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS,
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => (
-          <DefaultHeaderCell value="Does internation transfers" {...props} />
+          <DefaultHeaderCell value="Does international transfers" {...props} />
         ),
         meta: {
-          displayText: "Does internation transfers",
+          displayText: "Does international transfers",
         },
       }),
       columnHelper.accessor((row) => row.dpa_location, {
@@ -889,6 +889,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Undeclared data categories",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.uses_cookies, {
