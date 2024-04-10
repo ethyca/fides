@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.33.2b0.post0.dev1"
+    "version": "2.33.2b0.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14582,7 +14582,7 @@
         "type": "object",
         "properties": {
           "phone_number": {
-            "title": "Phone Number",
+            "title": "Phone number",
             "type": "string"
           },
           "email": {
@@ -14591,19 +14591,18 @@
             "format": "email"
           },
           "ga_client_id": {
-            "title": "Ga Client Id",
+            "title": "GA client ID",
             "type": "string"
           },
           "ljt_readerID": {
-            "title": "Ljt Readerid",
+            "title": "LJT reader ID",
             "type": "string"
           },
           "fides_user_device_id": {
-            "title": "Fides User Device Id",
+            "title": "Fides user device ID",
             "type": "string"
           }
         },
-        "additionalProperties": false,
         "description": "Some PII grouping pertaining to a human"
       },
       "IdentityTypes": {
@@ -16865,7 +16864,14 @@
             "title": "Identity",
             "type": "object",
             "additionalProperties": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object"
+                }
+              ]
             }
           },
           "custom_privacy_request_fields": {
@@ -17013,7 +17019,14 @@
             "title": "Identity",
             "type": "object",
             "additionalProperties": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object"
+                }
+              ]
             }
           },
           "custom_privacy_request_fields": {
