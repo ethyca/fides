@@ -22,6 +22,7 @@ The types of changes are:
 - Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
 - Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
 - Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
+- Added support for custom identities [#4764](https://github.com/ethyca/fides/pull/4764)
 
 ### Changed
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
