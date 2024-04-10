@@ -36,13 +36,27 @@ from fides.api.util.cache import CustomJSONEncoder
 from fides.api.util.collection_util import Row
 
 
+def _add_edge_if_no_nodes(
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
+    networkx_graph: networkx.DiGraph,
+) -> None:
+    """
+    Adds an edge from the root node to the terminator node, altering the networkx_graph in-place.
+
+    Handle edge case of there are no traversal nodes in the graph at all
+    """
+    if not traversal_nodes.items():
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS)
+
+
 def build_access_networkx_digraph(
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
     end_nodes: List[CollectionAddress],
     traversal: Traversal,
 ) -> networkx.DiGraph:
     """
-    Builds an access networkx graph to get consistent formatting of nodes, regardless of whether node is real or artificial.
+    DSR 3.0: Builds an access networkx graph to get consistent formatting of nodes to build the Request Tasks,
+    regardless of whether node is real or artificial.
 
     Primarily though, this lets us use networkx.descendants to calculate every node that can be reached from the current
     node to more easily mark downstream nodes as failed if the current node fails.
@@ -71,7 +85,7 @@ def build_access_networkx_digraph(
         # Connect the end nodes, those that have no downstream dependencies, to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
-    add_edge_if_no_nodes(traversal_nodes, networkx_graph)
+    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
 
 
@@ -80,7 +94,9 @@ def _evaluate_erasure_dependencies(
 ) -> Set[CollectionAddress]:
     """
     Return a set of collection addresses corresponding to collections that need
-    to be erased before the given task. Remove the dependent collection addresses
+    to be erased before the given task.
+
+    Remove the dependent collection addresses
     from `end_nodes` so they can be executed in the correct order. If a task does
     not have any dependencies it is linked directly to the root node
     """
@@ -101,7 +117,8 @@ def build_erasure_networkx_digraph(
     end_nodes: List[CollectionAddress],
 ) -> networkx.DiGraph:
     """
-    Builds a networkx graph of erasure nodes to get consistent formatting of nodes, regardless of whether node is real or artificial.
+    DSR 3.0: Builds a networkx graph of erasure nodes to get consistent formatting of nodes to build the Request Tasks,
+    regardless of whether node is real or artificial.
 
     Erasure graphs are different from access graphs, in that we've queried all the data we need upfront in the access
     graphs, so the nodes can in theory run entirely in parallel, except for the "erase_after" dependencies.
@@ -136,28 +153,16 @@ def build_erasure_networkx_digraph(
             "The values for the `erase_after` fields created a cycle in the DAG."
         )
 
-    add_edge_if_no_nodes(traversal_nodes, networkx_graph)
+    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
-
-
-def add_edge_if_no_nodes(
-    traversal_nodes: Dict[CollectionAddress, TraversalNode],
-    networkx_graph: networkx.DiGraph,
-) -> None:
-    """
-    Adds an edge from the root node to the terminator node, altering the networkx_graph in-place.
-
-    Handle edge case of there are no traversal nodes in the graph at all
-    """
-    if not traversal_nodes.items():
-        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS)
 
 
 def build_consent_networkx_digraph(
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
 ) -> networkx.DiGraph:
     """
-    Builds a networkx graph of consent nodes to get consistent formatting of nodes, regardless of whether node is real or artificial.
+    DSR 3.0: Builds a networkx graph of consent nodes to get consistent formatting of nodes to build the Request Tasks,
+    regardless of whether node is real or artificial.
     """
     networkx_graph = networkx.DiGraph()
     networkx_graph.add_nodes_from(traversal_nodes.keys())
@@ -169,7 +174,7 @@ def build_consent_networkx_digraph(
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, collection_address)
         networkx_graph.add_edge(collection_address, TERMINATOR_ADDRESS)
 
-    add_edge_if_no_nodes(traversal_nodes, networkx_graph)
+    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
 
 
@@ -268,7 +273,8 @@ def persist_new_access_request_tasks(
                 ),
                 "access_data": json.dumps([traversal.seed_data], cls=CustomJSONEncoder)
                 if node == ROOT_COLLECTION_ADDRESS
-                else [],
+                else [],  # For consistent treatment of nodes, add the seed data to the root node.  Subsequent
+                # tasks will save the data collected on the same field.
                 "action_type": ActionType.access,
             },
         )
@@ -313,6 +319,9 @@ def persist_initial_erasure_request_tasks(
             },
         )
 
+    # If a policy has an erasure rule, this method is run immediately after creating the access tasks, so their
+    # nodes in the database are the same.  There are no "ready" tasks yet, because we need to wait for the
+    # access step to run, so we return an empty list here.
     return []
 
 
@@ -322,6 +331,8 @@ def _get_data_for_erasures(
     """
     Return the access data in erasure format needed to format the masking request for the current node.
     """
+    # Get the access task of the same name as the erasure task so we can transfer the data
+    # collected for masking onto the current erasure task
     corresponding_access_task: Optional[
         RequestTask
     ] = privacy_request.get_existing_request_task(
@@ -344,7 +355,7 @@ def _get_data_for_erasures(
             request_task.traversal_details or {}
         )
 
-        # Select tasks from input keys (which are built based on data depenendencies), rather than upstream
+        # Getting upstream nodes based on input keys(which are built based on data dependencies), rather than upstream
         # tasks here.  We want the access data that was fed into the node of the same name.  This is
         # for things like email erasure nodes, where the access node of the same name didn't fetch results.
         input_tasks: Query = session.query(RequestTask).filter(
@@ -374,7 +385,7 @@ def _get_data_for_erasures(
 def update_erasure_tasks_with_access_data(
     session: Session,
     privacy_request: PrivacyRequest,
-) -> List[RequestTask]:
+) -> None:
     """
     Update individual erasure RequestTasks with data from the TraversalNodes and persist to the database.
     """
@@ -396,8 +407,6 @@ def update_erasure_tasks_with_access_data(
             combined_input_data, cls=CustomJSONEncoder
         )
         request_task.save(session)
-
-    return []
 
 
 def persist_new_consent_request_tasks(
@@ -452,6 +461,7 @@ def collect_tasks_fn(
 
 
 def log_task_queued(request_task: RequestTask) -> None:
+    """Helper for logging that tasks are queued"""
     logger.info(
         "Queuing {} task {} from main runner. Privacy Request: {}, Request Task {}",
         request_task.action_type.value,
@@ -471,12 +481,18 @@ def run_access_request(
     privacy_request_proceed: bool = True,
 ) -> List[RequestTask]:
     """
-    DSR 3.0: Build the "access" graph, add its tasks to the database and queue the root task.
+    DSR 3.0: Build the "access" graph, add its tasks to the database and queue the root task.  If erasure rules
+    are present, build the "erasure" graph at the same time so their nodes match, but these erasure nodes are
+    not yet ready to run until the access graph is complete.
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
 
     if privacy_request.access_tasks.count():
+        # If we are reprocessing a privacy request, just see if there
+        # are existing ready tasks; don't create new ones.
+        # Possible edge cases here where we have no ready tasks and
+        # Privacy Request is hanging in an in-processing state.
         ready_tasks: List[RequestTask] = get_existing_ready_tasks(
             session, privacy_request, ActionType.access
         )
@@ -530,7 +546,8 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request_proceed: bool = True,
 ) -> List[RequestTask]:
     """
-    DSR 3.0: Build the "erasure" graph, add its tasks to the database and queue the root task.
+    DSR 3.0: Update erasure Request Tasks that were built in the "run_access_request" step with data
+    collected to build masking requests and queue the root task for processing.
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """

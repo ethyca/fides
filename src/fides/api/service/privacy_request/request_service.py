@@ -157,6 +157,11 @@ async def poll_server_for_completion(
 def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
     """
     Mark a privacy request as errored if all of its Request Tasks have run but some have errored.
+
+    When a Request Task fails, it marks itself and *every Request Task that can be reached by the current
+    Request Task* as failed. However, other Request Tasks independent of this path should still have an
+    opportunity to run. We wait until everything has run before marking the Privacy Request as errored so it
+    can be reprocessed.
     """
     with self.get_new_session() as db:
         logger.info("Polling for errored privacy requests")
