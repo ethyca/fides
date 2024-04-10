@@ -421,7 +421,7 @@ class System(Base, FidesBase):
     datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.fides_key)==any_(System.dataset_references)",
-        lazy="select",
+        lazy="selectin",
         uselist=True,
         viewonly=True,
     )
@@ -515,7 +515,7 @@ class PrivacyDeclaration(Base):
     datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.fides_key)==any_(PrivacyDeclaration.dataset_references)",
-        lazy="select",
+        lazy="selectin",
         uselist=True,
         viewonly=True,
     )
@@ -562,7 +562,7 @@ class PrivacyDeclaration(Base):
     def undeclared_data_categories(self) -> List[str]:
         """
         Aggregates a unique set of data categories across the collections in the associated datasets and
-        returns the data categories that are not associated directly on the privacy declaration.
+        returns the data categories that are not defined directly on the privacy declaration.
         """
 
         # all data categories from the datasets

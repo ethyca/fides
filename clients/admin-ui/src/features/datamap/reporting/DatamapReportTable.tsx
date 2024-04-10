@@ -74,6 +74,7 @@ enum COLUMN_IDS {
   SYSTEM_NAME = "system_name",
   DATA_USE = "data_use",
   DATA_CATEGORY = "data_categories",
+  UNDECLARED_DATA_CATEGORIES = "undeclared_data_categories",
   DATA_SUBJECT = "data_subjects",
   LEGAL_NAME = "legal_name",
   DPO = "dpo",
@@ -756,10 +757,10 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.REASON_FOR_EXEMPTION,
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => (
-          <DefaultHeaderCell value="Reason for excemption" {...props} />
+          <DefaultHeaderCell value="Reason for exemption" {...props} />
         ),
         meta: {
-          displayText: "Reason for excemption",
+          displayText: "Reason for exemption",
         },
       }),
       columnHelper.accessor((row) => row.requires_data_protection_assessments, {
@@ -866,6 +867,30 @@ export const DatamapReportTable = () => {
           displayText: "Third parties",
         },
       }),
+      columnHelper.accessor((row) => row.undeclared_data_categories, {
+        id: COLUMN_IDS.UNDECLARED_DATA_CATEGORIES,
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="undeclared data categories"
+              value={
+                isArray(value)
+                  ? map(value, getDataCategoryDisplayName)
+                  : getDataCategoryDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
+        header: (props) => (
+          <DefaultHeaderCell value="Undeclared data categories" {...props} />
+        ),
+        meta: {
+          displayText: "Undeclared data categories",
+        },
+      }),
       columnHelper.accessor((row) => row.uses_cookies, {
         id: COLUMN_IDS.USES_COOKIES,
         cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -922,6 +947,9 @@ export const DatamapReportTable = () => {
     data,
     initialState: {
       columnOrder,
+      columnVisibility: {
+        [COLUMN_IDS.UNDECLARED_DATA_CATEGORIES]: false,
+      },
     },
     state: {
       expanded: true,
@@ -977,7 +1005,7 @@ export const DatamapReportTable = () => {
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
-        headerText="Data Map Settings"
+        headerText="Data map settings"
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
       />
