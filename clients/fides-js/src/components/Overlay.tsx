@@ -113,7 +113,6 @@ const Overlay: FunctionComponent<Props> = ({
   const handleOpenModal = useCallback(() => {
     if (options.fidesEmbed) {
       setBannerIsOpen(false);
-      onOpen();
     } else if (instance) {
       setBannerIsOpen(false);
       instance.show();
