@@ -28,7 +28,7 @@ from fides.api.models.privacy_request import (
     can_run_checkpoint,
 )
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
-from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
@@ -49,6 +49,16 @@ def test_blank_provided_identity_to_identity(
 ) -> None:
     identity = empty_provided_identity.as_identity_schema()
     assert identity.email is None
+
+
+def test_custom_provided_identity_to_identity(
+    custom_provided_identity: ProvidedIdentity,
+) -> None:
+    identity = custom_provided_identity.as_identity_schema()
+    assert identity.customer_id == LabeledIdentity(
+        label=custom_provided_identity.field_label,
+        value=custom_provided_identity.encrypted_value.get("value"),
+    )
 
 
 def test_privacy_request(
@@ -246,7 +256,9 @@ def test_delete_privacy_request_removes_cached_data(
         privacy_request_id=privacy_request.id,
         identity_attribute=identity_attribute,
     )
-    assert cache.get(key) == identity_value
+    assert (
+        privacy_request.get_cached_identity_data()[identity_attribute] == identity_value
+    )
     privacy_request.delete(db)
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
@@ -1186,3 +1198,33 @@ class TestConsentRequestCustomFieldFunctions:
             },
         )
         assert consent_request.get_persisted_custom_privacy_request_fields() == {}
+
+
+class TestPrivacyRequestCustomIdentities:
+    def test_cache_custom_identities(self, privacy_request):
+        privacy_request.cache_identity(
+            identity={
+                "customer_id": LabeledIdentity(label="Custom ID", value=123),
+                "account_id": LabeledIdentity(label="Account ID", value="456"),
+            },
+        )
+        assert privacy_request.get_cached_identity_data() == {
+            "email": "test@example.com",
+            "customer_id": {"label": "Custom ID", "value": 123},
+            "account_id": {"label": "Account ID", "value": "456"},
+        }
+
+    def test_persist_custom_identities(self, db, privacy_request):
+        privacy_request.persist_identity(
+            db=db,
+            identity={
+                "customer_id": LabeledIdentity(label="Custom ID", value=123),
+                "account_id": LabeledIdentity(label="Account ID", value="456"),
+            },
+        )
+        assert privacy_request.get_persisted_identity() == Identity(
+            email="test@example.com",
+            phone_number="+12345678910",
+            customer_id=LabeledIdentity(label="Custom ID", value=123),
+            account_id=LabeledIdentity(label="Account ID", value="456"),
+        )

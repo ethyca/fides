@@ -102,6 +102,13 @@ CREATE TABLE public.type_link_test (
     name CHARACTER VARYING(100)
 );
 
+CREATE TABLE public.loyalty (
+    id CHARACTER VARYING(100) PRIMARY KEY,
+    name CHARACTER VARYING(100),
+    points INT,
+    tier CHARACTER VARYING(100)
+);
+
 INSERT INTO public.composite_pk_test VALUES
     (1,10,'linked to customer 1',1),
     (1,11,'linked to customer 2',2),
@@ -188,6 +195,10 @@ INSERT INTO public.report VALUES
 INSERT INTO public.type_link_test VALUES
 ('1', 'name1'),
 ('2', 'name2');
+
+INSERT INTO public.loyalty VALUES
+('CH-1', 'Jane Customer', 100, 'Cookie Rookie'),
+('CH-2', 'John Customer', 200, 'Cookie Connoisseur');
 
 
 CREATE SCHEMA backup_schema;

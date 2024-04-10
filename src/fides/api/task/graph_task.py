@@ -8,6 +8,7 @@ from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from loguru import logger
+from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -52,8 +53,10 @@ from fides.api.util.cache import CustomJSONEncoder, get_cache
 from fides.api.util.collection_util import (
     NodeInput,
     Row,
-    append,
+    append_unique,
     extract_key_for_address,
+    make_immutable,
+    make_mutable,
 )
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
@@ -271,8 +274,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
          table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}, "y": [4, 5]}]
            where table1.x => self.id,
-           table1.y=> self.name,
-           table2.x=>self.id
+           table1.y => self.name,
+           table2.x => self.id
            table3.z.a => self.contact.address
            table3.y => self.contact.email
          becomes
@@ -280,6 +283,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
          If there are dependent fields from one collection into another, they are separated out as follows:
          {fidesops_grouped_inputs: [{"organization_id": 1, "project_id": "math}, {"organization_id": 5, "project_id": "science"}]
+
+         The output dictionary is constructed with deduplicated values for each key, ensuring that the value lists
+         and the fides_grouped_input list contain only unique elements.
         """
         if not len(data) == len(self.execution_node.input_keys):
             logger.warning(
@@ -289,7 +295,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 len(data),
             )
 
-        output: Dict[str, List[Any]] = {FIDESOPS_GROUPED_INPUTS: []}
+        # the ordered set is just to have a consistent output for testing, the order is not needed otherwise
+        output: Dict[str, OrderedSet] = {FIDESOPS_GROUPED_INPUTS: OrderedSet()}
 
         (
             independent_field_mappings,
@@ -321,7 +328,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                         row=row, target_path=foreign_field_path
                     )
                     if new_values:
-                        append(output, local_field_path.string_path, new_values)
+                        append_unique(output, local_field_path.string_path, new_values)
 
                 # Separately group together dependent inputs if applicable
                 if dependent_field_mappings[collection_address]:
@@ -342,8 +349,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                             dependent_field_mappings=dependent_field_mappings,
                         )
 
-                    output[FIDESOPS_GROUPED_INPUTS].append(grouped_data)
-        return output
+                    output[FIDESOPS_GROUPED_INPUTS].add(make_immutable(grouped_data))
+
+        return make_mutable(output)
 
     def update_status(
         self,

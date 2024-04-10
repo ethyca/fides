@@ -355,51 +355,6 @@ class TestSaaSQueryConfig:
         assert prepared_request.query_params == {}
         assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"
 
-    @mock.patch(
-        "fides.api.models.privacy_request.PrivacyRequest.get_cached_identity_data"
-    )
-    def test_get_read_requests_by_identity(
-        self,
-        mock_identity_data: Mock,
-        combined_traversal,
-        saas_example_connection_config,
-    ):
-        mock_identity_data.return_value = {"email": "test@example.com"}
-
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
-        endpoints = saas_config.top_level_endpoint_dict
-
-        member = combined_traversal.traversal_node_dict[
-            CollectionAddress(saas_config.fides_key, "member")
-        ]
-        tickets = combined_traversal.traversal_node_dict[
-            CollectionAddress(saas_config.fides_key, "tickets")
-        ]
-
-        query_config = SaaSQueryConfig(
-            member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
-        )
-        saas_requests = query_config.get_read_requests_by_identity()
-        assert len(saas_requests) == 1
-        assert saas_requests[0].param_values[0].identity == "email"
-
-        mock_identity_data.return_value = {"phone": "+951555555"}
-
-        query_config = SaaSQueryConfig(
-            member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
-        )
-        saas_requests = query_config.get_read_requests_by_identity()
-        assert len(saas_requests) == 1
-        assert saas_requests[0].param_values[0].identity == "phone"
-
-        query_config = SaaSQueryConfig(
-            tickets, endpoints, {}, privacy_request=PrivacyRequest(id="123")
-        )
-        saas_requests = query_config.get_read_requests_by_identity()
-        assert len(saas_requests) == 2
-
     def test_get_masking_request(
         self, combined_traversal, saas_example_connection_config
     ):

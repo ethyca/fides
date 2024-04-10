@@ -380,7 +380,10 @@ def run_privacy_request(
             datasets = DatasetConfig.all(db=session)
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
             dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = privacy_request.get_cached_identity_data()
+            identity_data = {
+                key: value["value"] if isinstance(value, dict) else value
+                for key, value in privacy_request.get_cached_identity_data().items()
+            }
             connection_configs = ConnectionConfig.all(db=session)
             fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
                 connection_configs

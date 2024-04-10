@@ -220,7 +220,7 @@ class PrivacyRequestResponse(FidesSchema):
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Optional[str]]]
+    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]]
     custom_privacy_request_fields: Optional[Dict[str, Any]]
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None

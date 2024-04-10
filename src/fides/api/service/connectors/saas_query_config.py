@@ -27,7 +27,6 @@ from fides.api.util.saas_util import (
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
     UUID,
-    get_identity,
     unflatten_dict,
 )
 from fides.config import CONFIG
@@ -55,9 +54,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.action: Optional[str] = None
         self.current_request: Optional[SaaSRequest] = None
 
-    def get_read_requests_by_identity(self) -> List[SaaSRequest]:
+    def get_read_requests(self) -> List[SaaSRequest]:
         """
-        Returns the appropriate request configs based on the current collection and identity
+        Returns the appropriate request configs based on the current collection
         """
         collection_name = self.node.address.collection
 
@@ -70,27 +69,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if not requests.read:
             return []
 
-        read_requests = (
-            requests.read if isinstance(requests.read, list) else [requests.read]
-        )
-        filtered_requests = self._requests_using_identity(read_requests)
-        # return all the requests if none contained an identity reference
-        return read_requests if not filtered_requests else filtered_requests
-
-    def _requests_using_identity(
-        self, requests: List[SaaSRequest]
-    ) -> List[SaaSRequest]:
-        """Filters for the requests using the provided identity"""
-
-        return [
-            request
-            for request in requests
-            if any(
-                param_value
-                for param_value in request.param_values or []
-                if param_value.identity == get_identity(self.privacy_request)
-            )
-        ]
+        return requests.read if isinstance(requests.read, list) else [requests.read]
 
     def get_erasure_request_by_action(
         self, action: Literal["update", "delete"]

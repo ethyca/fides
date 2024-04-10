@@ -37,8 +37,10 @@
                <div>{{ request.id }}</div>
                <div>Request type:</div>
                <div>{{ request.type }}</div>
-               <div>Email:</div>
-               <div>{{ request.email }}</div>
+               {% for identity_type, identity_data in request.identity.items() %}
+               <div>{{ identity_data.label }}:</div>
+               <div>{{ identity_data.value }}</div>
+               {% endfor %}
                <div>Requested at:</div>
                <div id="requestedAt">{{ request.requested_at }}</div>
             </div>
