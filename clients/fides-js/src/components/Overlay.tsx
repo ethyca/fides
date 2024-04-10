@@ -76,7 +76,7 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
-  const [bannerIsOpen, setBannerIsOpen] = useState(options.fidesEmbed);
+  const [bannerIsOpen, setBannerIsOpen] = useState(false);
   const modalLinkRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
