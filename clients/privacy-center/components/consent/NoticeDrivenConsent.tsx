@@ -14,7 +14,6 @@ import {
   PrivacyNoticeWithPreference,
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
-  selectBestExperienceConfigTranslation,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -38,11 +37,11 @@ import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { selectBestNoticeTranslation } from "fides-js";
+import useI18n from "~/common/hooks/useI18n";
 import { useLocalStorage } from "~/common/hooks";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import useI18n from "~/common/hooks/useI18n";
 
 // DEFER(fides#3505): Use the fides-js version of this function
 export const resolveConsentValue = (
@@ -90,7 +89,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
   const region = useAppSelector(selectUserRegion);
-  const { i18n } = useI18n();
+  const {
+    i18n,
+    getPrivacyExperienceConfigHistoryId,
+    getPrivacyExperienceNoticeHistoryId,
+  } = useI18n();
 
   const browserIdentities = useMemo(() => {
     const identities = inspectForBrowserIdentities();
@@ -132,25 +135,14 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   useEffect(() => {
     if (experience && experience.privacy_notices) {
-      const experienceConfigTransalation =
-        selectBestExperienceConfigTranslation(
-          i18n,
-          experience.experience_config!
-        );
-      const privacyExperienceConfigHistoryId =
-        experienceConfigTransalation?.privacy_experience_config_history_id;
-
       updateNoticesServedMutationTrigger({
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
-          // TODO (PROD-1748): pass in specific language shown in UI
           privacy_experience_config_history_id:
-            privacyExperienceConfigHistoryId,
-          // TODO (PROD-1748): pass in specific language shown in UI
-          privacy_notice_history_ids: experience.privacy_notices.map(
-            // @ts-ignore
-            (p: PrivacyNotice) => p.translations[0].privacy_notice_history_id
+            getPrivacyExperienceConfigHistoryId(experience.experience_config!),
+          privacy_notice_history_ids: experience.privacy_notices.map((p) =>
+            getPrivacyExperienceNoticeHistoryId(p as PrivacyNotice)
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
           user_geography: region,
@@ -164,6 +156,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     browserIdentities,
     region,
     i18n,
+    getPrivacyExperienceConfigHistoryId,
+    getPrivacyExperienceNoticeHistoryId,
   ]);
 
   const items = useMemo(() => {
@@ -222,8 +216,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
         const notice = notices.find(
-          // TODO (PROD-1748): pass in specific language shown in UI
-          (n) => n.translations[0].privacy_notice_history_id === historyKey
+          (n) =>
+            !!n.translations.find(
+              (t) => t.privacy_notice_history_id === historyKey
+            )
         );
         return { historyKey, preference, notice };
       }
@@ -248,10 +244,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       browser_identity: browserIdentities,
       preferences,
       user_geography: region,
-      // TODO (PROD-1748): pass in specific language shown in UI
-      privacy_experience_config_history_id:
-        experience?.experience_config?.translations[0]
-          .privacy_experience_config_history_id,
+      privacy_experience_config_history_id: getPrivacyExperienceConfigHistoryId(
+        experience?.experience_config!
+      ),
       method: ConsentMethod.SAVE,
       code: verificationCode,
       served_notice_history_id: servedNotice?.served_notice_history_id,
