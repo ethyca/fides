@@ -1,5 +1,4 @@
 # pylint: disable=too-many-lines
-import json
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
@@ -24,9 +23,8 @@ from fides.api.task.graph_task import EMPTY_REQUEST_TASK, GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
 
-# These are deprecated functions that support running DSR's in sequence Dask in-memory
+# These are deprecated DSR 2.0 functions that support running DSR's in sequence with Dask in-memory
 # Supported for a limited time.
-
 
 dask.config.set(scheduler="threads")
 
@@ -120,15 +118,8 @@ def run_access_request_deprecated(
     ) -> None:
         """Run the traversal, as an action creating a GraphTask for each traversal_node."""
         if not tn.is_root_node():
-            collection_data = json.loads(tn.node.collection.json())
             # Mock a RequestTask object in memory
-            resources.privacy_request_task = RequestTask(
-                collection_address=tn.node.address.value,
-                dataset_name=tn.node.address.dataset,
-                collection_name=tn.node.address.collection,
-                collection=collection_data,
-                traversal_details=tn.format_traversal_details_for_save(),
-            )
+            resources.privacy_request_task = tn.to_mock_request_task()
             data[tn.address] = GraphTask(resources)
 
     def termination_fn(
@@ -302,15 +293,8 @@ def run_consent_request_deprecated(  # pylint: disable = too-many-arguments
 
     for col_address, node in graph.nodes.items():
         traversal_node = TraversalNode(node)
-        collection_data = json.loads(traversal_node.node.collection.json())
         # Mock a RequestTask object in memory
-        resources.privacy_request_task = RequestTask(
-            collection_address=traversal_node.node.address.value,
-            dataset_name=traversal_node.node.address.dataset,
-            collection_name=traversal_node.node.address.collection,
-            collection=collection_data,
-            traversal_details=traversal_node.format_traversal_details_for_save(),
-        )
+        resources.privacy_request_task = traversal_node.to_mock_request_task()
         task = GraphTask(resources)
         dsk[col_address] = (task.consent_request, identity)
 
