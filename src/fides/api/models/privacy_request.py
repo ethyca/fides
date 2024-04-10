@@ -561,24 +561,6 @@ class PrivacyRequest(
                         value,
                     )
 
-    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
-        """
-        Cache a dict of collections traversed in the privacy request
-        mapped to their associated data uses
-        """
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
-
-    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
-        """
-        Fetch the collection -> data use map cached for this privacy request
-        """
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[Dict[str, Set[str]]]]
-        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        return list(value_dict.values())[0] if value_dict else None
-
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
         """Sets the encryption key in the Fides app cache if provided"""
         if not encryption_key:
@@ -843,56 +825,22 @@ class PrivacyRequest(
             ).dict()
         return manual_webhook.empty_fields_dict
 
-    def cache_manual_access_input(
-        self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
-    ) -> None:
-        """Cache manually added rows for the given CollectionAddress. This is for use by the *manual* connector which is integrated with the graph."""
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(
-            f"MANUAL_INPUT__{self.id}__{collection.value}",
-            manual_rows,
-        )
-
-    def get_manual_access_input(
-        self, collection: CollectionAddress
-    ) -> Optional[List[Row]]:
-        """Retrieve manually added rows from the cache for the given CollectionAddress.
-        Returns the manual data if it exists, otherwise None.
-
-        This is for use by the *manual* connector which is integrated with the graph.
+    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
+        """
+        Cache a dict of collections traversed in the privacy request
+        mapped to their associated data uses
         """
         cache: FidesopsRedis = get_cache()
-        cached_results: Optional[
-            Dict[str, Optional[List[Row]]]
-        ] = cache.get_encoded_objects_by_prefix(
-            f"MANUAL_INPUT__{self.id}__{collection.value}"
-        )
-        return list(cached_results.values())[0] if cached_results else None
+        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
 
-    def cache_manual_erasure_count(
-        self, collection: CollectionAddress, count: int
-    ) -> None:
-        """Cache the number of rows manually masked for a given collection.
-
-        This is for use by the *manual* connector which is integrated with the graph.
+    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
+        """
+        Fetch the collection -> data use map cached for this privacy request
         """
         cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(
-            f"MANUAL_MASK__{self.id}__{collection.value}",
-            count,
-        )
-
-    def get_manual_erasure_count(self, collection: CollectionAddress) -> Optional[int]:
-        """Retrieve number of rows manually masked for this collection from the cache.
-
-        Cached as an integer to mimic what we return from erasures in an automated way.
-        This is for use by the *manual* connector which is integrated with the graph.
-        """
-        cache: FidesopsRedis = get_cache()
-        prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
-        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(  # type: ignore
-            prefix
-        )
+        value_dict: Optional[
+            Dict[str, Optional[Dict[str, Set[str]]]]
+        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(
@@ -1670,7 +1618,12 @@ class TraversalDetails(FidesSchema):
 
 class RequestTask(Base):
     """
-    An individual Task for a Privacy Request
+    An individual Task for a Privacy Request.
+
+    When we execute a PrivacyRequest, we build a graph by combining the current datasets with the identity data
+    and we save the nodes (collections) in the graph as Request Tasks.
+
+    Currently, we build access, erasure, and consent Request Tasks.
     """
 
     privacy_request_id = Column(

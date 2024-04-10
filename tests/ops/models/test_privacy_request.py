@@ -488,55 +488,6 @@ class TestCachePausedLocation:
         assert privacy_request.get_paused_collection_details() is None
 
 
-class TestCacheManualInput:
-    def test_cache_manual_access_input(self, privacy_request):
-        manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
-
-        privacy_request.cache_manual_access_input(paused_location, manual_data)
-        assert (
-            privacy_request.get_manual_access_input(
-                paused_location,
-            )
-            == manual_data
-        )
-
-    def test_cache_empty_manual_input(self, privacy_request):
-        manual_data = []
-        privacy_request.cache_manual_access_input(paused_location, manual_data)
-
-        assert (
-            privacy_request.get_manual_access_input(
-                paused_location,
-            )
-            == []
-        )
-
-    def test_no_manual_data_in_cache(self, privacy_request):
-        assert (
-            privacy_request.get_manual_access_input(
-                paused_location,
-            )
-            is None
-        )
-
-
-class TestCacheManualErasureCount:
-    def test_cache_manual_erasure_count(self, privacy_request):
-        privacy_request.cache_manual_erasure_count(paused_location, 5)
-
-        cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert cached_data == 5
-
-    def test_no_erasure_data_cached(self, privacy_request):
-        cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert cached_data is None
-
-    def test_zero_cached(self, privacy_request):
-        privacy_request.cache_manual_erasure_count(paused_location, 0)
-        cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert cached_data == 0
-
-
 class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
         privacy_request.cache_failed_checkpoint_details(
