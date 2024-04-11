@@ -112,7 +112,7 @@ class TaskResources:
         self.connections = Connections()
         self.session = session
 
-        # TODO deprecate
+        # TODO Remove when we stop support for DSR 2.0
         self.cache = get_cache()
 
     def get_connector(self, key: FidesKey) -> Any:

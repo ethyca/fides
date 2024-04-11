@@ -649,7 +649,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         )
         if self.request_task.id:
             # DSR 3.0
-            self.request_task.rows_masked = 0  # Saved as part of update_status
+            self.request_task.rows_masked = output  # Saved as part of update_status
         # TODO Remove when we stop support for DSR 2.0
         self.resources.cache_erasure(
             f"{self.key}", output
