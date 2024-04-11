@@ -1134,189 +1134,198 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("second layer embedded", () => {
-    it("automatically renders the second layer and can render tabs", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-            fidesEmbed: true,
-          },
-          experience: experience.items[0],
+  describe("when fides_embed is true", () => {
+    describe("when fides_disable_banner is false", () => {
+      it("renders the embedded layer 1 banner", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              fidesEmbed: true,
+            },
+            experience: experience.items[0],
+          });
         });
-      });
-      cy.get("#fides-tab-purposes");
-      cy.get("@FidesUIShown").should("have.been.calledOnce");
-      checkDefaultExperienceRender();
-    });
-    it("automatically renders the second layer even when fides_disable_banner is true", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-            fidesEmbed: true,
-            fidesDisableBanner: true,
-          },
-          experience: experience.items[0],
-        });
-      });
-      cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("have.been.calledOnce");
-        cy.get("div#fides-banner").should("not.exist");
-        cy.get("div#fides-consent-content").should("exist");
+        cy.get("div#fides-banner").should("be.visible");
+        cy.get("div#fides-banner #fides-banner-title").contains(
+          "[banner] Manage your consent"
+        );
       });
     });
-    it("can opt in to some and opt out of others", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-            fidesEmbed: true,
-          },
-          experience: experience.items[0],
-        });
-      });
-      cy.getByTestId("consent-content").within(() => {
-        cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
-        cy.get("#fides-tab-features").click();
-        cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
 
-        cy.get("#fides-tab-vendors").click();
-        cy.get("#fides-panel-vendors").within(() => {
-          cy.get("button").contains("Legitimate interest").click();
-        });
-        cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
-      });
-      cy.get("button").contains("Save").click();
-      cy.wait("@patchPrivacyPreference").then((interception) => {
-        const { body } = interception.request;
-        expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
-        expect(body.purpose_consent_preferences).to.eql([
-          { id: PURPOSE_4.id, preference: "opt_in" },
-          { id: PURPOSE_6.id, preference: "opt_out" },
-          { id: PURPOSE_7.id, preference: "opt_out" },
-          { id: PURPOSE_9.id, preference: "opt_out" },
-        ]);
-        expect(body.purpose_legitimate_interests_preferences).to.eql([
-          { id: PURPOSE_2.id, preference: "opt_in" },
-        ]);
-        expect(body.special_purpose_preferences).to.eql(undefined);
-        expect(body.feature_preferences).to.eql(undefined);
-        expect(body.special_feature_preferences).to.eql([
-          { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
-        ]);
-        expect(body.vendor_consent_preferences).to.eql([
-          { id: VENDOR_1.id, preference: "opt_out" },
-        ]);
-        expect(body.vendor_legitimate_interests_preferences).to.eql([]);
-        expect(body.system_legitimate_interests_preferences).to.eql([
-          { id: SYSTEM_1.id, preference: "opt_out" },
-        ]);
-        expect(body.system_consent_preferences).to.eql([]);
-      });
-      // embed modal should not close on preferences save
-      cy.getByTestId("consent-content").should("exist");
-      // Verify the cookie on save
-      cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-        const cookieKeyConsent: FidesCookie = JSON.parse(
-          decodeURIComponent(cookie!.value)
-        );
-        expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-          ConsentMethod.SAVE
-        );
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "purposeConsents",
-          ids: [PURPOSE_4.id],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "purposeLegitimateInterests",
-          ids: [PURPOSE_2.id],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "specialFeatureOptins",
-          ids: [SPECIAL_FEATURE_1.id],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "vendorConsents",
-          ids: [],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "vendorLegitimateInterests",
-          ids: [],
-        });
-        expect(
-          cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
-        )
-          .property(`${SYSTEM_1.id}`)
-          .is.eql(false);
-        expect(cookieKeyConsent.tcf_consent.system_consent_preferences).to.eql(
-          {}
-        );
-      });
-    });
-    it("automatically renders the second layer when fidesEmbed is set via cookie", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.getCookie("fides_embed").should("not.exist");
-      cy.setCookie("fides_embed", "true");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-          },
-          experience: experience.items[0],
-        });
-      });
-      checkDefaultExperienceRender();
-    });
-    it("automatically renders the second layer when fidesEmbed is set via query param", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig(
-          {
+    describe("when fides_disable_banner is true (Layer 2 only)", () => {
+      it("renders the embedded second layer and can render tabs", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
+              fidesEmbed: true,
+              fidesDisableBanner: true,
             },
             experience: experience.items[0],
-          },
-          null,
-          null,
-          { fides_embed: true }
-        );
+          });
+        });
+        cy.get("#fides-tab-purposes");
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        checkDefaultExperienceRender();
       });
-      checkDefaultExperienceRender();
-    });
-    it("automatically renders the second layer when fidesEmbed is set via window obj", () => {
-      cy.getCookie("fides_string").should("not.exist");
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig(
-          {
+      it("can opt in to some and opt out of others", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
+              fidesEmbed: true,
+              fidesDisableBanner: true,
             },
             experience: experience.items[0],
-          },
-          null,
-          null,
-          null,
-          { fides_embed: true }
-        );
+          });
+        });
+        cy.getByTestId("consent-content").within(() => {
+          cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+          cy.get("#fides-tab-features").click();
+          cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
+
+          cy.get("#fides-tab-vendors").click();
+          cy.get("#fides-panel-vendors").within(() => {
+            cy.get("button").contains("Legitimate interest").click();
+          });
+          cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
+        });
+        cy.get("button").contains("Save").click();
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const { body } = interception.request;
+          expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
+          expect(body.purpose_consent_preferences).to.eql([
+            { id: PURPOSE_4.id, preference: "opt_in" },
+            { id: PURPOSE_6.id, preference: "opt_out" },
+            { id: PURPOSE_7.id, preference: "opt_out" },
+            { id: PURPOSE_9.id, preference: "opt_out" },
+          ]);
+          expect(body.purpose_legitimate_interests_preferences).to.eql([
+            { id: PURPOSE_2.id, preference: "opt_in" },
+          ]);
+          expect(body.special_purpose_preferences).to.eql(undefined);
+          expect(body.feature_preferences).to.eql(undefined);
+          expect(body.special_feature_preferences).to.eql([
+            { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
+          ]);
+          expect(body.vendor_consent_preferences).to.eql([
+            { id: VENDOR_1.id, preference: "opt_out" },
+          ]);
+          expect(body.vendor_legitimate_interests_preferences).to.eql([]);
+          expect(body.system_legitimate_interests_preferences).to.eql([
+            { id: SYSTEM_1.id, preference: "opt_out" },
+          ]);
+          expect(body.system_consent_preferences).to.eql([]);
+        });
+        // embed modal should not close on preferences save
+        cy.getByTestId("consent-content").should("exist");
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.SAVE
+          );
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeConsents",
+            ids: [PURPOSE_4.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeLegitimateInterests",
+            ids: [PURPOSE_2.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "specialFeatureOptins",
+            ids: [SPECIAL_FEATURE_1.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorConsents",
+            ids: [],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorLegitimateInterests",
+            ids: [],
+          });
+          expect(
+            cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
+          )
+            .property(`${SYSTEM_1.id}`)
+            .is.eql(false);
+          expect(
+            cookieKeyConsent.tcf_consent.system_consent_preferences
+          ).to.eql({});
+        });
       });
-      checkDefaultExperienceRender();
+      it("renders the embedded second layer when fidesEmbed is set via cookie", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.getCookie("fides_embed").should("not.exist");
+        cy.setCookie("fides_embed", "true");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              fidesDisableBanner: true,
+            },
+            experience: experience.items[0],
+          });
+        });
+        checkDefaultExperienceRender();
+      });
+      it("renders the embedded second layer when fidesEmbed is set via query param", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+                fidesDisableBanner: true,
+              },
+              experience: experience.items[0],
+            },
+            null,
+            null,
+            { fides_embed: true }
+          );
+        });
+        checkDefaultExperienceRender();
+      });
+      it("renders the embedded second layer when fidesEmbed is set via window obj", () => {
+        cy.getCookie("fides_string").should("not.exist");
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+                fidesDisableBanner: true,
+              },
+              experience: experience.items[0],
+            },
+            null,
+            null,
+            null,
+            { fides_embed: true }
+          );
+        });
+        checkDefaultExperienceRender();
+      });
     });
   });
 

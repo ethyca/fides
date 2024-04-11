@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { h, FunctionComponent, VNode } from "preact";
 import {
   useEffect,
@@ -32,11 +33,13 @@ import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 
 interface RenderBannerProps {
   isOpen: boolean;
+  isEmbedded: boolean;
   onClose: () => void;
   onSave: () => void;
   onManagePreferencesClick: () => void;
 }
-interface RenderModalFooter {
+
+interface RenderModalFooterProps {
   onClose: () => void;
   isMobile: boolean;
 }
@@ -51,7 +54,7 @@ interface Props {
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
-  renderModalFooter: (props: RenderModalFooter) => VNode;
+  renderModalFooter: (props: RenderModalFooterProps) => VNode;
   onVendorPageClick?: () => void;
   isUiBlocking: boolean;
 }
@@ -73,7 +76,18 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
-  const [bannerIsOpen, setBannerIsOpen] = useState(false);
+
+  const showBanner = useMemo(
+    () =>
+      !options.fidesDisableBanner &&
+      experience.experience_config?.component !== ComponentType.MODAL &&
+      shouldResurfaceConsent(experience, cookie, savedConsent),
+    [cookie, savedConsent, experience, options]
+  );
+
+  const [bannerIsOpen, setBannerIsOpen] = useState(
+    options.fidesEmbed ? showBanner : false
+  );
   const modalLinkRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -108,12 +122,14 @@ const Overlay: FunctionComponent<Props> = ({
   });
 
   const handleOpenModal = useCallback(() => {
-    if (instance) {
+    if (options.fidesEmbed) {
+      setBannerIsOpen(false);
+    } else if (instance) {
       setBannerIsOpen(false);
       instance.show();
       onOpen();
     }
-  }, [instance, onOpen]);
+  }, [instance, onOpen, options]);
 
   const handleCloseModalAfterSave = useCallback(() => {
     if (instance && !options.fidesEmbed) {
@@ -123,20 +139,12 @@ const Overlay: FunctionComponent<Props> = ({
   }, [instance, dispatchCloseEvent, options.fidesEmbed]);
 
   useEffect(() => {
-    if (options.fidesEmbed) {
+    if (options.fidesEmbed && !bannerIsOpen) {
       onOpen();
     }
-  }, [options, onOpen]);
+  }, [options, onOpen, bannerIsOpen]);
 
-  const showBanner = useMemo(
-    () =>
-      !options.fidesDisableBanner &&
-      experience.experience_config?.component !== ComponentType.MODAL &&
-      shouldResurfaceConsent(experience, cookie, savedConsent) &&
-      !options.fidesEmbed,
-    [cookie, savedConsent, experience, options]
-  );
-
+  // The delay is needed for the banner CSS animation
   useEffect(() => {
     const delayBanner = setTimeout(() => {
       if (showBanner) {
@@ -200,6 +208,7 @@ const Overlay: FunctionComponent<Props> = ({
       {showBanner
         ? renderBanner({
             isOpen: bannerIsOpen,
+            isEmbedded: options.fidesEmbed,
             onClose: () => {
               setBannerIsOpen(false);
             },
@@ -210,19 +219,20 @@ const Overlay: FunctionComponent<Props> = ({
           })
         : null}
       {options.fidesEmbed ? (
-        <ConsentContent
-          titleProps={attributes.title}
-          className="fides-embed"
-          i18n={i18n}
-          renderModalFooter={() =>
-            renderModalFooter({
-              onClose: handleCloseModalAfterSave,
-              isMobile: false,
-            })
-          }
-        >
-          {renderModalContent()}
-        </ConsentContent>
+        bannerIsOpen ? null : (
+          <ConsentContent
+            titleProps={attributes.title}
+            i18n={i18n}
+            renderModalFooter={() =>
+              renderModalFooter({
+                onClose: handleCloseModalAfterSave,
+                isMobile: false,
+              })
+            }
+          >
+            {renderModalContent()}
+          </ConsentContent>
+        )
       ) : (
         <ConsentModal
           attributes={attributes}
@@ -235,8 +245,9 @@ const Overlay: FunctionComponent<Props> = ({
               isMobile: false,
             })
           }
-          renderModalContent={renderModalContent}
-        />
+        >
+          {renderModalContent()}
+        </ConsentModal>
       )}
     </div>
   );
