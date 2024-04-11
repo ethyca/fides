@@ -21,9 +21,7 @@ const useI18n = () => {
       const experienceConfigTransalation =
         selectBestExperienceConfigTranslation(i18n, experienceConfig);
       if (!experienceConfigTransalation) {
-        throw new Error(
-          "Coudln't find correct privacy experience config history id to save consent"
-        );
+        throw new Error("Coudln't find correct experience config translation");
       }
 
       return experienceConfigTransalation;
@@ -38,9 +36,7 @@ const useI18n = () => {
       notice as PrivacyNotice
     );
     if (!selectedNotice) {
-      throw new Error(
-        "Coudln't find correct privacy experience notice history id to save consent"
-      );
+      throw new Error("Coudln't find correct notice translation");
     }
     return selectedNotice;
   }, []);
