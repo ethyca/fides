@@ -196,7 +196,7 @@ async def test_square_access_request_task_with_multiple_identities(
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await access_runner_tester(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
