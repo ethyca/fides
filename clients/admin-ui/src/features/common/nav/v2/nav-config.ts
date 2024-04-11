@@ -35,6 +35,25 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Detection & Disovery",
+    routes: [
+      {
+        title: "System detection",
+        path: routes.SYSTEM_DETECTION,
+        exact: true,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+      },
+      {
+        title: "Data discovery",
+        path: routes.DATA_DISCOVERY,
+        exact: true,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+      },
+    ],
+  },
+  {
     title: "Data inventory",
     routes: [
       {
