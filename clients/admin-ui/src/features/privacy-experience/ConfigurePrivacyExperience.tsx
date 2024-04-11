@@ -21,7 +21,6 @@ import {
   defaultInitialValues,
   findLanguageDisplayName,
   transformConfigResponseToCreate,
-  transformTranslationResponseToCreate,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
 import {
@@ -44,7 +43,6 @@ import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
-  ExperienceTranslationResponse,
   SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -63,7 +61,7 @@ const translationSchema = (requirePreferencesLink: boolean) =>
     is_default: Yup.boolean(),
     privacy_preferences_link_label: requirePreferencesLink
       ? Yup.string().required().label("Privacy preferences link label")
-      : Yup.string().label("Privacy preferences link label"),
+      : Yup.string().nullable().label("Privacy preferences link label"),
   });
 
 const validationSchema = Yup.object().shape({
@@ -164,14 +162,14 @@ const ConfigurePrivacyExperience = ({
       setUsingOOBValues(true);
     }
 
-    return availableTranslation
-      ? transformTranslationResponseToCreate(
-          availableTranslation as ExperienceTranslationResponse
-        )
-      : {
-          language,
-          is_default: false,
-        };
+    console.log("availableTranslation", availableTranslation);
+
+    return (
+      availableTranslation ?? {
+        language,
+        is_default: false,
+      }
+    );
   };
 
   const handleExitTranslationForm = () => {
