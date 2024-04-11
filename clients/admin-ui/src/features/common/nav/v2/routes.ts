@@ -11,6 +11,10 @@ export const SYSTEM_ROUTE = "/systems";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 export const DATASET_ROUTE = "/dataset";
 
+// Detection and discovery
+export const SYSTEM_DETECTION = "/data-discovery/system-detection";
+export const DATA_DISCOVERY = "/data-discovery/discovery";
+
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
