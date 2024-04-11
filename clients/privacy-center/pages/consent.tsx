@@ -259,7 +259,7 @@ const Consent: NextPage = () => {
 
     setI18nInstance(i18n);
     setIsI18Initialized(true);
-  }, [experience, setI18nInstance]);
+  }, [experience, setI18nInstance, isConfigDrivenConsent]);
 
   return (
     <Stack as="main" align="center" data-testid="consent">

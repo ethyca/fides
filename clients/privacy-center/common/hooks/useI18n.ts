@@ -26,20 +26,23 @@ const useI18n = () => {
 
       return experienceConfigTransalation;
     },
-    []
+    [i18n]
   );
 
   // Useful wrapper for selectBestNoticeTranslation
-  const selectNoticeTranslation = useCallback((notice: PrivacyNotice) => {
-    const selectedNotice = selectBestNoticeTranslation(
-      i18n,
-      notice as PrivacyNotice
-    );
-    if (!selectedNotice) {
-      throw new Error("Coudln't find correct notice translation");
-    }
-    return selectedNotice;
-  }, []);
+  const selectNoticeTranslation = useCallback(
+    (notice: PrivacyNotice) => {
+      const selectedNotice = selectBestNoticeTranslation(
+        i18n,
+        notice as PrivacyNotice
+      );
+      if (!selectedNotice) {
+        throw new Error("Coudln't find correct notice translation");
+      }
+      return selectedNotice;
+    },
+    [i18n]
+  );
 
   return {
     ...context,

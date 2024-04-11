@@ -1,7 +1,6 @@
 import {
   Badge,
   Box,
-  Link,
   Stack,
   Text,
   HStack,

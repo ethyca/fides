@@ -1552,6 +1552,7 @@ describe("Consent i18n", () => {
 
       // Enable GPC
       cy.on("window:before:load", (win) => {
+        // eslint-disable-next-line no-param-reassign
         win.navigator.globalPrivacyControl = true;
       });
 
