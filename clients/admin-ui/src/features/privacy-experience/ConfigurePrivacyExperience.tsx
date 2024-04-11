@@ -21,6 +21,7 @@ import {
   defaultInitialValues,
   findLanguageDisplayName,
   transformConfigResponseToCreate,
+  transformTranslationResponseToCreate,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
 import {
@@ -43,6 +44,7 @@ import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
+  ExperienceTranslationResponse,
   SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -161,12 +163,15 @@ const ConfigurePrivacyExperience = ({
     if (availableTranslation) {
       setUsingOOBValues(true);
     }
-    return (
-      availableTranslation ?? {
-        language,
-        is_default: false,
-      }
-    );
+
+    return availableTranslation
+      ? transformTranslationResponseToCreate(
+          availableTranslation as ExperienceTranslationResponse
+        )
+      : {
+          language,
+          is_default: false,
+        };
   };
 
   const handleExitTranslationForm = () => {
