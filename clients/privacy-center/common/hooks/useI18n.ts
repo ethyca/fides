@@ -15,7 +15,8 @@ const useI18n = () => {
     throw new Error("useI18n must be used within a I18nProvider");
   }
 
-  const getPrivacyExperienceConfigHistoryId = useCallback(
+  // Useful wrapper for selectBestExperienceConfigTranslation
+  const selectExperienceConfigTranslation = useCallback(
     (experienceConfig: ExperienceConfig) => {
       const experienceConfigTransalation =
         selectBestExperienceConfigTranslation(i18n, experienceConfig);
@@ -25,39 +26,30 @@ const useI18n = () => {
         );
       }
 
-      const privacyExperienceConfigHistoryId =
-        experienceConfigTransalation.privacy_experience_config_history_id;
-
-      return privacyExperienceConfigHistoryId;
+      return experienceConfigTransalation;
     },
     []
   );
 
-  const getPrivacyExperienceNoticeHistoryId = useCallback(
-    (notice: PrivacyNotice) => {
-      const selectedNotice = selectBestNoticeTranslation(
-        i18n,
-        notice as PrivacyNotice
+  // Useful wrapper for selectBestNoticeTranslation
+  const selectNoticeTranslation = useCallback((notice: PrivacyNotice) => {
+    const selectedNotice = selectBestNoticeTranslation(
+      i18n,
+      notice as PrivacyNotice
+    );
+    if (!selectedNotice) {
+      throw new Error(
+        "Coudln't find correct privacy experience notice history id to save consent"
       );
-      if (!selectedNotice) {
-        throw new Error(
-          "Coudln't find correct privacy experience notice history id to save consent"
-        );
-      }
-
-      const privacyExperienceConfigNoticeId =
-        selectedNotice?.privacy_notice_history_id;
-
-      return privacyExperienceConfigNoticeId;
-    },
-    []
-  );
+    }
+    return selectedNotice;
+  }, []);
 
   return {
     ...context,
     i18n,
-    getPrivacyExperienceConfigHistoryId,
-    getPrivacyExperienceNoticeHistoryId,
+    selectExperienceConfigTranslation,
+    selectNoticeTranslation,
   };
 };
 export default useI18n;

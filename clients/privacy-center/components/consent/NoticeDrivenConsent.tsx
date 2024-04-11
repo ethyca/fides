@@ -36,7 +36,6 @@ import { useRouter } from "next/router";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
-import { selectBestNoticeTranslation } from "fides-js";
 import useI18n from "~/common/hooks/useI18n";
 import { useLocalStorage } from "~/common/hooks";
 import ConsentItem from "./ConsentItem";
@@ -89,11 +88,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
   const region = useAppSelector(selectUserRegion);
-  const {
-    i18n,
-    getPrivacyExperienceConfigHistoryId,
-    getPrivacyExperienceNoticeHistoryId,
-  } = useI18n();
+  const { i18n, selectNoticeTranslation, selectExperienceConfigTranslation } =
+    useI18n();
 
   const browserIdentities = useMemo(() => {
     const identities = inspectForBrowserIdentities();
@@ -110,18 +106,21 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
           consentContext,
           cookie
         );
+
+        const noticeTranslation = selectNoticeTranslation(
+          notice as PrivacyNotice
+        );
+
         if (pref) {
-          // todo- set to default language, extract into helper util fn to keep this logic centralized.
-          newPreferences[notice.translations[0].privacy_notice_history_id] =
-            pref;
+          newPreferences[noticeTranslation.privacy_notice_history_id] = pref;
         } else {
-          newPreferences[notice.translations[0].privacy_notice_history_id] =
+          newPreferences[noticeTranslation.privacy_notice_history_id] =
             UserConsentPreference.OPT_OUT;
         }
       });
     }
     return newPreferences;
-  }, [experience, consentContext, cookie]);
+  }, [experience, consentContext, cookie, selectNoticeTranslation]);
 
   const [draftPreferences, setDraftPreferences] =
     useState<NoticeHistoryIdToPreference>(initialDraftPreferences);
@@ -135,14 +134,20 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   useEffect(() => {
     if (experience && experience.privacy_notices) {
+      const experienceConfigTranslation = selectExperienceConfigTranslation(
+        experience.experience_config!
+      );
+
       updateNoticesServedMutationTrigger({
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
           privacy_experience_config_history_id:
-            getPrivacyExperienceConfigHistoryId(experience.experience_config!),
-          privacy_notice_history_ids: experience.privacy_notices.map((p) =>
-            getPrivacyExperienceNoticeHistoryId(p as PrivacyNotice)
+            experienceConfigTranslation.privacy_experience_config_history_id,
+          privacy_notice_history_ids: experience.privacy_notices.map(
+            (p) =>
+              selectNoticeTranslation(p as PrivacyNotice)
+                .privacy_notice_history_id
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
           user_geography: region,
@@ -156,8 +161,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     browserIdentities,
     region,
     i18n,
-    getPrivacyExperienceConfigHistoryId,
-    getPrivacyExperienceNoticeHistoryId,
+    selectExperienceConfigTranslation,
+    selectNoticeTranslation,
   ]);
 
   const items = useMemo(() => {
@@ -170,8 +175,12 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     }
 
     return notices.map((notice) => {
+      const noticeTranslation = selectNoticeTranslation(
+        notice as PrivacyNotice
+      );
+
       const preference =
-        draftPreferences[notice.translations[0].privacy_notice_history_id];
+        draftPreferences[noticeTranslation.privacy_notice_history_id];
       const value = transformUserPreferenceToBoolean(preference);
       const gpcStatus = getGpcStatusFromNotice({
         value,
@@ -179,25 +188,20 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         consentContext,
       });
 
-      const bestTranslation = selectBestNoticeTranslation(
-        i18n,
-        notice as PrivacyNotice
-      );
-
       return {
         name: notice.name || "",
-        description: notice.translations[0].description || "",
+        description: noticeTranslation.description || "",
         id: notice.id,
-        historyId: notice.translations[0].privacy_notice_history_id,
+        historyId: noticeTranslation.privacy_notice_history_id,
         highlight: false,
         url: undefined,
         value,
         gpcStatus,
         disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
-        bestTranslation,
+        bestTranslation: noticeTranslation,
       };
     });
-  }, [consentContext, experience, draftPreferences, i18n]);
+  }, [consentContext, experience, draftPreferences, selectNoticeTranslation]);
 
   const handleCancel = () => {
     router.push("/");
@@ -240,13 +244,16 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       }
     );
 
+    const experienceConfigTranslation = selectExperienceConfigTranslation(
+      experience?.experience_config!
+    );
+
     const payload: PrivacyPreferencesRequest = {
       browser_identity: browserIdentities,
       preferences,
       user_geography: region,
-      privacy_experience_config_history_id: getPrivacyExperienceConfigHistoryId(
-        experience?.experience_config!
-      ),
+      privacy_experience_config_history_id:
+        experienceConfigTranslation.privacy_experience_config_history_id,
       method: ConsentMethod.SAVE,
       code: verificationCode,
       served_notice_history_id: servedNotice?.served_notice_history_id,
@@ -305,6 +312,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       {items.map((item, index) => {
         const { id, highlight, url, name, description, historyId, disabled } =
           item;
+
         const handleChange = (value: boolean) => {
           const pref = value
             ? UserConsentPreference.OPT_IN
@@ -320,8 +328,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
             {index > 0 ? <Divider /> : null}
             <ConsentItem
               id={id}
-              name={item.bestTranslation?.title}
-              description={item.bestTranslation?.description}
+              name={item.bestTranslation?.title || name}
+              description={item.bestTranslation?.description || description}
               highlight={highlight}
               url={url}
               value={item.value}

@@ -1,7 +1,7 @@
 import { Stack, useToast } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   FidesCookie,
@@ -226,6 +226,8 @@ const Consent: NextPage = () => {
   const experience = useAppSelector(selectPrivacyExperience);
   const { IS_OVERLAY_ENABLED } = settings;
   const isConfigDrivenConsent = !IS_OVERLAY_ENABLED;
+  const [isI18Initialized, setIsI18Initialized] = useState(false);
+
   useEffect(() => {
     const i18n = setupI18n();
 
@@ -236,6 +238,7 @@ const Consent: NextPage = () => {
       // messages available
       loadMessagesFromFiles(i18n);
       setI18nInstance(i18n);
+      setIsI18Initialized(true);
       return;
     }
 
@@ -255,18 +258,23 @@ const Consent: NextPage = () => {
     );
 
     setI18nInstance(i18n);
+    setIsI18Initialized(true);
   }, [experience, setI18nInstance]);
 
   return (
     <Stack as="main" align="center" data-testid="consent">
-      <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
-        <Stack align="center" spacing={3}>
-          <ConsentHeading />
-          <ConsentDescription />
+      {/* Wait until i18n is initalized so we can diplay the correct language and
+       also we can use the correct history ids */}
+      {isI18Initialized && (
+        <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
+          <Stack align="center" spacing={3}>
+            <ConsentHeading />
+            <ConsentDescription />
+          </Stack>
+          {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
+          <ConsentToggles storePreferences={storeConsentPreferences} />
         </Stack>
-        {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
-        <ConsentToggles storePreferences={storeConsentPreferences} />
-      </Stack>
+      )}
     </Stack>
   );
 };
