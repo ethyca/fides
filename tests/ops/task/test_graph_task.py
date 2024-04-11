@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict
 from unittest import mock
 from uuid import uuid4
@@ -994,12 +995,14 @@ class TestGraphTaskAffectedConsentSystems:
         )
         assert logs.first().status == ExecutionLogStatus.skipped
 
+    @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_errored_consent_task_for_connector_no_relevant_preferences(
         self,
         mock_run_consent_request,
+        mark_current_and_downstream_nodes_as_failed_mock,
         mailchimp_transactional_connection_config_no_secrets,
         mock_graph_task,
         db,
@@ -1048,6 +1051,7 @@ class TestGraphTaskAffectedConsentSystems:
             .order_by(ExecutionLog.created_at.desc())
         )
         assert logs.first().status == ExecutionLogStatus.error
+        assert mark_current_and_downstream_nodes_as_failed_mock.called
 
 
 class TestFilterByEnabledActions:
@@ -1138,3 +1142,137 @@ class TestFilterByEnabledActions:
         assert filter_by_enabled_actions(access_results, connection_configs) == {
             "dataset1:collection": "data",
         }
+
+
+class TestGraphTaskLogging:
+    @pytest.fixture(scope="function")
+    def graph_task(self, privacy_request, policy, db):
+        resources = TaskResources(
+            privacy_request,
+            policy,
+            [
+                ConnectionConfig(
+                    key="mock_connection_config_key_a",
+                    connection_type=ConnectionType.postgres,
+                )
+            ],
+            EMPTY_REQUEST_TASK,
+            db,
+        )
+        tn = TraversalNode(generate_node("a", "b", "c"))
+        rq = tn.to_mock_request_task()
+        rq.action_type = ActionType.access
+        rq.status = ExecutionLogStatus.pending
+        rq.id = str(uuid.uuid4())
+        db.add(rq)
+        db.commit()
+
+        resources.privacy_request_task = rq
+        return GraphTask(resources)
+
+    def test_log_start(self, graph_task, db, privacy_request):
+        graph_task.log_start(action_type=ActionType.access)
+
+        assert graph_task.request_task.status == ExecutionLogStatus.in_processing
+
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+        assert execution_log.status == ExecutionLogStatus.in_processing
+
+    def test_log_retry(self, graph_task, db, privacy_request):
+        graph_task.log_retry(action_type=ActionType.access)
+
+        assert graph_task.request_task.status == ExecutionLogStatus.retrying
+
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+        assert execution_log.status == ExecutionLogStatus.retrying
+
+    def test_log_skipped(self, graph_task, db, privacy_request):
+        graph_task.log_skipped(action_type=ActionType.access, ex="Skipping node")
+
+        assert graph_task.request_task.status == ExecutionLogStatus.skipped
+        assert graph_task.request_task.consent_sent is None, "Not applicable for access"
+
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+        assert execution_log.status == ExecutionLogStatus.skipped
+
+        graph_task.log_skipped(action_type=ActionType.consent, ex="Skipping node")
+        assert graph_task.request_task.consent_sent is False
+
+    @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
+    def test_log_end_error(
+        self,
+        mark_current_and_downstream_nodes_as_failed_mock,
+        graph_task,
+        db,
+        privacy_request,
+    ):
+        graph_task.log_end(action_type=ActionType.access, ex=Exception("Key Error"))
+
+        assert graph_task.request_task.status == ExecutionLogStatus.error
+
+        assert mark_current_and_downstream_nodes_as_failed_mock.called
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+
+        assert execution_log.status == ExecutionLogStatus.error
+
+    @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
+    def test_log_end_complete(
+        self,
+        mark_current_and_downstream_nodes_as_failed_mock,
+        graph_task,
+        db,
+        privacy_request,
+    ):
+        graph_task.log_end(action_type=ActionType.access)
+
+        assert graph_task.request_task.status == ExecutionLogStatus.complete
+
+        assert not mark_current_and_downstream_nodes_as_failed_mock.called
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+
+        assert execution_log.status == ExecutionLogStatus.complete

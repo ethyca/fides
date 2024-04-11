@@ -1302,6 +1302,10 @@ def request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "__ROOT__",
             "upstream_tasks": [],
             "downstream_tasks": ["test_dataset:test_collection"],
+            "all_descendant_tasks": [
+                "test_dataset:test_collection",
+                "__TERMINATE__:__TERMINATE__",
+            ],
         },
     )
     request_task = RequestTask.create(
@@ -1315,6 +1319,7 @@ def request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "test_collection",
             "upstream_tasks": ["__ROOT__:__ROOT__"],
             "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+            "all_descendant_tasks": ["__TERMINATE__:__TERMINATE__"],
         },
     )
     end_task = RequestTask.create(
@@ -1328,6 +1333,7 @@ def request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "__TERMINATE__",
             "upstream_tasks": ["test_dataset:test_collection"],
             "downstream_tasks": [],
+            "all_descendant_tasks": [],
         },
     )
     yield request_task
@@ -1359,6 +1365,10 @@ def erasure_request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "__ROOT__",
             "upstream_tasks": [],
             "downstream_tasks": ["test_dataset:test_collection"],
+            "all_descendant_tasks": [
+                "test_dataset:test_collection",
+                "__TERMINATE__:__TERMINATE__",
+            ],
         },
     )
     request_task = RequestTask.create(
@@ -1372,6 +1382,7 @@ def erasure_request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "test_collection",
             "upstream_tasks": ["__ROOT__:__ROOT__"],
             "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+            "all_descendant_tasks": ["__TERMINATE__:__TERMINATE__"],
         },
     )
     end_task = RequestTask.create(
@@ -1385,6 +1396,7 @@ def erasure_request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "__TERMINATE__",
             "upstream_tasks": ["test_dataset:test_collection"],
             "downstream_tasks": [],
+            "all_descendant_tasks": [],
         },
     )
     yield request_task
@@ -1406,6 +1418,10 @@ def consent_request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "__ROOT__",
             "upstream_tasks": [],
             "downstream_tasks": ["test_dataset:test_collection"],
+            "all_descendant_tasks": [
+                "test_dataset:test_collection",
+                "__TERMINATE__:__TERMINATE__",
+            ],
         },
     )
     request_task = RequestTask.create(
@@ -1419,6 +1435,7 @@ def consent_request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "test_collection",
             "upstream_tasks": ["__ROOT__:__ROOT__"],
             "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+            "all_descendant_tasks": ["__TERMINATE__:__TERMINATE__"],
         },
     )
     end_task = RequestTask.create(
@@ -1432,6 +1449,7 @@ def consent_request_task(db: Session, privacy_request) -> RequestTask:
             "collection_name": "__TERMINATE__",
             "upstream_tasks": ["test_dataset:test_collection"],
             "downstream_tasks": [],
+            "all_descendant_tasks": [],
         },
     )
     yield request_task

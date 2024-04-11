@@ -514,6 +514,11 @@ async def test_mailchimp_transactional_consent_request_task_error(
             == "mailchimp_transactional_instance:mailchimp_transactional_instance"
         ).first()
         assert rt.status == ExecutionLogStatus.error  # Matches status of Execution Log
+        terminator_task = privacy_request.get_terminate_task_by_action(
+            ActionType.consent
+        )
+        # Terminator task was also marked "errored"
+        assert terminator_task.status == ExecutionLogStatus.error
 
     execution_logs = db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id

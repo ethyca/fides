@@ -139,7 +139,6 @@ def retry(
                         self.execution_node.address,
                         self.resources.request.id,
                     )
-                    self.request_task.consent_sent = False
                     self.log_skipped(action_type, exc)
                     for pref in self.resources.request.privacy_preferences:
                         # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
@@ -405,7 +404,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
         logger.info("Skipping {}, node {}", self.resources.request.id, self.key)
-
+        if action_type == ActionType.consent and self.request_task.id:
+            self.request_task.consent_sent = False
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
 
     def log_end(
@@ -423,6 +423,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 Pii(ex),
             )
             self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
+            # Hooking into the GraphTask.log_end method to also mark the current
+            # Request Task and every Request Task that can be reached from the current
+            # task as errored.
             mark_current_and_downstream_nodes_as_failed(
                 self.request_task, self.resources.session
             )

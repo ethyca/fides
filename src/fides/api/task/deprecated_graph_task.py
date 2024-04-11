@@ -17,7 +17,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.task.graph_task import EMPTY_REQUEST_TASK, GraphTask
 from fides.api.task.task_resources import TaskResources

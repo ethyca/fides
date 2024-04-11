@@ -281,6 +281,12 @@ async def test_wunderkind_errored_logging_new_workflow(
             {"email": wunderkind_identity_email},
             db,
         )
+        # Current task and terminator task were marked as error
+        assert [rt.status.value for rt in privacy_request.consent_tasks] == [
+            "complete",
+            "error",
+            "error",
+        ]
 
     execution_logs = db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id

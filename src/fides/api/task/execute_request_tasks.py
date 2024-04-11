@@ -28,49 +28,7 @@ from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.collection_util import Row
 
-
-def logger_method(request_task: RequestTask) -> Callable:
-    """Log selected no-op items with debug method and others with info method"""
-    return (
-        logger.debug
-        if request_task.status == ExecutionLogStatus.complete
-        else logger.info
-    )
-
-
-def order_tasks_by_input_key(
-    input_keys: List[CollectionAddress], upstream_tasks: Query
-) -> List[Optional[RequestTask]]:
-    """Order tasks by input key. If task doesn't exist, add None in its place
-
-    Data being passed to GraphTask.access_request is expected to have the same order
-    as input keys so we know which data belongs to which upstream collection
-    """
-    tasks: List[Optional[RequestTask]] = []
-    for key in input_keys:
-        task = next(
-            (
-                upstream
-                for upstream in upstream_tasks
-                if upstream.collection_address == key.value
-            ),
-            None,
-        )
-        tasks.append(task)
-    return tasks
-
-
-def collect_task_resources(
-    session: Session, request_task: RequestTask
-) -> TaskResources:
-    """Build the TaskResources artifact which just collects some Database resources needed for the current task"""
-    return TaskResources(
-        request_task.privacy_request,
-        request_task.privacy_request.policy,
-        session.query(ConnectionConfig).all(),
-        request_task,
-        session,
-    )
+# DSR 3.0 task functions
 
 
 def run_prerequisite_task_checks(
@@ -126,7 +84,9 @@ def create_graph_task(session: Session, request_task: RequestTask) -> GraphTask:
     to begin with - this may be unrecoverable and a new Privacy Request should be created.
     """
     try:
-        graph_task: GraphTask = GraphTask(collect_task_resources(session, request_task))
+        graph_task: GraphTask = GraphTask(
+            _collect_task_resources(session, request_task)
+        )
 
     except Exception as exc:
         logger.debug(
@@ -156,30 +116,6 @@ def create_graph_task(session: Session, request_task: RequestTask) -> GraphTask:
         )
 
     return graph_task
-
-
-def log_task_starting(request_task: RequestTask) -> None:
-    """Convenience method for logging task start"""
-    logger_method(request_task)(
-        "Starting '{}' task {} with current status '{}'. Privacy Request: {}, Request Task {}",
-        request_task.action_type,
-        request_task.collection_address,
-        request_task.status.value,
-        request_task.privacy_request_id,
-        request_task.id,
-    )
-
-
-def log_task_complete(request_task: RequestTask) -> None:
-    """Convenience method for logging task completion"""
-    logger.info(
-        "{} task {} is {}. Privacy Request: {}, Request Task {}",
-        request_task.action_type.value.capitalize(),
-        request_task.collection_address,
-        request_task.status.value,
-        request_task.privacy_request_id,
-        request_task.id,
-    )
 
 
 def can_run_task_body(
@@ -277,7 +213,8 @@ def run_access_node(
     privacy_request_task_id: str,
     privacy_request_proceed: bool = True,
 ) -> None:
-    """Run an individual task in the access graph"""
+    """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
+    upload completion if applicable"""
     with self.get_new_session() as session:
         privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
@@ -291,7 +228,7 @@ def run_access_node(
             # are the same, but they may not be the same in the future.
             ordered_upstream_tasks: List[
                 Optional[RequestTask]
-            ] = order_tasks_by_input_key(
+            ] = _order_tasks_by_input_key(
                 graph_task.execution_node.input_keys, upstream_results
             )
             # Pass in access data dependencies in the same order as the input keys.
@@ -322,7 +259,8 @@ def run_erasure_node(
     privacy_request_task_id: str,
     privacy_request_proceed: bool = True,
 ) -> None:
-    """Run an individual task in the erasure graph"""
+    """Run an individual task in the erasure graph for DSR 3.0 and queue downstream nodes
+    upload completion if applicable"""
     with self.get_new_session() as session:
         privacy_request, request_task, _ = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
@@ -365,7 +303,8 @@ def run_consent_node(
     privacy_request_task_id: str,
     privacy_request_proceed: bool = True,
 ) -> None:
-    """Run an individual task in the consent graph"""
+    """Run an individual task in the consent graph for DSR 3.0 and queue downstream nodes
+    upload completion if applicable"""
     with self.get_new_session() as session:
         privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
@@ -394,3 +333,71 @@ def run_consent_node(
             privacy_request_proceed,
         )
         return
+
+
+def logger_method(request_task: RequestTask) -> Callable:
+    """Log selected no-op items with debug method and others with info method"""
+    return (
+        logger.debug
+        if request_task.status == ExecutionLogStatus.complete
+        else logger.info
+    )
+
+
+def log_task_starting(request_task: RequestTask) -> None:
+    """Convenience method for logging task start"""
+    logger_method(request_task)(
+        "Starting '{}' task {} with current status '{}'. Privacy Request: {}, Request Task {}",
+        request_task.action_type,
+        request_task.collection_address,
+        request_task.status.value,
+        request_task.privacy_request_id,
+        request_task.id,
+    )
+
+
+def log_task_complete(request_task: RequestTask) -> None:
+    """Convenience method for logging task completion"""
+    logger.info(
+        "{} task {} is {}. Privacy Request: {}, Request Task {}",
+        request_task.action_type.value.capitalize(),
+        request_task.collection_address,
+        request_task.status.value,
+        request_task.privacy_request_id,
+        request_task.id,
+    )
+
+
+def _order_tasks_by_input_key(
+    input_keys: List[CollectionAddress], upstream_tasks: Query
+) -> List[Optional[RequestTask]]:
+    """Order tasks by input key. If task doesn't exist, add None in its place
+
+    Data being passed to GraphTask.access_request is expected to have the same order
+    as input keys so we know which data belongs to which upstream collection
+    """
+    tasks: List[Optional[RequestTask]] = []
+    for key in input_keys:
+        task = next(
+            (
+                upstream
+                for upstream in upstream_tasks
+                if upstream.collection_address == key.value
+            ),
+            None,
+        )
+        tasks.append(task)
+    return tasks
+
+
+def _collect_task_resources(
+    session: Session, request_task: RequestTask
+) -> TaskResources:
+    """Build the TaskResources artifact which just collects some Database resources needed for the current task"""
+    return TaskResources(
+        request_task.privacy_request,
+        request_task.privacy_request.policy,
+        session.query(ConnectionConfig).all(),
+        request_task,
+        session,
+    )

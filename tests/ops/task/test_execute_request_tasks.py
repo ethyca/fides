@@ -29,6 +29,7 @@ from fides.api.task.execute_request_tasks import (
     create_graph_task,
     run_prerequisite_task_checks,
 )
+from fides.api.task.graph_task import mark_current_and_downstream_nodes_as_failed
 
 
 @pytest.fixture()
@@ -429,3 +430,30 @@ class TestCanRunTaskBody:
         )
         assert terminator_task.status == ExecutionLogStatus.pending
         assert not can_run_task_body(terminator_task)
+
+
+class TestMarkCurrentAndDownstreamNodesAsFailed:
+    def test_mark_tasks_as_failed(
+        self, db, privacy_request, request_task, erasure_request_task
+    ):
+        root_task = privacy_request.get_root_task_by_action(ActionType.access)
+        terminator_task = privacy_request.get_terminate_task_by_action(
+            ActionType.access
+        )
+        assert request_task.status == ExecutionLogStatus.pending
+        assert terminator_task.status == ExecutionLogStatus.pending
+
+        mark_current_and_downstream_nodes_as_failed(request_task, db)
+
+        db.refresh(root_task)
+        db.refresh(request_task)
+        db.refresh(terminator_task)
+        db.refresh(erasure_request_task)
+
+        # Upstream task unaffected
+        assert root_task.status == ExecutionLogStatus.complete
+        # Both current task and terminator task marked as error
+        assert request_task.status == ExecutionLogStatus.error
+        assert terminator_task.status == ExecutionLogStatus.error
+        # Task of a different action type unaffected
+        assert erasure_request_task.status == ExecutionLogStatus.pending

@@ -1244,6 +1244,22 @@ class TestRetryIntegration:
                 ("postgres_example_test_dataset:visit", "retrying"),
                 ("postgres_example_test_dataset:visit", "error"),
             ]
+            # Downstream request tasks were marked as error
+            assert [rt.status.value for rt in privacy_request.access_tasks] == [
+                "complete",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+            ]
 
     @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
     @pytest.mark.parametrize(
@@ -1376,6 +1392,24 @@ class TestRetryIntegration:
             )
             assert ["in_processing", "retrying", "retrying", "error"] == [
                 el.status.value for el in address_logs
+            ]
+
+            # Downstream request tasks were marked as error. Some tasks completed because there is no PK
+            # on their collection and we can't erase
+            assert [rt.status.value for rt in privacy_request.erasure_tasks] == [
+                "complete",
+                "error",
+                "error",
+                "error",
+                "complete",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "complete",
+                "error",
+                "error",
             ]
 
 
