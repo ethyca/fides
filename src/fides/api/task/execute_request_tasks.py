@@ -197,7 +197,6 @@ def queue_downstream_tasks(
             queue_privacy_request,
         )
 
-        logger.info(f"Queue privacy request {privacy_request_proceed}")
         if (
             privacy_request_proceed
         ):  # For Testing, this could be set to False, so we could just

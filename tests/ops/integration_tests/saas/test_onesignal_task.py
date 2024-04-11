@@ -30,9 +30,9 @@ class TestOneSignalConnector:
 
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
-    async def test_non_strict_erasure_request(
+    async def test_non_strict_erasure_request_3_0(
         self,
         dsr_version,
         request,
@@ -43,6 +43,46 @@ class TestOneSignalConnector:
         onesignal_erasure_data,
         onesignal_client,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        player_id = onesignal_erasure_data
+        (
+            access_results,
+            erasure_results,
+        ) = await onesignal_runner.non_strict_erasure_request(
+            access_policy=policy,
+            erasure_policy=erasure_policy_string_rewrite,
+            identities={"email": onesignal_erasure_identity_email},
+        )
+
+        assert erasure_results == {
+            "onesignal_instance:devices": 1,
+            "onesignal_external_dataset:onesignal_external_collection": 0,
+        }
+
+        poll_for_existence(
+            onesignal_client.get_device, (player_id,), existence_desired=False
+        )
+
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_2_0"],
+    )
+    async def test_non_strict_erasure_request_2_0(
+        self,
+        dsr_version,
+        request,
+        onesignal_runner: ConnectorRunner,
+        policy: Policy,
+        erasure_policy_string_rewrite: Policy,
+        onesignal_erasure_identity_email: str,
+        onesignal_erasure_data,
+        onesignal_client,
+    ):
+        """
+        Running this in a separate test from the dsr_3_0 test to avoid errors when creating the onesignal_erasure_data:
+        {'success': False, 'errors': ['A player with that identifier (XXXXX) already exists. Usually this is caused by calling the same update for multiple player ids. Please double check your update calls and try again']}
+        """
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         player_id = onesignal_erasure_data

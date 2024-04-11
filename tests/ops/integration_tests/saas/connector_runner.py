@@ -279,7 +279,6 @@ class ConnectorRunner:
             identities,
             self.db,
         )
-
         return {"opt_in": opt_in.popitem()[1], "opt_out": opt_out.popitem()[1]}
 
     async def _base_erasure_request(

@@ -1100,7 +1100,7 @@ class PrivacyRequest(
             return {
                 t.collection_address: t.consent_sent
                 for t in self.consent_tasks.filter(
-                    RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
+                    RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
                 )
                 if not t.is_root_task and not t.is_terminator_task
             }
