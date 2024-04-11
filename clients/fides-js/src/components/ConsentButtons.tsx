@@ -52,7 +52,9 @@ export const ConsentButtons = ({
     {includePrivacyPolicy && <PrivacyPolicyLink i18n={i18n} />}
     <div
       className={
-        isInModal ? "fides-modal-button-group" : "fides-banner-button-group fides-banner-primary-actions"
+        isInModal
+          ? "fides-modal-button-group"
+          : "fides-banner-button-group fides-banner-primary-actions"
       }
     >
       {firstButton}
