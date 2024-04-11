@@ -11,6 +11,7 @@ import {
   loadMessagesFromFiles,
   initializeI18n,
   setupI18n,
+  PrivacyExperience,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
@@ -250,7 +251,7 @@ const Consent: NextPage = () => {
     initializeI18n(
       i18n,
       window?.navigator,
-      experience,
+      experience as PrivacyExperience,
       {
         debug: true,
       },
