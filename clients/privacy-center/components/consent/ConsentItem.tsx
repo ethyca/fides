@@ -79,6 +79,8 @@ const ConsentItem = ({
 
         <Box>
           <Toggle
+            name={id}
+            id={id}
             disabled={disabled}
             checked={value}
             onChange={() => onChange(!value)}
