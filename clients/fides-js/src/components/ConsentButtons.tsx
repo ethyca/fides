@@ -53,7 +53,7 @@ export const ConsentButtons = ({
     <div
       className={
         isInModal
-          ? "fides-modal-button-group"
+          ? "fides-modal-button-group fides-modal-primary-actions"
           : "fides-banner-button-group fides-banner-primary-actions"
       }
     >
