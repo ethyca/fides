@@ -1,5 +1,6 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestExit
@@ -7,6 +8,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.task.create_request_tasks import (
     run_access_request,
     run_consent_request,
@@ -19,6 +21,35 @@ from fides.api.task.deprecated_graph_task import (
 )
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
+
+
+def use_dsr_3_0_scheduler(
+    privacy_request: PrivacyRequest, action_type: ActionType
+) -> bool:
+    """Return whether we should use the DSR 3.0 scheduler.
+
+    Override if we have a partially processed Privacy Request that was already run on
+    DSR 2.0 so we can finish processing it on 2.0.
+
+    """
+    use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
+
+    prev_results: Dict[
+        str, Optional[List[Row]]
+    ] = privacy_request.get_raw_access_results()
+    existing_tasks_count: int = privacy_request.get_tasks_by_action(action_type).count()
+
+    if prev_results and use_dsr_3_0 and not existing_tasks_count:
+        # If we've previously tried to process this Privacy Request using DSR 2.0, continue doing so
+        # for access and erasure requests
+        logger.info(
+            "Overriding scheduler to run privacy request {} using DSR 2.0 as it's "
+            "already partially processed",
+            privacy_request.id,
+        )
+        use_dsr_3_0 = False
+
+    return use_dsr_3_0
 
 
 def access_runner(
@@ -35,19 +66,7 @@ def access_runner(
 
     DSR 2.0 will be going away
     """
-    use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
-
-    # TODO figure out better logic for how to reprocess privacy requests that were
-    # already run on one scheduler, on the same scheduler
-    # prev_results = privacy_request.get_raw_access_results()
-    #
-    # if privacy_request.access_tasks.count() and not use_dsr_3_0:
-    #     # If we've previously processed this Privacy Request using DSR 3.0, continue doing so
-    #     use_dsr_3_0 = True
-    #
-    # elif prev_results and use_dsr_3_0 and not privacy_request.access_tasks.count():
-    #     # If we've previously tried to process this Privacy Request using DSR 2.0, continue doing so
-    #     use_dsr_3_0 = False
+    use_dsr_3_0 = use_dsr_3_0_scheduler(privacy_request, ActionType.access)
 
     if use_dsr_3_0:
         run_access_request(
@@ -85,7 +104,9 @@ def erasure_runner(
 
     DSR 2.0 will be going away
     """
-    if CONFIG.execution.use_dsr_3_0:
+    use_dsr_3_0 = use_dsr_3_0_scheduler(privacy_request, ActionType.erasure)
+
+    if use_dsr_3_0:
         run_erasure_request(
             privacy_request=privacy_request,
             session=session,
@@ -116,7 +137,9 @@ def consent_runner(
     """Consent runner that temporarily supports running Consent DAGs with DSR 3.0 or 2.0.
 
     DSR 2.0 will be going away"""
-    if CONFIG.execution.use_dsr_3_0:
+    use_dsr_3_0 = use_dsr_3_0_scheduler(privacy_request, ActionType.consent)
+
+    if use_dsr_3_0:
         run_consent_request(
             privacy_request=privacy_request,
             graph=graph,

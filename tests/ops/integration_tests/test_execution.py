@@ -1021,6 +1021,122 @@ async def test_restart_graph_from_failure(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
+async def test_restart_graph_from_failure_on_different_scheduler(
+    db,
+    policy,
+    example_datasets,
+    integration_postgres_config,
+    integration_mongodb_config,
+    mongo_postgres_dataset_graph,
+    privacy_request,
+    dsr_version,
+    request,
+) -> None:
+    """Run a failed privacy request and restart from failure"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
+    saved_secrets = integration_mongodb_config.secrets
+    integration_mongodb_config.secrets = {}
+    integration_mongodb_config.save(db)
+
+    # Attempt to run the graph; execution will stop when we reach one of the mongo nodes for DSR 2.0
+    if dsr_version == "use_dsr_2_0":
+        with pytest.raises(Exception) as exc:
+            access_runner_tester(
+                privacy_request,
+                policy,
+                mongo_postgres_dataset_graph,
+                [integration_postgres_config, integration_mongodb_config],
+                {"email": "customer-4@example.com"},
+                db,
+            )
+    else:
+        access_runner_tester(
+            privacy_request,
+            policy,
+            mongo_postgres_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-4@example.com"},
+            db,
+        )
+
+    assert privacy_request.get_failed_checkpoint_details() == CheckpointActionRequired(
+        step=CurrentStep.access,
+    )
+
+    # Test switching the version from when the Privacy Request was first run
+    if dsr_version == "use_dsr_3_0":
+        original_version = 3.0
+        CONFIG.execution.use_dsr_3_0 = False
+    else:
+        original_version = 2.0
+        CONFIG.execution.use_dsr_3_0 = True
+
+    # Reset secrets
+    integration_mongodb_config.secrets = saved_secrets
+    integration_mongodb_config.save(db)
+
+    access_runner_tester(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-4@example.com"},
+        db,
+    )
+
+    db.refresh(privacy_request)
+    if original_version == 2.0:
+        assert not privacy_request.access_tasks.count()
+    else:
+        assert privacy_request.access_tasks.count()
+
+    assert (
+        db.query(ExecutionLog)
+        .filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="postgres_example_test_dataset",
+            collection_name="customer",
+        )
+        .count()
+        == 2
+    ), "Postgres customer collection does not re-run"
+
+    assert db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id,
+        dataset_name="mongo_test",
+        collection_name="customer_details",
+    )
+
+    customer_detail_logs = [
+        (
+            CollectionAddress(log.dataset_name, log.collection_name).value,
+            log.status.value,
+        )
+        for log in db.query(ExecutionLog)
+        .filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_details",
+        )
+        .order_by("created_at")
+    ]
+
+    assert customer_detail_logs == [
+        ("mongo_test:customer_details", "in_processing"),
+        ("mongo_test:customer_details", "error"),
+        ("mongo_test:customer_details", "in_processing"),
+        ("mongo_test:customer_details", "complete"),
+    ], "Mongo customer_details node reruns"
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_restart_graph_from_failure_during_erasure(
     db,
     erasure_policy,
