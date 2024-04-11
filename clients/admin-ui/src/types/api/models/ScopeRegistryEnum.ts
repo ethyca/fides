@@ -68,6 +68,8 @@ export enum ScopeRegistryEnum {
   DATASET_CREATE_OR_UPDATE = "dataset:create_or_update",
   DATASET_DELETE = "dataset:delete",
   DATASET_READ = "dataset:read",
+  DISCOVERY_MONITOR_READ = "discovery_monitor:read",
+  DISCOVERY_MONITOR_UPDATE = "discovery_monitor:update",
   ENCRYPTION_EXEC = "encryption:exec",
   ENDPOINT_CACHE_UPDATE = "endpoint_cache:update",
   EVALUATION_CREATE = "evaluation:create",

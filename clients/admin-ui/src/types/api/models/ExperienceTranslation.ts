@@ -57,8 +57,4 @@ export type ExperienceTranslation = {
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string;
-  /**
-   * Custom link/button trigger label
-   */
-  modal_link_label?: string;
 };
