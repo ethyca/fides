@@ -56,6 +56,17 @@ Cypress.Commands.add("overrideSettings", (settings) => {
   );
 });
 
+Cypress.Commands.add("visitWithLanguage", (url: string, language: string) => {
+  cy.visit(url, {
+    onBeforeLoad(win) {
+      Object.defineProperty(win.navigator, "language", {
+        value: language,
+        writable: true,
+      });
+    },
+  });
+});
+
 Cypress.Commands.add(
   "visitConsentDemo",
   (
@@ -185,6 +196,11 @@ declare global {
         fixtureName: string,
         options?: Partial<Cypress.Timeoutable>
       ): Chainable<any>;
+      /**
+       * Visit the specified url with a different browser language
+       */
+      visitWithLanguage(url: string, language: string): Chainable<any>;
+
       /**
        * Visit the /fides-js-components-demo page and inject config options
        * @example cy.visitConsentDemo(fidesConfig, {fidesEmbed: true});

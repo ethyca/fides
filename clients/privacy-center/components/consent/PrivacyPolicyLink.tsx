@@ -29,6 +29,7 @@ const PrivacyPolicyLink = ({
       fontSize="sm"
       fontWeight="500"
       isExternal
+      data-testid="privacypolicy.link"
       {...props}
     >
       {label}

@@ -6,7 +6,7 @@ import {
   PrivacyNotice,
 } from "fides-js";
 import { Locale } from "~/../fides-js/src/lib/i18n";
-import { TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
+import { API_URL, TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
 import { stubConfig } from "../support/stubs";
 
 /**
@@ -1509,7 +1509,84 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe.skip("when localizing privacy_center components", () => {});
+  describe.only("when localizing privacy_center components", () => {
+    const GEOLOCATION_API_URL = "https://www.example.com/location";
+    const VERIFICATION_CODE = "112358";
+
+    beforeEach(() => {
+      // Seed local storage with verification data
+      cy.window().then((win) => {
+        win.localStorage.setItem(
+          "consentRequestId",
+          JSON.stringify("consent-request-id")
+        );
+        win.localStorage.setItem(
+          "verificationCode",
+          JSON.stringify(VERIFICATION_CODE)
+        );
+      });
+
+      // Intercept sending identity data to the backend to access /consent page
+      cy.intercept(
+        "POST",
+        `${API_URL}/consent-request/consent-request-id/verify`,
+        { fixture: "consent/verify" }
+      ).as("postConsentRequestVerify");
+
+      // Location intercept
+      cy.intercept("GET", GEOLOCATION_API_URL, {
+        fixture: "consent/geolocation.json",
+      }).as("getGeolocation");
+
+      // Experience intercept
+      cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
+        fixture: "consent/experience_privacy_center.json",
+      }).as("getExperience");
+
+      // Enable GPC
+      cy.on("window:before:load", (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.navigator.globalPrivacyControl = true;
+      });
+
+      // Visit page
+      cy.visitWithLanguage("/consent", "es");
+    });
+
+    it("displays localized text from experience", () => {
+      cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
+      cy.getByTestId("consent-description").contains(SPANISH_MODAL.description);
+    });
+
+    it("displays localized text for gpc banner", () => {
+      cy.getByTestId("gpc.banner.title").contains(SPANISH_MODAL.gpc_title);
+      cy.getByTestId("gpc.banner.description").contains(
+        SPANISH_MODAL.gpc_description
+      );
+    });
+
+    it("displays localized save button", () => {
+      cy.getByTestId("save-btn").contains(SPANISH_MODAL.save_button_label);
+    });
+
+    it("displays localized privacy policy", () => {
+      cy.getByTestId("privacypolicy.link").contains(
+        SPANISH_MODAL.privacy_policy_link_label!
+      );
+      cy.getByTestId("privacypolicy.link")
+        .should("have.attr", "href")
+        .and("include", SPANISH_MODAL.privacy_policy_url!);
+    });
+
+    it("displays localized notice texts", () => {
+      cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
+        SPANISH_NOTICES[1].title
+      );
+      cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
+        SPANISH_NOTICES[1].description
+      );
+    });
+  });
 
   /**
    * Special-case tests for the On/Off toggle labels, which are hidden in non-English locales

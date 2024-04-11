@@ -82,12 +82,12 @@ export const GpcBanner = () => {
     >
       <Stack direction="row">
         <WarningTwoIcon color="blue.400" />
-        <Text fontSize="sm" fontWeight="bold">
+        <Text fontSize="sm" fontWeight="bold" data-testid="gpc.banner.title">
           {i18n.t("static.gpc.title")}
         </Text>
       </Stack>
 
-      <Box paddingLeft={6}>
+      <Box paddingLeft={6} data-testid="gpc.banner.description">
         <Text fontSize="sm">{i18n.t("static.gpc.description")}</Text>
       </Box>
     </Stack>
