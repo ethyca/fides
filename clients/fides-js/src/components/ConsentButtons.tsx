@@ -40,7 +40,7 @@ export const ConsentButtons = ({
       <LanguageSelector i18n={i18n} options={options} />
     )}
     {!!onManagePreferencesClick && (
-      <div className="fides-banner-button-group">
+      <div className="fides-banner-button-group fides-manage-preferences-button-group">
         <Button
           buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
           label={i18n.t("exp.privacy_preferences_link_label")}
@@ -52,7 +52,9 @@ export const ConsentButtons = ({
     {includePrivacyPolicy && <PrivacyPolicyLink i18n={i18n} />}
     <div
       className={
-        isInModal ? "fides-modal-button-group" : "fides-banner-button-group"
+        isInModal
+          ? "fides-modal-button-group fides-modal-primary-actions"
+          : "fides-banner-button-group fides-banner-primary-actions"
       }
     >
       {firstButton}
