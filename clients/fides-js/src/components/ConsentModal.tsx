@@ -1,4 +1,4 @@
-import { VNode, h } from "preact";
+import { ComponentChildren, VNode, h } from "preact";
 import { HTMLAttributes } from "preact/compat";
 
 import { Attributes } from "../lib/a11y-dialog";
@@ -9,17 +9,17 @@ import ConsentContent from "./ConsentContent";
 
 const ConsentModal = ({
   attributes,
+  children,
   dismissable,
   i18n,
   renderModalFooter,
-  renderModalContent,
 }: {
   attributes: Attributes;
+  children: ComponentChildren;
   dismissable: boolean | undefined;
   i18n: I18n;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode;
-  renderModalContent: () => VNode;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
 
@@ -48,7 +48,7 @@ const ConsentModal = ({
           i18n={i18n}
           renderModalFooter={renderModalFooter}
         >
-          {renderModalContent()}
+          {children}
         </ConsentContent>
       </div>
     </div>
