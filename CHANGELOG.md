@@ -20,6 +20,8 @@ The types of changes are:
 ### Added
 - Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
 - Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
+- Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
+
 
 ### Changed
 - Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
