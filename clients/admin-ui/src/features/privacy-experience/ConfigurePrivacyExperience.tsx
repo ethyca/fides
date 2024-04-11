@@ -161,9 +161,6 @@ const ConfigurePrivacyExperience = ({
     if (availableTranslation) {
       setUsingOOBValues(true);
     }
-
-    console.log("availableTranslation", availableTranslation);
-
     return (
       availableTranslation ?? {
         language,
