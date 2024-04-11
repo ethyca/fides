@@ -53,7 +53,7 @@ def openweb_create_erasure_data(
         + user_name
     )
     check_user_url = (
-        "https://" + openweb_secrets["domain"] + "/api/sso/v1/user/" + primary_key_val
+        f"https://{openweb_secrets["domain"]}/api/sso/v1/user/{primary_key_val}"
     )
     payload = {}
     headers = {"x-spotim-sso-access-token": openweb_secrets["api_key"]}
