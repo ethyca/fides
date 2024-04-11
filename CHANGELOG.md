@@ -15,29 +15,44 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.33.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
 
 ### Added
-- Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
-- Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
+
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
 
+## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
+
+### Added
+
+- Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
+- Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
+- Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
+- Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
+- Added support for custom identities [#4764](https://github.com/ethyca/fides/pull/4764)
 
 ### Changed
+
+- Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
 - Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
+- Update active disabled Fides.js toggle color to light grey [#4778](https://github.com/ethyca/fides/pull/4778)
+- Update FidesJS fides_embed option to support embedding both banner & modal components [#4782](https://github.com/ethyca/fides/pull/4782)
 
 ### Fixed
+
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
 - Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
 - Fixed issue when loading the privacy request detail page [#4775](https://github.com/ethyca/fides/pull/4775)
 - Fixed connection test for Aircall [#4756](https://github.com/ethyca/fides/pull/4756/pull)
 
 ### Developer Experience
+
 - Build a `fides-types.d.ts` type declaration file to include alongside our FidesJS developer docs [#4772](https://github.com/ethyca/fides/pull/4772)
 
 ## [2.33.1](https://github.com/ethyca/fides/compare/2.33.0...2.33.1)
 
 ### Added
+
 - Adds CUSTOM_OPTIONS_PATH to Privacy Center env vars [#4769](https://github.com/ethyca/fides/pull/4769)
 
 ## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
@@ -61,7 +76,7 @@ The types of changes are:
 - Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
 - Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
 - Show a "systems displayed" count on datamap map & table reporting page [#4752](https://github.com/ethyca/fides/pull/4752)
-- Change default Canada Privacy Experience Config in migration to reference generic `ca` region [#4762](https://github.com/ethyca/fides/pull/4762) 
+- Change default Canada Privacy Experience Config in migration to reference generic `ca` region [#4762](https://github.com/ethyca/fides/pull/4762)
 
 ### Fixed
 
@@ -72,8 +87,8 @@ The types of changes are:
 - Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
 - Re-add CORS origin regex field to admin UI (#4742)[https://github.com/ethyca/fides/pull/4742]
 
-
 ### Developer Experience
+
 - Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)
 - Update Cookie House to support for additional locations (Canada, Quebec, EEA) and a "property_id" override [#4750](https://github.com/ethyca/fides/pull/4750)
 

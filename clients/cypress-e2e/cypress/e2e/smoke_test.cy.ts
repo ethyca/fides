@@ -19,6 +19,7 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Access your data").click();
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#loyalty_id").type("CH-1");
       cy.get("input#first_name").type("Jenny");
       cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
@@ -30,16 +31,12 @@ describe("Smoke test", () => {
         {
           identity: {
             email: "jenny@example.com",
-            phone_number: "",
+            loyalty_id: { label: "Loyalty ID", value: "CH-1" },
           },
           custom_privacy_request_fields: {
             first_name: {
               label: "First name",
               value: "Jenny",
-            },
-            last_name: {
-              label: "Last name",
-              value: "",
             },
             color: {
               label: "Color",
