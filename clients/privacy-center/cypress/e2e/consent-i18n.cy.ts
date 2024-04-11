@@ -1543,9 +1543,15 @@ describe("Consent i18n", () => {
         fixture: "consent/experience_privacy_center.json",
       }).as("getExperience");
 
+      // Consent reporting intercept
+      cy.intercept(
+        "PATCH",
+        `${API_URL}/consent-request/consent-request-id/notices-served`,
+        { fixture: "consent/notices_served.json" }
+      ).as("patchNoticesServed");
+
       // Enable GPC
       cy.on("window:before:load", (win) => {
-        // eslint-disable-next-line no-param-reassign
         win.navigator.globalPrivacyControl = true;
       });
 
@@ -1585,6 +1591,24 @@ describe("Consent i18n", () => {
       cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
         SPANISH_NOTICES[1].description
       );
+    });
+
+    it("calls notices served with the correct history id for the notices", () => {
+      cy.wait("@patchNoticesServed").then((interception) => {
+        expect(interception.request.body.privacy_notice_history_ids).to.eql([
+          "pri_notice-history-advertising-es-000",
+          "pri_notice-history-analytics-es-000",
+          "pri_notice-history-essential-es-000",
+        ]);
+      });
+    });
+
+    it("calls notices served with the correct history id for the experience config", () => {
+      cy.wait("@patchNoticesServed").then((interception) => {
+        expect(
+          interception.request.body.privacy_experience_config_history_id
+        ).to.eql("pri_exp-history-privacy-center-es-000");
+      });
     });
   });
 
