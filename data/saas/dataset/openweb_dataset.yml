@@ -15,11 +15,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: user_name
-            data_categories: [system.operations]
+            data_categories: [user.account.username]
             fidesops_meta:
               data_type: string
           - name: display_name
-            data_categories: [system.operations]
+            data_categories: [user.demographic.profile]
             fidesops_meta:
               data_type: string
           - name: bio
@@ -27,7 +27,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: location
-            data_categories: [system.operations]
+            data_categories: [user.contact.address]
             fidesops_meta:
               data_type: string
           - name: private_profile
@@ -39,7 +39,13 @@ dataset:
             fidesops_meta:
               data_type: 'string[]'
           - name: image_url
+            data_categories: [user.content.self_image]
+            fidesops_meta:
+              data_type: string
           - name: email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
           - name: email_verified
             data_categories: [system.operations]
             fidesops_meta:
