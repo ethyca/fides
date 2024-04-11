@@ -437,11 +437,11 @@ def get_identity(privacy_request: Optional[PrivacyRequest]) -> Optional[str]:
 
 def get_identities(privacy_request: Optional[PrivacyRequest]) -> Set[str]:
     """
-    Returns a list of cached identity names for the provided privacy request.
+    Returns a set of cached identity names for the provided privacy request.
     """
 
     if not privacy_request:
-        return []
+        return set()
 
     cached_identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
     identities = {k for k, v in cached_identity_data.items() if v}
