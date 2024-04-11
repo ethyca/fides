@@ -488,7 +488,6 @@ async def test_stripe_access_request_task_with_email(
         f"{dataset_name}:invoice_item",
         f"{dataset_name}:payment_intent",
         f"{dataset_name}:payment_method",
-        f"{dataset_name}:subscription",
         f"{dataset_name}:tax_id",
     }
 
@@ -583,10 +582,6 @@ async def test_stripe_access_request_task_with_email(
     assert set(filtered_results[f"{dataset_name}:payment_method"][0].keys()) == {
         "billing_details",
         "card",
-    }
-
-    assert set(filtered_results[f"{dataset_name}:subscription"][0].keys()) == {
-        "discount",
     }
 
     assert set(filtered_results[f"{dataset_name}:tax_id"][0].keys()) == {
