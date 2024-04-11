@@ -76,7 +76,16 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
-  const [bannerIsOpen, setBannerIsOpen] = useState(false);
+
+  const showBanner = useMemo(
+    () =>
+      !options.fidesDisableBanner &&
+      experience.experience_config?.component !== ComponentType.MODAL &&
+      shouldResurfaceConsent(experience, cookie, savedConsent),
+    [cookie, savedConsent, experience, options]
+  );
+
+  const [bannerIsOpen, setBannerIsOpen] = useState(options.fidesEmbed ? showBanner : false);
   const modalLinkRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -133,14 +142,7 @@ const Overlay: FunctionComponent<Props> = ({
     }
   }, [options, onOpen, bannerIsOpen]);
 
-  const showBanner = useMemo(
-    () =>
-      !options.fidesDisableBanner &&
-      experience.experience_config?.component !== ComponentType.MODAL &&
-      shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options]
-  );
-
+  // The delay is needed for the banner CSS animation
   useEffect(() => {
     const delayBanner = setTimeout(() => {
       if (showBanner) {
