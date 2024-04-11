@@ -85,7 +85,9 @@ const Overlay: FunctionComponent<Props> = ({
     [cookie, savedConsent, experience, options]
   );
 
-  const [bannerIsOpen, setBannerIsOpen] = useState(options.fidesEmbed ? showBanner : false);
+  const [bannerIsOpen, setBannerIsOpen] = useState(
+    options.fidesEmbed ? showBanner : false
+  );
   const modalLinkRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
