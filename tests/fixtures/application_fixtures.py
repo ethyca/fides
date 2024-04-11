@@ -99,6 +99,7 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 from fides.api.util.data_category import DataCategory
 from fides.config import CONFIG
 from fides.config.helpers import load_file
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -1286,6 +1287,7 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
         policy,
     )
     yield privacy_request
+    clear_cache_identities(privacy_request.id)
     privacy_request.delete(db)
 
 
@@ -1467,6 +1469,7 @@ def privacy_request_with_erasure_policy(
         erasure_policy,
     )
     yield privacy_request
+    clear_cache_identities(privacy_request.id)
     privacy_request.delete(db)
 
 

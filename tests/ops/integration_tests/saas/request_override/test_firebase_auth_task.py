@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 import pytest
 from firebase_admin import auth
 from firebase_admin.auth import UserNotFoundError, UserRecord
@@ -14,6 +12,7 @@ from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
 @pytest.mark.integration_saas
@@ -102,7 +101,7 @@ async def test_firebase_auth_access_request(
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("firebase_auth_user")
 @pytest.mark.parametrize(
-    "identity_info, message,dsr_version",
+    "identity_info, message, dsr_version",
     [
         (
             {"email": "a_fake_email@ethyca.com"},
@@ -112,12 +111,12 @@ async def test_firebase_auth_access_request(
         (
             {"phone_number": "+10000000000"},
             "Could not find user with phone_number",
-            "use_dsr_2_0",
+            "use_dsr_3_0",
         ),
         (
             {"email": "a_fake_email@ethyca.com"},
             "Could not find user with email",
-            "use_dsr_3_0",
+            "use_dsr_2_0",
         ),
         (
             {"phone_number": "+10000000000"},
@@ -129,8 +128,8 @@ async def test_firebase_auth_access_request(
 async def test_firebase_auth_access_request_non_existent_users(
     identity_info,
     message,
-    db,
     dsr_version,
+    db,
     request,
     privacy_request,
     policy,
@@ -140,9 +139,11 @@ async def test_firebase_auth_access_request_non_existent_users(
 ) -> None:
     """Ensure that firebase access request task gracefully handles non-existent users"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
 
     identity = Identity(**identity_info)
     privacy_request.cache_identity(identity)
+
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
@@ -190,6 +191,7 @@ async def test_firebase_auth_access_request_phone_number_identity(
 ) -> None:
     """Full access request based on the Firebase Auth SaaS config using a phone number identity"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
 
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
     privacy_request.cache_identity(identity)
@@ -549,6 +551,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
 ) -> None:
     """Delete request based on the Firebase Auth SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
 
     privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)
@@ -678,6 +681,7 @@ async def test_firebase_auth_user_delete_function_with_phone_number_identity(
 ) -> None:
     """Tests delete functionality by explicitly invoking the delete override function"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
 
     privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)

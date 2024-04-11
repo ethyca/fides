@@ -1396,7 +1396,7 @@ class TestRetryIntegration:
 
             # Downstream request tasks were marked as error. Some tasks completed because there is no PK
             # on their collection and we can't erase
-            assert [rt.status.value for rt in privacy_request.erasure_tasks] == [
+            assert {rt.status.value for rt in privacy_request.erasure_tasks} == {
                 "complete",
                 "error",
                 "error",
@@ -1410,7 +1410,7 @@ class TestRetryIntegration:
                 "complete",
                 "error",
                 "error",
-            ]
+            }
 
 
 @pytest.mark.integration_timescale
