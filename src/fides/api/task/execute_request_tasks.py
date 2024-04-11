@@ -198,7 +198,10 @@ def queue_downstream_tasks(
         )
 
         logger.info(f"Queue privacy request {privacy_request_proceed}")
-        if privacy_request_proceed:  # For Testing, this could be set to False,
+        if (
+            privacy_request_proceed
+        ):  # For Testing, this could be set to False, so we could just
+            # run one of the graphs and not the entire privacy request
             queue_privacy_request(
                 privacy_request_id=privacy_request.id,
                 from_step=next_step.value,
@@ -214,7 +217,7 @@ def run_access_node(
     privacy_request_proceed: bool = True,
 ) -> None:
     """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
-    upload completion if applicable"""
+    upon completion if applicable"""
     with self.get_new_session() as session:
         privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
@@ -260,7 +263,7 @@ def run_erasure_node(
     privacy_request_proceed: bool = True,
 ) -> None:
     """Run an individual task in the erasure graph for DSR 3.0 and queue downstream nodes
-    upload completion if applicable"""
+    upon completion if applicable"""
     with self.get_new_session() as session:
         privacy_request, request_task, _ = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
@@ -304,7 +307,7 @@ def run_consent_node(
     privacy_request_proceed: bool = True,
 ) -> None:
     """Run an individual task in the consent graph for DSR 3.0 and queue downstream nodes
-    upload completion if applicable"""
+    upon completion if applicable"""
     with self.get_new_session() as session:
         privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id

@@ -160,6 +160,8 @@ def retry(
                     sleep(func_delay)
                     raised_ex = ex
             self.log_end(action_type, raised_ex)
+            # This is useful for resuming from the access, erasure, or consent
+            # checkpoints if the graph fails in one of these sections.
             self.resources.request.cache_failed_checkpoint_details(step=action_type)
             add_errored_system_status_for_consent_reporting(
                 self.resources.session,
@@ -596,6 +598,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             if self.request_task.id:
+                # DSR 3.0
                 self.request_task.rows_masked = 0  # Saved as part of update_status
 
             # TODO Remove when we stop support for DSR 2.0
@@ -616,6 +619,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             if self.request_task.id:
+                # DSR 3.0
                 self.request_task.rows_masked = 0  # Saved as part of update_status
 
             # TODO Remove when we stop support for DSR 2.0
@@ -643,7 +647,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             retrieved_data,
             formatted_input_data,
         )
-        self.request_task.rows_masked = output  # Saved as part of update_status
+        if self.request_task.id:
+            # DSR 3.0
+            self.request_task.rows_masked = 0  # Saved as part of update_status
         # TODO Remove when we stop support for DSR 2.0
         self.resources.cache_erasure(
             f"{self.key}", output
