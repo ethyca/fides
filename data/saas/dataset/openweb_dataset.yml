@@ -19,7 +19,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: display_name
-            data_categories: [user.demographic.profile]
+            data_categories: [user.account.username]
             fidesops_meta:
               data_type: string
           - name: bio
@@ -31,7 +31,8 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: private_profile
-            data_categories: [system.operations]
+            # this is based on viewing our test profiles this data looks to be what a user might write about themselves - I think the safer option would be user.demographic.profile though?
+            data_categories: [user.contact.public]
             fidesops_meta:
               data_type: boolean
           - name: roles
