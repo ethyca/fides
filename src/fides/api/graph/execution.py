@@ -12,11 +12,12 @@ from fides.api.graph.config import (
 from fides.api.graph.graph import Edge
 from fides.api.models.privacy_request import RequestTask, TraversalDetails
 from fides.api.util.collection_util import partition
+from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 
 
-class ExecutionNode:  # pylint: disable=too-many-instance-attributes
+class ExecutionNode(Contextualizable):  # pylint: disable=too-many-instance-attributes
     """Node for *executing* a task. This node only has knowledge of itself and its incoming and outgoing edges
 
     After we build the graph, we save details to RequestTasks in the database that are hydrated here to execute an individual
@@ -73,6 +74,9 @@ class ExecutionNode:  # pylint: disable=too-many-instance-attributes
             if self.collection.field(FieldPath(field)).identity:  # type: ignore
                 return True
         return False
+
+    def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+        return {LoggerContextKeys.collection: self.collection.name}
 
     def build_incoming_field_path_maps(
         self, group_dependent_fields: bool = False

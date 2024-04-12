@@ -128,7 +128,9 @@ async def test_hubspot_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@pytest.mark.usefixtures("use_dsr_3_0")  # Only testing on DSR 3.0 not 2.0 - because of fixtures taking too long to settle down
+@pytest.mark.usefixtures(
+    "use_dsr_3_0"
+)  # Only testing on DSR 3.0 not 2.0 - because of fixtures taking too long to settle down
 async def test_hubspot_erasure_request_task(
     db,
     privacy_request,
