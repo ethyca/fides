@@ -1,6 +1,7 @@
 import io
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Type
+from urllib.parse import quote_plus
 
 import paramiko
 import sshtunnel  # type: ignore
@@ -398,9 +399,10 @@ class RedshiftConnector(SQLConnector):
         """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
+        url_encoded_password = quote_plus(config.password)
         port = f":{config.port}" if config.port else ""
         database = f"/{config.database}" if config.database else ""
-        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
+        url = f"redshift+psycopg2://{config.user}:{url_encoded_password}@{config.host}{port}{database}"
         return url
 
     # Overrides SQLConnector.create_client
