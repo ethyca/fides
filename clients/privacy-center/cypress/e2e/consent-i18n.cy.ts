@@ -1514,6 +1514,8 @@ describe("Consent i18n", () => {
     const VERIFICATION_CODE = "112358";
 
     beforeEach(() => {
+      cy.clearAllCookies();
+
       // Seed local storage with verification data
       cy.window().then((win) => {
         win.localStorage.setItem(
@@ -1566,7 +1568,7 @@ describe("Consent i18n", () => {
       });
 
       // Visit page
-      cy.visitWithLanguage("/consent", "es");
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
     });
 
     it("displays localized text from experience", () => {
