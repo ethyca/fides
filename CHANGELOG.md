@@ -16,6 +16,7 @@ The types of changes are:
 - `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
+- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
@@ -28,7 +29,6 @@ The types of changes are:
 - Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
 - Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
 - Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
-- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 - Added support for custom identities [#4764](https://github.com/ethyca/fides/pull/4764)
 
 ### Changed
