@@ -394,6 +394,17 @@ class TestSaaSQueryConfig:
         assert len(saas_requests) == 1
         assert saas_requests[0].param_values[0].identity == "phone"
 
+        mock_identity_data.return_value = {
+            "email": "test@example.com",
+            "phone": "+951555555",
+        }
+
+        query_config = SaaSQueryConfig(
+            member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
+        )
+        saas_requests = query_config.get_read_requests_by_identity()
+        assert len(saas_requests) == 2
+
         query_config = SaaSQueryConfig(
             tickets, endpoints, {}, privacy_request=PrivacyRequest(id="123")
         )

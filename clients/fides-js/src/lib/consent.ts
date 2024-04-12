@@ -70,18 +70,9 @@ export const initOverlay = async ({
           ColorFormat.HEX,
           1
         );
-        const lightestPrimaryColor: string = generateLighterColor(
-          options.fidesPrimaryColor,
-          ColorFormat.HEX,
-          2
-        );
         document.documentElement.style.setProperty(
           "--fides-overlay-primary-button-background-hover-color",
           lighterPrimaryColor
-        );
-        document.documentElement.style.setProperty(
-          "--fides-overlay-primary-active-disabled-color",
-          lightestPrimaryColor
         );
       }
 

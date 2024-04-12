@@ -12,6 +12,23 @@ system:
         data_subjects:
           - customer
 
+  - fides_key: cookie_house_loyalty_database
+    name: Cookie House Loyalty Program
+    description: Secondary database for Cookie House's loyalty program.
+    system_type: Database
+    administrating_department: Engineering
+    egress:
+      - fides_key: cookie_house
+        type: system
+    privacy_declarations:
+      - data_categories:
+          - user
+        data_use: essential.service
+        data_subjects:
+          - customer
+        dataset_references:
+          - postgres_example_test_extended_dataset
+
   - fides_key: cookie_house_postgresql_database
     name: Cookie House PostgreSQL Database
     description: Primary database for Cookie House orders.
