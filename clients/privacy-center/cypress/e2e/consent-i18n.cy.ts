@@ -1509,7 +1509,7 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe.only("when localizing privacy_center components", () => {
+  describe("when localizing privacy_center components", () => {
     const GEOLOCATION_API_URL = "https://www.example.com/location";
     const VERIFICATION_CODE = "112358";
 
@@ -1631,10 +1631,13 @@ describe("Consent i18n", () => {
     it("calls privacy preference with the correct history id for the experience config", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        const { preferences, privacy_experience_config_history_id } =
-          interception.request.body;
+        const {
+          preferences,
+          privacy_experience_config_history_id:
+            privacyExperienceConfigHistoryId,
+        } = interception.request.body;
 
-        expect(privacy_experience_config_history_id).to.eql(
+        expect(privacyExperienceConfigHistoryId).to.eql(
           EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID
         );
         expect(preferences.map((p: any) => p.privacy_notice_history_id)).to.eql(
