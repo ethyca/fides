@@ -252,7 +252,7 @@ class ConnectorRunner:
         from tests.conftest import consent_runner_tester
 
         privacy_request = create_privacy_request_with_policy_rules(
-            consent_policy, None, None
+            consent_policy, None, privacy_request_id
         )
 
         privacy_request.save(self.db)
