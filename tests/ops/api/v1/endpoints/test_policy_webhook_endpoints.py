@@ -749,13 +749,13 @@ class TestPatchPreExecutionPolicyWebhook:
     def test_patch_pre_execution_webhook_invalid_webhook_key(
         self, api_client, generate_auth_header, policy
     ):
-        return V1_URL_PREFIX + POLICY_PRE_WEBHOOK_DETAIL.format(
+        invalid_url = V1_URL_PREFIX + POLICY_PRE_WEBHOOK_DETAIL.format(
             policy_key=policy.key, pre_webhook_key="invalid_webhook_key"
         )
 
         auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
         resp = api_client.patch(
-            url,
+            invalid_url,
             headers=auth_header,
         )
         assert resp.status_code == 404

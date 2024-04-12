@@ -36,6 +36,7 @@ from fides.api.models.policy import (
     Rule,
     RuleTarget,
 )
+from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
@@ -494,6 +495,38 @@ def policy_post_execution_webhooks(
         pass
     try:
         post_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def pre_approval_webhooks(
+        db: Session, https_connection_config,
+) -> Generator:
+    pre_approval_webhook = PreApprovalWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "name": str(uuid4()),
+            "key": "pre_approval_webhook",
+        },
+    )
+    pre_approval_webhook_two = PreApprovalWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "name": str(uuid4()),
+            "key": "pre_approval_webhook_2",
+        },
+    )
+    db.commit()
+    yield [pre_approval_webhook, pre_approval_webhook_two]
+    try:
+        pre_approval_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        pre_approval_webhook_two.delete(db)
     except ObjectDeletedError:
         pass
 
