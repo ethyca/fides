@@ -611,7 +611,9 @@ class PrivacyRequest(
         return result
 
     def get_results(self) -> Dict[str, Any]:
-        """Retrieves all cached identity data associated with this Privacy Request"""
+        """Retrieves all cached identity data associated with this Privacy Request
+        Just used in testing
+        """
         cache: FidesopsRedis = get_cache()
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)

@@ -128,14 +128,9 @@ async def test_hubspot_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
+@pytest.mark.usefixtures("use_dsr_3_0")  # Only testing on DSR 3.0 not 2.0 - because of fixtures taking too long to settle down
 async def test_hubspot_erasure_request_task(
     db,
-    dsr_version,
-    request,
     privacy_request,
     erasure_policy_string_rewrite_name_and_email,
     connection_config_hubspot,
@@ -145,7 +140,6 @@ async def test_hubspot_erasure_request_task(
     hubspot_test_client: HubspotTestClient,
 ) -> None:
     """Full erasure request based on the Hubspot SaaS config"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     privacy_request.policy_id = erasure_policy_string_rewrite_name_and_email.id
     privacy_request.save(db)

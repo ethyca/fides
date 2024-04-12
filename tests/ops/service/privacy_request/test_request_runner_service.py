@@ -1884,7 +1884,7 @@ def test_create_and_process_access_request_bigquery(
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
-    results = pr.get_results()
+    results = pr.get_raw_access_results()
     customer_table_key = f"bigquery_example_test_dataset:customer"
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email

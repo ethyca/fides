@@ -28,14 +28,9 @@ class TestOneSignalConnector:
             access_policy=policy, identities={"email": onesignal_identity_email}
         )
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
-    async def test_non_strict_erasure_request_3_0(
+    @pytest.mark.usefixtures("use_dsr_3_0")
+    async def test_non_strict_erasure_request(
         self,
-        dsr_version,
-        request,
         onesignal_runner: ConnectorRunner,
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
@@ -43,7 +38,10 @@ class TestOneSignalConnector:
         onesignal_erasure_data,
         onesignal_client,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+        """
+        Testing this just on one scheduler: DSR 3.0 due to issues with data fixtures not settling down in time,
+        {'success': False, 'errors': ['A player with that identifier (XXXXX) already exists. Usually this is caused by calling the same update for multiple player ids. Please double check your update calls and try again']}
+        """
 
         player_id = onesignal_erasure_data
         (
