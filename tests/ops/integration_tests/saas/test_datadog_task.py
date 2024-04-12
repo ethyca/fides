@@ -5,6 +5,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from tests.conftest import access_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
 @pytest.mark.integration_saas
@@ -91,12 +92,12 @@ async def test_datadog_access_request_task_with_phone_number(
     privacy_request,
     datadog_connection_config,
     datadog_dataset_config,
-    datadog_identity_email,
     datadog_identity_phone_number,
     datadog_access_data,
 ) -> None:
     """Full access request based on the Datadog SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
 
     identity_attribute = "phone_number"
     identity_value = datadog_identity_phone_number

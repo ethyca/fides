@@ -1287,7 +1287,6 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
         policy,
     )
     yield privacy_request
-    clear_cache_identities(privacy_request.id)
     privacy_request.delete(db)
 
 
@@ -1469,7 +1468,6 @@ def privacy_request_with_erasure_policy(
         erasure_policy,
     )
     yield privacy_request
-    clear_cache_identities(privacy_request.id)
     privacy_request.delete(db)
 
 

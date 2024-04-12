@@ -10,6 +10,7 @@ from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import get_config
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 CONFIG = get_config()
 
@@ -124,6 +125,7 @@ async def test_kustomer_access_request_task_with_phone_number(
 ) -> None:
     """Full access request based on the Kustomer SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
 
     identity = Identity(**{"phone_number": kustomer_identity_phone_number})
     privacy_request.cache_identity(identity)

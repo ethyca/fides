@@ -9,6 +9,7 @@ from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
 @pytest.mark.integration_saas
@@ -123,6 +124,7 @@ async def test_square_access_request_task_by_phone_number(
 ) -> None:
     """Full access request based on the Square SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
 
     identity = Identity(**{"phone_number": square_identity_phone_number})
     privacy_request.cache_identity(identity)
