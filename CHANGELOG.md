@@ -21,6 +21,10 @@ The types of changes are:
 
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
 
+### Fixed
+
+- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
 ### Added
