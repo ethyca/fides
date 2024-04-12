@@ -15,7 +15,13 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.33.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
+
+### Fixed
+- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+
+
+## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
 ### Added
 - Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
@@ -28,6 +34,8 @@ The types of changes are:
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
 - Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
 - Update active disabled Fides.js toggle color to light grey [#4778](https://github.com/ethyca/fides/pull/4778)
+- Update FidesJS fides_embed option to support embedding both banner & modal components [#4782](https://github.com/ethyca/fides/pull/4782)
+- Add a few CSS classes to help with styling FidesJS button groups [#4789](https://github.com/ethyca/fides/pull/4789)
 
 ### Fixed
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)

@@ -25,6 +25,7 @@ interface BannerProps {
   onVendorPageClick?: () => void;
   renderButtonGroup: (props: ButtonGroupProps) => VNode;
   className?: string;
+  isEmbedded: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -37,6 +38,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onVendorPageClick,
   renderButtonGroup,
   className,
+  isEmbedded,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -71,13 +73,18 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     ? i18n.t("exp.banner_description")
     : i18n.t("exp.description");
 
+  const containerClassName = [
+    "fides-banner",
+    "fides-banner-bottom",
+    !bannerIsOpen && "fides-banner-hidden",
+    isEmbedded && "fides-embedded",
+    className,
+  ]
+    .filter((c) => typeof c === "string")
+    .join(" ");
+
   return (
-    <div
-      id="fides-banner-container"
-      className={`fides-banner fides-banner-bottom 
-        ${bannerIsOpen ? "" : "fides-banner-hidden"} 
-        ${className || ""}`}
-    >
+    <div id="fides-banner-container" className={containerClassName}>
       <div id="fides-banner">
         <div id="fides-banner-inner">
           <CloseButton

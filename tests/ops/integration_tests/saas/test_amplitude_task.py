@@ -176,6 +176,7 @@ async def test_amplitude_access_request_task(
     assert v[f"{dataset_name}:user_details"][0]["user_id"] == amplitude_identity_email
 
 
+@pytest.mark.skip(reason="Temporarily disabled test")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

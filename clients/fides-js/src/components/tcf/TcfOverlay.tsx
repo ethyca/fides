@@ -254,7 +254,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experience, i18n, currentLocale]);
+  }, [experience, i18n]);
 
   const { servedNotice } = useConsentServed({
     privacyExperienceConfigHistoryId,
@@ -336,7 +336,13 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
-      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
+      renderBanner={({
+        isEmbedded,
+        isOpen,
+        onClose,
+        onSave,
+        onManagePreferencesClick,
+      }) => {
         const goToVendorTab = () => {
           onManagePreferencesClick();
           setActiveTabIndex(2);
@@ -346,6 +352,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             i18n={i18n}
             dismissable={isDismissable}
             bannerIsOpen={isOpen}
+            isEmbedded={isEmbedded}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
               onClose();
