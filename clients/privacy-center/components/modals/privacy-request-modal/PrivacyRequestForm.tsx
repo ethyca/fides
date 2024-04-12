@@ -69,7 +69,7 @@ const usePrivacyRequestForm = ({
           .filter(
             ([key, value]) =>
               key === "name" ||
-              key === "phone_number" ||
+              key === "phone" ||
               key === "email" ||
               (typeof value === "object" && value.label)
           )
