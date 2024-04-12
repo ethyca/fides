@@ -1589,6 +1589,11 @@ describe("Consent i18n", () => {
       );
     });
 
+    /* Commenting tests for now. The problem is that the test runs with config based consent,
+      which don't support translations. Then, we override with cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+      to use notices-based consent to run the test, but notices-server has already ran with the previous config
+      */
+    /*
     const EXPECTED_NOTICE_HISTORY_IDS = [
       "pri_notice-history-advertising-es-000", // Spanish (es)
       "pri_notice-history-analytics-es-000", // Spanish (es)
@@ -1598,11 +1603,6 @@ describe("Consent i18n", () => {
     const EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID =
       "pri_exp-history-privacy-center-es-000";
 
-    /* Commenting tests for now. The problem is that the test runs with config based consent,
-      which don't support translations. Then, we override with cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
-      to use notices-based consent to run the test, but notices-server has already ran with the previous config
-      */
-    /*
     it("calls notices served with the correct history id for the notices", () => {
       // Consent reporting intercept
       cy.intercept(
