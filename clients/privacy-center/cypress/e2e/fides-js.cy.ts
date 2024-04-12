@@ -1,3 +1,4 @@
+export {};
 describe("fides.js API route", () => {
   it("returns the fides.js package bundled with the global config", () => {
     cy.request("/fides.js").then((response) => {
@@ -77,6 +78,26 @@ describe("fides.js API route", () => {
             country: "FR",
             region: "IDF",
           });
+      });
+    });
+  });
+
+  describe("when GPP is forced as a '?gpp' query param", () => {
+    it("always returns GPP extension regardless of location", () => {
+      cy.request("/fides.js?gpp=true").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=US-ID").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=US-CA").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=FR-IDF").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?geolocation=US-ID").then((response) => {
+        expect(response.body).not.to.match(/window.__gpp/);
       });
     });
   });

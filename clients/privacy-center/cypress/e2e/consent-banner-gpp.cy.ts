@@ -633,5 +633,21 @@ describe("Fides-js GPP extension", () => {
         });
       });
     });
+    describe("when visiting from a state that does not have an applicable section and GPP is forced", () => {
+      it("loads the gpp extension", () => {
+        cy.visit("/fides-js-demo.html?gpp=true&geolocation=US-NC");
+        cy.window().then((win) => {
+          win.__gpp("ping", cy.stub().as("gppPing"));
+          cy.get("@gppPing")
+            .should("have.been.calledOnce")
+            .its("lastCall.args")
+            .then(([data, success]) => {
+              expect(success).to.eql(true);
+              expect(data.signalStatus).to.eql("ready");
+              expect(data.applicableSections).to.eql([-1]);
+            });
+        });
+      });
+    });
   });
 });
