@@ -403,7 +403,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   isInvalid={touched[key] && Boolean(errors[key])}
                   isRequired
                 >
-                  <FormLabel fontSize="sm">{item.label}</FormLabel>
+                  <FormLabel fontSize="sm">
+                    {(item as CustomIdentity).label}
+                  </FormLabel>
                   <Input
                     id={key}
                     name={key}
