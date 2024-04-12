@@ -53,7 +53,6 @@ class ManualWebhookConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> None:
         """
         Not applicable for a manual webhook.  Manual webhooks are not called as part of the traversal.

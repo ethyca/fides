@@ -138,7 +138,6 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking requestfor DynamoDB"""
 

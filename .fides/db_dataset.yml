@@ -2105,8 +2105,6 @@ dataset:
       data_categories: [user]
     - name: downstream_tasks
       data_categories: [system]
-    - name: erasure_input_data
-      data_categories: [user]
     - name: id
       data_categories: [system]
     - name: privacy_request_id

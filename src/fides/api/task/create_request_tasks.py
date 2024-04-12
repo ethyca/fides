@@ -1,6 +1,6 @@
 # pylint: disable=too-many-lines
 import json
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 import networkx
 from loguru import logger
@@ -23,7 +23,6 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
-    TraversalDetails,
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
@@ -33,7 +32,6 @@ from fides.api.task.execute_request_tasks import (
     run_erasure_node,
 )
 from fides.api.util.cache import CustomJSONEncoder
-from fides.api.util.collection_util import Row
 
 
 def _add_edge_if_no_nodes(
@@ -178,24 +176,6 @@ def build_consent_networkx_digraph(
     return networkx_graph
 
 
-def _order_tasks_by_input_key(
-    input_keys: List[CollectionAddress], upstream_tasks: Query
-) -> List[Optional[RequestTask]]:
-    """Order tasks by input key. If task doesn't exist, add None in its place"""
-    tasks: List[Optional[RequestTask]] = []
-    for key in input_keys:
-        task = next(
-            (
-                upstream
-                for upstream in upstream_tasks
-                if upstream.collection_address == key.value
-            ),
-            None,
-        )
-        tasks.append(task)
-    return tasks
-
-
 def base_task_data(
     graph: networkx.DiGraph,
     dataset_graph: DatasetGraph,
@@ -327,7 +307,7 @@ def persist_initial_erasure_request_tasks(
 
 def _get_data_for_erasures(
     session: Session, privacy_request: PrivacyRequest, request_task: RequestTask
-) -> Tuple[List[Dict], List[List[Row]]]:
+) -> List[Dict]:
     """
     Return the access data in erasure format needed to format the masking request for the current node.
     """
@@ -341,7 +321,6 @@ def _get_data_for_erasures(
         collection_address=request_task.request_task_address,
     )
     retrieved_task_data: List[Dict] = []
-    combined_input_data: List[List[Row]] = []
     if (
         corresponding_access_task
         and not request_task.request_task_address in ARTIFICIAL_NODES
@@ -351,35 +330,7 @@ def _get_data_for_erasures(
         # queries we need the original data in the appropriate indices
         retrieved_task_data = corresponding_access_task.get_decoded_data_for_erasures()
 
-        traversal_details = TraversalDetails.parse_obj(
-            request_task.traversal_details or {}
-        )
-
-        # Getting upstream nodes based on input keys(which are built based on data dependencies), rather than upstream
-        # tasks here.  We want the access data that was fed into the node of the same name.  This is
-        # for things like email erasure nodes, where the access node of the same name didn't fetch results.
-        input_tasks: Query = session.query(RequestTask).filter(
-            RequestTask.privacy_request_id == privacy_request.id,
-            RequestTask.action_type == ActionType.access,
-            RequestTask.collection_address.in_(traversal_details.input_keys or []),
-            RequestTask.status == ExecutionLogStatus.complete,
-        )
-
-        input_keys = [
-            CollectionAddress.from_string(input_key)
-            for input_key in traversal_details.input_keys
-        ]
-
-        ordered_access_tasks_by_input_key: List[
-            Optional[RequestTask]
-        ] = _order_tasks_by_input_key(input_keys, input_tasks)
-
-        for input_data in ordered_access_tasks_by_input_key or []:
-            combined_input_data.append(
-                input_data.get_decoded_data_for_erasures() or [] if input_data else []
-            )
-
-    return retrieved_task_data, combined_input_data
+    return retrieved_task_data
 
 
 def update_erasure_tasks_with_access_data(
@@ -397,14 +348,11 @@ def update_erasure_tasks_with_access_data(
     for request_task in privacy_request.erasure_tasks:
         # I pull access data saved in the format suitable for erasures
         # off of the access nodes to be saved onto the erasure nodes.
-        retrieved_task_data, combined_input_data = _get_data_for_erasures(
+        retrieved_task_data = _get_data_for_erasures(
             session, privacy_request, request_task
         )
         request_task.data_for_erasures = json.dumps(
             retrieved_task_data, cls=CustomJSONEncoder
-        )
-        request_task.erasure_input_data = json.dumps(
-            combined_input_data, cls=CustomJSONEncoder
         )
         request_task.save(session)
 

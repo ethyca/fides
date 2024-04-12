@@ -1681,20 +1681,6 @@ class RequestTask(Base):
         ),
     )
 
-    # This is the raw access data saved in erasure format from the upstream access nodes (with placeholders preserved) to perform a masking request.
-    # First saved on access nodes, and then copied to the erasure nodes.
-    # This is useful for things like email connectors whose access nodes do not execute their own requests
-    erasure_input_data = (
-        Column(  # An encrypted JSON String - saved as a list of list of rows
-            StringEncryptedType(
-                type_in=String(),
-                key=CONFIG.security.app_encryption_key,
-                engine=AesGcmEngine,
-                padding="pkcs5",
-            ),
-        )
-    )
-
     # Written after an erasure is completed
     rows_masked = Column(Integer)
     # Written after a consent request is completed - not all consent
@@ -1735,11 +1721,6 @@ class RequestTask(Base):
     def get_decoded_data_for_erasures(self) -> List[Row]:
         """Decode the erasure data needed to build masking requests"""
         return json.loads(self.data_for_erasures or "[]", object_hook=_custom_decoder)
-
-    def get_decoded_erasure_input_data(self) -> List[List[Row]]:
-        """Decode the access data dependencies for the current task for use in erasures where
-        the access node doesn't collect its own data"""
-        return json.loads(self.erasure_input_data or "[]", object_hook=_custom_decoder)
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
         """Helper method to update a task's status"""

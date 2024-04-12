@@ -277,13 +277,9 @@ def run_erasure_node(
             retrieved_data: List[Row] = (
                 request_task.get_decoded_data_for_erasures() or []
             )
-            # Get access data in erasure format from upstream tasks of the current corresponding access node.
-            # This is useful for email connectors where the access request doesn't actually retrieve data
-            upstream_retrieved_data: List[List[Row]] = (
-                request_task.get_decoded_erasure_input_data() or []
-            )
+
             # Run the main erasure function!
-            graph_task.erasure_request(retrieved_data, upstream_retrieved_data)
+            graph_task.erasure_request(retrieved_data)
 
             log_task_complete(request_task)
 

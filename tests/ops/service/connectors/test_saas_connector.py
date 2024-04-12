@@ -332,8 +332,7 @@ class TestSaasConnector:
                 Policy(),
                 PrivacyRequest(id="123"),
                 request_task,
-                {"customer_id": 1},
-                {"phone_number": "555-555-5555"},
+                [{"customer_id": 1}],
             )
             == 1
         )
@@ -352,8 +351,7 @@ class TestSaasConnector:
                 Policy(),
                 PrivacyRequest(id="123"),
                 request_task,
-                {"customer_id": 1},
-                {"phone_number": "555-555-5555"},
+                [{"customer_id": 1}],
             )
 
         # Set skip_missing_param_values to True, so the missing placeholder just causes the request to be skipped
@@ -366,8 +364,7 @@ class TestSaasConnector:
                 Policy(),
                 PrivacyRequest(id="123"),
                 request_task,
-                {"customer_id": 1},
-                {"phone_number": "555-555-5555"},
+                [{"customer_id": 1}],
             )
             == 0
         )

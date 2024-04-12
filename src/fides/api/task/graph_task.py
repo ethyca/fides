@@ -586,7 +586,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def erasure_request(
         self,
         retrieved_data: List[Row],
-        inputs: List[List[Row]],
         *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0
     ) -> int:
         """Run erasure request"""
@@ -635,17 +634,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return 0
 
-        formatted_input_data: NodeInput = self.pre_process_input_data(
-            *inputs, group_dependent_fields=True
-        )
-
         output = self.connector.mask_data(
             self.execution_node,
             self.resources.policy,
             self.resources.request,
             self.resources.privacy_request_task,
             retrieved_data,
-            formatted_input_data,
         )
         if self.request_task.id:
             # DSR 3.0

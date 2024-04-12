@@ -60,11 +60,6 @@ def upgrade():
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
             nullable=True,
         ),
-        sa.Column(
-            "erasure_input_data",
-            sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
-            nullable=True,
-        ),
         sa.Column("rows_masked", sa.Integer(), nullable=True),
         sa.Column("consent_sent", sa.Boolean(), nullable=True),
         sa.Column("collection", postgresql.JSONB(astext_type=sa.Text()), nullable=True),

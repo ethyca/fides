@@ -194,7 +194,6 @@ class TestPersistAccessRequestTasks:
         assert root_task.get_decoded_access_data() == [
             {"email": "customer-1@example.com"}
         ]
-        assert root_task.erasure_input_data is None
         # ARTIFICIAL NODES don't have collections or traversal details
         assert root_task.collection is None
         assert root_task.traversal_details == {}
@@ -222,7 +221,6 @@ class TestPersistAccessRequestTasks:
         assert terminator_task.downstream_tasks == []
         assert terminator_task.all_descendant_tasks == []
         assert terminator_task.access_data == "[]"
-        assert terminator_task.erasure_input_data is None
         # ARTIFICIAL NODES don't have collections or traversal details
         assert terminator_task.collection is None
         assert terminator_task.traversal_details == {}
@@ -249,7 +247,6 @@ class TestPersistAccessRequestTasks:
             "postgres_example_test_dataset:address",
         ]
         assert payment_card_task.access_data == "[]"
-        assert payment_card_task.erasure_input_data is None
         assert payment_card_task.collection == payment_card_serialized_collection
         assert (
             payment_card_task.traversal_details
@@ -514,7 +511,6 @@ class TestPersistErasureRequestTasks:
         )
         assert root_task.access_data is None
         assert root_task.data_for_erasures is None
-        assert root_task.erasure_input_data is None
         assert root_task.get_decoded_access_data() == []
         # ARTIFICIAL NODES don't have collections or traversal details
         assert root_task.collection is None
@@ -536,7 +532,6 @@ class TestPersistErasureRequestTasks:
         assert terminator_task.all_descendant_tasks == []
         assert terminator_task.access_data is None
         assert terminator_task.data_for_erasures is None
-        assert terminator_task.erasure_input_data is None
         # ARTIFICIAL NODES don't have collections or traversal details
         assert terminator_task.collection is None
         assert terminator_task.traversal_details == {}
@@ -561,7 +556,6 @@ class TestPersistErasureRequestTasks:
         ]
         assert payment_card_task.access_data is None
         assert payment_card_task.data_for_erasures is None
-        assert payment_card_task.erasure_input_data is None
         # Even though the downstream task is just the terminate node and the upstream
         # task is just the root node, it's upstream and downstream edges are still
         # based on data dependencies
@@ -637,57 +631,12 @@ class TestPersistErasureRequestTasks:
                 "preferred": True,
             }
         ]
-
-        # Access data from upstream nodes added for use in nodes that don't collect their own access data like emails
-        assert (
-            payment_card_task.erasure_input_data
-            == '[[{"address_id": 1, "created": "date_encoded_2020-04-01T11:47:42", "email": "customer-1@example.com", "id": 1, "name": "John Customer"}]]'
-        )
-        assert payment_card_task.get_decoded_erasure_input_data() == [
-            [
-                {
-                    "address_id": 1,
-                    "created": datetime(2020, 4, 1, 11, 47, 42),
-                    "email": "customer-1@example.com",
-                    "id": 1,
-                    "name": "John Customer",
-                }
-            ]
-        ]
         assert payment_card_task.status == ExecutionLogStatus.pending
 
         address_task = privacy_request.erasure_tasks.filter(
             RequestTask.collection_address == "postgres_example_test_dataset:address"
         ).first()
-        # Inputs for decoded erasure input data are in the same order as the input keys
-        assert address_task.get_decoded_erasure_input_data() == [
-            [
-                {  # From upstream customer collection
-                    "address_id": 1,
-                    "created": datetime(2020, 4, 1, 11, 47, 42),
-                    "email": "customer-1@example.com",
-                    "id": 1,
-                    "name": "John Customer",
-                }
-            ],
-            [],  # From upstream employee collection, no results
-            [  # From upstream orders collection
-                {"customer_id": 1, "id": "ord_aaa-aaa", "shipping_address_id": 2},
-                {"customer_id": 1, "id": "ord_ccc-ccc", "shipping_address_id": 1},
-                {"customer_id": 1, "id": "ord_ddd-ddd", "shipping_address_id": 1},
-            ],
-            [
-                {  # From upstream payment card collection
-                    "billing_address_id": 1,
-                    "ccn": 123456789,
-                    "code": 321,
-                    "customer_id": 1,
-                    "id": "pay_aaa-aaa",
-                    "name": "Example Card 1",
-                    "preferred": True,
-                }
-            ],
-        ]
+
         assert address_task.traversal_details["input_keys"] == [
             "postgres_example_test_dataset:customer",
             "postgres_example_test_dataset:employee",
