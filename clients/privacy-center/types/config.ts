@@ -1,6 +1,7 @@
 import { ConsentValue } from "fides-js";
 
 type DefaultIdentities = {
+  name?: string; // here for legacy purposes, we don't treat it as an identity or pass it along in the privacy request
   email?: string;
   phone?: string;
 };
