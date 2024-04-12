@@ -135,7 +135,7 @@ declare global {
         >
       ): Chainable<JQuery<HTMLElement>>;
       /**
-       * Custom command to select a cehckbox input by its value.
+       * Custom command to select a checkbox input by its value.
        * @example cy.getToggle().should("be.checked");
        */
       getToggle(

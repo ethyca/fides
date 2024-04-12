@@ -220,20 +220,20 @@ describe("Consent settings", () => {
 
       cy.getByTestId(`consent-item-advertising.first_party`).within(() => {
         cy.contains("Test advertising.first_party");
-        cy.getRadio().should("not.be.checked");
+        cy.getToggle().should("not.be.checked");
       });
       cy.getByTestId(`consent-item-functional`).within(() => {
-        cy.getRadio().should("be.checked");
+        cy.getToggle().should("be.checked");
       });
 
       // Without GPC, this defaults to true.
       cy.getByTestId(`consent-item-collect.gpc`).within(() => {
-        cy.getRadio().should("be.checked");
+        cy.getToggle().should("be.checked");
       });
 
       // Consent to an item that was opted-out.
       cy.getByTestId(`consent-item-advertising`).within(() => {
-        cy.getRadio().should("not.be.checked").check({ force: true });
+        cy.getToggle().should("not.be.checked");
       });
       cy.getByTestId("save-btn").click();
 
@@ -293,10 +293,10 @@ describe("Consent settings", () => {
     it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.getByTestId(`consent-item-advertising`).within(() => {
-        cy.getRadio("false").check({ force: true });
+        cy.getToggle().uncheck();
       });
       cy.getByTestId(`consent-item-functional`).within(() => {
-        cy.getRadio("false").check({ force: true });
+        cy.getToggle().uncheck();
       });
       cy.getByTestId("save-btn").click();
 
@@ -351,7 +351,7 @@ describe("Consent settings", () => {
         cy.getByTestId("gpc-banner");
         cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
-          cy.getRadio().should("not.be.checked");
+          cy.getToggle().should("not.be.checked");
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.APPLIED);
         });
 
@@ -374,7 +374,7 @@ describe("Consent settings", () => {
         cy.getByTestId("gpc-banner");
         cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
-          cy.getRadio().should("not.be.checked").check({ force: true });
+          cy.getToggle().should("not.be.checked").check({ force: true });
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.OVERRIDDEN);
         });
         cy.getByTestId("save-btn").click();
