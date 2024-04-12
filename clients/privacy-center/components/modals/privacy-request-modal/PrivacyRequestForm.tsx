@@ -26,6 +26,7 @@ import { ModalViews } from "~/components/modals/types";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import {
   emailValidation,
+  nameValidation,
   phoneValidation,
 } from "~/components/modals/validation";
 import { useConfig } from "~/features/common/config.slice";
@@ -64,7 +65,15 @@ const usePrivacyRequestForm = ({
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
-        Object.entries(identityInputs).map(([key]) => [key, ""])
+        Object.entries(identityInputs)
+          .filter(
+            ([key, value]) =>
+              key === "name" ||
+              key === "phone_number" ||
+              key === "email" ||
+              (typeof value === "object" && value.label)
+          )
+          .map(([key]) => [key, ""])
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -80,13 +89,21 @@ const usePrivacyRequestForm = ({
 
       // extract identity input values
       const identityInputValues = Object.fromEntries(
-        Object.entries(action.identity_inputs ?? {}).map(([key, field]) => {
-          const value = fallbackNull(values[key]);
-          if (typeof field === "string") {
-            return [key, value];
-          }
-          return [key, { label: field.label, value }];
-        })
+        Object.entries(action.identity_inputs ?? {})
+          // we have to support name as an identity_input for legacy purposes
+          // but we ignore it since it's not unique enough to be treated as an identity
+          .filter(([key]) => key !== "name")
+          .map(([key, field]) => {
+            const value = fallbackNull(values[key]);
+            if (typeof field === "string") {
+              if (key === "phone") {
+                // eslint-disable-next-line no-param-reassign
+                key = "phone_number";
+              }
+              return [key, value];
+            }
+            return [key, { label: field.label, value }];
+          })
       );
 
       // extract custom privacy request field values
@@ -183,6 +200,7 @@ const usePrivacyRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
+      name: nameValidation(identityInputs?.name),
       email: emailValidation(identityInputs?.email).test(
         "one of email or phone entered",
         "You must enter either email or phone",
@@ -211,7 +229,13 @@ const usePrivacyRequestForm = ({
       ),
       ...Object.fromEntries(
         Object.entries(identityInputs)
-          .filter(([key]) => key !== "email" && key !== "phone")
+          .filter(
+            ([key, value]) =>
+              key !== "email" &&
+              key !== "phone" &&
+              key !== "name" &&
+              typeof value !== "string"
+          )
           .map(([key, value]) => {
             const customIdentity = value as CustomIdentity;
             return [
@@ -306,29 +330,77 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             </Text>
           ))}
           <Stack>
-            {Object.entries(identityInputs).map(([key, item]) => (
+            {identityInputs.name ? (
               <FormControl
-                key={key}
-                id={key}
-                isInvalid={touched[key] && Boolean(errors[key])}
-                isRequired
+                id="name"
+                isInvalid={touched.name && Boolean(errors.name)}
+                isRequired={identityInputs.name === "required"}
               >
-                <FormLabel fontSize="sm">
-                  {typeof item === "string"
-                    ? key[0].toUpperCase() + key.slice(1)
-                    : item.label}
-                </FormLabel>
-                {key === "phone" ? (
-                  <PhoneInput
-                    id={key}
-                    name={key}
-                    onChange={(value) => {
-                      setFieldValue(key, value, true);
-                    }}
-                    onBlur={handleBlur}
-                    value={values[key]}
-                  />
-                ) : (
+                <FormLabel fontSize="sm">Name</FormLabel>
+                <Input
+                  id="name"
+                  name="name"
+                  focusBorderColor="primary.500"
+                  placeholder="Michael Brown"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.name}
+                />
+                <FormErrorMessage>{errors.name}</FormErrorMessage>
+              </FormControl>
+            ) : null}
+            {identityInputs.email ? (
+              <FormControl
+                id="email"
+                isInvalid={touched.email && Boolean(errors.email)}
+                isRequired={identityInputs.email === "required"}
+              >
+                <FormLabel fontSize="sm">Email</FormLabel>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  focusBorderColor="primary.500"
+                  placeholder="your-email@example.com"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.email}
+                />
+                <FormErrorMessage>{errors.email}</FormErrorMessage>
+              </FormControl>
+            ) : null}
+            {identityInputs.phone ? (
+              <FormControl
+                id="phone"
+                isInvalid={touched.phone && Boolean(errors.phone)}
+                isRequired={identityInputs.phone === "required"}
+              >
+                <FormLabel fontSize="sm">Phone</FormLabel>
+                <PhoneInput
+                  id="phone"
+                  name="phone"
+                  onChange={(value) => {
+                    setFieldValue("phone", value, true);
+                  }}
+                  onBlur={handleBlur}
+                  value={values.phone}
+                />
+                <FormErrorMessage>{errors.phone}</FormErrorMessage>
+              </FormControl>
+            ) : null}
+            {Object.entries(identityInputs)
+              .filter(
+                ([key]) => key !== "email" && key !== "phone" && key !== "name"
+              )
+              .filter(([, item]) => typeof item !== "string")
+              .map(([key, item]) => (
+                <FormControl
+                  key={key}
+                  id={key}
+                  isInvalid={touched[key] && Boolean(errors[key])}
+                  isRequired
+                >
+                  <FormLabel fontSize="sm">{item.label}</FormLabel>
                   <Input
                     id={key}
                     name={key}
@@ -337,10 +409,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                     onBlur={handleBlur}
                     value={values[key]}
                   />
-                )}
-                <FormErrorMessage>{errors[key]}</FormErrorMessage>
-              </FormControl>
-            ))}
+                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                </FormControl>
+              ))}
             {Object.entries(customPrivacyRequestFields)
               .filter(([, field]) => !field.hidden)
               .map(([key, item]) => (
