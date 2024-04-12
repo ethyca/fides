@@ -42,8 +42,6 @@ services:
       FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB: mongo_test
       FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME: mongo_user
       FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD: mongo_pass
-      # uncomment the line below to enable the "loyalty database"
-      # FIDES_DEPLOY__CONNECTORS__POSTGRES_LOYALTY__HOST: postgres-test
     # Mount a local volume so the user can see their privacy requests
     volumes:
       - type: bind
