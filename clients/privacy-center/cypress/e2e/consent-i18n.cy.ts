@@ -1560,23 +1560,23 @@ describe("Consent i18n", () => {
           fixture: "consent/privacy_preferences.json",
         }
       ).as("patchPrivacyPreference");
-
-      // Enable GPC
-      cy.on("window:before:load", (win) => {
-        // eslint-disable-next-line no-param-reassign
-        win.navigator.globalPrivacyControl = true;
-      });
-
-      // Visit page
-      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
     });
 
     it("displays localized text from experience", () => {
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
       cy.getByTestId("consent-description").contains(SPANISH_MODAL.description);
     });
 
     it("displays localized text for gpc banner", () => {
+      // Enable GPC
+      cy.on("window:before:load", (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.navigator.globalPrivacyControl = true;
+      });
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.getByTestId("gpc.banner.title").contains(SPANISH_MODAL.gpc_title);
       cy.getByTestId("gpc.banner.description").contains(
         SPANISH_MODAL.gpc_description
@@ -1584,10 +1584,14 @@ describe("Consent i18n", () => {
     });
 
     it("displays localized save button", () => {
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.getByTestId("save-btn").contains(SPANISH_MODAL.save_button_label);
     });
 
     it("displays localized privacy policy", () => {
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.getByTestId("privacypolicy.link").contains(
         SPANISH_MODAL.privacy_policy_link_label!
       );
@@ -1597,6 +1601,8 @@ describe("Consent i18n", () => {
     });
 
     it("displays localized notice texts", () => {
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
         SPANISH_NOTICES[1].title
       );
@@ -1615,6 +1621,8 @@ describe("Consent i18n", () => {
       "pri_exp-history-privacy-center-es-000";
 
     it("calls notices served with the correct history id for the notices", () => {
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.wait("@patchNoticesServed").then((interception) => {
         expect(interception.request.body.privacy_notice_history_ids).to.eql(
           EXPECTED_NOTICE_HISTORY_IDS
@@ -1623,6 +1631,8 @@ describe("Consent i18n", () => {
     });
 
     it("calls notices served with the correct history id for the experience config", () => {
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.wait("@patchNoticesServed").then((interception) => {
         expect(
           interception.request.body.privacy_experience_config_history_id
@@ -1631,6 +1641,8 @@ describe("Consent i18n", () => {
     });
 
     it("calls privacy preference with the correct history id for the experience config", () => {
+      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const {
