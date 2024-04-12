@@ -390,9 +390,12 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             ) : null}
             {Object.entries(identityInputs)
               .filter(
-                ([key]) => key !== "email" && key !== "phone" && key !== "name"
+                ([key, item]) =>
+                  key !== "email" &&
+                  key !== "phone" &&
+                  key !== "name" &&
+                  typeof item !== "string"
               )
-              .filter(([, item]) => typeof item !== "string")
               .map(([key, item]) => (
                 <FormControl
                   key={key}
