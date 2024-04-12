@@ -1509,7 +1509,7 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe("when localizing privacy_center components", () => {
+  describe.only("when localizing privacy_center components", () => {
     const GEOLOCATION_API_URL = "https://www.example.com/location";
     const VERIFICATION_CODE = "112358";
 
@@ -1549,6 +1549,15 @@ describe("Consent i18n", () => {
         `${API_URL}/consent-request/consent-request-id/notices-served`,
         { fixture: "consent/notices_served.json" }
       ).as("patchNoticesServed");
+
+      // Patch privacy preference intercept
+      cy.intercept(
+        "PATCH",
+        `${API_URL}/consent-request/consent-request-id/privacy-preferences*`,
+        {
+          fixture: "consent/privacy_preferences.json",
+        }
+      ).as("patchPrivacyPreference");
 
       // Enable GPC
       cy.on("window:before:load", (win) => {
@@ -1594,13 +1603,20 @@ describe("Consent i18n", () => {
       );
     });
 
+    const EXPECTED_NOTICE_HISTORY_IDS = [
+      "pri_notice-history-advertising-es-000", // Spanish (es)
+      "pri_notice-history-analytics-es-000", // Spanish (es)
+      "pri_notice-history-essential-es-000", // Spanish (es)
+    ];
+
+    const EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID =
+      "pri_exp-history-privacy-center-es-000";
+
     it("calls notices served with the correct history id for the notices", () => {
       cy.wait("@patchNoticesServed").then((interception) => {
-        expect(interception.request.body.privacy_notice_history_ids).to.eql([
-          "pri_notice-history-advertising-es-000",
-          "pri_notice-history-analytics-es-000",
-          "pri_notice-history-essential-es-000",
-        ]);
+        expect(interception.request.body.privacy_notice_history_ids).to.eql(
+          EXPECTED_NOTICE_HISTORY_IDS
+        );
       });
     });
 
@@ -1608,7 +1624,22 @@ describe("Consent i18n", () => {
       cy.wait("@patchNoticesServed").then((interception) => {
         expect(
           interception.request.body.privacy_experience_config_history_id
-        ).to.eql("pri_exp-history-privacy-center-es-000");
+        ).to.eql(EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID);
+      });
+    });
+
+    it("calls privacy preference with the correct history id for the experience config", () => {
+      cy.getByTestId("save-btn").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { preferences, privacy_experience_config_history_id } =
+          interception.request.body;
+
+        expect(privacy_experience_config_history_id).to.eql(
+          EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID
+        );
+        expect(preferences.map((p: any) => p.privacy_notice_history_id)).to.eql(
+          EXPECTED_NOTICE_HISTORY_IDS
+        );
       });
     });
   });
