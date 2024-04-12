@@ -219,11 +219,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     // Reconnect preferences to notices
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
-        const notice = notices.find(
-          (n) =>
-            !!n.translations.find(
-              (t) => t.privacy_notice_history_id === historyKey
-            )
+        const notice = notices.find((n) =>
+          n.translations.some((t) => t.privacy_notice_history_id === historyKey)
         );
         return { historyKey, preference, notice };
       }
