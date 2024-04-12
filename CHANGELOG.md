@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
 
+### Fixed
+- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+
+
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
 ### Added
