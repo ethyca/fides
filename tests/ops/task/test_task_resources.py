@@ -1,3 +1,4 @@
+from fides.api.task.execute_request_tasks import _collect_task_resources
 from fides.api.task.graph_task import EMPTY_REQUEST_TASK
 from fides.api.task.task_resources import TaskResources
 
@@ -50,3 +51,14 @@ class TestTaskResources:
             "manual_example:filing-cabinet": 2,
             "manual_example:storage-unit": 3,
         }
+
+    def test_collect_task_resources(self, db, privacy_request, policy, request_task):
+        collected = _collect_task_resources(db, request_task)
+
+        expected = TaskResources(privacy_request, policy, [], request_task, db)
+
+        assert collected.privacy_request_task == expected.privacy_request_task
+        assert collected.request == expected.request
+        assert collected.policy == expected.policy
+        assert collected.session == expected.session
+        assert collected.connection_configs == expected.connection_configs

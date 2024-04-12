@@ -709,9 +709,9 @@ def erasure_runner_tester(
             identity,
             access_request_data,
             session,
-            privacy_request_proceed=False,
+            privacy_request_proceed=False,  # This allows the DSR 3.0 Erasure Runner to be tested in isolation
         )
-    except PrivacyRequestExit as exc:
+    except PrivacyRequestExit:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
         wait_for_terminator_completion(session, privacy_request, ActionType.erasure)
         return privacy_request.get_raw_masking_counts()
@@ -736,7 +736,7 @@ def consent_runner_tester(
             connection_configs,
             identity,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+            privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
