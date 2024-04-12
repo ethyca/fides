@@ -233,7 +233,7 @@ describe("Consent settings", () => {
 
       // Consent to an item that was opted-out.
       cy.getByTestId(`consent-item-advertising`).within(() => {
-        cy.getToggle().should("not.be.checked");
+        cy.getToggle().should("not.be.checked").check({ force: true });
       });
       cy.getByTestId("save-btn").click();
 
