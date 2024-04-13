@@ -134,12 +134,16 @@ export default async function handler(
     }
   }
 
+  const { e2e: e2eQuery, tcf: tcfQuery } = req.query;
+
   // We determine server-side whether or not to send the TCF bundle, which is based
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
   // be able to prefetch the experience.
-  const tcfEnabled = experience
-    ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
-    : environment.settings.IS_FORCED_TCF;
+  const tcfEnabled =
+    tcfQuery === "true" ||
+    (experience
+      ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
+      : environment.settings.IS_FORCED_TCF);
 
   // Check for a provided "gpp" query param.
   // If the experience has GPP enabled, or the query param is present,
@@ -151,7 +155,7 @@ export default async function handler(
   const gppEnabled =
     !!experience?.gpp_settings?.enabled || forcedGppQuery === "true";
 
-  // Create the FidesConfig JSON that will be used to initialize fides.js
+  // Create the FidesConfig JSON that will be used to initialize fides.js unless in E2E mode (see below)
   const fidesConfig: FidesConfig = {
     consent: {
       options,
@@ -241,10 +245,14 @@ export default async function handler(
     document.head.append(style);
     `
       : ""
-  }
-    // Initialize fides.js with custom config
+  }${
+    e2eQuery === "true"
+      ? ""
+      : `
+        // Initialize fides.js with custom config
     var fidesConfig = ${fidesConfigJSON};
-    window.Fides.init(fidesConfig);
+    window.Fides.init(fidesConfig);`
+  }
   })();
   `;
 

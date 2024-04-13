@@ -60,7 +60,7 @@ Cypress.Commands.add(
   "visitConsentDemo",
   (
     options?: FidesConfig,
-    queryParams?: Cypress.VisitOptions["qs"],
+    queryParams?: Cypress.VisitOptions["qs"] | null,
     windowParams?: any
   ) => {
     const visitOptions: Partial<VisitOptions> = {
@@ -192,7 +192,7 @@ declare global {
        */
       visitConsentDemo(
         options?: FidesConfig,
-        queryParams?: Cypress.VisitOptions["qs"],
+        queryParams?: Cypress.VisitOptions["qs"] | null,
         windowParams?: any
       ): Chainable<any>;
       /**
