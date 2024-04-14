@@ -1077,6 +1077,7 @@ class PrivacyRequest(
         This is largely just used for testing
         """
         if self.erasure_tasks.count():
+            # For DSR 3.0
             return {
                 t.collection_address: t.rows_masked
                 for t in self.erasure_tasks.filter(
@@ -1099,6 +1100,7 @@ class PrivacyRequest(
         This is largely just used for testing
         """
         if self.consent_tasks.count():
+            # For DSR 3.0
             return {
                 t.collection_address: t.consent_sent
                 for t in self.consent_tasks.filter(

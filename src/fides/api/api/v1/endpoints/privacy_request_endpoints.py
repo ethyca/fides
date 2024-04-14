@@ -1794,7 +1794,8 @@ def get_individual_privacy_request_tasks(
     *,
     db: Session = Depends(deps.get_db),
 ) -> List[RequestTask]:
-    """Returns individual Privacy Request Tasks (DSR 3.0) in order by creation"""
+    """Returns individual Privacy Request Tasks created by DSR 3.0 scheduler
+    in order by creation and collection address"""
     pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
 
     logger.info(f"Getting Request Tasks for '{privacy_request_id}'")
@@ -1847,7 +1848,7 @@ def queue_task_manually(
     db: Session = Depends(deps.get_db),
 ) -> Dict:
     """
-    Manually a privacy request from a specific task if applicable
+    Manually queue a privacy request from a specific task if applicable
     """
     try:
         privacy_request, request_task, _ = run_prerequisite_task_checks(
@@ -1884,7 +1885,7 @@ def queue_task_manually(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} when access tasks haven't completed.",
         )
-    # TODO prevent re-running access task after erasure section has started
+    # TODO prevent re-running access task after erasure section has started?
 
     logger.info(
         "Manual task call received for {} task {} {}",
@@ -1903,6 +1904,8 @@ def queue_task_manually(
 
 
 def task_function(request_task: RequestTask) -> Task:
+    """Map the action type of a request task to the celery task that should
+    be used to run it"""
     mapping = {
         ActionType.access: run_access_node,
         ActionType.erasure: run_erasure_node,

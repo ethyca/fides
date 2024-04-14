@@ -522,7 +522,8 @@ class Collection(BaseModel):
         data = data.copy()
 
         def build_field(serialized_field: dict) -> Field:
-            """Convert a serialized field on RequestTask.collection.fields into a Field"""
+            """Convert a serialized field on RequestTask.collection.fields into a Scalar Field
+            or Object Field"""
             converted_references: List[
                 Tuple[FieldAddress, Optional[EdgeDirection]]
             ] = []
