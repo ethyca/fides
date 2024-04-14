@@ -25,7 +25,7 @@ saas_config:
           - name: Authorization
             value: Klaviyo-API-Key <api_key>
           - name: revision
-            value: "2023-10-15"
+            value: "2023-12-15"
 
   test_request:
     method: GET
