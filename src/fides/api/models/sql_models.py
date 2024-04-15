@@ -15,7 +15,6 @@ from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import DatasetCollection as FideslangDatasetCollection
 from pydantic import BaseModel
-from pygtrie import StringTrie
 from sqlalchemy import BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
@@ -562,7 +561,7 @@ class PrivacyDeclaration(Base):
     def undeclared_data_categories(self) -> List[str]:
         """
         Aggregates a unique set of data categories across the collections in the associated datasets and
-        returns the data categories that are not defined directly on the privacy declaration.
+        returns the data categories that are not defined directly on this or any sibling privacy declarations.
         """
 
         # all data categories from the datasets
@@ -570,12 +569,14 @@ class PrivacyDeclaration(Base):
         for dataset in self.datasets:
             dataset_data_categories.update(dataset.field_data_categories)
 
-        # all data categories specified directly on the privacy declaration
+        # all data categories specified directly on this and sibling privacy declarations
         declared_data_categories = set()
-        for category in self.data_categories:
-            declared_data_categories.update(category)
+        for privacy_declaration in self.system.privacy_declarations:
+            declared_data_categories.update(privacy_declaration.data_categories)
 
-        return find_undeclared_categories(dataset_data_categories, self.data_categories)
+        return find_undeclared_categories(
+            dataset_data_categories, declared_data_categories
+        )
 
     async def get_purpose_legal_basis_override(self) -> Optional[str]:
         """

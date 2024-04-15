@@ -1086,7 +1086,6 @@ def system_with_dataset_references(db: Session) -> System:
         },
     )
 
-    db.refresh(system)
     return system
 
 
@@ -1121,7 +1120,6 @@ def system_with_undeclared_data_categories(db: Session) -> System:
         },
     )
 
-    db.refresh(system)
     return system
 
 
