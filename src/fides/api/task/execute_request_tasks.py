@@ -57,6 +57,7 @@ def run_prerequisite_task_checks(
         )
 
     assert request_task  # For mypy
+
     upstream_results: Query = session.query(RequestTask).filter(False)
     # Only bother running this if the current task body needs to run
     if request_task.status == ExecutionLogStatus.pending:
@@ -123,17 +124,7 @@ def can_run_task_body(
 ) -> bool:
     """Return true if we can execute the task body. We should skip if the task is already
     complete or this is a root/terminator node"""
-    if request_task.status in COMPLETED_EXECUTION_LOG_STATUSES:
-        logger_method(request_task)(
-            "Skipping already-completed {} task {}. Privacy Request: {}, Request Task {}",
-            request_task.action_type.value,
-            request_task.collection_address,
-            request_task.privacy_request_id,
-            request_task.id,
-        )
-        return False
     if request_task.is_terminator_task:
-        # This is logged when the terminator node is reached for the first time.
         logger.info(
             "Terminator {} task reached. Privacy Request: {}, Request Task {}",
             request_task.action_type.value,
@@ -143,6 +134,16 @@ def can_run_task_body(
         return False
     if request_task.is_root_task:
         # Shouldn't be possible but adding as a catch-all
+        return False
+    if request_task.status != ExecutionLogStatus.pending:
+        logger_method(request_task)(
+            "Skipping {} task {} with status {}. Privacy Request: {}, Request Task {}",
+            request_task.action_type.value,
+            request_task.status.value,
+            request_task.collection_address,
+            request_task.privacy_request_id,
+            request_task.id,
+        )
         return False
 
     return True
@@ -179,8 +180,9 @@ def queue_downstream_tasks(
             )
         else:
             logger.debug(
-                "Cannot yet queue {} task {}. Privacy Request: {}, Request Task {}. Waiting for other upstream nodes.",
+                "Cannot yet queue {} task {} from {}. Privacy Request: {}, Request Task {}. Waiting for other upstream nodes.",
                 downstream_task.action_type.value,
+                request_task.collection_address,
                 downstream_task.collection_address,
                 privacy_request.id,
                 downstream_task.id,

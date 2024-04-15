@@ -411,9 +411,9 @@ class TestCanRunTaskBody:
         assert not can_run_task_body(request_task)
 
     def test_task_is_error(self, db, request_task):
-        # Shouldn't hit this case - it would have been reset to pending on reprocessing
         request_task.update_status(db, ExecutionLogStatus.error)
-        assert can_run_task_body(request_task)
+        # Error states need to be set to pending when reprocessing
+        assert not can_run_task_body(request_task)
 
     def test_task_is_complete(self, db, request_task):
         request_task.update_status(db, ExecutionLogStatus.complete)
