@@ -148,6 +148,13 @@ class ConnectionConfig(Base):
         uselist=False,
     )
 
+    pre_approval_webhooks = relationship(  # type: ignore[misc]
+        "PreApprovalWebhook",
+        back_populates="connection_config",
+        cascade="delete",
+        uselist=False,
+    )
+
     system = relationship(System, back_populates="connection_configs", uselist=False)
 
     # Identifies the privacy actions needed from this connection by the associated system.

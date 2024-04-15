@@ -28,5 +28,5 @@ class PreApprovalWebhookReply(Base):
     )  # Which privacy request this webhook response belongs to
     is_eligible = Column(Boolean, nullable=False)
     privacy_request = relationship(
-        PrivacyRequest, back_populates="pre_approval_webhook_response"
+        PrivacyRequest, back_populates="pre_approval_webhook_reply"
     )
