@@ -8,6 +8,7 @@ import {
   constructFidesRegionString,
   fetchExperience,
   ComponentType,
+  debugLog,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
@@ -118,10 +119,10 @@ export default async function handler(
     const fidesRegionString = constructFidesRegionString(geolocation);
 
     if (fidesRegionString) {
-      if (environment.settings.DEBUG) {
-        // eslint-disable-next-line no-console
-        console.log("Fetching relevant experiences from server-side...");
-      }
+      debugLog(
+        environment.settings.DEBUG,
+        "Fetching relevant experiences from server-side..."
+      );
       experience = await fetchExperience(
         fidesRegionString,
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
@@ -140,7 +141,12 @@ export default async function handler(
     ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
     : environment.settings.IS_FORCED_TCF;
 
-  const gppEnabled = !!experience?.gpp_settings?.enabled;
+  // Check for a provided "gpp" query param.
+  // If the experience has GPP enabled, or the query param is present,
+  // include the GPP extension in the bundle.
+  const { gpp: forcedGPP } = req.query;
+  const gppEnabled =
+    !!experience?.gpp_settings?.enabled || forcedGPP === "true";
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
@@ -180,12 +186,10 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
-    console.log(
-      "Bundling generic fides.js & Privacy Center configuration together..."
-    );
-  }
+  debugLog(
+    environment.settings.DEBUG,
+    "Bundling generic fides.js & Privacy Center configuration together..."
+  );
   const fidesJsFile = tcfEnabled
     ? "public/lib/fides-tcf.js"
     : "public/lib/fides.js";
@@ -196,8 +200,12 @@ export default async function handler(
   }
   let fidesGPP: string = "";
   if (gppEnabled) {
-    // eslint-disable-next-line no-console
-    console.log("GPP extension enabled, bundling fides-ext-gpp.js...");
+    debugLog(
+      environment.settings.DEBUG,
+      `GPP extension ${
+        forcedGPP === "true" ? "forced" : "enabled"
+      }, bundling fides-ext-gpp.js...`
+    );
     const fidesGPPBuffer = await fsPromises.readFile(
       "public/lib/fides-ext-gpp.js"
     );
@@ -219,7 +227,7 @@ export default async function handler(
       document.head.appendChild(script);
     }
 
-    // Include generic fides.js script
+    // Include generic fides.js script and GPP extension (if enabled)
     ${fidesJS}${fidesGPP}${
     customFidesCss
       ? `
