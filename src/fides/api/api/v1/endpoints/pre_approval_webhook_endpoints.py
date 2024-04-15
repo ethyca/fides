@@ -4,7 +4,6 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fides.api.db.base_class import get_key_from_data
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import conlist
@@ -14,13 +13,13 @@ from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOU
 
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.db.base_class import get_key_from_data
 from fides.api.models.policy import (
     PolicyPreWebhook,
 )
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas import policy_webhooks as schemas
-from fides.api.schemas.pre_approval_webhooks import PreApprovalWebhookResponse
+from fides.api.schemas import pre_approval_webhooks as schemas
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import get_connection_config_or_error
 from fides.common.api import scope_registry as scopes
@@ -36,22 +35,28 @@ router = APIRouter(tags=["Pre Approval Webhooks"], prefix=urls.V1_URL_PREFIX)
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
 def get_pre_approval_webhook_list(
-        *,
-        db: Session = Depends(deps.get_db),
-        params: Params = Depends(),
-) -> AbstractPage[PreApprovalWebhookResponse]:
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+) -> AbstractPage[schemas.PreApprovalWebhookResponse]:
     """
-   Return a paginated list of all PreApprovalWebhook records in this system
-   """
+    Return a paginated list of all PreApprovalWebhook records in this system
+    """
     logger.info("Finding all pre_approval webhooks with pagination params '{}'", params)
-    pre_approval_webhooks = PreApprovalWebhook.query(db=db).order_by(PreApprovalWebhook.created_at.desc())
+    pre_approval_webhooks = PreApprovalWebhook.query(db=db).order_by(
+        PreApprovalWebhook.created_at.desc()
+    )
     return paginate(pre_approval_webhooks, params=params)
 
 
-def get_pre_approval_webhook_or_error(db: Session, webhook_key: FidesKey) -> PreApprovalWebhook:
+def get_pre_approval_webhook_or_error(
+    db: Session, webhook_key: FidesKey
+) -> PreApprovalWebhook:
     """Helper method to load PreApprovalWebhook or throw a 404"""
     logger.info("Finding PreApprovalWebhook with key '{}'", webhook_key)
-    pre_approval_webhook = PreApprovalWebhook.get_by(db=db, field="key", value=webhook_key)
+    pre_approval_webhook = PreApprovalWebhook.get_by(
+        db=db, field="key", value=webhook_key
+    )
     if not pre_approval_webhook:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -68,9 +73,9 @@ def get_pre_approval_webhook_or_error(db: Session, webhook_key: FidesKey) -> Pre
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
 def get_pre_approval_webhook_detail(
-        *,
-        db: Session = Depends(deps.get_db),
-        webhook_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+    webhook_key: FidesKey,
 ) -> PolicyPreWebhook:
     """
     Loads the given Pre-Approval Webhook by key
@@ -79,8 +84,8 @@ def get_pre_approval_webhook_detail(
 
 
 def put_webhooks(
-        db: Session = Depends(deps.get_db),
-        webhooks: List[schemas.PreApprovalWebhookCreate] = Body(...),
+    db: Session = Depends(deps.get_db),
+    webhooks: List[schemas.PreApprovalWebhookCreate] = Body(...),
 ) -> List[PreApprovalWebhook]:
     """
     Helper method to PUT pre-approval webhooks.
@@ -105,7 +110,7 @@ def put_webhooks(
         )
 
     staged_webhooks = []  # Webhooks will be committed at the end
-    for webhook_index, schema in enumerate(webhooks):
+    for index, schema in enumerate(webhooks):  # type: ignore
         connection_config = get_connection_config_or_error(
             db, schema.connection_config_key
         )
@@ -128,7 +133,7 @@ def put_webhooks(
 
     staged_webhook_keys = [webhook.key for webhook in staged_webhooks]
     webhooks_to_remove = pre_approval_webhooks.filter(
-        PreApprovalWebhook.key.not_in(staged_webhook_keys)
+        PreApprovalWebhook.key.not_in(staged_webhook_keys)  # type: ignore
     )
 
     if webhooks_to_remove.count():
@@ -156,10 +161,10 @@ def put_webhooks(
     response_model=List[schemas.PreApprovalWebhookResponse],
 )
 def create_or_update_pre_execution_webhooks(
-        *,
-        db: Session = Depends(deps.get_db),
-        webhooks: conlist(schemas.PreApprovalWebhookCreate, max_items=50) = Body(...),  # type: ignore
-) -> List[PreApprovalWebhookResponse]:
+    *,
+    db: Session = Depends(deps.get_db),
+    webhooks: conlist(schemas.PreApprovalWebhookCreate, max_items=50) = Body(...),  # type: ignore
+) -> List[PreApprovalWebhook]:
     """
     Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.
     """
@@ -167,13 +172,12 @@ def create_or_update_pre_execution_webhooks(
 
 
 def _patch_webhook(
-        *,
-        db: Session = Depends(deps.get_db),
-        webhook_key: FidesKey,
-        webhook_body: schemas.PreApprovalWebhookUpdate = Body(...),
+    *,
+    db: Session = Depends(deps.get_db),
+    webhook_key: FidesKey,
+    webhook_body: schemas.PreApprovalWebhookUpdate = Body(...),
 ) -> schemas.PreApprovalWebhookResponse:
-    """Helper method for PATCHing a single pre-approval webhook
-    """
+    """Helper method for PATCHing a single pre-approval webhook"""
     loaded_webhook = get_pre_approval_webhook_or_error(db, webhook_key)
     data = webhook_body.dict(exclude_none=True)
 
@@ -209,13 +213,12 @@ def _patch_webhook(
     response_model=schemas.PreApprovalWebhookResponse,
 )
 def update_pre_execution_webhook(
-        *,
-        db: Session = Depends(deps.get_db),
-        webhook_key: FidesKey,
-        webhook_body: schemas.PreApprovalWebhookUpdate = Body(...),
+    *,
+    db: Session = Depends(deps.get_db),
+    webhook_key: FidesKey,
+    webhook_body: schemas.PreApprovalWebhookUpdate = Body(...),
 ) -> schemas.PreApprovalWebhookResponse:
-    """PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created.
-    """
+    """PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created."""
     return _patch_webhook(
         db=db,
         webhook_key=webhook_key,
@@ -224,9 +227,9 @@ def update_pre_execution_webhook(
 
 
 def delete_webhook(
-        *,
-        db: Session = Depends(deps.get_db),
-        webhook_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+    webhook_key: FidesKey,
 ) -> None:
     """Handles deleting Pre-Approval Webhooks."""
     loaded_webhook = get_pre_approval_webhook_or_error(db, webhook_key)
@@ -244,13 +247,12 @@ def delete_webhook(
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_DELETE])],
 )
 def delete_pre_execution_webhook(
-        *,
-        db: Session = Depends(deps.get_db),
-        webhook_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+    webhook_key: FidesKey,
 ) -> None:
     """Delete the Pre-Approval Webhook given webhook key"""
     delete_webhook(
         db=db,
         webhook_key=webhook_key,
     )
-

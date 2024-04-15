@@ -116,9 +116,7 @@ POLICY_POST_WEBHOOK_DETAIL = (
 
 # Pre-approval webhook URLs
 WEBHOOK_PRE_APPROVAL = "/dsr/webhook/pre_approval"
-WEBHOOK_PRE_APPROVAL_DETAIL = (
-    "/dsr/webhook/pre_approval/{webhook_key}"
-)
+WEBHOOK_PRE_APPROVAL_DETAIL = "/dsr/webhook/pre_approval/{webhook_key}"
 
 # Connection Type URLs
 CONNECTION_TYPES = "/connection_type"

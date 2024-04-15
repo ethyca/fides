@@ -1,6 +1,6 @@
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey, String, Boolean
-from sqlalchemy.orm import Session, backref, declared_attr, relationship  # type: ignore
+from sqlalchemy.orm import relationship  # type: ignore
 from fides.api.db.base_class import Base
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import (
@@ -27,4 +27,6 @@ class PreApprovalWebhookReply(Base):
         String, ForeignKey(PrivacyRequest.id, ondelete="SET NULL"), index=True
     )  # Which privacy request this webhook response belongs to
     is_eligible = Column(Boolean, nullable=False)
-    privacy_request = relationship(PrivacyRequest, back_populates="pre_approval_webhook_response")
+    privacy_request = relationship(
+        PrivacyRequest, back_populates="pre_approval_webhook_response"
+    )

@@ -501,7 +501,8 @@ def policy_post_execution_webhooks(
 
 @pytest.fixture(scope="function")
 def pre_approval_webhooks(
-        db: Session, https_connection_config,
+    db: Session,
+    https_connection_config,
 ) -> Generator:
     pre_approval_webhook = PreApprovalWebhook.create(
         db=db,

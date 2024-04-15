@@ -4,7 +4,6 @@ from typing import Dict
 import pytest
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.common.api.scope_registry import (
     POLICY_READ,
@@ -13,7 +12,9 @@ from fides.common.api.scope_registry import (
     WEBHOOK_READ,
 )
 from fides.common.api.v1.urn_registry import (
-    V1_URL_PREFIX, WEBHOOK_PRE_APPROVAL, WEBHOOK_PRE_APPROVAL_DETAIL,
+    V1_URL_PREFIX,
+    WEBHOOK_PRE_APPROVAL,
+    WEBHOOK_PRE_APPROVAL_DETAIL,
 )
 from tests.ops.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
 
@@ -49,7 +50,7 @@ class TestGetPreApprovalWebhooks:
         assert resp.status_code == 401
 
     def test_get_pre_approval_webhooks_wrong_scope(
-            self, url, api_client, generate_auth_header
+        self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[POLICY_READ])
         resp = api_client.get(
@@ -59,13 +60,13 @@ class TestGetPreApprovalWebhooks:
         assert resp.status_code == 403
 
     def test_get_pre_approval_webhooks(
-            self,
-            url,
-            db,
-            api_client,
-            generate_auth_header,
-            pre_approval_webhooks,
-            https_connection_config,
+        self,
+        url,
+        db,
+        api_client,
+        generate_auth_header,
+        pre_approval_webhooks,
+        https_connection_config,
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
         resp = api_client.get(url, headers=auth_header)
@@ -108,7 +109,7 @@ class TestGetPreApprovalWebhooksDetail:
         assert resp.status_code == 401
 
     def test_get_pre_approval_webhook_detail_wrong_scope(
-            self, url, api_client, generate_auth_header
+        self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[POLICY_READ])
         resp = api_client.get(
@@ -117,15 +118,14 @@ class TestGetPreApprovalWebhooksDetail:
         )
         assert resp.status_code == 403
 
-
     def test_get_pre_approval_webhook_detail(
-            self,
-            url,
-            db,
-            api_client,
-            generate_auth_header,
-            pre_approval_webhooks,
-            https_connection_config,
+        self,
+        url,
+        db,
+        api_client,
+        generate_auth_header,
+        pre_approval_webhooks,
+        https_connection_config,
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
         resp = api_client.get(url, headers=auth_header)
@@ -159,7 +159,7 @@ class TestPutPreApprovalWebhooks:
         assert resp.status_code == 401
 
     def test_put_pre_approval_webhooks_wrong_scope(
-            self, url, api_client, generate_auth_header
+        self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
         resp = api_client.put(
@@ -169,7 +169,7 @@ class TestPutPreApprovalWebhooks:
         assert resp.status_code == 403
 
     def test_invalid_connection_config(
-            self, db, url, api_client, generate_auth_header, valid_webhook_request
+        self, db, url, api_client, generate_auth_header, valid_webhook_request
     ):
         invalid_connection_config_body = {
             "connection_config_key": "unknown_connection_key",
@@ -186,19 +186,19 @@ class TestPutPreApprovalWebhooks:
         assert resp.status_code == 404
         body = json.loads(resp.text)
         assert (
-                body["detail"]
-                == "No connection configuration found with key 'unknown_connection_key'."
+            body["detail"]
+            == "No connection configuration found with key 'unknown_connection_key'."
         )
         assert db.query(PreApprovalWebhook).count() == 0  # All must succeed or fail
 
     def test_put_pre_approval_webhooks_duplicate_keys(
-            self,
-            db,
-            url,
-            api_client,
-            generate_auth_header,
-            valid_webhook_request,
-            https_connection_config,
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        valid_webhook_request,
+        https_connection_config,
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_CREATE_OR_UPDATE])
         resp = api_client.put(
@@ -209,8 +209,8 @@ class TestPutPreApprovalWebhooks:
         assert resp.status_code == 400
         body = json.loads(resp.text)
         assert (
-                body["detail"]
-                == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
+            body["detail"]
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
 
         name_only = {
@@ -224,19 +224,19 @@ class TestPutPreApprovalWebhooks:
         assert resp.status_code == 400
         body = json.loads(resp.text)
         assert (
-                body["detail"]
-                == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
+            body["detail"]
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
-        assert db.query(PolicyPreWebhook).count() == 0  # All must succeed or fail
+        assert db.query(PreApprovalWebhook).count() == 0  # All must succeed or fail
 
     def test_put_pre_approval_webhooks_duplicate_names(
-            self,
-            db,
-            url,
-            api_client,
-            generate_auth_header,
-            valid_webhook_request,
-            https_connection_config,
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        valid_webhook_request,
+        https_connection_config,
     ):
         second_payload = valid_webhook_request.copy()
         second_payload["key"] = "new_key"
@@ -250,18 +250,18 @@ class TestPutPreApprovalWebhooks:
         assert resp.status_code == 400
         body = json.loads(resp.text)
         assert (
-                body["detail"]
-                == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
+            body["detail"]
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
 
     def test_create_multiple_pre_approval_webhooks(
-            self,
-            db,
-            generate_auth_header,
-            api_client,
-            url,
-            valid_webhook_request,
-            https_connection_config,
+        self,
+        db,
+        generate_auth_header,
+        api_client,
+        url,
+        valid_webhook_request,
+        https_connection_config,
     ):
         second_webhook_body = {
             "connection_config_key": https_connection_config.key,
@@ -293,10 +293,10 @@ class TestPutPreApprovalWebhooks:
             },
         ]
 
-        webhooks = PolicyPreWebhook.filter(
+        webhooks = PreApprovalWebhook.filter(
             db=db,
             conditions=(
-                PolicyPreWebhook.key.in_(
+                PreApprovalWebhook.key.in_(
                     ["my_really_nice_webhook", "my_new_pre-approval_webhook"]
                 )
             ),
@@ -307,13 +307,13 @@ class TestPutPreApprovalWebhooks:
             webhook.delete(db=db)
 
     def test_update_webhooks_remove_webhook_from_request(
-            self,
-            db,
-            generate_auth_header,
-            api_client,
-            url,
-            pre_approval_webhooks,
-            https_connection_config,
+        self,
+        db,
+        generate_auth_header,
+        api_client,
+        url,
+        pre_approval_webhooks,
+        https_connection_config,
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_CREATE_OR_UPDATE])
 
@@ -350,7 +350,7 @@ class TestPatchPreApprovalWebhook:
         assert resp.status_code == 401
 
     def test_patch_pre_approval_webhook_wrong_scope(
-            self, url, api_client, generate_auth_header
+        self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
         resp = api_client.patch(
@@ -360,7 +360,7 @@ class TestPatchPreApprovalWebhook:
         assert resp.status_code == 403
 
     def test_patch_pre_approval_webhook_invalid_webhook_key(
-            self, api_client, generate_auth_header
+        self, api_client, generate_auth_header
     ):
         invalid_url = V1_URL_PREFIX + WEBHOOK_PRE_APPROVAL_DETAIL.format(
             pre_webhook_key="invalid_webhook_key"
@@ -374,13 +374,13 @@ class TestPatchPreApprovalWebhook:
         assert resp.status_code == 404
 
     def test_update_name_only(
-            self,
-            db,
-            generate_auth_header,
-            api_client,
-            url,
-            pre_approval_webhooks,
-            https_connection_config,
+        self,
+        db,
+        generate_auth_header,
+        api_client,
+        url,
+        pre_approval_webhooks,
+        https_connection_config,
     ):
         request_body = {"name": "Renaming this webhook"}
         auth_header = generate_auth_header(scopes=[WEBHOOK_CREATE_OR_UPDATE])
@@ -411,7 +411,7 @@ class TestDeletePreApprovalWebhook:
         assert resp.status_code == 401
 
     def test_delete_pre_approval_webhook_detail_wrong_scope(
-            self, url, api_client, generate_auth_header
+        self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
         resp = api_client.delete(
@@ -421,12 +421,12 @@ class TestDeletePreApprovalWebhook:
         assert resp.status_code == 403
 
     def test_delete_pre_approval_webhook_detail(
-            self,
-            db,
-            url,
-            api_client,
-            generate_auth_header,
-            pre_approval_webhooks,
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        pre_approval_webhooks,
     ):
         auth_header = generate_auth_header(scopes=[WEBHOOK_DELETE])
         resp = api_client.delete(
@@ -436,4 +436,6 @@ class TestDeletePreApprovalWebhook:
         assert resp.status_code == 200
         all_webhooks = PreApprovalWebhook.query(db=db)
         assert len(all_webhooks) == 1
-        assert all_webhooks[0].key == pre_approval_webhooks[1]  # should keep the other configured webhook
+        assert (
+            all_webhooks[0].key == pre_approval_webhooks[1]
+        )  # should keep the other configured webhook
