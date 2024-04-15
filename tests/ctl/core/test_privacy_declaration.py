@@ -13,7 +13,7 @@ class TestPrivacyDeclaration:
     ):
         assert (
             privacy_declaration_with_dataset_references.undeclared_data_categories
-            == ["user.contact.email"]
+            == {"user.contact.email"}
         )
 
     def test_privacy_declaration_data_category_defined_on_sibling(
@@ -36,8 +36,11 @@ class TestPrivacyDeclaration:
             },
         )
 
+        db.refresh(system)
+
         # Check that the original privacy declaration doesn't have any undeclared data categories
         # because we also search sibling privacy declarations for the data category
         assert (
-            privacy_declaration_with_dataset_references.undeclared_data_categories == []
+            privacy_declaration_with_dataset_references.undeclared_data_categories
+            == set()
         )

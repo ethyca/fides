@@ -67,9 +67,9 @@ def test_system_datasets(system_with_dataset_references: System) -> None:
 def test_system_undeclared_data_categories(
     system_with_undeclared_data_categories: System,
 ) -> None:
-    assert system_with_undeclared_data_categories.undeclared_data_categories == [
+    assert system_with_undeclared_data_categories.undeclared_data_categories == {
         "user.contact.email"
-    ]
+    }
 
 
 @pytest.fixture(scope="function")

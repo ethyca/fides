@@ -51,7 +51,7 @@ class TestFindUndeclaredCategories:
         )
 
     def test_find_undeclared_categories_empty_input(self):
-        assert find_undeclared_categories(set(), {"user.contact", "user.name"}) == []
+        assert find_undeclared_categories(set(), {"user.contact", "user.name"}) == set()
 
     def test_find_undeclared_categories_empty_declared(self):
         assert sorted(
@@ -63,7 +63,9 @@ class TestFindUndeclaredCategories:
     def test_find_undeclared_categories_no_undeclared(self):
         input_categories = {"user.contact.email", "user.name.first", "user.name.last"}
         declared_categories = {"user.contact", "user.name", "user.financial"}
-        assert find_undeclared_categories(input_categories, declared_categories) == []
+        assert (
+            find_undeclared_categories(input_categories, declared_categories) == set()
+        )
 
     def test_find_undeclared_categories_all_undeclared(self):
         input_categories = {
