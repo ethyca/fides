@@ -1,11 +1,11 @@
-from typing import List, Set
+from typing import Set
 
 from pygtrie import StringTrie
 
 
 def find_undeclared_categories(
     input_categories: Set[str], declared_categories: Set[str]
-) -> List[str]:
+) -> Set[str]:
     """
     Finds the categories in input_categories that are not declared in the given list of declared categories.
 
@@ -22,10 +22,10 @@ def find_undeclared_categories(
     for category in declared_categories:
         declared_trie[category] = True
 
-    undeclared_categories = []
+    undeclared_categories = set()
     for category in input_categories:
         prefix, _ = declared_trie.longest_prefix(category)
         if not prefix:
-            undeclared_categories.append(category)
+            undeclared_categories.add(category)
 
     return undeclared_categories

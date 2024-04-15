@@ -443,7 +443,7 @@ class System(Base, FidesBase):
         return data_uses
 
     @property
-    def undeclared_data_categories(self) -> List[str]:
+    def undeclared_data_categories(self) -> Set[str]:
         """
         Returns a set of data categories defined on the system's datasets
         that are not associated with any data use (privacy declaration).
@@ -507,7 +507,9 @@ class PrivacyDeclaration(Base):
         nullable=False,
         index=True,
     )
-    system = relationship(System, back_populates="privacy_declarations")
+    system = relationship(
+        System, back_populates="privacy_declarations", lazy="selectin"
+    )
     cookies = relationship(
         "Cookies", back_populates="privacy_declaration", lazy="joined", uselist=True
     )
@@ -558,7 +560,7 @@ class PrivacyDeclaration(Base):
         )
 
     @property
-    def undeclared_data_categories(self) -> List[str]:
+    def undeclared_data_categories(self) -> Set[str]:
         """
         Aggregates a unique set of data categories across the collections in the associated datasets and
         returns the data categories that are not defined directly on this or any sibling privacy declarations.

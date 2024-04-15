@@ -112,6 +112,7 @@ export const ColumnSettingsModal = <T,>({
               Cancel
             </Button>
             <Button
+              data-testid="save-button"
               colorScheme="primary"
               size="sm"
               onClick={handleSave}
