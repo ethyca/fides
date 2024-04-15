@@ -230,8 +230,8 @@ def initiate_scheduled_dsr_data_removal() -> None:
         replace_existing=True,
         trigger="cron",
         minute="0",
-        hour="10",
-        day_of_week="mon",
+        hour="2",
+        day="*",
         timezone="US/Eastern",
     )
 
@@ -259,7 +259,8 @@ def remove_saved_customer_data(self: DatabaseTask) -> None:
             remove_dsr_data,
             {
                 "ttl": (
-                    datetime.now() - timedelta(seconds=CONFIG.redis.default_ttl_seconds)
+                    datetime.now()
+                    - timedelta(seconds=CONFIG.execution.request_task_ttl)
                 ),
             },
         )

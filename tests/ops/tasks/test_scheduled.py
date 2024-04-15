@@ -60,11 +60,11 @@ def test_initiate_scheduled_dsr_data_removal() -> None:
     assert job is not None
     assert isinstance(job.trigger, CronTrigger)
 
-    assert job.trigger.fields[4].name == "day_of_week"
-    assert str(job.trigger.fields[4].expressions[0]) == "mon"
+    assert job.trigger.fields[2].name == "day"
+    assert str(job.trigger.fields[2].expressions[0]) == "*"
 
     assert job.trigger.fields[5].name == "hour"
-    assert str(job.trigger.fields[5].expressions[0]) == "10"
+    assert str(job.trigger.fields[5].expressions[0]) == "2"
 
     assert type(job.trigger.timezone).__name__ == "US/Eastern"
 

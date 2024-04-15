@@ -247,6 +247,16 @@ class TestPollForExitedPrivacyRequests:
 
 
 @pytest.fixture(scope="function")
+def very_short_request_task_expiration():
+    original_value: float = CONFIG.execution.request_task_ttl
+    CONFIG.execution.request_task_ttl = (
+        0.01  # Set redis cache to expire very quickly for testing purposes
+    )
+    yield CONFIG
+    CONFIG.execution.request_task_ttl = original_value
+
+
+@pytest.fixture(scope="function")
 def very_short_redis_cache_expiration():
     original_value: float = CONFIG.redis.default_ttl_seconds
     CONFIG.redis.default_ttl_seconds = (
@@ -257,7 +267,9 @@ def very_short_redis_cache_expiration():
 
 
 class TestRemoveSavedCustomerData:
-    @pytest.mark.usefixtures("very_short_redis_cache_expiration")
+    @pytest.mark.usefixtures(
+        "very_short_redis_cache_expiration", "very_short_request_task_expiration"
+    )
     def test_no_request_tasks(self, db, privacy_request):
         assert not privacy_request.request_tasks.count()
         time.sleep(1)
@@ -268,7 +280,11 @@ class TestRemoveSavedCustomerData:
         db.refresh(privacy_request)
         assert not privacy_request.request_tasks.count()
 
-    @pytest.mark.usefixtures("very_short_redis_cache_expiration", "request_task")
+    @pytest.mark.usefixtures(
+        "very_short_redis_cache_expiration",
+        "very_short_request_task_expiration",
+        "request_task",
+    )
     def test_privacy_request_incomplete(self, db, privacy_request):
         """Incomplete Privacy Requests are not cleaned up"""
         assert privacy_request.status == PrivacyRequestStatus.in_processing
@@ -291,7 +307,9 @@ class TestRemoveSavedCustomerData:
         assert privacy_request.access_result_urls is not None
         assert privacy_request.request_tasks.count()
 
-    @pytest.mark.usefixtures("very_short_redis_cache_expiration")
+    @pytest.mark.usefixtures(
+        "very_short_redis_cache_expiration", "very_short_request_task_expiration"
+    )
     def test_customer_data_removed_from_old_request_tasks_and_privacy_requests(
         self, db, privacy_request, request_task
     ):
