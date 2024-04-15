@@ -110,7 +110,7 @@ def put_webhooks(
         )
 
     staged_webhooks = []  # Webhooks will be committed at the end
-    for index, schema in enumerate(webhooks):  # type: ignore
+    for schema in webhooks:
         connection_config = get_connection_config_or_error(
             db, schema.connection_config_key
         )
