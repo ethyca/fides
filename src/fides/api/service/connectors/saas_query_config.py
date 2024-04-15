@@ -27,7 +27,7 @@ from fides.api.util.saas_util import (
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
     UUID,
-    get_identity,
+    get_identities,
     unflatten_dict,
 )
 from fides.config import CONFIG
@@ -88,7 +88,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if any(
                 param_value
                 for param_value in request.param_values or []
-                if param_value.identity == get_identity(self.privacy_request)
+                if param_value.identity in get_identities(self.privacy_request)
             )
         ]
 

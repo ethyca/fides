@@ -103,3 +103,5 @@ export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
     validationRegex: LOCALE_REGEX,
   },
 ];
+
+export const FIDES_OVERLAY_WRAPPER = "fides-overlay-wrapper";

@@ -11,6 +11,19 @@ connection:
       dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
       username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
       password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
+  - key: cookie_house_loyalty_database
+    name: Postgres Connector (Loyalty)
+    connection_type: postgres
+    access: write
+    dataset: postgres_example_test_extended_dataset
+    system_key: cookie_house_loyalty_database
+    secrets:
+      host: $FIDES_DEPLOY__CONNECTORS__POSTGRES_LOYALTY__HOST
+      port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
+      dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
+      username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
+      password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
+    disabled: True
   - key: cookie_house_customer_database_mongodb
     name: MongoDB Connector
     connection_type: mongodb

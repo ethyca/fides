@@ -609,7 +609,9 @@ def get_request_status(
 
     for item in paginated.items:  # type: ignore
         if include_identities:
-            item.identity = item.get_persisted_identity().dict()
+            item.identity = item.get_persisted_identity().labeled_dict(
+                include_default_labels=True
+            )
 
         if include_custom_privacy_request_fields:
             item.custom_privacy_request_fields = (

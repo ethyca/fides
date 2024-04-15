@@ -30,16 +30,11 @@ describe("Smoke test", () => {
         {
           identity: {
             email: "jenny@example.com",
-            phone_number: "",
           },
           custom_privacy_request_fields: {
             first_name: {
               label: "First name",
               value: "Jenny",
-            },
-            last_name: {
-              label: "Last name",
-              value: "",
             },
             color: {
               label: "Color",
