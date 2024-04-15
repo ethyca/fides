@@ -31,11 +31,10 @@ class PreApprovalWebhookResponse(WebhookBase):
 
     connection_config: Optional[ConnectionConfigurationResponse]
 
+    class Config:
+        """Set orm_mode to True"""
 
-class Config:
-    """Set orm_mode to True"""
-
-    orm_mode = True
+        orm_mode = True
 
 
 class PreApprovalWebhookUpdate(FidesSchema):
