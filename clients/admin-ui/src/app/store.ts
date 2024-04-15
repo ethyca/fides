@@ -25,6 +25,7 @@ import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
+import { discoveryDetectionSlice } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { dataSubjectsSlice } from "~/features/data-subjects/data-subject.slice";
 import { dataUseSlice } from "~/features/data-use/data-use.slice";
 import { datamapSlice } from "~/features/datamap";
@@ -79,6 +80,7 @@ const reducer = {
   [dataUseSlice.name]: dataUseSlice.reducer,
   [datasetSlice.name]: datasetSlice.reducer,
   [datastoreConnectionSlice.name]: datastoreConnectionSlice.reducer,
+  [discoveryDetectionSlice.name]: discoveryDetectionSlice.reducer,
   [featuresSlice.name]: featuresSlice.reducer,
   [languageSlice.name]: languageSlice.reducer,
   [locationsSlice.name]: locationsSlice.reducer,
