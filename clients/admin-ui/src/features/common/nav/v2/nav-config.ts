@@ -40,14 +40,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "System detection",
         path: routes.SYSTEM_DETECTION,
-        exact: true,
         scopes: [],
         requiresFlag: "dataDiscoveryAndDetection",
       },
       {
         title: "Data discovery",
-        path: routes.DATA_DISCOVERY,
-        exact: true,
+        path: routes.DATA_DISCOVERY_MONITORS,
         scopes: [],
         requiresFlag: "dataDiscoveryAndDetection",
       },
