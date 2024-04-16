@@ -1,3 +1,4 @@
+import { Box, Heading } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
 import FixedLayout from "~/features/common/FixedLayout";
@@ -32,6 +33,11 @@ const DataDiscoveryMonitorsPage = () => {
         paddingRight: "48px",
       }}
     >
+      <Box display="flex" justifyContent="space-between">
+        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+          Data Discovery
+        </Heading>
+      </Box>
       {/* <DiscoveryMonitorBreadcrumbs urn={urn} /> */}
       {/* <DiscoveryMonitorItemsTable
         discoveryMonitorItems={discoveryMonitorItems}
