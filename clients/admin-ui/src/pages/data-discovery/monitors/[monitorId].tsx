@@ -1,3 +1,4 @@
+import { Box, Heading } from "@fidesui/react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
@@ -24,6 +25,11 @@ const DataDiscoveryMonitorDetailPage: NextPage = () => {
         paddingRight: "48px",
       }}
     >
+      <Box display="flex" justifyContent="space-between">
+        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+          Data Discovery Monitor: {monitorId}
+        </Heading>
+      </Box>
       {/* <DiscoveryMonitorBreadcrumbs urn={urn} />
       <DiscoveryMonitorItemsTable
         discoveryMonitorItems={discoveryMonitorItems}
