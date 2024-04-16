@@ -142,7 +142,8 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
-    V1_URL_PREFIX,
+    V1_URL_PREFIX, PRIVACY_REQUEST_PRE_APPROVE, PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
+    PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -1119,7 +1120,7 @@ def review_privacy_request(
     request_ids: List[str],
     process_request_function: Callable,
 ) -> BulkReviewResponse:
-    """Helper method shared between the approve and deny privacy request endpoints"""
+    """Helper method shared between the approve and deny privacy request endpoints, and pre-approval webhook endpoints"""
     succeeded: List[PrivacyRequest] = []
     failed: List[Dict[str, Any]] = []
 
@@ -1354,6 +1355,71 @@ def deny_privacy_request(
         process_request_function=_deny_request,
     )
 
+@router.post(
+    PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
+    status_code=HTTP_200_OK,
+)
+def mark_privacy_request_pre_approve_eligible(
+        *,
+        db: Session = Depends(deps.get_db),
+        config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+        client: ClientDetail = Security(
+            verify_oauth_client,
+            scopes=[PRIVACY_REQUEST_REVIEW],
+        ),
+        privacy_requests: ReviewPrivacyRequestIds,
+) -> None:
+    """Marks privacy request as eligible for automatic approval, given all other webhook responses are also affirmative"""
+    # todo- insert eligible to DB, refresh
+    # todo- check if all configured webhooks have run and are eligible, approve request if so, pass if not,
+
+    user_id = client.user_id  # todo- what should we use here?
+
+    def _approve_request(privacy_request: PrivacyRequest) -> None:
+        """Method for how to process requests - approved"""
+        now = datetime.utcnow()
+        privacy_request.status = PrivacyRequestStatus.approved
+        privacy_request.reviewed_at = now
+        privacy_request.reviewed_by = user_id
+        if privacy_request.custom_fields:  # type: ignore[attr-defined]
+            privacy_request.custom_privacy_request_fields_approved_at = now
+            privacy_request.custom_privacy_request_fields_approved_by = user_id
+        privacy_request.save(db=db)
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": user_id,
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.approved,
+                "message": "",
+            },
+        )
+
+        queue_privacy_request(privacy_request_id=privacy_request.id)
+
+    review_privacy_request(
+        db=db,
+        request_ids=privacy_requests.request_ids,
+        process_request_function=_approve_request,
+    )
+
+@router.post(
+    PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
+    status_code=HTTP_200_OK,
+)
+def mark_privacy_request_pre_approve_not_eligible(
+        *,
+        db: Session = Depends(deps.get_db),
+        config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+        client: ClientDetail = Security(
+            verify_oauth_client,
+            scopes=[PRIVACY_REQUEST_REVIEW],
+        ),
+        privacy_requests: ReviewPrivacyRequestIds,
+) -> None:
+    """Marks privacy request as not eligible for automatic approval, regardless of what other webhook responses we receive"""
+    # todo- insert not eligible to DB
+    # do nothing to privacy request, let it sit in pending until manually approved
 
 def _handle_manual_webhook_input(
     action: Literal["access", "erasure"],
