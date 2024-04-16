@@ -137,7 +137,9 @@ export interface FidesGlobal extends Fides {
   saved_consent: NoticeConsent;
   gtm: typeof gtm;
   identity: FidesJSIdentity;
+  prevConfig: FidesConfig | undefined;
   init: (config: FidesConfig) => Promise<void>;
+  reinit: () => Promise<void>;
   initialized: boolean;
   meta: typeof meta;
   shopify: typeof shopify;

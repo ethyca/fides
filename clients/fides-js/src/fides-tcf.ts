@@ -227,6 +227,8 @@ _Fides = {
   saved_consent: {},
   gtm,
   init,
+  reinit: () => { throw new Error("Not implemented for fides-tcf"); },
+  prevConfig: undefined,
   initialized: false,
   meta,
   shopify,

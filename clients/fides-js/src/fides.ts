@@ -47,21 +47,12 @@ declare global {
   }
 }
 
-// The global Fides object; this is bound to window.Fides if available
-// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _Fides: FidesGlobal;
-
-const updateExperience = ({
-  cookie,
-  experience,
-  debug,
-  isExperienceClientSideFetched,
-}: {
-  cookie: FidesCookie;
-  experience: PrivacyExperience;
-  debug?: boolean;
-  isExperienceClientSideFetched: boolean;
-}): Partial<PrivacyExperience> => {
+const updateExperience = (
+  cookie: FidesCookie,
+  experience: PrivacyExperience,
+  debug?: boolean,
+  isExperienceClientSideFetched?: boolean
+): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent
@@ -81,7 +72,7 @@ const updateExperience = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-const init = async (config: FidesConfig) => {
+async function init(this: FidesGlobal, config: FidesConfig) {
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
@@ -120,7 +111,7 @@ const init = async (config: FidesConfig) => {
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
-    Object.assign(_Fides, initialFides);
+    Object.assign(this, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
   const experience = initialFides?.experience ?? config.experience;
@@ -133,14 +124,23 @@ const init = async (config: FidesConfig) => {
     updateExperience,
     overrides,
   });
-  Object.assign(_Fides, updatedFides);
+  Object.assign(this, updatedFides);
+  this.prevConfig = config;
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 
+async function reinit(this: FidesGlobal) {
+  if (!this.initialized || !this.prevConfig) {
+    throw new Error("Fides must be initialized before reinitializing");
+  }
+  return this.init(this.prevConfig);
+}
+
 // The global Fides object; this is bound to window.Fides if available
-_Fides = {
+// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
@@ -175,6 +175,8 @@ _Fides = {
   saved_consent: {},
   gtm,
   init,
+  reinit,
+  prevConfig: undefined,
   initialized: false,
   meta,
   shopify,
