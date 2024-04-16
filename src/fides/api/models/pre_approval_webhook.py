@@ -11,7 +11,7 @@ class PreApprovalWebhook(Base):
         String, ForeignKey("connectionconfig.id"), nullable=False
     )
     connection_config = relationship(
-        "ConnectionConfig", back_populates="pre_approval_webhooks", uselist=False
+        "ConnectionConfig", back_populates="pre_approval_webhooks", uselist=False  # type: ignore
     )
 
 
@@ -24,5 +24,5 @@ class PreApprovalWebhookReply(Base):
     )  # Which privacy request this webhook response belongs to
     is_eligible = Column(Boolean, nullable=False)
     privacy_request = relationship(
-        "PrivacyRequest", back_populates="pre_approval_webhook_reply"
+        "PrivacyRequest", back_populates="pre_approval_webhook_reply"  # type: ignore
     )
