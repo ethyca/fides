@@ -13,7 +13,9 @@ export const DATASET_ROUTE = "/dataset";
 
 // Detection and discovery
 export const SYSTEM_DETECTION = "/data-discovery/system-detection";
-export const DATA_DISCOVERY = "/data-discovery/discovery";
+export const DATA_DISCOVERY_MONITORS = "/data-discovery/monitors";
+export const DATA_DISCOVERY_MONITOR_DETAIL =
+  "/data-discovery/monitors/[monitorId]";
 
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
