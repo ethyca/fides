@@ -50,6 +50,7 @@ def upgrade():
     op.create_table(
         "preapprovalwebhookreply",
         sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("webhook_id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),

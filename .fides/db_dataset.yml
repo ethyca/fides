@@ -2097,6 +2097,8 @@ dataset:
     description: 'The table that stores service replies to Pre Approval Webhooks'
     data_categories: [ ]
     fields:
+    - name: webhook_id
+      data_categories: [ system.operations ]
     - name: privacy_request_id
       data_categories: [ system.operations ]
     - name: created_at
