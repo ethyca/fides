@@ -337,11 +337,6 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        // NOTE: this is super-specific - waitUntilFidesInitialized() completes
-        // *just* before the FidesInitialized event fires, so our GPP extension
-        // isn't ready yet. Workaround that by waiting just long enough for the
-        // FidesInitialized event to complete
         cy.get("@FidesInitialized").should("have.been.calledOnce");
 
         cy.window().then((win) => {

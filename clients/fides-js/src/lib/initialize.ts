@@ -458,9 +458,9 @@ export const initialize = async ({
          * saved consent, etc.
          *
          * NOTE: We want to finish initialization immediately while GPC updates
-         * run in parallel. To ensure that any GPC API calls don't block the rest
-         * of the code from executing, we use setTimeout with no delay which
-         * simply moves it to the end of the JavaScript event queue.
+         * continue to run in the background. To ensure that any GPC API calls
+         * don't block the rest of the code from executing, we use setTimeout with
+         * no delay which simply moves it to the end of the JavaScript event queue.
          */
         setTimeout(() => {
           automaticallyApplyGPCPreferences({
