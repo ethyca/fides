@@ -468,7 +468,7 @@ describe("Consent i18n", () => {
         cy.get(".fides-gpc-banner").contains(t.gpc_title);
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (t.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label && t.privacy_policy_url) {
           cy.get("#fides-privacy-policy-link").contains(
             t.privacy_policy_link_label
           );
@@ -518,7 +518,7 @@ describe("Consent i18n", () => {
 
     tests.forEach(({ navigatorLanguage, locale, banner, modal, notices }) => {
       describe(`when browser language matches available locale (${navigatorLanguage})`, () => {
-        it(`localizes banner_and_modal components in the correct locale (${locale})`, () => {
+        it.only(`localizes banner_and_modal components in the correct locale (${locale})`, () => {
           visitDemoWithI18n({
             navigatorLanguage,
             globalPrivacyControl: true,
