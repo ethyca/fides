@@ -15,7 +15,6 @@ import {
 } from "./lib/cookie";
 import {
   FidesConfig,
-  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
@@ -34,6 +33,7 @@ import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
+  UpdateExperienceFn,
 } from "./lib/initialize";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
@@ -47,12 +47,12 @@ declare global {
   }
 }
 
-const updateExperience = (
-  cookie: FidesCookie,
-  experience: PrivacyExperience,
-  debug?: boolean,
-  isExperienceClientSideFetched?: boolean
-): Partial<PrivacyExperience> => {
+const updateExperience: UpdateExperienceFn = ({
+  cookie,
+  experience,
+  debug,
+  isExperienceClientSideFetched,
+}): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent
@@ -73,6 +73,8 @@ const updateExperience = (
  * Initialize the global Fides object with the given configuration values
  */
 async function init(this: FidesGlobal, config: FidesConfig) {
+  this.prevConfig = config;
+
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
@@ -92,7 +94,10 @@ async function init(this: FidesGlobal, config: FidesConfig) {
     experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrides.optionsOverrides };
+  config = {
+    ...config,
+    options: { ...config.options, ...overrides.optionsOverrides },
+  };
   const cookie = {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
@@ -125,17 +130,9 @@ async function init(this: FidesGlobal, config: FidesConfig) {
     overrides,
   });
   Object.assign(this, updatedFides);
-  this.prevConfig = config;
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-};
-
-async function reinit(this: FidesGlobal) {
-  if (!this.initialized || !this.prevConfig) {
-    throw new Error("Fides must be initialized before reinitializing");
-  }
-  return this.init(this.prevConfig);
 }
 
 // The global Fides object; this is bound to window.Fides if available
@@ -175,8 +172,13 @@ const _Fides: FidesGlobal = {
   saved_consent: {},
   gtm,
   init,
-  reinit,
   prevConfig: undefined,
+  reinit() {
+    if (!this.prevConfig || !this.initialized) {
+      throw new Error("Fides must be initialized before reinitializing");
+    }
+    return this.init(this.prevConfig);
+  },
   initialized: false,
   meta,
   shopify,

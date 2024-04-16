@@ -62,10 +62,6 @@ declare global {
   }
 }
 
-// The global Fides object; this is bound to window.Fides if available
-// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _Fides: FidesGlobal;
-
 const updateExperience = ({
   cookie,
   experience,
@@ -104,7 +100,8 @@ const updateExperience = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-const init = async (config: FidesConfig) => {
+async function init(this: FidesGlobal, config: FidesConfig) {
+  this.prevConfig = config;
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
@@ -130,7 +127,10 @@ const init = async (config: FidesConfig) => {
     experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrides.optionsOverrides };
+  config = {
+    ...config,
+    options: { ...config.options, ...overrides.optionsOverrides },
+  };
   const cookie = {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
@@ -172,7 +172,7 @@ const init = async (config: FidesConfig) => {
   // Initialize the CMP API early so that listeners are established
   initializeTcfCmpApi();
   if (initialFides) {
-    Object.assign(_Fides, initialFides);
+    Object.assign(this, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
   const experience = initialFides?.experience ?? config.experience;
@@ -185,14 +185,15 @@ const init = async (config: FidesConfig) => {
     updateExperience,
     overrides,
   });
-  Object.assign(_Fides, updatedFides);
+  Object.assign(this, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 
 // The global Fides object; this is bound to window.Fides if available
-_Fides = {
+// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
@@ -227,8 +228,13 @@ _Fides = {
   saved_consent: {},
   gtm,
   init,
-  reinit: () => { throw new Error("Not implemented for fides-tcf"); },
   prevConfig: undefined,
+  reinit() {
+    if (!this.prevConfig || !this.initialized) {
+      throw new Error("Fides must be initialized before reinitializing");
+    }
+    return this.init(this.prevConfig);
+  },
   initialized: false,
   meta,
   shopify,
