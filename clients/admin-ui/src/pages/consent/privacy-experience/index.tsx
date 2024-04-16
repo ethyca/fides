@@ -1,14 +1,16 @@
 import { Box, Heading, Text } from "@fidesui/react";
 import React from "react";
-import FixedLayout from "~/features/common/FixedLayout";
 
+import FixedLayout from "~/features/common/FixedLayout";
 import { PrivacyExperiencesTable } from "~/features/privacy-experience/PrivacyExperiencesTable";
 
 const PrivacyExperiencePage = () => (
-  <FixedLayout title="Privacy experiences"
+  <FixedLayout
+    title="Privacy experiences"
     mainProps={{
       padding: "24px 40px",
-    }}>
+    }}
+  >
     <Box mb={4} data-testid="privacy-experience-page">
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
         Privacy experience
@@ -23,7 +25,7 @@ const PrivacyExperiencePage = () => (
       website, copy the javascript using the button on this page and place it on
       your website.
     </Text>
-    <Box >
+    <Box>
       <PrivacyExperiencesTable />
     </Box>
   </FixedLayout>
