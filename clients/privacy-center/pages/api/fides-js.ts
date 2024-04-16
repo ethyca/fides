@@ -145,6 +145,9 @@ export default async function handler(
   // If the experience has GPP enabled, or the query param is present,
   // include the GPP extension in the bundle.
   const { gpp: forcedGPP } = req.query;
+  if (forcedGPP === "true" && experience === undefined) {
+    experience = {};
+  }
   const gppEnabled =
     !!experience?.gpp_settings?.enabled || forcedGPP === "true";
 
@@ -180,6 +183,7 @@ export default async function handler(
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
       base64Cookie: environment.settings.BASE_64_COOKIE,
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
+      forceGpp: forcedGPP === "true",
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

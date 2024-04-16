@@ -66,9 +66,11 @@ const deriveGppFieldRegion = ({
 export const setGppNoticesProvidedFromExperience = ({
   cmpApi,
   experience,
+  forcedGpp,
 }: {
   cmpApi: CmpApi;
   experience: PrivacyExperience;
+  forcedGpp: boolean;
 }) => {
   const sectionsChanged = new Set<{ name: string; id: number }>();
   const {
@@ -82,12 +84,9 @@ export const setGppNoticesProvidedFromExperience = ({
   });
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
-  // GPP was forced to be included by the developer
-  const gppWasForced = !experience?.gpp_settings;
-
   if (!gppSection) {
     if (
-      gppWasForced ||
+      (forcedGpp && !experience?.gpp_settings) ||
       experience?.gpp_settings?.us_approach === GPPUSApproach.STATE
     ) {
       cmpApi.setApplicableSections([-1]);
@@ -126,10 +125,12 @@ export const setGppOptOutsFromCookieAndExperience = ({
   cmpApi,
   cookie,
   experience,
+  forcedGpp,
 }: {
   cmpApi: CmpApi;
   cookie: FidesCookie;
   experience: PrivacyExperience;
+  forcedGpp: boolean;
 }) => {
   const sectionsChanged = new Set<{ name: string; id: number }>();
   const { consent } = cookie;
@@ -139,12 +140,9 @@ export const setGppOptOutsFromCookieAndExperience = ({
   });
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
-  // GPP was forced to be included by the developer
-  const gppWasForced = !experience?.gpp_settings;
-
   if (!gppSection) {
     if (
-      gppWasForced ||
+      (forcedGpp && !experience?.gpp_settings) ||
       experience?.gpp_settings?.us_approach === GPPUSApproach.STATE
     ) {
       cmpApi.setApplicableSections([-1]);
