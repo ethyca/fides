@@ -518,7 +518,7 @@ describe("Consent i18n", () => {
 
     tests.forEach(({ navigatorLanguage, locale, banner, modal, notices }) => {
       describe(`when browser language matches available locale (${navigatorLanguage})`, () => {
-        it.only(`localizes banner_and_modal components in the correct locale (${locale})`, () => {
+        it(`localizes banner_and_modal components in the correct locale (${locale})`, () => {
           visitDemoWithI18n({
             navigatorLanguage,
             globalPrivacyControl: true,
