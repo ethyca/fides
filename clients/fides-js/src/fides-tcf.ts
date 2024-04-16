@@ -220,6 +220,7 @@ _Fides = {
     allowHTMLDescription: null,
     base64Cookie: false,
     fidesPrimaryColor: null,
+    forceGpp: false,
   },
   fides_meta: {},
   identity: {},
