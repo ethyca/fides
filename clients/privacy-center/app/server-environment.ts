@@ -371,6 +371,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_PRIMARY_COLOR: process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
         : null,
+      FIDES_CLEAR_COOKIE: process.env.FIDES_CLEAR_COOKIE ? process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR === "true" : false,
     };
 
     // Load configuration file (if it exists)
@@ -404,6 +405,7 @@ export const loadPrivacyCenterEnvironment =
       ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
       BASE_64_COOKIE: settings.BASE_64_COOKIE,
       FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
+      FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
