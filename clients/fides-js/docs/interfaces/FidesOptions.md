@@ -46,7 +46,7 @@ order of precedence:
 - [fides\_locale](FidesOptions.md#fides_locale)
 - [fides\_string](FidesOptions.md#fides_string)
 - [fides\_tcf\_gdpr\_applies](FidesOptions.md#fides_tcf_gdpr_applies)
-- [show\_new\_experience](FidesOptions.md#fides_clear_cookie)
+- [fides\_clear\_cookie](FidesOptions.md#fides_clear_cookie)
 
 ## Properties
 
@@ -153,9 +153,9 @@ Defaults to `true`.
 
 ___
 
-### show\_new\_experience
+### fides\_clear\_cookie
 
-• **show\_new\_experience**: `boolean`
+• **fides\_clear\_cookie**: `boolean`
 
 When `true`, shows fides.js overlay UI on refresh. This deletes the fides_consent cookie as if no preferences have been saved. 
 
