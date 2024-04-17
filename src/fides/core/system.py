@@ -1,4 +1,5 @@
 """Module that adds functionality for generating or scanning systems."""
+
 import asyncio
 from collections import defaultdict
 from typing import Dict, List, Optional
@@ -25,10 +26,9 @@ def generate_redshift_systems(
 
     client = aws_connector.get_aws_client(service="redshift", aws_config=aws_config)
     describe_clusters = aws_connector.describe_redshift_clusters(client=client)
-    if not describe_clusters:
-        return []
     redshift_systems = aws_connector.create_redshift_systems(
-        describe_clusters=describe_clusters, organization_key=organization_key
+        describe_clusters=describe_clusters or {"Clusters": []},
+        organization_key=organization_key,
     )
     return redshift_systems
 
@@ -45,8 +45,8 @@ def generate_rds_systems(
     describe_clusters = aws_connector.describe_rds_clusters(client=client)
     describe_instances = aws_connector.describe_rds_instances(client=client)
     rds_systems = aws_connector.create_rds_systems(
-        describe_clusters=describe_clusters,
-        describe_instances=describe_instances,
+        describe_clusters=describe_clusters or {"DBClusters": []},
+        describe_instances=describe_instances or {"DBInstances": []},
         organization_key=organization_key,
     )
     return rds_systems
@@ -65,7 +65,7 @@ def generate_resource_tagging_systems(
     )
     resource_arns = aws_connector.get_tagging_resources(client=client)
     resource_tagging_systems = aws_connector.create_resource_tagging_systems(
-        resource_arns=resource_arns, organization_key=organization_key
+        resource_arns=resource_arns or [], organization_key=organization_key
     )
     return resource_tagging_systems
 
@@ -387,9 +387,9 @@ def scan_system_aws(
 
     organization = get_organization(
         organization_key=organization_key,
-        manifest_organizations=manifest_taxonomy.organization
-        if manifest_taxonomy
-        else [],
+        manifest_organizations=(
+            manifest_taxonomy.organization if manifest_taxonomy else []
+        ),
         url=url,
         headers=headers,
     )
@@ -437,9 +437,9 @@ def scan_system_okta(
 
     organization = get_organization(
         organization_key=organization_key,
-        manifest_organizations=manifest_taxonomy.organization
-        if manifest_taxonomy
-        else [],
+        manifest_organizations=(
+            manifest_taxonomy.organization if manifest_taxonomy else []
+        ),
         url=url,
         headers=headers,
     )
