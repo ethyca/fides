@@ -76,6 +76,8 @@ ___
 When `true`, require FidesJS to "embed" it's UI into a specific `<div>` on
 the page, instead of as an overlay over the `<body>` itself. This is useful
 for creating a dedicated page to manage consent preferences on your site.
+Both the consent modal and the banner will be embedded into the container.
+To only embed the consent modal, set `fides_disable_banner` to `true`.
 
 To use the `fides_embed` option, ensure that a DOM element with
 `id="fides-embed-container"` exists on the page, which FidesJS will then

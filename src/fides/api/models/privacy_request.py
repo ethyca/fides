@@ -61,9 +61,10 @@ from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
 from fides.api.schemas.redis_cache import (
-    CustomPrivacyRequestFieldValue,
     Identity,
     IdentityBase,
+    LabeledIdentity,
+    MultiValue,
 )
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
@@ -342,12 +343,17 @@ class PrivacyRequest(
     def cache_identity(self, identity: Identity) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
-        identity_dict: Dict[str, Any] = dict(identity)
+
+        if isinstance(identity, dict):
+            identity = Identity(**identity)
+
+        identity_dict: Dict[str, Any] = identity.labeled_dict()
+
         for key, value in identity_dict.items():
             if value is not None:
                 cache.set_with_autoexpire(
                     get_identity_cache_key(self.id, key),
-                    value,
+                    FidesopsRedis.encode_obj(value),
                 )
 
     def cache_custom_privacy_request_fields(
@@ -382,19 +388,39 @@ class PrivacyRequest(
         Stores the identity provided with the privacy request in a secure way, compatible with
         blind indexing for later searching and audit purposes.
         """
-        identity_dict: Dict[str, Any] = dict(identity)
+
+        if isinstance(identity, dict):
+            identity = Identity(**identity)
+
+        identity_dict = identity.labeled_dict()
         for key, value in identity_dict.items():
-            if value:
+            if value is not None:
+                if isinstance(value, dict):
+                    if "label" in value and "value" in value:
+                        label = value["label"]
+                        value = value["value"]
+                    else:
+                        raise RuntimeError(
+                            f"Programming error: unexpected dict value '{value}' found in an Identity's `labeled_dict()`!"
+                        )
+                else:
+                    label = None
+
                 hashed_value = ProvidedIdentity.hash_value(value)
+                provided_identity_data = {
+                    "privacy_request_id": self.id,
+                    "field_name": key,
+                    # We don't need to manually encrypt this field, it's done at the ORM level
+                    "encrypted_value": {"value": value},
+                    "hashed_value": hashed_value,
+                }
+
+                if label is not None:
+                    provided_identity_data["field_label"] = label
+
                 ProvidedIdentity.create(
                     db=db,
-                    data={
-                        "privacy_request_id": self.id,
-                        "field_name": key,
-                        # We don't need to manually encrypt this field, it's done at the ORM level
-                        "encrypted_value": {"value": value},
-                        "hashed_value": hashed_value,
-                    },
+                    data=provided_identity_data,
                 )
 
     def persist_custom_privacy_request_fields(
@@ -429,14 +455,13 @@ class PrivacyRequest(
         """
         Retrieves persisted identity fields from the DB.
         """
-        schema = Identity()
+        schema_dict = {}
         for field in self.provided_identities:  # type: ignore[attr-defined]
-            setattr(
-                schema,
-                field.field_name.value,
-                field.encrypted_value["value"],
-            )
-        return schema
+            value = field.encrypted_value.get("value")
+            if field.field_label:
+                value = LabeledIdentity(label=field.field_label, value=value)
+            schema_dict[field.field_name] = value
+        return Identity(**schema_dict)
 
     def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
         return {
@@ -531,7 +556,12 @@ class PrivacyRequest(
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
+        result = {}
+        for key in keys:
+            value = cache.get(key)
+            if value:
+                result[key.split("-")[-1]] = json.loads(value)
+        return result
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
@@ -1045,9 +1075,14 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     )  # Which privacy request this identity belongs to
 
     field_name = Column(
-        EnumColumn(ProvidedIdentityType),
+        String,
         index=False,
         nullable=False,
+    )
+    field_label = Column(
+        String,
+        index=False,
+        nullable=True,
     )
     hashed_value = Column(
         String,
@@ -1078,34 +1113,35 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     @classmethod
     def hash_value(
         cls,
-        value: str,
+        value: MultiValue,
         encoding: str = "UTF-8",
     ) -> str:
         """Utility function to hash the value with a generated salt"""
         SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        value_str = str(value)
         hashed_value = hash_with_salt(
-            value.encode(encoding),
+            value_str.encode(encoding),
             SALT.encode(encoding),
         )
         return hashed_value
 
     def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
-        identity = Identity()
+
+        identity_dict = {}
         if any(
             [
                 not self.field_name,
                 not self.encrypted_value,
             ]
         ):
-            return identity
+            return Identity()
 
-        setattr(
-            identity,
-            self.field_name.value,  # type:ignore
-            self.encrypted_value.get("value"),  # type:ignore
-        )
-        return identity
+        value = self.encrypted_value.get("value")  # type:ignore
+        if self.field_label:
+            value = LabeledIdentity(label=self.field_label, value=value)
+        identity_dict[self.field_name] = value
+        return Identity(**identity_dict)
 
 
 class CustomPrivacyRequestField(Base):
@@ -1156,7 +1192,7 @@ class CustomPrivacyRequestField(Base):
     @classmethod
     def hash_value(
         cls,
-        value: CustomPrivacyRequestFieldValue,
+        value: MultiValue,
         encoding: str = "UTF-8",
     ) -> Union[str, List[str]]:
         """Utility function to hash the value(s) with a generated salt"""

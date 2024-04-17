@@ -36,7 +36,6 @@ from fides.api.task.graph_task import (
     build_affected_field_logs,
     collect_queries,
     filter_by_enabled_actions,
-    start_function,
     update_erasure_mapping_from_cache,
 )
 from fides.api.task.task_resources import Connections
@@ -187,17 +186,18 @@ class TestPreProcessInputData:
         truncated_customer_details_output = [
             {
                 "_id": ObjectId("61f422e0ddc2559e0c300e95"),
-                "travel_identifiers": ["A111-11111", "B111-11111"],
+                "travel_identifiers": ["A111-11111", "B111-11111", "D111-11111"],
             },
             {
                 "_id": ObjectId("61f422e0ddc2559e0c300e95"),
-                "travel_identifiers": ["C111-11111"],
+                "travel_identifiers": ["C111-11111", "D111-11111"],
             },
         ]
         assert task.pre_process_input_data(truncated_customer_details_output) == {
             "passenger_information.passenger_ids": [
                 "A111-11111",
                 "B111-11111",
+                "D111-11111",
                 "C111-11111",
             ],
             "fidesops_grouped_inputs": [],
@@ -312,7 +312,7 @@ class TestPreProcessInputData:
         assert task.pre_process_input_data(identity_output, project_output) == {
             "email": ["email@gmail.com"],
             "project": ["abcde", "fghij", "klmno"],
-            "organization": ["12345", "54321", "54321"],
+            "organization": ["12345", "54321"],
             "fidesops_grouped_inputs": [],
         }
 

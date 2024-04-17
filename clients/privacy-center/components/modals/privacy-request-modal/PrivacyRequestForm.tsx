@@ -19,7 +19,7 @@ import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
-import { PrivacyRequestOption } from "~/types/config";
+import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
 import { defaultIdentityInput } from "~/constants";
 import { PhoneInput } from "~/components/phone-input";
 import { ModalViews } from "~/components/modals/types";
@@ -32,15 +32,17 @@ import {
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 
-type KnownKeys = {
-  name: string;
-  email: string;
-  phone: string;
-};
-
-type FormValues = KnownKeys & {
+type FormValues = {
   [key: string]: any;
 };
+
+/**
+ *
+ * @param value
+ * @returns Default to null if the value is undefined or an empty string
+ */
+const fallbackNull = (value: any) =>
+  value === undefined || value === "" ? null : value;
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -62,9 +64,17 @@ const usePrivacyRequestForm = ({
   const toast = useToast();
   const formik = useFormik<FormValues>({
     initialValues: {
-      name: "",
-      email: "",
-      phone: "",
+      ...Object.fromEntries(
+        Object.entries(identityInputs)
+          .filter(
+            ([key, value]) =>
+              key === "name" ||
+              key === "phone" ||
+              key === "email" ||
+              (typeof value === "object" && value.label)
+          )
+          .map(([key]) => [key, ""])
+      ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
@@ -77,32 +87,47 @@ const usePrivacyRequestForm = ({
         return;
       }
 
-      const { email, phone, name, ...customPrivacyRequestFieldValues } = values;
+      // extract identity input values
+      const identityInputValues = Object.fromEntries(
+        Object.entries(action.identity_inputs ?? {})
+          // we have to support name as an identity_input for legacy purposes
+          // but we ignore it since it's not unique enough to be treated as an identity
+          .filter(([key]) => key !== "name")
+          .map(([key, field]) => {
+            const value = fallbackNull(values[key]);
+            if (typeof field === "string") {
+              if (key === "phone") {
+                // eslint-disable-next-line no-param-reassign
+                key = "phone_number";
+              }
+              return [key, value];
+            }
+            return [key, { label: field.label, value }];
+          })
+      );
 
-      // populate the values from the form or from the field's default value
-      const transformedCustomPrivacyRequestFields = Object.fromEntries(
-        Object.entries(action.custom_privacy_request_fields ?? {}).map(
-          ([key, field]) => [
+      // extract custom privacy request field values
+      const customPrivacyRequestFieldValues = Object.fromEntries(
+        Object.entries(action.custom_privacy_request_fields ?? {})
+          .map(([key, field]) => [
             key,
             {
               label: field.label,
               value: field.hidden
                 ? field.default_value
-                : customPrivacyRequestFieldValues[key] || "",
+                : fallbackNull(values[key]),
             },
-          ]
-        )
+          ])
+          // @ts-ignore
+          .filter(([, { value }]) => value !== null)
       );
 
       const body = [
         {
-          identity: {
-            email,
-            phone_number: phone,
-            // enable this when name field is supported on the server
-            // name: values.name
-          },
-          custom_privacy_request_fields: transformedCustomPrivacyRequestFields,
+          identity: identityInputValues,
+          ...(Object.keys(customPrivacyRequestFieldValues).length > 0 && {
+            custom_privacy_request_fields: customPrivacyRequestFieldValues,
+          }),
           policy_key: action.policy_key,
         },
       ];
@@ -201,6 +226,23 @@ const usePrivacyRequestForm = ({
           }
           return true;
         }
+      ),
+      ...Object.fromEntries(
+        Object.entries(identityInputs)
+          .filter(
+            ([key, value]) =>
+              key !== "email" &&
+              key !== "phone" &&
+              key !== "name" &&
+              typeof value !== "string"
+          )
+          .map(([key, value]) => {
+            const customIdentity = value as CustomIdentity;
+            return [
+              key,
+              Yup.string().required(`${customIdentity.label} is required`),
+            ];
+          })
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -323,9 +365,6 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
-                  isDisabled={Boolean(
-                    typeof values.phone !== "undefined" && values.phone
-                  )}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -345,13 +384,39 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   }}
                   onBlur={handleBlur}
                   value={values.phone}
-                  isDisabled={Boolean(
-                    typeof values.email !== "undefined" && values.email
-                  )}
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
+            {Object.entries(identityInputs)
+              .filter(
+                ([key, item]) =>
+                  key !== "email" &&
+                  key !== "phone" &&
+                  key !== "name" &&
+                  typeof item !== "string"
+              )
+              .map(([key, item]) => (
+                <FormControl
+                  key={key}
+                  id={key}
+                  isInvalid={touched[key] && Boolean(errors[key])}
+                  isRequired
+                >
+                  <FormLabel fontSize="sm">
+                    {(item as CustomIdentity).label}
+                  </FormLabel>
+                  <Input
+                    id={key}
+                    name={key}
+                    focusBorderColor="primary.500"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values[key]}
+                  />
+                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                </FormControl>
+              ))}
             {Object.entries(customPrivacyRequestFields)
               .filter(([, field]) => !field.hidden)
               .map(([key, item]) => (
