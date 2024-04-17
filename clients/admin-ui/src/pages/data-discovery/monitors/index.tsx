@@ -1,29 +1,11 @@
 import { Box, Heading } from "@fidesui/react";
-import { useRouter } from "next/router";
 import React from "react";
 import FixedLayout from "~/features/common/FixedLayout";
-import { DATA_DISCOVERY_MONITOR_DETAIL } from "~/features/common/nav/v2/routes";
 import TestMonitorTable from "~/features/data-discovery-and-detection/TestMonitorTable";
+import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 
 const DataDiscoveryMonitorsPage = () => {
-  const router = useRouter();
-
-  // Data fetching
-  // const { isLoading, discoveryMonitorItems } = useDiscoveryMonitorItems({
-  //   urn,
-  // });
-
-  // Actions
-  // const { mute, accept, reject, monitor } = useDiscoveryMonitorActions();
-
-  const navigateToMonitorDetails = (monitorId: string) => {
-    router.push({
-      pathname: DATA_DISCOVERY_MONITOR_DETAIL,
-      query: {
-        monitorId: monitorId,
-      },
-    });
-  };
+  const { navigateToMonitorDetails } = useDiscoveryRoutes();
 
   return (
     <FixedLayout
@@ -38,17 +20,11 @@ const DataDiscoveryMonitorsPage = () => {
           Data Discovery
         </Heading>
       </Box>
-      {/* <DiscoveryMonitorBreadcrumbs urn={urn} /> */}
-      {/* <DiscoveryMonitorItemsTable
-        discoveryMonitorItems={discoveryMonitorItems}
-        onAccept={accept}
-        onMute={mute}
-        onReject={reject}
-        onMonitor={monitor}
-        onNavigate={navigateToUrn}
-      /> */}
+
       <TestMonitorTable
-        viewMonitorResults={(monitor) => navigateToMonitorDetails(monitor.id!)}
+        viewMonitorResults={(monitor) =>
+          navigateToMonitorDetails({ monitorId: monitor.id! })
+        }
       />
     </FixedLayout>
   );

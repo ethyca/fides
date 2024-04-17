@@ -16,6 +16,8 @@ export const SYSTEM_DETECTION = "/data-discovery/system-detection";
 export const DATA_DISCOVERY_MONITORS = "/data-discovery/monitors";
 export const DATA_DISCOVERY_MONITOR_DETAIL =
   "/data-discovery/monitors/[monitorId]";
+export const DATA_DISCOVERY_RESOURCE_DETAIL =
+  "/data-discovery/monitors/[monitorId]/[resourceUrn]";
 
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";

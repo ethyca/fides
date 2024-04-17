@@ -54,11 +54,23 @@ const EmptyTableNotice = () => (
 
 const columnHelper = createColumnHelper<StagedResource>();
 
-const TestMonitorResultTable = ({ configId }: { configId: string }) => {
-  const [currentResource, setCurrentResource] = useState<
-    StagedResource | undefined
-  >();
+interface TestMonitorResultTableProps {
+  monitorId: string;
+  resourceUrn?: string;
+  onSelectResource: ({
+    monitorId,
+    resourceUrn,
+  }: {
+    monitorId: string;
+    resourceUrn: string;
+  }) => void;
+}
 
+const TestMonitorResultTable = ({
+  monitorId,
+  resourceUrn,
+  onSelectResource,
+}: TestMonitorResultTableProps) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -78,8 +90,8 @@ const TestMonitorResultTable = ({ configId }: { configId: string }) => {
     isLoading,
     data: monitors,
   } = useGetMonitorResultsQuery({
-    monitor_config_id: configId,
-    staged_resource_urn: currentResource?.urn,
+    monitor_config_id: monitorId,
+    staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
   });
@@ -136,7 +148,9 @@ const TestMonitorResultTable = ({ configId }: { configId: string }) => {
     <>
       <FidesTableV2
         tableInstance={tableInstance}
-        onRowClick={(row) => setCurrentResource(row)}
+        onRowClick={(resource) =>
+          onSelectResource({ monitorId, resourceUrn: resource.urn })
+        }
         emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
