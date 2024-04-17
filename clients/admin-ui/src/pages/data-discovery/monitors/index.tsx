@@ -1,6 +1,6 @@
-import { Box, Heading } from "@fidesui/react";
 import React from "react";
 import FixedLayout from "~/features/common/FixedLayout";
+import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import TestMonitorTable from "~/features/data-discovery-and-detection/TestMonitorTable";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 
@@ -15,12 +15,7 @@ const DataDiscoveryMonitorsPage = () => {
         paddingRight: "48px",
       }}
     >
-      <Box display="flex" justifyContent="space-between">
-        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          Data Discovery
-        </Heading>
-      </Box>
-
+      <DiscoveryMonitorBreadcrumbs />
       <TestMonitorTable
         viewMonitorResults={(monitor) =>
           navigateToMonitorDetails({ monitorId: monitor.id! })
