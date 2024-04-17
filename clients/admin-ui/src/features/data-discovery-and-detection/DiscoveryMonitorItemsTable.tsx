@@ -15,7 +15,5 @@ const DiscoveryMonitorItemsTable: React.FC<DiscoveryMonitorItemsTableProps> = ({
   onMonitor,
   onMute,
   onReject,
-}) => {
-  return <span>Table</span>;
-};
+}) => <span>Table</span>;
 export default DiscoveryMonitorItemsTable;

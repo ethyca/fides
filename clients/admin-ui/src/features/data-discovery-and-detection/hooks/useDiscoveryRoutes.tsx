@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+
 import {
   DATA_DISCOVERY_MONITOR_DETAIL,
   DATA_DISCOVERY_RESOURCE_DETAIL,
@@ -13,7 +14,7 @@ const useDiscoveryRoutes = () => {
     router.push({
       pathname: DATA_DISCOVERY_MONITOR_DETAIL,
       query: {
-        monitorId: monitorId,
+        monitorId,
       },
     });
   };

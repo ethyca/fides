@@ -1,7 +1,8 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@fidesui/react";
-import useDiscoveryRoutes from "./hooks/useDiscoveryRoutes";
-import { DATA_DISCOVERY_MONITORS } from "../common/nav/v2/routes";
 import Link from "next/link";
+
+import { DATA_DISCOVERY_MONITORS } from "../common/nav/v2/routes";
+import useDiscoveryRoutes from "./hooks/useDiscoveryRoutes";
 
 interface DiscoveryMonitorBreadcrumbsProps {
   monitorId?: string;
