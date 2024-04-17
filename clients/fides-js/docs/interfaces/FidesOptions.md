@@ -46,6 +46,7 @@ order of precedence:
 - [fides\_locale](FidesOptions.md#fides_locale)
 - [fides\_string](FidesOptions.md#fides_string)
 - [fides\_tcf\_gdpr\_applies](FidesOptions.md#fides_tcf_gdpr_applies)
+- [show\_new\_experience](FidesOptions.md#show_new_experience)
 
 ## Properties
 
@@ -149,3 +150,15 @@ overriden at the page-level as needed. Only applicable to a TCF experience.
 For more details, see the [TCF CMP API technical specification](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean)  * 
 
 Defaults to `true`.
+
+___
+
+### show\_new\_experience
+
+• **show\_new\_experience**: `boolean`
+
+When `true`, shows fides.js overlay UI on refresh. This deletes the fides_consent cookie as if no preferences have been saved. 
+
+Defaults to `false`.
+
+___

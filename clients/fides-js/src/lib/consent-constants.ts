@@ -66,6 +66,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     overrideKey: "fides_primary_color",
     validationRegex: /(.*)/,
   },
+  {
+    overrideName: "showNewExperience",
+    overrideType: "string",
+    overrideKey: "show_new_experience",
+    validationRegex: /(.*)/,
+  },
 ];
 
 /**
