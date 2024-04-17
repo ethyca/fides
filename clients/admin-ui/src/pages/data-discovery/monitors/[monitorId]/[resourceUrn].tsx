@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Heading } from "@fidesui/react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -6,8 +5,9 @@ import FixedLayout from "~/features/common/FixedLayout";
 import TestMonitorResultTable from "~/features/data-discovery-and-detection/TestMonitorResultTable";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 
-const DataDiscoveryMonitorDetailPage: NextPage = () => {
-  const { navigateToResourceDetails, monitorId } = useDiscoveryRoutes();
+const MonitorUrnDetailPage: NextPage = () => {
+  const { monitorId, resourceUrn, navigateToResourceDetails } =
+    useDiscoveryRoutes();
 
   return (
     <FixedLayout
@@ -25,10 +25,10 @@ const DataDiscoveryMonitorDetailPage: NextPage = () => {
 
       <TestMonitorResultTable
         monitorId={monitorId}
+        resourceUrn={resourceUrn}
         onSelectResource={navigateToResourceDetails}
       />
     </FixedLayout>
   );
 };
-
-export default DataDiscoveryMonitorDetailPage;
+export default MonitorUrnDetailPage;
