@@ -101,6 +101,7 @@ describe("Consent settings", () => {
       });
       cy.intercept("/api/v1/config?api_set=true", { body: {} });
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
+      cy.getByTestId("section-GPP U.S.").should("exist");
       cy.getByTestId("section-MSPA").should("not.exist");
       cy.getByTestId("option-national").click();
       cy.getByTestId("section-MSPA").should("exist");
@@ -183,6 +184,7 @@ describe("Consent settings", () => {
         cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG });
         cy.intercept("/api/v1/config?api_set=true", { body: {} });
         cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
+        cy.getByTestId("section-GPP U.S.").should("exist");
         cy.getByTestId("section-GPP Europe").should("not.exist");
       });
     });

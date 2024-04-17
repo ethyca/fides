@@ -51,12 +51,17 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: FidesGlobal;
 
-const updateExperience = (
-  cookie: FidesCookie,
-  experience: PrivacyExperience,
-  debug?: boolean,
-  isExperienceClientSideFetched?: boolean
-): Partial<PrivacyExperience> => {
+const updateExperience = ({
+  cookie,
+  experience,
+  debug,
+  isExperienceClientSideFetched,
+}: {
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+  debug?: boolean;
+  isExperienceClientSideFetched: boolean;
+}): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent
@@ -125,18 +130,7 @@ const init = async (config: FidesConfig) => {
     savedConsent,
     experience,
     renderOverlay,
-    updateExperience: ({
-      cookie: oldCookie,
-      experience: effectiveExperience,
-      debug,
-      isExperienceClientSideFetched,
-    }) =>
-      updateExperience(
-        oldCookie,
-        effectiveExperience,
-        debug,
-        isExperienceClientSideFetched
-      ),
+    updateExperience,
     overrides,
   });
   Object.assign(_Fides, updatedFides);
