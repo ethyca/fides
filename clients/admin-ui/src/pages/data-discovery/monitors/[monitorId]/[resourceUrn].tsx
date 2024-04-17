@@ -19,7 +19,7 @@ const MonitorUrnDetailPage: NextPage = () => {
     >
       <Box display="flex" justifyContent="space-between">
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          Data Discovery Monitor: {monitorId}
+          Data Discovery Monitor: {monitorId} {">"} {resourceUrn}
         </Heading>
       </Box>
 
