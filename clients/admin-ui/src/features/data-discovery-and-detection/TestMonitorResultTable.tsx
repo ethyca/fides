@@ -17,7 +17,11 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import useStagedResourceColumns from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
+import useStagedResourceColumns, {
+  findResourceType,
+  MonitorResultsItem,
+  StagedResourceType,
+} from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
 import { StagedResource } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -92,7 +96,11 @@ const TestMonitorResultTable = ({
     size: pageSize,
   });
 
-  const { columns } = useStagedResourceColumns(resources?.items[0]);
+  const resourceType = findResourceType(
+    resources?.items[0] as MonitorResultsItem
+  );
+
+  const { columns } = useStagedResourceColumns(resourceType);
 
   const {
     items: data,
@@ -108,6 +116,12 @@ const TestMonitorResultTable = ({
     () => columns,
     [columns]
   );
+
+  const handleRowClick =
+    resourceType !== StagedResourceType.FIELD
+      ? (resource: StagedResource) =>
+          onSelectResource({ monitorId, resourceUrn: resource.urn })
+      : undefined;
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),
@@ -126,9 +140,7 @@ const TestMonitorResultTable = ({
     <>
       <FidesTableV2
         tableInstance={tableInstance}
-        onRowClick={(resource) =>
-          onSelectResource({ monitorId, resourceUrn: resource.urn })
-        }
+        onRowClick={handleRowClick}
         emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar

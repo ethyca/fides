@@ -7,13 +7,17 @@ export type MonitorResultsItem = StagedResource &
   Partial<Database & Schema & Table & Field>;
 
 export enum StagedResourceType {
-  DATABASE,
-  SCHEMA,
-  TABLE,
-  FIELD,
+  DATABASE = "database",
+  SCHEMA = "schema",
+  TABLE = "table",
+  FIELD = "field",
+  NONE = "none",
 }
 
-const findResourceType = (item: MonitorResultsItem) => {
+export const findResourceType = (item: MonitorResultsItem | undefined) => {
+  if (!item) {
+    return StagedResourceType.NONE;
+  }
   if (item.schemas) {
     return StagedResourceType.DATABASE;
   }
@@ -26,7 +30,9 @@ const findResourceType = (item: MonitorResultsItem) => {
   return StagedResourceType.FIELD;
 };
 
-const useStagedResourceColumns = (item: MonitorResultsItem | undefined) => {
+const useStagedResourceColumns = (
+  resourceType: StagedResourceType | undefined
+) => {
   const columnHelper = createColumnHelper<MonitorResultsItem>();
 
   const defaultColumns: ColumnDef<MonitorResultsItem, any>[] = [
@@ -47,11 +53,9 @@ const useStagedResourceColumns = (item: MonitorResultsItem | undefined) => {
     }),
   ];
 
-  if (!item) {
+  if (!resourceType) {
     return { columns: defaultColumns };
   }
-
-  const resourceType = findResourceType(item);
 
   if (resourceType === StagedResourceType.DATABASE) {
     const columns = [
