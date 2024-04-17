@@ -129,7 +129,7 @@ export const getFidesConsentCookie = (
 export const getOrMakeFidesCookie = (
   defaults?: NoticeConsent,
   debug: boolean = false,
-  showNewExperience: boolean = false
+  fidesClearCookie: boolean = false
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
@@ -137,7 +137,7 @@ export const getOrMakeFidesCookie = (
     return defaultCookie;
   }
 
-  if (showNewExperience) {
+  if (fidesClearCookie) {
     document.cookie =
       "fides_consent=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT";
     return defaultCookie;

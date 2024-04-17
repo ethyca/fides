@@ -67,9 +67,9 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     validationRegex: /(.*)/,
   },
   {
-    overrideName: "showNewExperience",
+    overrideName: "fidesClearCookie",
     overrideType: "string",
-    overrideKey: "show_new_experience",
+    overrideKey: "fides_clear_cookie",
     validationRegex: /(.*)/,
   },
 ];

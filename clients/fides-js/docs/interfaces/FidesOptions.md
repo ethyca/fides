@@ -46,7 +46,7 @@ order of precedence:
 - [fides\_locale](FidesOptions.md#fides_locale)
 - [fides\_string](FidesOptions.md#fides_string)
 - [fides\_tcf\_gdpr\_applies](FidesOptions.md#fides_tcf_gdpr_applies)
-- [show\_new\_experience](FidesOptions.md#show_new_experience)
+- [show\_new\_experience](FidesOptions.md#fides_clear_cookie)
 
 ## Properties
 

@@ -134,5 +134,5 @@ export interface FidesOptions {
    * Defaults to `false`.
   */
 
-  show_new_experience: boolean;
+  fides_clear_cookie: boolean;
 };

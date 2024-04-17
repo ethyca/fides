@@ -119,7 +119,7 @@ export interface FidesInitOptions {
   fidesPrimaryColor: string | null;
 
   // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
-  showNewExperience: boolean;
+  fidesClearCookie: boolean;
 }
 
 /**
@@ -666,7 +666,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesTcfGdprApplies"
   | "fidesLocale"
   | "fidesPrimaryColor"
-  | "showNewExperience"
+  | "fidesClearCookie"
 >;
 
 export type FidesExperienceTranslationOverrides = {

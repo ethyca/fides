@@ -246,7 +246,7 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   return getOrMakeFidesCookie(
     consentDefaults,
     options.debug,
-    options.showNewExperience
+    options.fidesClearCookie
   );
 };
 
