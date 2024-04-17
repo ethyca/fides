@@ -92,7 +92,7 @@ const TestMonitorResultTable = ({
     size: pageSize,
   });
 
-  const { columns } = useStagedResourceColumns(resources?.items);
+  const { columns } = useStagedResourceColumns(resources?.items[0]);
 
   const {
     items: data,
