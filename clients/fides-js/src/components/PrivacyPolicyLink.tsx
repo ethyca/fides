@@ -6,7 +6,7 @@ const PrivacyPolicyLink = ({ i18n }: { i18n: I18n }) => {
   // both the label & URL before attempting to render
   if (
     !messageExists(i18n, "exp.privacy_policy_link_label") ||
-    !messageExists(i18n, "exp.privacy_policy_link_label")
+    !messageExists(i18n, "exp.privacy_policy_url")
   ) {
     return null;
   }
