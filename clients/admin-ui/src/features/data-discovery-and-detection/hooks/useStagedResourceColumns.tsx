@@ -6,7 +6,27 @@ import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
 export type MonitorResultsItem = StagedResource &
   Partial<Database & Schema & Table & Field>;
 
-const useStagedResourceColumns = (items: MonitorResultsItem[] | undefined) => {
+export enum StagedResourceType {
+  DATABASE,
+  SCHEMA,
+  TABLE,
+  FIELD,
+}
+
+const findResourceType = (item: MonitorResultsItem) => {
+  if (item.schemas) {
+    return StagedResourceType.DATABASE;
+  }
+  if (item.tables) {
+    return StagedResourceType.SCHEMA;
+  }
+  if (item.fields) {
+    return StagedResourceType.TABLE;
+  }
+  return StagedResourceType.FIELD;
+};
+
+const useStagedResourceColumns = (item: MonitorResultsItem | undefined) => {
   const columnHelper = createColumnHelper<MonitorResultsItem>();
 
   const defaultColumns: ColumnDef<MonitorResultsItem, any>[] = [
@@ -27,11 +47,13 @@ const useStagedResourceColumns = (items: MonitorResultsItem[] | undefined) => {
     }),
   ];
 
-  if (!items?.length) {
+  if (!item) {
     return { columns: defaultColumns };
   }
 
-  if (items[0].schemas) {
+  const resourceType = findResourceType(item);
+
+  if (resourceType === StagedResourceType.DATABASE) {
     const columns = [
       ...defaultColumns,
       columnHelper.accessor((row) => row.schemas, {
@@ -42,11 +64,10 @@ const useStagedResourceColumns = (items: MonitorResultsItem[] | undefined) => {
         ),
       }),
     ];
-
     return { columns };
   }
 
-  if (items[0].tables) {
+  if (resourceType === StagedResourceType.SCHEMA) {
     const columns = [
       ...defaultColumns,
       columnHelper.accessor((row) => row.tables, {
@@ -58,7 +79,7 @@ const useStagedResourceColumns = (items: MonitorResultsItem[] | undefined) => {
     return { columns };
   }
 
-  if (items[0].fields) {
+  if (resourceType === StagedResourceType.TABLE) {
     const columns = [
       ...defaultColumns,
       columnHelper.accessor((row) => row.fields, {
@@ -72,11 +93,10 @@ const useStagedResourceColumns = (items: MonitorResultsItem[] | undefined) => {
         header: (props) => <DefaultHeaderCell value="# of rows" {...props} />,
       }),
     ];
-
     return { columns };
   }
 
-  if (items[0].data_type) {
+  if (resourceType === StagedResourceType.FIELD) {
     const columns = [
       ...defaultColumns,
       columnHelper.accessor((row) => row.data_type, {
@@ -85,7 +105,6 @@ const useStagedResourceColumns = (items: MonitorResultsItem[] | undefined) => {
         header: (props) => <DefaultHeaderCell value="Data type" {...props} />,
       }),
     ];
-
     return { columns };
   }
 
