@@ -1,4 +1,5 @@
 import React from "react";
+
 import FixedLayout from "~/features/common/FixedLayout";
 
 const SystemDetectionPage = () => (
