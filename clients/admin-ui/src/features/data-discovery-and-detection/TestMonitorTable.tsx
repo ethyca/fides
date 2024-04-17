@@ -1,4 +1,6 @@
-import { VStack, Text } from "@fidesui/react";
+/* eslint-disable react/no-unstable-nested-components */
+
+import { Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   createColumnHelper,
