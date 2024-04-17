@@ -1,23 +1,23 @@
+/* eslint-disable react/no-unstable-nested-components */
+
 import { Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
-  createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import {
-  DefaultCell,
-  DefaultHeaderCell,
   FidesTableV2,
   PaginationBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import useStagedResourceColumns from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
 import { StagedResource } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -49,10 +49,6 @@ const EmptyTableNotice = () => (
     </VStack>
   </VStack>
 );
-
-// const columnHelper = createColumnHelper<
-
-const columnHelper = createColumnHelper<StagedResource>();
 
 interface TestMonitorResultTableProps {
   monitorId: string;
@@ -88,7 +84,7 @@ const TestMonitorResultTable = ({
   const {
     isFetching,
     isLoading,
-    data: monitors,
+    data: resources,
   } = useGetMonitorResultsQuery({
     monitor_config_id: monitorId,
     staged_resource_urn: resourceUrn,
@@ -96,39 +92,21 @@ const TestMonitorResultTable = ({
     size: pageSize,
   });
 
-  console.log(monitors);
+  const { columns } = useStagedResourceColumns(resources?.items[0]);
 
   const {
     items: data,
     total: totalRows,
     pages: totalPages,
-  } = useMemo(() => monitors ?? EMPTY_RESPONSE, [monitors]);
+  } = useMemo(() => resources ?? EMPTY_RESPONSE, [resources]);
 
   useEffect(() => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
   const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
-    () => [
-      columnHelper.accessor((row) => row.name, {
-        id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Name" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.description, {
-        id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.modified, {
-        id: "modified",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Last modified" {...props} />
-        ),
-      }),
-    ],
-    []
+    () => columns,
+    [columns]
   );
 
   const tableInstance = useReactTable<StagedResource>({

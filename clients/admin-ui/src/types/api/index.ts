@@ -338,6 +338,7 @@ export type { SnowflakeDocsSchema } from "./models/SnowflakeDocsSchema";
 export type { SovrnDocsSchema } from "./models/SovrnDocsSchema";
 export { SpecialCategoryLegalBasisEnum } from "./models/SpecialCategoryLegalBasisEnum";
 export type { StagedResource } from "./models/StagedResource";
+export type { StagedResourceUpdateRequest } from "./models/StagedResourceUpdateRequest";
 export { StatusEnum } from "./models/StatusEnum";
 export type { StorageApplicationConfig } from "./models/StorageApplicationConfig";
 export { StorageConfigStatus } from "./models/StorageConfigStatus";
