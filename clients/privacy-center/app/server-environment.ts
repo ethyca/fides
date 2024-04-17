@@ -59,6 +59,7 @@ export interface PrivacyCenterSettings {
   ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
+  FIDES_CLEAR_COOKIE: boolean // (optional) deletes fides_consent cookie on reload 
 }
 
 /**
@@ -90,6 +91,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "ALLOW_HTML_DESCRIPTION"
   | "BASE_64_COOKIE"
   | "FIDES_PRIMARY_COLOR"
+  | "FIDES_CLEAR_COOKIE"
 >;
 
 export type Styles = string;

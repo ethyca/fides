@@ -157,8 +157,6 @@ ___
 
 • **fides\_clear\_cookie**: `boolean`
 
-When `true`, shows fides.js overlay UI on refresh. This deletes the fides_consent cookie as if no preferences have been saved. 
+When `true`, shows fides.js overlay UI on load. This deletes the fides_consent cookie as if no preferences have been saved on reload.
 
 Defaults to `false`.
-
-___
