@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectorNotFoundException
@@ -115,11 +116,13 @@ class TaskResources:
         # TODO Remove when we stop support for DSR 2.0
         self.cache = get_cache()
 
-    def get_connector(self, key: FidesKey) -> Any:
-        """Create or return the client corresponding to the given ConnectionConfig key"""
-        if key in self.connection_configs:
-            return self.connections.get_connector(self.connection_configs[key])
-        raise ConnectorNotFoundException(f"No available connector for {key}")
+    def __enter__(self) -> "TaskResources":
+        """Support 'with' usage for closing resources"""
+        return self
+
+    def __exit__(self, _type: Any, value: Any, traceback: Any) -> None:
+        """Support 'with' usage for closing resources"""
+        self.close()
 
     # TODO Remove when we stop support for DSR 2.0
     def cache_results_with_placeholders(self, key: str, value: Any) -> None:
@@ -166,3 +169,14 @@ class TaskResources:
         # extract request id to return a map of address:value
         number_of_leading_strings_to_exclude = 2
         return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
+
+    def get_connector(self, key: FidesKey) -> Any:
+        """Create or return the client corresponding to the given ConnectionConfig key"""
+        if key in self.connection_configs:
+            return self.connections.get_connector(self.connection_configs[key])
+        raise ConnectorNotFoundException(f"No available connector for {key}")
+
+    def close(self) -> None:
+        """Close any held resources"""
+        logger.debug("Closing all task resources for {}", self.request.id)
+        self.connections.close()

@@ -109,54 +109,54 @@ def run_access_request_deprecated(
 ) -> Dict[str, List[Row]]:
     """Deprecated: Run the access request sequentially in-memory using Dask"""
     traversal: Traversal = Traversal(graph, identity)
-    resources = TaskResources(
+    with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
-    )
+    ) as resources:
 
-    def collect_tasks_fn(
-        tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-    ) -> None:
-        """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-        if not tn.is_root_node():
-            # Mock a RequestTask object in memory
-            resources.privacy_request_task = tn.to_mock_request_task()
-            data[tn.address] = GraphTask(resources)
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                # Mock a RequestTask object in memory
+                resources.privacy_request_task = tn.to_mock_request_task()
+                data[tn.address] = GraphTask(resources)
 
-    def termination_fn(
-        *dependent_values: List[Row],
-    ) -> Dict[str, Optional[List[Row]]]:
-        """A termination function that just returns its inputs mapped to their source addresses.
-        This needs to wait for all dependent keys because this is how dask is informed to wait for
-        all terminating addresses before calling this."""
+        def termination_fn(
+            *dependent_values: List[Row],
+        ) -> Dict[str, Optional[List[Row]]]:
+            """A termination function that just returns its inputs mapped to their source addresses.
+            This needs to wait for all dependent keys because this is how dask is informed to wait for
+            all terminating addresses before calling this."""
 
-        return resources.get_all_cached_objects()
+            return resources.get_all_cached_objects()
 
-    env: Dict[CollectionAddress, GraphTask] = {}
-    end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
+        env: Dict[CollectionAddress, GraphTask] = {}
+        end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
 
-    dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
-        k: (t.access_request, *t.execution_node.input_keys) for k, t in env.items()
-    }
-    dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
-    dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-    update_mapping_from_cache(dsk, resources, start_function)
+        dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
+            k: (t.access_request, *t.execution_node.input_keys) for k, t in env.items()
+        }
+        dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
+        update_mapping_from_cache(dsk, resources, start_function)
 
-    # cache a map of collections -> data uses for the output package of access requests
-    # this is cached here before request execution, since this is the state of the
-    # graph used for request execution. the graph could change _during_ request execution,
-    # but we don't want those changes in our data use map.
-    privacy_request.cache_data_use_map(
-        format_data_use_map_for_caching(
-            {
-                coll_address: gt.execution_node.connection_key
-                for (coll_address, gt) in env.items()
-            },
-            connection_configs,
+        # cache a map of collections -> data uses for the output package of access requests
+        # this is cached here before request execution, since this is the state of the
+        # graph used for request execution. the graph could change _during_ request execution,
+        # but we don't want those changes in our data use map.
+        privacy_request.cache_data_use_map(
+            format_data_use_map_for_caching(
+                {
+                    coll_address: gt.execution_node.connection_key
+                    for (coll_address, gt) in env.items()
+                },
+                connection_configs,
+            )
         )
-    )
 
-    v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-    return v.compute()
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        return v.compute()
 
 
 def update_erasure_mapping_from_cache(
@@ -186,60 +186,60 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
 ) -> Dict[str, int]:
     """Deprecated: Run an erasure request sequentially in-memory using Dask"""
     traversal: Traversal = Traversal(graph, identity)
-    resources = TaskResources(
+    with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
-    )
+    ) as resources:
 
-    def collect_tasks_fn(
-        tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-    ) -> None:
-        """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-        if not tn.is_root_node():
-            # Mock a RequestTask object in memory
-            resources.privacy_request_task = tn.to_mock_request_task()
-            data[tn.address] = GraphTask(resources)
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                # Mock a RequestTask object in memory
+                resources.privacy_request_task = tn.to_mock_request_task()
+                data[tn.address] = GraphTask(resources)
 
-    env: Dict[CollectionAddress, GraphTask] = {}
-    # Modifies env in place
-    traversal.traverse(env, collect_tasks_fn)
-    erasure_end_nodes = list(graph.nodes.keys())
+        env: Dict[CollectionAddress, GraphTask] = {}
+        # Modifies env in place
+        traversal.traverse(env, collect_tasks_fn)
+        erasure_end_nodes = list(graph.nodes.keys())
 
-    def termination_fn(*dependent_values: int) -> Dict[str, int]:
-        """
-        The erasure order can be affected in a way that not every node is directly linked
-        to the termination node. This means that we can't just aggregate the inputs directly,
-        we must read the erasure results from the cache.
-        """
-        return resources.get_all_cached_erasures()
+        def termination_fn(*dependent_values: int) -> Dict[str, int]:
+            """
+            The erasure order can be affected in a way that not every node is directly linked
+            to the termination node. This means that we can't just aggregate the inputs directly,
+            we must read the erasure results from the cache.
+            """
+            return resources.get_all_cached_erasures()
 
-    access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
+        access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
 
-    dsk: Dict[CollectionAddress, Any] = {
-        k: (
-            t.erasure_request,
-            access_request_data.get(
-                str(k), []
-            ),  # Pass in the results of the access request for this collection
-            *_evaluate_erasure_dependencies(t, erasure_end_nodes),
-        )
-        for k, t in env.items()
-    }
+        dsk: Dict[CollectionAddress, Any] = {
+            k: (
+                t.erasure_request,
+                access_request_data.get(
+                    str(k), []
+                ),  # Pass in the results of the access request for this collection
+                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
+            )
+            for k, t in env.items()
+        }
 
-    # root node returns 0 to be consistent with the output of the other erasure tasks
-    dsk[ROOT_COLLECTION_ADDRESS] = 0
-    # terminator function reads and returns the cached erasure results for the entire erasure traversal
-    dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
-    update_erasure_mapping_from_cache(dsk, resources)
+        # root node returns 0 to be consistent with the output of the other erasure tasks
+        dsk[ROOT_COLLECTION_ADDRESS] = 0
+        # terminator function reads and returns the cached erasure results for the entire erasure traversal
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
+        update_erasure_mapping_from_cache(dsk, resources)
 
-    # using an existing function from dask.core to detect cycles in the generated graph
-    collection_cycle = getcycle(dsk, None)
-    if collection_cycle:
-        raise TraversalError(
-            f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
-        )
+        # using an existing function from dask.core to detect cycles in the generated graph
+        collection_cycle = getcycle(dsk, None)
+        if collection_cycle:
+            raise TraversalError(
+                f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
+            )
 
-    v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-    return v.compute()
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        return v.compute()
 
 
 def _evaluate_erasure_dependencies(
@@ -277,38 +277,37 @@ def run_consent_request_deprecated(  # pylint: disable = too-many-arguments
     The DatasetGraph passed in is expected to have one Node per Dataset.  That Node is expected to carry out requests
     for the Dataset as a whole.
     """
-    resources = TaskResources(
+    with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
-    )
+    ) as resources:
+        graph_keys: List[CollectionAddress] = list(graph.nodes.keys())
+        dsk: Dict[CollectionAddress, Any] = {}
 
-    graph_keys: List[CollectionAddress] = list(graph.nodes.keys())
-    dsk: Dict[CollectionAddress, Any] = {}
+        for col_address, node in graph.nodes.items():
+            traversal_node = TraversalNode(node)
+            # Mock a RequestTask object in memory
+            resources.privacy_request_task = traversal_node.to_mock_request_task()
+            task = GraphTask(resources)
+            dsk[col_address] = (task.consent_request, identity)
 
-    for col_address, node in graph.nodes.items():
-        traversal_node = TraversalNode(node)
-        # Mock a RequestTask object in memory
-        resources.privacy_request_task = traversal_node.to_mock_request_task()
-        task = GraphTask(resources)
-        dsk[col_address] = (task.consent_request, identity)
+        def termination_fn(*dependent_values: bool) -> Tuple[bool, ...]:
+            """The dependent_values here is an bool output from each task feeding in, where
+            each task reports the output of 'task.consent_request(identity_data)', which is whether the
+            consent request succeeded
 
-    def termination_fn(*dependent_values: bool) -> Tuple[bool, ...]:
-        """The dependent_values here is an bool output from each task feeding in, where
-        each task reports the output of 'task.consent_request(identity_data)', which is whether the
-        consent request succeeded
+            The termination function just returns this tuple of booleans."""
+            return dependent_values
 
-        The termination function just returns this tuple of booleans."""
-        return dependent_values
+        # terminator function waits for all keys
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph_keys)
 
-    # terminator function waits for all keys
-    dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph_keys)
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
-    v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        update_successes: Tuple[bool, ...] = v.compute()
+        # we combine the output of the termination function with the input keys to provide
+        # a map of {collection_name: whether consent request succeeded}:
+        consent_update_map: Dict[str, bool] = dict(
+            zip([coll.value for coll in graph_keys], update_successes)
+        )
 
-    update_successes: Tuple[bool, ...] = v.compute()
-    # we combine the output of the termination function with the input keys to provide
-    # a map of {collection_name: whether consent request succeeded}:
-    consent_update_map: Dict[str, bool] = dict(
-        zip([coll.value for coll in graph_keys], update_successes)
-    )
-
-    return consent_update_map
+        return consent_update_map

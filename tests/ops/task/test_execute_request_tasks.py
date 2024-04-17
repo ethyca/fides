@@ -25,6 +25,7 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.api.task.execute_request_tasks import (
+    _collect_task_resources,
     can_run_task_body,
     create_graph_task,
     run_prerequisite_task_checks,
@@ -102,8 +103,9 @@ class TestCreateGraphTask:
         request_task = privacy_request.access_tasks.filter(
             RequestTask.collection_address == "postgres_example_test_dataset:address"
         ).first()
+        resources = _collect_task_resources(db, request_task)
 
-        graph_task = create_graph_task(db, request_task)
+        graph_task = create_graph_task(db, request_task, resources)
 
         assert graph_task.request_task == request_task
         assert graph_task.key == CollectionAddress.from_string(
@@ -133,8 +135,10 @@ class TestCreateGraphTask:
         request_task.collection["name"] = None
         request_task.save(db)
 
+        resources = _collect_task_resources(db, request_task)
+
         with pytest.raises(ResumeTaskException):
-            create_graph_task(db, request_task)
+            create_graph_task(db, request_task, resources)
 
         db.refresh(request_task)
 
