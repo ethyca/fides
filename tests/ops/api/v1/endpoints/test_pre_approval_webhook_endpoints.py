@@ -76,15 +76,15 @@ class TestGetPreApprovalWebhooks:
         assert body == {
             "items": [
                 {
-                    "key": "pre_approval_webhook",
-                    "name": pre_approval_webhooks[0].name,
+                    "key": "pre_approval_webhook_2",
+                    "name": pre_approval_webhooks[1].name,
                     "connection_config": embedded_http_connection_config(
                         https_connection_config
                     ),
                 },
                 {
-                    "key": "pre_approval_webhook_two",
-                    "name": pre_approval_webhooks[1].name,
+                    "key": "pre_approval_webhook",
+                    "name": pre_approval_webhooks[0].name,
                     "connection_config": embedded_http_connection_config(
                         https_connection_config
                     ),
@@ -285,7 +285,7 @@ class TestPutPreApprovalWebhooks:
                 ),
             },
             {
-                "key": "my_new_pre-approval_webhook",
+                "key": "my_new_pre_approval_webhook",
                 "name": "My New Pre-Approval Webhook",
                 "connection_config": embedded_http_connection_config(
                     https_connection_config
@@ -297,7 +297,7 @@ class TestPutPreApprovalWebhooks:
             db=db,
             conditions=(
                 PreApprovalWebhook.key.in_(
-                    ["my_really_nice_webhook", "my_new_pre-approval_webhook"]
+                    ["my_really_nice_webhook", "my_new_pre_approval_webhook"]
                 )
             ),
         )
@@ -342,7 +342,7 @@ class TestPatchPreApprovalWebhook:
     @pytest.fixture(scope="function")
     def url(self, pre_approval_webhooks) -> str:
         return V1_URL_PREFIX + WEBHOOK_PRE_APPROVAL_DETAIL.format(
-            pre_webhook_key=pre_approval_webhooks[0].key
+            webhook_key=pre_approval_webhooks[0].key
         )
 
     def test_patch_pre_approval_webhook_unauthenticated(self, url, api_client):
@@ -363,7 +363,7 @@ class TestPatchPreApprovalWebhook:
         self, api_client, generate_auth_header
     ):
         invalid_url = V1_URL_PREFIX + WEBHOOK_PRE_APPROVAL_DETAIL.format(
-            pre_webhook_key="invalid_webhook_key"
+            webhook_key="invalid_webhook_key"
         )
 
         auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
@@ -403,7 +403,7 @@ class TestDeletePreApprovalWebhook:
     @pytest.fixture(scope="function")
     def url(self, pre_approval_webhooks) -> str:
         return V1_URL_PREFIX + WEBHOOK_PRE_APPROVAL_DETAIL.format(
-            pre_webhook_key=pre_approval_webhooks[0].key
+            webhook_key=pre_approval_webhooks[0].key
         )
 
     def test_delete_pre_approval_webhook(self, url, api_client):
