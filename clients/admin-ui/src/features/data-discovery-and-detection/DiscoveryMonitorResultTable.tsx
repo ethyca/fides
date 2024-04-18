@@ -8,7 +8,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   FidesTableV2,
@@ -17,7 +17,14 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import useStagedResourceColumns from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
+import DiscoveryMonitorTabFilter, {
+  FirstLetterFilterValue,
+} from "~/features/data-discovery-and-detection/DiscoveryMonitorTabFilter";
+import useStagedResourceColumns, {
+  findResourceType,
+  MonitorResultsItem,
+  StagedResourceType,
+} from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
 import { StagedResource } from "~/types/api";
 import { DiscoveryMonitorItem } from "./types/DiscoveryMonitorItem";
 import { StagedResourceType } from "./types/StagedResourceType";
@@ -95,6 +102,29 @@ const DiscoveryMonitorResultTable = ({
     size: pageSize,
   });
 
+  const [filterValue, setFilterValue] = useState<FirstLetterFilterValue>(
+    FirstLetterFilterValue.ALL
+  );
+
+  const filterByFirstLetter = (
+    item: MonitorResultsItem,
+    filter: FirstLetterFilterValue
+  ) => {
+    if (filter === FirstLetterFilterValue.NONE) {
+      return false;
+    }
+    if (filter === FirstLetterFilterValue.ALL) {
+      return true;
+    }
+    const startsWithVowel = ["a", "e", "i", "o", "u"].some((vowel) =>
+      item.name.toLocaleLowerCase().startsWith(vowel)
+    );
+    if (startsWithVowel) {
+      return filter === FirstLetterFilterValue.VOWEL;
+    }
+    return filter === FirstLetterFilterValue.CONSONANT;
+  };
+
   const resourceType = findResourceType(
     resources?.items[0] as DiscoveryMonitorItem
   );
@@ -116,6 +146,11 @@ const DiscoveryMonitorResultTable = ({
     [columns]
   );
 
+  const filteredData = useMemo(
+    () => data.filter((item) => filterByFirstLetter(item, filterValue)),
+    [data, filterValue]
+  );
+
   const handleRowClick =
     resourceType !== StagedResourceType.FIELD
       ? (resource: StagedResource) =>
@@ -128,7 +163,7 @@ const DiscoveryMonitorResultTable = ({
     getExpandedRowModel: getExpandedRowModel(),
     columns: resourceColumns,
     manualPagination: true,
-    data,
+    data: filteredData,
   });
 
   if (isLoading) {
@@ -137,6 +172,7 @@ const DiscoveryMonitorResultTable = ({
 
   return (
     <>
+      <DiscoveryMonitorTabFilter onFilterChange={setFilterValue} />
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClick}
