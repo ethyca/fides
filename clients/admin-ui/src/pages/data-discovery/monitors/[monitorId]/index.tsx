@@ -3,8 +3,8 @@ import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
+import DiscoveryMonitorResultTable from "~/features/data-discovery-and-detection/DiscoveryMonitorResultTable";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
-import TestMonitorResultTable from "~/features/data-discovery-and-detection/TestMonitorResultTable";
 
 const DataDiscoveryMonitorDetailPage: NextPage = () => {
   const { navigateToResourceDetails, monitorId } = useDiscoveryRoutes();
@@ -18,7 +18,7 @@ const DataDiscoveryMonitorDetailPage: NextPage = () => {
       }}
     >
       <DiscoveryMonitorBreadcrumbs monitorId={monitorId} />
-      <TestMonitorResultTable
+      <DiscoveryMonitorResultTable
         monitorId={monitorId}
         onSelectResource={navigateToResourceDetails}
       />
