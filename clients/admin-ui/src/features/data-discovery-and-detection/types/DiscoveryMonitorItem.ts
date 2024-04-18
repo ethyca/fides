@@ -1,8 +1,4 @@
-export interface DiscoveryMonitorItem {
-  urn: string;
-  name: string;
-  description?: string;
-  modified?: string;
-  parent?: DiscoveryMonitorItem;
-  children?: DiscoveryMonitorItem[];
-}
+import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
+
+export type DiscoveryMonitorItem = StagedResource &
+  Partial<Database & Schema & Table & Field>;
