@@ -122,7 +122,7 @@ const SettingsBar: React.FC = () => {
           <Button
             aria-label="Open Filter Settings"
             variant="solid"
-            backgroundColor="#824EF2"
+            backgroundColor="complimentary.500"
             color="white"
             size="sm"
             marginRight={4}
