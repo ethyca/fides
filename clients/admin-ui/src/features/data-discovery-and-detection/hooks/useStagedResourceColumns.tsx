@@ -1,6 +1,7 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
+import DiscoveryMonitorItemActions from "~/features/data-discovery-and-detection/DiscoveryMonitorItemActions";
 import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
 
 export type MonitorResultsItem = StagedResource &
@@ -52,6 +53,16 @@ const useStagedResourceColumns = (
       id: "modified",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: (props) => <DefaultHeaderCell value="Last modified" {...props} />,
+    }),
+    columnHelper.accessor((row) => row, {
+      id: "Action",
+      cell: (props) => (
+        <DiscoveryMonitorItemActions
+          resource={props.getValue()}
+          resourceType={findResourceType(props.getValue())}
+        />
+      ),
+      header: (props) => <DefaultHeaderCell value="Action" {...props} />,
     }),
   ];
 

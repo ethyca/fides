@@ -10,16 +10,14 @@ export enum FirstLetterFilterValue {
   NONE,
 }
 
-const FilterTabLabel = ({ label, count }: { label: string; count: number }) => {
-  return (
-    <>
-      <Tag size="sm" colorScheme="complimentary" mr={2}>
-        <TagLabel>{count}</TagLabel>
-      </Tag>
-      <span>{label}</span>
-    </>
-  );
-};
+const FilterTabLabel = ({ label, count }: { label: string; count: number }) => (
+  <>
+    <Tag size="sm" colorScheme="complimentary" mr={2}>
+      <TagLabel>{count}</TagLabel>
+    </Tag>
+    <span>{label}</span>
+  </>
+);
 
 const DiscoveryMonitorTabFilter = ({
   onFilterChange,
