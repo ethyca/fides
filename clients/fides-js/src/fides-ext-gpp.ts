@@ -130,7 +130,7 @@ const getSupportedApis = () => {
   return supportedApis;
 };
 
-export const initializeGppCmpApi = () => {
+const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
@@ -235,5 +235,4 @@ export const initializeGppCmpApi = () => {
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };
-
 initializeGppCmpApi();
