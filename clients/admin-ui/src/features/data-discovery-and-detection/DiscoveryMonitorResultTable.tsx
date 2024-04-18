@@ -54,7 +54,7 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
-interface TestMonitorResultTableProps {
+interface MonitorResultTableProps {
   monitorId: string;
   resourceUrn?: string;
   onSelectResource: ({
@@ -66,11 +66,11 @@ interface TestMonitorResultTableProps {
   }) => void;
 }
 
-const TestMonitorResultTable = ({
+const DiscoveryMonitorResultTable = ({
   monitorId,
   resourceUrn,
   onSelectResource,
-}: TestMonitorResultTableProps) => {
+}: MonitorResultTableProps) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -158,4 +158,4 @@ const TestMonitorResultTable = ({
   );
 };
 
-export default TestMonitorResultTable;
+export default DiscoveryMonitorResultTable;

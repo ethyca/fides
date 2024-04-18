@@ -52,7 +52,7 @@ const EmptyTableNotice = () => (
 
 const columnHelper = createColumnHelper<DiscoveryMonitorConfig>();
 
-const TestMonitorTable = ({
+const DiscoveryMonitorListTable = ({
   viewMonitorResults,
 }: {
   viewMonitorResults: (monitor: DiscoveryMonitorConfig) => void;
@@ -153,4 +153,4 @@ const TestMonitorTable = ({
   );
 };
 
-export default TestMonitorTable;
+export default DiscoveryMonitorListTable;
