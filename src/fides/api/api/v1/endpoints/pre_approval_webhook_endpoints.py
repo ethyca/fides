@@ -114,7 +114,6 @@ def put_webhooks(
         connection_config = get_connection_config_or_error(
             db, schema.connection_config_key
         )
-
         try:
             webhook = PreApprovalWebhook.create_or_update(
                 db=db,
@@ -199,9 +198,13 @@ def _patch_webhook(
             detail=exc.args[0],
         )
 
-    # Policy Webhooks are not committed by default, so we commit at the end.
+    # Pre Execution Webhooks are not committed by default, so we commit at the end.
     db.commit()
-    return schemas.PreApprovalWebhookResponse(resource=loaded_webhook, new_order=[])
+    return schemas.PreApprovalWebhookResponse(
+        connection_config=loaded_webhook.connection_config,
+        key=loaded_webhook.key,
+        name=loaded_webhook.name,
+    )
 
 
 @router.patch(

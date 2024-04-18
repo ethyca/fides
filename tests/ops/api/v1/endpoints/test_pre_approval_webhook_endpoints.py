@@ -6,7 +6,6 @@ import pytest
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.common.api.scope_registry import (
-    POLICY_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
@@ -52,7 +51,7 @@ class TestGetPreApprovalWebhooks:
     def test_get_pre_approval_webhooks_wrong_scope(
         self, url, api_client, generate_auth_header
     ):
-        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        auth_header = generate_auth_header(scopes=[WEBHOOK_DELETE])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -76,15 +75,15 @@ class TestGetPreApprovalWebhooks:
         assert body == {
             "items": [
                 {
-                    "key": "pre_approval_webhook_2",
-                    "name": pre_approval_webhooks[1].name,
+                    "key": "pre_approval_webhook",
+                    "name": pre_approval_webhooks[0].name,
                     "connection_config": embedded_http_connection_config(
                         https_connection_config
                     ),
                 },
                 {
-                    "key": "pre_approval_webhook",
-                    "name": pre_approval_webhooks[0].name,
+                    "key": "pre_approval_webhook_2",
+                    "name": pre_approval_webhooks[1].name,
                     "connection_config": embedded_http_connection_config(
                         https_connection_config
                     ),
@@ -111,7 +110,7 @@ class TestGetPreApprovalWebhooksDetail:
     def test_get_pre_approval_webhook_detail_wrong_scope(
         self, url, api_client, generate_auth_header
     ):
-        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        auth_header = generate_auth_header(scopes=[WEBHOOK_DELETE])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -146,8 +145,8 @@ class TestPutPreApprovalWebhooks:
     def valid_webhook_request(self, https_connection_config) -> Dict:
         return {
             "connection_config_key": https_connection_config.key,
-            "name": "My really nice webhook",
-            "key": "my_really_nice_webhook",
+            "name": "My webhook",
+            "key": "my_webhook",
         }
 
     @pytest.fixture(scope="function")
@@ -173,7 +172,7 @@ class TestPutPreApprovalWebhooks:
     ):
         invalid_connection_config_body = {
             "connection_config_key": "unknown_connection_key",
-            "name": "my_pre_execution_webhook",
+            "name": "my_pre_approval_webhook",
         }
 
         auth_header = generate_auth_header(scopes=[WEBHOOK_CREATE_OR_UPDATE])
@@ -189,6 +188,7 @@ class TestPutPreApprovalWebhooks:
             body["detail"]
             == "No connection configuration found with key 'unknown_connection_key'."
         )
+        test = db.query(PreApprovalWebhook)
         assert db.query(PreApprovalWebhook).count() == 0  # All must succeed or fail
 
     def test_put_pre_approval_webhooks_duplicate_keys(
@@ -215,7 +215,7 @@ class TestPutPreApprovalWebhooks:
 
         name_only = {
             "connection_config_key": https_connection_config.key,
-            "name": "My really nice webhook",
+            "name": "My webhook",
         }
 
         resp = api_client.put(
@@ -278,8 +278,8 @@ class TestPutPreApprovalWebhooks:
         assert len(body) == 2
         assert body == [
             {
-                "key": "my_really_nice_webhook",
-                "name": "My really nice webhook",
+                "key": "my_webhook",
+                "name": "My webhook",
                 "connection_config": embedded_http_connection_config(
                     https_connection_config
                 ),
@@ -297,7 +297,7 @@ class TestPutPreApprovalWebhooks:
             db=db,
             conditions=(
                 PreApprovalWebhook.key.in_(
-                    ["my_really_nice_webhook", "my_new_pre_approval_webhook"]
+                    ["my_webhook", "my_new_pre_approval_webhook"]
                 )
             ),
         )
@@ -365,12 +365,9 @@ class TestPatchPreApprovalWebhook:
         invalid_url = V1_URL_PREFIX + WEBHOOK_PRE_APPROVAL_DETAIL.format(
             webhook_key="invalid_webhook_key"
         )
-
-        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
-        resp = api_client.patch(
-            invalid_url,
-            headers=auth_header,
-        )
+        request_body = {"name": "Renaming this webhook"}
+        auth_header = generate_auth_header(scopes=[WEBHOOK_CREATE_OR_UPDATE])
+        resp = api_client.patch(invalid_url, headers=auth_header, json=request_body)
         assert resp.status_code == 404
 
     def test_update_name_only(
@@ -434,8 +431,8 @@ class TestDeletePreApprovalWebhook:
             headers=auth_header,
         )
         assert resp.status_code == 200
-        all_webhooks = PreApprovalWebhook.query(db=db)
-        assert len(all_webhooks) == 1
+        all_webhooks = db.query(PreApprovalWebhook)
+        assert all_webhooks.count() == 1
         assert (
-            all_webhooks[0].key == pre_approval_webhooks[1]
+            all_webhooks[0].key == pre_approval_webhooks[1].key
         )  # should keep the other configured webhook

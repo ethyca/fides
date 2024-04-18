@@ -1,6 +1,6 @@
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey, String, Boolean
-from sqlalchemy.orm import relationship  # type: ignore
+from sqlalchemy.orm import relationship, Session  # type: ignore
 from fides.api.db.base_class import Base
 
 
@@ -13,6 +13,14 @@ class PreApprovalWebhook(Base):
     connection_config = relationship(
         "ConnectionConfig", back_populates="pre_approval_webhooks", uselist=False  # type: ignore
     )
+
+    @classmethod
+    def persist_obj(
+        cls, db: Session, resource: "PreApprovalWebhook"
+    ) -> "PreApprovalWebhook":
+        """Override to have PreApprovalWebhooks not be committed to the database automatically."""
+        db.add(resource)
+        return resource
 
 
 class PreApprovalWebhookReply(Base):
