@@ -40,7 +40,7 @@ def log_celery_setup(sender: str, instance: Worker, **kwargs: Any) -> None:
 
     logger.bind(
         celery_details=celery_details
-    ).info(f"Celery connection setup complete")
+    ).info("Celery connection setup complete")
 
 
 if __name__ == "__main__":  # pragma: no cover
