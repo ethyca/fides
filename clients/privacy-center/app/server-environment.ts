@@ -371,8 +371,8 @@ export const loadPrivacyCenterEnvironment =
       FIDES_PRIMARY_COLOR: process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
         : null,
-      FIDES_CLEAR_COOKIE: process.env.FIDES_CLEAR_COOKIE
-        ? process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR === "true"
+      FIDES_CLEAR_COOKIE: process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE
+        ? process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE === "true"
         : false,
     };
 
