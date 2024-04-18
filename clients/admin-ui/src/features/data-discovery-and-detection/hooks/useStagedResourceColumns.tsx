@@ -11,6 +11,8 @@ export enum StagedResourceType {
   SCHEMA = "schema",
   TABLE = "table",
   FIELD = "field",
+  // there should never be actual data that doesn't match one of the types, but
+  // having a fallback makes some TypeScript smoother
   NONE = "none",
 }
 
