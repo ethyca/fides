@@ -1,6 +1,6 @@
-from sqlalchemy import Column
-from sqlalchemy import ForeignKey, String, Boolean
-from sqlalchemy.orm import relationship, Session  # type: ignore
+from sqlalchemy import Boolean, Column, ForeignKey, String
+from sqlalchemy.orm import Session, relationship  # type: ignore
+
 from fides.api.db.base_class import Base
 
 

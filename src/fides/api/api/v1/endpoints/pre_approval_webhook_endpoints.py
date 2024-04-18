@@ -14,9 +14,7 @@ from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOU
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import get_key_from_data
-from fides.api.models.policy import (
-    PolicyPreWebhook,
-)
+from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import pre_approval_webhooks as schemas
