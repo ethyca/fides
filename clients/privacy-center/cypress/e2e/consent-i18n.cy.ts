@@ -1626,7 +1626,7 @@ describe("Consent i18n", () => {
         beforeAll();
         cy.visitWithLanguage("/", SPANISH_LOCALE);
         cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
-        cy.wait(100);
+        cy.wait("@getExperience");
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
           cy.get("input#email").type("test@example.com");
