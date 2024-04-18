@@ -188,7 +188,6 @@ class TestPutPreApprovalWebhooks:
             body["detail"]
             == "No connection configuration found with key 'unknown_connection_key'."
         )
-        test = db.query(PreApprovalWebhook)
         assert db.query(PreApprovalWebhook).count() == 0  # All must succeed or fail
 
     def test_put_pre_approval_webhooks_duplicate_keys(
