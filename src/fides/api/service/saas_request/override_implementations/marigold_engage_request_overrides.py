@@ -52,9 +52,9 @@ def marigold_engage_user_read(
             },
         }
         stringified_payload = json.dumps(payload, separators=(",", ":"))
-        import pdb
+        # import pdb
 
-        pdb.set_trace()
+        # pdb.set_trace()
         sig = payload_signature(secrets, stringified_payload)
 
         response = client.send(
