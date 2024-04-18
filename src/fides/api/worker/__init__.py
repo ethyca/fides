@@ -1,10 +1,10 @@
 import json
 
+from typing import Any
 from celery import VERSION_BANNER
 from celery.apps.worker import Worker
 from celery.signals import celeryd_after_setup
 from loguru import logger
-from typing import Any
 
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import MESSAGING_QUEUE_NAME, celery_app
