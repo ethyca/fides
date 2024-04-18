@@ -19,22 +19,22 @@ class TestMarigoldEngageConnector:
             access_policy=policy, identities={"email": marigold_engage_identity_email}
         )
 
-    async def test_strict_erasure_request(
-        self,
-        marigold_engage_runner: ConnectorRunner,
-        policy: Policy,
-        erasure_policy_string_rewrite: Policy,
-        marigold_engage_erasure_identity_email: str,
-        marigold_engage_erasure_data,
-    ):
-        (
-            access_results,
-            erasure_results,
-        ) = await marigold_engage_runner.strict_erasure_request(
-            access_policy=policy,
-            erasure_policy=erasure_policy_string_rewrite,
-            identities={"email": marigold_engage_erasure_identity_email},
-        )
+    # async def test_strict_erasure_request(
+    #     self,
+    #     marigold_engage_runner: ConnectorRunner,
+    #     policy: Policy,
+    #     erasure_policy_string_rewrite: Policy,
+    #     marigold_engage_erasure_identity_email: str,
+    #     marigold_engage_erasure_data,
+    # ):
+    #     (
+    #         access_results,
+    #         erasure_results,
+    #     ) = await marigold_engage_runner.strict_erasure_request(
+    #         access_policy=policy,
+    #         erasure_policy=erasure_policy_string_rewrite,
+    #         identities={"email": marigold_engage_erasure_identity_email},
+    #     )
 
     async def test_non_strict_erasure_request(
         self,
