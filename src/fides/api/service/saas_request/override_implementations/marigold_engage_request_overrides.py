@@ -65,7 +65,7 @@ def marigold_engage_user_read(
                     "api_key": secrets["api_key"],
                     "sig": sig,
                     "format": "json",
-                    "json": quote(stringified_payload, safe=":"),
+                    "json": stringified_payload,
                 },
             )
         )
