@@ -18,7 +18,7 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     poll_for_exited_privacy_request_tasks,
     poll_server_for_completion,
-    remove_saved_customer_data,
+    remove_saved_dsr_data,
 )
 from fides.api.util.cache import CustomJSONEncoder
 from fides.common.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
@@ -125,34 +125,23 @@ async def test_poll_server_for_completion_non_200(async_api_client, db, policy):
 
 
 class TestPollForExitedPrivacyRequests:
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.scheduler.add_job",
-    )
-    def test_no_request_tasks(self, add_job_mock, db, privacy_request):
+    def test_no_request_tasks(self, db, privacy_request):
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
         assert errored_prs == set()
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        assert add_job_mock.called
 
     @pytest.mark.usefixtures("request_task")
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.scheduler.add_job",
-    )
-    def test_request_tasks_still_in_progress(self, add_job_mock, db, privacy_request):
+    def test_request_tasks_still_in_progress(self, db, privacy_request):
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
         assert errored_prs == set()
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        assert add_job_mock.called
 
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.scheduler.add_job",
-    )
     def test_request_tasks_all_exited_and_some_errored(
-        self, add_job_mock, db, privacy_request, request_task
+        self, db, privacy_request, request_task
     ):
         # Put all tasks in an exited state - completed, errored, or skipped
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
@@ -168,13 +157,9 @@ class TestPollForExitedPrivacyRequests:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.error
-        assert add_job_mock.called
 
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.scheduler.add_job",
-    )
     def test_request_tasks_all_exited_none_errored(
-        self, add_job_mock, db, privacy_request, request_task
+        self, db, privacy_request, request_task
     ):
         # Put all tasks in an exited state - but none are errored.
         # This task does not flip the status of the overall privacy request in that case
@@ -191,13 +176,9 @@ class TestPollForExitedPrivacyRequests:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        assert add_job_mock.called
 
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.scheduler.add_job",
-    )
     def test_access_tasks_errored_erasure_tasks_pending(
-        self, add_job_mock, db, privacy_request, request_task, erasure_request_task
+        self, db, privacy_request, request_task, erasure_request_task
     ):
         """Request tasks of different action types are considered separately.
         If access tasks have errored but erasure tasks are pending, the access step itself
@@ -221,14 +202,10 @@ class TestPollForExitedPrivacyRequests:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.error
-        assert add_job_mock.called
 
     @pytest.mark.usefixtures("request_task")
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.scheduler.add_job",
-    )
     def test_access_tasks_complete_erasure_tasks_errored(
-        self, add_job_mock, db, privacy_request, erasure_request_task
+        self, db, privacy_request, erasure_request_task
     ):
         """Tasks of different action types are considered separately.  If all access tasks
         have completed, but erasure tasks have an error, the entire privacy request will be marked as error
@@ -243,7 +220,6 @@ class TestPollForExitedPrivacyRequests:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.error
-        assert add_job_mock.called
 
 
 @pytest.fixture(scope="function")
@@ -275,7 +251,7 @@ class TestRemoveSavedCustomerData:
         time.sleep(1)
 
         # Mainly asserting this runs without error
-        remove_saved_customer_data.delay().get()
+        remove_saved_dsr_data.delay().get()
 
         db.refresh(privacy_request)
         assert not privacy_request.request_tasks.count()
@@ -300,7 +276,7 @@ class TestRemoveSavedCustomerData:
         assert privacy_request.request_tasks.count()
         time.sleep(1)
 
-        remove_saved_customer_data.delay().get()
+        remove_saved_dsr_data.delay().get()
 
         db.refresh(privacy_request)
         assert privacy_request.filtered_final_upload is not None
@@ -308,10 +284,12 @@ class TestRemoveSavedCustomerData:
         assert privacy_request.request_tasks.count()
 
     @pytest.mark.usefixtures(
-        "very_short_redis_cache_expiration", "very_short_request_task_expiration"
+        "very_short_redis_cache_expiration",
+        "very_short_request_task_expiration",
+        "request_task",
     )
     def test_customer_data_removed_from_old_request_tasks_and_privacy_requests(
-        self, db, privacy_request, request_task
+        self, db, privacy_request, loguru_caplog
     ):
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db)
@@ -326,12 +304,17 @@ class TestRemoveSavedCustomerData:
         assert privacy_request.request_tasks.count()
         time.sleep(1)
 
-        remove_saved_customer_data.delay().get()
+        remove_saved_dsr_data.delay().get()
 
         db.refresh(privacy_request)
         assert privacy_request.filtered_final_upload is None
         assert privacy_request.access_result_urls is None
         assert not privacy_request.request_tasks.count()
+
+        assert (
+            "Deleted 3 expired request tasks via DSR Data Removal Task."
+            in loguru_caplog.text
+        )
 
 
 class TestBuildPrivacyRequestRequiredKwargs:

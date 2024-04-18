@@ -237,7 +237,7 @@ class QueryConfig(Generic[T], ABC):
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> Optional[T]:
         """Generate a retrieval query. If there is no data to be queried
-        (for example, if the poicy identifies no fields to be queried)
+        (for example, if the policy identifies no fields to be queried)
         returns None"""
 
     @abstractmethod

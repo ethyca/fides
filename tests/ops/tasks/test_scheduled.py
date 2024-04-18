@@ -1,5 +1,8 @@
+import datetime
+
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.email_batch_service import (
@@ -11,6 +14,8 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.api.service.privacy_request.request_service import (
     DSR_DATA_REMOVAL,
+    PRIVACY_REQUEST_STATUS_CHANGE_POLL,
+    initiate_poll_for_exited_privacy_request_tasks,
     initiate_scheduled_dsr_data_removal,
 )
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -67,5 +72,20 @@ def test_initiate_scheduled_dsr_data_removal() -> None:
     assert str(job.trigger.fields[5].expressions[0]) == "2"
 
     assert type(job.trigger.timezone).__name__ == "US/Eastern"
+
+    CONFIG.test_mode = True
+
+
+def test_initiate_poll_for_exited_privacy_request_tasks() -> None:
+    CONFIG.test_mode = False
+
+    initiate_poll_for_exited_privacy_request_tasks()
+    assert scheduler.running
+    job = scheduler.get_job(job_id=PRIVACY_REQUEST_STATUS_CHANGE_POLL)
+    assert job is not None
+    assert isinstance(job.trigger, IntervalTrigger)
+    assert job.trigger.interval == datetime.timedelta(
+        seconds=CONFIG.execution.state_polling_interval
+    )
 
     CONFIG.test_mode = True

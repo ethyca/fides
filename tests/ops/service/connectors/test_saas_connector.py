@@ -179,7 +179,6 @@ class TestSaasConnector:
             ),
         )
         traversal_node = TraversalNode(node)
-        traversal_node = TraversalNode(node)
         request_task = traversal_node.to_mock_request_task()
         execution_node = ExecutionNode(request_task)
 

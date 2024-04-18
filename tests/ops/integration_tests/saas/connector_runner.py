@@ -101,9 +101,10 @@ class ConnectorRunner:
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
     ) -> Dict[str, List[Row]]:
+        """Access request for a given access policy and identities"""
+
         from tests.conftest import access_runner_tester
 
-        """Access request for a given access policy and identities"""
         fides_key = self.connection_config.key
         privacy_request = create_privacy_request_with_policy_rules(
             access_policy, None, privacy_request_id

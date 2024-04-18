@@ -29,7 +29,7 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
-ERRORED_PRIVACY_REQUEST_POLL = "errored_privacy_request_poll"
+PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
 
 
@@ -153,6 +153,29 @@ async def poll_server_for_completion(
     )
 
 
+def initiate_poll_for_exited_privacy_request_tasks() -> None:
+    """Initiates scheduler to check if a Privacy Request's status needs to be flipped when all
+    Request Tasks have had a chance to run"""
+
+    if CONFIG.test_mode:
+        return
+
+    assert (
+        scheduler.running
+    ), "Scheduler is not running! Cannot add Privacy Request Status Change job."
+
+    logger.info("Initiating scheduler for Privacy Request Status Change")
+    scheduler.add_job(
+        func=poll_for_exited_privacy_request_tasks,
+        trigger="interval",
+        kwargs={},
+        id=PRIVACY_REQUEST_STATUS_CHANGE_POLL,
+        coalesce=True,
+        replace_existing=True,
+        seconds=CONFIG.execution.state_polling_interval,
+    )
+
+
 @celery_app.task(base=DatabaseTask, bind=True)
 def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
     """
@@ -164,7 +187,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
     can be reprocessed.
     """
     with self.get_new_session() as db:
-        logger.info("Polling for errored privacy requests")
+        logger.info("Polling for privacy requests awaiting status change")
         in_progress_privacy_requests = (
             db.query(PrivacyRequest)
             .filter(PrivacyRequest.status == PrivacyRequestStatus.in_processing)
@@ -200,14 +223,6 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                     pr.error_processing(db)
                     marked_as_errored.add(pr.id)
 
-        # Schedule itself when this is finished
-        scheduler.add_job(
-            poll_for_exited_privacy_request_tasks,
-            trigger="date",
-            next_run_time=datetime.now()
-            + timedelta(seconds=CONFIG.execution.state_polling_interval),
-        )
-
         return marked_as_errored
 
 
@@ -223,7 +238,7 @@ def initiate_scheduled_dsr_data_removal() -> None:
 
     logger.info("Initiating scheduler for DSR Data Removal")
     scheduler.add_job(
-        func=remove_saved_customer_data,
+        func=remove_saved_dsr_data,
         kwargs={},
         id=DSR_DATA_REMOVAL,
         coalesce=False,
@@ -237,7 +252,7 @@ def initiate_scheduled_dsr_data_removal() -> None:
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def remove_saved_customer_data(self: DatabaseTask) -> None:
+def remove_saved_dsr_data(self: DatabaseTask) -> None:
     """
     Remove saved customer data that is no longer needed to facilitate running the access or erasure request.
     """
@@ -255,7 +270,7 @@ def remove_saved_customer_data(self: DatabaseTask) -> None:
             """
         )
 
-        db.execute(
+        result = db.execute(
             remove_dsr_data,
             {
                 "ttl": (
@@ -263,6 +278,10 @@ def remove_saved_customer_data(self: DatabaseTask) -> None:
                     - timedelta(seconds=CONFIG.execution.request_task_ttl)
                 ),
             },
+        )
+        affected_rows = result.rowcount
+        logger.info(
+            f"Deleted {affected_rows} expired request tasks via DSR Data Removal Task."
         )
 
         # Remove columns from old privacyrequests that potentially contain encrypted PII

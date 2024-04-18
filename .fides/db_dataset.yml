@@ -2102,7 +2102,7 @@ dataset:
     - name: data_for_erasures
       data_categories: [user]
     - name: dataset_name
-      data_categories: [user]
+      data_categories: [system]
     - name: downstream_tasks
       data_categories: [system]
     - name: id
