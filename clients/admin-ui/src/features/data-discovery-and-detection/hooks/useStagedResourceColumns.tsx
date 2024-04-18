@@ -1,17 +1,44 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
-import DiscoveryMonitorItemActions from "../DiscoveryMonitorItemActions";
-import { DiscoveryMonitorItem } from "../types/DiscoveryMonitorItem";
-import { StagedResourceType } from "../types/StagedResourceType";
-import { findResourceType } from "../utils/findResourceType";
+import DiscoveryMonitorItemActions from "~/features/data-discovery-and-detection/DiscoveryMonitorItemActions";
+import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
+
+export type MonitorResultsItem = StagedResource &
+  Partial<Database & Schema & Table & Field>;
+
+export enum StagedResourceType {
+  DATABASE = "database",
+  SCHEMA = "schema",
+  TABLE = "table",
+  FIELD = "field",
+  // there should never be actual data that doesn't match one of the types, but
+  // having a fallback makes some TypeScript smoother
+  NONE = "none",
+}
+
+export const findResourceType = (item: MonitorResultsItem | undefined) => {
+  if (!item) {
+    return StagedResourceType.NONE;
+  }
+  if (item.schemas) {
+    return StagedResourceType.DATABASE;
+  }
+  if (item.tables) {
+    return StagedResourceType.SCHEMA;
+  }
+  if (item.fields) {
+    return StagedResourceType.TABLE;
+  }
+  return StagedResourceType.FIELD;
+};
 
 const useStagedResourceColumns = (
   resourceType: StagedResourceType | undefined
 ) => {
-  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
+  const columnHelper = createColumnHelper<MonitorResultsItem>();
 
-  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [
+  const defaultColumns: ColumnDef<MonitorResultsItem, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
