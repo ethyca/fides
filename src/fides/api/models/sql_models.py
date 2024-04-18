@@ -193,22 +193,6 @@ class DataCategory(Base, FidesBase):
             is_default=data_category.is_default,
         )
 
-    @staticmethod
-    def get_parent_categories_from_key(data_category_key: str) -> Set[str]:
-        """
-        Utility method to traverse "up" the taxonomy hierarchy and unpack
-        a given data category fides key into a set of fides keys that include its
-        parent fides keys.
-
-        Example inputs and outputs:
-            - `a.b.c` --> [`a.b.c`, `a.b`, `a`]
-            - `a` --> [`a`]
-        """
-        parent_categories = {data_category_key}
-        while data_category_key := data_category_key.rpartition(".")[0]:
-            parent_categories.add(data_category_key)
-        return parent_categories
-
 
 class DataSubject(Base, FidesBase):
     """
@@ -565,6 +549,10 @@ class PrivacyDeclaration(Base):
         Aggregates a unique set of data categories across the collections in the associated datasets and
         returns the data categories that are not defined directly on this or any sibling privacy declarations.
         """
+
+        # Note: This property evaluates the data categories attached to the datasets associated with this specific
+        # privacy declaration. However, the search space for identifying undeclared data categories includes all
+        # data categories across this privacy declaration and its sibling privacy declarations.
 
         # all data categories from the datasets
         dataset_data_categories = set()
