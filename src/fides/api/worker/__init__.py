@@ -4,6 +4,7 @@ from celery import VERSION_BANNER
 from celery.apps.worker import Worker
 from celery.signals import celeryd_after_setup
 from loguru import logger
+from typing import Any
 
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import MESSAGING_QUEUE_NAME, celery_app
@@ -24,7 +25,7 @@ def start_worker() -> None:
 
 
 @celeryd_after_setup.connect
-def log_celery_setup(sender: str, instance: Worker, **kwargs) -> None:
+def log_celery_setup(sender: str, instance: Worker, **kwargs: Any) -> None:
     """In lieu of the Celery banner, print the connection details"""
     app = instance.app
     concurrency = str(instance.concurrency)
