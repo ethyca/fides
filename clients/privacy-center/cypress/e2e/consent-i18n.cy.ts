@@ -1509,11 +1509,11 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe("when localizing privacy_center components", () => {
+  describe.only("when localizing privacy_center components", () => {
     const GEOLOCATION_API_URL = "https://www.example.com/location";
     const VERIFICATION_CODE = "112358";
 
-    beforeEach(() => {
+    const beforeAll = () => {
       cy.clearAllCookies();
 
       // Seed local storage with verification data
@@ -1534,6 +1534,13 @@ describe("Consent i18n", () => {
         win.navigator.globalPrivacyControl = true;
       });
 
+      // Intercept consent request
+      cy.intercept("POST", `${API_URL}/consent-request`, {
+        body: {
+          consent_request_id: "consent-request-id",
+        },
+      }).as("postConsentRequest");
+
       // Intercept sending identity data to the backend to access /consent page
       cy.intercept(
         "POST",
@@ -1546,54 +1553,65 @@ describe("Consent i18n", () => {
         fixture: "consent/geolocation.json",
       }).as("getGeolocation");
 
+      // Patch privacy preference intercept
+      cy.intercept(
+        "PATCH",
+        `${API_URL}/consent-request/consent-request-id/privacy-preferences*`,
+        {
+          fixture: "consent/privacy_preferences.json",
+        }
+      ).as("patchPrivacyPreference");
+
       // Experience intercept
       cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
         fixture: "consent/experience_privacy_center.json",
       }).as("getExperience");
+    };
 
-      cy.visitWithLanguage("/consent", SPANISH_LOCALE);
-      cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+    describe("displays localized texts", () => {
+      beforeEach(() => {
+        beforeAll();
+        cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+        cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+      });
+
+      it("displays localized text from experience", () => {
+        cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
+        cy.getByTestId("consent-description").contains(
+          SPANISH_MODAL.description
+        );
+      });
+
+      it("displays localized text for gpc banner", () => {
+        cy.getByTestId("gpc.banner.title").contains(SPANISH_MODAL.gpc_title);
+        cy.getByTestId("gpc.banner.description").contains(
+          SPANISH_MODAL.gpc_description
+        );
+      });
+
+      it("displays localized save button", () => {
+        cy.getByTestId("save-btn").contains(SPANISH_MODAL.save_button_label);
+      });
+
+      it("displays localized privacy policy", () => {
+        cy.getByTestId("privacypolicy.link").contains(
+          SPANISH_MODAL.privacy_policy_link_label!
+        );
+        cy.getByTestId("privacypolicy.link")
+          .should("have.attr", "href")
+          .and("include", SPANISH_MODAL.privacy_policy_url!);
+      });
+
+      it("displays localized notice texts", () => {
+        cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
+          SPANISH_NOTICES[1].title
+        );
+        cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
+          SPANISH_NOTICES[1].description
+        );
+      });
     });
 
-    it("displays localized text from experience", () => {
-      cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
-      cy.getByTestId("consent-description").contains(SPANISH_MODAL.description);
-    });
-
-    it("displays localized text for gpc banner", () => {
-      cy.getByTestId("gpc.banner.title").contains(SPANISH_MODAL.gpc_title);
-      cy.getByTestId("gpc.banner.description").contains(
-        SPANISH_MODAL.gpc_description
-      );
-    });
-
-    it("displays localized save button", () => {
-      cy.getByTestId("save-btn").contains(SPANISH_MODAL.save_button_label);
-    });
-
-    it("displays localized privacy policy", () => {
-      cy.getByTestId("privacypolicy.link").contains(
-        SPANISH_MODAL.privacy_policy_link_label!
-      );
-      cy.getByTestId("privacypolicy.link")
-        .should("have.attr", "href")
-        .and("include", SPANISH_MODAL.privacy_policy_url!);
-    });
-
-    it("displays localized notice texts", () => {
-      cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
-        SPANISH_NOTICES[1].title
-      );
-      cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
-        SPANISH_NOTICES[1].description
-      );
-    });
-
-    /* Commenting tests for now. The problem is that the test runs with config based consent,
-      which don't support translations. Then, we override with cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
-      to use notices-based consent to run the test, but notices-server has already ran with the previous config
-      */
-    /*
     const EXPECTED_NOTICE_HISTORY_IDS = [
       "pri_notice-history-advertising-es-000", // Spanish (es)
       "pri_notice-history-analytics-es-000", // Spanish (es)
@@ -1603,54 +1621,74 @@ describe("Consent i18n", () => {
     const EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID =
       "pri_exp-history-privacy-center-es-000";
 
-    it("calls notices served with the correct history id for the notices", () => {
-      // Consent reporting intercept
-      cy.intercept(
-        "PATCH",
-        `${API_URL}/consent-request/consent-request-id/notices-served`,
-        { fixture: "consent/notices_served.json" }
-      ).as("patchNoticesServed");
+    describe("utilizes correct history and configs id for the current language", () => {
+      beforeEach(() => {
+        beforeAll();
+        cy.visitWithLanguage("/", SPANISH_LOCALE);
+        cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.wait(100);
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.wait("@postConsentRequest");
 
-      cy.wait("@patchNoticesServed").then((interception) => {
-        expect(interception.request.body.privacy_notice_history_ids).to.eql(
-          EXPECTED_NOTICE_HISTORY_IDS
-        );
+        cy.getByTestId("verification-form").within(() => {
+          cy.get("input").type(VERIFICATION_CODE);
+          cy.get("button").contains("Submit code").click();
+        });
+        cy.wait("@postConsentRequestVerify");
+      });
+
+      it("calls notices served with the correct history id for the notices", () => {
+        // Consent reporting intercept
+        cy.intercept(
+          "PATCH",
+          `${API_URL}/consent-request/consent-request-id/notices-served`,
+          { fixture: "consent/notices_served.json" }
+        ).as("patchNoticesServed");
+
+        cy.wait("@patchNoticesServed").then((interception) => {
+          expect(interception.request.body.privacy_notice_history_ids).to.eql(
+            EXPECTED_NOTICE_HISTORY_IDS
+          );
+        });
+      });
+
+      it("calls notices served with the correct history id for the experience config", () => {
+        // Consent reporting intercept
+        cy.intercept(
+          "PATCH",
+          `${API_URL}/consent-request/consent-request-id/notices-served`,
+          { fixture: "consent/notices_served.json" }
+        ).as("patchNoticesServed");
+
+        cy.wait("@patchNoticesServed").then((interception) => {
+          expect(
+            interception.request.body.privacy_experience_config_history_id
+          ).to.eql(EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID);
+        });
+      });
+
+      it("calls privacy preference with the correct history id for the experience config", () => {
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const {
+            preferences,
+            privacy_experience_config_history_id:
+              privacyExperienceConfigHistoryId,
+          } = interception.request.body;
+
+          expect(privacyExperienceConfigHistoryId).to.eql(
+            EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID
+          );
+          expect(
+            preferences.map((p: any) => p.privacy_notice_history_id)
+          ).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+        });
       });
     });
-
-    it("calls notices served with the correct history id for the experience config", () => {
-      // Consent reporting intercept
-      cy.intercept(
-        "PATCH",
-        `${API_URL}/consent-request/consent-request-id/notices-served`,
-        { fixture: "consent/notices_served.json" }
-      ).as("patchNoticesServed");
-
-      cy.wait("@patchNoticesServed").then((interception) => {
-        expect(
-          interception.request.body.privacy_experience_config_history_id
-        ).to.eql(EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID);
-      });
-    });
-
-    it("calls privacy preference with the correct history id for the experience config", () => {
-      cy.getByTestId("save-btn").click();
-      cy.wait("@patchPrivacyPreference").then((interception) => {
-        const {
-          preferences,
-          privacy_experience_config_history_id:
-            privacyExperienceConfigHistoryId,
-        } = interception.request.body;
-
-        expect(privacyExperienceConfigHistoryId).to.eql(
-          EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID
-        );
-        expect(preferences.map((p: any) => p.privacy_notice_history_id)).to.eql(
-          EXPECTED_NOTICE_HISTORY_IDS
-        );
-      });
-    });
-    */
   });
 
   /**
