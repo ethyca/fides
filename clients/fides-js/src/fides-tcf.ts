@@ -189,7 +189,7 @@ async function init(this: FidesGlobal, config: FidesConfig) {
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-};
+}
 
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
@@ -229,7 +229,7 @@ const _Fides: FidesGlobal = {
   gtm,
   init,
   prevConfig: undefined,
-  reinit() {
+  reinitialize() {
     if (!this.prevConfig || !this.initialized) {
       throw new Error("Fides must be initialized before reinitializing");
     }

@@ -139,7 +139,7 @@ export interface FidesGlobal extends Fides {
   identity: FidesJSIdentity;
   prevConfig: FidesConfig | undefined;
   init: (config: FidesConfig) => Promise<void>;
-  reinit: () => Promise<void>;
+  reinitialize: () => Promise<void>;
   initialized: boolean;
   meta: typeof meta;
   shopify: typeof shopify;

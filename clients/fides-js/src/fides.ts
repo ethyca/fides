@@ -173,7 +173,7 @@ const _Fides: FidesGlobal = {
   gtm,
   init,
   prevConfig: undefined,
-  reinit() {
+  reinitialize() {
     if (!this.prevConfig || !this.initialized) {
       throw new Error("Fides must be initialized before reinitializing");
     }

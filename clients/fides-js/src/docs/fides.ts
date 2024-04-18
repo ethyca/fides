@@ -209,6 +209,16 @@ export interface Fides {
   init: (config: any) => Promise<void>;
 
   /**
+   * Reinitialize FidesJS with the initial configuration, but taking into account
+   * any new overrides such as the `fides_overrides` global or the query params.
+   * 
+   * This is useful when you're working on a single page application (SPA) and you
+   * want to embed the FidesJS modal on different pages or switch between embedding
+   * and showing the actual modal.
+   */
+  reinitialize: () => Promise<void>;
+
+  /**
    * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid
