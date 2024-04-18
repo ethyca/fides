@@ -140,6 +140,8 @@ export default async function handler(
     ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
     : environment.settings.IS_FORCED_TCF;
 
+  const gppEnabled = !!experience?.gpp_settings?.enabled;
+
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
     consent: {
@@ -192,13 +194,25 @@ export default async function handler(
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
+  let fidesGPP: string = "";
+  if (gppEnabled) {
+    // eslint-disable-next-line no-console
+    console.log("GPP extension enabled, bundling fides-ext-gpp.js...");
+    const fidesGPPBuffer = await fsPromises.readFile(
+      "public/lib/fides-ext-gpp.js"
+    );
+    fidesGPP = fidesGPPBuffer.toString();
+    if (!fidesGPP || fidesGPP === "") {
+      throw new Error("Unable to load latest gpp extension from server!");
+    }
+  }
 
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
   const script = `
   (function () {
-    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
+    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request
     if (!window.fetch) {
       var script = document.createElement('script');
       script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
@@ -206,7 +220,7 @@ export default async function handler(
     }
 
     // Include generic fides.js script
-    ${fidesJS}${
+    ${fidesJS}${fidesGPP}${
     customFidesCss
       ? `
     // Include custom fides.css styles
