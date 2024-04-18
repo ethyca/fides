@@ -142,7 +142,8 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
-    V1_URL_PREFIX, PRIVACY_REQUEST_PRE_APPROVE, PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
+    V1_URL_PREFIX,
+    PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
 )
 from fides.config import CONFIG
@@ -1236,6 +1237,7 @@ def verify_identification_code(
     logger.info("Identity verified for {}.", privacy_request.id)
 
     if not config_proxy.execution.require_manual_request_approval:
+        # fixme- add logic here to fire pre-execution webhooks
         AuditLog.create(
             db=db,
             data={
@@ -1885,6 +1887,7 @@ def create_privacy_request_func(
                     config_proxy.notifications.notification_service_type,
                 )
             if not config_proxy.execution.require_manual_request_approval:
+                # fixme- add logic here
                 AuditLog.create(
                     db=db,
                     data={
