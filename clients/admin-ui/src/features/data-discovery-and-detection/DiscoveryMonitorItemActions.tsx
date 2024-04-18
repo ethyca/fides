@@ -8,6 +8,7 @@ import {
   ViewIcon,
   ViewOffIcon,
   IconButton,
+  SearchIcon,
 } from "@fidesui/react";
 import { ReactElement } from "react";
 import { StagedResource } from "~/types/api";
@@ -42,7 +43,7 @@ const DiscoveryMonitorItemActions: React.FC<
   console.log("resource", resource);
   const monitorStatus = undefined;
   const diffStatus = mockDiffStatusEnum.ADDITION;
-  const classificationStatus = mockClassificationStatusEnum.COMPLETE;
+  const classificationStatus = undefined;
 
   if (resourceType === StagedResourceType.DATABASE) {
     // No actions for database level
