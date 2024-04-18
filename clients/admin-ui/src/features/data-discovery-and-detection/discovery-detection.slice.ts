@@ -30,6 +30,11 @@ interface MonitorResultQueryParams {
   size?: number;
 }
 
+interface ResourceActionQueryParams {
+  monitor_config_id: string;
+  staged_resource_urn?: string;
+}
+
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllMonitors: build.query<
@@ -51,6 +56,27 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         params,
         method: "GET",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/results`,
+      }),
+    }),
+    monitorResource: build.query<any, ResourceActionQueryParams>({
+      query: (params) => ({
+        params,
+        method: "POST",
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/monitor`,
+      }),
+    }),
+    muteResource: build.query<any, ResourceActionQueryParams>({
+      query: (params) => ({
+        params,
+        method: "POST",
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/mute`,
+      }),
+    }),
+    acceptResource: build.query<any, ResourceActionQueryParams>({
+      query: (params) => ({
+        params,
+        method: "POST",
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/accept`,
       }),
     }),
   }),
