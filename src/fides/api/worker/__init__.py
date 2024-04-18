@@ -28,14 +28,13 @@ def start_worker() -> None:
 def log_celery_setup(sender: str, instance: Worker, **kwargs: Any) -> None:
     """In lieu of the Celery banner, print the connection details"""
     app = instance.app
-    concurrency = str(instance.concurrency)
     celery_details = {
         "hostname": instance.hostname,
         "version": VERSION_BANNER,
         "app": "{0}:{1:#x}".format(app.main or "__main__", id(app)),
         "transport": app.connection().as_uri(),
         "results": app.backend.as_uri(),
-        "concurrency": concurrency,
+        "concurrency": str(instance.concurrency),
         "queues": "|".join(str(queue) for queue in app.amqp.queues.keys()),
     }
 
