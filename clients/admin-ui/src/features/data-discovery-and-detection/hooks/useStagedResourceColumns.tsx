@@ -1,41 +1,17 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
-import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
-
-export type MonitorResultsItem = StagedResource &
-  Partial<Database & Schema & Table & Field>;
-
-export enum StagedResourceType {
-  DATABASE = "database",
-  SCHEMA = "schema",
-  TABLE = "table",
-  FIELD = "field",
-  NONE = "none",
-}
-
-export const findResourceType = (item: MonitorResultsItem | undefined) => {
-  if (!item) {
-    return StagedResourceType.NONE;
-  }
-  if (item.schemas) {
-    return StagedResourceType.DATABASE;
-  }
-  if (item.tables) {
-    return StagedResourceType.SCHEMA;
-  }
-  if (item.fields) {
-    return StagedResourceType.TABLE;
-  }
-  return StagedResourceType.FIELD;
-};
+import DiscoveryMonitorItemActions from "../DiscoveryMonitorItemActions";
+import { DiscoveryMonitorItem } from "../types/DiscoveryMonitorItem";
+import { StagedResourceType } from "../types/StagedResourceType";
+import { findResourceType } from "../utils/findResourceType";
 
 const useStagedResourceColumns = (
   resourceType: StagedResourceType | undefined
 ) => {
-  const columnHelper = createColumnHelper<MonitorResultsItem>();
+  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
-  const defaultColumns: ColumnDef<MonitorResultsItem, any>[] = [
+  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -50,6 +26,16 @@ const useStagedResourceColumns = (
       id: "modified",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: (props) => <DefaultHeaderCell value="Last modified" {...props} />,
+    }),
+    columnHelper.accessor((row) => row, {
+      id: "Action",
+      cell: (props) => (
+        <DiscoveryMonitorItemActions
+          resource={props.getValue()}
+          resourceType={findResourceType(props.getValue())}
+        />
+      ),
+      header: (props) => <DefaultHeaderCell value="Action" {...props} />,
     }),
   ];
 

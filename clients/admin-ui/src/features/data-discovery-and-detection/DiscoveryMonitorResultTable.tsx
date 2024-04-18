@@ -17,12 +17,11 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import useStagedResourceColumns, {
-  findResourceType,
-  MonitorResultsItem,
-  StagedResourceType,
-} from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
+import useStagedResourceColumns from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
 import { StagedResource } from "~/types/api";
+import { DiscoveryMonitorItem } from "./types/DiscoveryMonitorItem";
+import { StagedResourceType } from "./types/StagedResourceType";
+import { findResourceType } from "./utils/findResourceType";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -97,7 +96,7 @@ const DiscoveryMonitorResultTable = ({
   });
 
   const resourceType = findResourceType(
-    resources?.items[0] as MonitorResultsItem
+    resources?.items[0] as DiscoveryMonitorItem
   );
 
   const { columns } = useStagedResourceColumns(resourceType);
