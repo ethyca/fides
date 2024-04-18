@@ -39,7 +39,9 @@ def log_celery_setup(sender: str, instance: Worker, **kwargs: Any) -> None:
         "queues": "|".join(str(queue) for queue in app.amqp.queues.keys()),
     }
 
-    logger.info(f"Celery connection details | {json.dumps(celery_details)}")
+    logger.bind(
+        celery_details=celery_details
+    ).info(f"Celery connection setup complete")
 
 
 if __name__ == "__main__":  # pragma: no cover
