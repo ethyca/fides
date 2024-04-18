@@ -138,7 +138,6 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.common.api.v1.urn_registry import (
-    PRIVACY_REQUEST_ACCESS_DATA,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
@@ -1803,35 +1802,6 @@ def get_individual_privacy_request_tasks(
     return pr.request_tasks.order_by(
         RequestTask.created_at.asc(), RequestTask.collection_address.asc()
     ).all()
-
-
-@router.get(
-    PRIVACY_REQUEST_ACCESS_DATA,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
-    response_model=Dict,
-)
-def get_access_data(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-) -> Dict[str, Dict[str, List[Row]]]:
-    """Returns filtered data collected for an access request by policy rule key."""
-    pr = get_privacy_request_or_error(db, privacy_request_id)
-
-    if not pr.policy.get_rules_for_action(action_type=ActionType.access):
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot retrieve access data for {pr.id}. This is not an access request.",
-        )
-
-    if pr.status != PrivacyRequestStatus.complete:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot retrieve access data for incomplete request {pr.id}.",
-        )
-
-    logger.info(f"Getting privacy request '{privacy_request_id}' access data")
-    return pr.get_filtered_access_results()
 
 
 @router.post(
