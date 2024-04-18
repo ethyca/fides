@@ -49,7 +49,6 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { setupExtensions } from "./extensions";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
@@ -458,29 +457,24 @@ export const initialize = async ({
          * set any applicable notices to "opt-out" unless the user has previously
          * saved consent, etc.
          *
-         * NOTE: Do *not* await the results of this function, even though it's
-         * async and returns a Promise! Instead, let the GPC update run
-         * asynchronously but continue our initialization. If GPC applies, this
-         * will kick off an update to the user's consent preferences which will
-         * also call the Fides API, but we want to finish initialization
-         * immediately while those API updates happen in parallel.
+         * NOTE: We want to finish initialization immediately while GPC updates
+         * continue to run in the background. To ensure that any GPC API calls
+         * don't block the rest of the code from executing, we use setTimeout with
+         * no delay which simply moves it to the end of the JavaScript event queue.
          */
-        automaticallyApplyGPCPreferences({
-          savedConsent,
-          effectiveExperience,
-          cookie,
-          fidesRegionString,
-          fidesOptions: options,
-          i18n,
+        setTimeout(() => {
+          automaticallyApplyGPCPreferences({
+            savedConsent,
+            effectiveExperience: effectiveExperience as PrivacyExperience,
+            cookie,
+            fidesRegionString,
+            fidesOptions: options,
+            i18n,
+          });
         });
       }
     }
   }
-
-  // Call extensions
-  // DEFER(PROD#1439): This is likely too late for the GPP stub.
-  // We should move stub code out to the base package and call it right away instead.
-  await setupExtensions({ options, experience: effectiveExperience });
 
   // return an object with the updated Fides values
   return {
