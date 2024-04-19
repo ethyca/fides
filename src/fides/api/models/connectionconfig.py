@@ -145,6 +145,7 @@ class ConnectionConfig(Base):
         "AccessManualWebhook",
         back_populates="connection_config",
         cascade="delete",
+        uselist=False,
     )
 
     pre_approval_webhooks = relationship(  # type: ignore[misc]
