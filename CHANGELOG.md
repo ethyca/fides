@@ -21,6 +21,10 @@ The types of changes are:
 
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+- Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
+
+### Changed
+- Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
 
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
@@ -38,6 +42,7 @@ The types of changes are:
 - Update active disabled Fides.js toggle color to light grey [#4778](https://github.com/ethyca/fides/pull/4778)
 - Update FidesJS fides_embed option to support embedding both banner & modal components [#4782](https://github.com/ethyca/fides/pull/4782)
 - Add a few CSS classes to help with styling FidesJS button groups [#4789](https://github.com/ethyca/fides/pull/4789)
+- Changed GPP extension to be pre-bundled in appropriate circumstances, as opposed to another fetch [#4780](https://github.com/ethyca/fides/pull/4780)
 
 ### Fixed
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
