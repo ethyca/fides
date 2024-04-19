@@ -12,7 +12,7 @@ class WebhookBase(FidesSchema):
     """Base schema for Webhooks"""
 
     key: Optional[FidesKey]
-    name: Optional[str]
+    name: str
 
 
 class PreApprovalWebhookCreate(WebhookBase):

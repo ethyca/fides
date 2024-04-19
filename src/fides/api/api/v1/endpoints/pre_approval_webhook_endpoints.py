@@ -14,7 +14,6 @@ from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOU
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import get_key_from_data
-from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import pre_approval_webhooks as schemas
@@ -58,7 +57,7 @@ def get_pre_approval_webhook_or_error(
     if not pre_approval_webhook:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Policy found for key {webhook_key}.",
+            detail=f"No PreApprovalWebhook found for key {webhook_key}.",
         )
 
     return pre_approval_webhook
@@ -67,27 +66,35 @@ def get_pre_approval_webhook_or_error(
 @router.get(
     urls.WEBHOOK_PRE_APPROVAL_DETAIL,
     status_code=HTTP_200_OK,
-    response_model=schemas.PreApprovalWebhookResponse,
+    response_model=PreApprovalWebhook,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
 def get_pre_approval_webhook_detail(
     *,
     db: Session = Depends(deps.get_db),
     webhook_key: FidesKey,
-) -> PolicyPreWebhook:
+) -> PreApprovalWebhook:
     """
     Loads the given Pre-Approval Webhook by key
     """
-    return get_pre_approval_webhook_or_error(db, webhook_key)  # type: ignore
+    return get_pre_approval_webhook_or_error(db, webhook_key)
 
 
-def put_webhooks(
+@router.put(
+    urls.WEBHOOK_PRE_APPROVAL,
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
+    ],
+    response_model=List[schemas.PreApprovalWebhookResponse],
+)
+def create_or_update_pre_execution_webhooks(
+    *,
     db: Session = Depends(deps.get_db),
-    webhooks: List[schemas.PreApprovalWebhookCreate] = Body(...),
+    webhooks: conlist(schemas.PreApprovalWebhookCreate, max_items=50) = Body(...),  # type: ignore
 ) -> List[PreApprovalWebhook]:
     """
-    Helper method to PUT pre-approval webhooks.
-
+    Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.
     This endpoint is all-or-nothing.
     Either all webhooks should be created/updated or none should be updated. Deletes any webhooks not present
     in the request body.
@@ -99,8 +106,6 @@ def put_webhooks(
         for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]
-    # Because resources are dependent on each other for order, we want to make sure that we don't have multiple
-    # resources in the request that actually point to the same object.
     if len(keys) != len(set(keys)) or len(names) != len(set(names)):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -149,32 +154,22 @@ def put_webhooks(
     return staged_webhooks
 
 
-@router.put(
-    urls.WEBHOOK_PRE_APPROVAL,
+@router.patch(
+    urls.WEBHOOK_PRE_APPROVAL_DETAIL,
     status_code=HTTP_200_OK,
     dependencies=[
         Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
     ],
-    response_model=List[schemas.PreApprovalWebhookResponse],
+    response_model=schemas.PreApprovalWebhookResponse,
 )
-def create_or_update_pre_execution_webhooks(
-    *,
-    db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PreApprovalWebhookCreate, max_items=50) = Body(...),  # type: ignore
-) -> List[PreApprovalWebhook]:
-    """
-    Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.
-    """
-    return put_webhooks(db, webhooks)
-
-
-def _patch_webhook(
+def update_pre_execution_webhook(
     *,
     db: Session = Depends(deps.get_db),
     webhook_key: FidesKey,
     webhook_body: schemas.PreApprovalWebhookUpdate = Body(...),
 ) -> schemas.PreApprovalWebhookResponse:
-    """Helper method for PATCHing a single pre-approval webhook"""
+    """PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created."""
+
     loaded_webhook = get_pre_approval_webhook_or_error(db, webhook_key)
     data = webhook_body.dict(exclude_none=True)
 
@@ -205,43 +200,6 @@ def _patch_webhook(
     )
 
 
-@router.patch(
-    urls.WEBHOOK_PRE_APPROVAL_DETAIL,
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
-    ],
-    response_model=schemas.PreApprovalWebhookResponse,
-)
-def update_pre_execution_webhook(
-    *,
-    db: Session = Depends(deps.get_db),
-    webhook_key: FidesKey,
-    webhook_body: schemas.PreApprovalWebhookUpdate = Body(...),
-) -> schemas.PreApprovalWebhookResponse:
-    """PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created."""
-    return _patch_webhook(
-        db=db,
-        webhook_key=webhook_key,
-        webhook_body=webhook_body,
-    )
-
-
-def delete_webhook(
-    *,
-    db: Session = Depends(deps.get_db),
-    webhook_key: FidesKey,
-) -> None:
-    """Handles deleting Pre-Approval Webhooks."""
-    loaded_webhook = get_pre_approval_webhook_or_error(db, webhook_key)
-
-    logger.info(
-        "Deleting Pre-Approval Webhook with key '{}'",
-        webhook_key,
-    )
-    loaded_webhook.delete(db=db)
-
-
 @router.delete(
     urls.WEBHOOK_PRE_APPROVAL_DETAIL,
     status_code=HTTP_200_OK,
@@ -253,7 +211,10 @@ def delete_pre_execution_webhook(
     webhook_key: FidesKey,
 ) -> None:
     """Delete the Pre-Approval Webhook given webhook key"""
-    delete_webhook(
-        db=db,
-        webhook_key=webhook_key,
+    loaded_webhook = get_pre_approval_webhook_or_error(db, webhook_key)
+
+    logger.info(
+        "Deleting Pre-Approval Webhook with key '{}'",
+        webhook_key,
     )
+    loaded_webhook.delete(db=db)
