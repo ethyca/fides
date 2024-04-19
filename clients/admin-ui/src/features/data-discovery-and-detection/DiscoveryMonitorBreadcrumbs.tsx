@@ -1,7 +1,7 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@fidesui/react";
 import Link from "next/link";
 
-import { DATA_DISCOVERY_MONITORS } from "../common/nav/v2/routes";
+import { DATA_DISCOVERY_MONITORS_ROUTE } from "../common/nav/v2/routes";
 import useDiscoveryRoutes from "./hooks/useDiscoveryRoutes";
 
 interface DiscoveryMonitorBreadcrumbsProps {
@@ -18,9 +18,15 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
   const urnParts = resourceUrn ? resourceUrn.split(".") : [];
 
   return (
-    <Breadcrumb separator="->" fontSize="2xl" fontWeight="medium" mb={5}>
+    <Breadcrumb
+      separator="->"
+      fontSize="2xl"
+      fontWeight="medium"
+      mb={5}
+      data-testid="results-breadcrumb"
+    >
       <BreadcrumbItem color={monitorId ? "gray.500" : "black"}>
-        <BreadcrumbLink as={Link} href={DATA_DISCOVERY_MONITORS}>
+        <BreadcrumbLink as={Link} href={DATA_DISCOVERY_MONITORS_ROUTE}>
           Data Discovery
         </BreadcrumbLink>
       </BreadcrumbItem>
