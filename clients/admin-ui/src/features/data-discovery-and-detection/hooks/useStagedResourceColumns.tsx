@@ -50,11 +50,6 @@ const useStagedResourceColumns = ({
       cell: (props) => <DiffStatusCell status={props.getValue()} />,
       header: (props) => <DefaultHeaderCell value="Change type" {...props} />,
     }),
-    columnHelper.accessor((row) => row.description, {
-      id: "description",
-      cell: (props) => <DefaultCell value={props.getValue()} />,
-      header: (props) => <DefaultHeaderCell value="Description" {...props} />,
-    }),
     columnHelper.accessor((row) => row.modified, {
       id: "modified",
       cell: (props) => <DefaultCell value={props.getValue()} />,
