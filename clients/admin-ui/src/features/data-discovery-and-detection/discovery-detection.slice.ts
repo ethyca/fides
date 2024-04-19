@@ -58,21 +58,21 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/${params.monitor_config_id}/results`,
       }),
     }),
-    monitorResource: build.query<any, ResourceActionQueryParams>({
+    monitorResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
         params,
         method: "POST",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/monitor`,
       }),
     }),
-    muteResource: build.query<any, ResourceActionQueryParams>({
+    muteResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
         params,
         method: "POST",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/mute`,
       }),
     }),
-    acceptResource: build.query<any, ResourceActionQueryParams>({
+    acceptResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
         params,
         method: "POST",
@@ -82,8 +82,13 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetAllMonitorsQuery, useGetMonitorResultsQuery } =
-  discoveryDetectionApi;
+export const {
+  useGetAllMonitorsQuery,
+  useGetMonitorResultsQuery,
+  useAcceptResourceMutation,
+  useMuteResourceMutation,
+  useMonitorResourceMutation,
+} = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({
   name: "discoveryDetection",

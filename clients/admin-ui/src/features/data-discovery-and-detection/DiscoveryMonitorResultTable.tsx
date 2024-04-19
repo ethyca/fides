@@ -128,7 +128,7 @@ const DiscoveryMonitorResultTable = ({
     resources?.items[0] as DiscoveryMonitorItem
   );
 
-  const { columns } = useStagedResourceColumns(resourceType);
+  const { columns } = useStagedResourceColumns({ resourceType, monitorId });
 
   const {
     items: data,

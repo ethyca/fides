@@ -8,17 +8,22 @@ import {
   ViewIcon,
   ViewOffIcon,
   IconButton,
-  SearchIcon,
 } from "@fidesui/react";
 import { ReactElement } from "react";
 import { StagedResource } from "~/types/api";
 import { PlayIcon } from "../common/Icon/Play";
 import { StopIcon } from "../common/Icon/Stop";
+import {
+  useAcceptResourceMutation,
+  useMonitorResourceMutation,
+  useMuteResourceMutation,
+} from "./discovery-detection.slice";
 import { StagedResourceType } from "./types/StagedResourceType";
 
 interface DiscoveryMonitorItemActionsProps {
   resource: StagedResource;
   resourceType: StagedResourceType;
+  monitorId: string;
 }
 
 enum mockMonitorStatusEnum {
@@ -39,8 +44,11 @@ enum mockClassificationStatusEnum {
 
 const DiscoveryMonitorItemActions: React.FC<
   DiscoveryMonitorItemActionsProps
-> = ({ resource, resourceType }) => {
-  console.log("resource", resource);
+> = ({ resource, resourceType, monitorId }) => {
+  const [monitorResourceMutation] = useMonitorResourceMutation();
+  const [acceptResourceMutation] = useAcceptResourceMutation();
+  const [muteResourceMutation] = useMuteResourceMutation();
+
   const monitorStatus = undefined;
   const diffStatus = mockDiffStatusEnum.ADDITION;
   const classificationStatus = undefined;
@@ -49,6 +57,8 @@ const DiscoveryMonitorItemActions: React.FC<
     // No actions for database level
     return null;
   }
+
+  console.log("monitorId", monitorId);
 
   // We enable monitor / stop monitoring at the schema level only
   // Tables and field levels can mute/unmute
@@ -80,35 +90,64 @@ const DiscoveryMonitorItemActions: React.FC<
         <ActionIcon
           title="Start Monitoring"
           icon={<PlayIcon />}
-          onClick={() => {}}
+          onClick={() =>
+            monitorResourceMutation({
+              monitor_config_id: monitorId,
+              staged_resource_urn: resource.urn,
+            })
+          }
         />
       )}
       {showStopMonitoringAction && (
         <ActionIcon
           title="Stop Monitoring"
           icon={<StopIcon />}
-          onClick={() => {}}
+          onClick={() =>
+            muteResourceMutation({
+              monitor_config_id: monitorId,
+              staged_resource_urn: resource.urn,
+            })
+          }
         />
       )}
       {showMuteAction && (
         <ActionIcon
           title="Mute - Exclude from monitoring"
           icon={<ViewOffIcon />}
-          onClick={() => {}}
+          onClick={() =>
+            muteResourceMutation({
+              monitor_config_id: monitorId,
+              staged_resource_urn: resource.urn,
+            })
+          }
         />
       )}
       {showUnmuteAction && (
         <ActionIcon
           title="Unmute - Include in monitoring"
           icon={<ViewIcon />}
-          onClick={() => {}}
+          onClick={() =>
+            monitorResourceMutation({
+              monitor_config_id: monitorId,
+              staged_resource_urn: resource.urn,
+            })
+          }
         />
       )}
       {showRejectAction && (
         <ActionIcon title="Reject" icon={<CloseIcon />} onClick={() => {}} />
       )}
       {showAcceptAction && (
-        <ActionIcon title="Accept" icon={<CheckIcon />} onClick={() => {}} />
+        <ActionIcon
+          title="Accept"
+          icon={<CheckIcon />}
+          onClick={() =>
+            acceptResourceMutation({
+              monitor_config_id: monitorId,
+              staged_resource_urn: resource.urn,
+            })
+          }
+        />
       )}
       {showEditAction && (
         <ActionIcon title="Edit" icon={<EditIcon />} onClick={() => {}} />
