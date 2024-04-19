@@ -12,11 +12,11 @@ export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 export const DATASET_ROUTE = "/dataset";
 
 // Detection and discovery
-export const SYSTEM_DETECTION = "/data-discovery/system-detection";
-export const DATA_DISCOVERY_MONITORS = "/data-discovery/monitors";
-export const DATA_DISCOVERY_MONITOR_DETAIL =
+export const SYSTEM_DETECTION_ROUTE = "/data-discovery/system-detection";
+export const DATA_DISCOVERY_MONITORS_ROUTE = "/data-discovery/monitors";
+export const DATA_DISCOVERY_MONITOR_DETAIL_ROUTE =
   "/data-discovery/monitors/[monitorId]";
-export const DATA_DISCOVERY_RESOURCE_DETAIL =
+export const DATA_DISCOVERY_RESOURCE_DETAIL_ROUTE =
   "/data-discovery/monitors/[monitorId]/[resourceUrn]";
 
 // Privacy requests group
