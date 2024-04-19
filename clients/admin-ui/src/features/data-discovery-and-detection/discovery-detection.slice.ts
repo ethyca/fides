@@ -57,6 +57,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "GET",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/results`,
       }),
+      providesTags: () => ["Discovery Monitor Results"],
     }),
     monitorResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
@@ -64,6 +65,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/monitor`,
       }),
+      invalidatesTags: ["Discovery Monitor Results"],
     }),
     muteResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
@@ -71,6 +73,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/mute`,
       }),
+      invalidatesTags: ["Discovery Monitor Results"],
     }),
     unmuteResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
@@ -78,6 +81,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/un-mute`,
       }),
+      invalidatesTags: ["Discovery Monitor Results"],
     }),
     acceptResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
@@ -85,6 +89,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/accept`,
       }),
+      invalidatesTags: ["Discovery Monitor Results"],
     }),
   }),
 });

@@ -33,6 +33,7 @@ export const baseApi = createApi({
     "Dataset",
     "Datasets",
     "Discovery Monitor Configs",
+    "Discovery Monitor Results",
     "Fides Cloud Config",
     "Languages",
     "Locations",

@@ -24,6 +24,7 @@ import {
   useAcceptResourceMutation,
   useMonitorResourceMutation,
   useMuteResourceMutation,
+  useUnmuteResourceMutation,
 } from "./discovery-detection.slice";
 import { StagedResourceType } from "./types/StagedResourceType";
 
@@ -39,7 +40,7 @@ const DiscoveryMonitorItemActions: React.FC<
   const [monitorResourceMutation] = useMonitorResourceMutation();
   const [acceptResourceMutation] = useAcceptResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
-  const [unmuteResourceMutation] = useMuteResourceMutation();
+  const [unmuteResourceMutation] = useUnmuteResourceMutation();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
