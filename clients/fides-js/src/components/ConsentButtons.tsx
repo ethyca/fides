@@ -19,7 +19,6 @@ export const ConsentButtons = ({
   onAcceptAll,
   onRejectAll,
   isMobile,
-  includePrivacyPolicy,
   saveOnly = false,
   options,
   isInModal,
@@ -31,25 +30,10 @@ export const ConsentButtons = ({
   onRejectAll: () => void;
   isMobile: boolean;
   options: FidesInitOptions;
-  includePrivacyPolicy?: boolean;
   saveOnly?: boolean;
   isInModal?: boolean;
 }) => (
   <div id="fides-button-group">
-    {i18n.availableLanguages?.length > 1 && (
-      <LanguageSelector i18n={i18n} options={options} />
-    )}
-    {!!onManagePreferencesClick && (
-      <div className="fides-banner-button-group fides-manage-preferences-button-group">
-        <Button
-          buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
-          label={i18n.t("exp.privacy_preferences_link_label")}
-          onClick={onManagePreferencesClick}
-          className="fides-manage-preferences-button"
-        />
-      </div>
-    )}
-    {includePrivacyPolicy && <PrivacyPolicyLink i18n={i18n} />}
     <div
       className={
         isInModal
@@ -74,6 +58,28 @@ export const ConsentButtons = ({
           />
         </Fragment>
       )}
+    </div>
+    <div
+      className={`${
+        isInModal
+          ? "fides-modal-button-group fides-modal-secondary-actions"
+          : "fides-banner-button-group fides-banner-secondary-actions"
+      } ${
+        i18n.availableLanguages?.length > 1 ? "fides-button-group-i18n" : ""
+      }`}
+    >
+      {i18n.availableLanguages?.length > 1 && (
+        <LanguageSelector i18n={i18n} options={options} />
+      )}
+      {!!onManagePreferencesClick && (
+        <Button
+          buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
+          label={i18n.t("exp.privacy_preferences_link_label")}
+          onClick={onManagePreferencesClick}
+          className="fides-manage-preferences-button"
+        />
+      )}
+      <PrivacyPolicyLink i18n={i18n} />
     </div>
   </div>
 );
@@ -165,7 +171,6 @@ export const NoticeConsentButtons = ({
         ) : undefined
       }
       isMobile={isMobile}
-      includePrivacyPolicy={!isInModal}
       saveOnly={saveOnly}
       options={options}
     />
