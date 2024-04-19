@@ -29,9 +29,12 @@ the browser, see the MDN docs:
 current user's consent preferences - either previously saved or applicable
 defaults - have been set on the `Fides` global object.
 
+- `FidesUpdating`: Dispatched whenever the current user's consent preferences
+are about to be saved.
+
 - `FidesUpdated`: Dispatched whenever the current user's consent preferences
 are updated on the `Fides` global object due to a user action (e.g. accepting
-all, applying GPC). The
+all, applying GPC).
 
 - `FidesUIShown`: Dispatched whenever a FidesJS UI component is rendered and
 shown to the current user (banner, modal, etc.). The specific component shown

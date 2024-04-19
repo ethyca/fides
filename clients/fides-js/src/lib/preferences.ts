@@ -96,18 +96,21 @@ export const updateConsentPreferences = async ({
   Object.assign(cookie, updatedCookie);
   Object.assign(cookie.fides_meta, extraDetails); // save extra details to meta (i.e. consentMethod)
 
-  // 2. Update the window.Fides object
+  // 2. Dispatch a "FidesUpdating" event with the new cookie
+  dispatchFidesEvent("FidesUpdating", cookie, options.debug, extraDetails);
+  
+  // 3. Update the window.Fides object
   debugLog(options.debug, "Updating window.Fides");
   window.Fides.consent = cookie.consent;
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
-  // 3. Save preferences to the cookie in the browser
+  // 4. Save preferences to the cookie in the browser
   debugLog(options.debug, "Saving preferences to cookie");
   saveFidesCookie(cookie, options.base64Cookie);
   window.Fides.saved_consent = cookie.consent;
 
-  // 4. Save preferences to API (if not disabled)
+  // 5. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {
     try {
       await savePreferencesApi(
@@ -130,7 +133,7 @@ export const updateConsentPreferences = async ({
     }
   }
 
-  // 5. Remove cookies associated with notices that were opted-out from the browser
+  // 6. Remove cookies associated with notices that were opted-out from the browser
   if (consentPreferencesToSave) {
     consentPreferencesToSave
       .filter(
@@ -142,6 +145,6 @@ export const updateConsentPreferences = async ({
       });
   }
 
-  // 6. Dispatch a "FidesUpdated" event
+  // 7. Dispatch a "FidesUpdated" event
   dispatchFidesEvent("FidesUpdated", cookie, options.debug, extraDetails);
 };
