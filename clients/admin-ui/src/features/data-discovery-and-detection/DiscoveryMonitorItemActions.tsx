@@ -5,11 +5,12 @@ import {
   EditIcon,
   HStack,
   IconButton,
+  SpinnerIcon,
   Tooltip,
   ViewIcon,
   ViewOffIcon,
 } from "@fidesui/react";
-import { ReactElement } from "react";
+import { ReactElement, useState } from "react";
 
 import {
   ClassificationStatus,
@@ -38,6 +39,9 @@ const DiscoveryMonitorItemActions: React.FC<
   const [monitorResourceMutation] = useMonitorResourceMutation();
   const [acceptResourceMutation] = useAcceptResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
+  const [unmuteResourceMutation] = useMuteResourceMutation();
+
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
 
   const {
     monitor_status: monitorStatus,
@@ -77,68 +81,94 @@ const DiscoveryMonitorItemActions: React.FC<
         <ActionIcon
           title="Start Monitoring"
           icon={<PlayIcon />}
-          onClick={() =>
-            monitorResourceMutation({
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await monitorResourceMutation({
               monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
-            })
-          }
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
         />
       )}
       {showStopMonitoringAction && (
         <ActionIcon
           title="Stop Monitoring"
           icon={<StopIcon />}
-          onClick={() =>
-            muteResourceMutation({
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await muteResourceMutation({
               monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
-            })
-          }
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
         />
       )}
       {showMuteAction && (
         <ActionIcon
           title="Mute - Exclude from monitoring"
           icon={<ViewOffIcon />}
-          onClick={() =>
-            muteResourceMutation({
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await muteResourceMutation({
               monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
-            })
-          }
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
         />
       )}
       {showUnmuteAction && (
         <ActionIcon
           title="Unmute - Include in monitoring"
           icon={<ViewIcon />}
-          onClick={() =>
-            monitorResourceMutation({
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await unmuteResourceMutation({
               monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
-            })
-          }
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
         />
       )}
       {showRejectAction && (
-        <ActionIcon title="Reject" icon={<CloseIcon />} onClick={() => {}} />
+        <ActionIcon
+          title="Reject"
+          icon={<CloseIcon />}
+          onClick={() => {}}
+          disabled={isProcessingAction}
+        />
       )}
       {showAcceptAction && (
         <ActionIcon
           title="Accept"
           icon={<CheckIcon />}
-          onClick={() =>
-            acceptResourceMutation({
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await acceptResourceMutation({
               monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
-            })
-          }
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
         />
       )}
       {showEditAction && (
-        <ActionIcon title="Edit" icon={<EditIcon />} onClick={() => {}} />
+        <ActionIcon
+          title="Edit"
+          icon={<EditIcon />}
+          onClick={() => {}}
+          disabled={isProcessingAction}
+        />
       )}
+      {isProcessingAction ? <SpinnerIcon /> : null}
     </HStack>
   );
 };
@@ -147,10 +177,12 @@ const ActionIcon = ({
   title,
   icon,
   onClick,
+  disabled,
 }: {
   title: string;
   icon: ReactElement;
   onClick: () => void;
+  disabled?: boolean;
 }) => (
   <Tooltip label={title}>
     <IconButton
@@ -159,6 +191,7 @@ const ActionIcon = ({
       size="xs"
       icon={icon}
       onClick={onClick}
+      disabled={disabled}
     />
   </Tooltip>
 );
