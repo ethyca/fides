@@ -38,7 +38,6 @@ class TestPreApprovalWebhookModel:
         db.add(webhook_1)
         db.add(webhook_2)
         db.commit()
-        db.expunge_all()
 
         loaded_webhook = db.query(PreApprovalWebhook).filter_by(name=name_1).first()
 
@@ -62,29 +61,34 @@ class TestPreApprovalWebhookModel:
             == all_webhooks_with_specific_connection_config
         )
 
-        loaded_webhook.delete(db=db)
+        connection_config.delete(db=db)
+        for webhook in all_webhooks_with_specific_connection_config:
+            webhook.delete(db=db)
 
     def test_create_connection_config_errors(
         self, db: Session, https_connection_config, pre_approval_webhooks
     ):
         with pytest.raises(KeyValidationError) as exc:
-            PreApprovalWebhook.create(
+            new_webhook_no_key = PreApprovalWebhook.create(
                 db=db,
                 data={
                     "connection_config_id": https_connection_config.id,
-                    "key": "pre_approval_webhook_3",
                 },
             )
+            db.add(new_webhook_no_key)
+            db.commit()
         assert str(exc.value) == "PreApprovalWebhook requires a name."
 
         with pytest.raises(KeyOrNameAlreadyExists) as exc:
-            PreApprovalWebhook.create(
+            new_webhook_duplicate_key = PreApprovalWebhook.create(
                 db=db,
                 data={
                     "connection_config_id": https_connection_config.id,
                     "key": "pre_approval_webhook_2",
                 },
             )
+            db.add(new_webhook_duplicate_key)
+            db.commit()
         assert (
             str(exc.value)
             == "Key pre_approval_webhook_2 already exists in PreApprovalWebhook. Keys will be snake-cased names if not provided. "
@@ -108,17 +112,12 @@ class TestPreApprovalWebhookModel:
         )
         db.add(reply)
         db.commit()
-        db.expunge_all()
 
-        loaded_reply = (
-            db.query(PreApprovalWebhookReply)
-            .filter_by(privacy_request_id=privacy_request_status_pending.id)
-            .first()
-        )
+        loaded_reply = PreApprovalWebhookReply.get_by(db, field="privacy_request_id", value=privacy_request_status_pending.id)
 
         assert loaded_reply.webhook_id == https_connection_config.id
         assert loaded_reply.privacy_request_id == privacy_request_status_pending.id
-        assert loaded_reply.is_eligible == True
+        assert loaded_reply.is_eligible is True
         assert loaded_reply.created_at is not None
 
         # assert relationship with PrivacyRequest
@@ -128,3 +127,5 @@ class TestPreApprovalWebhookModel:
             .first()
         )
         assert loaded_reply.privacy_request == privacy_request
+
+        reply.delete(db=db)
