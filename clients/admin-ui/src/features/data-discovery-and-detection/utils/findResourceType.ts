@@ -1,5 +1,9 @@
-import { MonitorResultsItem } from "../hooks/useStagedResourceColumns";
+import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
+
 import { StagedResourceType } from "../types/StagedResourceType";
+
+export type MonitorResultsItem = StagedResource &
+  Partial<Database & Schema & Table & Field>;
 
 export const findResourceType = (item: MonitorResultsItem | undefined) => {
   if (!item) {
