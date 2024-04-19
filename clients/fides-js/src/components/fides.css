@@ -425,9 +425,7 @@ div#fides-consent-content .fides-modal-body {
   z-index: 5;
   background-color: var(--fides-overlay-background-color);
   bottom: 0px;
-  width: calc(
-    var(--fides-overlay-width) - var(--fides-overlay-container-border-width) * 2
-  );
+  width: 100%;
   border-bottom-left-radius: var(--fides-overlay-component-border-radius);
   border-bottom-right-radius: var(--fides-overlay-component-border-radius);
 }

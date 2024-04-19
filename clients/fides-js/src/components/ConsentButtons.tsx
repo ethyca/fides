@@ -32,57 +32,58 @@ export const ConsentButtons = ({
   options: FidesInitOptions;
   saveOnly?: boolean;
   isInModal?: boolean;
-}) => (
-  <div id="fides-button-group">
-    <div
-      className={
-        isInModal
-          ? "fides-modal-button-group fides-modal-primary-actions"
-          : "fides-banner-button-group fides-banner-primary-actions"
-      }
-    >
-      {firstButton}
-      {!saveOnly && (
-        <Fragment>
+}) => {
+  const includeLanguageSelector = i18n.availableLanguages?.length > 1;
+  return (
+    <div id="fides-button-group">
+      <div
+        className={
+          isInModal
+            ? "fides-modal-button-group fides-modal-primary-actions"
+            : "fides-banner-button-group fides-banner-primary-actions"
+        }
+      >
+        {firstButton}
+        {!saveOnly && (
+          <Fragment>
+            <Button
+              buttonType={ButtonType.PRIMARY}
+              label={i18n.t("exp.reject_button_label")}
+              onClick={onRejectAll}
+              className="fides-reject-all-button"
+            />
+            <Button
+              buttonType={ButtonType.PRIMARY}
+              label={i18n.t("exp.accept_button_label")}
+              onClick={onAcceptAll}
+              className="fides-accept-all-button"
+            />
+          </Fragment>
+        )}
+      </div>
+      <div
+        className={`${
+          isInModal
+            ? "fides-modal-button-group fides-modal-secondary-actions"
+            : "fides-banner-button-group fides-banner-secondary-actions"
+        } ${includeLanguageSelector ? "fides-button-group-i18n" : ""}`}
+      >
+        {includeLanguageSelector && (
+          <LanguageSelector i18n={i18n} options={options} />
+        )}
+        {!!onManagePreferencesClick && (
           <Button
-            buttonType={ButtonType.PRIMARY}
-            label={i18n.t("exp.reject_button_label")}
-            onClick={onRejectAll}
-            className="fides-reject-all-button"
+            buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
+            label={i18n.t("exp.privacy_preferences_link_label")}
+            onClick={onManagePreferencesClick}
+            className="fides-manage-preferences-button"
           />
-          <Button
-            buttonType={ButtonType.PRIMARY}
-            label={i18n.t("exp.accept_button_label")}
-            onClick={onAcceptAll}
-            className="fides-accept-all-button"
-          />
-        </Fragment>
-      )}
+        )}
+        <PrivacyPolicyLink i18n={i18n} />
+      </div>
     </div>
-    <div
-      className={`${
-        isInModal
-          ? "fides-modal-button-group fides-modal-secondary-actions"
-          : "fides-banner-button-group fides-banner-secondary-actions"
-      } ${
-        i18n.availableLanguages?.length > 1 ? "fides-button-group-i18n" : ""
-      }`}
-    >
-      {i18n.availableLanguages?.length > 1 && (
-        <LanguageSelector i18n={i18n} options={options} />
-      )}
-      {!!onManagePreferencesClick && (
-        <Button
-          buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
-          label={i18n.t("exp.privacy_preferences_link_label")}
-          onClick={onManagePreferencesClick}
-          className="fides-manage-preferences-button"
-        />
-      )}
-      <PrivacyPolicyLink i18n={i18n} />
-    </div>
-  </div>
-);
+  );
+};
 
 type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
