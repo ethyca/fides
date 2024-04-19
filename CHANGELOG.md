@@ -22,6 +22,7 @@ The types of changes are:
 - Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 
 ### Changed
+- Loosened requirement for AWS Scanning permissions to warn instead of raise an exception [#4806](https://github.com/ethyca/fides/pull/4806)
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
 
 ### Fixed

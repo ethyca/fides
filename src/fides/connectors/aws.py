@@ -50,11 +50,11 @@ def handle_common_aws_errors(func: Callable) -> Callable:
                 "SignatureDoesNotMatch",
             ]:
                 raise ConnectorAuthFailureException(error.response["Error"]["Message"])
-            elif error.response["Error"]["Code"] in [
+            if error.response["Error"]["Code"] in [
                 "AccessDenied",
             ]:
                 logger.warning(error.response["Error"]["Message"])
-                return
+                return []
             raise ConnectorFailureException(error.response["Error"]["Message"])
 
     return update_wrapper(wrapper_func, func)
