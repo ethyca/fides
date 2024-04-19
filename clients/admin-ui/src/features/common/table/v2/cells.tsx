@@ -50,6 +50,12 @@ const FidesBadge: FC = ({ children }) => (
   </Badge>
 );
 
+export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
+  <Flex alignItems="center" height="100%" mr={2}>
+    {children}
+  </Flex>
+);
+
 export const BadgeCell = ({
   value,
   suffix,
@@ -57,12 +63,12 @@ export const BadgeCell = ({
   value: string | number;
   suffix?: string;
 }) => (
-  <Flex alignItems="center" height="100%" mr="2">
+  <BadgeCellContainer>
     <FidesBadge>
       {value}
       {suffix ? ` ${suffix}` : null}
     </FidesBadge>
-  </Flex>
+  </BadgeCellContainer>
 );
 
 export const GroupCountBadgeCell = ({
