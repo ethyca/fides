@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added carets to collapsible sections in the overlay modal [#4793](https://github.com/ethyca/fides/pull/4793)
+- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
