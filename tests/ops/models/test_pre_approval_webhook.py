@@ -113,7 +113,9 @@ class TestPreApprovalWebhookModel:
         db.add(reply)
         db.commit()
 
-        loaded_reply = PreApprovalWebhookReply.get_by(db, field="privacy_request_id", value=privacy_request_status_pending.id)
+        loaded_reply = PreApprovalWebhookReply.get_by(
+            db, field="privacy_request_id", value=privacy_request_status_pending.id
+        )
 
         assert loaded_reply.webhook_id == https_connection_config.id
         assert loaded_reply.privacy_request_id == privacy_request_status_pending.id
