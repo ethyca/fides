@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 
 import {
-  DATA_DISCOVERY_MONITOR_DETAIL,
-  DATA_DISCOVERY_RESOURCE_DETAIL,
+  DATA_DISCOVERY_MONITOR_DETAIL_ROUTE,
+  DATA_DISCOVERY_RESOURCE_DETAIL_ROUTE,
 } from "~/features/common/nav/v2/routes";
 
 const useDiscoveryRoutes = () => {
@@ -12,7 +12,7 @@ const useDiscoveryRoutes = () => {
 
   const navigateToMonitorDetails = ({ monitorId }: { monitorId: string }) => {
     router.push({
-      pathname: DATA_DISCOVERY_MONITOR_DETAIL,
+      pathname: DATA_DISCOVERY_MONITOR_DETAIL_ROUTE,
       query: {
         monitorId,
       },
@@ -27,7 +27,7 @@ const useDiscoveryRoutes = () => {
     resourceUrn: string;
   }) => {
     router.push({
-      pathname: DATA_DISCOVERY_RESOURCE_DETAIL,
+      pathname: DATA_DISCOVERY_RESOURCE_DETAIL_ROUTE,
       query: {
         monitorId,
         resourceUrn,

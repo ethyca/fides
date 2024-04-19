@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "name": "test",
+      "monitor_frequency": "Daily",
+      "data_steward": ["data@stewa.rd"],
+      "id": "test",
+      "type": "Big Query"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

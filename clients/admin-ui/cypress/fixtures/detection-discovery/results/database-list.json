@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "urn": "test.prj-bigquery-000000",
+      "user_assigned_data_categories": [],
+      "name": "prj-bigquery-000000",
+      "description": null,
+      "modified": null,
+      "classifications": [],
+      "monitor_status": "Monitored",
+      "approval_status": null,
+      "classification_status": null,
+      "diff_status": null,
+      "child_diff_statuses": [],
+      "schemas": ["test.prj-bigquery-418515.test_dataset_1"]
+    },
+    {
+      "urn": "test.prj-bqextract-000001",
+      "user_assigned_data_categories": [],
+      "name": "prj-bqextract-000001",
+      "description": null,
+      "modified": null,
+      "classifications": [],
+      "monitor_status": "Monitored",
+      "approval_status": null,
+      "classification_status": null,
+      "diff_status": null,
+      "child_diff_statuses": [],
+      "schemas": []
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}
