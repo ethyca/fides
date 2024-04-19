@@ -4,13 +4,19 @@ import {
   CloseIcon,
   EditIcon,
   HStack,
+  IconButton,
   Tooltip,
   ViewIcon,
   ViewOffIcon,
-  IconButton,
 } from "@fidesui/react";
 import { ReactElement } from "react";
-import { StagedResource } from "~/types/api";
+
+import {
+  ClassificationStatus,
+  MonitorStatus,
+  StagedResource,
+} from "~/types/api";
+
 import { PlayIcon } from "../common/Icon/Play";
 import { StopIcon } from "../common/Icon/Stop";
 import {
@@ -26,22 +32,6 @@ interface DiscoveryMonitorItemActionsProps {
   monitorId: string;
 }
 
-enum mockMonitorStatusEnum {
-  MONITORED = "monitored",
-  MUTED = "muted",
-}
-
-enum mockDiffStatusEnum {
-  ADDITION = "addition",
-  REMOVAL = "removal",
-  MODIFICATION = "modification",
-}
-
-enum mockClassificationStatusEnum {
-  PROCESSING = "processing",
-  COMPLETE = "complete",
-}
-
 const DiscoveryMonitorItemActions: React.FC<
   DiscoveryMonitorItemActionsProps
 > = ({ resource, resourceType, monitorId }) => {
@@ -49,40 +39,37 @@ const DiscoveryMonitorItemActions: React.FC<
   const [acceptResourceMutation] = useAcceptResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
 
-  const monitorStatus = undefined;
-  const diffStatus = mockDiffStatusEnum.ADDITION;
-  const classificationStatus = undefined;
+  const {
+    monitor_status: monitorStatus,
+    classification_status: classificationStatus,
+    diff_status: diffStatus,
+  } = resource;
 
+  // No actions for database level
   if (resourceType === StagedResourceType.DATABASE) {
-    // No actions for database level
     return null;
   }
-
-  console.log("monitorId", monitorId);
 
   // We enable monitor / stop monitoring at the schema level only
   // Tables and field levels can mute/unmute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
 
-  const showMuteAction =
-    monitorStatus !== mockMonitorStatusEnum.MUTED && !isSchemaType;
+  const showMuteAction = monitorStatus !== MonitorStatus.MUTED && !isSchemaType;
   const showUnmuteAction =
-    monitorStatus === mockMonitorStatusEnum.MUTED && !isSchemaType;
+    monitorStatus === MonitorStatus.MUTED && !isSchemaType;
   const showAcceptAction =
-    classificationStatus === mockClassificationStatusEnum.COMPLETE &&
-    diffStatus;
+    classificationStatus === ClassificationStatus.COMPLETE && diffStatus;
   const showRejectAction =
-    classificationStatus === mockClassificationStatusEnum.COMPLETE &&
-    diffStatus;
+    classificationStatus === ClassificationStatus.COMPLETE && diffStatus;
 
   const showStartMonitoringAction =
-    isSchemaType && monitorStatus !== mockMonitorStatusEnum.MONITORED;
+    isSchemaType && monitorStatus !== MonitorStatus.MONITORED;
   const showStopMonitoringAction =
-    isSchemaType && monitorStatus === mockMonitorStatusEnum.MONITORED;
+    isSchemaType && monitorStatus === MonitorStatus.MONITORED;
 
   const showEditAction =
     resourceType === StagedResourceType.FIELD &&
-    classificationStatus === mockClassificationStatusEnum.COMPLETE;
+    classificationStatus === ClassificationStatus.COMPLETE;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
