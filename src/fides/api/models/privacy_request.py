@@ -278,7 +278,7 @@ class PrivacyRequest(
         foreign_keys=[reviewed_by],
     )
 
-    pre_approval_webhook_reply = relationship(
+    pre_approval_webhook_replies = relationship(
         PreApprovalWebhookReply,
         back_populates="privacy_request",
     )

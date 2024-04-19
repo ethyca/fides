@@ -129,5 +129,6 @@ class TestPreApprovalWebhookModel:
             .first()
         )
         assert loaded_reply.privacy_request == privacy_request
+        assert privacy_request.pre_approval_webhook_replies[0] == loaded_reply
 
         reply.delete(db=db)
