@@ -2382,7 +2382,7 @@ describe("Consent overlay", () => {
       });
     });
 
-    it.only("reinitializes FidesJS and loads any changed options", () => {
+    it("reinitializes FidesJS and loads any changed options", () => {
       // First, it should initialize normally and show the banner
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesInitialized").should("have.been.calledOnce");
