@@ -22,7 +22,7 @@ The types of changes are:
 - Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
 
 ### Added 
-- Added CMP API fidesCleanCookie to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
+- Added CMP API fidesClearCookie to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
