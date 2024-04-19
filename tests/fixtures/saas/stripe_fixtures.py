@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, Generator
 
 import pydash
@@ -141,7 +142,6 @@ def stripe_create_erasure_data(
         "description": "RTF Test Customer",
         "email": stripe_erasure_identity_email,
         "name": "Ethyca RTF",
-        "phone": "+19515551234",
         "preferred_locales": ["en-US"],
         "shipping": {
             "address": {
@@ -153,7 +153,6 @@ def stripe_create_erasure_data(
                 "state": "CA",
             },
             "name": "Ethyca RTF",
-            "phone": "+19515551234",
         },
     }
 
@@ -292,7 +291,7 @@ def stripe_create_erasure_data(
                 "card": {
                     "number": 4242424242424242,
                     "exp_month": 4,
-                    "exp_year": 2023,
+                    "exp_year": datetime.today().year + 1,
                     "cvc": 314,
                 },
                 "billing_details": {"name": customer_data["name"]},

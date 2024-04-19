@@ -18,7 +18,6 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_access_request(
     db,
@@ -94,7 +93,6 @@ async def test_firebase_auth_access_request(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("firebase_auth_user")
 @pytest.mark.parametrize(
@@ -147,7 +145,6 @@ async def test_firebase_auth_access_request_non_existent_users(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_access_request_phone_number_identity(
     db,
@@ -226,7 +223,6 @@ async def test_firebase_auth_access_request_phone_number_identity(
     "Re-enable this test if the general config needs to test the user update functionality"
 )
 @pytest.mark.integration_saas
-@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_update_request(
     db,
@@ -316,7 +312,6 @@ async def test_firebase_auth_update_request(
     "Re-enable this test if the general config needs to test the user update functionality"
 )
 @pytest.mark.integration_saas
-@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_update_request_phone_number_identity(
     db,
@@ -403,7 +398,6 @@ async def test_firebase_auth_update_request_phone_number_identity(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_delete_request(
     db,
@@ -475,7 +469,6 @@ async def test_firebase_auth_delete_request(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_delete_request_phone_number_identity(
     db,

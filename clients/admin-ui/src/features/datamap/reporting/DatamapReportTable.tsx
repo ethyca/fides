@@ -29,20 +29,31 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
   DatamapReportFilterModal,
   useDatamapReportFilters,
 } from "~/features/datamap/reporting/DatamapReportFilterModal";
-import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
+  selectAllCustomFieldDefinitions,
+  useGetAllCustomFieldDefinitionsQuery,
+  useGetHealthQuery,
+} from "~/features/plus/plus.slice";
+import {
+  CustomField,
   DATAMAP_GROUPING,
-  DatamapReport,
+  DatamapReport as BaseDatamapReport,
   Page_DatamapReport_,
 } from "~/types/api";
+
+// Extend the base datamap report type to also have custom fields
+type DatamapReport = BaseDatamapReport & Record<string, CustomField["value"]>;
 
 const columnHelper = createColumnHelper<DatamapReport>();
 
@@ -53,6 +64,10 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   size: 25,
   pages: 1,
 };
+
+// Custom fields are prepended by `system_` or `privacy_declaration_`
+const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
+const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 enum COLUMN_IDS {
@@ -195,6 +210,13 @@ export const DatamapReportTable = () => {
     onDataSubjectChange,
   } = useDatamapReportFilters();
 
+  const {
+    getDataUseDisplayName,
+    getDataCategoryDisplayName,
+    getDataSubjectDisplayName,
+    isLoading: isLoadingFidesLang,
+  } = useTaxonomies();
+
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
     [dataUseOptions]
@@ -249,6 +271,8 @@ export const DatamapReportTable = () => {
     columnOrder,
   } = useMemo(() => {
     const report = datamapReport || emptyMinimalDatamapReportResponse;
+    // Type workaround since extending BaseDatamapReport with custom fields causes some trouble
+    const items = report.items as DatamapReport[];
     if (groupChangeStarted) {
       setGroupChangeStarted(false);
     }
@@ -262,6 +286,7 @@ export const DatamapReportTable = () => {
     */
     return {
       ...report,
+      items,
       grouping: getGrouping(groupBy),
       columnOrder: getColumnOrder(groupBy),
     };
@@ -272,6 +297,59 @@ export const DatamapReportTable = () => {
   useEffect(() => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
+
+  // Get custom fields
+  useGetAllCustomFieldDefinitionsQuery();
+  const customFields = useAppSelector(selectAllCustomFieldDefinitions);
+
+  const customFieldColumns = useMemo(() => {
+    // Determine custom field keys by
+    // 1. If they aren't in our expected, static, columns
+    // 2. If they start with one of the custom field prefixes
+    const datamapKeys = datamapReport?.items?.length
+      ? Object.keys(datamapReport.items[0])
+      : [];
+    const defaultKeys = Object.values(COLUMN_IDS);
+    const customFieldKeys = datamapKeys
+      .filter((k) => !defaultKeys.includes(k as COLUMN_IDS))
+      .filter(
+        (k) =>
+          k.startsWith(CUSTOM_FIELD_DATA_USE_PREFIX) ||
+          k.startsWith(CUSTOM_FIELD_SYSTEM_PREFIX)
+      );
+
+    // Create column objects for each custom field key
+    const columns = customFieldKeys.map((key) => {
+      // We need to figure out the original custom field object in order to see
+      // if the value is a string[], which would want `showHeaderMenu=true`
+      const customField = customFields.find((cf) =>
+        key.includes(_.snakeCase(cf.name))
+      );
+      const keyWithoutPrefix = key.replace(
+        /^(system_|privacy_declaration_)/,
+        ""
+      );
+      const displayText = _.upperFirst(keyWithoutPrefix.replaceAll("_", " "));
+      return columnHelper.accessor((row) => row[key], {
+        id: key,
+        cell: (props) =>
+          // Conditionally render the Group cell if we have more than one value.
+          // Alternatively, could check the customField type
+          Array.isArray(props.getValue()) ? (
+            <GroupCountBadgeCell value={props.getValue()} {...props} />
+          ) : (
+            <DefaultCell value={props.getValue() as string} />
+          ),
+        header: (props) => <DefaultHeaderCell value={displayText} {...props} />,
+        meta: {
+          displayText,
+          showHeaderMenu: customField?.field_type === "string[]",
+        },
+      });
+    });
+
+    return columns;
+  }, [datamapReport, customFields]);
 
   const tcfColumns = useMemo(
     () => [
@@ -286,13 +364,20 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: COLUMN_IDS.DATA_USE,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data uses"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+          return (
+            <GroupCountBadgeCell
+              suffix="data uses"
+              value={
+                isArray(value)
+                  ? map(value, getDataUseDisplayName)
+                  : getDataUseDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           displayText: "Data use",
@@ -300,13 +385,21 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_categories, {
         id: COLUMN_IDS.DATA_CATEGORY,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data categories"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="data categories"
+              value={
+                isArray(value)
+                  ? map(value, getDataCategoryDisplayName)
+                  : getDataCategoryDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
@@ -317,13 +410,21 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_subjects, {
         id: COLUMN_IDS.DATA_SUBJECT,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data subjects"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="data subjects"
+              value={
+                isArray(value)
+                  ? map(value, getDataSubjectDisplayName)
+                  : getDataSubjectDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => (
           <DefaultHeaderCell value="Data subject" {...props} />
         ),
@@ -795,8 +896,15 @@ export const DatamapReportTable = () => {
           displayText: "Uses profiling",
         },
       }),
+      // Tack on the custom field columns to the end
+      ...customFieldColumns,
     ],
-    []
+    [
+      customFieldColumns,
+      getDataUseDisplayName,
+      getDataSubjectDisplayName,
+      getDataCategoryDisplayName,
+    ]
   );
 
   const {
@@ -841,14 +949,19 @@ export const DatamapReportTable = () => {
     }
   };
 
-  if (isReportLoading || isLoadingHealthCheck) {
+  if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
   return (
     <Flex flex={1} direction="column" overflow="auto">
-      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-        Data Map Report
+      <Heading
+        mb={8}
+        fontSize="2xl"
+        fontWeight="semibold"
+        data-testid="datamap-report-heading"
+      >
+        Data map report
       </Heading>
       <DatamapReportFilterModal
         isOpen={isOpen}

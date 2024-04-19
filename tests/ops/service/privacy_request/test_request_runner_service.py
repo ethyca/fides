@@ -300,6 +300,9 @@ def get_privacy_request_results(
             pass
     privacy_request = PrivacyRequest.create(db=db, data=kwargs)
     privacy_request.cache_identity(privacy_request_data["identity"])
+    privacy_request.cache_custom_privacy_request_fields(
+        privacy_request_data.get("custom_privacy_request_fields", None)
+    )
     if "encryption_key" in privacy_request_data:
         privacy_request.cache_encryption(privacy_request_data["encryption_key"])
 
@@ -484,6 +487,86 @@ def test_create_and_process_access_request_postgres(
 
     visit_key = result_key_prefix + "visit"
     assert results[visit_key][0]["email"] == customer_email
+    log_id = pr.execution_logs[0].id
+    pr_id = pr.id
+
+    finished_audit_log: AuditLog = AuditLog.filter(
+        db=db,
+        conditions=(
+            (AuditLog.privacy_request_id == pr_id)
+            & (AuditLog.action == AuditLogAction.finished)
+        ),
+    ).first()
+
+    assert finished_audit_log is not None
+
+    # Both pre-execution webhooks and both post-execution webhooks were called
+    assert trigger_webhook_mock.call_count == 4
+
+    for webhook in policy_pre_execution_webhooks:
+        webhook.delete(db=db)
+
+    for webhook in policy_post_execution_webhooks:
+        webhook.delete(db=db)
+
+    policy.delete(db=db)
+    pr.delete(db=db)
+    assert not pr in db  # Check that `pr` has been expunged from the session
+    assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+def test_create_and_process_access_request_with_custom_identities_postgres(
+    trigger_webhook_mock,
+    postgres_example_test_dataset_config_read_access,
+    postgres_example_test_extended_dataset_config,
+    postgres_integration_db,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+    run_privacy_request_task,
+):
+    customer_email = "customer-1@example.com"
+    loyalty_id = "CH-1"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {
+            "email": customer_email,
+            "loyalty_id": {"label": "Loyalty ID", "value": loyalty_id},
+        },
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    results = pr.get_results()
+    assert len(results.keys()) == 12
+
+    for key in results.keys():
+        assert results[key] is not None
+        assert results[key] != {}
+
+    result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+    customer_key = result_key_prefix + "customer"
+    assert results[customer_key][0]["email"] == customer_email
+
+    visit_key = result_key_prefix + "visit"
+    assert results[visit_key][0]["email"] == customer_email
+
+    loyalty_key = (
+        f"EN_{pr.id}__access_request__postgres_example_test_extended_dataset:loyalty"
+    )
+    assert results[loyalty_key][0]["id"] == loyalty_id
+
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
 
@@ -727,7 +810,6 @@ def test_create_and_process_access_request_mariadb(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas_mailchimp(
     trigger_webhook_mock,
@@ -773,7 +855,6 @@ def test_create_and_process_access_request_saas_mailchimp(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_erasure_request_saas(
     _,
@@ -835,7 +916,6 @@ def test_create_and_process_erasure_request_saas(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_hubspot
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas_hubspot(
     trigger_webhook_mock,
@@ -2041,7 +2121,7 @@ class TestPrivacyRequestsEmailNotifications:
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
-            "identity": {"phone_number": "1231231233"},
+            "identity": {"phone_number": "+1231231233"},
         }
 
         pr = get_privacy_request_results(
@@ -2198,7 +2278,6 @@ class TestPrivacyRequestsManualWebhooks:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp_transactional
 def test_build_consent_dataset_graph(
     postgres_example_test_dataset_config_read_access,
     mysql_example_test_dataset_config,
@@ -2595,7 +2674,7 @@ def test_create_and_process_access_request_dynamodb(
     )
     login_table_key = f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:login"
     assert len(results[customer_table_key]) == 1
-    assert len(results[address_table_key]) == 2
+    assert len(results[address_table_key]) == 1
     assert len(results[login_table_key]) == 2
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name

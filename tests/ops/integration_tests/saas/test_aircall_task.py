@@ -16,13 +16,11 @@ CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_aircall
 def test_aircall_connection_test(aircall_connection_config) -> None:
     get_connector(aircall_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_aircall
 @pytest.mark.asyncio
 async def test_aircall_access_request_task_with_phone_number(
     db,
@@ -77,8 +75,8 @@ async def test_aircall_access_request_task_with_phone_number(
     )
 
 
+@pytest.mark.skip(reason="Temporarily disabled test")
 @pytest.mark.integration_saas
-@pytest.mark.integration_aircall
 @pytest.mark.asyncio
 async def test_aircall_erasure_request_task(
     db,

@@ -925,7 +925,6 @@ class TestGetConnections:
         assert [item["last_test_succeeded"] is None for item in items]
 
     @pytest.mark.integration_saas
-    @pytest.mark.integration_stripe
     def test_filter_system_type(
         self,
         db,

@@ -29,6 +29,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     ProvidedIdentity,
 )
+from fides.api.schemas.language import SupportedLanguage
 from fides.config import CONFIG
 
 
@@ -187,6 +188,15 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
+    language = Column(
+        EnumColumn(
+            SupportedLanguage,
+            native_enum=False,
+            values_callable=lambda x: [i.value for i in x],
+        ),
+        index=True,
+    )
+
     notice_key = Column(String, index=True)  # Privacy Notice Key
 
     notice_mechanism = Column(
@@ -204,12 +214,6 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
             ForeignKey("privacyexperienceconfighistory.id"),
             index=True,
         )
-
-    # The specific experience under which the user was presented the relevant notice
-    # Minimal information stored here, mostly just region and component type
-    @declared_attr
-    def privacy_experience_id(cls) -> Column:
-        return Column(String, ForeignKey("privacyexperience.id"), index=True)
 
     @declared_attr
     def privacy_notice_history_id(cls) -> Column:

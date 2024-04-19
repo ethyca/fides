@@ -11,6 +11,7 @@ import {
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
+import { safeLookupPropertyId } from "~/common/property-id";
 
 // one hour, how long the client should cache fides.js for
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
@@ -38,6 +39,12 @@ let autoRefresh: boolean = true;
  *         schema:
  *           type: string
  *         example: US-CA
+ *       - in: query
+ *         name: property_id
+ *         required: false
+ *         description: Optional identifier used to filter for experiences associated with the given property. If omitted, returns all experiences not associated with any properties.
+ *         schema:
+ *           type: string
  *       - in: query
  *         name: refresh
  *         required: false
@@ -91,6 +98,13 @@ export default async function handler(
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
+  const propertyId = safeLookupPropertyId(
+    req,
+    geolocation,
+    environment,
+    fidesString
+  );
+
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
@@ -113,7 +127,8 @@ export default async function handler(
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
         environment.settings.DEBUG,
-        null
+        null,
+        propertyId
       );
     }
   }
@@ -122,8 +137,10 @@ export default async function handler(
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
   // be able to prefetch the experience.
   const tcfEnabled = experience
-    ? experience.component === ComponentType.TCF_OVERLAY
+    ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
     : environment.settings.IS_FORCED_TCF;
+
+  const gppEnabled = !!experience?.gpp_settings?.enabled;
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
@@ -152,9 +169,11 @@ export default async function handler(
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
       fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
-      customOptionsPath: null,
+      customOptionsPath: environment.settings.CUSTOM_OPTIONS_PATH,
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
+      base64Cookie: environment.settings.BASE_64_COOKIE,
+      fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -175,13 +194,25 @@ export default async function handler(
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
+  let fidesGPP: string = "";
+  if (gppEnabled) {
+    // eslint-disable-next-line no-console
+    console.log("GPP extension enabled, bundling fides-ext-gpp.js...");
+    const fidesGPPBuffer = await fsPromises.readFile(
+      "public/lib/fides-ext-gpp.js"
+    );
+    fidesGPP = fidesGPPBuffer.toString();
+    if (!fidesGPP || fidesGPP === "") {
+      throw new Error("Unable to load latest gpp extension from server!");
+    }
+  }
 
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
   const script = `
   (function () {
-    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
+    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request
     if (!window.fetch) {
       var script = document.createElement('script');
       script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
@@ -189,7 +220,7 @@ export default async function handler(
     }
 
     // Include generic fides.js script
-    ${fidesJS}${
+    ${fidesJS}${fidesGPP}${
     customFidesCss
       ? `
     // Include custom fides.css styles

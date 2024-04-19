@@ -394,6 +394,17 @@ class TestSaaSQueryConfig:
         assert len(saas_requests) == 1
         assert saas_requests[0].param_values[0].identity == "phone"
 
+        mock_identity_data.return_value = {
+            "email": "test@example.com",
+            "phone": "+951555555",
+        }
+
+        query_config = SaaSQueryConfig(
+            member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
+        )
+        saas_requests = query_config.get_read_requests_by_identity()
+        assert len(saas_requests) == 2
+
         query_config = SaaSQueryConfig(
             tickets, endpoints, {}, privacy_request=PrivacyRequest(id="123")
         )
@@ -632,6 +643,8 @@ class TestSaaSQueryConfig:
         mock_custom_privacy_request_fields.return_value = {
             "first_name": "John",
             "last_name": "Doe",
+            "subscriber_ids": ["123", "456"],
+            "account_ids": [123, 456],
         }
         connector = SaaSConnector(saas_example_connection_config)
         saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
@@ -655,6 +668,8 @@ class TestSaaSQueryConfig:
                 CUSTOM_PRIVACY_REQUEST_FIELDS: {
                     "first_name": "John",
                     "last_name": "Doe",
+                    "subscriber_ids": ["123", "456"],
+                    "account_ids": [123, 456],
                 },
             },
             policy,
@@ -666,6 +681,8 @@ class TestSaaSQueryConfig:
         assert json.loads(read_request.body) == {
             "last_name": "Doe",
             "order_id": None,
+            "subscriber_ids": ["123", "456"],
+            "account_ids": [123, 456],
         }
 
         update_request: SaaSRequestParams = config.generate_update_stmt(
@@ -675,7 +692,12 @@ class TestSaaSQueryConfig:
         assert update_request.path == "/v1/internal/"
         assert update_request.query_params == {}
         assert json.loads(update_request.body) == {
-            "user_info": {"first_name": "John", "last_name": "Doe"}
+            "user_info": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "subscriber_ids": ["123", "456"],
+                "account_ids": [123, 456],
+            }
         }
 
         opt_in_request: SaaSRequest = config.generate_consent_stmt(

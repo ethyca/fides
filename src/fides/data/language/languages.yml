@@ -1,0 +1,81 @@
+languages:
+- id: ar
+  name: Arabic
+- id: bg
+  name: Bulgarian
+- id: bs
+  name: Bosnian
+- id: ca
+  name: Catalan
+- id: cs
+  name: Czech
+- id: da
+  name: Danish
+- id: de
+  name: German
+- id: el
+  name: Greek
+- id: en
+  name: English
+- id: es
+  name: Spanish
+- id: es-MX
+  name: Spanish (Mexico)
+- id: et
+  name: Estonian
+- id: eu
+  name: Basque
+- id: fi
+  name: Finnish
+- id: fr
+  name: French
+- id: fr-CA
+  name: French (Canada)
+- id: gl
+  name: Galician
+- id: hi-IN
+  name: Hindi (India)
+- id: hr
+  name: Croatian
+- id: hu
+  name: Hungarian
+- id: it
+  name: Italian
+- id: ja
+  name: Japanese
+- id: lt
+  name: Lithuanian
+- id: lv
+  name: Latvian
+- id: mt
+  name: Maltese
+- id: nl
+  name: Dutch
+- id: "no" # needs quotes, `no` literal in YAML is a keyword for False
+  name: Norwegian
+- id: pl
+  name: Polish
+- id: pt-BR
+  name: Portuguese (Brazil)
+- id: pt-PT
+  name: Portuguese (Portugal)
+- id: ro
+  name: Romanian
+- id: ru
+  name: Russian
+- id: sk
+  name: Slovak
+- id: sl
+  name: Slovenian
+- id: sr-Cyrl
+  name: Serbian (Cyrillic)
+- id: sr-Latn
+  name: Serbian (Latin)
+- id: sv
+  name: Swedish
+- id: tr
+  name: Turkish
+- id: uk
+  name: Ukrainian
+- id: zh
+  name: Chinese

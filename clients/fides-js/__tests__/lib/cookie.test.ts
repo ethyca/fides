@@ -1,6 +1,7 @@
 import * as uuid from "uuid";
 
 import { CookieAttributes } from "typescript-cookie/dist/types";
+import { encode as base64_encode } from "base-64";
 import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
@@ -14,8 +15,8 @@ import {
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
-  CookieKeyConsent,
-  CookieMeta,
+  NoticeConsent,
+  FidesJSMeta,
   Cookies,
   FidesCookie,
   LegacyConsentConfig,
@@ -24,7 +25,7 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
-import { TcfCookieConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
+import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -80,7 +81,7 @@ describe("makeFidesCookie", () => {
   });
 
   it("accepts default consent preferences", () => {
-    const defaults: CookieKeyConsent = {
+    const defaults: NoticeConsent = {
       essential: true,
       performance: false,
       data_sales: true,
@@ -135,7 +136,7 @@ describe("getOrMakeFidesCookie", () => {
 
       it("returns the saved cookie including optional fides_meta details like consentMethod", () => {
         // extend the cookie object with some extra details on fides_meta
-        const extendedFidesMeta: CookieMeta = {
+        const extendedFidesMeta: FidesJSMeta = {
           ...V090_COOKIE_OBJECT.fides_meta,
           ...{ consentMethod: "accept", otherMetadata: "foo" },
         };
@@ -169,6 +170,31 @@ describe("getOrMakeFidesCookie", () => {
         expect(cookie.tcf_consent).toEqual({});
       });
     });
+    describe("in base64 format", () => {
+      const V090_COOKIE_OBJECT: FidesCookie = {
+        consent: SAVED_CONSENT,
+        identity: { fides_user_device_id: SAVED_UUID },
+        fides_meta: {
+          createdAt: CREATED_DATE,
+          updatedAt: UPDATED_DATE,
+          version: "0.9.0",
+        },
+        tcf_consent: {},
+      };
+      // mock base64 cookie
+      mockGetCookie.mockReturnValue(
+        base64_encode(JSON.stringify(V090_COOKIE_OBJECT))
+      );
+
+      it("returns the saved cookie and decodes from base64", () => {
+        const cookie: FidesCookie = getOrMakeFidesCookie();
+        expect(cookie.consent).toEqual(SAVED_CONSENT);
+        expect(cookie.fides_meta.consentMethod).toEqual(undefined);
+        expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
+        expect(cookie.identity.fides_user_device_id).toEqual(MOCK_UUID);
+        expect(cookie.tcf_consent).toEqual({});
+      });
+    });
   });
 });
 
@@ -178,14 +204,14 @@ describe("saveFidesCookie", () => {
   it("updates the updatedAt date", () => {
     const cookie: FidesCookie = getOrMakeFidesCookie();
     expect(cookie.fides_meta.updatedAt).toEqual("");
-    saveFidesCookie(cookie);
+    saveFidesCookie(cookie, false);
     expect(cookie.fides_meta.updatedAt).toEqual(MOCK_DATE);
   });
 
   it("saves optional fides_meta details like consentMethod", () => {
     const cookie: FidesCookie = getOrMakeFidesCookie();
     cookie.fides_meta.consentMethod = "dismiss";
-    saveFidesCookie(cookie);
+    saveFidesCookie(cookie, false);
     expect(mockSetCookie.mock.calls).toHaveLength(1);
     expect(mockSetCookie.mock.calls[0][0]).toEqual("fides_consent"); // name
     const cookieValue = mockSetCookie.mock.calls[0][1];
@@ -196,17 +222,26 @@ describe("saveFidesCookie", () => {
 
   it("sets a cookie on the root domain with 1 year expiry date", () => {
     const cookie: FidesCookie = getOrMakeFidesCookie();
-    saveFidesCookie(cookie);
+    saveFidesCookie(cookie, false);
     const expectedCookieString = JSON.stringify(cookie);
-    // NOTE: signature of the setCookie fn is: setCookie(name, value, attributes, encoding)
     expect(mockSetCookie.mock.calls).toHaveLength(1);
-    expect(mockSetCookie.mock.calls[0][0]).toEqual("fides_consent"); // name
-    expect(mockSetCookie.mock.calls[0][1]).toEqual(expectedCookieString); // value
-    expect(mockSetCookie.mock.calls[0][2]).toHaveProperty(
-      "domain",
-      "localhost"
-    ); // attributes
-    expect(mockSetCookie.mock.calls[0][2]).toHaveProperty("expires", 365); // attributes
+    const [name, value, attributes] = mockSetCookie.mock.calls[0];
+    expect(name).toEqual("fides_consent");
+    expect(value).toEqual(expectedCookieString);
+    expect(attributes).toHaveProperty("domain", "localhost");
+    expect(attributes).toHaveProperty("expires", 365);
+  });
+
+  it("sets a base64 cookie", () => {
+    const cookie: FidesCookie = getOrMakeFidesCookie();
+    saveFidesCookie(cookie, true);
+    const expectedCookieString = base64_encode(JSON.stringify(cookie));
+    expect(mockSetCookie.mock.calls).toHaveLength(1);
+    const [name, value, attributes] = mockSetCookie.mock.calls[0];
+    expect(name).toEqual("fides_consent");
+    expect(value).toEqual(expectedCookieString);
+    expect(attributes).toHaveProperty("domain", "localhost");
+    expect(attributes).toHaveProperty("expires", 365);
   });
 
   it.each([
@@ -230,6 +265,7 @@ describe("saveFidesCookie", () => {
   );
 
   // DEFER: known issue https://github.com/ethyca/fides/issues/2072
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip.each([
     {
       url: "https://privacy.subdomain.example.co.uk",
@@ -383,7 +419,7 @@ describe("removeCookiesFromBrowser", () => {
 describe("transformTcfPreferencesToCookieKeys", () => {
   it("can handle empty preferences", () => {
     const preferences: TcfSavePreferences = { purpose_consent_preferences: [] };
-    const expected: TcfCookieConsent = {
+    const expected: TcfOtherConsent = {
       system_consent_preferences: {},
       system_legitimate_interests_preferences: {},
     };
@@ -415,7 +451,7 @@ describe("transformTcfPreferencesToCookieKeys", () => {
         { id: "ctl_test_system", preference: UserConsentPreference.OPT_IN },
       ],
     };
-    const expected: TcfCookieConsent = {
+    const expected: TcfOtherConsent = {
       system_consent_preferences: { ctl_test_system: true },
       system_legitimate_interests_preferences: { ctl_test_system: true },
     };
@@ -498,7 +534,8 @@ describe("updateCookieFromNoticePreferences", () => {
       (n) =>
         new SaveConsentPreference(
           n,
-          n.current_preference ?? UserConsentPreference.OPT_OUT
+          n.current_preference ?? UserConsentPreference.OPT_OUT,
+          `pri_notice-history-mock-${n.notice_key}`
         )
     );
     const updatedCookie = await updateCookieFromNoticePreferences(

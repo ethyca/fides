@@ -18,7 +18,7 @@ const CustomAssetUploadButton: React.FC<CustomAssetUploadButtonProps> = ({
     <>
       <Button
         variant="outline"
-        size="sm"
+        size="xs"
         ml={2}
         onClick={uploadCustomAssetModal.onOpen}
       >

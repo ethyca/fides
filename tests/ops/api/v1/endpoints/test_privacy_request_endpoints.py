@@ -53,7 +53,7 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.policy import ActionType, PolicyResponse
-from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task import graph_task
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import (
@@ -177,6 +177,43 @@ class TestCreatePrivacyRequest:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    def test_create_privacy_request_stores_custom_identities(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+12345678910"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                    "phone_number": TEST_PHONE_NUMBER,
+                    "loyalty_id": {"label": "Loyalty ID", "value": "CH-1"},
+                },
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert pr.get_persisted_identity() == Identity(
+            email=TEST_EMAIL,
+            phone_number=TEST_PHONE_NUMBER,
+            loyalty_id=LabeledIdentity(label="Loyalty ID", value="CH-1"),
+        )
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_create_privacy_request_stores_custom_fields(
         self,
         run_access_request_mock,
@@ -190,6 +227,48 @@ class TestCreatePrivacyRequest:
         TEST_CUSTOM_FIELDS = {
             "first_name": {"label": "First name", "value": "John"},
             "last_name": {"label": "Last name", "value": "Doe"},
+        }
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                },
+                "custom_privacy_request_fields": TEST_CUSTOM_FIELDS,
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        persisted_custom_privacy_request_fields = (
+            pr.get_persisted_custom_privacy_request_fields()
+        )
+        assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_create_privacy_request_stores_multivalue_custom_fields(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        allow_custom_privacy_request_field_collection_enabled,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_CUSTOM_FIELDS = {
+            "first_name": {"label": "First name", "value": "John"},
+            "subscriber_ids": {"label": "Subscriber IDs", "value": ["123", "456"]},
+            "account_ids": {"label": "Account IDs", "value": [123, 456]},
         }
         data = [
             {
@@ -401,7 +480,6 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -416,11 +494,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute=list(identity.keys())[0],
-        )
-        assert cache.get(key) == list(identity.values())[0]
+        assert pr.get_cached_identity_data() == identity
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -883,9 +957,10 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
-        assert (
-            resp["items"][0]["identity"]
-            == succeeded_privacy_request.get_persisted_identity()
+        assert resp["items"][0][
+            "identity"
+        ] == succeeded_privacy_request.get_persisted_identity().labeled_dict(
+            include_default_labels=True
         )
 
         assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
@@ -4823,11 +4898,7 @@ class TestCreatePrivacyRequestAuthenticated:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        key = get_identity_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute=list(identity.keys())[0],
-        )
-        assert cache.get(key) == list(identity.values())[0]
+        assert pr.get_cached_identity_data() == identity
         assert run_access_request_mock.called
 
     @mock.patch(
