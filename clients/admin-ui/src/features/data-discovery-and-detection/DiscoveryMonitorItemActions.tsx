@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
+  ButtonSpinner,
   CheckIcon,
   CloseIcon,
   EditIcon,
   HStack,
   IconButton,
-  SpinnerIcon,
+  Spinner,
   Tooltip,
   ViewIcon,
   ViewOffIcon,
@@ -169,7 +170,7 @@ const DiscoveryMonitorItemActions: React.FC<
           disabled={isProcessingAction}
         />
       )}
-      {isProcessingAction ? <SpinnerIcon /> : null}
+      {isProcessingAction ? <ButtonSpinner position="static" /> : null}
     </HStack>
   );
 };
