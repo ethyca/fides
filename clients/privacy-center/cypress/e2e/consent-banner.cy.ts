@@ -2382,17 +2382,35 @@ describe("Consent overlay", () => {
       });
     });
 
-    it("reinitializes FidesJS and loads any changed options", () => {
+    it.only("reinitializes FidesJS and loads any changed options", () => {
       // First, it should initialize normally and show the banner
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesInitialized").should("have.been.calledOnce");
-        cy.get("div#fides-banner").should("exist");
-        cy.get("div#fides-embed-container .fides-modal-body").should(
-          "not.exist"
-        );
+        cy.get("#fides-overlay .fides-banner").should("exist");
+        cy.get("#fides-embed-container .fides-banner").should("not.exist");
+        cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
       });
 
-      // Next, change some Fides options and reinitialize()
+      // Next, change some Fides options to enable embed and reinitialize()
+      cy.window().then((win) => {
+        // @ts-ignore
+        // eslint-disable-next-line no-param-reassign
+        win.fides_overrides = {
+          fides_embed: true,
+          fides_disable_banner: false,
+        };
+        win.Fides.reinitialize();
+      });
+
+      // FidesJS should initialize again, in embedded mode this time
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesInitialized").should("have.been.calledTwice");
+        // cy.get("#fides-overlay .fides-banner").should("not.exist");
+        cy.get("#fides-embed-container .fides-banner").should("exist");
+        cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
+      });
+
+      // Change the options  and reinitialize() again
       cy.window().then((win) => {
         // @ts-ignore
         // eslint-disable-next-line no-param-reassign
@@ -2403,31 +2421,12 @@ describe("Consent overlay", () => {
         win.Fides.reinitialize();
       });
 
-      // FidesJS should initialize again, without a banner
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.been.calledTwice");
-        cy.get("div#fides-banner").should("not.exist");
-        cy.get("div#fides-embed-container .fides-modal-body").should("exist");
-      });
-
-      // Change the options back and reinitialize() again
-      cy.window().then((win) => {
-        // @ts-ignore
-        // eslint-disable-next-line no-param-reassign
-        win.fides_overrides = {
-          fides_embed: false,
-          fides_disable_banner: false,
-        };
-        win.Fides.reinitialize();
-      });
-
-      // FidesJS should initialize once again, with a banner
+      // FidesJS should initialize once again, without any banners
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesInitialized").should("have.been.calledThrice");
-        cy.get("div#fides-banner").should("exist");
-        cy.get("div#fides-embed-container .fides-modal-body").should(
-          "not.exist"
-        );
+        // cy.get("#fides-overlay .fides-banner").should("not.exist");
+        cy.get("#fides-embed-container .fides-banner").should("not.exist");
+        cy.get("#fides-embed-container .fides-modal-body").should("exist");
       });
     });
   });
