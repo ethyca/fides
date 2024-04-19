@@ -66,7 +66,7 @@ def get_pre_approval_webhook_or_error(
 @router.get(
     urls.WEBHOOK_PRE_APPROVAL_DETAIL,
     status_code=HTTP_200_OK,
-    response_model=PreApprovalWebhook,
+    response_model=schemas.PreApprovalWebhookResponse,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
 def get_pre_approval_webhook_detail(
