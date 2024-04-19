@@ -32,10 +32,14 @@ export const findResourceType = (item: MonitorResultsItem | undefined) => {
   return StagedResourceType.FIELD;
 };
 
-const useStagedResourceColumns = (
-  resourceType: StagedResourceType | undefined
-) => {
-  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
+const useStagedResourceColumns = ({
+  resourceType,
+  monitorId,
+}: {
+  resourceType: StagedResourceType | undefined;
+  monitorId: string;
+}) => {
+  const columnHelper = createColumnHelper<MonitorResultsItem>();
 
   const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [
     columnHelper.accessor((row) => row.name, {
@@ -57,6 +61,7 @@ const useStagedResourceColumns = (
       id: "Action",
       cell: (props) => (
         <DiscoveryMonitorItemActions
+          monitorId={monitorId}
           resource={props.getValue()}
           resourceType={findResourceType(props.getValue())}
         />
