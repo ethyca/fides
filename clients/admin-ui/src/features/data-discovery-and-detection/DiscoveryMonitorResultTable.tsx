@@ -20,15 +20,11 @@ import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detecti
 import DiscoveryMonitorTabFilter, {
   FirstLetterFilterValue,
 } from "~/features/data-discovery-and-detection/DiscoveryMonitorTabFilter";
-import useStagedResourceColumns, {
-  findResourceType,
-  MonitorResultsItem,
-  StagedResourceType,
-} from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
+import useStagedResourceColumns from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
 import { StagedResource } from "~/types/api";
 import { DiscoveryMonitorItem } from "./types/DiscoveryMonitorItem";
 import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType } from "./utils/findResourceType";
+import { findResourceType, MonitorResultsItem } from "./utils/findResourceType";
 
 const EMPTY_RESPONSE = {
   items: [],

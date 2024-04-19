@@ -7,26 +7,10 @@ import ClassificationStatusCell from "~/features/data-discovery-and-detection/st
 import DiffStatusCell from "~/features/data-discovery-and-detection/status-cells/DiffStatusCell";
 import MonitorStatusCell from "~/features/data-discovery-and-detection/status-cells/MonitorStatusCell";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
-import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
-
-export type MonitorResultsItem = StagedResource &
-  Partial<Database & Schema & Table & Field>;
-
-export const findResourceType = (item: MonitorResultsItem | undefined) => {
-  if (!item) {
-    return StagedResourceType.NONE;
-  }
-  if (item.schemas) {
-    return StagedResourceType.DATABASE;
-  }
-  if (item.tables) {
-    return StagedResourceType.SCHEMA;
-  }
-  if (item.fields) {
-    return StagedResourceType.TABLE;
-  }
-  return StagedResourceType.FIELD;
-};
+import {
+  findResourceType,
+  MonitorResultsItem,
+} from "~/features/data-discovery-and-detection/utils/findResourceType";
 
 const useStagedResourceColumns = ({
   resourceType,
@@ -66,7 +50,7 @@ const useStagedResourceColumns = ({
     columnHelper.accessor((row) => row.diff_status, {
       id: "diff_status",
       cell: (props) => <DiffStatusCell status={props.getValue()} />,
-      header: (props) => <DefaultHeaderCell value="Change" {...props} />,
+      header: (props) => <DefaultHeaderCell value="Change type" {...props} />,
     }),
     columnHelper.accessor((row) => row.description, {
       id: "description",
