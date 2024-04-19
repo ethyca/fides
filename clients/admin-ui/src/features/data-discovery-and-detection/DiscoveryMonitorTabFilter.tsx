@@ -1,4 +1,4 @@
-import { TabList, Tabs, Tag, TagLabel } from "@fidesui/react";
+import { Badge, TabList, Tabs } from "@fidesui/react";
 import { useState } from "react";
 
 import { FidesTab } from "~/features/common/DataTabs";
@@ -10,11 +10,27 @@ export enum FirstLetterFilterValue {
   NONE,
 }
 
-const FilterTabLabel = ({ label, count }: { label: string; count: number }) => (
+const FilterTabLabel = ({
+  label,
+  count,
+  isActive,
+}: {
+  label: string;
+  count: number;
+  isActive?: boolean;
+}) => (
   <>
-    <Tag size="sm" colorScheme="complimentary" mr={2}>
-      <TagLabel>{count}</TagLabel>
-    </Tag>
+    {count ? (
+      <Badge
+        fontSize={10}
+        colorScheme={isActive ? "complimentary" : "gray"}
+        variant="solid"
+        mr={2}
+        borderRadius={1000}
+      >
+        {count}
+      </Badge>
+    ) : null}
     <span>{label}</span>
   </>
 );
@@ -24,29 +40,39 @@ const DiscoveryMonitorTabFilter = ({
 }: {
   onFilterChange: (filter: FirstLetterFilterValue) => void;
 }) => {
-  const [index, setIndex] = useState<number>(0);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
 
   const getFilterTypeByIndex = (i: number) => i as FirstLetterFilterValue;
 
   const handleChangeIndex = (newIndex: number) => {
     onFilterChange(getFilterTypeByIndex(newIndex));
-    setIndex(newIndex);
+    setActiveIndex(newIndex);
   };
 
   return (
     <Tabs
-      index={index}
+      index={activeIndex}
       onChange={handleChangeIndex}
       colorScheme="complimentary"
     >
       <TabList>
-        <FidesTab label={<FilterTabLabel label="All" count={1} />} />
-        <FidesTab label={<FilterTabLabel label="Vowel" count={1} />} />
-        <FidesTab label={<FilterTabLabel label="Consonant" count={1} />} />
-        <FidesTab
-          label={<FilterTabLabel label="None" count={1} />}
-          isDisabled
-        />
+        {["All", "Vowel", "Consonant", "None"].map((filter, idx) => {
+          const count = 3 - idx;
+          return (
+            <FidesTab
+              // eslint-disable-next-line react/no-array-index-key
+              key={idx}
+              label={
+                <FilterTabLabel
+                  label={filter}
+                  count={count}
+                  isActive={idx === activeIndex}
+                />
+              }
+              isDisabled={count === 0}
+            />
+          );
+        })}
       </TabList>
     </Tabs>
   );
