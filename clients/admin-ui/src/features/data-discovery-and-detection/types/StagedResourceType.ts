@@ -1,7 +1,7 @@
 export enum StagedResourceType {
-  DATABASE = "database",
-  SCHEMA = "schema",
-  TABLE = "table",
-  FIELD = "field",
+  DATABASE = "Database",
+  SCHEMA = "Schema",
+  TABLE = "Table",
+  FIELD = "Field",
   NONE = "none",
 }
