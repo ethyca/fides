@@ -19,15 +19,15 @@ The types of changes are:
 
 ### Added
 - Added a `reinitialize` method to Fides.js [#4812](https://github.com/ethyca/fides/pull/4812)
+- Added carets to collapsible sections in the overlay modal [#4793](https://github.com/ethyca/fides/pull/4793)
 - Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
-
-### Fixed
-- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
-- Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
 
+### Fixed
+- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+- Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
