@@ -1,11 +1,8 @@
-import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
 import { StagedResourceType } from "../types/StagedResourceType";
 
-export type MonitorResultsItem = StagedResource &
-  Partial<Database & Schema & Table & Field>;
-
-export const findResourceType = (item: MonitorResultsItem | undefined) => {
+export const findResourceType = (item: DiscoveryMonitorItem | undefined) => {
   if (!item) {
     return StagedResourceType.NONE;
   }

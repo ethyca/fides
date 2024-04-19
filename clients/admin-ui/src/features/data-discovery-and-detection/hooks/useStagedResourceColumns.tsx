@@ -6,11 +6,9 @@ import ApprovalStatusCell from "~/features/data-discovery-and-detection/status-c
 import ClassificationStatusCell from "~/features/data-discovery-and-detection/status-cells/ClassificationStatusCell";
 import DiffStatusCell from "~/features/data-discovery-and-detection/status-cells/DiffStatusCell";
 import MonitorStatusCell from "~/features/data-discovery-and-detection/status-cells/MonitorStatusCell";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
-import {
-  findResourceType,
-  MonitorResultsItem,
-} from "~/features/data-discovery-and-detection/utils/findResourceType";
+import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 
 const useStagedResourceColumns = ({
   resourceType,
@@ -19,9 +17,9 @@ const useStagedResourceColumns = ({
   resourceType: StagedResourceType | undefined;
   monitorId: string;
 }) => {
-  const columnHelper = createColumnHelper<MonitorResultsItem>();
+  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
-  const defaultColumns: ColumnDef<MonitorResultsItem, any>[] = [
+  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
