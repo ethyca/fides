@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.34.1b0.post0.dev10"
+    "version": "2.34.1b0.post0.dev11"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7108,6 +7108,283 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PolicyWebhookUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "webhook:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/dsr/webhook/pre_approval": {
+      "get": {
+        "tags": [
+          "Pre Approval Webhooks"
+        ],
+        "summary": "Get Pre Approval Webhook List",
+        "description": "Return a paginated list of all PreApprovalWebhook records in this system",
+        "operationId": "get_pre_approval_webhook_list_api_v1_dsr_webhook_pre_approval_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PreApprovalWebhookResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "webhook:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Pre Approval Webhooks"
+        ],
+        "summary": "Create Or Update Pre Execution Webhooks",
+        "description": "Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.\nThis endpoint is all-or-nothing.\nEither all webhooks should be created/updated or none should be updated. Deletes any webhooks not present\nin the request body.",
+        "operationId": "create_or_update_pre_execution_webhooks_api_v1_dsr_webhook_pre_approval_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Webhooks",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PreApprovalWebhookCreate"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Create Or Update Pre Execution Webhooks Api V1 Dsr Webhook Pre Approval Put",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PreApprovalWebhookResponse"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "webhook:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/dsr/webhook/pre_approval/{webhook_key}": {
+      "get": {
+        "tags": [
+          "Pre Approval Webhooks"
+        ],
+        "summary": "Get Pre Approval Webhook Detail",
+        "description": "Loads the given Pre-Approval Webhook by key",
+        "operationId": "get_pre_approval_webhook_detail_api_v1_dsr_webhook_pre_approval__webhook_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Webhook Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "webhook_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreApprovalWebhookResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "webhook:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Pre Approval Webhooks"
+        ],
+        "summary": "Delete Pre Execution Webhook",
+        "description": "Delete the Pre-Approval Webhook given webhook key",
+        "operationId": "delete_pre_execution_webhook_api_v1_dsr_webhook_pre_approval__webhook_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Webhook Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "webhook_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "webhook:delete"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Pre Approval Webhooks"
+        ],
+        "summary": "Update Pre Execution Webhook",
+        "description": "PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created.",
+        "operationId": "update_pre_execution_webhook_api_v1_dsr_webhook_pre_approval__webhook_key__patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Webhook Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "webhook_key",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreApprovalWebhookUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreApprovalWebhookResponse"
                 }
               }
             }
@@ -15860,6 +16137,45 @@
           }
         }
       },
+      "Page_PreApprovalWebhookResponse_": {
+        "title": "Page[PreApprovalWebhookResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PreApprovalWebhookResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_RuleResponseWithTargets_": {
         "title": "Page[RuleResponseWithTargets]",
         "required": [
@@ -16381,6 +16697,70 @@
           }
         },
         "description": "Postgres Secrets Schema for API Docs"
+      },
+      "PreApprovalWebhookCreate": {
+        "title": "PreApprovalWebhookCreate",
+        "required": [
+          "name",
+          "connection_config_key"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "connection_config_key": {
+            "title": "Connection Config Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          }
+        },
+        "description": "Request schema for creating/updating a Pre Approval Webhook"
+      },
+      "PreApprovalWebhookResponse": {
+        "title": "PreApprovalWebhookResponse",
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "connection_config": {
+            "$ref": "#/components/schemas/ConnectionConfigurationResponse"
+          }
+        },
+        "description": "Response schema after creating/updating/getting a PreApprovalWebhook"
+      },
+      "PreApprovalWebhookUpdate": {
+        "title": "PreApprovalWebhookUpdate",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "connection_config_key": {
+            "title": "Connection Config Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request schema for updating a single webhook - fields are optional"
       },
       "PrivacyDeclaration": {
         "title": "PrivacyDeclaration",
