@@ -150,10 +150,11 @@ class PrivacyRequestStatus(str, EnumType):
 
 
 class CallbackType(EnumType):
-    """We currently have two types of Policy Webhooks: pre and post"""
+    """We currently have three types of Webhooks: pre-approval, pre (-execution), post (-execution)"""
 
-    pre = "pre"
-    post = "post"
+    pre_approval = "pre_approval"
+    pre = "pre"  # pre-execution
+    post = "post"  # post-execution
 
 
 class SecondPartyRequestFormat(BaseModel):
@@ -176,7 +177,7 @@ class SecondPartyRequestFormat(BaseModel):
         use_enum_values = True
 
 
-def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
+def generate_request_callback_jwe(webhook: PolicyPreWebhook | PreApprovalWebhook) -> str:
     """Generate a JWE to be used to resume privacy request execution."""
     jwe = WebhookJWE(
         webhook_id=webhook.id,
@@ -878,6 +879,47 @@ class PrivacyRequest(
             Dict[str, Optional[Dict[str, Set[str]]]]
         ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
+
+    def trigger_pre_approval_webhook(
+        self,
+        webhook: WebhookTypes,
+        policy_action: Optional[ActionType] = None,
+    ) -> None:
+        """
+        Firing pre-approval webhooks allows the privacy request to be automatically approved if all webhooks
+        respond with "eligible" to be approved.
+
+        Pre-approval webhooks don't expect an immediate HTTPs response when we execute the request,
+        hence the use of WebhookDirection.one_way.
+
+        Instead, to respond, they use send a request to one of the reply-to URLs with the reply-to-token.
+        """
+        # temp fix for circular dependency
+        from fides.api.service.connectors import HTTPSConnector, get_connector
+
+        https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
+        request_body = SecondPartyRequestFormat(
+            privacy_request_id=self.id,
+            privacy_request_status=self.status,
+            direction=WebhookDirection.one_way,  # pre-approval webhooks don't expect an immediate response
+            callback_type=webhook.prefix,
+            identity=self.get_cached_identity_data(),
+            policy_action=policy_action,
+        )
+        headers = {
+            "reply-to-approve": f"/privacy-request/{self.id}/pre-approve/eligible",
+            "reply-to-deny": f"/privacy-request/{self.id}/pre-approve/not-eligible",
+            "reply-to-token": generate_request_callback_jwe(webhook),  # type: ignore[arg-type]
+        }
+
+        logger.info(
+            "Calling pre approval webhook '{}' for privacy_request '{}'", webhook.key, self.id
+        )
+        https_connector.execute(  # type: ignore
+            request_body.dict(),
+            response_expected=False,
+            additional_headers=headers,
+        )
 
     def trigger_policy_webhook(
         self,
