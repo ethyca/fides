@@ -18,7 +18,8 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
 
 ### Added
-- Add a `reinitialize` method to Fides.js [#4812](https://github.com/ethyca/fides/pull/4812)
+- Added a `reinitialize` method to Fides.js [#4812](https://github.com/ethyca/fides/pull/4812)
+- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
