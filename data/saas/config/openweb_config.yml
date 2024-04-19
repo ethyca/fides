@@ -1,5 +1,5 @@
-# Notes about the test request below  
-  # Normally we would not hardcode a value here, however, we won't know the  value ahead of time, and we only need to verify the SSO token is valid. This call will return a 404 if the primary_key is not found. A 401 will be returned if the SSO token is invalid.
+# Notes about the test request below
+# Normally we would not hardcode a value here, however, we won't know the  value ahead of time, and we only need to verify the SSO token is valid. This call will return a 404 if the primary_key is not found. A 401 will be returned if the SSO token is invalid.
 
 saas_config:
   fides_key: <instance_fides_key>
@@ -19,13 +19,12 @@ saas_config:
       sensitive: True
     - name: x_spot_id
       label: Spot ID
-      description: You can determine your SPOT_ID by logging into your Admin Dashboard. Then, copy your Spot ID from the URL. The value will show up like this example - https://admin.spot.im/spot/{SPOT_ID}/
-
+      description: You can determine your Spot ID by logging into your Admin Dashboard. Then, copy your Spot ID from the URL. The value will show up like this example - https://admin.spot.im/spot/{SPOT_ID}/
 
   external_references:
     - name: primary_key
       label: OpenWeb primary_key field
-      description: Dataset reference to the location of OpenWeb primary_key. The dataset reference where you store OpenWeb primary_key. For example `dataset.collection.field`                                   
+      description: Dataset reference to the location of OpenWeb primary_key. The dataset reference where you store OpenWeb primary_key. For example `dataset.collection.field`
 
   client_config:
     protocol: https
