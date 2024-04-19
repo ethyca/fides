@@ -6,20 +6,11 @@ import ApprovalStatusCell from "~/features/data-discovery-and-detection/status-c
 import ClassificationStatusCell from "~/features/data-discovery-and-detection/status-cells/ClassificationStatusCell";
 import DiffStatusCell from "~/features/data-discovery-and-detection/status-cells/DiffStatusCell";
 import MonitorStatusCell from "~/features/data-discovery-and-detection/status-cells/MonitorStatusCell";
+import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
 
 export type MonitorResultsItem = StagedResource &
   Partial<Database & Schema & Table & Field>;
-
-export enum StagedResourceType {
-  DATABASE = "database",
-  SCHEMA = "schema",
-  TABLE = "table",
-  FIELD = "field",
-  // there should never be actual data that doesn't match one of the types, but
-  // having a fallback makes some TypeScript smoother
-  NONE = "none",
-}
 
 export const findResourceType = (item: MonitorResultsItem | undefined) => {
   if (!item) {
@@ -50,7 +41,7 @@ const useStagedResourceColumns = ({
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
-      header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+      header: (props) => <DefaultHeaderCell value={resourceType} {...props} />,
     }),
     columnHelper.accessor((row) => row.classification_status, {
       id: "classification_status",
