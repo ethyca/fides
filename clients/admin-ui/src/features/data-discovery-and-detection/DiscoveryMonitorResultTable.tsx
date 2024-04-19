@@ -24,7 +24,7 @@ import useStagedResourceColumns from "~/features/data-discovery-and-detection/ho
 import { StagedResource } from "~/types/api";
 import { DiscoveryMonitorItem } from "./types/DiscoveryMonitorItem";
 import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType, MonitorResultsItem } from "./utils/findResourceType";
+import { findResourceType } from "./utils/findResourceType";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -103,7 +103,7 @@ const DiscoveryMonitorResultTable = ({
   );
 
   const filterByFirstLetter = (
-    item: MonitorResultsItem,
+    item: DiscoveryMonitorItem,
     filter: FirstLetterFilterValue
   ) => {
     if (filter === FirstLetterFilterValue.NONE) {
