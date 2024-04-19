@@ -182,8 +182,8 @@ def queue_downstream_tasks(
             logger.debug(
                 "Cannot yet queue {} task {} from {}. Privacy Request: {}, Request Task {}. Waiting for other upstream nodes.",
                 downstream_task.action_type.value,
-                request_task.collection_address,
                 downstream_task.collection_address,
+                request_task.collection_address,
                 privacy_request.id,
                 downstream_task.id,
             )
