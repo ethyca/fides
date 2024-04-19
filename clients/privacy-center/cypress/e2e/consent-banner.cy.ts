@@ -2371,4 +2371,64 @@ describe("Consent overlay", () => {
       });
     });
   });
+
+  describe("when using Fides.reinitialize() SDK function", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+        },
+      });
+    });
+
+    it("reinitializes FidesJS and loads any changed options", () => {
+      // First, it should initialize normally and show the banner
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesInitialized").should("have.been.calledOnce");
+        cy.get("div#fides-banner").should("exist");
+        cy.get("div#fides-embed-container .fides-modal-body").should(
+          "not.exist"
+        );
+      });
+
+      // Next, change some Fides options and reinitialize()
+      cy.window().then((win) => {
+        // @ts-ignore
+        // eslint-disable-next-line no-param-reassign
+        win.fides_overrides = {
+          fides_embed: true,
+          fides_disable_banner: true,
+        };
+        win.Fides.reinitialize();
+      });
+
+      // FidesJS should initialize again, without a banner
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesInitialized").should("have.been.calledTwice");
+        cy.get("div#fides-banner").should("not.exist");
+        cy.get("div#fides-embed-container .fides-modal-body").should("exist");
+      });
+
+      // Change the options back and reinitialize() again
+      cy.window().then((win) => {
+        // @ts-ignore
+        // eslint-disable-next-line no-param-reassign
+        win.fides_overrides = {
+          fides_embed: false,
+          fides_disable_banner: false,
+        };
+        win.Fides.reinitialize();
+      });
+
+      // FidesJS should initialize once again, with a banner
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesInitialized").should("have.been.calledThrice");
+        cy.get("div#fides-banner").should("exist");
+        cy.get("div#fides-embed-container .fides-modal-body").should(
+          "not.exist"
+        );
+      });
+    });
+  });
 });
