@@ -77,6 +77,10 @@ div#fides-overlay {
   position: fixed;
 }
 
+div#fides-overlay * {
+  box-sizing: border-box;
+}
+
 .fides-banner,
 .fides-modal-container {
   font-family: var(--fides-overlay-font-family);
@@ -112,7 +116,6 @@ div#fides-banner {
   font-size: var(--fides-overlay-font-size-body);
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
-  box-sizing: border-box;
   padding: 24px;
   overflow-y: hidden;
 
@@ -299,7 +302,6 @@ div.fides-modal-content {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   color: var(--fides-overlay-body-font-color);
-  box-sizing: border-box;
   padding: var(--fides-overlay-padding);
   border: 1px solid var(--fides-overlay-primary-color);
   background-color: var(--fides-overlay-background-color);
@@ -350,7 +352,6 @@ div#fides-embed-container div#fides-consent-content {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   color: var(--fides-overlay-body-font-color);
-  box-sizing: border-box;
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
   border-bottom-left-radius: 0;
@@ -544,7 +545,6 @@ div.fides-i18n-pseudo-button {
   display: inline-flex !important;
   align-items: center;
   justify-content: space-around;
-  box-sizing: content-box;
   position: relative;
   border-radius: 100vw;
   background-color: var(--fides-overlay-inactive-color);
@@ -556,6 +556,10 @@ div.fides-i18n-pseudo-button {
   width: 34px;
   height: 24px;
   justify-content: end;
+}
+
+#fides-overlay .fides-toggle .fides-toggle-display {
+  box-sizing: content-box;
 }
 
 .fides-toggle .fides-toggle-display::before {
@@ -1120,6 +1124,10 @@ div.fides-i18n-pseudo-button {
   align-items: center;
   gap: 2px;
   white-space: nowrap;
+}
+
+#fides-overlay .fides-i18n-pseudo-button {
+  box-sizing: content-box;
 }
 
 .fides-i18n-popover {
