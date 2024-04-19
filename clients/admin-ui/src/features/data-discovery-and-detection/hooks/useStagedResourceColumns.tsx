@@ -2,6 +2,10 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
 import DiscoveryMonitorItemActions from "~/features/data-discovery-and-detection/DiscoveryMonitorItemActions";
+import ApprovalStatusCell from "~/features/data-discovery-and-detection/status-cells/ApprovalStatusCell";
+import ClassificationStatusCell from "~/features/data-discovery-and-detection/status-cells/ClassificationStatusCell";
+import DiffStatusCell from "~/features/data-discovery-and-detection/status-cells/DiffStatusCell";
+import MonitorStatusCell from "~/features/data-discovery-and-detection/status-cells/MonitorStatusCell";
 import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
 
 export type MonitorResultsItem = StagedResource &
@@ -47,6 +51,31 @@ const useStagedResourceColumns = ({
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+    }),
+    columnHelper.accessor((row) => row.classification_status, {
+      id: "classification_status",
+      cell: (props) => <ClassificationStatusCell status={props.getValue()} />,
+      header: (props) => (
+        <DefaultHeaderCell value="Classification" {...props} />
+      ),
+      size: 50,
+    }),
+    columnHelper.accessor((row) => row.monitor_status, {
+      id: "monitor_status",
+      cell: (props) => <MonitorStatusCell status={props.getValue()} />,
+      header: (props) => <DefaultHeaderCell value="Monitoring" {...props} />,
+      size: 50,
+    }),
+    columnHelper.accessor((row) => row.approval_status, {
+      id: "approval_status",
+      cell: (props) => <ApprovalStatusCell status={props.getValue()} />,
+      header: (props) => <DefaultHeaderCell value="Approval" {...props} />,
+      size: 50,
+    }),
+    columnHelper.accessor((row) => row.diff_status, {
+      id: "diff_status",
+      cell: (props) => <DiffStatusCell status={props.getValue()} />,
+      header: (props) => <DefaultHeaderCell value="Change" {...props} />,
     }),
     columnHelper.accessor((row) => row.description, {
       id: "description",
