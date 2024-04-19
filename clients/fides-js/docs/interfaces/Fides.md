@@ -43,6 +43,7 @@ existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 - [getModalLinkLabel](Fides.md#getmodallinklabel)
 - [gtm](Fides.md#gtm)
 - [init](Fides.md#init)
+- [reinitialize](Fides.md#reinitialize)
 
 ## Properties
 
@@ -287,6 +288,27 @@ their location, property ID, and the matching experience config from Fides.
 | Name | Type |
 | :------ | :------ |
 | `config` | `any` |
+
+##### Returns
+
+`Promise`\<`void`\>
+
+___
+
+### reinitialize
+
+• **reinitialize**: () => `Promise`\<`void`\>
+
+Reinitialize FidesJS with the initial configuration, but taking into account
+any new overrides such as the `fides_overrides` global or the query params.
+
+This is useful when you're working on a single page application (SPA) and you
+want to embed the FidesJS modal on different pages or switch between embedding
+and showing the actual modal.
+
+#### Type declaration
+
+▸ (): `Promise`\<`void`\>
 
 ##### Returns
 
