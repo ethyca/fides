@@ -76,12 +76,17 @@
   --fides-banner-font-size-title: var(--16px);
 }
 
-div#fides-overlay {
+/*
+  WARNING: the `#fides-overlay` id is unreliable as it can be customized! Do not use here!!
+  However `.fides-overlay` gets applied to that same element and is consistently present.
+ */
+
+div.fides-overlay {
   z-index: 1000;
   position: fixed;
 }
 
-div#fides-overlay * {
+div#fides-overlay-wrapper * {
   box-sizing: border-box;
 }
 
@@ -585,7 +590,7 @@ div.fides-i18n-pseudo-button {
   justify-content: end;
 }
 
-#fides-overlay .fides-toggle .fides-toggle-display {
+div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   box-sizing: content-box;
 }
 
@@ -1160,7 +1165,7 @@ div.fides-i18n-pseudo-button {
   white-space: nowrap;
 }
 
-#fides-overlay .fides-i18n-pseudo-button {
+div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   box-sizing: content-box;
 }
 
