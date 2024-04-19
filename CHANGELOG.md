@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
+- Added FidesUpdating event [#4816](https://github.com/ethyca/fides/pull/4816)
 
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)

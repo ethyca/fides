@@ -98,7 +98,7 @@ export const updateConsentPreferences = async ({
 
   // 2. Dispatch a "FidesUpdating" event with the new cookie
   dispatchFidesEvent("FidesUpdating", cookie, options.debug, extraDetails);
-  
+
   // 3. Update the window.Fides object
   debugLog(options.debug, "Updating window.Fides");
   window.Fides.consent = cookie.consent;
