@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
+- Improve performance of Snowflake schema generation [#4587](https://github.com/ethyca/fides/pull/4587)
 
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
@@ -177,10 +178,6 @@ The types of changes are:
 ### Fixed
 
 - Fixing issue when modifying Policies, Rules, or RuleTargets as a root user [#4582](https://github.com/ethyca/fides/pull/4582)
-
-### Changed
-
-- Improve performance of Snowflake schema generation [#4587](https://github.com/ethyca/fides/pull/4587)
 
 ## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
 
