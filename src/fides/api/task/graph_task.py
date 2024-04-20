@@ -160,9 +160,6 @@ def retry(
                     sleep(func_delay)
                     raised_ex = ex
             self.log_end(action_type, raised_ex)
-            # This is useful for resuming from the access, erasure, or consent
-            # checkpoints if the graph fails in one of these sections.
-            self.resources.request.cache_failed_checkpoint_details(step=action_type)
             add_errored_system_status_for_consent_reporting(
                 self.resources.session,
                 self.resources.request,
