@@ -55,6 +55,12 @@ def run_prerequisite_task_checks(
             f"Privacy request with id {privacy_request_id} not found"
         )
 
+    if privacy_request.status != PrivacyRequestStatus.in_processing:
+        # This is an extra check for cancelled privacy requests
+        raise InvalidPrivacyRequestStatus(
+            f"Cannot execute request task {privacy_request_task_id} if privacy Request {privacy_request_id} status is {privacy_request.status.value}"
+        )
+
     if not request_task or not request_task.privacy_request_id == privacy_request.id:
         raise RequestTaskNotFound(
             f"Request Task with id {privacy_request_task_id} not found for privacy request {privacy_request_id}"
@@ -138,8 +144,8 @@ def can_run_task_body(
         logger_method(request_task)(
             "Skipping {} task {} with status {}. Privacy Request: {}, Request Task {}",
             request_task.action_type.value,
-            request_task.status.value,
             request_task.collection_address,
+            request_task.status.value,
             request_task.privacy_request_id,
             request_task.id,
         )
@@ -438,4 +444,3 @@ def log_task_queued(request_task: RequestTask, location: str) -> None:
         request_task.privacy_request_id,
         request_task.id,
     )
-

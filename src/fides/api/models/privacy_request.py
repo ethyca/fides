@@ -926,19 +926,46 @@ class PrivacyRequest(
         self.status = PrivacyRequestStatus.awaiting_email_send
         self.save(db=db)
 
+    def get_request_task_celery_task_ids(self) -> List[str]:
+        """Returns the celery task ids for each of the Request Tasks (subtasks)
+
+        It is possible Request Tasks get queued multiple times, so the celery task
+        id returned is the last celery task queued.
+        """
+        request_task_celery_ids: List[str] = []
+        for request_task in self.request_tasks:
+            request_task_id: Optional[str] = request_task.get_cached_task_id()
+            if request_task_id:
+                request_task_celery_ids.append(request_task_id)
+        return request_task_celery_ids
+
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
-        """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
+        """Cancels a privacy request.  Currently should only cancel 'pending' tasks
+
+        Just in case, also tries to cancel sub tasks (Request Tasks) if applicable,
+        although these shouldn't exist if the Privacy Request is pending.
+        """
         if self.canceled_at is None:
             self.status = PrivacyRequestStatus.canceled
             self.cancel_reason = cancel_reason
             self.canceled_at = datetime.utcnow()
             self.save(db)
 
-            task_id = self.get_cached_task_id()
-            if task_id:
-                logger.info("Revoking task {} for request {}", task_id, self.id)
-                # Only revokes if execution is not already in progress
-                celery_app.control.revoke(task_id, terminate=False)
+            task_ids: List[
+                str
+            ] = (
+                self.get_request_task_celery_task_ids()
+            )  # Celery tasks for sub tasks (DSR 3.0 Request Tasks)
+            parent_task_id = (
+                self.get_cached_task_id()
+            )  # Celery task for current Privacy Request
+            if parent_task_id:
+                task_ids.append(parent_task_id)
+
+            for celery_task_id in task_ids:
+                logger.info("Revoking task {} for request {}", celery_task_id, self.id)
+                # Only revokes if execution is not already in progress.
+                celery_app.control.revoke(celery_task_id, terminate=False)
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""
