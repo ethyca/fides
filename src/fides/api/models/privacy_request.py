@@ -680,28 +680,24 @@ class PrivacyRequest(
     def cache_failed_checkpoint_details(
         self,
         step: Optional[CurrentStep] = None,
-        collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        Cache a checkpoint where the privacy request failed so we can later resume from this failure point.
+        Cache the checkpoint reached in the Privacy Request so it can be resumed from this point in
+        case of failure.
 
-        Cache details about the failed step and failed collection details (where applicable).
-        No specific input data is required to resume a failed request, so action_needed is None.
         """
         cache_action_required(
             cache_key=f"FAILED_LOCATION__{self.id}",
             step=step,
-            collection=collection,
+            collection=None,  # Deprecated for failed checkpoint details
             action_needed=None,
         )
 
     def get_failed_checkpoint_details(
         self,
     ) -> Optional[CheckpointActionRequired]:
-        """Get details about the failed step (access or erasure) and collection that triggered failure.
-
-        If DSR processing failed within the graph, this will let us know if we should resume privacy request execution
-        from the "access" or "erasure" portion of the privacy request flow.
+        """Get the latest checkpoint reached in Privacy Request processing so we know where to resume
+        in case of failure.
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 

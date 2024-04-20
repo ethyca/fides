@@ -489,15 +489,15 @@ class TestCachePausedLocation:
 
 
 class TestPrivacyRequestCacheFailedStep:
-    def test_cache_failed_step_and_collection(self, privacy_request):
-        privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure, collection=paused_location
-        )
+    def test_cache_failed_step(self, privacy_request):
+        privacy_request.cache_failed_checkpoint_details(step=CurrentStep.erasure)
 
         cached_data = privacy_request.get_failed_checkpoint_details()
         assert cached_data.step == CurrentStep.erasure
-        assert cached_data.collection == paused_location
-        assert cached_data.action_needed is None
+        assert cached_data.collection is None  # This is deprecated
+        assert (
+            cached_data.action_needed is None
+        )  # This isn't applicable for failed details
 
     def test_cache_null_step_and_location(self, privacy_request):
         privacy_request.cache_failed_checkpoint_details()

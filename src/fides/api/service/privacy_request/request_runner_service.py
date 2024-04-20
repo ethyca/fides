@@ -189,7 +189,6 @@ def run_webhooks_and_report_status(
                 Pii(str(exc.args[0])),
             )
             privacy_request.error_processing(db)
-            privacy_request.cache_failed_checkpoint_details(current_step)
             return False
         except ValidationError:
             logger.error(
@@ -198,7 +197,6 @@ def run_webhooks_and_report_status(
                 webhook.key,
             )
             privacy_request.error_processing(db)
-            privacy_request.cache_failed_checkpoint_details(current_step)
             return False
 
     return True
@@ -330,8 +328,6 @@ def run_privacy_request(
                 f"Privacy request with id {privacy_request_id} not found"
             )
 
-        privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
-
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logger.info(
                 "Terminating privacy request {}: request canceled.", privacy_request.id
@@ -360,6 +356,7 @@ def run_privacy_request(
         if can_run_checkpoint(
             request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
         ):
+            privacy_request.cache_failed_checkpoint_details(CurrentStep.pre_webhooks)
             # Run pre-execution webhooks
             proceed = run_webhooks_and_report_status(
                 session,
@@ -396,6 +393,7 @@ def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.access)
                 access_runner(
                     privacy_request=privacy_request,
                     policy=policy,
@@ -416,6 +414,9 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.upload_access,
                 from_checkpoint=resume_step,
             ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.upload_access
+                )
                 filtered_access_results = filter_by_enabled_actions(
                     raw_access_results, connection_configs
                 )
@@ -435,6 +436,7 @@ def run_privacy_request(
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
                 # We only need to run the erasure once until masking strategies are handled
                 erasure_runner(
                     privacy_request=privacy_request,
@@ -454,6 +456,9 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.finalize_erasure,
                 from_checkpoint=resume_step,
             ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.finalize_erasure
+                )
                 # This conditional adds a checkpoint for resuming after erasure graph complete
                 pass
 
@@ -463,6 +468,7 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.consent,
                 from_checkpoint=resume_step,
             ):
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
                 consent_runner(
                     privacy_request=privacy_request,
                     policy=policy,
@@ -478,6 +484,9 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.finalize_consent,
                 from_checkpoint=resume_step,
             ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.finalize_consent
+                )
                 # This conditional adds a checkpoint for resuming after consent graph complete
                 pass
 
@@ -511,6 +520,7 @@ def run_privacy_request(
             )
             and needs_batch_email_send(session, identity_data, privacy_request)
         ):
+            privacy_request.cache_failed_checkpoint_details(CurrentStep.email_post_send)
             privacy_request.pause_processing_for_email_send(session)
             logger.info(
                 "Privacy request '{}' exiting: awaiting email send.",
@@ -523,6 +533,7 @@ def run_privacy_request(
             request_checkpoint=CurrentStep.post_webhooks,
             from_checkpoint=resume_step,
         ):
+            privacy_request.cache_failed_checkpoint_details(CurrentStep.post_webhooks)
             proceed = run_webhooks_and_report_status(
                 db=session,
                 privacy_request=privacy_request,

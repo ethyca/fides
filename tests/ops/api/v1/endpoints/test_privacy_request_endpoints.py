@@ -1569,7 +1569,7 @@ class TestGetPrivacyRequests:
             privacy_request.id
         )
 
-    def test_get_failed_request_resume_info_from_collection(
+    def test_get_failed_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
         # Mock the privacy request being in an errored state waiting for retry
@@ -1577,7 +1577,6 @@ class TestGetPrivacyRequests:
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure,
-            collection=CollectionAddress("manual_example", "another_collection"),
         )
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -1588,12 +1587,12 @@ class TestGetPrivacyRequests:
         assert data["status"] == "error"
         assert data["action_required_details"] == {
             "step": "erasure",
-            "collection": "manual_example:another_collection",
+            "collection": None,
             "action_needed": None,
         }
         assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
 
-    def test_get_failed_request_resume_info_from_email_send(
+    def test_get_failed_request_resume_info_from_email_post_send(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
         # Mock the privacy request being in an errored state waiting for retry
@@ -1601,7 +1600,6 @@ class TestGetPrivacyRequests:
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.email_post_send,
-            collection=None,
         )
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -2744,7 +2742,6 @@ class TestBulkRestartFromFailure:
 
         privacy_requests[0].cache_failed_checkpoint_details(
             step=CurrentStep.access,
-            collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
         response = api_client.post(url, json=data, headers=auth_header)
@@ -2777,7 +2774,6 @@ class TestBulkRestartFromFailure:
 
         privacy_requests[0].cache_failed_checkpoint_details(
             step=CurrentStep.email_post_send,
-            collection=None,
         )
 
         response = api_client.post(url, json=data, headers=auth_header)
@@ -2811,7 +2807,6 @@ class TestBulkRestartFromFailure:
 
         privacy_requests[0].cache_failed_checkpoint_details(
             step=CurrentStep.access,
-            collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
         response = api_client.post(url, json=data, headers=auth_header)
@@ -2893,7 +2888,7 @@ class TestRestartFromFailure:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_restart_from_failure_from_specific_collection(
+    def test_restart_from_failure_from_access_step(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
@@ -2902,7 +2897,6 @@ class TestRestartFromFailure:
 
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.access,
-            collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
         response = api_client.post(url, headers=auth_header)
@@ -2920,7 +2914,7 @@ class TestRestartFromFailure:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_restart_from_failure_outside_graph(
+    def test_restart_from_email_post_send(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
@@ -2929,7 +2923,6 @@ class TestRestartFromFailure:
 
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.email_post_send,
-            collection=None,
         )
 
         response = api_client.post(url, headers=auth_header)
