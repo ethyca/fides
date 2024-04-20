@@ -523,14 +523,6 @@ class PrivacyRequest(
         self.save(db)
         return self
 
-    def cache_task_id(self, task_id: str) -> None:
-        """Sets a task_id for this privacy request's asynchronous execution."""
-        cache: FidesopsRedis = get_cache()
-        cache.set(
-            get_async_task_tracking_cache_key(self.id),
-            task_id,
-        )
-
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
         cache: FidesopsRedis = get_cache()
@@ -1713,6 +1705,12 @@ class RequestTask(Base):
     def is_terminator_task(self) -> bool:
         """Convenience helper for asserting whether the task is a terminator task"""
         return self.request_task_address == TERMINATOR_ADDRESS
+
+    def get_cached_task_id(self) -> Optional[str]:
+        """Gets the cached celery task ID for this request task."""
+        cache: FidesopsRedis = get_cache()
+        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
+        return task_id
 
     def get_decoded_access_data(self) -> List[Row]:
         """Decode the collected access data"""
