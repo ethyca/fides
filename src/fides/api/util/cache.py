@@ -9,9 +9,11 @@ from loguru import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
 from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
+from redis.exceptions import DataError
 
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
+from fides.api.tasks import celery_app
 from fides.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
@@ -240,3 +242,27 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
     return f"id-{privacy_request_id}-async-execution"
+
+
+def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
+    """
+    Cache the celery task id created to run the Privacy Request or Request Task
+
+    :param request_id: Can be the Privacy Request Id or a Request Task ID
+    :param celery_task_id: The id of the Celery task itself that was queued to run the
+    Privacy Request or the Request Task
+    :return: None
+    """
+
+    cache: FidesopsRedis = get_cache()
+
+    try:
+        cache.set(
+            get_async_task_tracking_cache_key(request_id),
+            celery_task_id,
+        )
+    except DataError:
+        logger.debug(
+            "Error tracking task_id for privacy request or request task with id {}",
+            request_id,
+        )

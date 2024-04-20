@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import requests
 from loguru import logger
 from pydantic import ValidationError
-from redis.exceptions import DataError
 from sqlalchemy.orm import Query, Session
 
 from fides.api import common_exceptions
@@ -64,11 +63,7 @@ from fides.api.task.graph_task import (
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import (
-    FidesopsRedis,
-    get_async_task_tracking_cache_key,
-    get_cache,
-)
+from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.common.api.v1.urn_registry import (
@@ -277,7 +272,6 @@ def queue_privacy_request(
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
 ) -> str:
-    cache: FidesopsRedis = get_cache()
     logger.info(
         "Queueing privacy request {} from step {}", privacy_request_id, from_step
     )
@@ -286,15 +280,7 @@ def queue_privacy_request(
         from_webhook_id=from_webhook_id,
         from_step=from_step,
     )
-    try:
-        cache.set(
-            get_async_task_tracking_cache_key(privacy_request_id),
-            task.task_id,
-        )
-    except DataError:
-        logger.debug(
-            "Error tracking task_id for request with id {}", privacy_request_id
-        )
+    cache_task_tracking_key(privacy_request_id, task.task_id)
 
     return task.task_id
 
