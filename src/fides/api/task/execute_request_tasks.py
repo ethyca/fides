@@ -78,16 +78,16 @@ def run_prerequisite_task_checks(
     return privacy_request, request_task, upstream_results
 
 
-def create_graph_task(session: Session, request_task: RequestTask) -> GraphTask:
+def create_graph_task(
+    session: Session, request_task: RequestTask, resources: TaskResources
+) -> GraphTask:
     """Hydrates a GraphTask from the saved collection details on the Request Task in the database
 
     This could fail if things like our Collection definitions have changed since we created the Task
     to begin with - this may be unrecoverable and a new Privacy Request should be created.
     """
     try:
-        graph_task: GraphTask = GraphTask(
-            _collect_task_resources(session, request_task)
-        )
+        graph_task: GraphTask = GraphTask(resources)
 
     except Exception as exc:
         logger.debug(
@@ -227,23 +227,32 @@ def run_access_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            graph_task: GraphTask = create_graph_task(session, request_task)
-            # Currently, upstream tasks and "input keys" (which are built by data dependencies)
-            # are the same, but they may not be the same in the future.
-            ordered_upstream_tasks: List[
-                Optional[RequestTask]
-            ] = _order_tasks_by_input_key(
-                graph_task.execution_node.input_keys, upstream_results
-            )
-            # Pass in access data dependencies in the same order as the input keys.
-            # If we don't have access data for an upstream node, pass in an empty list
-            upstream_access_data: List[List[Row]] = [
-                upstream.get_decoded_access_data() if upstream else []
-                for upstream in ordered_upstream_tasks
-            ]
-            # Run the main access function
-            graph_task.access_request(*upstream_access_data)
-            log_task_complete(request_task)
+            with TaskResources(
+                privacy_request,
+                privacy_request.policy,
+                session.query(ConnectionConfig).all(),
+                request_task,
+                session,
+            ) as resources:
+                graph_task: GraphTask = create_graph_task(
+                    session, request_task, resources
+                )
+                # Currently, upstream tasks and "input keys" (which are built by data dependencies)
+                # are the same, but they may not be the same in the future.
+                ordered_upstream_tasks: List[
+                    Optional[RequestTask]
+                ] = _order_tasks_by_input_key(
+                    graph_task.execution_node.input_keys, upstream_results
+                )
+                # Pass in access data dependencies in the same order as the input keys.
+                # If we don't have access data for an upstream node, pass in an empty list
+                upstream_access_data: List[List[Row]] = [
+                    upstream.get_decoded_access_data() if upstream else []
+                    for upstream in ordered_upstream_tasks
+                ]
+                # Run the main access function
+                graph_task.access_request(*upstream_access_data)
+                log_task_complete(request_task)
 
         queue_downstream_tasks(
             session,
@@ -272,18 +281,27 @@ def run_erasure_node(
         log_task_starting(request_task)
 
         if can_run_task_body(request_task):
-            # Build GraphTask resource to facilitate execution
-            graph_task: GraphTask = create_graph_task(session, request_task)
-            # Get access data that was saved in the erasure format that was collected from the
-            # access task for the same collection.  This data is used to build the masking request
-            retrieved_data: List[Row] = (
-                request_task.get_decoded_data_for_erasures() or []
-            )
+            with TaskResources(
+                privacy_request,
+                privacy_request.policy,
+                session.query(ConnectionConfig).all(),
+                request_task,
+                session,
+            ) as resources:
+                # Build GraphTask resource to facilitate execution
+                graph_task: GraphTask = create_graph_task(
+                    session, request_task, resources
+                )
+                # Get access data that was saved in the erasure format that was collected from the
+                # access task for the same collection.  This data is used to build the masking request
+                retrieved_data: List[Row] = (
+                    request_task.get_decoded_data_for_erasures() or []
+                )
 
-            # Run the main erasure function!
-            graph_task.erasure_request(retrieved_data)
+                # Run the main erasure function!
+                graph_task.erasure_request(retrieved_data)
 
-            log_task_complete(request_task)
+                log_task_complete(request_task)
 
         queue_downstream_tasks(
             session,
@@ -313,16 +331,27 @@ def run_consent_node(
 
         if can_run_task_body(request_task):
             # Build GraphTask resource to facilitate execution
-            graph_task: GraphTask = create_graph_task(session, request_task)
-            if upstream_results:
-                # For consent, expected that there is only one upstream node, the root node,
-                # and it holds the identity data (stored in a list for consistency with other
-                # data stored in access_data)
-                access_data: List = upstream_results[0].get_decoded_access_data() or []
+            with TaskResources(
+                privacy_request,
+                privacy_request.policy,
+                session.query(ConnectionConfig).all(),
+                request_task,
+                session,
+            ) as resources:
+                graph_task: GraphTask = create_graph_task(
+                    session, request_task, resources
+                )
+                if upstream_results:
+                    # For consent, expected that there is only one upstream node, the root node,
+                    # and it holds the identity data (stored in a list for consistency with other
+                    # data stored in access_data)
+                    access_data: List = (
+                        upstream_results[0].get_decoded_access_data() or []
+                    )
 
-            graph_task.consent_request(access_data[0] if access_data else {})
+                graph_task.consent_request(access_data[0] if access_data else {})
 
-            log_task_complete(request_task)
+                log_task_complete(request_task)
 
         queue_downstream_tasks(
             session,
@@ -393,7 +422,9 @@ def _order_tasks_by_input_key(
 def _collect_task_resources(
     session: Session, request_task: RequestTask
 ) -> TaskResources:
-    """Build the TaskResources artifact which just collects some Database resources needed for the current task"""
+    """Build the TaskResources artifact which just collects some Database resources needed for the current task
+    Currently just used for testing -
+    """
     return TaskResources(
         request_task.privacy_request,
         request_task.privacy_request.policy,
