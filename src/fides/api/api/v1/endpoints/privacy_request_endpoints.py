@@ -931,7 +931,6 @@ def bulk_restart_privacy_request_from_failure(
             _process_privacy_request_restart(
                 privacy_request,
                 failed_details.step if failed_details else None,
-                failed_details.collection if failed_details else None,
                 db,
             )
         )
@@ -970,7 +969,6 @@ def restart_privacy_request_from_failure(
     return _process_privacy_request_restart(
         privacy_request,
         failed_details.step if failed_details else None,
-        failed_details.collection if failed_details else None,
         db,
     )
 
@@ -1755,17 +1753,15 @@ def _create_or_update_custom_fields(
 def _process_privacy_request_restart(
     privacy_request: PrivacyRequest,
     failed_step: Optional[CurrentStep],
-    failed_collection: Optional[CollectionAddress],
     db: Session,
 ) -> PrivacyRequestResponse:
-    """If failed_step and failed_collection are provided, restart the DSR within that step. Otherwise,
+    """If failed_step is provided, restart the DSR within that step. Otherwise,
     restart the privacy request from the beginning."""
-    if failed_step and failed_collection:
+    if failed_step:
         logger.info(
-            "Restarting failed privacy request '{}' from '{} step, 'collection '{}'",
+            "Restarting failed privacy request '{}' from '{}'",
             privacy_request.id,
             failed_step,
-            failed_collection,
         )
     else:
         logger.info(

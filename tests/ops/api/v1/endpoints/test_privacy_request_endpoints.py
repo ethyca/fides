@@ -2735,6 +2735,8 @@ class TestBulkRestartFromFailure:
     def test_restart_from_failure_from_specific_collection(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
     ):
+        """Collection is no longer a relevant parameter here, but its inclusion does not affect
+        restarting the privacy request"""
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         data = [privacy_requests[0].id]
         privacy_requests[0].status = PrivacyRequestStatus.error
