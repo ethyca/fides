@@ -5,7 +5,9 @@ from loguru import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import (
+    InvalidPrivacyRequestStatus,
     PrivacyRequestNotFound,
+    RequestTaskAlreadyQueued,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
@@ -14,12 +16,13 @@ from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
-    COMPLETED_EXECUTION_LOG_STATUSES,
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
+    PrivacyRequestStatus,
     RequestTask,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
@@ -36,7 +39,7 @@ def run_prerequisite_task_checks(
     session: Session, privacy_request_id: str, privacy_request_task_id: str
 ) -> Tuple[PrivacyRequest, RequestTask, Query]:
     """
-    Upfront checks for seeing if we can run a Request Task
+    Upfront checks that run as soon as the RequestTask is executed by the worker.
 
     Returns resources for use in executing a task
     """
@@ -60,18 +63,13 @@ def run_prerequisite_task_checks(
     assert request_task  # For mypy
 
     upstream_results: Query = session.query(RequestTask).filter(False)
+
     # Only bother running this if the current task body needs to run
     if request_task.status == ExecutionLogStatus.pending:
-        upstream_results = session.query(RequestTask).filter(
-            RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.action_type == request_task.action_type,
-            RequestTask.collection_address.in_(request_task.upstream_tasks or []),
-        )
-
-        if not all(
-            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
-            for upstream_task in upstream_results
-        ) or not upstream_results.count() == len(request_task.upstream_tasks or []):
+        # Only running the upstream check instead of RequestTask.can_queue_request_task since
+        # the node is already queued.
+        upstream_results = request_task.upstream_tasks_objects(session)
+        if not request_task.upstream_tasks_complete(upstream_results, should_log=False):
             raise UpstreamTasksNotReady(
                 f"Cannot start {request_task.action_type} task {request_task.collection_address}. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
             )
@@ -163,27 +161,9 @@ def queue_downstream_tasks(
     """
     pending_downstream: Query = request_task.get_pending_downstream_tasks(session)
     for downstream_task in pending_downstream:
-        if downstream_task.upstream_tasks_complete(session):
-            logger_method(downstream_task)(
-                "Queuing {} task {} from {} {}: upstream nodes complete. Privacy Request: {}, Request Task {}.",
-                downstream_task.action_type.value,
-                downstream_task.collection_address,
-                request_task.action_type.value,
-                request_task.collection_address,
-                privacy_request.id,
-                downstream_task.id,
-            )
+        if downstream_task.can_queue_request_task(session, should_log=True):
             log_task_queued(downstream_task, request_task.collection_address)
             queue_request_task(downstream_task, privacy_request_proceed)
-        else:
-            logger.debug(
-                "Cannot yet queue {} task {} from {}. Privacy Request: {}, Request Task {}. Waiting for other upstream nodes.",
-                downstream_task.action_type.value,
-                downstream_task.collection_address,
-                request_task.collection_address,
-                privacy_request.id,
-                downstream_task.id,
-            )
 
     if (
         request_task.request_task_address == TERMINATOR_ADDRESS

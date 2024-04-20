@@ -266,3 +266,29 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
             "Error tracking task_id for privacy request or request task with id {}",
             request_id,
         )
+
+
+def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
+    """Returns True if supplied Celery Tasks appear to be in-flight"""
+    if not celery_task_ids:
+        return False
+
+    queried_tasks = celery_app.control.inspect().query_task(*celery_task_ids)
+    if not queried_tasks:
+        return False
+
+    # Expected format: {HOSTNAME: {TASK_ID: [STATE, TASK_INFO]}}
+    for host, task_details in queried_tasks.items():
+        for cel_task_id, state_array in task_details.items():
+            state: str = state_array[0]
+            if state in [
+                "active",
+                "received",
+                "reserved",
+                "retry",
+                "scheduled",
+                "started",
+            ]:
+                return True
+
+    return False

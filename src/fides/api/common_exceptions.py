@@ -147,6 +147,10 @@ class PrivacyRequestExit(BaseException):
     """Privacy request exiting processing waiting on subtasks to complete"""
 
 
+class InvalidPrivacyRequestStatus(BaseException):
+    """Unexpected Privacy Request Status"""
+
+
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
@@ -157,6 +161,10 @@ class PrivacyRequestNotFound(BaseException):
 
 class RequestTaskNotFound(BaseException):
     """Privacy Request Task Not Found"""
+
+
+class RequestTaskAlreadyQueued(BaseException):
+    """Request Task Already Queued"""
 
 
 class UpstreamTasksNotReady(BaseException):

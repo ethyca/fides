@@ -17,7 +17,7 @@ from fides.api.graph.config import (
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import ARTIFICIAL_NODES, Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.policy import Policy
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     ExecutionLogStatus,
@@ -552,7 +552,8 @@ def get_existing_ready_tasks(
         )
 
         for task in incomplete_tasks:
-            if task.upstream_tasks_complete(session):
+            # Checks if both upstream tasks are complete and the task is not currently in-flight (if using workers)
+            if task.can_queue_request_task(session, should_log=True):
                 task.update_status(session, ExecutionLogStatus.pending)
                 ready.append(task)
             elif task.status == ExecutionLogStatus.error:

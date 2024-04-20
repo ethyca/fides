@@ -75,6 +75,7 @@ from fides.api.util.cache import (
     CustomJSONEncoder,
     FidesopsRedis,
     _custom_decoder,
+    celery_tasks_in_flight,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -1744,15 +1745,76 @@ class RequestTask(Base):
             RequestTask.status == ExecutionLogStatus.pending,
         )
 
-    def upstream_tasks_complete(self, db: Session) -> bool:
-        """Determines if a given task is ready to run"""
+    def can_queue_request_task(self, db: Session, should_log: bool = False) -> bool:
+        """Returns True if upstream tasks are complete and the current Request Task
+        is not running in another celery task.
+
+        This check ignores its database status
+        """
+        upstream_task_objects: Query = self.upstream_tasks_objects(db)
+        return self.upstream_tasks_complete(
+            upstream_task_objects, should_log
+        ) and not self.request_task_running(should_log)
+
+    def upstream_tasks_complete(
+        self, upstream_tasks: Query, should_log: bool = False
+    ) -> bool:
+        """Determines if all of the upstream tasks of the current task are complete"""
+        tasks_complete: bool = all(
+            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
+            for upstream_task in upstream_tasks
+        ) and upstream_tasks.count() == len(self.upstream_tasks or [])
+
+        if not tasks_complete and should_log:
+            logger.debug(
+                "Upstream tasks incomplete for {} task {}. Privacy Request: {}, Request Task {}.",
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        return tasks_complete
+
+    def upstream_tasks_objects(self, db: Session) -> Query:
+        """Returns Request Task objects that are upstream of the current Request Task"""
         upstream_tasks: Query = db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.collection_address.in_(self.upstream_tasks or []),
             RequestTask.action_type == self.action_type,
         )
+        return upstream_tasks
 
-        return all(
-            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
-            for upstream_task in upstream_tasks
-        )
+    def request_task_running(self, should_log: bool = False) -> bool:
+        """Returns whether the Request Task is already running -
+
+        This is only applicable if you are running workers and
+        CONFIG.execution.task_always_eager=False
+        """
+        celery_task_id: Optional[str] = self.get_cached_task_id()
+        if not celery_task_id:
+            return False
+
+        if should_log:
+            logger.debug(
+                "Celery Task ID {} found for {} task {}. Privacy Request: {}, Request Task {}.",
+                celery_task_id,
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
+
+        if task_in_flight:
+            logger.debug(
+                "Celery Task {} already processing for {} task {}. Privacy Request: {}, Request Task {}.",
+                celery_task_id,
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        return task_in_flight
