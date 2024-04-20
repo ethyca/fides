@@ -26,6 +26,7 @@ from fides.api.task.graph_task import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 
 # DSR 3.0 task functions
@@ -153,7 +154,6 @@ def queue_downstream_tasks(
     session: Session,
     request_task: RequestTask,
     privacy_request: PrivacyRequest,
-    run_node_function: Task,
     next_step: CurrentStep,
     privacy_request_proceed: bool,
 ) -> None:
@@ -173,11 +173,8 @@ def queue_downstream_tasks(
                 privacy_request.id,
                 downstream_task.id,
             )
-            run_node_function.delay(
-                privacy_request_id=privacy_request.id,
-                privacy_request_task_id=downstream_task.id,
-                privacy_request_proceed=privacy_request_proceed,
-            )
+            log_task_queued(downstream_task, request_task.collection_address)
+            queue_request_task(downstream_task, privacy_request_proceed)
         else:
             logger.debug(
                 "Cannot yet queue {} task {} from {}. Privacy Request: {}, Request Task {}. Waiting for other upstream nodes.",
@@ -258,7 +255,6 @@ def run_access_node(
             session,
             request_task,
             privacy_request,
-            run_access_node,
             CurrentStep.upload_access,
             privacy_request_proceed,
         )
@@ -307,7 +303,6 @@ def run_erasure_node(
             session,
             request_task,
             privacy_request,
-            run_erasure_node,
             CurrentStep.finalize_erasure,
             privacy_request_proceed,
         )
@@ -357,7 +352,6 @@ def run_consent_node(
             session,
             request_task,
             privacy_request,
-            run_consent_node,
             CurrentStep.finalize_consent,
             privacy_request_proceed,
         )
@@ -432,3 +426,36 @@ def _collect_task_resources(
         request_task,
         session,
     )
+
+
+mapping = {
+    ActionType.access: run_access_node,
+    ActionType.erasure: run_erasure_node,
+    ActionType.consent: run_consent_node,
+}
+
+
+def queue_request_task(
+    request_task: RequestTask, privacy_request_proceed: bool = True
+) -> None:
+    """Queues the RequestTask in Celery and caches the Celery Task ID"""
+    celery_task_fn: Task = mapping[request_task.action_type]
+    celery_task = celery_task_fn.delay(
+        privacy_request_id=request_task.privacy_request_id,
+        privacy_request_task_id=request_task.id,
+        privacy_request_proceed=privacy_request_proceed,
+    )
+    cache_task_tracking_key(request_task.id, celery_task.task_id)
+
+
+def log_task_queued(request_task: RequestTask, location: str) -> None:
+    """Helper for logging that tasks are queued"""
+    logger_method(request_task)(
+        "Queuing {} task {} from {}. Privacy Request: {}, Request Task {}",
+        request_task.action_type.value,
+        request_task.collection_address,
+        location,
+        request_task.privacy_request_id,
+        request_task.id,
+    )
+

@@ -26,11 +26,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
-from fides.api.task.execute_request_tasks import (
-    run_access_node,
-    run_consent_node,
-    run_erasure_node,
-)
+from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.util.cache import CustomJSONEncoder
 
 
@@ -408,17 +404,6 @@ def collect_tasks_fn(
         data[tn.address] = tn
 
 
-def log_task_queued(request_task: RequestTask) -> None:
-    """Helper for logging that tasks are queued"""
-    logger.info(
-        "Queuing {} task {} from main runner. Privacy Request: {}, Request Task {}",
-        request_task.action_type.value,
-        request_task.collection_address,
-        request_task.privacy_request_id,
-        request_task.id,
-    )
-
-
 def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -482,8 +467,8 @@ def run_access_request(
         )
 
     for task in ready_tasks:
-        log_task_queued(task)
-        run_access_node.delay(privacy_request.id, task.id, privacy_request_proceed)
+        log_task_queued(task, "main runner")
+        queue_request_task(task, privacy_request_proceed)
 
     return ready_tasks
 
@@ -505,8 +490,8 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     )
 
     for task in ready_tasks:
-        log_task_queued(task)
-        run_erasure_node.delay(privacy_request.id, task.id, privacy_request_proceed)
+        log_task_queued(task, "main runner")
+        queue_request_task(task, privacy_request_proceed)
     return ready_tasks
 
 
@@ -547,8 +532,8 @@ def run_consent_request(  # pylint: disable = too-many-arguments
         )
 
     for task in ready_tasks:
-        log_task_queued(task)
-        run_consent_node.delay(privacy_request.id, task.id, privacy_request_proceed)
+        log_task_queued(task, "main runner")
+        queue_request_task(task, privacy_request_proceed)
     return ready_tasks
 
 
