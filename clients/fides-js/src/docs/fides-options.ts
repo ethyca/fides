@@ -127,4 +127,12 @@ export interface FidesOptions {
    * Defaults to `true`.
    */
   fides_tcf_gdpr_applies: boolean;
+
+  /**
+   * When `true`, shows fides.js overlay UI on load. This deletes the fides_consent cookie as if no preferences have been saved on reload.
+   * 
+   * Defaults to `false`.
+  */
+
+  fides_clear_cookie: boolean;
 };
