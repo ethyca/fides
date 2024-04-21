@@ -18,12 +18,12 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
 
 ### Added
-- Added a `reinitialize` method to Fides.js [#4812](https://github.com/ethyca/fides/pull/4812)
 - Added carets to collapsible sections in the overlay modal [#4793](https://github.com/ethyca/fides/pull/4793)
 - Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 - Added support for configuration of pre-approval webhooks [#4795](https://github.com/ethyca/fides/pull/4795)
 - Added fides_clear_cookie option to FidesJS SDK to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
 - Added FidesUpdating event to FidesJS SDK [#4816](https://github.com/ethyca/fides/pull/4816)
+- Added `reinitialize` method to FidesJS SDK [#4812](https://github.com/ethyca/fides/pull/4812)
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
