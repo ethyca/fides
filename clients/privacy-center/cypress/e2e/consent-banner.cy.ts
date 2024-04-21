@@ -2372,8 +2372,7 @@ describe("Consent overlay", () => {
     });
   });
 
-  // TODO: only
-  describe.only("when using Fides.reinitialize() SDK function", () => {
+  describe("when using Fides.reinitialize() SDK function", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubConfig({
@@ -2393,7 +2392,6 @@ describe("Consent overlay", () => {
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
       });
-      cy.wait(5000); // TODO: remove
 
       // Call reinitialize() without making any changes
       cy.window().then((win) => {
@@ -2411,7 +2409,6 @@ describe("Consent overlay", () => {
         cy.get("#fides-overlay .fides-banner").should("have.class", "fides-banner-hidden");
         cy.get("#fides-overlay .fides-banner").should("not.have.class", "fides-banner-hidden");
       });
-      cy.wait(5000); // TODO: remove
 
       // Next, change some Fides options to enable embed and reinitialize()
       cy.window().then((win) => {
@@ -2431,7 +2428,6 @@ describe("Consent overlay", () => {
         cy.get("#fides-embed-container .fides-banner").should("exist");
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
       });
-      cy.wait(5000); // TODO: remove
 
       // Change the options  and reinitialize() again
       cy.window().then((win) => {
