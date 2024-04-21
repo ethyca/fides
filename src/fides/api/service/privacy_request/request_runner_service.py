@@ -159,6 +159,8 @@ def run_webhooks_and_report_status(
             webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
         )
 
+    current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
+
     for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
             privacy_request.trigger_policy_webhook(
@@ -182,6 +184,7 @@ def run_webhooks_and_report_status(
                 Pii(str(exc.args[0])),
             )
             privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
             return False
         except ValidationError:
             logger.error(
@@ -190,6 +193,7 @@ def run_webhooks_and_report_status(
                 webhook.key,
             )
             privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
             return False
 
     return True
