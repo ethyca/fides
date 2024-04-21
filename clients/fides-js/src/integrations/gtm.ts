@@ -1,4 +1,4 @@
-import { FidesEventDetail } from "../lib/events";
+import { FidesEventDetail, FidesEventExtraDetails } from "../lib/events";
 import { NoticeConsent } from "../lib/consent-types";
 
 declare global {
@@ -12,6 +12,7 @@ declare global {
  */
 interface FidesVariable {
   consent: NoticeConsent;
+  extraDetails?: FidesEventExtraDetails;
 }
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
@@ -26,6 +27,7 @@ const pushFidesVariableToGTM = (fidesEvent: {
   // Construct the Fides variable that will be pushed to GTM
   const Fides: FidesVariable = {
     consent: fidesEvent.detail.consent,
+    extraDetails: fidesEvent.detail.extraDetails,
   };
 
   // Push to the GTM dataLayer
@@ -40,6 +42,9 @@ const pushFidesVariableToGTM = (fidesEvent: {
 export const gtm = () => {
   // Listen for Fides events and cross-publish them to GTM
   window.addEventListener("FidesInitialized", (event) =>
+    pushFidesVariableToGTM(event)
+  );
+  window.addEventListener("FidesUpdating", (event) =>
     pushFidesVariableToGTM(event)
   );
   window.addEventListener("FidesUpdated", (event) =>
