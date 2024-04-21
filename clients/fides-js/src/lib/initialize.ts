@@ -48,11 +48,18 @@ import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
-import { initOverlay } from "./consent";
+import { initOverlay } from "./initOverlay";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
+
+export type UpdateExperienceFn = (args: {
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+  debug?: boolean;
+  isExperienceClientSideFetched: boolean;
+}) => Partial<PrivacyExperience>;
 
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
@@ -324,17 +331,7 @@ export const initialize = async ({
    * Once we for sure have a valid experience, this is another chance to update values
    * before the overlay renders.
    */
-  updateExperience: ({
-    cookie,
-    experience,
-    debug,
-    isExperienceClientSideFetched,
-  }: {
-    cookie: FidesCookie;
-    experience: PrivacyExperience;
-    debug?: boolean;
-    isExperienceClientSideFetched: boolean;
-  }) => Partial<PrivacyExperience>;
+  updateExperience: UpdateExperienceFn;
   overrides?: Partial<FidesOverrides>;
 } & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
