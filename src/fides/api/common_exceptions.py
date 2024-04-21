@@ -163,10 +163,6 @@ class RequestTaskNotFound(BaseException):
     """Privacy Request Task Not Found"""
 
 
-class RequestTaskAlreadyQueued(BaseException):
-    """Request Task Already Queued"""
-
-
 class UpstreamTasksNotReady(BaseException):
     """Privacy Request Task awaiting upstream tasks"""
 

@@ -43,10 +43,7 @@ from fides.api.common_exceptions import (
     MessageDispatchException,
     NoCachedManualWebhookEntry,
     PolicyNotFoundException,
-    PrivacyRequestNotFound,
-    RequestTaskNotFound,
     TraversalError,
-    UpstreamTasksNotReady,
     ValidationError,
 )
 from fides.api.graph.config import CollectionAddress
@@ -60,10 +57,10 @@ from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
-    COMPLETED_EXECUTION_LOG_STATUSES,
     CheckpointActionRequired,
     ConsentRequest,
     ExecutionLog,
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
@@ -109,12 +106,10 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.task.create_request_tasks import log_task_queued
 from fides.api.task.execute_request_tasks import (
     run_access_node,
     run_consent_node,
     run_erasure_node,
-    run_prerequisite_task_checks,
 )
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -145,10 +140,10 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
+    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
-    PRIVACY_REQUEST_TASK_QUEUE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
@@ -1801,72 +1796,66 @@ def get_individual_privacy_request_tasks(
 
 
 @router.post(
-    PRIVACY_REQUEST_TASK_QUEUE,
+    PRIVACY_REQUEST_REQUEUE,
     dependencies=[
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
-    response_model=Dict,
+    response_model=PrivacyRequestResponse,
 )
-def queue_task_manually(
+def requeue_privacy_request(
     privacy_request_id: str,
-    task_id: str,
     *,
     db: Session = Depends(deps.get_db),
-) -> Dict:
+) -> PrivacyRequestResponse:
     """
-    Manually queue a privacy request from a specific task if applicable
+    Endpoint for manually re-queuing a stuck Privacy Request from selected states - use with caution.
+
+    Don't use this unless the Privacy Request is stuck.
     """
-    try:
-        privacy_request, request_task, _ = run_prerequisite_task_checks(
-            db, privacy_request_id, task_id
-        )
-    except (PrivacyRequestNotFound, RequestTaskNotFound) as exc:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        )
-    except UpstreamTasksNotReady as exc:
+    pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
+
+    if pr.status not in [
+        PrivacyRequestStatus.pending,
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.in_processing,
+    ]:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            detail=f"Request failed. Cannot re-queue privacy request {pr.id} with status {pr.status.value}",
         )
 
-    if privacy_request.status != PrivacyRequestStatus.in_processing:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} for privacy request {privacy_request.id} of status {privacy_request.status.value}",
-        )
+    checkpoint_details: Optional[
+        CheckpointActionRequired
+    ] = pr.get_failed_checkpoint_details()
+    resume_step = checkpoint_details.step if checkpoint_details else None
 
-    if request_task.status in COMPLETED_EXECUTION_LOG_STATUSES:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} for privacy request {privacy_request.id} with status {request_task.status.value}",
-        )
-
-    if request_task.action_type == ActionType.erasure and not all(
-        pr.status in COMPLETED_EXECUTION_LOG_STATUSES
-        for pr in privacy_request.access_tasks
-    ):
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot run {request_task.action_type.value} task {request_task.id} when access tasks haven't completed.",
-        )
-    # TODO prevent re-running access task after erasure section has started?
+    # If cache has expired for DSR 3.0, drop back to using request tasks to infer where to start privacy request
+    if not resume_step and pr.request_tasks.count():
+        if pr.consent_tasks.count():
+            resume_step = CurrentStep.consent
+        elif pr.erasure_tasks.count():
+            # Checking if access terminator task was completed, because erasure tasks are created
+            # at the same time as the access tasks
+            terminator_access_task = pr.get_terminate_task_by_action(ActionType.access)
+            resume_step = (
+                CurrentStep.erasure
+                if terminator_access_task.status == ExecutionLogStatus.complete
+                else CurrentStep.access
+            )
+        elif pr.access_tasks.count():
+            resume_step = CurrentStep.access
 
     logger.info(
-        "Manual task call received for {} task {} {}",
-        request_task.action_type.value,
-        request_task.collection_address,
-        request_task.id,
+        "Manually requeuing Privacy Request {} from step {}",
+        pr,
+        resume_step.value if resume_step else None,
     )
 
-    # Requeuing the particular task now that the callback is received
-    log_task_queued(request_task)
-    task_function(request_task).delay(
-        privacy_request_id=privacy_request.id, privacy_request_task_id=request_task.id
+    return _process_privacy_request_restart(
+        pr,
+        resume_step,
+        db,
     )
-
-    return {"task_queued": True}
 
 
 def task_function(request_task: RequestTask) -> Task:

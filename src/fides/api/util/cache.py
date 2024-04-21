@@ -278,8 +278,8 @@ def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
         return False
 
     # Expected format: {HOSTNAME: {TASK_ID: [STATE, TASK_INFO]}}
-    for host, task_details in queried_tasks.items():
-        for cel_task_id, state_array in task_details.items():
+    for _, task_details in queried_tasks.items():
+        for _, state_array in task_details.items():
             state: str = state_array[0]
             if state in [
                 "active",

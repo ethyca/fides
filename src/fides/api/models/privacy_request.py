@@ -1778,15 +1778,17 @@ class RequestTask(Base):
 
         This check ignores its database status
         """
-        upstream_task_objects: Query = self.upstream_tasks_objects(db)
         return self.upstream_tasks_complete(
-            upstream_task_objects, should_log
+            db, should_log
         ) and not self.request_task_running(should_log)
 
-    def upstream_tasks_complete(
-        self, upstream_tasks: Query, should_log: bool = False
-    ) -> bool:
+    def upstream_tasks_complete(self, db: Session, should_log: bool = False) -> bool:
         """Determines if all of the upstream tasks of the current task are complete"""
+        upstream_tasks: Query = db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.collection_address.in_(self.upstream_tasks or []),
+            RequestTask.action_type == self.action_type,
+        )
         tasks_complete: bool = all(
             upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
             for upstream_task in upstream_tasks

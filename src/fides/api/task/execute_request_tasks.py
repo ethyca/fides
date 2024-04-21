@@ -7,7 +7,6 @@ from sqlalchemy.orm import Query, Session
 from fides.api.common_exceptions import (
     InvalidPrivacyRequestStatus,
     PrivacyRequestNotFound,
-    RequestTaskAlreadyQueued,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
@@ -55,10 +54,9 @@ def run_prerequisite_task_checks(
             f"Privacy request with id {privacy_request_id} not found"
         )
 
-    if privacy_request.status != PrivacyRequestStatus.in_processing:
-        # This is an extra check for cancelled privacy requests
+    if privacy_request.status == PrivacyRequestStatus.canceled:
         raise InvalidPrivacyRequestStatus(
-            f"Cannot execute request task {privacy_request_task_id} if privacy Request {privacy_request_id} status is {privacy_request.status.value}"
+            f"Cannot execute request task {privacy_request_task_id} of privacy request {privacy_request_id}: status is {privacy_request.status.value}"
         )
 
     if not request_task or not request_task.privacy_request_id == privacy_request.id:
@@ -68,14 +66,17 @@ def run_prerequisite_task_checks(
 
     assert request_task  # For mypy
 
-    upstream_results: Query = session.query(RequestTask).filter(False)
+    upstream_results: Query = session.query(RequestTask).filter(
+        RequestTask.privacy_request_id == request_task.privacy_request_id,
+        RequestTask.collection_address.in_(request_task.upstream_tasks or []),
+        RequestTask.action_type == request_task.action_type,
+    )
 
     # Only bother running this if the current task body needs to run
     if request_task.status == ExecutionLogStatus.pending:
         # Only running the upstream check instead of RequestTask.can_queue_request_task since
         # the node is already queued.
-        upstream_results = request_task.upstream_tasks_objects(session)
-        if not request_task.upstream_tasks_complete(upstream_results, should_log=False):
+        if not request_task.upstream_tasks_complete(session, should_log=False):
             raise UpstreamTasksNotReady(
                 f"Cannot start {request_task.action_type} task {request_task.collection_address}. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
             )

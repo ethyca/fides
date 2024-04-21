@@ -159,8 +159,6 @@ def run_webhooks_and_report_status(
             webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
         )
 
-    current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
-
     for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
             privacy_request.trigger_policy_webhook(
@@ -445,8 +443,6 @@ def run_privacy_request(
                 privacy_request.cache_failed_checkpoint_details(
                     CurrentStep.finalize_erasure
                 )
-                # This conditional adds a checkpoint for resuming after erasure graph complete
-                pass
 
             if policy.get_rules_for_action(
                 action_type=ActionType.consent
@@ -474,7 +470,6 @@ def run_privacy_request(
                     CurrentStep.finalize_consent
                 )
                 # This conditional adds a checkpoint for resuming after consent graph complete
-                pass
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
