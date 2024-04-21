@@ -2372,7 +2372,8 @@ describe("Consent overlay", () => {
     });
   });
 
-  describe("when using Fides.reinitialize() SDK function", () => {
+  // TODO: only
+  describe.only("when using Fides.reinitialize() SDK function", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubConfig({
@@ -2385,11 +2386,32 @@ describe("Consent overlay", () => {
     it("reinitializes FidesJS and loads any changed options", () => {
       // First, it should initialize normally and show the banner
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.been.calledOnce");
+        cy.get("@FidesInitialized").should("have.callCount", 1);
         cy.get("#fides-overlay .fides-banner").should("exist");
+        cy.get("#fides-overlay .fides-banner").should("have.class", "fides-banner-hidden");
+        cy.get("#fides-overlay .fides-banner").should("not.have.class", "fides-banner-hidden");
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
       });
+      cy.wait(5000); // TODO: remove
+
+      // Call reinitialize() without making any changes
+      cy.window().then((win) => {
+        win.Fides.reinitialize();
+      });
+
+      // FidesJS should re-initialize and re-show the banner
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesInitialized").should("have.callCount", 2);
+        cy.get("#fides-overlay .fides-banner").should("exist");
+        cy.get("#fides-embed-container .fides-banner").should("not.exist");
+        cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
+
+        // Ensure the .fides-banner-hidden class is added & removed again (foranimation)
+        cy.get("#fides-overlay .fides-banner").should("have.class", "fides-banner-hidden");
+        cy.get("#fides-overlay .fides-banner").should("not.have.class", "fides-banner-hidden");
+      });
+      cy.wait(5000); // TODO: remove
 
       // Next, change some Fides options to enable embed and reinitialize()
       cy.window().then((win) => {
@@ -2404,11 +2426,12 @@ describe("Consent overlay", () => {
 
       // FidesJS should initialize again, in embedded mode this time
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.been.calledTwice");
-        // cy.get("#fides-overlay .fides-banner").should("not.exist");
+        cy.get("@FidesInitialized").should("have.callCount", 3);
+        cy.get("#fides-overlay .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-banner").should("exist");
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
       });
+      cy.wait(5000); // TODO: remove
 
       // Change the options  and reinitialize() again
       cy.window().then((win) => {
@@ -2423,8 +2446,8 @@ describe("Consent overlay", () => {
 
       // FidesJS should initialize once again, without any banners
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.been.calledThrice");
-        // cy.get("#fides-overlay .fides-banner").should("not.exist");
+        cy.get("@FidesInitialized").should("have.callCount", 4);
+        cy.get("#fides-overlay .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("exist");
       });
