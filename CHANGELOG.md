@@ -21,7 +21,8 @@ The types of changes are:
 - Added carets to collapsible sections in the overlay modal [#4793](https://github.com/ethyca/fides/pull/4793)
 - Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
 - Added support for configuration of pre-approval webhooks [#4795](https://github.com/ethyca/fides/pull/4795)
-- Added CMP API fidesClearCookie to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
+- Added fides_clear_cookie option to FidesJS SDK to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
+- Added FidesUpdating event to FidesJS SDK [#4816](https://github.com/ethyca/fides/pull/4816)
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
@@ -29,6 +30,9 @@ The types of changes are:
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
 - Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
+
+### Changed
+- Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
