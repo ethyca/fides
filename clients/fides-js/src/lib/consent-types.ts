@@ -117,6 +117,9 @@ export interface FidesInitOptions {
 
   // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
   fidesPrimaryColor: string | null;
+
+  // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
+  fidesClearCookie: boolean;
 }
 
 /**
@@ -665,6 +668,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesTcfGdprApplies"
   | "fidesLocale"
   | "fidesPrimaryColor"
+  | "fidesClearCookie"
 >;
 
 export type FidesExperienceTranslationOverrides = {
