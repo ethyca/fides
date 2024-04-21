@@ -45,11 +45,22 @@ export const initOverlay = async ({
       // Fides.reinitialize() or similar), first ensure we unmount any
       // previously rendered instances
       if (renderedParentElem) {
-        console.error("Detected re-rendering");
         debugLog(
           options.debug,
-          "Detected that Fides overlay was previously rendered! Unmounting previous instance from the DOM.",
+          "Detected that Fides overlay was previously rendered! Unmounting previous instance from the DOM."
         );
+
+        /**
+         * Render a `null` VDOM component to unmount any existing tree. The use
+         * of `null` here isn't explicitly mentioned in the Preact docs[1], but
+         * the maintainers have commented on StackOverflow[1] and rely on this
+         * behaviour to implement a React-compatible `unmountComponentAtNode`[3]
+         * function, so this should be safe to rely on.
+         *
+         * [1]: https://preactjs.com/guide/v10/api-reference/#render
+         * [2]: https://stackoverflow.com/questions/50946950/how-to-destroy-root-preact-node
+         * [3]: https://github.com/preactjs/preact/blob/3123e7f0a98ff15f5b14a2b764ddd036e79cd926/compat/src/index.js#L100
+         */
         render(null, renderedParentElem);
         renderedParentElem = undefined;
       }
