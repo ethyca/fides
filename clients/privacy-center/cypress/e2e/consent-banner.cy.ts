@@ -2387,8 +2387,14 @@ describe("Consent overlay", () => {
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesInitialized").should("have.callCount", 1);
         cy.get("#fides-overlay .fides-banner").should("exist");
-        cy.get("#fides-overlay .fides-banner").should("have.class", "fides-banner-hidden");
-        cy.get("#fides-overlay .fides-banner").should("not.have.class", "fides-banner-hidden");
+        cy.get("#fides-overlay .fides-banner").should(
+          "have.class",
+          "fides-banner-hidden"
+        );
+        cy.get("#fides-overlay .fides-banner").should(
+          "not.have.class",
+          "fides-banner-hidden"
+        );
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
       });
@@ -2406,8 +2412,14 @@ describe("Consent overlay", () => {
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
 
         // Ensure the .fides-banner-hidden class is added & removed again (foranimation)
-        cy.get("#fides-overlay .fides-banner").should("have.class", "fides-banner-hidden");
-        cy.get("#fides-overlay .fides-banner").should("not.have.class", "fides-banner-hidden");
+        cy.get("#fides-overlay .fides-banner").should(
+          "have.class",
+          "fides-banner-hidden"
+        );
+        cy.get("#fides-overlay .fides-banner").should(
+          "not.have.class",
+          "fides-banner-hidden"
+        );
       });
 
       // Next, change some Fides options to enable embed and reinitialize()
