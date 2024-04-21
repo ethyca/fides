@@ -58,11 +58,12 @@ async function savePreferencesApi(
 /**
  * Updates the user's consent preferences, going through the following steps:
  * 1. Update the cookie object based on new preferences
- * 2. Update the window.Fides object
- * 3. Save preferences to the `fides_consent` cookie in the browser
- * 4. Save preferences to Fides API or a custom function (`savePreferencesFn`)
- * 5. Remove any cookies from notices that were opted-out from the browser
- * 6. Dispatch a "FidesUpdated" event
+ * 2. Dispatch a "FidesUpdating" event with the new preferences
+ * 3. Update the window.Fides object
+ * 4. Save preferences to the `fides_consent` cookie in the browser
+ * 5. Save preferences to Fides API or a custom function (`savePreferencesFn`)
+ * 6. Remove any cookies from notices that were opted-out from the browser
+ * 7. Dispatch a "FidesUpdated" event
  */
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
@@ -96,7 +97,7 @@ export const updateConsentPreferences = async ({
   Object.assign(cookie, updatedCookie);
   Object.assign(cookie.fides_meta, extraDetails); // save extra details to meta (i.e. consentMethod)
 
-  // 2. Dispatch a "FidesUpdating" event with the new cookie
+  // 2. Dispatch a "FidesUpdating" event with the new preferences
   dispatchFidesEvent("FidesUpdating", cookie, options.debug, extraDetails);
 
   // 3. Update the window.Fides object
