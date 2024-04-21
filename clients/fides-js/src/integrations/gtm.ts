@@ -12,7 +12,6 @@ declare global {
  */
 interface FidesVariable {
   consent: NoticeConsent;
-  extraDetails?: FidesEventExtraDetails;
 }
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
@@ -27,7 +26,6 @@ const pushFidesVariableToGTM = (fidesEvent: {
   // Construct the Fides variable that will be pushed to GTM
   const Fides: FidesVariable = {
     consent: fidesEvent.detail.consent,
-    extraDetails: fidesEvent.detail.extraDetails,
   };
 
   // Push to the GTM dataLayer
