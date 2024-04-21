@@ -168,6 +168,7 @@ _Fides = {
     allowHTMLDescription: null,
     base64Cookie: false,
     fidesPrimaryColor: null,
+    fidesClearCookie: false,
   },
   fides_meta: {},
   identity: {},
