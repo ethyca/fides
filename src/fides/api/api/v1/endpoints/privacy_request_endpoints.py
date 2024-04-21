@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
 import sqlalchemy
-from celery import Task
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -105,11 +104,6 @@ from fides.api.service.privacy_request.request_runner_service import (
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
-)
-from fides.api.task.execute_request_tasks import (
-    run_access_node,
-    run_consent_node,
-    run_erasure_node,
 )
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -1824,12 +1818,14 @@ def requeue_privacy_request(
             detail=f"Request failed. Cannot re-queue privacy request {pr.id} with status {pr.status.value}",
         )
 
+    # Both DSR 2.0 and 3.0 cache checkpoint details
     checkpoint_details: Optional[
         CheckpointActionRequired
     ] = pr.get_failed_checkpoint_details()
     resume_step = checkpoint_details.step if checkpoint_details else None
 
-    # If cache has expired for DSR 3.0, drop back to using request tasks to infer where to start privacy request
+    # DSR 3.0 additionally stores Request Tasks in the application db that can be used to infer
+    # a resume checkpoint in the event the cache has expired.
     if not resume_step and pr.request_tasks.count():
         if pr.consent_tasks.count():
             resume_step = CurrentStep.consent
@@ -1856,14 +1852,3 @@ def requeue_privacy_request(
         resume_step,
         db,
     )
-
-
-def task_function(request_task: RequestTask) -> Task:
-    """Map the action type of a request task to the celery task that should
-    be used to run it"""
-    mapping = {
-        ActionType.access: run_access_node,
-        ActionType.erasure: run_erasure_node,
-        ActionType.consent: run_consent_node,
-    }
-    return mapping[request_task.action_type]

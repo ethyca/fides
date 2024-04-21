@@ -77,6 +77,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
+    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -4990,3 +4991,167 @@ class TestPrivacyRequestTasksList:
             "downstream_tasks",
             "action_type",
         }
+
+
+class TestRequeuePrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request, request_task) -> str:
+        return V1_URL_PREFIX + PRIVACY_REQUEST_REQUEUE.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_requeue_privacy_request_unauthenticated(self, api_client: TestClient, url):
+        response = api_client.post(url, headers={})
+        assert 401 == response.status_code
+
+    def test_requeue_privacy_request_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_requeue_privacy_request_privacy_request_not_found(
+        self, api_client: TestClient, generate_auth_header, url, request_task
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_REQUEUE.format(
+            privacy_request_id="adsf", task_id=request_task.id
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 404 == response.status_code
+
+    def test_requeue_privacy_request_already_completed(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_request,
+        request_task,
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Request failed. Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_from_cached_failure_point(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        privacy_request.cache_failed_checkpoint_details(
+            step=CurrentStep.erasure,
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.erasure.value,
+        )
+
+    @pytest.mark.usefixtures("consent_request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_with_consent_tasks(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.consent.value,
+        )
+
+    @pytest.mark.usefixtures("erasure_request_task", "request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_with_erasure_tasks(
+        self,
+        queue_privacy_request_mock,
+        db,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        terminate_access_task = privacy_request.get_terminate_task_by_action(
+            ActionType.access
+        )
+        terminate_access_task.status = ExecutionLogStatus.complete
+        terminate_access_task.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.erasure.value,
+        )
+
+    @pytest.mark.usefixtures("erasure_request_task", "request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_erasure_tasks_but_access_step_not_complete(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.access.value,
+        )
+
+    @pytest.mark.usefixtures("request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_with_access_tasks(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.access.value,
+        )
