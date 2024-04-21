@@ -1,4 +1,4 @@
-import { FidesEventDetail, FidesEventExtraDetails } from "../lib/events";
+import { FidesEventDetail } from "../lib/events";
 import { NoticeConsent } from "../lib/consent-types";
 
 declare global {
