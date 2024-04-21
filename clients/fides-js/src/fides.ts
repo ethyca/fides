@@ -73,7 +73,7 @@ const updateExperience: UpdateExperienceFn = ({
  * Initialize the global Fides object with the given configuration values
  */
 async function init(this: FidesGlobal, config: FidesConfig) {
-  this.prevConfig = config;
+  this.config = config;
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -172,12 +172,12 @@ const _Fides: FidesGlobal = {
   saved_consent: {},
   gtm,
   init,
-  prevConfig: undefined,
+  config: undefined,
   reinitialize() {
-    if (!this.prevConfig || !this.initialized) {
+    if (!this.config || !this.initialized) {
       throw new Error("Fides must be initialized before reinitializing");
     }
-    return this.init(this.prevConfig);
+    return this.init(this.config);
   },
   initialized: false,
   meta,
