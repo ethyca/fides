@@ -1,7 +1,10 @@
+from unittest import mock
+
 import pytest
 
 from fides.api.common_exceptions import (
     PrivacyRequestNotFound,
+    PrivacyRequestStatusCanceled,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
@@ -17,7 +20,11 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal
-from fides.api.models.privacy_request import ExecutionLogStatus, RequestTask
+from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+    RequestTask,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.api.task.create_request_tasks import (
@@ -59,6 +66,13 @@ class TestRunPrerequisiteTaskChecks:
 
     def test_request_task_does_not_exist(self, db, privacy_request):
         with pytest.raises(RequestTaskNotFound):
+            run_prerequisite_task_checks(db, privacy_request.id, "12345")
+
+    def test_privacy_request_was_cancelled(self, db, privacy_request):
+        privacy_request.status = PrivacyRequestStatus.canceled
+        privacy_request.save(db)
+
+        with pytest.raises(PrivacyRequestStatusCanceled):
             run_prerequisite_task_checks(db, privacy_request.id, "12345")
 
     @pytest.mark.usefixtures("request_task")

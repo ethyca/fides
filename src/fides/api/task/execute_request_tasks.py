@@ -5,8 +5,8 @@ from loguru import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import (
-    InvalidPrivacyRequestStatus,
     PrivacyRequestNotFound,
+    PrivacyRequestStatusCanceled,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
@@ -55,7 +55,7 @@ def run_prerequisite_task_checks(
         )
 
     if privacy_request.status == PrivacyRequestStatus.canceled:
-        raise InvalidPrivacyRequestStatus(
+        raise PrivacyRequestStatusCanceled(
             f"Cannot execute request task {privacy_request_task_id} of privacy request {privacy_request_id}: status is {privacy_request.status.value}"
         )
 

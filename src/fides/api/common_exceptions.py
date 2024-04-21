@@ -147,8 +147,8 @@ class PrivacyRequestExit(BaseException):
     """Privacy request exiting processing waiting on subtasks to complete"""
 
 
-class InvalidPrivacyRequestStatus(BaseException):
-    """Unexpected Privacy Request Status"""
+class PrivacyRequestStatusCanceled(BaseException):
+    """Privacy Request has been Canceled"""
 
 
 class PrivacyRequestPaused(BaseException):

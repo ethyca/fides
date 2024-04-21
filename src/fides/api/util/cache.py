@@ -246,7 +246,10 @@ def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
 
 def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
     """
-    Cache the celery task id created to run the Privacy Request or Request Task
+    Cache the celery task id created to run the Privacy Request or Request Task.
+
+    Note that it is possible a Privacy Request or Request Task is queued multiple times
+    over the life of a Priavcy Request so the cached id is the latest task queued
 
     :param request_id: Can be the Privacy Request Id or a Request Task ID
     :param celery_task_id: The id of the Celery task itself that was queued to run the

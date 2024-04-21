@@ -1,4 +1,5 @@
 import json
+from unittest import mock
 
 import pytest
 
@@ -9,7 +10,12 @@ from fides.api.graph.config import (
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, RequestTask
 from fides.api.schemas.policy import ActionType
-from fides.api.util.cache import CustomJSONEncoder, FidesopsRedis, get_cache
+from fides.api.util.cache import (
+    CustomJSONEncoder,
+    FidesopsRedis,
+    cache_task_tracking_key,
+    get_cache,
+)
 
 
 class TestRequestTask:
@@ -118,6 +124,24 @@ class TestRequestTask:
         assert request_task.get_pending_downstream_tasks(db).all() == [terminator_task]
         assert terminator_task.get_pending_downstream_tasks(db).all() == []
 
+    @mock.patch("fides.api.util.cache.celery_app.control.inspect.query_task")
+    def test_request_task_running(self, query_task_mock, db, request_task):
+        assert request_task.request_task_running() is False
+
+        cache_task_tracking_key(request_task.id, "test_5678")
+
+        assert request_task.request_task_running() is False
+
+        query_task_mock.return_value = {"@celery1234": {}}
+
+        assert request_task.request_task_running() is False
+        assert request_task.can_queue_request_task(db) is True
+
+        query_task_mock.return_value = {"@celery1234": {"test_5678": ["reserved", {}]}}
+
+        assert request_task.request_task_running() is True
+        assert request_task.can_queue_request_task(db) is False
+
     def test_upstream_tasks_complete(self, db, request_task):
         # The Request Task only has the Root Task upstream, which is complete
         assert request_task.upstream_tasks == [ROOT_COLLECTION_ADDRESS.value]
@@ -139,11 +163,13 @@ class TestRequestTask:
         assert terminator_task.upstream_tasks == [request_task.collection_address]
         assert request_task.status == ExecutionLogStatus.pending
         assert not terminator_task.upstream_tasks_complete(db)
+        assert not terminator_task.can_queue_request_task(db)
 
         # Set the request task to be skipped
         request_task.update_status(db, ExecutionLogStatus.skipped)
         # Skipped is considered to be a completed state
         assert terminator_task.upstream_tasks_complete(db)
+        assert terminator_task.can_queue_request_task(db)
 
     def test_update_status(self, db, request_task):
         assert request_task.status == ExecutionLogStatus.pending

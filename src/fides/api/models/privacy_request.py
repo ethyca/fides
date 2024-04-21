@@ -1815,10 +1815,11 @@ class RequestTask(Base):
         return upstream_tasks
 
     def request_task_running(self, should_log: bool = False) -> bool:
-        """Returns whether the Request Task is already running -
+        """Returns a rough measure if the Request Task is already running -
 
         This is only applicable if you are running workers and
-        CONFIG.execution.task_always_eager=False
+        CONFIG.execution.task_always_eager=False. This is just an extra check to reduce possible
+        over-scheduling, but it is also okay if the same node runs multiple times.
         """
         celery_task_id: Optional[str] = self.get_cached_task_id()
         if not celery_task_id:
@@ -1836,7 +1837,7 @@ class RequestTask(Base):
 
         task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
 
-        if task_in_flight:
+        if task_in_flight and should_log:
             logger.debug(
                 "Celery Task {} already processing for {} task {}. Privacy Request: {}, Request Task {}.",
                 celery_task_id,
