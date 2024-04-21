@@ -48,7 +48,7 @@ import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
-import { initOverlay } from "./consent";
+import { initOverlay } from "./initOverlay";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
