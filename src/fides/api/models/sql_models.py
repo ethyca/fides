@@ -329,6 +329,7 @@ class System(Base, FidesBase):
 
     vendor_id = Column(String)
     previous_vendor_id = Column(String)
+    vendor_deleted_date = Column(DateTime(timezone=True))
     dataset_references = Column(ARRAY(String), server_default="{}", nullable=False)
     processes_personal_data = Column(BOOLEAN(), server_default="t", nullable=False)
     exempt_from_privacy_regulations = Column(
