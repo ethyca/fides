@@ -13,7 +13,7 @@ defusedxml==0.7.1
 expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-pagination[sqlalchemy]==0.11.4
-fideslang==3.0.0
+fideslang==3.0.1a3
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.41
