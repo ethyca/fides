@@ -52,7 +52,10 @@ const deriveGppFieldRegion = ({
   experienceRegion: string;
   usApproach: GPPUSApproach | undefined;
 }) => {
-  if (usApproach === GPPUSApproach.NATIONAL) {
+  if (
+    experienceRegion.toLowerCase().startsWith("us") &&
+    usApproach === GPPUSApproach.NATIONAL
+  ) {
     return "us";
   }
   return experienceRegion;
@@ -83,8 +86,10 @@ export const setGppNoticesProvidedFromExperience = ({
   });
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
-  if (!gppSection) {
-    cmpApi.setApplicableSections([-1]);
+  if (
+    !gppSection ||
+    (experienceRegion === "us" && usApproach === GPPUSApproach.STATE)
+  ) {
     return [];
   }
 
@@ -136,8 +141,10 @@ export const setGppOptOutsFromCookieAndExperience = ({
   });
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
-  if (!gppSection) {
-    cmpApi.setApplicableSections([-1]);
+  if (
+    !gppSection ||
+    (experienceRegion === "us" && usApproach === GPPUSApproach.STATE)
+  ) {
     return [];
   }
 
