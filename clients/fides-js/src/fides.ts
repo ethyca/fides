@@ -165,7 +165,6 @@ const _Fides: FidesGlobal = {
     allowHTMLDescription: null,
     base64Cookie: false,
     fidesPrimaryColor: null,
-    forceGpp: false,
     fidesClearCookie: false,
   },
   fides_meta: {},
