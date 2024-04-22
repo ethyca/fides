@@ -53,6 +53,7 @@ from tests.fixtures.mariadb_fixtures import *
 from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
+from tests.fixtures.oracle_db_fixtures import *
 from tests.fixtures.postgres_fixtures import *
 from tests.fixtures.redshift_fixtures import *
 from tests.fixtures.saas import *

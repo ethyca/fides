@@ -353,6 +353,11 @@ jobs:
           SNOWFLAKE_TEST_WAREHOUSE_NAME: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE_NAME }}
           SNOWFLAKE_TEST_DATABASE_NAME: ${{ secrets.SNOWFLAKE_TEST_DATABASE_NAME }}
           SNOWFLAKE_TEST_SCHEMA_NAME: ${{ secrets.SNOWFLAKE_TEST_SCHEMA_NAME }}
+          ORACLE_DB_TEST_HOST: ${{ secrets.ORACLE_DB_TEST_HOST }}
+          ORACLE_DB_TEST_PORT: ${{ secrets.ORACLE_DB_TEST_PORT }}
+          ORACLE_DB_TEST_USER: ${{ secrets.ORACLE_DB_TEST_USER }}
+          ORACLE_DB_TEST_PASSWORD: ${{ secrets.ORACLE_DB_TEST_PASSWORD }}
+          ORACLE_DB_TEST_SERVICE_NAME: ${{ secrets.ORACLE_DB_TEST_SERVICE_NAME }}
 
         run: nox -s "pytest(ops-external-datastores)"
 

@@ -72,3 +72,10 @@ polling_timeout=1800
 aws_access_key_id = ""
 aws_secret_access_key = ""
 region = ""
+
+[oracle_db]
+host = ""
+port = ""
+username = ""
+password = ""
+service_name = ""

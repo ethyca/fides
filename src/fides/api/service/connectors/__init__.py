@@ -33,6 +33,7 @@ from fides.api.service.connectors.manual_webhook_connector import (
 from fides.api.service.connectors.mongodb_connector import (
     MongoDBConnector as MongoDBConnector,
 )
+from fides.api.service.connectors.oracle_db_connector import OracleDBConnector
 from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
 from fides.api.service.connectors.sql_connector import (
     BigQueryConnector as BigQueryConnector,
@@ -71,6 +72,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.mongodb.value: MongoDBConnector,
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
     ConnectionType.mysql.value: MySQLConnector,
+    ConnectionType.oracle_db.value: OracleDBConnector,
     ConnectionType.postgres.value: PostgreSQLConnector,
     ConnectionType.redshift.value: RedshiftConnector,
     ConnectionType.saas.value: SaaSConnector,

@@ -15,7 +15,7 @@ from fides.api.service.connectors import (
     SaaSConnector,
     get_connector,
 )
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.oracle_db_connector import OracleDBConnector
 from fides.api.service.connectors.sql_connector import (
     MariaDBConnector,
     MicrosoftSQLServerConnector,
@@ -1337,5 +1337,19 @@ class TestSaasConnectorIntegration:
         mailchimp_connection_config.secrets = {"domain": "bad_host"}
         mailchimp_connection_config.save(db)
         connector = get_connector(mailchimp_connection_config)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()
+
+
+@pytest.mark.integration_oracle_db
+class TestOracleDBIntegration:
+    def test_oracle_db_connector(self, db: Session, oracle_db_connection_config):
+        connector = get_connector(oracle_db_connection_config)
+        assert connector.__class__ == OracleDBConnector
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        oracle_db_connection_config.secrets = {"host": "bad_host"}
+        oracle_db_connection_config.save(db)
+        connector = get_connector(oracle_db_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()

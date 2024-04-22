@@ -166,6 +166,15 @@ integration_secrets = {
             integration_config, "dynamodb_example.aws_secret_access_key"
         ),
     },
+    "oracle_db": {
+        "host": pydash.get(integration_config, "oracle_db.host"),
+        "port": pydash.get(integration_config, "oracle_db.port"),
+        "username": pydash.get(integration_config, "oracle_db.username"),
+        "password": pydash.get(integration_config, "oracle_db.password"),
+        "service_name": pydash.get(
+            integration_config, "oracle_db.service_name"
+        ),
+    },
 }
 
 

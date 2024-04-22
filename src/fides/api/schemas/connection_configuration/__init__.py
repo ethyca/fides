@@ -68,6 +68,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema as MySQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_oracle_db import (
+    OracleDBDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_oracle_db import (
+    OracleDBSchema as OracleDBSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLDocsSchema as PostgreSQLDocsSchema,
 )
@@ -120,7 +126,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.mongodb.value: MongoDBSchema,
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
     ConnectionType.mysql.value: MySQLSchema,
-    ConnectionType.postgres.value: PostgreSQLSchema,
+    ConnectionType.oracle_db.value: OracleDBSchema,
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.saas.value: SaaSSchema,
     ConnectionType.snowflake.value: SnowflakeSchema,
@@ -171,4 +177,5 @@ connection_secrets_schemas = Union[
     FidesDocsSchema,
     SovrnDocsSchema,
     DynamoDBDocsSchema,
+    OracleDBDocsSchema,
 ]

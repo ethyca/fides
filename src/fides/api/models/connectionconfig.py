@@ -37,6 +37,7 @@ class ConnectionType(enum.Enum):
     postgres = "postgres"
     mongodb = "mongodb"
     mysql = "mysql"
+    oracle_db = "oracle_db"
     https = "https"
     saas = "saas"
     redshift = "redshift"
@@ -73,6 +74,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mongodb.value: "MongoDB",
             ConnectionType.mssql.value: "Microsoft SQL Server",
             ConnectionType.mysql.value: "MySQL",
+            ConnectionType.oracle_db.value: "Oracle Database",
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.redshift.value: "Amazon Redshift",
             ConnectionType.saas.value: "SaaS",

@@ -187,6 +187,7 @@ markers = [
     "integration_mariadb",
     "integration_bigquery",
     "integration_dynamodb",
+    "integration_oracle_db",
     "integration_saas",
     "integration_saas_override",
     "unit_saas"
