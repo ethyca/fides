@@ -120,6 +120,9 @@ export interface FidesInitOptions {
 
   // Whether the developer forced the inclusion of the GPP extension
   forceGpp: boolean;
+
+  // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
+  fidesClearCookie: boolean;
 }
 
 /**
@@ -130,19 +133,21 @@ export interface FidesInitOptions {
  * need to change.
  */
 export interface FidesGlobal extends Fides {
+  config?: FidesConfig;
   consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
-  geolocation?: UserGeolocation;
-  fides_string?: string | undefined;
-  options: FidesInitOptions;
   fides_meta: FidesJSMeta;
-  tcf_consent: TcfOtherConsent;
-  saved_consent: NoticeConsent;
-  gtm: typeof gtm;
+  fides_string?: string | undefined;
+  geolocation?: UserGeolocation;
   identity: FidesJSIdentity;
-  init: (config: FidesConfig) => Promise<void>;
   initialized: boolean;
+  options: FidesInitOptions;
+  saved_consent: NoticeConsent;
+  tcf_consent: TcfOtherConsent;
+  gtm: typeof gtm;
+  init: (config: FidesConfig) => Promise<void>;
   meta: typeof meta;
+  reinitialize: () => Promise<void>;
   shopify: typeof shopify;
   showModal: () => void;
 }
@@ -666,6 +671,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesTcfGdprApplies"
   | "fidesLocale"
   | "fidesPrimaryColor"
+  | "fidesClearCookie"
 >;
 
 export type FidesExperienceTranslationOverrides = {

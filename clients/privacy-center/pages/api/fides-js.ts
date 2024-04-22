@@ -184,6 +184,7 @@ export default async function handler(
       base64Cookie: environment.settings.BASE_64_COOKIE,
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       forceGpp: forcedGPP === "true",
+      fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

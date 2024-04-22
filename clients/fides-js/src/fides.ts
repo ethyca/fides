@@ -15,7 +15,6 @@ import {
 } from "./lib/cookie";
 import {
   FidesConfig,
-  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
@@ -34,6 +33,7 @@ import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
+  UpdateExperienceFn,
 } from "./lib/initialize";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
@@ -47,20 +47,11 @@ declare global {
   }
 }
 
-// The global Fides object; this is bound to window.Fides if available
-// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _Fides: FidesGlobal;
-
-const updateExperience = ({
+const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
   debug,
   isExperienceClientSideFetched,
-}: {
-  cookie: FidesCookie;
-  experience: PrivacyExperience;
-  debug?: boolean;
-  isExperienceClientSideFetched: boolean;
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
@@ -81,7 +72,9 @@ const updateExperience = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-const init = async (config: FidesConfig) => {
+async function init(this: FidesGlobal, config: FidesConfig) {
+  this.config = config;
+
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
@@ -101,7 +94,10 @@ const init = async (config: FidesConfig) => {
     experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrides.optionsOverrides };
+  config = {
+    ...config,
+    options: { ...config.options, ...overrides.optionsOverrides },
+  };
   const cookie = {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
@@ -120,7 +116,7 @@ const init = async (config: FidesConfig) => {
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
-    Object.assign(_Fides, initialFides);
+    Object.assign(this, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
   const experience = initialFides?.experience ?? config.experience;
@@ -133,14 +129,15 @@ const init = async (config: FidesConfig) => {
     updateExperience,
     overrides,
   });
-  Object.assign(_Fides, updatedFides);
+  Object.assign(this, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-};
+}
 
 // The global Fides object; this is bound to window.Fides if available
-_Fides = {
+// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
@@ -169,6 +166,7 @@ _Fides = {
     base64Cookie: false,
     fidesPrimaryColor: null,
     forceGpp: false,
+    fidesClearCookie: false,
   },
   fides_meta: {},
   identity: {},
@@ -176,6 +174,13 @@ _Fides = {
   saved_consent: {},
   gtm,
   init,
+  config: undefined,
+  reinitialize() {
+    if (!this.config || !this.initialized) {
+      throw new Error("Fides must be initialized before reinitializing");
+    }
+    return this.init(this.config);
+  },
   initialized: false,
   meta,
   shopify,
@@ -190,7 +195,7 @@ if (typeof window !== "undefined") {
 // Export everything from ./lib/* to use when importing fides.mjs as a module
 export * from "./services/api";
 export * from "./services/external/geolocation";
-export * from "./lib/consent";
+export * from "./lib/initOverlay";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";

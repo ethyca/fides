@@ -48,11 +48,18 @@ import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
-import { initOverlay } from "./consent";
+import { initOverlay } from "./initOverlay";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
+
+export type UpdateExperienceFn = (args: {
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+  debug?: boolean;
+  isExperienceClientSideFetched: boolean;
+}) => Partial<PrivacyExperience>;
 
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
@@ -242,7 +249,11 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   );
 
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(consentDefaults, options.debug);
+  return getOrMakeFidesCookie(
+    consentDefaults,
+    options.debug,
+    options.fidesClearCookie
+  );
 };
 
 /**
@@ -320,17 +331,7 @@ export const initialize = async ({
    * Once we for sure have a valid experience, this is another chance to update values
    * before the overlay renders.
    */
-  updateExperience: ({
-    cookie,
-    experience,
-    debug,
-    isExperienceClientSideFetched,
-  }: {
-    cookie: FidesCookie;
-    experience: PrivacyExperience;
-    debug?: boolean;
-    isExperienceClientSideFetched: boolean;
-  }) => Partial<PrivacyExperience>;
+  updateExperience: UpdateExperienceFn;
   overrides?: Partial<FidesOverrides>;
 } & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -458,9 +459,9 @@ export const initialize = async ({
          * saved consent, etc.
          *
          * NOTE: We want to finish initialization immediately while GPC updates
-         * run in parallel. To ensure that any GPC API calls don't block the rest
-         * of the code from executing, we use setTimeout with no delay which
-         * simply moves it to the end of the JavaScript event queue.
+         * continue to run in the background. To ensure that any GPC API calls
+         * don't block the rest of the code from executing, we use setTimeout with
+         * no delay which simply moves it to the end of the JavaScript event queue.
          */
         setTimeout(() => {
           automaticallyApplyGPCPreferences({
