@@ -1809,7 +1809,6 @@ def requeue_privacy_request(
     pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
 
     if pr.status not in [
-        PrivacyRequestStatus.pending,
         PrivacyRequestStatus.approved,
         PrivacyRequestStatus.in_processing,
     ]:
