@@ -10,6 +10,10 @@ import pytest
 import requests
 import yaml
 from fastapi.testclient import TestClient
+from fides.api.models.privacy_request import (
+    generate_request_callback_resume_jwe,
+    generate_request_callback_pre_approval_jwe,
+)
 from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
 from loguru import logger
@@ -26,7 +30,6 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.db.ctl_session import sync_engine
 from fides.api.main import app
-from fides.api.models.privacy_request import generate_request_callback_jwe
 from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import (
@@ -580,9 +583,18 @@ def _generate_auth_header(oauth_client, app_encryption_key):
 
 
 @pytest.fixture
-def generate_webhook_auth_header():
+def generate_policy_webhook_auth_header():
     def _build_jwt(webhook):
-        jwe = generate_request_callback_jwe(webhook)
+        jwe = generate_request_callback_resume_jwe(webhook)
+        return {"Authorization": "Bearer " + jwe}
+
+    return _build_jwt
+
+
+@pytest.fixture
+def generate_pre_approval_webhook_auth_header():
+    def _build_jwt(webhook):
+        jwe = generate_request_callback_pre_approval_jwe(webhook)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt

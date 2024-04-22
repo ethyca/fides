@@ -51,7 +51,10 @@ from fides.api.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
-from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
+from fides.api.models.pre_approval_webhook import (
+    PreApprovalWebhookReply,
+    PreApprovalWebhook,
+)
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -84,7 +87,10 @@ from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
-from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fides.common.api.scope_registry import (
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_REVIEW,
+)
 from fides.config import CONFIG
 
 # Locations from which privacy request execution can be resumed, in order.
@@ -177,11 +183,28 @@ class SecondPartyRequestFormat(BaseModel):
         use_enum_values = True
 
 
-def generate_request_callback_jwe(webhook: PolicyPreWebhook | PreApprovalWebhook) -> str:
-    """Generate a JWE to be used to resume privacy request execution."""
+def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
+    """
+    Generate a JWE to be used to resume privacy request execution.
+    """
     jwe = WebhookJWE(
         webhook_id=webhook.id,
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
+        iat=datetime.now().isoformat(),
+    )
+    return generate_jwe(
+        json.dumps(jwe.dict()),
+        CONFIG.security.app_encryption_key,
+    )
+
+
+def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> str:
+    """
+    Generate a JWE to be used to mark privacy requests as eligible / not-eligible for pre approval.
+    """
+    jwe = WebhookJWE(
+        webhook_id=webhook.id,
+        scopes=[PRIVACY_REQUEST_REVIEW],
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
@@ -882,7 +905,7 @@ class PrivacyRequest(
 
     def trigger_pre_approval_webhook(
         self,
-        webhook: WebhookTypes,
+        webhook: PreApprovalWebhook,
         policy_action: Optional[ActionType] = None,
     ) -> None:
         """
@@ -902,18 +925,20 @@ class PrivacyRequest(
             privacy_request_id=self.id,
             privacy_request_status=self.status,
             direction=WebhookDirection.one_way,  # pre-approval webhooks don't expect an immediate response
-            callback_type=webhook.prefix,
+            callback_type=CallbackType.pre_approval,
             identity=self.get_cached_identity_data(),
             policy_action=policy_action,
         )
         headers = {
             "reply-to-approve": f"/privacy-request/{self.id}/pre-approve/eligible",
             "reply-to-deny": f"/privacy-request/{self.id}/pre-approve/not-eligible",
-            "reply-to-token": generate_request_callback_jwe(webhook),  # type: ignore[arg-type]
+            "reply-to-token": generate_request_callback_pre_approval_jwe(webhook),  # type: ignore[arg-type]
         }
 
         logger.info(
-            "Calling pre approval webhook '{}' for privacy_request '{}'", webhook.key, self.id
+            "Calling pre approval webhook '{}' for privacy_request '{}'",
+            webhook.key,
+            self.id,
         )
         https_connector.execute(  # type: ignore
             request_body.dict(),
@@ -951,7 +976,7 @@ class PrivacyRequest(
         if is_pre_webhook and response_expected:
             headers = {
                 "reply-to": f"/privacy-request/{self.id}/resume",
-                "reply-to-token": generate_request_callback_jwe(webhook),  # type: ignore[arg-type]
+                "reply-to-token": generate_request_callback_resume_jwe(webhook),  # type: ignore[arg-type]
             }
 
         logger.info(
