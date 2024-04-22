@@ -6,7 +6,7 @@ import { CmpApi, UsNatV1Field } from "@iabgpp/cmpapi";
 
 import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
 import { FidesCookie, PrivacyExperience } from "../consent-types";
-import { GPPSettings, GPPUSApproach } from "./types";
+import { GPPSection, GPPSettings, GPPUSApproach } from "./types";
 
 const setMspaSections = ({
   cmpApi,
@@ -72,7 +72,7 @@ export const setGppNoticesProvidedFromExperience = ({
   experience: PrivacyExperience;
   forceGpp: boolean;
 }) => {
-  const sectionsChanged = new Set<{ name: string; id: number }>();
+  const sectionsChanged = new Set<GPPSection>();
   const {
     privacy_notices: notices = [],
     region,
@@ -132,7 +132,7 @@ export const setGppOptOutsFromCookieAndExperience = ({
   experience: PrivacyExperience;
   forceGpp: boolean;
 }) => {
-  const sectionsChanged = new Set<{ name: string; id: number }>();
+  const sectionsChanged = new Set<GPPSection>();
   const { consent } = cookie;
   const gppRegion = deriveGppFieldRegion({
     experienceRegion: experience.region,
