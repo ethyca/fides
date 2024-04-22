@@ -27,6 +27,7 @@ The types of changes are:
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
+- Improve performance of Snowflake schema generation [#4587](https://github.com/ethyca/fides/pull/4587)
 
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
