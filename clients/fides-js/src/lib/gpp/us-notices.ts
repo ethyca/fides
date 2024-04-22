@@ -75,20 +75,18 @@ export const setGppNoticesProvidedFromExperience = ({
   const sectionsChanged = new Set<GPPSection>();
   const {
     privacy_notices: notices = [],
-    region,
+    region: experienceRegion,
     gpp_settings: gppSettings,
   } = experience;
+  const usApproach = gppSettings?.us_approach;
   const gppRegion = deriveGppFieldRegion({
-    experienceRegion: region,
-    usApproach: gppSettings?.us_approach,
+    experienceRegion,
+    usApproach,
   });
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
-    if (
-      (forceGpp && !experience?.gpp_settings) ||
-      experience?.gpp_settings?.us_approach === GPPUSApproach.STATE
-    ) {
+    if ((forceGpp && !gppSettings) || usApproach === GPPUSApproach.STATE) {
       cmpApi.setApplicableSections([-1]);
       return [];
     }
@@ -133,18 +131,20 @@ export const setGppOptOutsFromCookieAndExperience = ({
   forceGpp: boolean;
 }) => {
   const sectionsChanged = new Set<GPPSection>();
-  const { consent } = cookie;
+  const {
+    privacy_notices: notices = [],
+    region: experienceRegion,
+    gpp_settings: gppSettings,
+  } = experience;
+  const usApproach = gppSettings?.us_approach;
   const gppRegion = deriveGppFieldRegion({
-    experienceRegion: experience.region,
-    usApproach: experience.gpp_settings?.us_approach,
+    experienceRegion,
+    usApproach,
   });
   const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
-    if (
-      (forceGpp && !experience?.gpp_settings) ||
-      experience?.gpp_settings?.us_approach === GPPUSApproach.STATE
-    ) {
+    if ((forceGpp && !gppSettings) || usApproach === GPPUSApproach.STATE) {
       cmpApi.setApplicableSections([-1]);
       return [];
     }
@@ -152,11 +152,10 @@ export const setGppOptOutsFromCookieAndExperience = ({
   }
   sectionsChanged.add(gppSection);
 
+  const { consent } = cookie;
   const noticeKeys = Object.keys(consent);
   noticeKeys.forEach((noticeKey) => {
-    const privacyNotice = experience.privacy_notices?.find(
-      (n) => n.notice_key === noticeKey
-    );
+    const privacyNotice = notices?.find((n) => n.notice_key === noticeKey);
     const consentValue = consent[noticeKey];
     if (privacyNotice) {
       const { gpp_field_mapping: fieldMapping } = privacyNotice;
@@ -186,7 +185,7 @@ export const setGppOptOutsFromCookieAndExperience = ({
   setMspaSections({
     cmpApi,
     sectionName: gppSection.name,
-    gppSettings: experience.gpp_settings,
+    gppSettings,
   });
 
   return Array.from(sectionsChanged);
