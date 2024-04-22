@@ -144,12 +144,12 @@ export default async function handler(
   // Check for a provided "gpp" query param.
   // If the experience has GPP enabled, or the query param is present,
   // include the GPP extension in the bundle.
-  const { gpp: forcedGPP } = req.query;
-  if (forcedGPP === "true" && experience === undefined) {
+  const { gpp: forcedGppQuery } = req.query;
+  if (forcedGppQuery === "true" && experience === undefined) {
     experience = {};
   }
   const gppEnabled =
-    !!experience?.gpp_settings?.enabled || forcedGPP === "true";
+    !!experience?.gpp_settings?.enabled || forcedGppQuery === "true";
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
@@ -183,7 +183,7 @@ export default async function handler(
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
       base64Cookie: environment.settings.BASE_64_COOKIE,
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
-      forceGpp: forcedGPP === "true",
+      forceGpp: forcedGppQuery === "true",
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
     },
     experience: experience || undefined,
@@ -208,7 +208,7 @@ export default async function handler(
     debugLog(
       environment.settings.DEBUG,
       `GPP extension ${
-        forcedGPP === "true" ? "forced" : "enabled"
+        forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`
     );
     const fidesGPPBuffer = await fsPromises.readFile(

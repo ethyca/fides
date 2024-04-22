@@ -159,13 +159,13 @@ const initializeGppCmpApi = () => {
       setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
-        forcedGpp: options.forceGpp,
+        forceGpp: options.forceGpp,
       });
       const sectionsChanged = setGppOptOutsFromCookieAndExperience({
         cmpApi,
         cookie: event.detail,
         experience,
-        forcedGpp: options.forceGpp,
+        forceGpp: options.forceGpp,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -195,7 +195,7 @@ const initializeGppCmpApi = () => {
       const sectionsChanged = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
-        forcedGpp: options.forceGpp,
+        forceGpp: options.forceGpp,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -230,7 +230,7 @@ const initializeGppCmpApi = () => {
         cmpApi,
         cookie: event.detail,
         experience: window.Fides.experience,
-        forcedGpp: window.Fides.options.forceGpp,
+        forceGpp: window.Fides.options.forceGpp,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));

@@ -118,11 +118,11 @@ export interface FidesInitOptions {
   // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
   fidesPrimaryColor: string | null;
 
-  // Whether the developer forced the inclusion of the GPP extension
-  forceGpp: boolean;
-
   // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
   fidesClearCookie: boolean;
+
+  // Whether the developer forced the inclusion of the GPP extension
+  forceGpp: boolean;
 }
 
 /**

@@ -124,7 +124,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -140,7 +140,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -192,7 +192,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -263,7 +263,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -371,7 +371,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -389,7 +389,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -432,7 +432,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
@@ -484,7 +484,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
@@ -536,7 +536,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
@@ -596,7 +596,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forcedGpp: false,
+      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({

@@ -66,11 +66,11 @@ const deriveGppFieldRegion = ({
 export const setGppNoticesProvidedFromExperience = ({
   cmpApi,
   experience,
-  forcedGpp,
+  forceGpp,
 }: {
   cmpApi: CmpApi;
   experience: PrivacyExperience;
-  forcedGpp: boolean;
+  forceGpp: boolean;
 }) => {
   const sectionsChanged = new Set<{ name: string; id: number }>();
   const {
@@ -86,7 +86,7 @@ export const setGppNoticesProvidedFromExperience = ({
 
   if (!gppSection) {
     if (
-      (forcedGpp && !experience?.gpp_settings) ||
+      (forceGpp && !experience?.gpp_settings) ||
       experience?.gpp_settings?.us_approach === GPPUSApproach.STATE
     ) {
       cmpApi.setApplicableSections([-1]);
@@ -125,12 +125,12 @@ export const setGppOptOutsFromCookieAndExperience = ({
   cmpApi,
   cookie,
   experience,
-  forcedGpp,
+  forceGpp,
 }: {
   cmpApi: CmpApi;
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  forcedGpp: boolean;
+  forceGpp: boolean;
 }) => {
   const sectionsChanged = new Set<{ name: string; id: number }>();
   const { consent } = cookie;
@@ -142,7 +142,7 @@ export const setGppOptOutsFromCookieAndExperience = ({
 
   if (!gppSection) {
     if (
-      (forcedGpp && !experience?.gpp_settings) ||
+      (forceGpp && !experience?.gpp_settings) ||
       experience?.gpp_settings?.us_approach === GPPUSApproach.STATE
     ) {
       cmpApi.setApplicableSections([-1]);
