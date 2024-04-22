@@ -656,6 +656,23 @@ div.fides-i18n-pseudo-button {
   background-color: var(--fides-overlay-row-hover-color);
 }
 
+.fides-notice-toggle .fides-notice-toggle-trigger:before {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: calc(0.5rem + 2px);
+  content: "";
+  transition: transform 0.12s ease-in-out;
+  transform: translateY(-2px) rotate(135deg);
+  border-style: solid;
+  border-width: 2px 2px 0 0;
+}
+
+.fides-notice-toggle.fides-notice-toggle-expanded
+  .fides-notice-toggle-trigger:before {
+  transform: translateY(2px) rotate(-45deg);
+}
+
 #fides-tcf-banner-inner .fides-disclosure-visible {
   padding: 12px 12px;
 }

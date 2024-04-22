@@ -2076,4 +2076,36 @@ dataset:
     - name: updated_at
       data_categories: [system.operations] 
     - name: single_row
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
+  - name: preapprovalwebhook
+    description: 'The table that stores Pre Approval Webhooks'
+    data_categories: [ ]
+    fields:
+    - name: connection_config_id
+      data_categories: [ system.operations ]
+    - name: created_at
+      data_categories: [ system.operations ]
+    - name: id
+      data_categories: [ system.operations ]
+    - name: updated_at
+      data_categories: [ system.operations ]
+    - name: key
+      data_categories: [ system.operations ]
+    - name: name
+      data_categories: [ system.operations ]
+  - name: preapprovalwebhookreply
+    description: 'The table that stores service replies to Pre Approval Webhooks'
+    data_categories: [ ]
+    fields:
+    - name: webhook_id
+      data_categories: [ system.operations ]
+    - name: privacy_request_id
+      data_categories: [ system.operations ]
+    - name: created_at
+      data_categories: [ system.operations ]
+    - name: id
+      data_categories: [ system.operations ]
+    - name: updated_at
+      data_categories: [ system.operations ]
+    - name: is_eligible
+      data_categories: [ system.operations ]
