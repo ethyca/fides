@@ -55,6 +55,7 @@ from fides.api.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
+from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -283,6 +284,11 @@ class PrivacyRequest(
         FidesUser,
         backref=backref("privacy_requests", passive_deletes=True),
         foreign_keys=[reviewed_by],
+    )
+
+    pre_approval_webhook_replies = relationship(
+        PreApprovalWebhookReply,
+        back_populates="privacy_request",
     )
 
     paused_at = Column(DateTime(timezone=True), nullable=True)

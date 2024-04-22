@@ -1,7 +1,7 @@
 """requesttask
 
 Revision ID: 55bedede956d
-Revises: d49a767eb49d
+Revises: 6cfd59e7920a
 Create Date: 2024-04-04 04:12:25.332952
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "55bedede956d"
-down_revision = "d49a767eb49d"
+down_revision = "6cfd59e7920a"
 branch_labels = None
 depends_on = None
 
