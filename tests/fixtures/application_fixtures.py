@@ -171,9 +171,7 @@ integration_secrets = {
         "port": pydash.get(integration_config, "oracle_db.port"),
         "username": pydash.get(integration_config, "oracle_db.username"),
         "password": pydash.get(integration_config, "oracle_db.password"),
-        "service_name": pydash.get(
-            integration_config, "oracle_db.service_name"
-        ),
+        "service_name": pydash.get(integration_config, "oracle_db.service_name"),
     },
 }
 
