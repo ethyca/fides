@@ -117,6 +117,12 @@ export interface FidesInitOptions {
 
   // Defines default primary color for consent components, but can still be overridden with overrides or custom CSS
   fidesPrimaryColor: string | null;
+
+  // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
+  fidesClearCookie: boolean;
+
+  // Whether the developer forced the inclusion of the GPP extension via query param on the script tag
+  forceGpp: boolean;
 }
 
 /**
@@ -127,19 +133,21 @@ export interface FidesInitOptions {
  * need to change.
  */
 export interface FidesGlobal extends Fides {
+  config?: FidesConfig;
   consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
-  geolocation?: UserGeolocation;
-  fides_string?: string | undefined;
-  options: FidesInitOptions;
   fides_meta: FidesJSMeta;
-  tcf_consent: TcfOtherConsent;
-  saved_consent: NoticeConsent;
-  gtm: typeof gtm;
+  fides_string?: string | undefined;
+  geolocation?: UserGeolocation;
   identity: FidesJSIdentity;
-  init: (config: FidesConfig) => Promise<void>;
   initialized: boolean;
+  options: FidesInitOptions;
+  saved_consent: NoticeConsent;
+  tcf_consent: TcfOtherConsent;
+  gtm: typeof gtm;
+  init: (config: FidesConfig) => Promise<void>;
   meta: typeof meta;
+  reinitialize: () => Promise<void>;
   shopify: typeof shopify;
   showModal: () => void;
 }
@@ -663,6 +671,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesTcfGdprApplies"
   | "fidesLocale"
   | "fidesPrimaryColor"
+  | "fidesClearCookie"
 >;
 
 export type FidesExperienceTranslationOverrides = {

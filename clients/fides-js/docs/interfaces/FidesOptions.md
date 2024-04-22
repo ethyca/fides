@@ -40,6 +40,7 @@ order of precedence:
 
 ### Properties
 
+- [fides\_clear\_cookie](FidesOptions.md#fides_clear_cookie)
 - [fides\_disable\_banner](FidesOptions.md#fides_disable_banner)
 - [fides\_disable\_save\_api](FidesOptions.md#fides_disable_save_api)
 - [fides\_embed](FidesOptions.md#fides_embed)
@@ -48,6 +49,18 @@ order of precedence:
 - [fides\_tcf\_gdpr\_applies](FidesOptions.md#fides_tcf_gdpr_applies)
 
 ## Properties
+
+### fides\_clear\_cookie
+
+• **fides\_clear\_cookie**: `boolean`
+
+When `true`, deletes the `fides_consent` cookie when FidesJS is
+initialized, to clear any previously saved consent preferences from the
+user's device.
+
+Defaults to `false`.
+
+___
 
 ### fides\_disable\_banner
 
@@ -149,3 +162,13 @@ overriden at the page-level as needed. Only applicable to a TCF experience.
 For more details, see the [TCF CMP API technical specification](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean)  * 
 
 Defaults to `true`.
+
+## Forcing GPP Inclusion
+
+In some cases it may be necessary to always support the IAB's Global Privacy Platform (GPP), even if a visiting user is from a location without a privacy regulation. Forcing the inclusion of the [GPP API](/docs/tutorials/consent-management/consent-management-configuration/cmp-javascript-apis#gpp-api) can be accomplished by including query parameter `gpp=true` on the FidesJS script:
+
+```
+<script src="path/to/fides.js?gpp=true"></script>
+```
+
+When the GPP API is included this way, the `applicableSections` property is set to `[-1]` whenever a user visits a page from a non-supported location.

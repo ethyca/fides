@@ -2893,6 +2893,15 @@ describe("Fides-js TCF", () => {
       cy.wait("@patchPrivacyPreference").then((interception) => {
         expect(interception.request.body.method).to.eql(ConsentMethod.ACCEPT);
       });
+      // Both FidesUpdating & FidesUpdated should include the fides_string
+      cy.get("@FidesUpdating")
+        .should("have.been.calledOnce")
+        .its("lastCall.args.0.detail.fides_string")
+        .then((fidesString) => {
+          const parts = fidesString.split(",");
+          expect(parts.length).to.eql(2);
+          expect(parts[1]).to.eql(acceptAllAcString);
+        });
       cy.get("@FidesUpdated")
         .should("have.been.calledOnce")
         .its("lastCall.args.0.detail.fides_string")

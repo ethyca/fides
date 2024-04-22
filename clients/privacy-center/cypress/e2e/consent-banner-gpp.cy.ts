@@ -629,4 +629,24 @@ describe("Fides-js GPP extension", () => {
       });
     });
   });
+
+  describe("with GPP forced", () => {
+    it("loads the gpp extension", () => {
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { gpp: "true", geolocation: "us-nc" },
+      });
+      cy.window().then((win) => {
+        win.__gpp("ping", cy.stub().as("gppPing"));
+        cy.get("@gppPing")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([data, success]) => {
+            expect(success).to.eql(true);
+            expect(data.signalStatus).to.eql("ready");
+            expect(data.applicableSections).to.eql([-1]);
+          });
+      });
+    });
+  });
 });

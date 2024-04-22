@@ -17,10 +17,21 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
 
+### Added
+- Added carets to collapsible sections in the overlay modal [#4793](https://github.com/ethyca/fides/pull/4793)
+- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
+- Added support for configuration of pre-approval webhooks [#4795](https://github.com/ethyca/fides/pull/4795)
+- Added fides_clear_cookie option to FidesJS SDK to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
+- Added FidesUpdating event to FidesJS SDK [#4816](https://github.com/ethyca/fides/pull/4816)
+- Added `reinitialize` method to FidesJS SDK [#4812](https://github.com/ethyca/fides/pull/4812)
+
+### Changed
+- Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
+- Improve performance of Snowflake schema generation [#4587](https://github.com/ethyca/fides/pull/4587)
+
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
 - Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
-
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
@@ -30,6 +41,7 @@ The types of changes are:
 - Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
 - Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
 - Added support for custom identities [#4764](https://github.com/ethyca/fides/pull/4764)
+- Added developer option to force GPP API on FidesJS bundles [#4799](https://github.com/ethyca/fides/pull/4799)
 
 ### Changed
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
