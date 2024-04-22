@@ -120,6 +120,9 @@ export interface FidesInitOptions {
 
   // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
   fidesClearCookie: boolean;
+
+  // Whether the developer forced the inclusion of the GPP extension via query param on the script tag
+  forceGpp: boolean;
 }
 
 /**
