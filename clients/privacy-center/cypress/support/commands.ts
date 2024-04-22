@@ -90,6 +90,7 @@ Cypress.Commands.add(
           "FidesInitialized",
           cy.stub().as("FidesInitialized")
         );
+        win.addEventListener("FidesUpdating", cy.stub().as("FidesUpdating"));
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
         win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));

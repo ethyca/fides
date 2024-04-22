@@ -115,6 +115,10 @@ POLICY_POST_WEBHOOK_DETAIL = (
     "/dsr/policy/{policy_key}/webhook/post_execution/{post_webhook_key}"
 )
 
+# Pre-approval webhook URLs
+WEBHOOK_PRE_APPROVAL = "/dsr/webhook/pre_approval"
+WEBHOOK_PRE_APPROVAL_DETAIL = "/dsr/webhook/pre_approval/{webhook_key}"
+
 # Connection Type URLs
 CONNECTION_TYPES = "/connection_type"
 CONNECTION_TYPE_SECRETS = "/connection_type/{connection_type}/secret"
