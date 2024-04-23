@@ -72,14 +72,21 @@ def marigold_engage_erasure_data(
     # stringified_payload = json.dumps(payload, separators=(",", ":"))
     # url_safe_payload = url_encode(stringified_payload)
     # sig = payload_signature(marigold_engage_secrets, stringified_payload)
+    email_test = "neilmarc@aol.com"
+    email_prep = '{"id":"'+email_test+'"}'
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
         }   
+    ### sig prep
+    sig_prep = marigold_engage_secrets["secret"]+marigold_engage_secrets["api_key"]+"json"+email_prep
+    sig_chk = md5_any(sig_prep)
+    md5_readable = sig_chk.hexdigest()
+    ### end sig prep
     payload = {
         "api_key": marigold_engage_secrets["api_key"],
-        "sig": "a54d109c83a632577086628e1ee084d1",
+        "sig": md5_readable,
         "format": "json",
-        "json": '{"id":"neilmarc@aol.com"}',
+        "json": email_prep,
     }
     response = requests.request("POST", base_url, headers=headers, data=payload)
     assert response.ok
@@ -90,8 +97,8 @@ def marigold_engage_erasure_data(
 
     # response = requests.request("GET", url, data=payload, headers=headers)
     # # assert response.ok
-    # import pdb
-    # pdb.set_trace()
+    import pdb
+    pdb.set_trace()
 
 
 
