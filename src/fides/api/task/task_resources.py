@@ -88,6 +88,8 @@ class Connections:
 
 class TaskResources:
     """Holds some Database resources for the given task.
+    Importantly, should be used as a context manager, to close connections to external databases.
+
     This includes
      - the privacy request
      - the request task

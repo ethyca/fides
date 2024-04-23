@@ -400,11 +400,12 @@ class TestPersistAccessRequestTasks:
         assert privacy_request.access_tasks[1].downstream_tasks == []
 
     @mock.patch(
-        "fides.api.task.create_request_tasks.run_access_node.delay",
+        "fides.api.task.create_request_tasks.queue_request_task",
     )
     def test_run_access_request_no_request_tasks_existing(
         self, run_access_node_mock, db, privacy_request, policy
     ):
+        """Request tasks created by run_access_request and the root task is queued"""
         ready = run_access_request(
             privacy_request,
             policy,
@@ -420,10 +421,10 @@ class TestPersistAccessRequestTasks:
         assert root_task.is_root_task
 
         assert run_access_node_mock.called
-        run_access_node_mock.assert_called_with(privacy_request.id, root_task.id, False)
+        run_access_node_mock.assert_called_with(root_task, False)
 
     @mock.patch(
-        "fides.api.task.create_request_tasks.run_access_node.delay",
+        "fides.api.task.create_request_tasks.queue_request_task",
     )
     def test_reprocess_access_request_with_existing_request_tasks(
         self, run_access_node_mock, request_task, db, privacy_request, policy
@@ -447,9 +448,7 @@ class TestPersistAccessRequestTasks:
         assert ready_task.status == ExecutionLogStatus.pending
 
         assert run_access_node_mock.called
-        run_access_node_mock.assert_called_with(
-            privacy_request.id, request_task.id, False
-        )
+        run_access_node_mock.assert_called_with(request_task, False)
 
 
 class TestPersistErasureRequestTasks:
@@ -932,7 +931,7 @@ class TestPersistErasureRequestTasks:
         "fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data",
     )
     @mock.patch(
-        "fides.api.task.create_request_tasks.run_erasure_node.delay",
+        "fides.api.task.create_request_tasks.queue_request_task",
     )
     def test_run_erasure_request_with_existing_request_tasks(
         self,
@@ -965,9 +964,7 @@ class TestPersistErasureRequestTasks:
         assert update_erasure_tasks_with_access_data_mock.called
         update_erasure_tasks_with_access_data_mock.called_with(db, privacy_request)
         assert run_erasure_node_mock.called
-        run_erasure_node_mock.assert_called_with(
-            privacy_request.id, erasure_request_task.id, False
-        )
+        run_erasure_node_mock.assert_called_with(erasure_request_task, False)
 
 
 class TestPersistConsentRequestTasks:
@@ -1051,7 +1048,7 @@ class TestPersistConsentRequestTasks:
         }
 
     @mock.patch(
-        "fides.api.task.create_request_tasks.run_consent_node.delay",
+        "fides.api.task.create_request_tasks.queue_request_task",
     )
     def test_run_consent_request_no_request_tasks_existing(
         self, run_consent_node_mock, db, privacy_request, policy
@@ -1069,12 +1066,10 @@ class TestPersistConsentRequestTasks:
         assert root_task.is_root_task
 
         assert run_consent_node_mock.called
-        run_consent_node_mock.assert_called_with(
-            privacy_request.id, root_task.id, False
-        )
+        run_consent_node_mock.assert_called_with(root_task, False)
 
     @mock.patch(
-        "fides.api.task.create_request_tasks.run_consent_node.delay",
+        "fides.api.task.create_request_tasks.queue_request_task",
     )
     def test_reprocess_consent_request_with_existing_request_tasks(
         self, run_consent_node_mock, consent_request_task, db, privacy_request, policy
@@ -1097,9 +1092,7 @@ class TestPersistConsentRequestTasks:
         assert ready_task.status == ExecutionLogStatus.pending
 
         assert run_consent_node_mock.called
-        run_consent_node_mock.assert_called_with(
-            privacy_request.id, consent_request_task.id, False
-        )
+        run_consent_node_mock.assert_called_with(consent_request_task, False)
 
         # No new consent tasks created
         assert privacy_request.consent_tasks.count() == 3

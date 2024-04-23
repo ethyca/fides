@@ -6,6 +6,7 @@ from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import (
     PrivacyRequestNotFound,
+    PrivacyRequestStatusCanceled,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
@@ -14,18 +15,20 @@ from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
-    COMPLETED_EXECUTION_LOG_STATUSES,
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
+    PrivacyRequestStatus,
     RequestTask,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 
 # DSR 3.0 task functions
@@ -35,7 +38,7 @@ def run_prerequisite_task_checks(
     session: Session, privacy_request_id: str, privacy_request_task_id: str
 ) -> Tuple[PrivacyRequest, RequestTask, Query]:
     """
-    Upfront checks for seeing if we can run a Request Task
+    Upfront checks that run as soon as the RequestTask is executed by the worker.
 
     Returns resources for use in executing a task
     """
@@ -51,6 +54,11 @@ def run_prerequisite_task_checks(
             f"Privacy request with id {privacy_request_id} not found"
         )
 
+    if privacy_request.status == PrivacyRequestStatus.canceled:
+        raise PrivacyRequestStatusCanceled(
+            f"Cannot execute request task {privacy_request_task_id} of privacy request {privacy_request_id}: status is {privacy_request.status.value}"
+        )
+
     if not request_task or not request_task.privacy_request_id == privacy_request.id:
         raise RequestTaskNotFound(
             f"Request Task with id {privacy_request_task_id} not found for privacy request {privacy_request_id}"
@@ -58,19 +66,17 @@ def run_prerequisite_task_checks(
 
     assert request_task  # For mypy
 
-    upstream_results: Query = session.query(RequestTask).filter(False)
+    upstream_results: Query = session.query(RequestTask).filter(
+        RequestTask.privacy_request_id == request_task.privacy_request_id,
+        RequestTask.collection_address.in_(request_task.upstream_tasks or []),
+        RequestTask.action_type == request_task.action_type,
+    )
+
     # Only bother running this if the current task body needs to run
     if request_task.status == ExecutionLogStatus.pending:
-        upstream_results = session.query(RequestTask).filter(
-            RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.action_type == request_task.action_type,
-            RequestTask.collection_address.in_(request_task.upstream_tasks or []),
-        )
-
-        if not all(
-            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
-            for upstream_task in upstream_results
-        ) or not upstream_results.count() == len(request_task.upstream_tasks or []):
+        # Only running the upstream check instead of RequestTask.can_queue_request_task since
+        # the node is already queued.
+        if not request_task.upstream_tasks_complete(session, should_log=False):
             raise UpstreamTasksNotReady(
                 f"Cannot start {request_task.action_type} task {request_task.collection_address}. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
             )
@@ -139,8 +145,8 @@ def can_run_task_body(
         logger_method(request_task)(
             "Skipping {} task {} with status {}. Privacy Request: {}, Request Task {}",
             request_task.action_type.value,
-            request_task.status.value,
             request_task.collection_address,
+            request_task.status.value,
             request_task.privacy_request_id,
             request_task.id,
         )
@@ -153,7 +159,6 @@ def queue_downstream_tasks(
     session: Session,
     request_task: RequestTask,
     privacy_request: PrivacyRequest,
-    run_node_function: Task,
     next_step: CurrentStep,
     privacy_request_proceed: bool,
 ) -> None:
@@ -163,30 +168,9 @@ def queue_downstream_tasks(
     """
     pending_downstream: Query = request_task.get_pending_downstream_tasks(session)
     for downstream_task in pending_downstream:
-        if downstream_task.upstream_tasks_complete(session):
-            logger_method(downstream_task)(
-                "Queuing {} task {} from {} {}: upstream nodes complete. Privacy Request: {}, Request Task {}.",
-                downstream_task.action_type.value,
-                downstream_task.collection_address,
-                request_task.action_type.value,
-                request_task.collection_address,
-                privacy_request.id,
-                downstream_task.id,
-            )
-            run_node_function.delay(
-                privacy_request_id=privacy_request.id,
-                privacy_request_task_id=downstream_task.id,
-                privacy_request_proceed=privacy_request_proceed,
-            )
-        else:
-            logger.debug(
-                "Cannot yet queue {} task {} from {}. Privacy Request: {}, Request Task {}. Waiting for other upstream nodes.",
-                downstream_task.action_type.value,
-                downstream_task.collection_address,
-                request_task.collection_address,
-                privacy_request.id,
-                downstream_task.id,
-            )
+        if downstream_task.can_queue_request_task(session, should_log=True):
+            log_task_queued(downstream_task, request_task.collection_address)
+            queue_request_task(downstream_task, privacy_request_proceed)
 
     if (
         request_task.request_task_address == TERMINATOR_ADDRESS
@@ -258,7 +242,6 @@ def run_access_node(
             session,
             request_task,
             privacy_request,
-            run_access_node,
             CurrentStep.upload_access,
             privacy_request_proceed,
         )
@@ -307,7 +290,6 @@ def run_erasure_node(
             session,
             request_task,
             privacy_request,
-            run_erasure_node,
             CurrentStep.finalize_erasure,
             privacy_request_proceed,
         )
@@ -357,7 +339,6 @@ def run_consent_node(
             session,
             request_task,
             privacy_request,
-            run_consent_node,
             CurrentStep.finalize_consent,
             privacy_request_proceed,
         )
@@ -431,4 +412,36 @@ def _collect_task_resources(
         session.query(ConnectionConfig).all(),
         request_task,
         session,
+    )
+
+
+mapping = {
+    ActionType.access: run_access_node,
+    ActionType.erasure: run_erasure_node,
+    ActionType.consent: run_consent_node,
+}
+
+
+def queue_request_task(
+    request_task: RequestTask, privacy_request_proceed: bool = True
+) -> None:
+    """Queues the RequestTask in Celery and caches the Celery Task ID"""
+    celery_task_fn: Task = mapping[request_task.action_type]
+    celery_task = celery_task_fn.delay(
+        privacy_request_id=request_task.privacy_request_id,
+        privacy_request_task_id=request_task.id,
+        privacy_request_proceed=privacy_request_proceed,
+    )
+    cache_task_tracking_key(request_task.id, celery_task.task_id)
+
+
+def log_task_queued(request_task: RequestTask, location: str) -> None:
+    """Helper for logging that tasks are queued"""
+    logger_method(request_task)(
+        "Queuing {} task {} from {}. Privacy Request: {}, Request Task {}",
+        request_task.action_type.value,
+        request_task.collection_address,
+        location,
+        request_task.privacy_request_id,
+        request_task.id,
     )

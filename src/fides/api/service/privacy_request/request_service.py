@@ -212,6 +212,8 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                     marked_as_errored.add(pr.id)
 
             if pr.erasure_tasks.count():
+                # Erasure tasks are created at the same time as access tasks but if any are errored, this means
+                # we made it to the erasure section
                 if some_errored(pr.erasure_tasks):
                     logger.info(f"Marking erasure step of {pr.id} as error")
                     pr.error_processing(db)

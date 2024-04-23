@@ -76,6 +76,7 @@ from fides.api.util.cache import (
     CustomJSONEncoder,
     FidesopsRedis,
     _custom_decoder,
+    celery_tasks_in_flight,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -529,14 +530,6 @@ class PrivacyRequest(
         self.save(db)
         return self
 
-    def cache_task_id(self, task_id: str) -> None:
-        """Sets a task_id for this privacy request's asynchronous execution."""
-        cache: FidesopsRedis = get_cache()
-        cache.set(
-            get_async_task_tracking_cache_key(self.id),
-            task_id,
-        )
-
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
         cache: FidesopsRedis = get_cache()
@@ -686,28 +679,24 @@ class PrivacyRequest(
     def cache_failed_checkpoint_details(
         self,
         step: Optional[CurrentStep] = None,
-        collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        Cache a checkpoint where the privacy request failed so we can later resume from this failure point.
+        Cache the checkpoint reached in the Privacy Request so it can be resumed from this point in
+        case of failure.
 
-        Cache details about the failed step and failed collection details (where applicable).
-        No specific input data is required to resume a failed request, so action_needed is None.
         """
         cache_action_required(
             cache_key=f"FAILED_LOCATION__{self.id}",
             step=step,
-            collection=collection,
+            collection=None,  # Deprecated for failed checkpoint details
             action_needed=None,
         )
 
     def get_failed_checkpoint_details(
         self,
     ) -> Optional[CheckpointActionRequired]:
-        """Get details about the failed step (access or erasure) and collection that triggered failure.
-
-        If DSR processing failed within the graph, this will let us know if we should resume privacy request execution
-        from the "access" or "erasure" portion of the privacy request flow.
+        """Get the latest checkpoint reached in Privacy Request processing so we know where to resume
+        in case of failure.
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
@@ -943,19 +932,46 @@ class PrivacyRequest(
         self.status = PrivacyRequestStatus.awaiting_email_send
         self.save(db=db)
 
+    def get_request_task_celery_task_ids(self) -> List[str]:
+        """Returns the celery task ids for each of the Request Tasks (subtasks)
+
+        It is possible Request Tasks get queued multiple times, so the celery task
+        id returned is the last celery task queued.
+        """
+        request_task_celery_ids: List[str] = []
+        for request_task in self.request_tasks:
+            request_task_id: Optional[str] = request_task.get_cached_task_id()
+            if request_task_id:
+                request_task_celery_ids.append(request_task_id)
+        return request_task_celery_ids
+
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
-        """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
+        """Cancels a privacy request.  Currently should only cancel 'pending' tasks
+
+        Just in case, also tries to cancel sub tasks (Request Tasks) if applicable,
+        although these shouldn't exist if the Privacy Request is pending.
+        """
         if self.canceled_at is None:
             self.status = PrivacyRequestStatus.canceled
             self.cancel_reason = cancel_reason
             self.canceled_at = datetime.utcnow()
             self.save(db)
 
-            task_id = self.get_cached_task_id()
-            if task_id:
-                logger.info("Revoking task {} for request {}", task_id, self.id)
-                # Only revokes if execution is not already in progress
-                celery_app.control.revoke(task_id, terminate=False)
+            task_ids: List[
+                str
+            ] = (
+                self.get_request_task_celery_task_ids()
+            )  # Celery tasks for sub tasks (DSR 3.0 Request Tasks)
+            parent_task_id = (
+                self.get_cached_task_id()
+            )  # Celery task for current Privacy Request
+            if parent_task_id:
+                task_ids.append(parent_task_id)
+
+            for celery_task_id in task_ids:
+                logger.info("Revoking task {} for request {}", celery_task_id, self.id)
+                # Only revokes if execution is not already in progress.
+                celery_app.control.revoke(celery_task_id, terminate=False)
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""
@@ -1724,6 +1740,12 @@ class RequestTask(Base):
         """Convenience helper for asserting whether the task is a terminator task"""
         return self.request_task_address == TERMINATOR_ADDRESS
 
+    def get_cached_task_id(self) -> Optional[str]:
+        """Gets the cached celery task ID for this request task."""
+        cache: FidesopsRedis = get_cache()
+        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
+        return task_id
+
     def get_decoded_access_data(self) -> List[Row]:
         """Decode the collected access data"""
         return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
@@ -1756,15 +1778,79 @@ class RequestTask(Base):
             RequestTask.status == ExecutionLogStatus.pending,
         )
 
-    def upstream_tasks_complete(self, db: Session) -> bool:
-        """Determines if a given task is ready to run"""
+    def can_queue_request_task(self, db: Session, should_log: bool = False) -> bool:
+        """Returns True if upstream tasks are complete and the current Request Task
+        is not running in another celery task.
+
+        This check ignores its database status
+        """
+        return self.upstream_tasks_complete(
+            db, should_log
+        ) and not self.request_task_running(should_log)
+
+    def upstream_tasks_complete(self, db: Session, should_log: bool = False) -> bool:
+        """Determines if all of the upstream tasks of the current task are complete"""
         upstream_tasks: Query = db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.collection_address.in_(self.upstream_tasks or []),
             RequestTask.action_type == self.action_type,
         )
-
-        return all(
+        tasks_complete: bool = all(
             upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
             for upstream_task in upstream_tasks
+        ) and upstream_tasks.count() == len(self.upstream_tasks or [])
+
+        if not tasks_complete and should_log:
+            logger.debug(
+                "Upstream tasks incomplete for {} task {}. Privacy Request: {}, Request Task {}.",
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        return tasks_complete
+
+    def upstream_tasks_objects(self, db: Session) -> Query:
+        """Returns Request Task objects that are upstream of the current Request Task"""
+        upstream_tasks: Query = db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.collection_address.in_(self.upstream_tasks or []),
+            RequestTask.action_type == self.action_type,
         )
+        return upstream_tasks
+
+    def request_task_running(self, should_log: bool = False) -> bool:
+        """Returns a rough measure if the Request Task is already running -
+
+        This is only applicable if you are running workers and
+        CONFIG.execution.task_always_eager=False. This is just an extra check to reduce possible
+        over-scheduling, but it is also okay if the same node runs multiple times.
+        """
+        celery_task_id: Optional[str] = self.get_cached_task_id()
+        if not celery_task_id:
+            return False
+
+        if should_log:
+            logger.debug(
+                "Celery Task ID {} found for {} task {}. Privacy Request: {}, Request Task {}.",
+                celery_task_id,
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
+
+        if task_in_flight and should_log:
+            logger.debug(
+                "Celery Task {} already processing for {} task {}. Privacy Request: {}, Request Task {}.",
+                celery_task_id,
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        return task_in_flight
