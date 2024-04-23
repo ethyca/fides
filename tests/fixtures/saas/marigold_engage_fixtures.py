@@ -94,12 +94,17 @@ def marigold_engage_erasure_data(
     # headers = {}
     # url = base_url + url_suffix
     # payload = ""
-
-    # response = requests.request("GET", url, data=payload, headers=headers)
-    # # assert response.ok
+    params = {
+        "api_key": marigold_engage_secrets["api_key"],
+        "sig": md5_readable,
+        "format": "json",
+        "json": email_prep
+    }
+    response = requests.request("GET", base_url, params=params)
     import pdb
     pdb.set_trace()
-
+    assert response.ok
+    
 
 
     #yield {}
