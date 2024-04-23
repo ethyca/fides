@@ -2,6 +2,10 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
+import json
+import hashlib
+import urllib
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -10,6 +14,16 @@ from tests.ops.integration_tests.saas.connector_runner import (
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("marigold_engage")
+
+def payload_signature(secrets: Dict[str, Any], stringified_payload: str):
+    values = [secrets["secret"], secrets["api_key"], "json", stringified_payload]
+    return md5_any("".join(values)).hexdigest()
+
+def md5_any(value_to_MD5) -> str:
+    return hashlib.md5(value_to_MD5.encode())
+
+def url_encode(value_to_encode) -> str:
+    return urllib.parse.quote_plus(value_to_encode)
 
 
 @pytest.fixture(scope="session")
@@ -49,10 +63,31 @@ def marigold_engage_erasure_external_references() -> Dict[str, Any]:
 
 @pytest.fixture
 def marigold_engage_erasure_data(
+    marigold_engage_secrets,
     marigold_engage_erasure_identity_email: str,
 ) -> Generator:
     # create the data needed for erasure tests here
-    yield {}
+    ### I need to post to the user endpoint with a randomized email e.g. marigold_engage_erasure_identity_email [secrets["secret"]
+    base_url = f'https://api.sailthru.com/user'
+    email = "abc@aol.com"
+    payload = {
+            "id": email
+            }
+    stringified_payload = json.dumps(payload, separators=(",", ":"))
+    url_safe_payload = url_encode(stringified_payload)
+    sig = payload_signature(secrets, stringified_payload)
+    params = {
+        "api_key": marigold_engage_secrets["api_key"],
+        "sig": sig,
+        "format": "json",
+        "json": url_safe_payload
+    }
+    response = requests.request(
+    "POST", base_url, params=params
+    )
+    assert response.ok
+
+    #yield {}
 
 
 @pytest.fixture
