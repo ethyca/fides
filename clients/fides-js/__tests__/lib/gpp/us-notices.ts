@@ -76,7 +76,7 @@ const mockPrivacyExperience = (override?: Partial<PrivacyExperience>) => {
     updated_at: "2023-12-07T22:03:26.052630+00:00",
     gpp_settings: {
       enabled: true,
-      us_approach: GPPUSApproach.STATE,
+      us_approach: GPPUSApproach.NATIONAL,
       mspa_covered_transactions: true,
       mspa_opt_out_option_mode: true,
       mspa_service_provider_mode: false,
@@ -124,7 +124,6 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -140,7 +139,6 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -192,7 +190,6 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -263,7 +260,6 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
-      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -371,10 +367,10 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
+    expect(cmpApi.getSection("usnatv1")).toBe(null);
   });
 
   it("sets all as 0 when there is no consent object in cookie", () => {
@@ -389,7 +385,6 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forceGpp: false,
     });
     expect(sectionsChanged).toEqual([
       { name: "usnatv1", id: 7, prefix: "usnat" },
@@ -432,7 +427,6 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
@@ -484,7 +478,6 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
@@ -536,7 +529,6 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
-      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
@@ -583,20 +575,11 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     const experience = mockPrivacyExperience({
       region: "us_ca", // Set to a state
       privacy_notices: notices,
-      gpp_settings: {
-        enabled: true,
-        us_approach: GPPUSApproach.NATIONAL, // But set setting to national
-        mspa_covered_transactions: true,
-        mspa_opt_out_option_mode: true,
-        mspa_service_provider_mode: false,
-        enable_tcfeu_string: true,
-      },
     });
     setGppOptOutsFromCookieAndExperience({
       cmpApi,
       cookie,
       experience,
-      forceGpp: false,
     });
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
@@ -620,5 +603,81 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       Gpc: false,
     });
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVWA.QA");
+  });
+
+  it("can use state gpp fields when gpp is set to state", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const cookie = mockFidesCookie({
+      consent: {
+        data_sales_and_sharing: false,
+        targeted_advertising: false,
+        sensitive_personal_data_sharing: false,
+        known_child_sensitive_data_consents: false,
+        personal_data_consents: false,
+      },
+    });
+    const notices = [
+      DATA_SALES_SHARING_NOTICE,
+      TARGETED_ADVERTISING_NOTICE,
+      SENSITIVE_PERSONAL_SHARING_NOTICE,
+      KNOWN_CHILD_SENSITIVE_NOTICE,
+      PERSONAL_DATA_NOTICE,
+    ];
+    const experience = mockPrivacyExperience({
+      region: "us_ut", // Set to a state
+      privacy_notices: notices,
+      gpp_settings: {
+        enabled: true,
+        us_approach: GPPUSApproach.STATE, // Set to state
+        mspa_covered_transactions: true,
+        mspa_opt_out_option_mode: true,
+        mspa_service_provider_mode: false,
+        enable_tcfeu_string: true,
+      },
+    });
+    setGppOptOutsFromCookieAndExperience({
+      cmpApi,
+      cookie,
+      experience,
+    });
+    const section = cmpApi.getSection("usutv1");
+    expect(section).toEqual({
+      Version: 1,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SaleOptOut: 0,
+      TargetedAdvertisingOptOut: 0,
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: 0,
+      MspaCoveredTransaction: 1,
+      MspaOptOutOptionMode: 1,
+      MspaServiceProviderMode: 2,
+    });
+    expect(cmpApi.getGppString()).toEqual("DBABFg~BAAAAAWA");
+  });
+
+  it("does nothing for non-supported region when gpp is set to state", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const experience = mockPrivacyExperience({
+      region: "us_ny",
+      gpp_settings: {
+        enabled: true,
+        us_approach: GPPUSApproach.STATE, // Set to state
+        mspa_covered_transactions: true,
+        mspa_opt_out_option_mode: true,
+        mspa_service_provider_mode: false,
+        enable_tcfeu_string: true,
+      },
+    });
+    const sectionsChanged = setGppNoticesProvidedFromExperience({
+      cmpApi,
+      experience,
+    });
+    expect(sectionsChanged).toEqual([]);
+    expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
+    expect(cmpApi.getSection("usnatv1")).toBe(null);
+    expect(cmpApi.getSection("usnyv1")).toBe(null);
   });
 });

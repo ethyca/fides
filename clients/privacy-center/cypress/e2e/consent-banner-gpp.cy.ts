@@ -356,7 +356,7 @@ describe("Fides-js GPP extension", () => {
               supportedAPIs,
             } = data.pingData;
             expect(signalStatus).to.eql("ready");
-            expect(applicableSections).to.eql([]);
+            expect(applicableSections).to.eql([-1]);
             expect(supportedAPIs).to.eql([]);
             expect(gppString).to.eql("DBAA");
           });

@@ -137,7 +137,7 @@ const initializeGppCmpApi = () => {
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
     // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
-    const { experience, saved_consent: savedConsent, options } = window.Fides;
+    const { experience, saved_consent: savedConsent } = window.Fides;
     cmpApi.setSupportedAPIs(getSupportedApis());
     // Set status to ready immediately upon initialization, if either:
     // A. Consent should not be resurfaced
@@ -156,19 +156,20 @@ const initializeGppCmpApi = () => {
       if (tcSet) {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
       }
-      setGppNoticesProvidedFromExperience({
+      const sectionsSet = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
-        forceGpp: options.forceGpp,
       });
       const sectionsChanged = setGppOptOutsFromCookieAndExperience({
         cmpApi,
         cookie: event.detail,
         experience,
-        forceGpp: options.forceGpp,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      }
+      if (!tcSet && !sectionsSet.length && !sectionsChanged.length) {
+        cmpApi.setApplicableSections([-1]);
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
@@ -176,7 +177,7 @@ const initializeGppCmpApi = () => {
 
   window.addEventListener("FidesUIShown", (event) => {
     // Set US GPP notice fields
-    const { experience, saved_consent: savedConsent, options } = window.Fides;
+    const { experience, saved_consent: savedConsent } = window.Fides;
     if (isPrivacyExperience(experience)) {
       // set signal status to ready only for users with no existing prefs and if notices are all opt-in by default
       if (
@@ -195,7 +196,6 @@ const initializeGppCmpApi = () => {
       const sectionsChanged = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
-        forceGpp: options.forceGpp,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -230,7 +230,6 @@ const initializeGppCmpApi = () => {
         cmpApi,
         cookie: event.detail,
         experience: window.Fides.experience,
-        forceGpp: window.Fides.options.forceGpp,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));

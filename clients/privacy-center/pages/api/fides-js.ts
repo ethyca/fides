@@ -183,7 +183,6 @@ export default async function handler(
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
       base64Cookie: environment.settings.BASE_64_COOKIE,
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
-      forceGpp: forcedGppQuery === "true",
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
     },
     experience: experience || undefined,
