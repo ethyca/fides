@@ -69,24 +69,28 @@ def marigold_engage_erasure_data(
     # create the data needed for erasure tests here
     ### I need to post to the user endpoint with a randomized email e.g. marigold_engage_erasure_identity_email [secrets["secret"]
     base_url = f'https://api.sailthru.com/user'
-    test_email = "abc@aol.com"
-    payload = {
-            "id": test_email
-            }
-    stringified_payload = json.dumps(payload, separators=(",", ":"))
-    url_safe_payload = url_encode(stringified_payload)
-    sig = payload_signature(marigold_engage_secrets, stringified_payload)
-    params = {
-        "api_key": marigold_engage_secrets["api_key"],
-        "sig": sig,
-        "format": "json",
-        "json": url_safe_payload
-    }
-    response = requests.request(
-    "POST", base_url, params=params
-    )
-    print(response.reason)
-    #assert response.ok
+    # stringified_payload = json.dumps(payload, separators=(",", ":"))
+    # url_safe_payload = url_encode(stringified_payload)
+    # sig = payload_signature(marigold_engage_secrets, stringified_payload)
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }   
+    payload = 'api_key=bae47bda1a5fbf1bfc8fc5e593d4141a&sig=a54d109c83a632577086628e1ee084d1&format=json&json=%7B%22id%22%3A%22neilmarc%40aol.com%22%7D'
+    url_suffix = '?api_key=bae47bda1a5fbf1bfc8fc5e593d4141a&sig=a54d109c83a632577086628e1ee084d1&format=json&json=%7B%22id%22%3A%22neilmarc%40aol.com%22%7D'
+    response = requests.request("POST", base_url, headers=headers, data=payload)
+    # import pdb
+    # pdb.set_trace()
+    assert response.ok
+
+    headers = {}
+    url = base_url + url_suffix
+    payload = ""
+
+    response = requests.request("GET", url, data=payload, headers=headers)
+    assert response.ok
+
+
+
 
     #yield {}
 

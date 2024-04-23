@@ -1,5 +1,5 @@
 import pytest
-
+#from marigold_engage_fixtures import marigold_engage_erasure_data
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
