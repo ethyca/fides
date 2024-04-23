@@ -43,6 +43,12 @@ const setMspaSections = ({
 };
 
 /**
+ * Checks if a given region is in the US based on the provided region string's prefix.
+ * Also returns true if the region is the US_NATIONAL_REGION.
+ */
+const isUsRegion = (region: string) => region.toLowerCase().startsWith("us");
+
+/**
  * For US National, the privacy experience region is still the state where the user came from.
  * However, the GPP field mapping will only contain "us", so make sure we use "us" (US_NATIONAL_REGION) when we are configured for the national case.
  * Otherwise, we can use the experience region directly.
@@ -54,10 +60,7 @@ const deriveGppFieldRegion = ({
   experienceRegion: string;
   usApproach: GPPUSApproach | undefined;
 }) => {
-  if (
-    experienceRegion?.toLowerCase().startsWith("us") &&
-    usApproach === GPPUSApproach.NATIONAL
-  ) {
+  if (isUsRegion(experienceRegion) && usApproach === GPPUSApproach.NATIONAL) {
     return US_NATIONAL_REGION;
   }
   return experienceRegion;
