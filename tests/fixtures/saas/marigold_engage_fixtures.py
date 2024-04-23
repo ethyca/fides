@@ -75,20 +75,23 @@ def marigold_engage_erasure_data(
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
         }   
-    payload = 'api_key=bae47bda1a5fbf1bfc8fc5e593d4141a&sig=a54d109c83a632577086628e1ee084d1&format=json&json=%7B%22id%22%3A%22neilmarc%40aol.com%22%7D'
-    url_suffix = '?api_key=bae47bda1a5fbf1bfc8fc5e593d4141a&sig=a54d109c83a632577086628e1ee084d1&format=json&json=%7B%22id%22%3A%22neilmarc%40aol.com%22%7D'
+    payload = {
+        "api_key": marigold_engage_secrets["api_key"],
+        "sig": "a54d109c83a632577086628e1ee084d1",
+        "format": "json",
+        "json": '{"id":"neilmarc@aol.com"}',
+    }
     response = requests.request("POST", base_url, headers=headers, data=payload)
+    assert response.ok
+
+    # headers = {}
+    # url = base_url + url_suffix
+    # payload = ""
+
+    # response = requests.request("GET", url, data=payload, headers=headers)
+    # # assert response.ok
     # import pdb
     # pdb.set_trace()
-    assert response.ok
-
-    headers = {}
-    url = base_url + url_suffix
-    payload = ""
-
-    response = requests.request("GET", url, data=payload, headers=headers)
-    assert response.ok
-
 
 
 
