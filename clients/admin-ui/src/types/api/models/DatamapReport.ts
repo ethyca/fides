@@ -11,6 +11,7 @@ export type DatamapReport = {
   data_shared_with_third_parties?: boolean;
   data_stewards?: Array<string>;
   data_subjects?: Array<string>;
+  data_use_undeclared_data_categories?: Array<string>;
   data_uses?: string | Array<string>;
   declaration_name?: string;
   description?: string;
@@ -42,6 +43,7 @@ export type DatamapReport = {
   special_category_legal_basis?: string;
   system_dependencies?: string;
   system_name: string;
+  system_undeclared_data_categories?: Array<string>;
   third_country_safeguards?: string;
   third_parties?: string;
   uses_cookies: boolean;

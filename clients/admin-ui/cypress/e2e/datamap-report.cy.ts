@@ -28,7 +28,7 @@ const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
   return base;
 };
 
-describe("Datamap table and spatial view", () => {
+describe("Minimal datamap report table", () => {
   beforeEach(() => {
     cy.login();
     stubPlus(true);
@@ -80,5 +80,55 @@ describe("Datamap table and spatial view", () => {
       body: { items: [], page: 1, pages: 0, size: 25, total: 0 },
     }).as("getDatamapMinimalEmpty");
     cy.getByTestId("datamap-report-heading").should("be.visible");
+  });
+
+  describe("Undeclared data category columns", () => {
+    it("should have the undeclared data columns disabled by default", () => {
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").should(
+        "not.exist"
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").should(
+        "not.exist"
+      );
+    });
+
+    it("should show undeclared data columns when enabled", () => {
+      cy.getByTestId("edit-columns-btn").click();
+      cy.contains("div", "System undeclared data categories").click();
+      cy.contains("div", "Data use undeclared data categories").click();
+      cy.getByTestId("save-button").click();
+
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+        "2 system undeclared data categories"
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
+        "2 data use undeclared data categories"
+      );
+
+      // should be able to expand columns
+      cy.getByTestId("system_undeclared_data_categories-header-menu").click();
+      cy.getByTestId(
+        "system_undeclared_data_categories-header-menu-list"
+      ).within(() => {
+        cy.get("button").contains("Display all").click();
+      });
+      ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
+        cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+          pokemon
+        );
+      });
+
+      cy.getByTestId("data_use_undeclared_data_categories-header-menu").click();
+      cy.getByTestId(
+        "data_use_undeclared_data_categories-header-menu-list"
+      ).within(() => {
+        cy.get("button").contains("Display all").click();
+      });
+      ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
+        cy.getByTestId(
+          "row-0-col-data_use_undeclared_data_categories"
+        ).contains(pokemon);
+      });
+    });
   });
 });

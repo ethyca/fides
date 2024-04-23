@@ -66,6 +66,7 @@ module = [
   "twilio.*",
   "uvicorn.*",
   "validators.*",
+  "pygtrie.*"
 ]
 ignore_missing_imports = true
 

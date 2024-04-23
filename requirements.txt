@@ -32,13 +32,14 @@ openpyxl==3.0.9
 networkx==3.1
 packaging==23.0
 pandas==1.4.3
-paramiko==3.1.0
+paramiko==3.4.0
 passlib[bcrypt]==1.7.4
 plotly==5.13.1
 pyinstrument==4.5.1
 psycopg2-binary==2.9.6
 pydantic==1.10.9
 pydash==6.0.2
+pygtrie==2.5.0
 PyJWT==2.4.0
 pymongo==3.13.0
 PyMySQL==1.0.2
