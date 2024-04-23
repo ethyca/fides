@@ -13,6 +13,7 @@ from fideslang import MAPPED_PURPOSES_BY_DATA_USE
 from fideslang.gvl import MAPPED_PURPOSES, MappedPurpose
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
+from fideslang.models import DatasetCollection as FideslangDatasetCollection
 from pydantic import BaseModel
 from sqlalchemy import BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
@@ -46,6 +47,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.util.taxonomy_utils import find_undeclared_categories
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -269,6 +271,16 @@ class Dataset(Base, FidesBase):
         db.refresh(ctl_dataset)
         return ctl_dataset
 
+    @property
+    def field_data_categories(self) -> Set[str]:
+        """Returns a set of all the data categories found within the fields of all collections in this dataset."""
+        data_categories = set()
+        for collection in self.collections:
+            dataset_collection = FideslangDatasetCollection(**collection)
+            for field in dataset_collection.fields:
+                data_categories.update(field.data_categories)
+        return data_categories
+
 
 # Evaluation
 class Evaluation(Base):
@@ -360,6 +372,7 @@ class System(Base, FidesBase):
         BOOLEAN(), default=False, server_default="f", nullable=False
     )
     legitimate_interest_disclosure_url = Column(String)
+    user_id = Column(String, nullable=True)
 
     privacy_declarations = relationship(
         "PrivacyDeclaration",
@@ -387,7 +400,14 @@ class System(Base, FidesBase):
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
 
-    user_id = Column(String, nullable=True)
+    # index scan using ix_ctl_datasets_fides_key on ctl_datasets
+    datasets = relationship(
+        "Dataset",
+        primaryjoin="foreign(Dataset.fides_key)==any_(System.dataset_references)",
+        lazy="selectin",
+        uselist=True,
+        viewonly=True,
+    )
 
     @classmethod
     def get_data_uses(
@@ -405,6 +425,27 @@ class System(Base, FidesBase):
                     else:
                         data_uses.add(data_use)
         return data_uses
+
+    @property
+    def undeclared_data_categories(self) -> Set[str]:
+        """
+        Returns a set of data categories defined on the system's datasets
+        that are not associated with any data use (privacy declaration).
+        """
+
+        privacy_declaration_data_categories = set()
+        for privacy_declaration in self.privacy_declarations:
+            privacy_declaration_data_categories.update(
+                privacy_declaration.data_categories
+            )
+
+        system_dataset_data_categories = set()
+        for dataset in self.datasets:
+            system_dataset_data_categories.update(dataset.field_data_categories)
+
+        return find_undeclared_categories(
+            system_dataset_data_categories, privacy_declaration_data_categories
+        )
 
 
 class PrivacyDeclaration(Base):
@@ -450,9 +491,18 @@ class PrivacyDeclaration(Base):
         nullable=False,
         index=True,
     )
-    system = relationship(System, back_populates="privacy_declarations")
+    system = relationship(
+        System, back_populates="privacy_declarations", lazy="selectin"
+    )
     cookies = relationship(
         "Cookies", back_populates="privacy_declaration", lazy="joined", uselist=True
+    )
+    datasets = relationship(
+        "Dataset",
+        primaryjoin="foreign(Dataset.fides_key)==any_(PrivacyDeclaration.dataset_references)",
+        lazy="selectin",
+        uselist=True,
+        viewonly=True,
     )
 
     @classmethod
@@ -491,6 +541,31 @@ class PrivacyDeclaration(Base):
                 for data_use, purpose in MAPPED_PURPOSES_ONLY_BY_DATA_USE.items()
             ],
             else_=None,
+        )
+
+    @property
+    def undeclared_data_categories(self) -> Set[str]:
+        """
+        Aggregates a unique set of data categories across the collections in the associated datasets and
+        returns the data categories that are not defined directly on this or any sibling privacy declarations.
+        """
+
+        # Note: This property evaluates the data categories attached to the datasets associated with this specific
+        # privacy declaration. However, the search space for identifying undeclared data categories includes all
+        # data categories across this privacy declaration and its sibling privacy declarations.
+
+        # all data categories from the datasets
+        dataset_data_categories = set()
+        for dataset in self.datasets:
+            dataset_data_categories.update(dataset.field_data_categories)
+
+        # all data categories specified directly on this and sibling privacy declarations
+        declared_data_categories = set()
+        for privacy_declaration in self.system.privacy_declarations:
+            declared_data_categories.update(privacy_declaration.data_categories)
+
+        return find_undeclared_categories(
+            dataset_data_categories, declared_data_categories
         )
 
     async def get_purpose_legal_basis_override(self) -> Optional[str]:

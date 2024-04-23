@@ -2361,7 +2361,7 @@ describe("Consent overlay", () => {
         },
       });
       cy.get("button").contains("Manage preferences").click();
-      cy.get(".fides-modal-button-group")
+      cy.get(".fides-modal-primary-actions")
         .find("button")
         .should("have.length", 1);
     });
@@ -2383,7 +2383,7 @@ describe("Consent overlay", () => {
         },
       });
       cy.get("button").contains("Manage preferences").click();
-      cy.get(".fides-modal-button-group")
+      cy.get(".fides-modal-primary-actions")
         .find("button")
         .should("have.length", 3);
     });

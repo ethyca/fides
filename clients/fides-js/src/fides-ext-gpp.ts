@@ -156,7 +156,10 @@ const initializeGppCmpApi = () => {
       if (tcSet) {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
       }
-      setGppNoticesProvidedFromExperience({ cmpApi, experience });
+      const sectionsSet = setGppNoticesProvidedFromExperience({
+        cmpApi,
+        experience,
+      });
       const sectionsChanged = setGppOptOutsFromCookieAndExperience({
         cmpApi,
         cookie: event.detail,
@@ -164,6 +167,9 @@ const initializeGppCmpApi = () => {
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      }
+      if (!tcSet && !sectionsSet.length && !sectionsChanged.length) {
+        cmpApi.setApplicableSections([-1]);
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
     }

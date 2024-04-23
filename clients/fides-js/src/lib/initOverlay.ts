@@ -88,6 +88,7 @@ export const initOverlay = async ({
           // Create our own parent element and prepend to body
           parentElem = document.createElement("div");
           parentElem.id = overlayParentId;
+          parentElem.className = "fides-overlay";
           document.body.prepend(parentElem);
         }
       }

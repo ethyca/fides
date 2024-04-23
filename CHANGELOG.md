@@ -24,6 +24,7 @@ The types of changes are:
 - Added fides_clear_cookie option to FidesJS SDK to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
 - Added FidesUpdating event to FidesJS SDK [#4816](https://github.com/ethyca/fides/pull/4816)
 - Added `reinitialize` method to FidesJS SDK [#4812](https://github.com/ethyca/fides/pull/4812)
+- Added undeclared data category columns to data map report table [#4781](https://github.com/ethyca/fides/pull/4781)
 - Fully implement pre-approval webhooks [#4822](https://github.com/ethyca/fides/pull/4822)
 
 ### Changed
@@ -33,6 +34,9 @@ The types of changes are:
 ### Fixed
 - Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
 - Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
+- Fixed bug where Language selector button was overlapping other buttons when Privacy Policy wasn't present. [#4815](https://github.com/ethyca/fides/pull/4815)
+- Fixed bug where icons of the Language selector were displayed too small on some sites [#4815](https://github.com/ethyca/fides/pull/4815)
+- Fixed bug where GPP US National Section was incorrectly included when the State by State approach was selected [#4823]https://github.com/ethyca/fides/pull/4823
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
@@ -42,6 +46,7 @@ The types of changes are:
 - Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
 - Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
 - Added support for custom identities [#4764](https://github.com/ethyca/fides/pull/4764)
+- Added developer option to force GPP API on FidesJS bundles [#4799](https://github.com/ethyca/fides/pull/4799)
 
 ### Changed
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
