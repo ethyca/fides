@@ -53,7 +53,7 @@ const deriveGppFieldRegion = ({
   usApproach: GPPUSApproach | undefined;
 }) => {
   if (
-    experienceRegion.toLowerCase().startsWith("us") &&
+    experienceRegion?.toLowerCase().startsWith("us") &&
     usApproach === GPPUSApproach.NATIONAL
   ) {
     return "us";
