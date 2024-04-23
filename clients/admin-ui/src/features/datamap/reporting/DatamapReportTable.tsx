@@ -3,11 +3,16 @@ import {
   Button,
   ChevronDownIcon,
   Flex,
+  FormControl,
+  FormLabel,
   Heading,
+  IconButton,
   Menu,
   MenuButton,
   MenuItemOption,
   MenuList,
+  Select,
+  Text,
   useDisclosure,
 } from "@fidesui/react";
 import {
@@ -34,7 +39,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { DownloadLightIcon } from "~/features/common/Icon";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
+import { ExportFormat } from "~/features/datamap/constants";
 import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
   DatamapReportFilterModal,
@@ -281,9 +289,9 @@ export const DatamapReportTable = () => {
 
     /*
       It's important that `grouping` and `columnOrder` are updated
-      in this `useMemo`. It makes it so grouping and column order 
+      in this `useMemo`. It makes it so grouping and column order
       updates are synced up with when the data changes. Otherwise
-      the table will update the grouping and column order before 
+      the table will update the grouping and column order before
       the correct data loads.
     */
     return {
@@ -971,6 +979,23 @@ export const DatamapReportTable = () => {
     onClose: onColumnSettingsClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isExportReportOpen,
+    onOpen: onExportReportOpen,
+    onClose: onExportReportClose,
+  } = useDisclosure();
+
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [downloadType, setDownloadType] = useState<ExportFormat>(
+    ExportFormat.csv
+  );
+
+  const onExport = () => {
+    // TASK: Implement export functionality
+    console.log("Export report here!", downloadType);
+    setIsExporting(true);
+  };
+
   const tableInstance = useReactTable<DatamapReport>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
@@ -1043,19 +1068,46 @@ export const DatamapReportTable = () => {
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
       />
+      <ConfirmationModal
+        isOpen={isExportReportOpen}
+        onClose={onExportReportClose}
+        title="Export report"
+        continueButtonText="Download"
+        message={
+          <Flex direction="column" gap={3} pb={3}>
+            <Text textAlign="left">
+              Export your data map report using the options below. Depending on
+              the number of rows, the file may take a few minutes to process.
+            </Text>
+            <FormControl>
+              <FormLabel>Choose Format</FormLabel>
+              <Select
+                value={downloadType}
+                onChange={(e) =>
+                  setDownloadType(e.target.value as ExportFormat)
+                }
+              >
+                <option value={ExportFormat.csv}>CSV</option>
+                <option value={ExportFormat.xlsx}>XLSX</option>
+              </Select>
+            </FormControl>
+          </Flex>
+        }
+        onConfirm={onExport}
+        isLoading={isExporting}
+      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
           setGlobalFilter={updateGlobalFilter}
           placeholder="System name, Fides key, or ID"
         />
-        <Flex alignItems="center">
+        <Flex alignItems="center" gap={2}>
           <Menu>
             <MenuButton
               as={Button}
               size="xs"
               variant="outline"
-              mr={2}
               rightIcon={<ChevronDownIcon />}
               spinnerPlacement="end"
               isLoading={groupChangeStarted}
@@ -1089,7 +1141,6 @@ export const DatamapReportTable = () => {
             size="xs"
             variant="outline"
             onClick={onColumnSettingsOpen}
-            mr={2}
           >
             Edit columns
           </Button>
@@ -1101,6 +1152,14 @@ export const DatamapReportTable = () => {
           >
             Filter
           </Button>
+          <IconButton
+            aria-label="Export report"
+            data-testid="export-btn"
+            size="xs"
+            variant="outline"
+            onClick={onExportReportOpen}
+            icon={<DownloadLightIcon />}
+          />
         </Flex>
       </TableActionBar>
 
