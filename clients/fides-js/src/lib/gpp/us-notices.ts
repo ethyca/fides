@@ -46,7 +46,7 @@ const setMspaSections = ({
  * Checks if a given region is in the US based on the provided region string's prefix.
  * Also returns true if the region is the US_NATIONAL_REGION.
  */
-const isUsRegion = (region: string) => region.toLowerCase().startsWith("us");
+const isUsRegion = (region: string) => region?.toLowerCase().startsWith("us");
 
 /**
  * For US National, the privacy experience region is still the state where the user came from.
