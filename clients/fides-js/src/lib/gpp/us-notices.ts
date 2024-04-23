@@ -8,6 +8,8 @@ import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
 import { FidesCookie, PrivacyExperience } from "../consent-types";
 import { GPPSection, GPPSettings, GPPUSApproach } from "./types";
 
+const US_NATIONAL_REGION = "us";
+
 const setMspaSections = ({
   cmpApi,
   sectionName,
@@ -42,7 +44,7 @@ const setMspaSections = ({
 
 /**
  * For US National, the privacy experience region is still the state where the user came from.
- * However, the GPP field mapping will only contain "us", so make sure we use "us" since we are configured for the national case.
+ * However, the GPP field mapping will only contain "us", so make sure we use "us" (US_NATIONAL_REGION) when we are configured for the national case.
  * Otherwise, we can use the experience region directly.
  */
 const deriveGppFieldRegion = ({
@@ -56,7 +58,7 @@ const deriveGppFieldRegion = ({
     experienceRegion?.toLowerCase().startsWith("us") &&
     usApproach === GPPUSApproach.NATIONAL
   ) {
-    return "us";
+    return US_NATIONAL_REGION;
   }
   return experienceRegion;
 };
@@ -88,8 +90,10 @@ export const setGppNoticesProvidedFromExperience = ({
 
   if (
     !gppSection ||
-    (experienceRegion === "us" && usApproach === GPPUSApproach.STATE)
+    (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
   ) {
+    // If we don't have a section, we can't set anything.
+    // If we're using the state approach we shouldn't return the national section, even if region is set to national.
     return [];
   }
 
@@ -143,8 +147,10 @@ export const setGppOptOutsFromCookieAndExperience = ({
 
   if (
     !gppSection ||
-    (experienceRegion === "us" && usApproach === GPPUSApproach.STATE)
+    (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
   ) {
+    // If we don't have a section, we can't set anything.
+    // If we're using the state approach, we shouldn't return the national section, even if region is set to national.
     return [];
   }
 
