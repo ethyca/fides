@@ -86,6 +86,8 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
+    PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
+    PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -94,8 +96,6 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
-    PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
-    PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
 )
 from fides.config import CONFIG
 
@@ -2507,11 +2507,11 @@ class TestMarkPrivacyRequestPreApproveEligible:
         assert response.status_code == 404
 
     def test_mark_eligible_nonexistent_privacy_request(
-            self,
-            url,
-            api_client,
-            generate_pre_approval_webhook_auth_header,
-            pre_approval_webhooks,
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
     ):
         auth_header = generate_pre_approval_webhook_auth_header(
             webhook=pre_approval_webhooks[1]
@@ -2520,13 +2520,13 @@ class TestMarkPrivacyRequestPreApproveEligible:
         assert response.status_code == 404
 
     def test_mark_eligible_privacy_request_not_pending(
-            self,
-            url,
-            db,
-            api_client,
-            privacy_request_status_pending,
-            generate_pre_approval_webhook_auth_header,
-            pre_approval_webhooks,
+        self,
+        url,
+        db,
+        api_client,
+        privacy_request_status_pending,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
     ):
         privacy_request_status_pending.status = PrivacyRequestStatus.approved
         privacy_request_status_pending.save(db=db)
@@ -2748,11 +2748,11 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert response.status_code == 404
 
     def test_mark_not_eligible_nonexistent_privacy_request(
-            self,
-            url,
-            api_client,
-            generate_pre_approval_webhook_auth_header,
-            pre_approval_webhooks,
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
     ):
         auth_header = generate_pre_approval_webhook_auth_header(
             webhook=pre_approval_webhooks[1]
@@ -2761,13 +2761,13 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert response.status_code == 404
 
     def test_mark_not_eligible_privacy_request_not_pending(
-            self,
-            url,
-            db,
-            api_client,
-            privacy_request_status_pending,
-            generate_pre_approval_webhook_auth_header,
-            pre_approval_webhooks,
+        self,
+        url,
+        db,
+        api_client,
+        privacy_request_status_pending,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
     ):
         privacy_request_status_pending.status = PrivacyRequestStatus.approved
         privacy_request_status_pending.save(db=db)

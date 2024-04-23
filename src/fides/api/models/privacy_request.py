@@ -52,8 +52,8 @@ from fides.api.models.policy import (
     WebhookTypes,
 )
 from fides.api.models.pre_approval_webhook import (
-    PreApprovalWebhookReply,
     PreApprovalWebhook,
+    PreApprovalWebhookReply,
 )
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema

@@ -70,9 +70,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.oauth.utils import (
-    verify_oauth_client,
-    verify_callback_oauth_pre_approval_webhook,
     verify_callback_oauth_policy_pre_webhook,
+    verify_callback_oauth_pre_approval_webhook,
+    verify_oauth_client,
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
@@ -142,6 +142,8 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
+    PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
+    PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -151,8 +153,6 @@ from fides.common.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
     V1_URL_PREFIX,
-    PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
-    PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -1160,7 +1160,9 @@ def review_privacy_request(
             continue
 
         try:
-            process_request_function(db, config_proxy, privacy_request, webhook_id, user_id)
+            process_request_function(
+                db, config_proxy, privacy_request, webhook_id, user_id
+            )
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
@@ -1210,7 +1212,9 @@ def _send_privacy_request_review_message_to_user(
     )
 
 
-def _trigger_pre_approval_webhooks(db: Session, privacy_request: PrivacyRequest) -> None:
+def _trigger_pre_approval_webhooks(
+    db: Session, privacy_request: PrivacyRequest
+) -> None:
     pre_approval_webhooks = db.query(PreApprovalWebhook).all()
     for webhook in pre_approval_webhooks:
         privacy_request.trigger_pre_approval_webhook(
@@ -1275,11 +1279,16 @@ def verify_identification_code(
         )
         queue_privacy_request(privacy_request.id)
 
-
     return privacy_request  # type: ignore[return-value]
 
 
-def _approve_request(db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest, webhook_id: Optional[str], user_id: Optional[str]) -> None:
+def _approve_request(
+    db: Session,
+    config_proxy: ConfigProxy,
+    privacy_request: PrivacyRequest,
+    webhook_id: Optional[str],
+    user_id: Optional[str],
+) -> None:
     """Method for how to process requests - approved"""
     now = datetime.utcnow()
     privacy_request.status = PrivacyRequestStatus.approved
@@ -1300,7 +1309,9 @@ def _approve_request(db: Session, config_proxy: ConfigProxy, privacy_request: Pr
         "action": AuditLogAction.approved,
         "message": "",
         "user_id": user_id if user_id else None,
-        "webhook_id": webhook_id if webhook_id else None  # the last webhook reply received is what approves the entire request
+        "webhook_id": webhook_id
+        if webhook_id
+        else None,  # the last webhook reply received is what approves the entire request
     }
     AuditLog.create(
         db=db,
@@ -1341,34 +1352,8 @@ def approve_privacy_request(
         config_proxy=config_proxy,
         process_request_function=_approve_request,
         user_id=user_id,
-        webhook_id=None
+        webhook_id=None,
     )
-
-
-def _deny_request(
-        db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest, webhook_id: Optional[str], user_id: Optional[str]
-) -> None:
-    """Method for how to process requests - denied"""
-    privacy_request.status = PrivacyRequestStatus.denied
-    privacy_request.reviewed_at = datetime.utcnow()
-    privacy_request.reviewed_by = user_id
-    privacy_request.save(db=db)
-    AuditLog.create(
-        db=db,
-        data={
-            "user_id": user_id,
-            "privacy_request_id": privacy_request.id,
-            "action": AuditLogAction.denied,
-            "message": privacy_request.reason,
-        },
-    )
-    if config_proxy.notifications.send_request_review_notification:
-        _send_privacy_request_review_message_to_user(
-            action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
-            identity_data=privacy_request.get_cached_identity_data(),
-            rejection_reason=privacy_request.reason,
-            service_type=config_proxy.notifications.notification_service_type,
-        )
 
 
 @router.patch(
@@ -1389,17 +1374,48 @@ def deny_privacy_request(
     """Deny a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
+    def _deny_request(
+            db: Session,
+            config_proxy: ConfigProxy,
+            privacy_request: PrivacyRequest,
+            webhook_id: Optional[str],
+            user_id: Optional[str],
+    ) -> None:
+        """Method for how to process requests - denied"""
+        privacy_request.status = PrivacyRequestStatus.denied
+        privacy_request.reviewed_at = datetime.utcnow()
+        privacy_request.reviewed_by = user_id
+        privacy_request.save(db=db)
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": user_id,
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.denied,
+                "message": privacy_requests.reason,
+            },
+        )
+        if config_proxy.notifications.send_request_review_notification:
+            _send_privacy_request_review_message_to_user(
+                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+                identity_data=privacy_request.get_cached_identity_data(),
+                rejection_reason=privacy_requests.reason,
+                service_type=config_proxy.notifications.notification_service_type,
+            )
+
     return review_privacy_request(
         db=db,
         config_proxy=config_proxy,
         request_ids=privacy_requests.request_ids,
         process_request_function=_deny_request,
         user_id=user_id,
-        webhook_id=None
+        webhook_id=None,
     )
 
 
-def _validate_privacy_request_pending_or_error(db: Session, privacy_request_id: str) -> None:
+def _validate_privacy_request_pending_or_error(
+    db: Session, privacy_request_id: str
+) -> None:
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
     if not privacy_request:
         raise HTTPException(
@@ -1412,6 +1428,7 @@ def _validate_privacy_request_pending_or_error(db: Session, privacy_request_id: 
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Privacy request with id '{privacy_request_id}' is not in pending status.",
         )
+
 
 @router.post(
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
@@ -1435,7 +1452,7 @@ def mark_privacy_request_pre_approve_eligible(
         "Marking privacy request '{}' as eligible for automatic approval via webhook '{}' for connection config '{}'.",
         privacy_request_id,
         webhook.key,
-        webhook.connection_config.key
+        webhook.connection_config.key,
     )
     PreApprovalWebhookReply.create(
         db=db,
@@ -1449,10 +1466,15 @@ def mark_privacy_request_pre_approve_eligible(
     all_webhooks = PreApprovalWebhook.all(db)
 
     def _reply_exists_for_webhook(webhook_id: str) -> bool:
-        return bool(PreApprovalWebhookReply.filter(db=db, conditions=(
-                (PreApprovalWebhookReply.webhook_id == webhook_id) &
-                (PreApprovalWebhookReply.privacy_request_id == privacy_request_id)
-        )).first())
+        return bool(
+            PreApprovalWebhookReply.filter(
+                db=db,
+                conditions=(
+                    (PreApprovalWebhookReply.webhook_id == webhook_id)
+                    & (PreApprovalWebhookReply.privacy_request_id == privacy_request_id)
+                ),
+            ).first()
+        )
 
     # Check if not all replies have been received
     if not all(_reply_exists_for_webhook(webhook.id) for webhook in all_webhooks):
@@ -1486,7 +1508,7 @@ def mark_privacy_request_pre_approve_eligible(
         config_proxy=config_proxy,
         process_request_function=_approve_request,
         webhook_id=webhook.id,
-        user_id=None
+        user_id=None,
     )
 
 
@@ -1508,7 +1530,7 @@ def mark_privacy_request_pre_approve_not_eligible(
         "Marking privacy request '{}' as not eligible for automatic approval via webhook '{}' for connection config '{}'.",
         privacy_request_id,
         webhook.key,
-        webhook.connection_config.key
+        webhook.connection_config.key,
     )
     PreApprovalWebhookReply.create(
         db=db,
