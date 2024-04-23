@@ -1131,6 +1131,9 @@ def review_privacy_request(
     db: Session,
     request_ids: List[str],
     process_request_function: Callable,
+    config_proxy: ConfigProxy,
+    webhook_id: Optional[str],
+    user_id: Optional[str],
 ) -> BulkReviewResponse:
     """Helper method shared between the approve and deny privacy request endpoints, and pre-approval webhook endpoints"""
     succeeded: List[PrivacyRequest] = []
@@ -1157,7 +1160,7 @@ def review_privacy_request(
             continue
 
         try:
-            process_request_function(privacy_request)
+            process_request_function(db, config_proxy, privacy_request, webhook_id, user_id)
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
@@ -1207,6 +1210,15 @@ def _send_privacy_request_review_message_to_user(
     )
 
 
+def _trigger_pre_approval_webhooks(db: Session, privacy_request: PrivacyRequest) -> None:
+    pre_approval_webhooks = db.query(PreApprovalWebhook).all()
+    for webhook in pre_approval_webhooks:
+        privacy_request.trigger_pre_approval_webhook(
+            webhook=webhook,
+            policy_action=privacy_request.policy.get_action_type(),
+        )
+
+
 @router.post(
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     status_code=HTTP_200_OK,
@@ -1249,7 +1261,9 @@ def verify_identification_code(
 
     logger.info("Identity verified for {}.", privacy_request.id)
 
-    if not config_proxy.execution.require_manual_request_approval:
+    if config_proxy.execution.require_manual_request_approval:
+        _trigger_pre_approval_webhooks(db, privacy_request)
+    else:
         AuditLog.create(
             db=db,
             data={
@@ -1260,15 +1274,47 @@ def verify_identification_code(
             },
         )
         queue_privacy_request(privacy_request.id)
-    else:
-        pre_approval_webhooks = db.query(PreApprovalWebhook).all()
-        for webhook in pre_approval_webhooks:
-            privacy_request.trigger_pre_approval_webhook(
-                webhook=webhook,
-                policy_action=privacy_request.policy.get_action_type(),
-            )
+
 
     return privacy_request  # type: ignore[return-value]
+
+
+def _approve_request(db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest, webhook_id: Optional[str], user_id: Optional[str]) -> None:
+    """Method for how to process requests - approved"""
+    now = datetime.utcnow()
+    privacy_request.status = PrivacyRequestStatus.approved
+    privacy_request.reviewed_at = now
+    if user_id:
+        privacy_request.reviewed_by = user_id
+
+    if privacy_request.custom_fields:  # type: ignore[attr-defined]
+        privacy_request.custom_privacy_request_fields_approved_at = now
+        if user_id:
+            # for now, the reviewer will be marked as the approver of the custom privacy request fields
+            # this is to make it flexible in the future if we want to allow a different user to approve
+            privacy_request.custom_privacy_request_fields_approved_by = user_id
+    privacy_request.save(db=db)
+
+    auditlog_data = {
+        "privacy_request_id": privacy_request.id,
+        "action": AuditLogAction.approved,
+        "message": "",
+        "user_id": user_id if user_id else None,
+        "webhook_id": webhook_id if webhook_id else None  # the last webhook reply received is what approves the entire request
+    }
+    AuditLog.create(
+        db=db,
+        data=auditlog_data,
+    )
+    if config_proxy.notifications.send_request_review_notification:
+        _send_privacy_request_review_message_to_user(
+            action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
+            identity_data=privacy_request.get_cached_identity_data(),
+            rejection_reason=None,
+            service_type=config_proxy.notifications.notification_service_type,
+        )
+
+    queue_privacy_request(privacy_request_id=privacy_request.id)
 
 
 @router.patch(
@@ -1289,42 +1335,40 @@ def approve_privacy_request(
     """Approve and dispatch a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _approve_request(privacy_request: PrivacyRequest) -> None:
-        """Method for how to process requests - approved"""
-        now = datetime.utcnow()
-        privacy_request.status = PrivacyRequestStatus.approved
-        privacy_request.reviewed_at = now
-        privacy_request.reviewed_by = user_id
-        # for now, the reviewer will be marked as the approver of the custom privacy request fields
-        # this is to make it flexible in the future if we want to allow a different user to approve
-        if privacy_request.custom_fields:  # type: ignore[attr-defined]
-            privacy_request.custom_privacy_request_fields_approved_at = now
-            privacy_request.custom_privacy_request_fields_approved_by = user_id
-        privacy_request.save(db=db)
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": user_id,
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.approved,
-                "message": "",
-            },
-        )
-        if config_proxy.notifications.send_request_review_notification:
-            _send_privacy_request_review_message_to_user(
-                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
-                identity_data=privacy_request.get_cached_identity_data(),
-                rejection_reason=None,
-                service_type=config_proxy.notifications.notification_service_type,
-            )
-
-        queue_privacy_request(privacy_request_id=privacy_request.id)
-
     return review_privacy_request(
         db=db,
         request_ids=privacy_requests.request_ids,
+        config_proxy=config_proxy,
         process_request_function=_approve_request,
+        user_id=user_id,
+        webhook_id=None
     )
+
+
+def _deny_request(
+        db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest, webhook_id: Optional[str], user_id: Optional[str]
+) -> None:
+    """Method for how to process requests - denied"""
+    privacy_request.status = PrivacyRequestStatus.denied
+    privacy_request.reviewed_at = datetime.utcnow()
+    privacy_request.reviewed_by = user_id
+    privacy_request.save(db=db)
+    AuditLog.create(
+        db=db,
+        data={
+            "user_id": user_id,
+            "privacy_request_id": privacy_request.id,
+            "action": AuditLogAction.denied,
+            "message": privacy_request.reason,
+        },
+    )
+    if config_proxy.notifications.send_request_review_notification:
+        _send_privacy_request_review_message_to_user(
+            action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+            identity_data=privacy_request.get_cached_identity_data(),
+            rejection_reason=privacy_request.reason,
+            service_type=config_proxy.notifications.notification_service_type,
+        )
 
 
 @router.patch(
@@ -1345,37 +1389,29 @@ def deny_privacy_request(
     """Deny a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _deny_request(
-        privacy_request: PrivacyRequest,
-    ) -> None:
-        """Method for how to process requests - denied"""
-        privacy_request.status = PrivacyRequestStatus.denied
-        privacy_request.reviewed_at = datetime.utcnow()
-        privacy_request.reviewed_by = user_id
-        privacy_request.save(db=db)
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": user_id,
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.denied,
-                "message": privacy_requests.reason,
-            },
-        )
-        if config_proxy.notifications.send_request_review_notification:
-            _send_privacy_request_review_message_to_user(
-                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
-                identity_data=privacy_request.get_cached_identity_data(),
-                rejection_reason=privacy_requests.reason,
-                service_type=config_proxy.notifications.notification_service_type,
-            )
-
     return review_privacy_request(
         db=db,
+        config_proxy=config_proxy,
         request_ids=privacy_requests.request_ids,
         process_request_function=_deny_request,
+        user_id=user_id,
+        webhook_id=None
     )
 
+
+def _validate_privacy_request_pending_or_error(db: Session, privacy_request_id: str) -> None:
+    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+    if not privacy_request:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No privacy request found with id: '{privacy_request_id}'.",
+        )
+
+    if privacy_request.status != PrivacyRequestStatus.pending:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Privacy request with id '{privacy_request_id}' is not in pending status.",
+        )
 
 @router.post(
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
@@ -1394,6 +1430,13 @@ def mark_privacy_request_pre_approve_eligible(
     Marks privacy request as eligible for automatic approval.
     If all webhook responses have been received and all are affirmative, proceed to queue privacy request
     """
+    _validate_privacy_request_pending_or_error(db, privacy_request_id)
+    logger.info(
+        "Marking privacy request '{}' as eligible for automatic approval via webhook '{}' for connection config '{}'.",
+        privacy_request_id,
+        webhook.key,
+        webhook.connection_config.key
+    )
     PreApprovalWebhookReply.create(
         db=db,
         data={
@@ -1404,58 +1447,46 @@ def mark_privacy_request_pre_approve_eligible(
     )
 
     all_webhooks = PreApprovalWebhook.all(db)
-    if not all_webhooks:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"No configured webhooks found. Could not pre-approve privacy request '{privacy_request_id}'.",
+
+    def _reply_exists_for_webhook(webhook_id: str) -> bool:
+        return bool(PreApprovalWebhookReply.filter(db=db, conditions=(
+                (PreApprovalWebhookReply.webhook_id == webhook_id) &
+                (PreApprovalWebhookReply.privacy_request_id == privacy_request_id)
+        )).first())
+
+    # Check if not all replies have been received
+    if not all(_reply_exists_for_webhook(webhook.id) for webhook in all_webhooks):
+        # Subtlety here is that if a new webhook is configured between when the privacy request was created and when
+        # the last webhook replied, then the privacy request can never be automatically approved. It must instead be
+        # manually approved in the Admin UI.
+        logger.info(
+            "Not all pre-approval webhooks have responded for privacy request '{}'. Cannot automatically approve request.",
+            privacy_request_id,
         )
+        return
+    # Check if all replies are true
     replies_for_privacy_request = PreApprovalWebhookReply.filter(
         db=db,
         conditions=(PreApprovalWebhookReply.privacy_request_id == privacy_request_id),
     ).all()
-
-    # Check if not all replies have been received
-    if len(replies_for_privacy_request) < len(all_webhooks):
-        # Subtlety here is that if a new webhook is configured between when the privacy request was created and when
-        # the last webhook replied, then the privacy request can never be automatically approved. It must instead be
-        # manually approved in the Admin UI.
-        return
-    # Check if all replies are true
-    if not all(reply.is_eligible is True for reply in replies_for_privacy_request):
-        return
-
-    def _approve_request(privacy_request: PrivacyRequest) -> None:
-        """Method for how to process requests - approved"""
-        now = datetime.utcnow()
-        privacy_request.status = PrivacyRequestStatus.approved
-        privacy_request.reviewed_at = now
-        if privacy_request.custom_fields:  # type: ignore[attr-defined]
-            privacy_request.custom_privacy_request_fields_approved_at = now
-        privacy_request.save(db=db)
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": None,
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.approved,
-                "message": "",
-                "webhook_id": webhook.id,
-            },
+    if not all(reply.is_eligible for reply in replies_for_privacy_request):
+        logger.info(
+            "Not all pre-approval webhooks have responded with eligible for privacy request '{}'. Cannot automatically approve request.",
+            privacy_request_id,
         )
-        if config_proxy.notifications.send_request_review_notification:
-            _send_privacy_request_review_message_to_user(
-                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
-                identity_data=privacy_request.get_cached_identity_data(),
-                rejection_reason=None,
-                service_type=config_proxy.notifications.notification_service_type,
-            )
+        return
 
-        queue_privacy_request(privacy_request_id=privacy_request.id)
-
+    logger.info(
+        "All pre-approval webhooks have responded with eligible for privacy request '{}'. Proceeding to automatically approve request.",
+        privacy_request_id,
+    )
     review_privacy_request(
         db=db,
         request_ids=[privacy_request_id],
+        config_proxy=config_proxy,
         process_request_function=_approve_request,
+        webhook_id=webhook.id,
+        user_id=None
     )
 
 
@@ -1472,6 +1503,13 @@ def mark_privacy_request_pre_approve_not_eligible(
     ),
 ) -> None:
     """Marks privacy request as not eligible for automatic approval, regardless of what other webhook responses we receive"""
+    _validate_privacy_request_pending_or_error(db, privacy_request_id)
+    logger.info(
+        "Marking privacy request '{}' as not eligible for automatic approval via webhook '{}' for connection config '{}'.",
+        privacy_request_id,
+        webhook.key,
+        webhook.connection_config.key
+    )
     PreApprovalWebhookReply.create(
         db=db,
         data={
@@ -1947,7 +1985,9 @@ def create_privacy_request_func(
                     privacy_request_data.identity,
                     config_proxy.notifications.notification_service_type,
                 )
-            if not config_proxy.execution.require_manual_request_approval:
+            if config_proxy.execution.require_manual_request_approval:
+                _trigger_pre_approval_webhooks(db, privacy_request)
+            else:
                 AuditLog.create(
                     db=db,
                     data={
@@ -1958,13 +1998,7 @@ def create_privacy_request_func(
                     },
                 )
                 queue_privacy_request(privacy_request.id)
-            else:
-                pre_approval_webhooks = db.query(PreApprovalWebhook).all()
-                for webhook in pre_approval_webhooks:
-                    privacy_request.trigger_pre_approval_webhook(
-                        webhook=webhook,
-                        policy_action=privacy_request.policy.get_action_type(),
-                    )
+
         except MessageDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
             logger.error("MessageDispatchException: {}", exc)

@@ -912,10 +912,7 @@ class PrivacyRequest(
         Firing pre-approval webhooks allows the privacy request to be automatically approved if all webhooks
         respond with "eligible" to be approved.
 
-        Pre-approval webhooks don't expect an immediate HTTPs response when we execute the request,
-        hence the use of WebhookDirection.one_way.
-
-        Instead, to respond, they use send a request to one of the reply-to URLs with the reply-to-token.
+        To respond, the service should send a request to one of the reply-to URLs with the reply-to-token.
         """
         # temp fix for circular dependency
         from fides.api.service.connectors import HTTPSConnector, get_connector
@@ -924,7 +921,7 @@ class PrivacyRequest(
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
             privacy_request_status=self.status,
-            direction=WebhookDirection.one_way,  # pre-approval webhooks don't expect an immediate response
+            direction=WebhookDirection.two_way,
             callback_type=CallbackType.pre_approval,
             identity=self.get_cached_identity_data(),
             policy_action=policy_action,

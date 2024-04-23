@@ -2430,6 +2430,7 @@ class TestMarkPrivacyRequestPreApproveEligible:
         self,
         url,
         api_client,
+        privacy_request_status_pending,
         generate_pre_approval_webhook_auth_header,
         pre_approval_webhooks,
     ):
@@ -2456,6 +2457,7 @@ class TestMarkPrivacyRequestPreApproveEligible:
         self,
         url,
         api_client,
+        privacy_request_status_pending,
         generate_pre_approval_webhook_auth_header,
         pre_approval_webhooks,
     ):
@@ -2484,6 +2486,7 @@ class TestMarkPrivacyRequestPreApproveEligible:
         self,
         url,
         api_client,
+        privacy_request_status_pending,
         generate_pre_approval_webhook_auth_header,
         pre_approval_webhooks,
     ):
@@ -2502,6 +2505,37 @@ class TestMarkPrivacyRequestPreApproveEligible:
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == 404
+
+    def test_mark_eligible_nonexistent_privacy_request(
+            self,
+            url,
+            api_client,
+            generate_pre_approval_webhook_auth_header,
+            pre_approval_webhooks,
+    ):
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_mark_eligible_privacy_request_not_pending(
+            self,
+            url,
+            db,
+            api_client,
+            privacy_request_status_pending,
+            generate_pre_approval_webhook_auth_header,
+            pre_approval_webhooks,
+    ):
+        privacy_request_status_pending.status = PrivacyRequestStatus.approved
+        privacy_request_status_pending.save(db=db)
+
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -2712,6 +2746,37 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == 404
+
+    def test_mark_not_eligible_nonexistent_privacy_request(
+            self,
+            url,
+            api_client,
+            generate_pre_approval_webhook_auth_header,
+            pre_approval_webhooks,
+    ):
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_mark_not_eligible_privacy_request_not_pending(
+            self,
+            url,
+            db,
+            api_client,
+            privacy_request_status_pending,
+            generate_pre_approval_webhook_auth_header,
+            pre_approval_webhooks,
+    ):
+        privacy_request_status_pending.status = PrivacyRequestStatus.approved
+        privacy_request_status_pending.save(db=db)
+
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
