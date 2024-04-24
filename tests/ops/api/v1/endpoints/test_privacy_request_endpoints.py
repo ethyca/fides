@@ -2516,7 +2516,11 @@ class TestMarkPrivacyRequestPreApproveEligible:
         auth_header = generate_pre_approval_webhook_auth_header(
             webhook=pre_approval_webhooks[1]
         )
-        response = api_client.post(url, headers=auth_header)
+        invalid_privacy_request_url = (
+            V1_URL_PREFIX
+            + PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE.format(privacy_request_id="invalid")
+        )
+        response = api_client.post(invalid_privacy_request_url, headers=auth_header)
         assert response.status_code == 404
 
     def test_mark_eligible_privacy_request_not_pending(
@@ -2757,7 +2761,13 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         auth_header = generate_pre_approval_webhook_auth_header(
             webhook=pre_approval_webhooks[1]
         )
-        response = api_client.post(url, headers=auth_header)
+        invalid_privacy_request_url = (
+            V1_URL_PREFIX
+            + PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE.format(
+                privacy_request_id="invalid"
+            )
+        )
+        response = api_client.post(invalid_privacy_request_url, headers=auth_header)
         assert response.status_code == 404
 
     def test_mark_not_eligible_privacy_request_not_pending(
