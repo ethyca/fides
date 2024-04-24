@@ -220,6 +220,9 @@ class AuthenticatedClient:
         deny_unsafe_hosts(urlparse(prepared_request.url).netloc)
 
         response = self.session.send(prepared_request)
+        # import pdb
+
+        # pdb.set_trace()
 
         ignore_error = self._should_ignore_error(
             status_code=response.status_code, errors_to_ignore=ignore_errors
