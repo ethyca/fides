@@ -13,6 +13,7 @@ saas_config:
       label: API key
       sensitive: True
     - name: secret
+      label: Marigold secret
       sensitive: True
 
   client_config:
