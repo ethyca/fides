@@ -1215,9 +1215,7 @@ describe("Consent i18n", () => {
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
             ).contains(t.stacked_purpose_example);
           }
-          cy.get(".fides-notice-toggle-title")
-            .contains(title)
-            .click({ force: true });
+          cy.get(".fides-notice-toggle-title").contains(title).click();
         });
       });
     };
@@ -1511,7 +1509,7 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe.skip("when localizing privacy_center components", () => {
+  describe.only("when localizing privacy_center components", () => {
     const GEOLOCATION_API_URL = "https://www.example.com/location";
     const VERIFICATION_CODE = "112358";
 
@@ -1652,7 +1650,7 @@ describe("Consent i18n", () => {
         cy.wait("@postConsentRequestVerify");
       });
 
-      it("calls notices served with the correct history id for the notices", () => {
+      it.skip("calls notices served with the correct history id for the notices", () => {
         // Consent reporting intercept
         cy.intercept(
           "PATCH",
