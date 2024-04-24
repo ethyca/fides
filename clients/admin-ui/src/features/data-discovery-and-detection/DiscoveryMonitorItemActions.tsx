@@ -32,12 +32,11 @@ import { StagedResourceType } from "./types/StagedResourceType";
 interface DiscoveryMonitorItemActionsProps {
   resource: StagedResource;
   resourceType: StagedResourceType;
-  monitorId: string;
 }
 
 const DiscoveryMonitorItemActions: React.FC<
   DiscoveryMonitorItemActionsProps
-> = ({ resource, resourceType, monitorId }) => {
+> = ({ resource, resourceType }) => {
   const [monitorResourceMutation] = useMonitorResourceMutation();
   const [acceptResourceMutation] = useAcceptResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
@@ -86,7 +85,6 @@ const DiscoveryMonitorItemActions: React.FC<
           onClick={async () => {
             setIsProcessingAction(true);
             await monitorResourceMutation({
-              monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);
@@ -101,7 +99,6 @@ const DiscoveryMonitorItemActions: React.FC<
           onClick={async () => {
             setIsProcessingAction(true);
             await muteResourceMutation({
-              monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);
@@ -116,7 +113,6 @@ const DiscoveryMonitorItemActions: React.FC<
           onClick={async () => {
             setIsProcessingAction(true);
             await muteResourceMutation({
-              monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);
@@ -131,7 +127,6 @@ const DiscoveryMonitorItemActions: React.FC<
           onClick={async () => {
             setIsProcessingAction(true);
             await unmuteResourceMutation({
-              monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);
@@ -154,7 +149,6 @@ const DiscoveryMonitorItemActions: React.FC<
           onClick={async () => {
             setIsProcessingAction(true);
             await acceptResourceMutation({
-              monitor_config_id: monitorId,
               staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);

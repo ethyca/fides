@@ -58,7 +58,6 @@ const EmptyTableNotice = () => (
 );
 
 interface MonitorResultTableProps {
-  monitorId: string;
   resourceUrn?: string;
   onSelectResource: ({
     monitorId,
@@ -70,7 +69,6 @@ interface MonitorResultTableProps {
 }
 
 const DiscoveryMonitorResultTable = ({
-  monitorId,
   resourceUrn,
   onSelectResource,
 }: MonitorResultTableProps) => {
@@ -93,7 +91,6 @@ const DiscoveryMonitorResultTable = ({
     isLoading,
     data: resources,
   } = useGetMonitorResultsQuery({
-    monitor_config_id: monitorId,
     staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
@@ -126,7 +123,7 @@ const DiscoveryMonitorResultTable = ({
     resources?.items[0] as DiscoveryMonitorItem
   );
 
-  const { columns } = useStagedResourceColumns({ resourceType, monitorId });
+  const { columns } = useStagedResourceColumns({ resourceType });
 
   const {
     items: data,

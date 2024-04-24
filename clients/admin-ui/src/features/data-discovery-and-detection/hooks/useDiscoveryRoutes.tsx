@@ -1,8 +1,7 @@
 import { useRouter } from "next/router";
-
 import {
-  DATA_DISCOVERY_MONITOR_DETAIL_ROUTE,
-  DATA_DISCOVERY_RESOURCE_DETAIL_ROUTE,
+  DATA_DETECTION_ROUTE_DETAIL,
+  DATA_DISCOVERY_ROUTE_DETAIL,
 } from "~/features/common/nav/v2/routes";
 
 const useDiscoveryRoutes = () => {
@@ -10,26 +9,27 @@ const useDiscoveryRoutes = () => {
   const monitorId = router.query.monitorId as string;
   const resourceUrn = router.query.resourceUrn as string;
 
-  const navigateToMonitorDetails = ({ monitorId }: { monitorId: string }) => {
+  const navigateToDetectionResults = ({
+    resourceUrn,
+  }: {
+    resourceUrn: string;
+  }) => {
     router.push({
-      pathname: DATA_DISCOVERY_MONITOR_DETAIL_ROUTE,
+      pathname: DATA_DETECTION_ROUTE_DETAIL,
       query: {
-        monitorId,
+        resourceUrn,
       },
     });
   };
 
-  const navigateToResourceDetails = ({
-    monitorId,
+  const navigateToDiscoveryResults = ({
     resourceUrn,
   }: {
-    monitorId: string;
     resourceUrn: string;
   }) => {
     router.push({
-      pathname: DATA_DISCOVERY_RESOURCE_DETAIL_ROUTE,
+      pathname: DATA_DISCOVERY_ROUTE_DETAIL,
       query: {
-        monitorId,
         resourceUrn,
       },
     });
@@ -38,8 +38,8 @@ const useDiscoveryRoutes = () => {
   return {
     monitorId,
     resourceUrn,
-    navigateToMonitorDetails,
-    navigateToResourceDetails,
+    navigateToDetectionResults,
+    navigateToDiscoveryResults,
   };
 };
 export default useDiscoveryRoutes;
