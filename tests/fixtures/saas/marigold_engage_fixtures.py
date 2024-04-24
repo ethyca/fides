@@ -66,13 +66,8 @@ def marigold_engage_erasure_data(
     marigold_engage_secrets,
     marigold_engage_erasure_identity_email: str,
 ) -> Generator:
-    # create the data needed for erasure tests here
-    ### I need to post to the user endpoint with a randomized email e.g. marigold_engage_erasure_identity_email [secrets["secret"]
     base_url = f'https://api.sailthru.com/user'
-    # stringified_payload = json.dumps(payload, separators=(",", ":"))
-    # url_safe_payload = url_encode(stringified_payload)
-    # sig = payload_signature(marigold_engage_secrets, stringified_payload)
-    email_test = "neilmarc@aol.com"
+    email_test = marigold_engage_erasure_identity_email
     email_prep = '{"id":"'+email_test+'"}'
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -91,9 +86,6 @@ def marigold_engage_erasure_data(
     response = requests.request("POST", base_url, headers=headers, data=payload)
     assert response.ok
 
-    # headers = {}
-    # url = base_url + url_suffix
-    # payload = ""
     params = {
         "api_key": marigold_engage_secrets["api_key"],
         "sig": md5_readable,
@@ -101,8 +93,8 @@ def marigold_engage_erasure_data(
         "json": email_prep
     }
     response = requests.request("GET", base_url, params=params)
-    import pdb
-    pdb.set_trace()
+    # import pdb
+    # pdb.set_trace()
     assert response.ok
     
 
