@@ -2,9 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ApprovalStatus } from "./ApprovalStatus";
 import type { Classification } from "./Classification";
-import type { ClassificationStatus } from "./ClassificationStatus";
 import type { DiffStatus } from "./DiffStatus";
 import type { MonitorStatus } from "./MonitorStatus";
 
@@ -16,11 +14,10 @@ export type Database = {
   user_assigned_data_categories?: Array<string>;
   name: string;
   description?: string;
+  monitor_config_id: string;
   modified?: string;
   classifications?: Array<Classification>;
   monitor_status?: MonitorStatus;
-  approval_status?: ApprovalStatus;
-  classification_status?: ClassificationStatus;
   diff_status?: DiffStatus;
   child_diff_statuses?: Array<DiffStatus>;
   schemas?: Array<string>;
