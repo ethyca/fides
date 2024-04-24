@@ -148,7 +148,8 @@ def shopify_erasure_data(
         url=f"{base_url}/admin/api/2022-07/customers.json", json=body, headers=headers
     )
     customer = customers_response.json()
-    assert customers_response.ok
+    # not asserting that customer response is okay for running back to back requests for DSR 2.0 and DSR 3.0
+    # which can cause a 422 - that the email is already taken
 
     sleep(30)
 

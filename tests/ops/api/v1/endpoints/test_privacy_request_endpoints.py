@@ -22,7 +22,6 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
-    JWE_PAYLOAD_SCOPES,
 )
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -36,7 +35,6 @@ from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
-    ManualAction,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
@@ -55,13 +53,9 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME
-from fides.api.util.cache import (
-    get_encryption_cache_key,
-    get_identity_cache_key,
-    get_masking_secret_cache_key,
-)
+from fides.api.util.cache import get_encryption_cache_key, get_masking_secret_cache_key
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -81,11 +75,10 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
-    PRIVACY_REQUEST_MANUAL_ERASURE,
-    PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
+    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     PRIVACY_REQUEST_RESUME,
@@ -95,6 +88,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
+    REQUEST_TASKS,
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
@@ -462,7 +456,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_access_request"
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
     def test_create_privacy_request_limit_exceeded(
         self,
@@ -1611,47 +1605,6 @@ class TestGetPrivacyRequests:
 
         privacy_request.delete(db)
 
-    def test_get_paused_access_privacy_request_resume_info(
-        self, db, privacy_request, generate_auth_header, api_client, url
-    ):
-        # Mock the privacy request being in a paused state waiting for manual input to the "manual_collection"
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-        paused_step = CurrentStep.access
-        paused_collection = CollectionAddress("manual_dataset", "manual_collection")
-        privacy_request.cache_paused_collection_details(
-            step=paused_step,
-            collection=paused_collection,
-            action_needed=[
-                ManualAction(
-                    locators={"email": ["customer-1@example.com"]},
-                    get=["authorized_user"],
-                    update=None,
-                )
-            ],
-        )
-
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url, headers=auth_header)
-        assert 200 == response.status_code
-
-        data = response.json()["items"][0]
-        assert data["status"] == "paused"
-        assert data["action_required_details"] == {
-            "step": "access",
-            "collection": "manual_dataset:manual_collection",
-            "action_needed": [
-                {
-                    "locators": {"email": ["customer-1@example.com"]},
-                    "get": ["authorized_user"],
-                    "update": None,
-                }
-            ],
-        }
-        assert data["resume_endpoint"] == "/privacy-request/{}/manual_input".format(
-            privacy_request.id
-        )
-
     def test_get_requires_input_privacy_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
@@ -1670,47 +1623,6 @@ class TestGetPrivacyRequests:
             "resume_endpoint"
         ] == "/privacy-request/{}/resume_from_requires_input".format(privacy_request.id)
 
-    def test_get_paused_erasure_privacy_request_resume_info(
-        self, db, privacy_request, generate_auth_header, api_client, url
-    ):
-        # Mock the privacy request being in a paused state waiting for manual erasure confirmation to the "another_collection"
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-        paused_step = CurrentStep.erasure
-        paused_collection = CollectionAddress("manual_dataset", "another_collection")
-        privacy_request.cache_paused_collection_details(
-            step=paused_step,
-            collection=paused_collection,
-            action_needed=[
-                ManualAction(
-                    locators={"id": [32424]},
-                    get=None,
-                    update={"authorized_user": "abcde_masked_user"},
-                )
-            ],
-        )
-
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url, headers=auth_header)
-        assert 200 == response.status_code
-
-        data = response.json()["items"][0]
-        assert data["status"] == "paused"
-        assert data["action_required_details"] == {
-            "step": "erasure",
-            "collection": "manual_dataset:another_collection",
-            "action_needed": [
-                {
-                    "locators": {"id": [32424]},
-                    "get": None,
-                    "update": {"authorized_user": "abcde_masked_user"},
-                }
-            ],
-        }
-        assert data["resume_endpoint"] == "/privacy-request/{}/erasure_confirm".format(
-            privacy_request.id
-        )
-
     def test_get_paused_webhook_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
@@ -1728,7 +1640,7 @@ class TestGetPrivacyRequests:
             privacy_request.id
         )
 
-    def test_get_failed_request_resume_info_from_collection(
+    def test_get_failed_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
         # Mock the privacy request being in an errored state waiting for retry
@@ -1736,7 +1648,6 @@ class TestGetPrivacyRequests:
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure,
-            collection=CollectionAddress("manual_example", "another_collection"),
         )
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -1747,12 +1658,12 @@ class TestGetPrivacyRequests:
         assert data["status"] == "error"
         assert data["action_required_details"] == {
             "step": "erasure",
-            "collection": "manual_example:another_collection",
+            "collection": None,
             "action_needed": None,
         }
         assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
 
-    def test_get_failed_request_resume_info_from_email_send(
+    def test_get_failed_request_resume_info_from_email_post_send(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
         # Mock the privacy request being in an errored state waiting for retry
@@ -1760,7 +1671,6 @@ class TestGetPrivacyRequests:
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.email_post_send,
-            collection=None,
         )
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -2062,9 +1972,9 @@ class TestRequestPreview:
     def test_request_preview_all(
         self,
         dataset_config_preview,
-        manual_dataset_config,
-        integration_manual_config,
+        mongo_connection_config,
         postgres_example_test_dataset_config,
+        mongo_dataset_config,
         api_client: TestClient,
         url,
         generate_auth_header,
@@ -2083,24 +1993,15 @@ class TestRequestPreview:
             )
             == "SELECT email,id FROM subscriptions WHERE email = ?"
         )
-
-        assert next(
-            response["query"]
-            for response in response_body
-            if response["collectionAddress"]["dataset"] == "manual_input"
-            if response["collectionAddress"]["collection"] == "filing_cabinet"
-        ) == {
-            "locators": {"customer_id": ["?", "?"]},
-            "get": ["authorized_user", "customer_id", "id", "payment_card_id"],
-            "update": None,
-        }
-
-        assert next(
-            response["query"]
-            for response in response_body
-            if response["collectionAddress"]["dataset"] == "manual_input"
-            if response["collectionAddress"]["collection"] == "storage_unit"
-        ) == {"locators": {"email": ["?"]}, "get": ["box_id", "email"], "update": None}
+        assert (
+            next(
+                response["query"]
+                for response in response_body
+                if response["collectionAddress"]["dataset"] == "mongo_test"
+                if response["collectionAddress"]["collection"] == "customer_feedback"
+            )
+            == "db.mongo_test.customer_feedback.find({'customer_information.email': ?}, {'_id': 1, 'customer_information': 1, 'date': 1, 'message': 1, 'rating': 1})"
+        )
 
 
 class TestApprovePrivacyRequest:
@@ -3235,146 +3136,6 @@ class TestResumePrivacyRequest:
         privacy_request.delete(db)
 
 
-class TestResumeAccessRequestWithManualInput:
-    @pytest.fixture(scope="function")
-    def url(self, privacy_request):
-        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_INPUT.format(
-            privacy_request_id=privacy_request.id
-        )
-
-    def test_manual_resume_not_authenticated(self, api_client, url):
-        response = api_client.post(url, headers={}, json={})
-        assert response.status_code == 401
-
-    def test_manual_resume_wrong_scope(self, api_client, url, generate_auth_header):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-
-        response = api_client.post(url, headers=auth_header, json={})
-        assert response.status_code == 403
-
-    def test_manual_resume_privacy_request_not_paused(
-        self, api_client, url, generate_auth_header, privacy_request
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing. Privacy request is not paused."
-        )
-
-    def test_manual_resume_privacy_request_no_paused_location(
-        self, db, api_client, url, generate_auth_header, privacy_request
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
-        )
-
-        privacy_request.delete(db)
-
-    def test_resume_with_manual_input_collection_has_changed(
-        self, db, api_client, url, generate_auth_header, privacy_request
-    ):
-        """Fail if user has changed graph so that the paused node doesn't exist"""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        privacy_request.cache_paused_collection_details(
-            step=CurrentStep.access,
-            collection=CollectionAddress("manual_example", "filing_cabinet"),
-        )
-
-        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
-        assert response.status_code == 422
-        assert (
-            response.json()["detail"]
-            == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
-        )
-
-        privacy_request.delete(db)
-
-    @pytest.mark.usefixtures(
-        "postgres_example_test_dataset_config", "manual_dataset_config"
-    )
-    def test_resume_with_manual_input_invalid_data(
-        self,
-        db,
-        api_client,
-        url,
-        generate_auth_header,
-        privacy_request,
-    ):
-        """Fail if the manual data entered does not match fields on the dataset"""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        privacy_request.cache_paused_collection_details(
-            step=CurrentStep.access,
-            collection=CollectionAddress("manual_input", "filing_cabinet"),
-        )
-
-        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
-        assert response.status_code == 422
-        assert (
-            response.json()["detail"]
-            == "Cannot save manual rows. No 'mock' field defined on the 'manual_input:filing_cabinet' collection."
-        )
-
-        privacy_request.delete(db)
-
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    @pytest.mark.usefixtures(
-        "postgres_example_test_dataset_config", "manual_dataset_config"
-    )
-    def test_resume_with_manual_input(
-        self,
-        _,
-        db,
-        api_client,
-        url,
-        generate_auth_header,
-        privacy_request,
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        privacy_request.cache_paused_collection_details(
-            step=CurrentStep.access,
-            collection=CollectionAddress("manual_input", "filing_cabinet"),
-        )
-
-        response = api_client.post(
-            url,
-            headers=auth_header,
-            json=[
-                {
-                    "id": 1,
-                    "authorized_user": "Jason Doe",
-                    "customer_id": 1,
-                    "payment_card_id": "abcde",
-                }
-            ],
-        )
-        assert response.status_code == 200
-
-        db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.in_processing
-
-        privacy_request.delete(db)
-
-
 class TestValidateManualInput:
     """Verify pytest cell-var-from-loop warning is a false positive"""
 
@@ -3419,130 +3180,6 @@ class TestValidateManualInput:
             exc.value.detail
             == "Cannot save manual rows. No 'misspelled_state' field defined on the 'postgres_example_test_dataset:address' collection."
         )
-
-
-class TestResumeErasureRequestWithManualConfirmation:
-    @pytest.fixture(scope="function")
-    def url(self, privacy_request):
-        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_ERASURE.format(
-            privacy_request_id=privacy_request.id
-        )
-
-    def test_manual_resume_not_authenticated(self, api_client, url):
-        response = api_client.post(url, headers={}, json={})
-        assert response.status_code == 401
-
-    def test_manual_resume_wrong_scope(self, api_client, url, generate_auth_header):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-
-        response = api_client.post(url, headers=auth_header, json={})
-        assert response.status_code == 403
-
-    def test_manual_resume_privacy_request_not_paused(
-        self, api_client, url, generate_auth_header, privacy_request
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing. Privacy request is not paused."
-        )
-
-    def test_manual_resume_privacy_request_no_paused_location(
-        self, db, api_client, url, generate_auth_header, privacy_request
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
-        )
-
-        privacy_request.delete(db)
-
-    def test_resume_with_manual_erasure_confirmation_collection_has_changed(
-        self, db, api_client, url, generate_auth_header, privacy_request
-    ):
-        """Fail if user has changed graph so that the paused node doesn't exist"""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        privacy_request.cache_paused_collection_details(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("manual_example", "filing_cabinet"),
-        )
-
-        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
-        assert response.status_code == 422
-        assert (
-            response.json()["detail"]
-            == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
-        )
-
-        privacy_request.delete(db)
-
-    def test_resume_still_paused_at_access_request(
-        self, db, api_client, url, generate_auth_header, privacy_request
-    ):
-        """Fail if user hitting wrong endpoint to resume."""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        privacy_request.cache_paused_collection_details(
-            step=CurrentStep.access,
-            collection=CollectionAddress("manual_example", "filing_cabinet"),
-        )
-        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
-        assert response.status_code == 400
-
-        assert (
-            response.json()["detail"]
-            == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data instead to '/privacy-request/{privacy_request_id}/manual_input' to resume."
-        )
-
-        privacy_request.delete(db)
-
-    @pytest.mark.usefixtures(
-        "postgres_example_test_dataset_config", "manual_dataset_config"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
-    )
-    def test_resume_with_manual_count(
-        self,
-        _,
-        db,
-        api_client,
-        url,
-        generate_auth_header,
-        privacy_request,
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request.status = PrivacyRequestStatus.paused
-        privacy_request.save(db)
-
-        privacy_request.cache_paused_collection_details(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("manual_input", "filing_cabinet"),
-        )
-        response = api_client.post(
-            url,
-            headers=auth_header,
-            json={"row_count": 5},
-        )
-        assert response.status_code == 200
-
-        db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.in_processing
-
-        privacy_request.delete(db)
 
 
 class TestBulkRestartFromFailure:
@@ -3617,6 +3254,8 @@ class TestBulkRestartFromFailure:
     def test_restart_from_failure_from_specific_collection(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
     ):
+        """Collection is no longer a relevant parameter here, but its inclusion does not affect
+        restarting the privacy request"""
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         data = [privacy_requests[0].id]
         privacy_requests[0].status = PrivacyRequestStatus.error
@@ -3624,7 +3263,6 @@ class TestBulkRestartFromFailure:
 
         privacy_requests[0].cache_failed_checkpoint_details(
             step=CurrentStep.access,
-            collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
         response = api_client.post(url, json=data, headers=auth_header)
@@ -3657,7 +3295,6 @@ class TestBulkRestartFromFailure:
 
         privacy_requests[0].cache_failed_checkpoint_details(
             step=CurrentStep.email_post_send,
-            collection=None,
         )
 
         response = api_client.post(url, json=data, headers=auth_header)
@@ -3691,7 +3328,6 @@ class TestBulkRestartFromFailure:
 
         privacy_requests[0].cache_failed_checkpoint_details(
             step=CurrentStep.access,
-            collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
         response = api_client.post(url, json=data, headers=auth_header)
@@ -3773,7 +3409,7 @@ class TestRestartFromFailure:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_restart_from_failure_from_specific_collection(
+    def test_restart_from_failure_from_access_step(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
@@ -3782,7 +3418,6 @@ class TestRestartFromFailure:
 
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.access,
-            collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
         response = api_client.post(url, headers=auth_header)
@@ -3800,7 +3435,7 @@ class TestRestartFromFailure:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_restart_from_failure_outside_graph(
+    def test_restart_from_email_post_send(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
@@ -3809,7 +3444,6 @@ class TestRestartFromFailure:
 
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.email_post_send,
-            collection=None,
         )
 
         response = api_client.post(url, headers=auth_header)
@@ -5367,7 +5001,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert len(response_data) == 1
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_access_request"
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
     def test_create_privacy_request_limit_exceeded(
         self,
@@ -5665,7 +5299,7 @@ class TestPrivacyReqeustDataTransfer:
         # execute the privacy request to mimic the expected workflow on the "child"
         # this will populate the access results in the cache, which is required for the
         # transfer endpoint to work
-        await graph_task.run_access_request(
+        access_runner(
             privacy_request,
             policy,
             graph,
@@ -5880,3 +5514,223 @@ class TestCreatePrivacyRequestErrorNotification:
         response = api_client.put(url, json=data, headers=auth_header)
         assert response.status_code == 200
         assert response.json() == data
+
+
+class TestPrivacyRequestTasksList:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request) -> str:
+        return V1_URL_PREFIX + REQUEST_TASKS.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_get_request_tasks_unauthenticated(self, api_client: TestClient, url):
+        response = api_client.get(url, headers={})
+        assert 401 == response.status_code
+
+    def test_get_request_tasks_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_no_tasks(self, api_client, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        assert response.json() == []
+
+    def test_get_request_tasks(
+        self, api_client: TestClient, generate_auth_header, url, request_task
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert len(response.json()) == 3
+        resp = response.json()
+        root_response = resp[0]
+        assert root_response["collection_address"] == "__ROOT__:__ROOT__"
+        assert resp[1]["collection_address"] == "test_dataset:test_collection"
+        assert resp[2]["collection_address"] == "__TERMINATE__:__TERMINATE__"
+
+        assert root_response["upstream_tasks"] == []
+        assert root_response["downstream_tasks"] == ["test_dataset:test_collection"]
+        assert root_response["status"] == "complete"
+        assert root_response["action_type"] == "access"
+
+        # No DSR data is returned in the response
+        assert set(root_response.keys()) == {
+            "id",
+            "collection_address",
+            "status",
+            "created_at",
+            "updated_at",
+            "upstream_tasks",
+            "downstream_tasks",
+            "action_type",
+        }
+
+
+class TestRequeuePrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request, request_task) -> str:
+        return V1_URL_PREFIX + PRIVACY_REQUEST_REQUEUE.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_requeue_privacy_request_unauthenticated(self, api_client: TestClient, url):
+        response = api_client.post(url, headers={})
+        assert 401 == response.status_code
+
+    def test_requeue_privacy_request_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_requeue_privacy_request_privacy_request_not_found(
+        self, api_client: TestClient, generate_auth_header, url, request_task
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_REQUEUE.format(
+            privacy_request_id="adsf", task_id=request_task.id
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 404 == response.status_code
+
+    def test_requeue_privacy_request_already_completed(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_request,
+        request_task,
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Request failed. Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_from_cached_failure_point(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        privacy_request.cache_failed_checkpoint_details(
+            step=CurrentStep.erasure,
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.erasure.value,
+        )
+
+    @pytest.mark.usefixtures("consent_request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_with_consent_tasks(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.consent.value,
+        )
+
+    @pytest.mark.usefixtures("erasure_request_task", "request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_with_erasure_tasks(
+        self,
+        queue_privacy_request_mock,
+        db,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        terminate_access_task = privacy_request.get_terminate_task_by_action(
+            ActionType.access
+        )
+        terminate_access_task.status = ExecutionLogStatus.complete
+        terminate_access_task.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.erasure.value,
+        )
+
+    @pytest.mark.usefixtures("erasure_request_task", "request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_erasure_tasks_but_access_step_not_complete(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.access.value,
+        )
+
+    @pytest.mark.usefixtures("request_task")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+    )
+    def test_requeue_privacy_request_with_access_tasks(
+        self,
+        queue_privacy_request_mock,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert queue_privacy_request_mock.called
+        queue_privacy_request_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.access.value,
+        )

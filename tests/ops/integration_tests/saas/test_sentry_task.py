@@ -1,17 +1,14 @@
-import random
-import time
 from typing import Any, Dict, List, Optional
 
 import pytest
 import requests
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
@@ -25,18 +22,23 @@ def test_sentry_connection_test(sentry_connection_config) -> None:
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_sentry_access_request_task(
     db,
+    dsr_version,
+    request,
     policy,
+    privacy_request,
     sentry_connection_config,
     sentry_dataset_config,
     sentry_identity_email,
 ) -> None:
     """Full access request based on the Sentry SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sentry_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": sentry_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -44,7 +46,7 @@ async def test_sentry_access_request_task(
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -272,31 +274,39 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_sentry_erasure_request_task(
-    db, policy, sentry_connection_config, sentry_dataset_config
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    privacy_request_with_erasure_policy,
+    sentry_connection_config,
+    sentry_dataset_config,
 ) -> None:
     """
     Full erasure request based on the Sentry SaaS config.
     Also verifies issue data in access request.
     """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     erasure_email, issue_url, headers = sentry_erasure_test_prep(
         sentry_connection_config, db
     )
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sentry_erasure_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": erasure_email})
-    privacy_request.cache_identity(identity)
+    privacy_request_with_erasure_policy.cache_identity(identity)
 
     dataset_name = sentry_connection_config.get_saas_config().fides_key
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
-        privacy_request,
-        policy,
+    v = access_runner_tester(
+        privacy_request_with_erasure_policy,
+        erasure_policy,
         graph,
         [sentry_connection_config],
         {"email": erasure_email},
@@ -375,13 +385,13 @@ async def test_sentry_erasure_request_task(
 
     assert v[f"{dataset_name}:issues"][0]["assignedTo"]["email"] == erasure_email
 
-    x = await graph_task.run_erasure(
-        privacy_request,
-        policy,
+    x = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
+        erasure_policy,
         graph,
         [sentry_connection_config],
         {"email": erasure_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 

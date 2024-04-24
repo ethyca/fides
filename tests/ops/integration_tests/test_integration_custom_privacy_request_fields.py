@@ -82,10 +82,22 @@ class TestCustomPrivacyRequestFields:
         "allow_custom_privacy_request_field_collection_enabled",
         "allow_custom_privacy_request_fields_in_request_execution_enabled",
     )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_access(
-        self, mock_send, db: Session, policy: Policy, run_privacy_request_task
+        self,
+        mock_send,
+        dsr_version,
+        request,
+        db: Session,
+        policy: Policy,
+        run_privacy_request_task,
     ) -> None:
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
@@ -133,10 +145,22 @@ class TestCustomPrivacyRequestFields:
         "allow_custom_privacy_request_field_collection_enabled",
         "allow_custom_privacy_request_fields_in_request_execution_enabled",
     )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_erasure(
-        self, mock_send, db: Session, erasure_policy: Policy, run_privacy_request_task
+        self,
+        mock_send,
+        dsr_version,
+        request,
+        db: Session,
+        erasure_policy: Policy,
+        run_privacy_request_task,
     ) -> None:
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": erasure_policy.key,

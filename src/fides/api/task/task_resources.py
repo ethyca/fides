@@ -5,21 +5,14 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectorNotFoundException
-from fides.api.graph.config import CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-)
-from fides.api.schemas.policy import ActionType
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     DynamoDBConnector,
     FidesConnector,
-    ManualConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -75,8 +68,6 @@ class Connections:
             return BigQueryConnector(connection_config)
         if connection_config.connection_type == ConnectionType.saas:
             return SaaSConnector(connection_config)
-        if connection_config.connection_type == ConnectionType.manual:
-            return ManualConnector(connection_config)
         if connection_config.connection_type == ConnectionType.timescale:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.dynamodb:
@@ -96,12 +87,14 @@ class Connections:
 
 
 class TaskResources:
-    """Shared information and environment for all nodes of a given task.
+    """Holds some Database resources for the given task.
+    Importantly, should be used as a context manager, to close connections to external databases.
+
     This includes
      - the privacy request
+     - the request task
      - the policy
-     - redis connection
-     -  configurations to any outside resources the task will require to run
+     - configurations to any outside resources the task will require to run
     """
 
     def __init__(
@@ -109,12 +102,15 @@ class TaskResources:
         request: PrivacyRequest,
         policy: Policy,
         connection_configs: List[ConnectionConfig],
+        privacy_request_task: RequestTask,
         session: Session,
     ):
         self.request = request
+
         self.policy = policy
+        # TODO Remove when we stop support for DSR 2.0
         self.cache = get_cache()
-        # tbd populate connection configurations.
+        self.privacy_request_task = privacy_request_task
         self.connection_configs: Dict[str, ConnectionConfig] = {
             c.key: c for c in connection_configs
         }
@@ -129,6 +125,7 @@ class TaskResources:
         """Support 'with' usage for closing resources"""
         self.close()
 
+    # TODO Remove when we stop support for DSR 2.0
     def cache_results_with_placeholders(self, key: str, value: Any) -> None:
         """Cache raw results from node. Object will be
         stored in redis under 'PLACEHOLDER_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS
@@ -137,10 +134,12 @@ class TaskResources:
             f"PLACEHOLDER_RESULTS__{self.request.id}__{key}", value
         )
 
+    # TODO Remove when we stop support for DSR 2.0
     def cache_object(self, key: str, value: Any) -> None:
         """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
         self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
 
+    # TODO Remove when we stop support for DSR 2.0
     def get_all_cached_objects(self) -> Dict[str, Optional[List[Row]]]:
         """Retrieve the access results of all steps (cache_object)"""
         value_dict = self.cache.get_encoded_objects_by_prefix(
@@ -153,6 +152,7 @@ class TaskResources:
             for k, v in value_dict.items()
         }
 
+    # TODO Remove when we stop support for DSR 2.0
     def cache_erasure(self, key: str, value: int) -> None:
         """Cache that a node's masking is complete. Object will be stored in redis under
         'REQUEST_ID__erasure_request__ADDRESS
@@ -161,6 +161,7 @@ class TaskResources:
             f"{self.request.id}__erasure_request__{key}", value
         )
 
+    # TODO Remove when we stop support for DSR 2.0
     def get_all_cached_erasures(self) -> Dict[str, int]:
         """Retrieve which collections have been masked and their row counts(cache_erasure)"""
         value_dict = self.cache.get_encoded_objects_by_prefix(
@@ -170,32 +171,6 @@ class TaskResources:
         number_of_leading_strings_to_exclude = 2
         return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
 
-    def write_execution_log(  # pylint: disable=too-many-arguments
-        self,
-        connection_key: str,
-        collection_address: CollectionAddress,
-        fields_affected: Any,
-        action_type: ActionType,
-        status: ExecutionLogStatus,
-        message: str = None,
-    ) -> Any:
-        """Store in application db. Return the created or written-to id field value."""
-        db = self.session
-
-        ExecutionLog.create(
-            db=db,
-            data={
-                "connection_key": connection_key,
-                "dataset_name": collection_address.dataset,
-                "collection_name": collection_address.collection,
-                "fields_affected": fields_affected,
-                "action_type": action_type,
-                "status": status,
-                "privacy_request_id": self.request.id,
-                "message": message,
-            },
-        )
-
     def get_connector(self, key: FidesKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""
         if key in self.connection_configs:
@@ -203,6 +178,11 @@ class TaskResources:
         raise ConnectorNotFoundException(f"No available connector for {key}")
 
     def close(self) -> None:
-        """Close any held resources"""
+        """Close any held resources
+
+        Note that using TaskResources as a Connection Manager will use this
+        self.connections.close() to close connections to External Databases.  This is
+        really important to avoid opening up too many connections.
+        """
         logger.debug("Closing all task resources for {}", self.request.id)
         self.connections.close()
