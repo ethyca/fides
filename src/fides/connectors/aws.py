@@ -1,4 +1,5 @@
 """Module that adds interactions with aws"""
+
 from functools import update_wrapper
 from typing import Any, Callable, Dict, List, Optional
 
@@ -172,12 +173,12 @@ def create_redshift_systems(
             system_type="redshift_cluster",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
-                endpoint_address=cluster["Endpoint"]["Address"]
-                if cluster.get("Endpoint")
-                else None,
-                endpoint_port=cluster["Endpoint"]["Port"]
-                if cluster.get("Endpoint")
-                else None,
+                endpoint_address=(
+                    cluster["Endpoint"]["Address"] if cluster.get("Endpoint") else None
+                ),
+                endpoint_port=(
+                    cluster["Endpoint"]["Port"] if cluster.get("Endpoint") else None
+                ),
                 resource_id=cluster["ClusterNamespaceArn"],
             ),
             privacy_declarations=[],
@@ -223,12 +224,14 @@ def create_rds_systems(
             system_type="rds_instance",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
-                endpoint_address=instance["Endpoint"]["Address"]
-                if instance.get("Endpoint")
-                else None,
-                endpoint_port=instance["Endpoint"]["Port"]
-                if instance.get("Endpoint")
-                else None,
+                endpoint_address=(
+                    instance["Endpoint"]["Address"]
+                    if instance.get("Endpoint")
+                    else None
+                ),
+                endpoint_port=(
+                    instance["Endpoint"]["Port"] if instance.get("Endpoint") else None
+                ),
                 resource_id=instance["DBInstanceArn"],
             ),
             privacy_declarations=[],

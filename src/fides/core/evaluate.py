@@ -1,4 +1,5 @@
 """Module for evaluating policies."""
+
 import uuid
 from typing import Callable, Dict, List, Optional, Set, cast
 
@@ -159,13 +160,17 @@ def compare_rule_to_declaration(
         # any matches return matching declared values as violations
         MatchesEnum.ANY: lambda: matched_declaration_types,
         # all matches return matching declared values as violations if all values match rule values
-        MatchesEnum.ALL: lambda: matched_declaration_types
-        if len(matched_declaration_types) == len(declaration_type_hierarchies)
-        else set(),
+        MatchesEnum.ALL: lambda: (
+            matched_declaration_types
+            if len(matched_declaration_types) == len(declaration_type_hierarchies)
+            else set()
+        ),
         # none matches return mismatched declared values as violations if none of the values matched rule values
-        MatchesEnum.NONE: lambda: mismatched_declaration_types
-        if not any(matched_declaration_types)
-        else set(),
+        MatchesEnum.NONE: lambda: (
+            mismatched_declaration_types
+            if not any(matched_declaration_types)
+            else set()
+        ),
         # other matches return mismatched declared values as violations
         MatchesEnum.OTHER: lambda: mismatched_declaration_types,
     }

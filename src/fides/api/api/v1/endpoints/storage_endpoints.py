@@ -231,9 +231,11 @@ def put_config_secrets(
 
         return TestStatusMessage(
             msg=msg,
-            test_status=ConnectionTestStatus.succeeded
-            if status
-            else ConnectionTestStatus.failed,
+            test_status=(
+                ConnectionTestStatus.succeeded
+                if status
+                else ConnectionTestStatus.failed
+            ),
         )
 
     return TestStatusMessage(msg=msg, test_status=None)
@@ -545,9 +547,11 @@ def put_default_config_secrets(
 
         return TestStatusMessage(
             msg=msg,
-            test_status=ConnectionTestStatus.succeeded
-            if status
-            else ConnectionTestStatus.failed,
+            test_status=(
+                ConnectionTestStatus.succeeded
+                if status
+                else ConnectionTestStatus.failed
+            ),
         )
 
     return TestStatusMessage(msg=msg, test_status=None)

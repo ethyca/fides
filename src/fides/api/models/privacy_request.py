@@ -835,9 +835,9 @@ class PrivacyRequest(
         Fetch the collection -> data use map cached for this privacy request
         """
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[Dict[str, Set[str]]]]
-        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        value_dict: Optional[Dict[str, Optional[Dict[str, Set[str]]]]] = (
+            cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        )
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(
@@ -957,9 +957,7 @@ class PrivacyRequest(
             self.canceled_at = datetime.utcnow()
             self.save(db)
 
-            task_ids: List[
-                str
-            ] = (
+            task_ids: List[str] = (
                 self.get_request_task_celery_task_ids()
             )  # Celery tasks for sub tasks (DSR 3.0 Request Tasks)
             parent_task_id = (
@@ -1179,10 +1177,10 @@ def _get_manual_access_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[
-        Optional[Dict[str, Any]]
-    ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    cached_results: Optional[Optional[Dict[str, Any]]] = (
+        cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        )
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -1195,10 +1193,10 @@ def _get_manual_erasure_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[
-        Optional[Dict[str, Any]]
-    ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    cached_results: Optional[Optional[Dict[str, Any]]] = (
+        cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        )
     )
     if cached_results:
         return list(cached_results.values())[0]
