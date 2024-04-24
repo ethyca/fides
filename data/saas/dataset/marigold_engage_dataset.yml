@@ -32,6 +32,7 @@ dataset:
               - name: email
                 data_categories: [system.operations]
                 fidesops_meta:
+                  primary_key: True
                   data_type: string
           - name: lists
           - name: optout_email
