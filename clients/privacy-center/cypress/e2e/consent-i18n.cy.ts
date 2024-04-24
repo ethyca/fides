@@ -1215,7 +1215,9 @@ describe("Consent i18n", () => {
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
             ).contains(t.stacked_purpose_example);
           }
-          cy.get(".fides-notice-toggle-title").contains(title).click();
+          cy.get(".fides-notice-toggle-title")
+            .contains(title)
+            .click({ force: true });
         });
       });
     };

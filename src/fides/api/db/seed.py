@@ -1,6 +1,7 @@
 """
 Provides functions that seed the application with data.
 """
+
 from typing import Dict, List, Optional
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY

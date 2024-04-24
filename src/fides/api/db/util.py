@@ -9,8 +9,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
     class EnumColumn(TypeEngine[T]):
-        def __init__(self, enum: Type[T], **kwargs: Any) -> None:
-            ...
+        def __init__(self, enum: Type[T], **kwargs: Any) -> None: ...
 
 else:
     from sqlalchemy import Enum as EnumColumn

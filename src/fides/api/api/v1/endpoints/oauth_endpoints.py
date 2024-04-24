@@ -225,9 +225,9 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
     """
 
     # find authentication request by state
-    authentication_request: Optional[
-        AuthenticationRequest
-    ] = AuthenticationRequest.get_by(db, field="state", value=state)
+    authentication_request: Optional[AuthenticationRequest] = (
+        AuthenticationRequest.get_by(db, field="state", value=state)
+    )
     if not authentication_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

@@ -1,4 +1,5 @@
 """Contains the nox sessions for docker-related tasks."""
+
 from typing import Callable, Dict, List, Optional, Tuple
 
 import nox

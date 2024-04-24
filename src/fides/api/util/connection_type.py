@@ -205,9 +205,12 @@ def get_connection_types(
                     type=SystemType.email,
                     human_readable=ConnectionType(email_type).human_readable,
                     supported_actions=[
-                        ActionType.consent
-                        if ConnectionType(email_type) in CONSENT_EMAIL_CONNECTOR_TYPES
-                        else ActionType.erasure
+                        (
+                            ActionType.consent
+                            if ConnectionType(email_type)
+                            in CONSENT_EMAIL_CONNECTOR_TYPES
+                            else ActionType.erasure
+                        )
                     ],
                 )
                 for email_type in email_types
