@@ -25,7 +25,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_424_FAILED_DEPENDENCY, HTTP_500_INTERNAL_SERVER_ERROR,
+    HTTP_424_FAILED_DEPENDENCY,
 )
 
 from fides.api import common_exceptions
@@ -1316,7 +1316,7 @@ def mark_privacy_request_pre_approve_eligible(
         )
     except Exception as exc:
         raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=HTTP_400_BAD_REQUEST,
             detail=f"Failed to mark privacy request {privacy_request_id} as eligible due to: {str(exc)}",
         )
 
@@ -1400,7 +1400,7 @@ def mark_privacy_request_pre_approve_not_eligible(
         )
     except Exception as exc:
         raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=HTTP_400_BAD_REQUEST,
             detail=f"Failed to mark privacy request {privacy_request_id} as not eligible due to: {str(exc)}",
         )
 
