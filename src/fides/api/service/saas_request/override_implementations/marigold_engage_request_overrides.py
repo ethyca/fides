@@ -88,9 +88,6 @@ def marigold_engage_user_read(
 #     base_url = f'https://api.sailthru.com/user'
 #     email_test = marigold_engage_erasure_identity_email
 #     email_prep = '{"id":"'+email_test+'"}'
-#     headers = {
-#         'Content-Type': 'application/x-www-form-urlencoded'
-#         }   
 #     ''' Setup to deal with the signature (sig) requirement
 #     Here we need to generate an MD5 hash based on the secret, api_key, format and the email of the user, converted into a string to compose the email into the format required.
 #     '''
