@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.34.2b3.post0.dev1"
+    "version": "2.34.2b3.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8135,7 +8135,7 @@
           "Privacy Requests"
         ],
         "summary": "Verify Identification Code",
-        "description": "Verify the supplied identity verification code.\n\nIf successful, and we don't need separate manual request approval, queue the privacy request\nfor execution.",
+        "description": "Verify the supplied identity verification code.\n\nIf successful, and we don't need a separate manual request approval, queue the privacy request\nfor execution.\n\nFires pre-approval webhooks if configured.",
         "operationId": "verify_identification_code_api_v1_privacy_request__privacy_request_id__verify_post",
         "parameters": [
           {
@@ -8257,6 +8257,102 @@
                 "schema": {
                   "$ref": "#/components/schemas/BulkReviewResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:review"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/pre-approve/eligible": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Mark Privacy Request Pre Approve Eligible",
+        "description": "Marks privacy request as eligible for automatic approval.\nIf all webhook responses have been received and all are affirmative, proceed to queue privacy request",
+        "operationId": "mark_privacy_request_pre_approve_eligible_api_v1_privacy_request__privacy_request_id__pre_approve_eligible_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:review"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/pre-approve/not-eligible": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Mark Privacy Request Pre Approve Not Eligible",
+        "description": "Marks privacy request as not eligible for automatic approval, regardless of what other webhook responses we receive",
+        "operationId": "mark_privacy_request_pre_approve_not_eligible_api_v1_privacy_request__privacy_request_id__pre_approve_not_eligible_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
