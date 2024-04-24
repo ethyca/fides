@@ -16,7 +16,6 @@ export type { AesEncryptionResponse } from "./models/AesEncryptionResponse";
 export { AllowedTypes } from "./models/AllowedTypes";
 export type { AllowList } from "./models/AllowList";
 export type { AllowListUpdate } from "./models/AllowListUpdate";
-export { ApprovalStatus } from "./models/ApprovalStatus";
 export { AuditLogAction } from "./models/AuditLogAction";
 export type { AWSConfig } from "./models/AWSConfig";
 export type { BasicSystemResponse } from "./models/BasicSystemResponse";
