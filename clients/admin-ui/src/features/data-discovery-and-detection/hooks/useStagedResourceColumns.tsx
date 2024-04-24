@@ -13,10 +13,8 @@ import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
 
 const useStagedResourceColumns = ({
   resourceType,
-  monitorId,
 }: {
   resourceType: StagedResourceType | undefined;
-  monitorId: string;
 }) => {
   const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
@@ -60,7 +58,6 @@ const useStagedResourceColumns = ({
       id: "Action",
       cell: (props) => (
         <DiscoveryMonitorItemActions
-          monitorId={monitorId}
           resource={props.getValue()}
           resourceType={findResourceType(props.getValue())}
         />

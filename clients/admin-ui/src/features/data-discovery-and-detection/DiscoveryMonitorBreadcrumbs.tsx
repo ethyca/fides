@@ -1,19 +1,18 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@fidesui/react";
 import Link from "next/link";
 
-import { DATA_DISCOVERY_MONITORS_ROUTE } from "../common/nav/v2/routes";
 import useDiscoveryRoutes from "./hooks/useDiscoveryRoutes";
 
 interface DiscoveryMonitorBreadcrumbsProps {
-  monitorId?: string;
   resourceUrn?: string;
+  parentTitle: string;
+  parentLink: string;
 }
 
 const DiscoveryMonitorBreadcrumbs: React.FC<
   DiscoveryMonitorBreadcrumbsProps
-> = ({ monitorId, resourceUrn }) => {
-  const { navigateToMonitorDetails, navigateToResourceDetails } =
-    useDiscoveryRoutes();
+> = ({ resourceUrn, parentTitle, parentLink }) => {
+  const {} = useDiscoveryRoutes();
 
   const urnParts = resourceUrn ? resourceUrn.split(".") : [];
 
@@ -25,19 +24,15 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
       mb={5}
       data-testid="results-breadcrumb"
     >
-      <BreadcrumbItem color={monitorId ? "gray.500" : "black"}>
-        <BreadcrumbLink as={Link} href={DATA_DISCOVERY_MONITORS_ROUTE}>
-          Data Discovery
+      <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
+        <BreadcrumbLink as={Link} href={parentLink}>
+          {parentTitle}
         </BreadcrumbLink>
       </BreadcrumbItem>
 
-      {monitorId ? (
+      {!resourceUrn ? (
         <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
-          <BreadcrumbLink
-            onClick={() => navigateToMonitorDetails({ monitorId })}
-          >
-            {monitorId}
-          </BreadcrumbLink>
+          <BreadcrumbLink>All activity</BreadcrumbLink>
         </BreadcrumbItem>
       ) : null}
 
@@ -54,17 +49,7 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
             key={urnPart}
             color={isLastPart ? "black" : "gray.500"}
           >
-            <BreadcrumbLink
-              onClick={() => {
-                navigateToResourceDetails({
-                  monitorId: monitorId!,
-                  // Join back to make the full arn for that element
-                  resourceUrn: urnParts.slice(0, index + 1).join("."),
-                });
-              }}
-            >
-              {urnPart}
-            </BreadcrumbLink>
+            <BreadcrumbLink onClick={() => {}}>{urnPart}</BreadcrumbLink>
           </BreadcrumbItem>
         );
       })}

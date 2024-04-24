@@ -1,29 +1,33 @@
-import { NextPage } from "next";
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
+import { DATA_DISCOVERY_ROUTE } from "~/features/common/nav/v2/routes";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
+import DiscoveryMonitorListTable from "~/features/data-discovery-and-detection/DiscoveryMonitorListTable";
 import DiscoveryMonitorResultTable from "~/features/data-discovery-and-detection/DiscoveryMonitorResultTable";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 
-const DataDiscoveryMonitorDetailPage: NextPage = () => {
-  const { navigateToResourceDetails, monitorId } = useDiscoveryRoutes();
-
+const DataDetectionActivityPage = () => {
   return (
     <FixedLayout
-      title="Data Discovery Monitor Detail"
+      title="Data detection"
       mainProps={{
         padding: "40px",
         paddingRight: "48px",
       }}
     >
-      <DiscoveryMonitorBreadcrumbs monitorId={monitorId} />
+      <DiscoveryMonitorBreadcrumbs
+        parentLink={DATA_DISCOVERY_ROUTE}
+        parentTitle="Data detection"
+      />
+
+      {/* TODO: Add filters to get appropiate results */}
       <DiscoveryMonitorResultTable
-        monitorId={monitorId}
-        onSelectResource={navigateToResourceDetails}
+        resourceUrn={undefined}
+        onSelectResource={() => {}}
       />
     </FixedLayout>
   );
 };
 
-export default DataDiscoveryMonitorDetailPage;
+export default DataDetectionActivityPage;

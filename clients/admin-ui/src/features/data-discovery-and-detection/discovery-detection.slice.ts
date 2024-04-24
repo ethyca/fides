@@ -24,14 +24,12 @@ interface MonitorQueryParams {
 }
 
 interface MonitorResultQueryParams {
-  monitor_config_id: string;
   staged_resource_urn?: string;
   page?: number;
   size?: number;
 }
 
 interface ResourceActionQueryParams {
-  monitor_config_id: string;
   staged_resource_urn?: string;
 }
 
@@ -55,7 +53,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: (params) => ({
         params,
         method: "GET",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/results`,
+        url: `/plus/discovery-monitor/results`,
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
@@ -63,7 +61,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: (params) => ({
         params,
         method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/monitor`,
+        url: `/plus/discovery-monitor/${params.staged_resource_urn}/monitor`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -71,7 +69,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: (params) => ({
         params,
         method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/mute`,
+        url: `/plus/discovery-monitor/${params.staged_resource_urn}/mute`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -79,7 +77,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: (params) => ({
         params,
         method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/un-mute`,
+        url: `/plus/discovery-monitor/${params.staged_resource_urn}/un-mute`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -87,7 +85,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: (params) => ({
         params,
         method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/accept`,
+        url: `/plus/discovery-monitor/${params.staged_resource_urn}/accept`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
