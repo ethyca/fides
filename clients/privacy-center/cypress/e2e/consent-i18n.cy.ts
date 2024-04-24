@@ -1572,6 +1572,7 @@ describe("Consent i18n", () => {
       beforeEach(() => {
         beforeAll();
         cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+        cy.getByTestId("consent");
         cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
       });
 
@@ -1624,7 +1625,15 @@ describe("Consent i18n", () => {
     describe("utilizes correct history and configs id for the current language", () => {
       beforeEach(() => {
         beforeAll();
+
+        cy.intercept("GET", `${API_URL}/id-verification/config`, {
+          body: {
+            identity_verification_required: true,
+          },
+        }).as("getVerificationConfig");
+
         cy.visitWithLanguage("/", SPANISH_LOCALE);
+        cy.wait("@getVerificationConfig");
         cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
         cy.wait("@getExperience");
         cy.getByTestId("card").contains("Manage your consent").click();
