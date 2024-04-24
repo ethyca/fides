@@ -72,7 +72,9 @@ def marigold_engage_erasure_data(
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
         }   
-    ### sig prep
+    ''' Setup to deal with the signature (sig) requirement
+    Here we need to generate an MD5 hash based on the secret, api_key, format and the email of the user, converted into a string to compose the email into the format required.
+    '''
     sig_prep = marigold_engage_secrets["secret"]+marigold_engage_secrets["api_key"]+"json"+email_prep
     sig_chk = md5_any(sig_prep)
     md5_readable = sig_chk.hexdigest()
