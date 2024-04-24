@@ -25,7 +25,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_424_FAILED_DEPENDENCY,
+    HTTP_424_FAILED_DEPENDENCY, HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fides.api import common_exceptions
@@ -1063,6 +1063,9 @@ def _send_privacy_request_review_message_to_user(
 def _trigger_pre_approval_webhooks(
     db: Session, privacy_request: PrivacyRequest
 ) -> None:
+    """
+    Shared method to trigger all configured pre-approval webhooks for a given privacy request.
+    """
     pre_approval_webhooks = db.query(PreApprovalWebhook).all()
     for webhook in pre_approval_webhooks:
         privacy_request.trigger_pre_approval_webhook(
@@ -1302,14 +1305,20 @@ def mark_privacy_request_pre_approve_eligible(
         webhook.key,
         webhook.connection_config.key,
     )
-    PreApprovalWebhookReply.create(
-        db=db,
-        data={
-            "webhook_id": webhook.id,
-            "privacy_request_id": privacy_request_id,
-            "is_eligible": True,
-        },
-    )
+    try:
+        PreApprovalWebhookReply.create(
+            db=db,
+            data={
+                "webhook_id": webhook.id,
+                "privacy_request_id": privacy_request_id,
+                "is_eligible": True,
+            },
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to mark privacy request {privacy_request_id} as eligible due to: {str(exc)}",
+        )
 
     all_webhooks = PreApprovalWebhook.all(db)
 
@@ -1380,14 +1389,20 @@ def mark_privacy_request_pre_approve_not_eligible(
         webhook.key,
         webhook.connection_config.key,
     )
-    PreApprovalWebhookReply.create(
-        db=db,
-        data={
-            "webhook_id": webhook.id,
-            "privacy_request_id": privacy_request_id,
-            "is_eligible": False,
-        },
-    )
+    try:
+        PreApprovalWebhookReply.create(
+            db=db,
+            data={
+                "webhook_id": webhook.id,
+                "privacy_request_id": privacy_request_id,
+                "is_eligible": False,
+            },
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to mark privacy request {privacy_request_id} as not eligible due to: {str(exc)}",
+        )
 
 
 def _handle_manual_webhook_input(
