@@ -11,10 +11,10 @@ from fides.api.common_exceptions import (
     PostProcessingException,
     SkippingConsentPropagation,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
@@ -77,7 +77,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.current_privacy_request: Optional[PrivacyRequest] = None
         self.current_saas_request: Optional[SaaSRequest] = None
 
-    def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
+    def query_config(self, node: ExecutionNode) -> SaaSQueryConfig:
         """
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
@@ -117,7 +117,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         )
 
     def set_privacy_request_state(
-        self, privacy_request: PrivacyRequest, node: TraversalNode
+        self, privacy_request: PrivacyRequest, node: ExecutionNode
     ) -> None:
         """
         Sets the class state for the current privacy request
@@ -175,9 +175,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.access.value)
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
@@ -391,11 +392,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.erasure.value)
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node)
@@ -478,9 +479,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:
@@ -611,7 +613,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        node: TraversalNode,
+        node: ExecutionNode,
         input_data: Dict[str, List],
         secrets: Any,
     ) -> List[Row]:

@@ -1,14 +1,11 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -21,18 +18,23 @@ def test_domo_connection_test(domo_connection_config) -> None:
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_domo_access_request_task(
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     domo_identity_email,
     domo_connection_config,
     domo_dataset_config,
     db,
 ) -> None:
     """Full access request based on the Domo SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_domo_access_request_task_{random.randint(0, 1000)}"
-    )
     identity_kwargs = {"email": domo_identity_email}
     identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
@@ -41,7 +43,7 @@ async def test_domo_access_request_task(
     merged_graph = domo_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -73,9 +75,15 @@ async def test_domo_access_request_task(
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_domo_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
+    privacy_request,
     erasure_policy_string_rewrite_name_and_email,
     domo_erasure_identity_email,
     domo_create_erasure_data,
@@ -84,10 +92,12 @@ async def test_domo_erasure_request_task(
     domo_dataset_config,
 ) -> None:
     """Full access request based on the Domo SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     user_id = domo_create_erasure_data
-    privacy_request = PrivacyRequest(
-        id=f"test_domo_erasure_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite_name_and_email.id
+    privacy_request.save(db)
+
     identity_kwargs = {"email": domo_erasure_identity_email}
     identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
@@ -96,9 +106,9 @@ async def test_domo_erasure_request_task(
     merged_graph = domo_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite_name_and_email,
         graph,
         [domo_connection_config],
         identity_kwargs,
@@ -128,7 +138,7 @@ async def test_domo_erasure_request_task(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite_name_and_email,
         graph,

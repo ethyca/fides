@@ -24,10 +24,10 @@ from fides.api.common_exceptions import (
     ConnectionException,
     SSHTunnelConfigNotFoundException,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
     MicrosoftSQLServerSchema,
@@ -103,8 +103,8 @@ class SQLConnector(BaseConnector[Engine]):
     def build_uri(self) -> str:
         """Build a database specific uri connection string"""
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return SQLQueryConfig(node)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -130,9 +130,10 @@ class SQLConnector(BaseConnector[Engine]):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
@@ -149,11 +150,11 @@ class SQLConnector(BaseConnector[Engine]):
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
@@ -438,8 +439,8 @@ class RedshiftConnector(SQLConnector):
             connection.execute(stmt)
 
     # Overrides SQLConnector.query_config
-    def query_config(self, node: TraversalNode) -> RedshiftQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> RedshiftQueryConfig:
+        """Query wrapper corresponding to the input execution node."""
         return RedshiftQueryConfig(node)
 
 
@@ -476,17 +477,17 @@ class BigQueryConnector(SQLConnector):
         )
 
     # Overrides SQLConnector.query_config
-    def query_config(self, node: TraversalNode) -> BigQueryQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> BigQueryQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return BigQueryQueryConfig(node)
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
@@ -534,8 +535,8 @@ class SnowflakeConnector(SQLConnector):
         url: str = Snowflake_URL(**kwargs)
         return url
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return SnowflakeQueryConfig(node)
 
 
@@ -566,8 +567,8 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
         return url
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return MicrosoftSQLServerQueryConfig(node)
 
     @staticmethod

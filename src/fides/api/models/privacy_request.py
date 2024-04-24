@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -22,7 +22,8 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -38,8 +39,11 @@ from fides.api.cryptography.cryptographic_util import hash_with_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
-from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph_differences import GraphRepr
+from fides.api.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+)
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -71,6 +75,8 @@ from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     CustomJSONEncoder,
     FidesopsRedis,
+    _custom_decoder,
+    celery_tasks_in_flight,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -80,7 +86,7 @@ from fides.api.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.api.util.collection_util import Row
+from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
@@ -91,8 +97,11 @@ from fides.config import CONFIG
 EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,
     CurrentStep.access,
+    CurrentStep.upload_access,
     CurrentStep.erasure,
+    CurrentStep.finalize_erasure,
     CurrentStep.consent,
+    CurrentStep.finalize_consent,
     CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
 ]
@@ -291,10 +300,37 @@ class PrivacyRequest(
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Encrypted filtered access results saved for later retrieval
+    filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+    # Encrypted filtered access results saved for later retrieval
+    access_result_urls = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+        StringEncryptedType(
+            type_in=JSONTypeOverride,
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[property] = None
     resume_endpoint: Optional[str] = None
+
+    request_tasks: RelationshipProperty[AppenderQuery] = relationship(
+        "RequestTask",
+        back_populates="privacy_request",
+        lazy="dynamic",
+        order_by="RequestTask.created_at",
+    )
 
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
@@ -494,14 +530,6 @@ class PrivacyRequest(
         self.save(db)
         return self
 
-    def cache_task_id(self, task_id: str) -> None:
-        """Sets a task_id for this privacy request's asynchronous execution."""
-        cache: FidesopsRedis = get_cache()
-        cache.set(
-            get_async_task_tracking_cache_key(self.id),
-            task_id,
-        )
-
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
         cache: FidesopsRedis = get_cache()
@@ -582,7 +610,9 @@ class PrivacyRequest(
         return result
 
     def get_results(self) -> Dict[str, Any]:
-        """Retrieves all cached identity data associated with this Privacy Request"""
+        """Retrieves all cached identity data associated with this Privacy Request
+        Just used in testing
+        """
         cache: FidesopsRedis = get_cache()
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
@@ -649,28 +679,24 @@ class PrivacyRequest(
     def cache_failed_checkpoint_details(
         self,
         step: Optional[CurrentStep] = None,
-        collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        Cache a checkpoint where the privacy request failed so we can later resume from this failure point.
+        Cache the checkpoint reached in the Privacy Request so it can be resumed from this point in
+        case of failure.
 
-        Cache details about the failed step and failed collection details (where applicable).
-        No specific input data is required to resume a failed request, so action_needed is None.
         """
         cache_action_required(
             cache_key=f"FAILED_LOCATION__{self.id}",
             step=step,
-            collection=collection,
+            collection=None,  # Deprecated for failed checkpoint details
             action_needed=None,
         )
 
     def get_failed_checkpoint_details(
         self,
     ) -> Optional[CheckpointActionRequired]:
-        """Get details about the failed step (access or erasure) and collection that triggered failure.
-
-        If DSR processing failed within the graph, this will let us know if we should resume privacy request execution
-        from the "access" or "erasure" portion of the privacy request flow.
+        """Get the latest checkpoint reached in Privacy Request processing so we know where to resume
+        in case of failure.
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
@@ -796,71 +822,6 @@ class PrivacyRequest(
             ).dict()
         return manual_webhook.empty_fields_dict
 
-    def cache_manual_access_input(
-        self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
-    ) -> None:
-        """Cache manually added rows for the given CollectionAddress. This is for use by the *manual* connector which is integrated with the graph."""
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(
-            f"MANUAL_INPUT__{self.id}__{collection.value}",
-            manual_rows,
-        )
-
-    def get_manual_access_input(
-        self, collection: CollectionAddress
-    ) -> Optional[List[Row]]:
-        """Retrieve manually added rows from the cache for the given CollectionAddress.
-        Returns the manual data if it exists, otherwise None.
-
-        This is for use by the *manual* connector which is integrated with the graph.
-        """
-        cache: FidesopsRedis = get_cache()
-        cached_results: Optional[
-            Dict[str, Optional[List[Row]]]
-        ] = cache.get_encoded_objects_by_prefix(
-            f"MANUAL_INPUT__{self.id}__{collection.value}"
-        )
-        return list(cached_results.values())[0] if cached_results else None
-
-    def cache_manual_erasure_count(
-        self, collection: CollectionAddress, count: int
-    ) -> None:
-        """Cache the number of rows manually masked for a given collection.
-
-        This is for use by the *manual* connector which is integrated with the graph.
-        """
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(
-            f"MANUAL_MASK__{self.id}__{collection.value}",
-            count,
-        )
-
-    def get_manual_erasure_count(self, collection: CollectionAddress) -> Optional[int]:
-        """Retrieve number of rows manually masked for this collection from the cache.
-
-        Cached as an integer to mimic what we return from erasures in an automated way.
-        This is for use by the *manual* connector which is integrated with the graph.
-        """
-        cache: FidesopsRedis = get_cache()
-        prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
-        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(  # type: ignore
-            prefix
-        )
-        return list(value_dict.values())[0] if value_dict else None
-
-    def cache_access_graph(self, value: GraphRepr) -> None:
-        """Cache a representation of the graph built for the access request"""
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"ACCESS_GRAPH__{self.id}", value)
-
-    def get_cached_access_graph(self) -> Optional[GraphRepr]:
-        """Fetch the graph built for the access request"""
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[
-            Dict[str, Optional[GraphRepr]]
-        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
-        return list(value_dict.values())[0] if value_dict else None
-
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
         """
         Cache a dict of collections traversed in the privacy request
@@ -971,19 +932,46 @@ class PrivacyRequest(
         self.status = PrivacyRequestStatus.awaiting_email_send
         self.save(db=db)
 
+    def get_request_task_celery_task_ids(self) -> List[str]:
+        """Returns the celery task ids for each of the Request Tasks (subtasks)
+
+        It is possible Request Tasks get queued multiple times, so the celery task
+        id returned is the last celery task queued.
+        """
+        request_task_celery_ids: List[str] = []
+        for request_task in self.request_tasks:
+            request_task_id: Optional[str] = request_task.get_cached_task_id()
+            if request_task_id:
+                request_task_celery_ids.append(request_task_id)
+        return request_task_celery_ids
+
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
-        """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
+        """Cancels a privacy request.  Currently should only cancel 'pending' tasks
+
+        Just in case, also tries to cancel sub tasks (Request Tasks) if applicable,
+        although these shouldn't exist if the Privacy Request is pending.
+        """
         if self.canceled_at is None:
             self.status = PrivacyRequestStatus.canceled
             self.cancel_reason = cancel_reason
             self.canceled_at = datetime.utcnow()
             self.save(db)
 
-            task_id = self.get_cached_task_id()
-            if task_id:
-                logger.info("Revoking task {} for request {}", task_id, self.id)
-                # Only revokes if execution is not already in progress
-                celery_app.control.revoke(task_id, terminate=False)
+            task_ids: List[
+                str
+            ] = (
+                self.get_request_task_celery_task_ids()
+            )  # Celery tasks for sub tasks (DSR 3.0 Request Tasks)
+            parent_task_id = (
+                self.get_cached_task_id()
+            )  # Celery task for current Privacy Request
+            if parent_task_id:
+                task_ids.append(parent_task_id)
+
+            for celery_task_id in task_ids:
+                logger.info("Revoking task {} for request {}", celery_task_id, self.id)
+                # Only revokes if execution is not already in progress.
+                celery_app.control.revoke(celery_task_id, terminate=False)
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""
@@ -1001,6 +989,173 @@ class PrivacyRequest(
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
         return {LoggerContextKeys.privacy_request_id: self.id}
+
+    @property
+    def access_tasks(self) -> Query:
+        """Return existing Access Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.access)
+
+    @property
+    def erasure_tasks(self) -> Query:
+        """Return existing Erasure Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.erasure)
+
+    @property
+    def consent_tasks(self) -> Query:
+        """Return existing Consent Request Tasks for the current privacy request"""
+        return self.request_tasks.filter(RequestTask.action_type == ActionType.consent)
+
+    def get_existing_request_task(
+        self,
+        db: Session,
+        action_type: ActionType,
+        collection_address: CollectionAddress,
+    ) -> Optional[RequestTask]:
+        """Returns a Request Task for the current Privacy Request with action type and collection address"""
+        return (
+            db.query(RequestTask)
+            .filter(
+                RequestTask.privacy_request_id == self.id,
+                RequestTask.action_type == action_type,
+                RequestTask.collection_address == collection_address.value,
+            )
+            .first()
+        )
+
+    def get_tasks_by_action(self, action: ActionType) -> Query:
+        """Convenience helper to get RequestTasks of a certain action type for the given
+        privacy request"""
+        if action == ActionType.access:
+            return self.access_tasks
+
+        if action == ActionType.erasure:
+            return self.erasure_tasks
+
+        if action == ActionType.consent:
+            return self.consent_tasks
+
+        raise Exception(f"Unsupported Privacy Request Action Type {action}")
+
+    def get_root_task_by_action(self, action: ActionType) -> RequestTask:
+        """Get the root tasks for a specific action"""
+        root: Optional[RequestTask] = (
+            self.get_tasks_by_action(action)
+            .filter(RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value)
+            .first()
+        )
+        if not root:
+            raise Exception(
+                f"Expected {action.value.capitalize()} root node cannot be found on privacy request {self.id} "
+            )
+        assert root  # for mypy
+        return root
+
+    def get_terminate_task_by_action(self, action: ActionType) -> RequestTask:
+        """Get the terminate task for a specific action"""
+        terminate: Optional[RequestTask] = (
+            self.get_tasks_by_action(action)
+            .filter(RequestTask.collection_address == TERMINATOR_ADDRESS.value)
+            .first()
+        )
+        if not terminate:
+            raise Exception(
+                f"Expected {action.value.capitalize()} terminate node cannot be found on privacy request {self.id} "
+            )
+        assert terminate  # for mypy
+        return terminate
+
+    def get_raw_access_results(self) -> Dict[str, Optional[List[Row]]]:
+        """Retrieve the *raw* access data saved on the individual access nodes
+
+        These shouldn't be returned to the user - they are not filtered by data category
+        """
+        # For DSR 3.0, pull these off of the RequestTask.access_data fields
+        if self.access_tasks.count():
+            final_results: Dict = {}
+            for task in self.access_tasks.filter(
+                RequestTask.status == PrivacyRequestStatus.complete,
+                RequestTask.collection_address.notin_(
+                    [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+                ),
+            ):
+                final_results[task.collection_address] = task.get_decoded_access_data()
+
+            return final_results
+
+        # TODO Remove when we stop support for DSR 2.0
+        # We will no longer be pulling access results from the cache, but off of Request Tasks instead
+        cache: FidesopsRedis = get_cache()
+        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__access_request")
+        # extract request id to return a map of address:value
+        number_of_leading_strings_to_exclude = 2
+        return {
+            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+            for k, v in value_dict.items()
+        }
+
+    def get_raw_masking_counts(self) -> Dict[str, int]:
+        """For parity, return the rows masked for an erasure request
+
+        This is largely just used for testing
+        """
+        if self.erasure_tasks.count():
+            # For DSR 3.0
+            return {
+                t.collection_address: t.rows_masked
+                for t in self.erasure_tasks.filter(
+                    RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
+                )
+                if not t.is_root_task and not t.is_terminator_task
+            }
+
+        # TODO Remove when we stop support for DSR 2.0
+        cache: FidesopsRedis = get_cache()
+        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__erasure_request")
+        # extract request id to return a map of address:value
+        number_of_leading_strings_to_exclude = 2
+        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
+
+    def get_consent_results(self) -> Dict[str, int]:
+        """For parity, return whether a consent request was sent for third
+        party consent propagation
+
+        This is largely just used for testing
+        """
+        if self.consent_tasks.count():
+            # For DSR 3.0
+            return {
+                t.collection_address: t.consent_sent
+                for t in self.consent_tasks.filter(
+                    RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
+                )
+                if not t.is_root_task and not t.is_terminator_task
+            }
+        # DSR 2.0 does not cache the results so nothing to do here
+        return {}
+
+    def save_filtered_access_results(
+        self, db: Session, results: Dict[str, Dict[str, List[Row]]]
+    ) -> None:
+        """
+        For access requests, save the access data filtered by data category that we uploaded to the end user
+
+        This is keyed by policy rule key, because we uploaded different packages for different policy rules
+
+        """
+        if not self.policy.get_rules_for_action(action_type=ActionType.access):
+            return None
+
+        self.filtered_final_upload = json.dumps(results, cls=CustomJSONEncoder)
+        self.save(db)
+
+        return None
+
+    def get_filtered_access_results(self) -> Dict[str, Dict[str, List[Row]]]:
+        """Fetched the same filtered access results we uploaded to the user"""
+        return json.loads(
+            self.filtered_final_upload or "{}",
+            object_hook=_custom_decoder,
+        )
 
 
 class PrivacyRequestError(Base):
@@ -1395,6 +1550,17 @@ class ExecutionLogStatus(EnumType):
     skipped = "skipped"
 
 
+COMPLETED_EXECUTION_LOG_STATUSES = [
+    ExecutionLogStatus.complete,
+    ExecutionLogStatus.skipped,
+]
+EXITED_EXECUTION_LOG_STATUSES = [
+    ExecutionLogStatus.complete,
+    ExecutionLogStatus.error,
+    ExecutionLogStatus.skipped,
+]
+
+
 class ExecutionLog(Base):
     """
     Stores the individual execution logs associated with a PrivacyRequest.
@@ -1465,3 +1631,223 @@ def _parse_cache_to_checkpoint_action_required(
         collection=collection,
         action_needed=action_needed,
     )
+
+
+class TraversalDetails(FidesSchema):
+    """Schema to format saving pre-calculated traversal details on RequestTask.traversal_details"""
+
+    dataset_connection_key: str
+    incoming_edges: List[Tuple[str, str]]
+    outgoing_edges: List[Tuple[str, str]]
+    input_keys: List[str]
+
+
+class RequestTask(Base):
+    """
+    An individual Task for a Privacy Request.
+
+    When we execute a PrivacyRequest, we build a graph by combining the current datasets with the identity data
+    and we save the nodes (collections) in the graph as Request Tasks.
+
+    Currently, we build access, erasure, and consent Request Tasks.
+    """
+
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
+    # Identifiers of this request task
+    collection_address = Column(
+        String, nullable=False, index=True
+    )  # Of the format dataset_name:collection_name for convenience
+    dataset_name = Column(String, nullable=False, index=True)
+    collection_name = Column(String, nullable=False, index=True)
+    action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
+
+    status = Column(
+        EnumColumn(ExecutionLogStatus),  # character varying in database
+        index=True,
+        nullable=False,
+    )
+
+    upstream_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # List of collection address strings
+    downstream_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # List of collection address strings
+    all_descendant_tasks = Column(
+        MutableList.as_mutable(JSONB)
+    )  # All tasks that can be reached by the current task.  This is useful when this task fails,
+    # and we can mark every single one of these as failed.
+
+    # Raw data retrieved from an access request is stored here.  This contains all of the
+    # intermediate data we retrieved, needed for downstream tasks, but hasn't been filtered
+    # by data category for the end user.
+    access_data = Column(  # An encrypted JSON String - saved as a list of Rows
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+    # This is the raw access data saved in erasure format (with placeholders preserved) to perform a masking request.
+    # First saved on the access node, and then copied to the corresponding erasure node.
+    data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+    # Written after an erasure is completed
+    rows_masked = Column(Integer)
+    # Written after a consent request is completed - not all consent
+    # connectors will end up sending a request
+    consent_sent = Column(Boolean)
+
+    # Stores a serialized collection that can be transformed back into a Collection to help
+    # execute the current task
+    collection = Column(MutableDict.as_mutable(JSONB))
+    # Stores key details from traversal.traverse in the format of TraversalDetails
+    traversal_details = Column(MutableDict.as_mutable(JSONB))
+
+    privacy_request: RelationshipProperty[PrivacyRequest] = relationship(
+        "PrivacyRequest",
+        back_populates="request_tasks",
+        uselist=False,
+    )
+
+    @property
+    def request_task_address(self) -> CollectionAddress:
+        """Convert the collection_address into Collection Address format"""
+        return CollectionAddress.from_string(self.collection_address)
+
+    @property
+    def is_root_task(self) -> bool:
+        """Convenience helper for asserting whether the task is a root task"""
+        return self.request_task_address == ROOT_COLLECTION_ADDRESS
+
+    @property
+    def is_terminator_task(self) -> bool:
+        """Convenience helper for asserting whether the task is a terminator task"""
+        return self.request_task_address == TERMINATOR_ADDRESS
+
+    def get_cached_task_id(self) -> Optional[str]:
+        """Gets the cached celery task ID for this request task."""
+        cache: FidesopsRedis = get_cache()
+        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
+        return task_id
+
+    def get_decoded_access_data(self) -> List[Row]:
+        """Decode the collected access data"""
+        return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
+
+    def get_decoded_data_for_erasures(self) -> List[Row]:
+        """Decode the erasure data needed to build masking requests"""
+        return json.loads(self.data_for_erasures or "[]", object_hook=_custom_decoder)
+
+    def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
+        """Helper method to update a task's status"""
+        self.status = status
+        self.save(db)
+
+    def get_tasks_with_same_action_type(
+        self, db: Session, collection_address_str: str
+    ) -> Query:
+        """Fetch task on the same privacy request and action type as current by collection address"""
+        return db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.action_type == self.action_type,
+            RequestTask.collection_address == collection_address_str,
+        )
+
+    def get_pending_downstream_tasks(self, db: Session) -> Query:
+        """Returns the immediate downstream task objects that are still pending"""
+        return db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.action_type == self.action_type,
+            RequestTask.collection_address.in_(self.downstream_tasks or []),
+            RequestTask.status == ExecutionLogStatus.pending,
+        )
+
+    def can_queue_request_task(self, db: Session, should_log: bool = False) -> bool:
+        """Returns True if upstream tasks are complete and the current Request Task
+        is not running in another celery task.
+
+        This check ignores its database status - that is checked elsewhere.
+        """
+        return self.upstream_tasks_complete(
+            db, should_log
+        ) and not self.request_task_running(should_log)
+
+    def upstream_tasks_complete(self, db: Session, should_log: bool = False) -> bool:
+        """Determines if all of the upstream tasks of the current task are complete"""
+        upstream_tasks: Query = self.upstream_tasks_objects(db)
+        tasks_complete: bool = all(
+            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
+            for upstream_task in upstream_tasks
+        ) and upstream_tasks.count() == len(self.upstream_tasks or [])
+
+        if not tasks_complete and should_log:
+            logger.debug(
+                "Upstream tasks incomplete for {} task {}. Privacy Request: {}, Request Task {}.",
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        return tasks_complete
+
+    def upstream_tasks_objects(self, db: Session) -> Query:
+        """Returns Request Task objects that are upstream of the current Request Task"""
+        upstream_tasks: Query = db.query(RequestTask).filter(
+            RequestTask.privacy_request_id == self.privacy_request_id,
+            RequestTask.collection_address.in_(self.upstream_tasks or []),
+            RequestTask.action_type == self.action_type,
+        )
+        return upstream_tasks
+
+    def request_task_running(self, should_log: bool = False) -> bool:
+        """Returns a rough measure if the Request Task is already running -
+        not 100% accurate.
+
+        This is further only applicable if you are running workers and
+        CONFIG.execution.task_always_eager=False. This is just an extra check to reduce possible
+        over-scheduling, but it is also okay if the same node runs multiple times.
+        """
+        celery_task_id: Optional[str] = self.get_cached_task_id()
+        if not celery_task_id:
+            return False
+
+        if should_log:
+            logger.debug(
+                "Celery Task ID {} found for {} task {}. Privacy Request: {}, Request Task {}.",
+                celery_task_id,
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
+
+        if task_in_flight and should_log:
+            logger.debug(
+                "Celery Task {} already processing for {} task {}. Privacy Request: {}, Request Task {}.",
+                celery_task_id,
+                self.action_type.value,
+                self.collection_address,
+                self.privacy_request_id,
+                self.id,
+            )
+
+        return task_in_flight

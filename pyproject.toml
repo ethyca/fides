@@ -51,6 +51,7 @@ module = [
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
+  "networkx.*",
   "okta.*",
   "pandas.*",
   "plotly.*",
@@ -65,7 +66,7 @@ module = [
   "twilio.*",
   "uvicorn.*",
   "validators.*",
-  "pygtrie.*"
+  "pygtrie.*",
 ]
 ignore_missing_imports = true
 

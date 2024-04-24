@@ -46,7 +46,7 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.graph.config import CollectionAddress
-from fides.api.graph.graph import DatasetGraph, Node
+from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -59,11 +59,13 @@ from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
     ExecutionLog,
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
     ProvidedIdentityType,
+    RequestTask,
 )
 from fides.api.oauth.utils import verify_callback_oauth, verify_oauth_client
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
@@ -84,9 +86,9 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestNotificationInfo,
     PrivacyRequestResponse,
+    PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
-    RowCountRequest,
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
@@ -104,7 +106,7 @@ from fides.api.service.privacy_request.request_service import (
     cache_data,
 )
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import EMPTY_REQUEST, collect_queries
+from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
@@ -129,11 +131,10 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
-    PRIVACY_REQUEST_MANUAL_ERASURE,
-    PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
+    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -142,6 +143,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
+    REQUEST_TASKS,
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
@@ -487,18 +489,8 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     action_required_details: Optional[CheckpointActionRequired] = None
 
     if privacy_request.status == PrivacyRequestStatus.paused:
-        action_required_details = privacy_request.get_paused_collection_details()
-
-        if action_required_details:
-            # Graph is paused on a specific collection
-            resume_endpoint = (
-                PRIVACY_REQUEST_MANUAL_ERASURE
-                if action_required_details.step == CurrentStep.erasure
-                else PRIVACY_REQUEST_MANUAL_INPUT
-            )
-        else:
-            # Graph is paused on a pre-processing webhook
-            resume_endpoint = PRIVACY_REQUEST_RESUME
+        # Graph is paused on a pre-processing webhook
+        resume_endpoint = PRIVACY_REQUEST_RESUME
 
     elif privacy_request.status == PrivacyRequestStatus.error:
         action_required_details = privacy_request.get_failed_checkpoint_details()
@@ -797,9 +789,12 @@ def get_request_preview_queries(
             k: "something" for k in dataset_graph.identity_keys.values()
         }
         traversal: Traversal = Traversal(dataset_graph, identity_seed)
+
         queries: Dict[CollectionAddress, str] = collect_queries(
             traversal,
-            TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db),
+            TaskResources(
+                EMPTY_REQUEST, Policy(), connection_configs, EMPTY_REQUEST_TASK, db
+            ),
         )
         return [
             DryRunDatasetResponse(
@@ -871,158 +866,13 @@ def validate_manual_input(
     """
     for row in manual_rows:
         for field_name in row:
-            if not dataset_graph.nodes[collection].contains_field(
+            if not dataset_graph.nodes[collection].collection.contains_field(
                 lambda f: f.name == field_name  # pylint: disable=W0640
             ):
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{collection.value}' collection.",
                 )
-
-
-def resume_privacy_request_with_manual_input(
-    privacy_request_id: str,
-    db: Session,
-    expected_paused_step: CurrentStep,
-    manual_rows: List[Row] = [],
-    manual_count: Optional[int] = None,
-) -> PrivacyRequest:
-    """Resume privacy request after validating and caching manual data for an access or an erasure request.
-
-    This assumes the privacy request is being resumed from a specific collection in the graph.
-    """
-    privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
-    )
-    if privacy_request.status != PrivacyRequestStatus.paused:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "  # type: ignore
-            f"status = {privacy_request.status.value}. Privacy request is not paused.",
-        )
-
-    paused_details: Optional[
-        CheckpointActionRequired
-    ] = privacy_request.get_paused_collection_details()
-    if not paused_details:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused details.",
-        )
-
-    paused_step: CurrentStep = paused_details.step
-    paused_collection: Optional[CollectionAddress] = paused_details.collection
-
-    if paused_step != expected_paused_step:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Collection '{paused_collection}' is paused at the {paused_step.value} step. Pass in manual data instead to "
-            f"'{PRIVACY_REQUEST_MANUAL_ERASURE if paused_step == CurrentStep.erasure else PRIVACY_REQUEST_MANUAL_INPUT}' to resume.",
-        )
-
-    datasets = DatasetConfig.all(db=db)
-    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-    dataset_graph = DatasetGraph(*dataset_graphs)
-
-    if not paused_collection:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Cannot save manual data on paused collection. No paused collection saved'.",
-        )
-
-    node: Optional[Node] = dataset_graph.nodes.get(paused_collection)
-    if not node:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Cannot save manual data. No collection in graph with name: '{paused_collection.value}'.",
-        )
-
-    if paused_step == CurrentStep.access:
-        validate_manual_input(manual_rows, paused_collection, dataset_graph)
-        logger.info(
-            "Caching manual access input for privacy request '{}', collection: '{}'",
-            privacy_request_id,
-            paused_collection,
-        )
-        privacy_request.cache_manual_access_input(paused_collection, manual_rows)
-
-    elif paused_step == CurrentStep.erasure:
-        logger.info(
-            "Caching manually erased row count for privacy request '{}', collection: '{}'",
-            privacy_request_id,
-            paused_collection,
-        )
-        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)  # type: ignore
-
-    logger.info(
-        "Resuming privacy request '{}', {} step, from collection '{}'",
-        privacy_request_id,
-        paused_step.value,
-        paused_collection.value,
-    )
-
-    privacy_request.status = PrivacyRequestStatus.in_processing
-    privacy_request.save(db=db)
-
-    queue_privacy_request(
-        privacy_request_id=privacy_request.id,
-        from_step=paused_step.value,
-    )
-
-    return privacy_request
-
-
-@router.post(
-    PRIVACY_REQUEST_MANUAL_INPUT,
-    status_code=HTTP_200_OK,
-    response_model=PrivacyRequestResponse,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-    ],
-)
-def resume_with_manual_input(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-    manual_rows: List[Row],
-) -> PrivacyRequestResponse:
-    """Resume a privacy request by passing in manual input for the paused collection.
-
-    If there's no manual data to submit, pass in an empty list to resume the privacy request.
-    """
-    return resume_privacy_request_with_manual_input(
-        privacy_request_id=privacy_request_id,
-        db=db,
-        expected_paused_step=CurrentStep.access,
-        manual_rows=manual_rows,
-    )  # type: ignore[return-value]
-
-
-@router.post(
-    PRIVACY_REQUEST_MANUAL_ERASURE,
-    status_code=HTTP_200_OK,
-    response_model=PrivacyRequestResponse,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-    ],
-)
-def resume_with_erasure_confirmation(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
-    manual_count: RowCountRequest,
-) -> PrivacyRequestResponse:
-    """Resume the erasure portion of privacy request by passing in the number of rows that were manually masked.
-
-    If no rows were masked, pass in a 0 to resume the privacy request.
-    """
-    return resume_privacy_request_with_manual_input(
-        privacy_request_id=privacy_request_id,
-        db=db,
-        expected_paused_step=CurrentStep.erasure,
-        manual_count=manual_count.row_count,
-    )  # type: ignore[return-value]
 
 
 @router.post(
@@ -1070,7 +920,6 @@ def bulk_restart_privacy_request_from_failure(
             _process_privacy_request_restart(
                 privacy_request,
                 failed_details.step if failed_details else None,
-                failed_details.collection if failed_details else None,
                 db,
             )
         )
@@ -1109,7 +958,6 @@ def restart_privacy_request_from_failure(
     return _process_privacy_request_restart(
         privacy_request,
         failed_details.step if failed_details else None,
-        failed_details.collection if failed_details else None,
         db,
     )
 
@@ -1894,17 +1742,15 @@ def _create_or_update_custom_fields(
 def _process_privacy_request_restart(
     privacy_request: PrivacyRequest,
     failed_step: Optional[CurrentStep],
-    failed_collection: Optional[CollectionAddress],
     db: Session,
 ) -> PrivacyRequestResponse:
-    """If failed_step and failed_collection are provided, restart the DSR within that step. Otherwise,
+    """If failed_step is provided, restart the DSR within that step. Otherwise,
     restart the privacy request from the beginning."""
-    if failed_step and failed_collection:
+    if failed_step:
         logger.info(
-            "Restarting failed privacy request '{}' from '{} step, 'collection '{}'",
+            "Restarting failed privacy request '{}' from '{}'",
             privacy_request.id,
             failed_step,
-            failed_collection,
         )
     else:
         logger.info(
@@ -1920,3 +1766,88 @@ def _process_privacy_request_restart(
     )
 
     return privacy_request  # type: ignore[return-value]
+
+
+@router.get(
+    REQUEST_TASKS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=List[PrivacyRequestTaskSchema],
+)
+def get_individual_privacy_request_tasks(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> List[RequestTask]:
+    """Returns individual Privacy Request Tasks created by DSR 3.0 scheduler
+    in order by creation and collection address"""
+    pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
+
+    logger.info(f"Getting Request Tasks for '{privacy_request_id}'")
+
+    return pr.request_tasks.order_by(
+        RequestTask.created_at.asc(), RequestTask.collection_address.asc()
+    ).all()
+
+
+@router.post(
+    PRIVACY_REQUEST_REQUEUE,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+    response_model=PrivacyRequestResponse,
+)
+def requeue_privacy_request(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> PrivacyRequestResponse:
+    """
+    Endpoint for manually re-queuing a stuck Privacy Request from selected states - use with caution.
+
+    Don't use this unless the Privacy Request is stuck.
+    """
+    pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
+
+    if pr.status not in [
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.in_processing,
+    ]:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Request failed. Cannot re-queue privacy request {pr.id} with status {pr.status.value}",
+        )
+
+    # Both DSR 2.0 and 3.0 cache checkpoint details
+    checkpoint_details: Optional[
+        CheckpointActionRequired
+    ] = pr.get_failed_checkpoint_details()
+    resume_step = checkpoint_details.step if checkpoint_details else None
+
+    # DSR 3.0 additionally stores Request Tasks in the application db that can be used to infer
+    # a resume checkpoint in the event the cache has expired.
+    if not resume_step and pr.request_tasks.count():
+        if pr.consent_tasks.count():
+            resume_step = CurrentStep.consent
+        elif pr.erasure_tasks.count():
+            # Checking if access terminator task was completed, because erasure tasks are created
+            # at the same time as the access tasks
+            terminator_access_task = pr.get_terminate_task_by_action(ActionType.access)
+            resume_step = (
+                CurrentStep.erasure
+                if terminator_access_task.status == ExecutionLogStatus.complete
+                else CurrentStep.access
+            )
+        elif pr.access_tasks.count():
+            resume_step = CurrentStep.access
+
+    logger.info(
+        "Manually re-queuing Privacy Request {} from step {}",
+        pr,
+        resume_step.value if resume_step else None,
+    )
+
+    return _process_privacy_request_restart(
+        pr,
+        resume_step,
+        db,
+    )

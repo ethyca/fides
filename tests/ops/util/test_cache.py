@@ -4,6 +4,7 @@ from base64 import b64encode
 from datetime import datetime
 from enum import Enum
 from typing import Any, List
+from unittest import mock
 
 import pytest
 from bson.objectid import ObjectId
@@ -13,6 +14,8 @@ from fides.api.util.cache import (
     ENCODED_DATE_PREFIX,
     ENCODED_MONGO_OBJECT_ID_PREFIX,
     FidesopsRedis,
+    cache_task_tracking_key,
+    celery_tasks_in_flight,
 )
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import faker
@@ -190,3 +193,49 @@ class TestCustomDecoder:
         value = b64encode(pickle.dumps(PickleObj()))
         cache = FidesopsRedis()
         assert cache.decode_obj(value) is None
+
+
+class TestCacheTaskTrackingKey:
+    def test_cache_tracking_key_privacy_request(self, privacy_request):
+        assert privacy_request.get_cached_task_id() is None
+
+        cache_task_tracking_key(privacy_request.id, "test_1234")
+
+        assert privacy_request.get_cached_task_id() == "test_1234"
+
+    def test_cache_tracking_key_request_task(self, request_task):
+        """Request Task celery tasks are cached in the same location as Privacy Request"""
+        assert request_task.get_cached_task_id() is None
+
+        cache_task_tracking_key(request_task.id, "test_5678")
+
+        assert request_task.get_cached_task_id() == "test_5678"
+
+
+class TestCeleryTasksInFlight:
+    def test_celery_tasks_in_flight_no_celery_tasks(self):
+        assert not celery_tasks_in_flight([])
+
+    @mock.patch("fides.api.util.cache.celery_app.control.inspect.query_task")
+    def test_celery_tasks_in_flight_no_workers(self, query_task_mock):
+        query_task_mock.return_value = {}
+
+        assert not celery_tasks_in_flight(["1234"])
+
+    @mock.patch("fides.api.util.cache.celery_app.control.inspect.query_task")
+    def test_celery_tasks_in_flight_no_match_in_queue(self, query_task_mock):
+        query_task_mock.return_value = {"@celery1234": {}}
+
+        assert not celery_tasks_in_flight(["abcde"])
+
+    @mock.patch("fides.api.util.cache.celery_app.control.inspect.query_task")
+    def test_celery_tasks_in_flight_completed_state(self, query_task_mock):
+        query_task_mock.return_value = {"@celery1234": {"abcde": ["completed", {}]}}
+
+        assert not celery_tasks_in_flight(["abde"])
+
+    @mock.patch("fides.api.util.cache.celery_app.control.inspect.query_task")
+    def test_celery_tasks_in_flight_reserved_state(self, query_task_mock):
+        query_task_mock.return_value = {"@celery1234": {"abcde": ["reserved", {}]}}
+
+        assert celery_tasks_in_flight(["abde"])
