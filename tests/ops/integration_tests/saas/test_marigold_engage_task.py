@@ -35,3 +35,7 @@ class TestMarigoldEngageConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": marigold_engage_erasure_identity_email},
         )
+
+        assert erasure_results == {
+            "marigold_engage_instance": 1,
+        }
