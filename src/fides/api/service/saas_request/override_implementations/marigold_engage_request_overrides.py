@@ -74,51 +74,51 @@ def marigold_engage_user_read(
 
     return output
 
-# @register("marigold_engage_user_delete", [SaaSRequestType.DELETE])
-# def marigold_engage_user_delete(
-#     client: AuthenticatedClient,
-#     node: TraversalNode,
-#     policy: Policy,
-#     privacy_request: PrivacyRequest,
-#     input_data: Dict[str, List[Any]],
-#     secrets: Dict[str, Any],
-#     marigold_engage_secrets,
-#     marigold_engage_erasure_identity_email,
-# ) -> List[Row]:
-#     base_url = f'https://api.sailthru.com/user'
-#     emails = input_data.get("email", [])
-#     for email in emails:
-#         email_test = email
-#         # email_test = marigold_engage_erasure_identity_email
-#         email_prep = '{"id":"'+email_test+'"}'
-#         ''' Setup to deal with the signature (sig) requirement
-#         Here we need to generate an MD5 hash based on the secret, api_key, format and the email of the user, converted into a string to compose the email into the format required.
-#         '''
-#         output = []
-#         sig_prep = marigold_engage_secrets["secret"]+marigold_engage_secrets["api_key"]+"json"+email_prep
-#         sig_chk = md5_any(sig_prep)
-#         md5_readable = sig_chk.hexdigest()
-#         ### end sig prep    
+@register("marigold_engage_user_delete", [SaaSRequestType.DELETE])
+def marigold_engage_user_delete(
+    client: AuthenticatedClient,
+    node: TraversalNode,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
+    input_data: Dict[str, List[Any]],
+    secrets: Dict[str, Any],
+    marigold_engage_secrets,
+    marigold_engage_erasure_identity_email,
+) -> List[Row]:
+    base_url = f'https://api.sailthru.com/user'
+    emails = input_data.get("email", [])
+    for email in emails:
+        email_test = email
+        # email_test = marigold_engage_erasure_identity_email
+        email_prep = '{"id":"'+email_test+'"}'
+        ''' Setup to deal with the signature (sig) requirement
+        Here we need to generate an MD5 hash based on the secret, api_key, format and the email of the user, converted into a string to compose the email into the format required.
+        '''
+        output = []
+        sig_prep = marigold_engage_secrets["secret"]+marigold_engage_secrets["api_key"]+"json"+email_prep
+        sig_chk = md5_any(sig_prep)
+        md5_readable = sig_chk.hexdigest()
+        ### end sig prep    
 
 
-#         response = client.send(
-#             SaaSRequestParams(
-#                 method=HTTPMethod.DELETE,
-#                 path="/user",
-#                 query_params={
-#                     "api_key": secrets["api_key"],
-#                     "sig": md5_readable,
-#                     "format": "json",
-#                     "json": email_prep,
-#                 },
-#             )
-#         )
+        response = client.send(
+            SaaSRequestParams(
+                method=HTTPMethod.DELETE,
+                path="/user",
+                query_params={
+                    "api_key": secrets["api_key"],
+                    "sig": md5_readable,
+                    "format": "json",
+                    "json": email_prep,
+                },
+            )
+        )
         
-#         assert response.ok
-#         user = response.json()
-#         output.append(user)
+        assert response.ok
+        user = response.json()
+        output.append(user)
 
-#     return output    
+    return output    
 
 
 

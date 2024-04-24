@@ -36,12 +36,12 @@ saas_config:
               connector_param: secret
             - name: email
               identity: email
-        # delete:
-        #   request_override: marigold_engage_user_delete
-        #   param_values:
-        #     - name: api_key
-        #       connector_param: api_key
-        #     - name: secret
-        #       connector_param: secret
-        #     - name: email
-        #       identity: email
+        delete:
+          request_override: marigold_engage_user_delete
+          param_values:
+            - name: api_key
+              connector_param: api_key
+            - name: secret
+              connector_param: secret
+            - name: email
+              identity: email
