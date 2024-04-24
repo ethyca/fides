@@ -87,13 +87,13 @@ def _remove_paths_from_row(
 
     {'A': {'B': [{'C': 'D'}]}}
     """
-    desc_path_length: Dict[
-        str, List[int]
-    ] = dict(  # We want to remove elements from the deepest paths first
-        sorted(
-            preserve_indices.items(),
-            key=lambda item: item[0].count("."),
-            reverse=True,
+    desc_path_length: Dict[str, List[int]] = (
+        dict(  # We want to remove elements from the deepest paths first
+            sorted(
+                preserve_indices.items(),
+                key=lambda item: item[0].count("."),
+                reverse=True,
+            )
         )
     )
     for path, preserve_index_list in desc_path_length.items():

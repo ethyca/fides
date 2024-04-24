@@ -5,6 +5,7 @@ Revises: fb6b0150d6e4
 Create Date: 2022-10-24 23:36:51.166480
 
 """
+
 from alembic.op import create_table, drop_table
 from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, text
 

@@ -847,21 +847,21 @@ class TestGenerate:
         os.environ["FIDES__CREDENTIALS__BIGQUERY_1__PROJECT_ID"] = config_data_decoded[
             "project_id"
         ]
-        os.environ[
-            "FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY_ID"
-        ] = config_data_decoded["private_key_id"]
+        os.environ["FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY_ID"] = (
+            config_data_decoded["private_key_id"]
+        )
         os.environ["FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY"] = config_data_decoded[
             "private_key"
         ]
-        os.environ[
-            "FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_EMAIL"
-        ] = config_data_decoded["client_email"]
+        os.environ["FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_EMAIL"] = (
+            config_data_decoded["client_email"]
+        )
         os.environ["FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_ID"] = config_data_decoded[
             "client_id"
         ]
-        os.environ[
-            "FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_X509_CERT_URL"
-        ] = config_data_decoded["client_x509_cert_url"]
+        os.environ["FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_X509_CERT_URL"] = (
+            config_data_decoded["client_x509_cert_url"]
+        )
         dataset_name = "fidesopstest"
         result = test_cli_runner.invoke(
             cli,

@@ -477,16 +477,16 @@ def set_consent_preferences(
     )
 
     # Note: This just queues the PrivacyRequest for processing
-    privacy_request_creation_results: Optional[
-        BulkPostPrivacyRequests
-    ] = queue_privacy_request_to_propagate_consent_old_workflow(
-        db,
-        provided_identity,
-        data.policy_key or DEFAULT_CONSENT_POLICY,
-        consent_preferences,
-        consent_request,
-        data.executable_options,
-        data.browser_identity,
+    privacy_request_creation_results: Optional[BulkPostPrivacyRequests] = (
+        queue_privacy_request_to_propagate_consent_old_workflow(
+            db,
+            provided_identity,
+            data.policy_key or DEFAULT_CONSENT_POLICY,
+            consent_preferences,
+            consent_request,
+            data.executable_options,
+            data.browser_identity,
+        )
     )
 
     if privacy_request_creation_results:

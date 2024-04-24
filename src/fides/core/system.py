@@ -1,4 +1,5 @@
 """Module that adds functionality for generating or scanning systems."""
+
 import asyncio
 from collections import defaultdict
 from typing import Dict, List, Optional
@@ -385,9 +386,9 @@ def scan_system_aws(
 
     organization = get_organization(
         organization_key=organization_key,
-        manifest_organizations=manifest_taxonomy.organization
-        if manifest_taxonomy
-        else [],
+        manifest_organizations=(
+            manifest_taxonomy.organization if manifest_taxonomy else []
+        ),
         url=url,
         headers=headers,
     )
@@ -435,9 +436,9 @@ def scan_system_okta(
 
     organization = get_organization(
         organization_key=organization_key,
-        manifest_organizations=manifest_taxonomy.organization
-        if manifest_taxonomy
-        else [],
+        manifest_organizations=(
+            manifest_taxonomy.organization if manifest_taxonomy else []
+        ),
         url=url,
         headers=headers,
     )

@@ -58,12 +58,12 @@ def test_fides_connector_overridden_polling(
     fides_connector_connection_config: Dict[str, str],
     fides_connector_polling_overrides: Tuple[int, int],
 ) -> FidesConnector:
-    fides_connector_connection_config.secrets[
-        "polling_timeout"
-    ] = fides_connector_polling_overrides[0]
-    fides_connector_connection_config.secrets[
-        "polling_interval"
-    ] = fides_connector_polling_overrides[1]
+    fides_connector_connection_config.secrets["polling_timeout"] = (
+        fides_connector_polling_overrides[0]
+    )
+    fides_connector_connection_config.secrets["polling_interval"] = (
+        fides_connector_polling_overrides[1]
+    )
     return FidesConnector(configuration=fides_connector_connection_config)
 
 

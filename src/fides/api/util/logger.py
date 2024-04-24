@@ -1,6 +1,7 @@
 """
 Defines the logging format and other helper functions to be used throughout the API server code.
 """
+
 # pylint: disable=eval-used,no-member
 
 from __future__ import annotations
