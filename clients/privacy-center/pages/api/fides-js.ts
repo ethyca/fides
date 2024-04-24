@@ -134,11 +134,15 @@ export default async function handler(
     }
   }
 
+  // These query params are used for testing purposes only, and should not be used
+  // in production. They allow for the config to be injected by the test framework
+  // and delay the initialization of fides.js until the test framework is ready.
   const { e2e: e2eQuery, tcf: tcfQuery } = req.query;
 
   // We determine server-side whether or not to send the TCF bundle, which is based
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
-  // be able to prefetch the experience.
+  // be able to prefetch the experience. This can also be forced via query param for
+  // internal testing when we know the experience will be injected by the test framework.
   const tcfEnabled =
     tcfQuery === "true" ||
     (experience
