@@ -36,9 +36,7 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
           <BreadcrumbLink
             onClick={() => navigateToMonitorDetails({ monitorId })}
           >
-            {"{"}
             {monitorId}
-            {"}"}
           </BreadcrumbLink>
         </BreadcrumbItem>
       ) : null}

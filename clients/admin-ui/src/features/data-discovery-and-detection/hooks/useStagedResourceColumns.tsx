@@ -9,6 +9,7 @@ import MonitorStatusCell from "~/features/data-discovery-and-detection/status-ce
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
+import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
 
 const useStagedResourceColumns = ({
   resourceType,
@@ -122,6 +123,24 @@ const useStagedResourceColumns = ({
         id: "data_type",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Data type" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.classifications, {
+        id: "classifications",
+        cell: (props) => {
+          const bestTaxonomyMatch =
+            props.getValue() && props.getValue().length
+              ? props.getValue()![0]
+              : null;
+
+          return (
+            <TaxonomyDisplayAndEdit
+              fidesLangKey={bestTaxonomyMatch?.label}
+              isEditable
+            />
+          );
+        },
+        header: (props) => <DefaultHeaderCell value="Label" {...props} />,
+        minSize: 240, // keep a minimum width so the Select has space to display the options properly
       }),
     ];
     return { columns };
