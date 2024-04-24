@@ -47,7 +47,8 @@ export const ColumnSettingsModal = <T,>({
         .map((c) => ({
           id: c.id,
           displayText: c.columnDef?.meta?.displayText || c.id,
-          isVisible: c.getIsVisible(),
+          isVisible:
+            tableInstance.getState().columnVisibility[c.id] ?? c.getIsVisible(),
         })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -111,6 +112,7 @@ export const ColumnSettingsModal = <T,>({
               Cancel
             </Button>
             <Button
+              data-testid="save-button"
               colorScheme="primary"
               size="sm"
               onClick={handleSave}

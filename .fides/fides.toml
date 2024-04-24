@@ -50,6 +50,7 @@ task_retry_backoff = 1
 subject_identity_verification_required = false
 task_retry_count = 0
 task_retry_delay = 1
+use_dsr_3_0 = false
 
 [admin_ui]
 enabled = true

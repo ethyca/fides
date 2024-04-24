@@ -1,3 +1,5 @@
+import json
+
 import pydantic
 import pytest
 
@@ -73,6 +75,123 @@ class TestFieldAddress:
         assert FieldAddress(
             "A", "B", "C", "D", "E"
         ).collection_address() == CollectionAddress("A", "B")
+
+    def test_from_string(self):
+        assert FieldAddress.from_string("A:B:C") == FieldAddress("A", "B", "C")
+
+        assert FieldAddress.from_string("A:B:C.D.E") == FieldAddress(
+            "A", "B", "C", "D", "E"
+        )
+
+        with pytest.raises(FidesopsException):
+            FieldAddress.from_string("A")
+
+        with pytest.raises(FidesopsException):
+            FieldAddress.from_string("A:B")
+
+        with pytest.raises(FidesopsException):
+            FieldAddress.from_string("A.B")
+
+
+collection_to_serialize = ds = Collection(
+    name="t3",
+    skip_processing=False,
+    fields=[
+        ScalarField(
+            name="f1",
+            identity="email",
+            data_type_converter=StringTypeConverter(),
+            data_categories=["user"],
+            return_all_elements=False,
+            references=[
+                (FieldAddress("a", "b", "c"), "to"),
+                (FieldAddress("a", "b", "d"), "from"),
+            ],
+        ),
+        ScalarField(
+            name="f2",
+            data_type_converter=IntTypeConverter(),
+            references=[(FieldAddress("d", "e", "f"), None)],
+        ),
+        ScalarField(name="f3", is_array=True, read_only=False),
+        ObjectField(name="f4", fields={"f5": ScalarField(name="f5")}),
+    ],
+    after={CollectionAddress("i", "j")},
+    erase_after={CollectionAddress("g", "h")},
+    grouped_inputs={"test_param"},
+)
+
+serialized_collection = {
+    "name": "t3",
+    "skip_processing": False,
+    "fields": [
+        {
+            "name": "f1",
+            "primary_key": False,
+            "references": [["a:b:c", "to"], ["a:b:d", "from"]],
+            "identity": "email",
+            "data_categories": ["user"],
+            "data_type_converter": "string",
+            "return_all_elements": False,
+            "length": None,
+            "is_array": False,
+            "read_only": None,
+        },
+        {
+            "name": "f2",
+            "primary_key": False,
+            "references": [["d:e:f", None]],
+            "identity": None,
+            "data_categories": None,
+            "data_type_converter": "integer",
+            "return_all_elements": None,
+            "length": None,
+            "is_array": False,
+            "read_only": None,
+        },
+        {
+            "name": "f3",
+            "primary_key": False,
+            "references": [],
+            "identity": None,
+            "data_categories": None,
+            "data_type_converter": "None",
+            "return_all_elements": None,
+            "length": None,
+            "is_array": True,
+            "read_only": False,
+        },
+        {
+            "name": "f4",
+            "primary_key": False,
+            "references": [],
+            "identity": None,
+            "data_categories": None,
+            "data_type_converter": "None",
+            "return_all_elements": None,
+            "length": None,
+            "is_array": False,
+            "read_only": None,
+            "fields": {
+                "f5": {
+                    "name": "f5",
+                    "primary_key": False,
+                    "references": [],
+                    "identity": None,
+                    "data_categories": None,
+                    "data_type_converter": "None",
+                    "return_all_elements": None,
+                    "length": None,
+                    "is_array": False,
+                    "read_only": None,
+                }
+            },
+        },
+    ],
+    "after": ["i:j"],
+    "erase_after": ["g:h"],
+    "grouped_inputs": ["test_param"],
+}
 
 
 class TestCollection:
@@ -234,6 +353,14 @@ class TestCollection:
                 FieldPath("f4", "f2")
             ],  # Applies to a nested field
         }
+
+    def test_collection_json(self):
+        json_collection = json.loads(collection_to_serialize.json())
+        assert json_collection == serialized_collection
+
+    def test_parse_from_task(self):
+        parsed = Collection.parse_from_request_task(serialized_collection)
+        assert parsed == collection_to_serialize
 
 
 class TestField:

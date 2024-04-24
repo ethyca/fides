@@ -33,8 +33,11 @@ from fides.config import CONFIG
 class CurrentStep(EnumType):
     pre_webhooks = "pre_webhooks"
     access = "access"
+    upload_access = "upload_access"
     erasure = "erasure"
+    finalize_erasure = "finalize_erasure"
     consent = "consent"
+    finalize_consent = "finalize_consent"
     email_post_send = "email_post_send"
     post_webhooks = "post_webhooks"
 

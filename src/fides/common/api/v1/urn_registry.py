@@ -73,10 +73,11 @@ PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
+REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
+PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
+
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
-PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
-PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
@@ -113,6 +114,10 @@ POLICY_PRE_WEBHOOK_DETAIL = (
 POLICY_POST_WEBHOOK_DETAIL = (
     "/dsr/policy/{policy_key}/webhook/post_execution/{post_webhook_key}"
 )
+
+# Pre-approval webhook URLs
+WEBHOOK_PRE_APPROVAL = "/dsr/webhook/pre_approval"
+WEBHOOK_PRE_APPROVAL_DETAIL = "/dsr/webhook/pre_approval/{webhook_key}"
 
 # Connection Type URLs
 CONNECTION_TYPES = "/connection_type"

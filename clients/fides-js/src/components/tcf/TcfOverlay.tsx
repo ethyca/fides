@@ -1,7 +1,6 @@
-import { Fragment, FunctionComponent, h } from "preact";
+import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import ConsentBanner from "../ConsentBanner";
-import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
 import { debugLog } from "../../lib/consent-utils";
 
@@ -369,7 +368,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   onSave();
                 }}
                 isMobile={isMobile}
-                includePrivacyPolicy
                 options={options}
               />
             )}
@@ -405,24 +403,22 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           onClose();
         };
         return (
-          <Fragment>
-            <TcfConsentButtons
-              experience={experience}
-              i18n={i18n}
-              onSave={onSave}
-              firstButton={
-                <Button
-                  buttonType={ButtonType.SECONDARY}
-                  label={i18n.t("exp.save_button_label")}
-                  onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
-                  className="fides-save-button"
-                />
-              }
-              isMobile={isMobile}
-              options={options}
-            />
-            <PrivacyPolicyLink i18n={i18n} />
-          </Fragment>
+          <TcfConsentButtons
+            experience={experience}
+            i18n={i18n}
+            onSave={onSave}
+            firstButton={
+              <Button
+                buttonType={ButtonType.SECONDARY}
+                label={i18n.t("exp.save_button_label")}
+                onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
+                className="fides-save-button"
+              />
+            }
+            isMobile={isMobile}
+            isInModal
+            options={options}
+          />
         );
       }}
     />

@@ -42,6 +42,9 @@ export const gtm = () => {
   window.addEventListener("FidesInitialized", (event) =>
     pushFidesVariableToGTM(event)
   );
+  window.addEventListener("FidesUpdating", (event) =>
+    pushFidesVariableToGTM(event)
+  );
   window.addEventListener("FidesUpdated", (event) =>
     pushFidesVariableToGTM(event)
   );

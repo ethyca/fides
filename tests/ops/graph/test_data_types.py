@@ -59,6 +59,7 @@ def test_safe_none_conversion():
 
 
 def test_get_data_type_converter():
+    assert isinstance(get_data_type_converter("None"), NoOpTypeConverter)
     assert isinstance(get_data_type_converter(None), NoOpTypeConverter)
     assert isinstance(get_data_type_converter(""), NoOpTypeConverter)
     assert isinstance(get_data_type_converter("string"), StringTypeConverter)

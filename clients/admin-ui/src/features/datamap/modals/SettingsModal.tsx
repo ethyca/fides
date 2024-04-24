@@ -271,7 +271,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader pb={0}>Data Map Settings</ModalHeader>
+        <ModalHeader pb={0}>Data map settings</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={2}>

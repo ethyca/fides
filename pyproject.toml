@@ -47,9 +47,11 @@ module = [
   "firebase_admin.*",
   "google.api_core.*",
   "nh3.*",
+  "joblib.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
+  "networkx.*",
   "okta.*",
   "pandas.*",
   "plotly.*",
@@ -64,6 +66,7 @@ module = [
   "twilio.*",
   "uvicorn.*",
   "validators.*",
+  "pygtrie.*",
 ]
 ignore_missing_imports = true
 
