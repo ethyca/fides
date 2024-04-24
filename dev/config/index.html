@@ -1460,7 +1460,16 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
-<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1478,7 +1487,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;f346e39b40cbcfe05dc381f5b07d8c14&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fecb2216a5d9daded2760fbea365372b&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1600,6 +1609,15 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># Allows custom privacy request fields to be used in request execution.</span>
 <span class="n">allow_custom_privacy_request_fields_in_request_execution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># The number of seconds a request task should live.</span>
+<span class="n">request_task_ttl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">604800</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Seconds between polling for Privacy Requests that should change state</span>
+<span class="n">state_polling_interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Temporary flag to switch to using DSR 3.0 to process your tasks.</span>
+<span class="n">use_dsr_3_0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#-------------#</span>
 <span class="c1">#-- LOGGING --#</span>

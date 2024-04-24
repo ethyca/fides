@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "f346e39b40cbcfe05dc381f5b07d8c14" # string
+analytics_id = "fecb2216a5d9daded2760fbea365372b" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -138,6 +138,15 @@ allow_custom_privacy_request_field_collection = false # boolean
 
 # Allows custom privacy request fields to be used in request execution.
 allow_custom_privacy_request_fields_in_request_execution = false # boolean
+
+# The number of seconds a request task should live.
+request_task_ttl = 604800 # integer
+
+# Seconds between polling for Privacy Requests that should change state
+state_polling_interval = 30 # integer
+
+# Temporary flag to switch to using DSR 3.0 to process your tasks.
+use_dsr_3_0 = false # boolean
 
 #-------------#
 #-- LOGGING --#

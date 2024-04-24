@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.34.2b2.post0.dev4"
+    "version": "2.34.2b2.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8026,130 +8026,6 @@
         ]
       }
     },
-    "/api/v1/privacy-request/{privacy_request_id}/manual_input": {
-      "post": {
-        "tags": [
-          "Privacy Requests"
-        ],
-        "summary": "Resume With Manual Input",
-        "description": "Resume a privacy request by passing in manual input for the paused collection.\n\nIf there's no manual data to submit, pass in an empty list to resume the privacy request.",
-        "operationId": "resume_with_manual_input_api_v1_privacy_request__privacy_request_id__manual_input_post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Privacy Request Id",
-              "type": "string"
-            },
-            "name": "privacy_request_id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Manual Rows",
-                "type": "array",
-                "items": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrivacyRequestResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "privacy-request:resume"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/privacy-request/{privacy_request_id}/erasure_confirm": {
-      "post": {
-        "tags": [
-          "Privacy Requests"
-        ],
-        "summary": "Resume With Erasure Confirmation",
-        "description": "Resume the erasure portion of privacy request by passing in the number of rows that were manually masked.\n\nIf no rows were masked, pass in a 0 to resume the privacy request.",
-        "operationId": "resume_with_erasure_confirmation_api_v1_privacy_request__privacy_request_id__erasure_confirm_post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Privacy Request Id",
-              "type": "string"
-            },
-            "name": "privacy_request_id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RowCountRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrivacyRequestResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "privacy-request:resume"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/privacy-request/bulk/retry": {
       "post": {
         "tags": [
@@ -8732,6 +8608,110 @@
         "summary": "Resume Privacy Request From Requires Input",
         "description": "Resume a privacy request from 'requires_input' status.",
         "operationId": "resume_privacy_request_from_requires_input_api_v1_privacy_request__privacy_request_id__resume_from_requires_input_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:resume"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/tasks": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Get Individual Privacy Request Tasks",
+        "description": "Returns individual Privacy Request Tasks created by DSR 3.0 scheduler\nin order by creation and collection address",
+        "operationId": "get_individual_privacy_request_tasks_api_v1_privacy_request__privacy_request_id__tasks_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Individual Privacy Request Tasks Api V1 Privacy Request  Privacy Request Id  Tasks Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrivacyRequestTaskSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/requeue": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Requeue Privacy Request",
+        "description": "Endpoint for manually re-queuing a stuck Privacy Request from selected states - use with caution.\n\nDon't use this unless the Privacy Request is stuck.",
+        "operationId": "requeue_privacy_request_api_v1_privacy_request__privacy_request_id__requeue_post",
         "parameters": [
           {
             "required": true,
@@ -13462,8 +13442,11 @@
         "enum": [
           "pre_webhooks",
           "access",
+          "upload_access",
           "erasure",
+          "finalize_erasure",
           "consent",
+          "finalize_consent",
           "email_post_send",
           "post_webhooks"
         ],
@@ -17337,6 +17320,61 @@
         "type": "string",
         "description": "Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"
       },
+      "PrivacyRequestTaskSchema": {
+        "title": "PrivacyRequestTaskSchema",
+        "required": [
+          "id",
+          "collection_address",
+          "status",
+          "created_at",
+          "updated_at",
+          "upstream_tasks",
+          "downstream_tasks",
+          "action_type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "collection_address": {
+            "title": "Collection Address",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ExecutionLogStatus"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "upstream_tasks": {
+            "title": "Upstream Tasks",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "downstream_tasks": {
+            "title": "Downstream Tasks",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType"
+          }
+        },
+        "description": "Schema for Privacy Request Tasks, which are individual nodes that are queued"
+      },
       "PrivacyRequestVerboseResponse": {
         "title": "PrivacyRequestVerboseResponse",
         "required": [
@@ -17692,20 +17730,6 @@
           "contributor"
         ],
         "description": "Enum of available roles\n\nOwner - Full admin\nViewer - Can view everything\nApprover - Limited viewer but can approve Privacy Requests\nViewer + Approver = Full View and can approve Privacy Requests\nContributor - Can't configure storage and messaging"
-      },
-      "RowCountRequest": {
-        "title": "RowCountRequest",
-        "required": [
-          "row_count"
-        ],
-        "type": "object",
-        "properties": {
-          "row_count": {
-            "title": "Row Count",
-            "type": "integer"
-          }
-        },
-        "description": "Schema for a user to manually confirm data erased for a collection"
       },
       "RuleCreate": {
         "title": "RuleCreate",
