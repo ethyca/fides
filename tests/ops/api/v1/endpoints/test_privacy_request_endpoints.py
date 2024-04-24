@@ -31,6 +31,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import CurrentStep, Policy
+from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -78,6 +79,8 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
     PRIVACY_REQUEST_REQUEUE,
+    PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
+    PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -329,8 +332,12 @@ class TestCreatePrivacyRequest:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    @mock.patch(
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
+    )
     def test_create_privacy_request_require_manual_approval(
         self,
+        mock_trigger_pre_approval_webhook,
         run_access_request_mock,
         url,
         db,
@@ -353,6 +360,74 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert not run_access_request_mock.called
+        assert not mock_trigger_pre_approval_webhook.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
+    )
+    def test_create_privacy_request_require_manual_approval_with_pre_approval_webhooks(
+        self,
+        mock_trigger_pre_approval_webhook,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        require_manual_request_approval,
+        pre_approval_webhooks,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        assert response_data[0]["status"] == "pending"
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        pr.delete(db=db)
+        assert not run_access_request_mock.called
+        assert mock_trigger_pre_approval_webhook.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
+    )
+    def test_create_privacy_request_not_require_manual_approval_with_pre_approval_webhooks(
+        self,
+        mock_trigger_pre_approval_webhook,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        pre_approval_webhooks,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        assert response_data[0]["status"] == "pending"
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+        assert not mock_trigger_pre_approval_webhook.called
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -2235,6 +2310,456 @@ class TestApprovePrivacyRequest:
         assert queue == MESSAGING_QUEUE_NAME
 
 
+class TestMarkPrivacyRequestPreApproveEligible:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request_status_pending):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE.format(
+            privacy_request_id=privacy_request_status_pending.id
+        )
+
+    @pytest.fixture(scope="function")
+    def privacy_request_review_notification_enabled(self, db):
+        """Enable request receipt"""
+        original_value = CONFIG.notifications.send_request_review_notification
+        CONFIG.notifications.send_request_review_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.send_request_review_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    def test_mark_eligible_not_authenticated(
+        self,
+        url,
+        api_client,
+        privacy_request_status_pending,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        response = api_client.post(url)
+        assert response.status_code == 401
+
+    def test_mark_eligible_invalid_jwe_format(
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps({"unexpected": "format"}), CONFIG.security.app_encryption_key
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_mark_eligible_invalid_scopes(
+        self,
+        url,
+        api_client,
+        privacy_request_status_pending,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        """
+        Test scopes are correct, although we just gave a user this token with the
+        correct scopes, the check doesn't mean much
+        """
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "webhook_id": pre_approval_webhooks[0].id,
+                        "scopes": [PRIVACY_REQUEST_READ],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                CONFIG.security.app_encryption_key,
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_mark_eligible_invalid_webhook(
+        self,
+        url,
+        api_client,
+        privacy_request_status_pending,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "webhook_id": "invalid",
+                        "scopes": [PRIVACY_REQUEST_REVIEW],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                CONFIG.security.app_encryption_key,
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 404
+
+    def test_mark_eligible_nonexistent_privacy_request(
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        invalid_privacy_request_url = (
+            V1_URL_PREFIX
+            + PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE.format(privacy_request_id="invalid")
+        )
+        response = api_client.post(invalid_privacy_request_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_mark_eligible_privacy_request_not_pending(
+        self,
+        url,
+        db,
+        api_client,
+        privacy_request_status_pending,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        privacy_request_status_pending.status = PrivacyRequestStatus.approved
+        privacy_request_status_pending.save(db=db)
+
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_mark_eligible_but_not_all_webhook_replies_received(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request_status_pending,
+        pre_approval_webhooks,
+        generate_pre_approval_webhook_auth_header,
+        privacy_request_review_notification_enabled,
+    ):
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        # new webhook reply
+        response = api_client.post(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert not submit_mock.called
+        assert not mock_dispatch_message.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_mark_eligible_but_some_webhooks_not_eligible(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request_status_pending,
+        pre_approval_webhooks,
+        generate_pre_approval_webhook_auth_header,
+        privacy_request_review_notification_enabled,
+    ):
+        # mock previous webhook reply
+        PreApprovalWebhookReply.create(
+            db=db,
+            data={
+                "webhook_id": pre_approval_webhooks[0].id,
+                "privacy_request_id": privacy_request_status_pending.id,
+                "is_eligible": False,
+            },
+        )
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+
+        # new webhook reply
+        response = api_client.post(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert not submit_mock.called
+        assert not mock_dispatch_message.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_mark_eligible_and_all_webhooks_eligible(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request_status_pending,
+        pre_approval_webhooks,
+        generate_pre_approval_webhook_auth_header,
+        privacy_request_review_notification_enabled,
+    ):
+        # mock previous webhook reply
+        PreApprovalWebhookReply.create(
+            db=db,
+            data={
+                "webhook_id": pre_approval_webhooks[0].id,
+                "privacy_request_id": privacy_request_status_pending.id,
+                "is_eligible": True,
+            },
+        )
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+
+        # new webhook reply
+        response = api_client.post(url, headers=auth_header)
+
+        assert response.status_code == 200
+
+        approval_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request_status_pending.id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+
+        assert approval_audit_log is not None
+        assert approval_audit_log.message == ""
+        assert approval_audit_log.webhook_id == pre_approval_webhooks[1].id
+
+        approval_audit_log.delete(db)
+
+        assert submit_mock.called
+        assert mock_dispatch_message.called
+
+
+class TestMarkPrivacyRequestPreApproveNotEligible:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request_status_pending):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE.format(
+            privacy_request_id=privacy_request_status_pending.id
+        )
+
+    def test_mark_not_eligible_not_authenticated(
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        response = api_client.post(url)
+        assert response.status_code == 401
+
+    def test_mark_not_eligible_invalid_jwe_format(
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps({"unexpected": "format"}), CONFIG.security.app_encryption_key
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_mark_not_eligible_invalid_scopes(
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        """
+        Test scopes are correct, although we just gave a user this token with the
+        correct scopes, the check doesn't mean much
+        """
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "webhook_id": pre_approval_webhooks[0].id,
+                        "scopes": [PRIVACY_REQUEST_READ],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                CONFIG.security.app_encryption_key,
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_mark_not_eligible_invalid_webhook(
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "webhook_id": "invalid",
+                        "scopes": [PRIVACY_REQUEST_REVIEW],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                CONFIG.security.app_encryption_key,
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 404
+
+    def test_mark_not_eligible_nonexistent_privacy_request(
+        self,
+        url,
+        api_client,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        invalid_privacy_request_url = (
+            V1_URL_PREFIX
+            + PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE.format(
+                privacy_request_id="invalid"
+            )
+        )
+        response = api_client.post(invalid_privacy_request_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_mark_not_eligible_privacy_request_not_pending(
+        self,
+        url,
+        db,
+        api_client,
+        privacy_request_status_pending,
+        generate_pre_approval_webhook_auth_header,
+        pre_approval_webhooks,
+    ):
+        privacy_request_status_pending.status = PrivacyRequestStatus.approved
+        privacy_request_status_pending.save(db=db)
+
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_mark_not_eligible(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request_status_pending,
+        pre_approval_webhooks,
+        generate_pre_approval_webhook_auth_header,
+    ):
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+
+        # new webhook reply
+        response = api_client.post(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert not submit_mock.called
+        assert not mock_dispatch_message.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_mark_not_eligible_with_previous_eligible(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request_status_pending,
+        pre_approval_webhooks,
+        generate_pre_approval_webhook_auth_header,
+    ):
+        # mock previous webhook reply
+        PreApprovalWebhookReply.create(
+            db=db,
+            data={
+                "webhook_id": pre_approval_webhooks[0].id,
+                "privacy_request_id": privacy_request_status_pending.id,
+                "is_eligible": True,
+            },
+        )
+
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+
+        # new webhook reply
+        response = api_client.post(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert not submit_mock.called
+        assert not mock_dispatch_message.called
+
+
 class TestDenyPrivacyRequest:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request):
@@ -2457,7 +2982,7 @@ class TestResumePrivacyRequest:
         self,
         url,
         api_client,
-        generate_webhook_auth_header,
+        generate_policy_webhook_auth_header,
         policy_pre_execution_webhooks,
     ):
         response = api_client.post(url)
@@ -2467,7 +2992,7 @@ class TestResumePrivacyRequest:
         self,
         url,
         api_client,
-        generate_webhook_auth_header,
+        generate_policy_webhook_auth_header,
         policy_pre_execution_webhooks,
     ):
         auth_header = {
@@ -2483,7 +3008,7 @@ class TestResumePrivacyRequest:
         self,
         url,
         api_client,
-        generate_webhook_auth_header,
+        generate_policy_webhook_auth_header,
         policy_pre_execution_webhooks,
     ):
         """
@@ -2511,7 +3036,7 @@ class TestResumePrivacyRequest:
         self,
         url,
         api_client,
-        generate_webhook_auth_header,
+        generate_policy_webhook_auth_header,
         policy_post_execution_webhooks,
     ):
         """Only can resume execution after Pre-Execution webhooks"""
@@ -2535,14 +3060,14 @@ class TestResumePrivacyRequest:
         self,
         url,
         api_client,
-        generate_webhook_auth_header,
+        generate_policy_webhook_auth_header,
         policy_pre_execution_webhooks,
         privacy_request,
         db,
     ):
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=db)
-        auth_header = generate_webhook_auth_header(
+        auth_header = generate_policy_webhook_auth_header(
             webhook=policy_pre_execution_webhooks[0]
         )
         response = api_client.post(url, headers=auth_header, json={})
@@ -2558,7 +3083,7 @@ class TestResumePrivacyRequest:
         submit_mock,
         url,
         api_client,
-        generate_webhook_auth_header,
+        generate_policy_webhook_auth_header,
         policy_pre_execution_webhooks,
         privacy_request,
         db,
@@ -2566,7 +3091,7 @@ class TestResumePrivacyRequest:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.due_date = None
         privacy_request.save(db=db)
-        auth_header = generate_webhook_auth_header(
+        auth_header = generate_policy_webhook_auth_header(
             webhook=policy_pre_execution_webhooks[0]
         )
         response = api_client.post(
@@ -3113,6 +3638,60 @@ class TestVerifyIdentity:
         )
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    @mock.patch(
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
+    )
+    def test_verify_identity_admin_approval_needed_with_pre_approval_webhooks(
+        self,
+        mock_trigger_pre_approval_webhook,
+        mock_dispatch_message,
+        mock_run_privacy_request,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_notification_enabled,
+        require_manual_request_approval,
+        pre_approval_webhooks,
+    ):
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(self.code)
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 200
+
+        resp = resp.json()
+        assert resp["status"] == "pending"
+        assert resp["identity_verified_at"] is not None
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.identity_verified_at is not None
+
+        approved_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+
+        assert approved_audit_log is None
+
+        assert not mock_run_privacy_request.called
+
+        assert mock_dispatch_message.called
+
+        assert mock_trigger_pre_approval_webhook.called
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"

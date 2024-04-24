@@ -71,6 +71,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: webhook_id
+      data_categories:
+      - system.operations
   - name: audit_log_resource
     fields:
     - name: created_at
