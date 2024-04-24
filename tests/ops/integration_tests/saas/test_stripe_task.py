@@ -613,6 +613,8 @@ async def test_stripe_access_request_task_with_phone_number(
 ) -> None:
     """Full access request based on the Stripe SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    # The Privacy request fixture we're using already has an email/phone cached
+    # so I'm clearing that first
     clear_cache_identities(privacy_request.id)
 
     identity = Identity(**{"phone_number": stripe_identity_phone_number})

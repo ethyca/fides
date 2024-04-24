@@ -84,7 +84,6 @@ def combined_traversal_node_dict(integration_mongodb_config, connection_config):
 def make_graph_task(integration_mongodb_config, connection_config, db):
     def task(node):
         request_task = node.to_mock_request_task()
-
         return MockMongoTask(
             TaskResources(
                 EMPTY_REQUEST,

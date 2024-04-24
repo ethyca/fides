@@ -28,27 +28,15 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.ctl_session import sync_engine
-from fides.api.graph.config import TERMINATOR_ADDRESS
-from fides.api.graph.graph import DatasetGraph
 from fides.api.main import app
 from fides.api.models.privacy_request import (
-    COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
-    RequestTask,
     generate_request_callback_jwe,
 )
-from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
+from fides.api.models.sql_models import Cookies, DataUse
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import (
-    APPROVER,
-    CONTRIBUTOR,
-    OWNER,
-    VIEWER,
-    VIEWER_AND_APPROVER,
-)
+from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
-from fides.api.task.create_request_tasks import run_access_request
-from fides.api.task.deprecated_graph_task import run_access_request_deprecated
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
@@ -639,9 +627,16 @@ def run_privacy_request_task(celery_session_app):
     ]
 
 
-def wait_for_terminator_completion(
+class DSRThreeTestRunnerTimedOut(Exception):
+    """DSR 3.0 Test Runner Timed Out"""
+
+
+def wait_for_tasks_to_complete(
     db: Session, pr: PrivacyRequest, action_type: ActionType
 ):
+    """Testing Helper for DSR 3.0 - repeatedly checks to see if all Request Tasks
+    have exited so bogged down test doesn't hang"""
+
     def all_tasks_have_run(tasks: Query) -> bool:
         return all(tsk.status in EXITED_EXECUTION_LOG_STATUSES for tsk in tasks)
 
@@ -658,7 +653,7 @@ def wait_for_terminator_completion(
         time.sleep(1)
         counter += 1
         if counter == 5:
-            raise Exception()
+            raise DSRThreeTestRunnerTimedOut()
 
 
 def access_runner_tester(
@@ -670,7 +665,7 @@ def access_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the access request for both DSR 2.0 and DSR 3.0
+    Function for testing the access request for either DSR 2.0 and DSR 3.0
     """
     try:
         return access_runner(
@@ -683,8 +678,9 @@ def access_runner_tester(
             privacy_request_proceed=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
-        # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
-        wait_for_terminator_completion(session, privacy_request, ActionType.access)
+        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
+        # RequestTasks to finish
+        wait_for_tasks_to_complete(session, privacy_request, ActionType.access)
         return privacy_request.get_raw_access_results()
 
 
@@ -698,7 +694,7 @@ def erasure_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the erasure runner for both DSR 2.0 and DSR 3.0
+    Function for testing the erasure runner for either DSR 2.0 and DSR 3.0
     """
     try:
         return erasure_runner(
@@ -712,8 +708,9 @@ def erasure_runner_tester(
             privacy_request_proceed=False,  # This allows the DSR 3.0 Erasure Runner to be tested in isolation
         )
     except PrivacyRequestExit:
-        # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
-        wait_for_terminator_completion(session, privacy_request, ActionType.erasure)
+        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits
+        # for RequestTasks to finish
+        wait_for_tasks_to_complete(session, privacy_request, ActionType.erasure)
         return privacy_request.get_raw_masking_counts()
 
 
@@ -726,7 +723,7 @@ def consent_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the consent request for both DSR 2.0 and DSR 3.0
+    Function for testing the consent request for either DSR 2.0 and DSR 3.0
     """
     try:
         return consent_runner(
@@ -739,8 +736,9 @@ def consent_runner_tester(
             privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
         )
     except PrivacyRequestExit:
-        # DSR 3.0 raises a PrivacyRequestExit status while it waits for RequestTasks to finish
-        wait_for_terminator_completion(session, privacy_request, ActionType.consent)
+        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
+        # RequestTasks to finish
+        wait_for_tasks_to_complete(session, privacy_request, ActionType.consent)
         return privacy_request.get_consent_results()
 
 

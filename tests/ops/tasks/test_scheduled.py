@@ -57,6 +57,8 @@ def test_initiate_batch_email_send() -> None:
 
 
 def test_initiate_scheduled_dsr_data_removal() -> None:
+    """Currently runs weekly to pick up any Request Tasks that expired in the last week
+    or Privacy Requests that need PII removed from them."""
     CONFIG.test_mode = False
 
     initiate_scheduled_dsr_data_removal()
@@ -77,6 +79,8 @@ def test_initiate_scheduled_dsr_data_removal() -> None:
 
 
 def test_initiate_poll_for_exited_privacy_request_tasks() -> None:
+    """This task runs on an interval looking for Privacy Requests that need to change state
+    because all their Request Tasks have had a chance to run but some are errored"""
     CONFIG.test_mode = False
 
     initiate_poll_for_exited_privacy_request_tasks()

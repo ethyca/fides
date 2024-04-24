@@ -1,6 +1,6 @@
 import json
-
 from typing import Any
+
 from celery import VERSION_BANNER
 from celery.apps.worker import Worker
 from celery.signals import celeryd_after_setup

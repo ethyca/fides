@@ -37,7 +37,8 @@ class TestEnabledActions:
         self, db, policy, integration_postgres_config, dataset_graph, privacy_request
     ) -> None:
         """Disable the access request for one connection config and verify the access results"""
-
+        # Not testing this with both the DSR 2.0 and DSR 3.0 schedules because filtered_by_enabled_actions
+        # happens after the access section now
         # disable the access action type for Postgres
         integration_postgres_config.enabled_actions = [ActionType.erasure]
         integration_postgres_config.save(db)

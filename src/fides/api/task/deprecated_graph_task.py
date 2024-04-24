@@ -118,7 +118,7 @@ def run_access_request_deprecated(
         ) -> None:
             """Run the traversal, as an action creating a GraphTask for each traversal_node."""
             if not tn.is_root_node():
-                # Mock a RequestTask object in memory
+                # Mock a RequestTask object in memory to share code with DSR 3.0
                 resources.privacy_request_task = tn.to_mock_request_task()
                 data[tn.address] = GraphTask(resources)
 
@@ -195,7 +195,7 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
         ) -> None:
             """Run the traversal, as an action creating a GraphTask for each traversal_node."""
             if not tn.is_root_node():
-                # Mock a RequestTask object in memory
+                # Mock a RequestTask object in memory to share code with DSR 3.0
                 resources.privacy_request_task = tn.to_mock_request_task()
                 data[tn.address] = GraphTask(resources)
 
@@ -285,7 +285,7 @@ def run_consent_request_deprecated(  # pylint: disable = too-many-arguments
 
         for col_address, node in graph.nodes.items():
             traversal_node = TraversalNode(node)
-            # Mock a RequestTask object in memory
+            # Mock a RequestTask object in memory to share code with DSR 3.0
             resources.privacy_request_task = traversal_node.to_mock_request_task()
             task = GraphTask(resources)
             dsk[col_address] = (task.consent_request, identity)

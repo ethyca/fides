@@ -169,10 +169,10 @@ class TraversalNode(Contextualizable):
 
     def to_mock_request_task(self) -> RequestTask:
         """Converts a portion of the TraversalNode into a RequestTask - used in building
-        dry run queries or for supporting Deprecated DSR 2.0"""
+        dry run queries or for supporting Deprecated DSR 2.0. Request Tasks were introduced in DSR 3.0
+        """
         collection_data = json.loads(self.node.collection.json())
-        # Mock a RequestTask object in memory
-        return RequestTask(
+        return RequestTask(  # Mock a RequestTask object in memory
             collection_address=self.node.address.value,
             dataset_name=self.node.address.dataset,
             collection_name=self.node.address.collection,

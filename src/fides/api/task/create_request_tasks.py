@@ -37,7 +37,7 @@ def _add_edge_if_no_nodes(
     """
     Adds an edge from the root node to the terminator node, altering the networkx_graph in-place.
 
-    Handle edge case of there are no traversal nodes in the graph at all
+    Handles edge case if there are no traversal nodes in the graph at all
     """
     if not traversal_nodes.items():
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS)
@@ -115,7 +115,7 @@ def build_erasure_networkx_digraph(
     regardless of whether node is real or artificial.
 
     Erasure graphs are different from access graphs, in that we've queried all the data we need upfront in the access
-    graphs, so the nodes can in theory run entirely in parallel, except for the "erase_after" dependencies.
+    graphs, so that all nodes can in theory run entirely in parallel, except for the "erase_after" dependencies.
 
     We tack on the "erase_after" dependencies here that aren't captured in traversal.traverse.
 
@@ -186,7 +186,8 @@ def base_task_data(
 
     if node not in ARTIFICIAL_NODES:
         # Save a representation of the collection that can be re-hydrated later
-        # when executing the node
+        # when executing the node, so we don't have to recalculate incoming
+        # and outgoing edges.
         collection_representation = json.loads(
             dataset_graph.nodes[node].collection.json()
         )
@@ -319,10 +320,10 @@ def _get_data_for_erasures(
     retrieved_task_data: List[Dict] = []
     if (
         corresponding_access_task
-        and not request_task.request_task_address in ARTIFICIAL_NODES
+        and request_task.request_task_address not in ARTIFICIAL_NODES
     ):
         # IMPORTANT. Use "data_for_erasures" - not RequestTask.access_data.
-        # For arrays, "access_data" may remove non-matched elements, but to build erasure
+        # For arrays, "access_data" may remove non-matched elements from arrays, but to build erasure
         # queries we need the original data in the appropriate indices
         retrieved_task_data = corresponding_access_task.get_decoded_data_for_erasures()
 
@@ -416,9 +417,9 @@ def run_access_request(
     """
     DSR 3.0: Build the "access" graph, add its tasks to the database and queue the root task.  If erasure rules
     are present, build the "erasure" graph at the same time so their nodes match, but these erasure nodes are
-    not yet ready to run until the access graph is complete.
+    not yet ready to run until the access graph is complete in-full.
 
-    If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
+    If we are *reprocessing* a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
 
     if privacy_request.access_tasks.count():

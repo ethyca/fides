@@ -1,4 +1,3 @@
-import random
 from typing import Any, Dict, List
 from unittest import mock
 
@@ -67,6 +66,7 @@ def delete_no_op(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("use_dsr_2_0")
 async def test_saas_erasure_order_request_task(
     db,
     policy,
@@ -75,6 +75,8 @@ async def test_saas_erasure_order_request_task(
     saas_erasure_order_connection_config,
     saas_erasure_order_dataset_config,
 ) -> None:
+    """This test uses DSR 2.0 specifically. Equivalent concept for DSR 3.0 tested
+    in test_create_request_tasks.py"""
     privacy_request.policy_id = erasure_policy_complete_mask.id
     privacy_request.save(db)
 
@@ -158,6 +160,7 @@ async def test_saas_erasure_order_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("use_dsr_2_0")
 async def test_saas_erasure_order_request_task_with_cycle(
     db,
     privacy_request,
@@ -166,6 +169,8 @@ async def test_saas_erasure_order_request_task_with_cycle(
     saas_erasure_order_connection_config,
     saas_erasure_order_dataset_config,
 ) -> None:
+    """This test uses DSR 2.0 specifically. Equivalent concept for DSR 3.0 tested
+    in test_create_request_tasks.py"""
     privacy_request.policy_id = erasure_policy_complete_mask.id
     privacy_request.save(db)
 

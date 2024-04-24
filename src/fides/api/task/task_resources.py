@@ -108,15 +108,14 @@ class TaskResources:
         self.request = request
 
         self.policy = policy
+        # TODO Remove when we stop support for DSR 2.0
+        self.cache = get_cache()
         self.privacy_request_task = privacy_request_task
         self.connection_configs: Dict[str, ConnectionConfig] = {
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
         self.session = session
-
-        # TODO Remove when we stop support for DSR 2.0
-        self.cache = get_cache()
 
     def __enter__(self) -> "TaskResources":
         """Support 'with' usage for closing resources"""
@@ -179,6 +178,11 @@ class TaskResources:
         raise ConnectorNotFoundException(f"No available connector for {key}")
 
     def close(self) -> None:
-        """Close any held resources"""
+        """Close any held resources
+
+        Note that using TaskResources as a Connection Manager will use this
+        self.connections.close() to close connections to External Databases.  This is
+        really important to avoid opening up too many connections.
+        """
         logger.debug("Closing all task resources for {}", self.request.id)
         self.connections.close()

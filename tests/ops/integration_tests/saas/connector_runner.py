@@ -313,6 +313,8 @@ class ConnectorRunner:
             )
             # DSR 3.0
             if CONFIG.execution.use_dsr_3_0:
+                # DSR 3.0 does not pull its results out of the cache, but rather
+                # off of the Request Tasks -
                 mock_external_results_3_0(
                     privacy_request,
                     dataset_graph,
@@ -355,15 +357,18 @@ class ConnectorRunner:
 
 
 def create_privacy_request_with_policy_rules(
-    access_or_consent_policy: Policy,
-    erasure_policy: Optional[Policy] = None,
+    access_or_consent_policy: Policy,  # In the event only one policy is passed in
+    erasure_policy: Optional[
+        Policy
+    ] = None,  # If two policies are passed in, second goes here.
     privacy_request_id: Optional[str] = None,
 ) -> PrivacyRequest:
     """
-    Consolidate the policy rules into a single Policy and then set this policy on a created Privacy Request.
+    Create a proper Privacy Request with a single Policy by combining policy rules passed in for this particular
+    test and persist to the database
 
-    DSR 3.0 testing requires that Privacy Requests and Policies are formulated properly and persisted to the database.
-    Privacy Requests only have one Policy -
+    Privacy Requests have only one policy, but tests using the connector runner can pass in policies separately.
+    DSR 3.0 scheduler requires that Privacy Requests are formulated properly and persisted to the database.
     """
     session = Session.object_session(access_or_consent_policy)
 

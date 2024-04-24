@@ -1668,7 +1668,7 @@ class RequestTask(Base):
     action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
 
     status = Column(
-        EnumColumn(ExecutionLogStatus),
+        EnumColumn(ExecutionLogStatus),  # character varying in database
         index=True,
         nullable=False,
     )
@@ -1684,10 +1684,10 @@ class RequestTask(Base):
     )  # All tasks that can be reached by the current task.  This is useful when this task fails,
     # and we can mark every single one of these as failed.
 
-    # Raw data retrieved from an access request is stored here.  This contains all of the data
-    # we retrieved, needed for downstream tasks, but hasn't been filtered by data category
-    # for the end user.
-    access_data = Column(  # An encrypted JSON String - saved as a list of rows
+    # Raw data retrieved from an access request is stored here.  This contains all of the
+    # intermediate data we retrieved, needed for downstream tasks, but hasn't been filtered
+    # by data category for the end user.
+    access_data = Column(  # An encrypted JSON String - saved as a list of Rows
         StringEncryptedType(
             type_in=String(),
             key=CONFIG.security.app_encryption_key,
@@ -1782,7 +1782,7 @@ class RequestTask(Base):
         """Returns True if upstream tasks are complete and the current Request Task
         is not running in another celery task.
 
-        This check ignores its database status
+        This check ignores its database status - that is checked elsewhere.
         """
         return self.upstream_tasks_complete(
             db, should_log
@@ -1790,11 +1790,7 @@ class RequestTask(Base):
 
     def upstream_tasks_complete(self, db: Session, should_log: bool = False) -> bool:
         """Determines if all of the upstream tasks of the current task are complete"""
-        upstream_tasks: Query = db.query(RequestTask).filter(
-            RequestTask.privacy_request_id == self.privacy_request_id,
-            RequestTask.collection_address.in_(self.upstream_tasks or []),
-            RequestTask.action_type == self.action_type,
-        )
+        upstream_tasks: Query = self.upstream_tasks_objects(db)
         tasks_complete: bool = all(
             upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
             for upstream_task in upstream_tasks
@@ -1822,8 +1818,9 @@ class RequestTask(Base):
 
     def request_task_running(self, should_log: bool = False) -> bool:
         """Returns a rough measure if the Request Task is already running -
+        not 100% accurate.
 
-        This is only applicable if you are running workers and
+        This is further only applicable if you are running workers and
         CONFIG.execution.task_always_eager=False. This is just an extra check to reduce possible
         over-scheduling, but it is also okay if the same node runs multiple times.
         """

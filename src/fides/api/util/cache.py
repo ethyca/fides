@@ -251,7 +251,7 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
     Note that it is possible a Privacy Request or Request Task is queued multiple times
     over the life of a Priavcy Request so the cached id is the latest task queued
 
-    :param request_id: Can be the Privacy Request Id or a Request Task ID
+    :param request_id: Can be the Privacy Request Id or a Request Task ID - these are cached in the same place.
     :param celery_task_id: The id of the Celery task itself that was queued to run the
     Privacy Request or the Request Task
     :return: None
@@ -284,9 +284,14 @@ def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
     for _, task_details in queried_tasks.items():
         for _, state_array in task_details.items():
             state: str = state_array[0]
+            # Note, not positive of states here,
+            # some seen in testing, some from here:
+            # https://github.com/celery/celery/blob/main/celery/worker/control.py or
+            # https://github.com/celery/celery/blob/main/celery/states.py
             if state in [
                 "active",
                 "received",
+                "registered",
                 "reserved",
                 "retry",
                 "scheduled",

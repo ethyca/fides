@@ -30,7 +30,7 @@ from fides.api.task.create_request_tasks import (
 from fides.api.task.execute_request_tasks import run_access_node
 from fides.api.task.graph_task import build_consent_dataset_graph
 from fides.config import CONFIG
-from tests.conftest import wait_for_terminator_completion
+from tests.conftest import wait_for_tasks_to_complete
 from tests.ops.task.traversal_data import combined_mongo_postgresql_graph
 
 from ..graph.graph_test_util import erasure_policy, field
@@ -606,7 +606,7 @@ class TestPersistErasureRequestTasks:
         run_access_node.delay(
             privacy_request.id, ready_tasks[0].id, privacy_request_proceed=False
         )
-        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+        wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
 
         update_erasure_tasks_with_access_data(db, privacy_request)
         payment_card_task = privacy_request.erasure_tasks.filter(
@@ -695,7 +695,7 @@ class TestPersistErasureRequestTasks:
         run_access_node.delay(
             privacy_request.id, ready_tasks[0].id, privacy_request_proceed=False
         )
-        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+        wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
 
         update_erasure_tasks_with_access_data(db, privacy_request)
 
@@ -1247,7 +1247,7 @@ class TestRunAccessRequestWithRequestTasks:
             db,
             privacy_request_proceed=True,
         )
-        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+        wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
 
         assert privacy_request.access_tasks.count() == 16
         assert privacy_request.erasure_tasks.count() == 0
@@ -1342,7 +1342,7 @@ class TestRunAccessRequestWithRequestTasks:
             db,
             privacy_request_proceed=True,
         )
-        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+        wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
 
         assert privacy_request.access_tasks.count() == 16
         assert privacy_request.erasure_tasks.count() == 0
@@ -1394,7 +1394,7 @@ class TestRunAccessRequestWithRequestTasks:
             db,
             privacy_request_proceed=True,
         )
-        wait_for_terminator_completion(db, privacy_request, ActionType.access)
+        wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
 
         # No new tasks were created - we just updated the statuses of the old ones
         assert privacy_request.access_tasks.count() == 16
@@ -1511,7 +1511,7 @@ class TestRunErasureRequestWithRequestTasks:
             db,
             privacy_request_proceed=False,
         )
-        wait_for_terminator_completion(
+        wait_for_tasks_to_complete(
             db, privacy_request_with_erasure_policy, ActionType.access
         )
         assert privacy_request_with_erasure_policy.access_tasks.count() == 16
@@ -1523,7 +1523,7 @@ class TestRunErasureRequestWithRequestTasks:
         run_erasure_request(
             privacy_request_with_erasure_policy, db, privacy_request_proceed=False
         )
-        wait_for_terminator_completion(
+        wait_for_tasks_to_complete(
             db, privacy_request_with_erasure_policy, ActionType.erasure
         )
 
@@ -1572,7 +1572,7 @@ class TestRunErasureRequestWithRequestTasks:
         run_erasure_request(
             privacy_request_with_erasure_policy, db, privacy_request_proceed=False
         )
-        wait_for_terminator_completion(
+        wait_for_tasks_to_complete(
             db, privacy_request_with_erasure_policy, ActionType.erasure
         )
 
@@ -1624,7 +1624,7 @@ class TestRunErasureRequestWithRequestTasks:
             db,
             privacy_request_proceed=False,
         )
-        wait_for_terminator_completion(
+        wait_for_tasks_to_complete(
             db, privacy_request_with_erasure_policy, ActionType.access
         )
         raw_access_results = (

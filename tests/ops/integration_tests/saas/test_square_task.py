@@ -124,6 +124,8 @@ async def test_square_access_request_task_by_phone_number(
 ) -> None:
     """Full access request based on the Square SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    # Privacy request fixture already caches an email and a phone number, so
+    # clearing those first
     clear_cache_identities(privacy_request.id)
 
     identity = Identity(**{"phone_number": square_identity_phone_number})

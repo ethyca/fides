@@ -397,7 +397,9 @@ def run_privacy_request(
             raw_access_results: Dict = privacy_request.get_raw_access_results()
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
-                or policy.get_rules_for_action(action_type=ActionType.erasure)
+                or policy.get_rules_for_action(
+                    action_type=ActionType.erasure
+                )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.upload_access,
                 from_checkpoint=resume_step,
@@ -444,6 +446,8 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.finalize_erasure,
                 from_checkpoint=resume_step,
             ):
+                # This checkpoint allows a Privacy Request to be re-queued
+                # after the Erasure Step is complete for DSR 3.0
                 privacy_request.cache_failed_checkpoint_details(
                     CurrentStep.finalize_erasure
                 )
@@ -470,10 +474,11 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.finalize_consent,
                 from_checkpoint=resume_step,
             ):
+                # This checkpoint allows a Privacy Request to be re-queued
+                # after the Consent Step is complete for DSR 3.0
                 privacy_request.cache_failed_checkpoint_details(
                     CurrentStep.finalize_consent
                 )
-                # This conditional adds a checkpoint for resuming after consent graph complete
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
@@ -483,7 +488,8 @@ def run_privacy_request(
         except PrivacyRequestExit:
             # Privacy Request Exiting awaiting sub task processing (Request Tasks)
             # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
-            # Request Tasks have been built.
+            # Request Tasks have been built.  The Privacy Request will be requeued from
+            # the appropriate checkpoint when all the Request Tasks have run.
             return
 
         except BaseException as exc:  # pylint: disable=broad-except
@@ -534,7 +540,7 @@ def run_privacy_request(
         ):
             try:
                 if not access_result_urls:
-                    # For DSR 3.0, if request has both access and erasure rules, this needs to be fetched
+                    # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
                     # from the database because the Privacy Request would have exited
                     # processing and lost access to the access_result_urls in memory
                     access_result_urls = (privacy_request.access_result_urls or {}).get(

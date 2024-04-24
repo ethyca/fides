@@ -415,7 +415,7 @@ def test_upload_access_results_has_data_category_field_mapping(
     )
 
     # sanity check that acccess results returned as expected
-    results = pr.get_results()
+    results = pr.get_raw_access_results()
     assert len(results.keys()) == 11
 
     # what we're really testing - ensure data_category_field_mapping arg is well-populated
@@ -487,8 +487,8 @@ def test_upload_access_results_has_data_use_map(
         data,
     )
 
-    # sanity check that acccess results returned as expected
-    results = pr.get_results()
+    # sanity check that access results returned as expected
+    results = pr.get_raw_access_results()
     assert len(results.keys()) == 11
 
     # what we're really testing - ensure data_use_map arg is well-populated
@@ -628,23 +628,21 @@ def test_create_and_process_access_request_with_custom_identities_postgres(
         data,
     )
 
-    results = pr.get_results()
+    results = pr.get_raw_access_results()
     assert len(results.keys()) == 12
 
     for key in results.keys():
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+    result_key_prefix = f"postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
     visit_key = result_key_prefix + "visit"
     assert results[visit_key][0]["email"] == customer_email
 
-    loyalty_key = (
-        f"EN_{pr.id}__access_request__postgres_example_test_extended_dataset:loyalty"
-    )
+    loyalty_key = f"postgres_example_test_extended_dataset:loyalty"
     assert results[loyalty_key][0]["id"] == loyalty_id
 
     log_id = pr.execution_logs[0].id
@@ -1175,6 +1173,8 @@ def test_create_and_process_erasure_request_specific_category_mssql(
     erasure_policy,
     run_privacy_request_task,
 ):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     customer_email = "customer-1@example.com"
     customer_id = 1
     data = {

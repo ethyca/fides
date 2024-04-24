@@ -1841,7 +1841,7 @@ def requeue_privacy_request(
             resume_step = CurrentStep.access
 
     logger.info(
-        "Manually requeuing Privacy Request {} from step {}",
+        "Manually re-queuing Privacy Request {} from step {}",
         pr,
         resume_step.value if resume_step else None,
     )

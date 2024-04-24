@@ -300,7 +300,7 @@ def remove_saved_dsr_data(self: DatabaseTask) -> None:
         db.execute(
             remove_data_from_privacy_request,
             {
-                "ttl": (
+                "ttl": (  # Using Redis Default TTL Seconds by default
                     datetime.now() - timedelta(seconds=CONFIG.redis.default_ttl_seconds)
                 ),
             },

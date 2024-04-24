@@ -5,8 +5,8 @@ from loguru import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import (
+    PrivacyRequestCanceled,
     PrivacyRequestNotFound,
-    PrivacyRequestStatusCanceled,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
@@ -55,7 +55,7 @@ def run_prerequisite_task_checks(
         )
 
     if privacy_request.status == PrivacyRequestStatus.canceled:
-        raise PrivacyRequestStatusCanceled(
+        raise PrivacyRequestCanceled(
             f"Cannot execute request task {privacy_request_task_id} of privacy request {privacy_request_id}: status is {privacy_request.status.value}"
         )
 
@@ -66,11 +66,7 @@ def run_prerequisite_task_checks(
 
     assert request_task  # For mypy
 
-    upstream_results: Query = session.query(RequestTask).filter(
-        RequestTask.privacy_request_id == request_task.privacy_request_id,
-        RequestTask.collection_address.in_(request_task.upstream_tasks or []),
-        RequestTask.action_type == request_task.action_type,
-    )
+    upstream_results: Query = request_task.upstream_tasks_objects(session)
 
     # Only bother running this if the current task body needs to run
     if request_task.status == ExecutionLogStatus.pending:
@@ -102,7 +98,7 @@ def create_graph_task(
             request_task.id,
             str(exc),
         )
-        # Normally the GraphTask takes care of this logging, but in this case we can't create it in the first place!
+        # Normally the GraphTask takes care of creating the ExecutionLog, but in this case we can't create it in the first place!
         ExecutionLog.create(
             db=session,
             data={
@@ -119,7 +115,7 @@ def create_graph_task(
         mark_current_and_downstream_nodes_as_failed(request_task, session)
 
         raise ResumeTaskException(
-            f"Cannot resume task. Error hydrating task from database: Request Task {request_task.id} for Privacy Request {request_task.privacy_request_id}"
+            f"Cannot resume request task. Error hydrating task from database: Request Task {request_task.id} for Privacy Request {request_task.privacy_request_id}. {exc}"
         )
 
     return graph_task
@@ -128,7 +124,7 @@ def create_graph_task(
 def can_run_task_body(
     request_task: RequestTask,
 ) -> bool:
-    """Return true if we can execute the task body. We should skip if the task is already
+    """Return True if we can execute the task body. We should skip if the task is already
     complete or this is a root/terminator node"""
     if request_task.is_terminator_task:
         logger.info(
@@ -398,21 +394,6 @@ def _order_tasks_by_input_key(
         )
         tasks.append(task)
     return tasks
-
-
-def _collect_task_resources(
-    session: Session, request_task: RequestTask
-) -> TaskResources:
-    """Build the TaskResources artifact which just collects some Database resources needed for the current task
-    Currently just used for testing -
-    """
-    return TaskResources(
-        request_task.privacy_request,
-        request_task.privacy_request.policy,
-        session.query(ConnectionConfig).all(),
-        request_task,
-        session,
-    )
 
 
 mapping = {

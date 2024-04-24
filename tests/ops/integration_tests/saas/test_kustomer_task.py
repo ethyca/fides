@@ -1,5 +1,3 @@
-import random
-
 import pytest
 import requests
 

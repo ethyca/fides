@@ -1,10 +1,9 @@
-from unittest import mock
-
 import pytest
+from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
+    PrivacyRequestCanceled,
     PrivacyRequestNotFound,
-    PrivacyRequestStatusCanceled,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
@@ -20,6 +19,7 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequestStatus,
@@ -32,14 +32,29 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.api.task.execute_request_tasks import (
-    _collect_task_resources,
     can_run_task_body,
     create_graph_task,
     run_prerequisite_task_checks,
 )
 from fides.api.task.graph_runners import use_dsr_3_0_scheduler
 from fides.api.task.graph_task import mark_current_and_downstream_nodes_as_failed
+from fides.api.task.task_resources import TaskResources
 from fides.api.util.cache import FidesopsRedis, get_cache
+
+
+def _collect_task_resources(
+    session: Session, request_task: RequestTask
+) -> TaskResources:
+    """Build the TaskResources artifact which just collects some Database resources needed for the current task
+    Currently just used for testing -
+    """
+    return TaskResources(
+        request_task.privacy_request,
+        request_task.privacy_request.policy,
+        session.query(ConnectionConfig).all(),
+        request_task,
+        session,
+    )
 
 
 @pytest.fixture()
@@ -72,7 +87,7 @@ class TestRunPrerequisiteTaskChecks:
         privacy_request.status = PrivacyRequestStatus.canceled
         privacy_request.save(db)
 
-        with pytest.raises(PrivacyRequestStatusCanceled):
+        with pytest.raises(PrivacyRequestCanceled):
             run_prerequisite_task_checks(db, privacy_request.id, "12345")
 
     @pytest.mark.usefixtures("request_task")
