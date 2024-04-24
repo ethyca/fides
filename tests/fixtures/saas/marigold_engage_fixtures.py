@@ -67,7 +67,7 @@ def marigold_engage_erasure_data(
     marigold_engage_erasure_identity_email: str,
 ) -> Generator:
     base_url = f'https://api.sailthru.com/user'
-    email_test = marigold_engage_erasure_identity_email
+    email_test = "MARCG@AOL.COm"
     email_prep = '{"id":"'+email_test+'"}'
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -95,8 +95,8 @@ def marigold_engage_erasure_data(
         "json": email_prep
     }
     response = requests.request("GET", base_url, params=params)
-    # import pdb
-    # pdb.set_trace()
+    import pdb
+    pdb.set_trace()
     assert response.ok
     
 
