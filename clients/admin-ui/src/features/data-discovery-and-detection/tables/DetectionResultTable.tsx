@@ -27,6 +27,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import { StagedResource } from "~/types/api";
+import DetectionItemAction from "../DetectionItemActions";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -104,7 +105,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   }, [totalPages, setTotalPages]);
 
   const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(() => {
-    const defaultColumns = [
+    const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
@@ -131,16 +132,23 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
       }),
     ];
-    return isField
-      ? defaultColumns
-      : [
-          ...defaultColumns,
-          columnHelper.display({
-            id: "actions",
-            cell: () => <DefaultCell value="action cell (placeholder)" />,
-            header: "Actions",
-          }),
-        ];
+
+    if (!isField) {
+      const actionColumn: ColumnDef<StagedResource, any> =
+        columnHelper.accessor((row) => row, {
+          id: "action",
+          cell: (props) => (
+            <DetectionItemAction
+              resource={props.getValue()}
+              resourceType={findResourceType(props.getValue())}
+            />
+          ),
+          header: (props) => <DefaultHeaderCell value="Action" {...props} />,
+        });
+      columns.push(actionColumn);
+    }
+
+    return columns;
   }, [isField]);
 
   const { navigateToDetectionResults } = useDiscoveryRoutes();
