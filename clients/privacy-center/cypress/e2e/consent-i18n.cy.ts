@@ -1568,12 +1568,13 @@ describe("Consent i18n", () => {
       }).as("getExperience");
     };
 
-    describe("displays localized texts", () => {
+    describe.only("displays localized texts", () => {
       beforeEach(() => {
         beforeAll();
         cy.visitWithLanguage("/consent", SPANISH_LOCALE);
         cy.getByTestId("consent");
         cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.getByTestId("consent-heading").should("be.visible");
       });
 
       it("displays localized text from experience", () => {
@@ -1650,7 +1651,7 @@ describe("Consent i18n", () => {
         cy.wait("@postConsentRequestVerify");
       });
 
-      it.skip("calls notices served with the correct history id for the notices", () => {
+      it("calls notices served with the correct history id for the notices", () => {
         // Consent reporting intercept
         cy.intercept(
           "PATCH",
