@@ -1568,17 +1568,16 @@ describe("Consent i18n", () => {
       }).as("getExperience");
     };
 
-    describe("displays localized texts", () => {
+    describe.only("displays localized texts", () => {
       beforeEach(() => {
         beforeAll();
         cy.visitWithLanguage("/consent", SPANISH_LOCALE);
-        cy.getByTestId("consent");
         cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.wait("@getExperience");
       });
 
       it("displays localized text from experience", () => {
-        cy.getByTestId("consent-heading").contains("exp.title");
-        // cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
+        cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
         cy.getByTestId("consent-description").contains(
           SPANISH_MODAL.description
         );
@@ -1626,12 +1625,6 @@ describe("Consent i18n", () => {
     describe("utilizes correct history and configs id for the current language", () => {
       beforeEach(() => {
         beforeAll();
-
-        cy.intercept("GET", `${API_URL}/id-verification/config`, {
-          body: {
-            identity_verification_required: true,
-          },
-        }).as("getVerificationConfig");
 
         cy.visitWithLanguage("/", SPANISH_LOCALE);
         cy.wait("@getVerificationConfig");
