@@ -30,9 +30,9 @@ class SaaSRequestOverrideFactory:
     user-defined functions that act as overrides to SaaS request execution
     """
 
-    registry: Dict[SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int]]]] = (
-        {}
-    )
+    registry: Dict[
+        SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int, None]]]
+    ] = {}
     valid_overrides: Dict[SaaSRequestType, str] = {}
 
     # initialize each request type's inner dicts with an empty dict
@@ -41,10 +41,9 @@ class SaaSRequestOverrideFactory:
         valid_overrides[request_type] = ""
 
     @classmethod
-    def register(
-        cls, name: str, request_types: List[SaaSRequestType]
-    ) -> Callable[
-        [Callable[..., Union[List[Row], int]]], Callable[..., Union[List[Row], int]]
+    def register(cls, name: str, request_types: List[SaaSRequestType]) -> Callable[
+        [Callable[..., Union[List[Row], int, None]]],
+        Callable[..., Union[List[Row], int, None]],
     ]:
         """
         Decorator to register the custom-implemented SaaS request override
@@ -59,8 +58,8 @@ class SaaSRequestOverrideFactory:
             )
 
         def wrapper(
-            override_function: Callable[..., Union[List[Row], int]],
-        ) -> Callable[..., Union[List[Row], int]]:
+            override_function: Callable[..., Union[List[Row], int, None]],
+        ) -> Callable[..., Union[List[Row], int, None]]:
             for request_type in request_types:
                 logger.debug(
                     "Registering new SaaS request override function '{}' under name '{}' for SaaSRequestType {}",
@@ -106,16 +105,16 @@ class SaaSRequestOverrideFactory:
     @classmethod
     def get_override(
         cls, override_function_name: str, request_type: SaaSRequestType
-    ) -> Callable[..., Union[List[Row], int]]:
+    ) -> Callable[..., Union[List[Row], int, None]]:
         """
         Returns the request override function given the name.
         Raises NoSuchSaaSRequestOverrideException if the named override
         does not exist.
         """
         try:
-            override_function: Callable[..., Union[List[Row], int]] = cls.registry[
-                request_type
-            ][override_function_name]
+            override_function: Callable[..., Union[List[Row], int, None]] = (
+                cls.registry[request_type][override_function_name]
+            )
         except KeyError:
             raise NoSuchSaaSRequestOverrideException(
                 f"Custom SaaS override '{override_function_name}' does not exist. Valid custom SaaS override classes for SaaSRequestType {request_type} are [{cls.valid_overrides[request_type]}]"

@@ -626,7 +626,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int]] = (
+        override_function: Callable[..., Union[List[Row], int, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType.TEST
             )
@@ -659,7 +659,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int]] = (
+        override_function: Callable[..., Union[List[Row], int, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType.READ
             )
@@ -699,7 +699,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[..., Union[List[Row], int]] = (
+        override_function: Callable[..., Union[List[Row], int, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType(query_config.action)
             )
