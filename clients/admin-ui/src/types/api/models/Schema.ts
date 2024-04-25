@@ -4,7 +4,6 @@
 
 import type { Classification } from "./Classification";
 import type { DiffStatus } from "./DiffStatus";
-import type { MonitorStatus } from "./MonitorStatus";
 
 /**
  * Base API model that represents a staged resource, fields common to all types of staged resources
@@ -17,8 +16,7 @@ export type Schema = {
   monitor_config_id: string;
   modified?: string;
   classifications?: Array<Classification>;
-  monitor_status?: MonitorStatus;
   diff_status?: DiffStatus;
-  child_diff_statuses?: Array<DiffStatus>;
+  child_diff_statuses?: Record<string, number>;
   tables?: Array<string>;
 };

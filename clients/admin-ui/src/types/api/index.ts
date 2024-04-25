@@ -223,7 +223,6 @@ export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
 export type { MonitorExecution } from "./models/MonitorExecution";
 export { MonitorExecutionStatus } from "./models/MonitorExecutionStatus";
 export { MonitorFrequency } from "./models/MonitorFrequency";
-export { MonitorStatus } from "./models/MonitorStatus";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";
 export type { NoticeTranslation } from "./models/NoticeTranslation";
