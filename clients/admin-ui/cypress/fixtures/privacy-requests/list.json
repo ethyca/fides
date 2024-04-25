@@ -12,7 +12,16 @@
       "paused_at": null,
       "status": "pending",
       "external_id": null,
-      "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "cypress-user@ethyca.com" }
+      },
+      "custom_privacy_request_fields": {
+        "account_id": { "label": "Account ID", "value": 1 },
+        "user_id": { "label": "User ID", "value": "123" },
+        "subscription_ids": { "label": "Subscription IDs", "value": [1, 2, 3] },
+        "loyalty_ids": { "label": "Loyalty IDs", "value": ["abc", "def"] }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
@@ -55,7 +64,10 @@
       "paused_at": null,
       "status": "pending",
       "external_id": null,
-      "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "cypress-user@ethyca.com" }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
@@ -98,7 +110,10 @@
       "paused_at": null,
       "status": "pending",
       "external_id": null,
-      "identity": { "phone_number": null, "email": "horse@example.com" },
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "horse@example.com" }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
@@ -141,7 +156,10 @@
       "paused_at": null,
       "status": "pending",
       "external_id": null,
-      "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "cypress-user@ethyca.com" }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
@@ -184,7 +202,10 @@
       "paused_at": null,
       "status": "complete",
       "external_id": null,
-      "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "cypress-user@ethyca.com" }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
@@ -227,7 +248,10 @@
       "paused_at": null,
       "status": "complete",
       "external_id": null,
-      "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "cypress-user@ethyca.com" }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
@@ -270,7 +294,10 @@
       "paused_at": null,
       "status": "complete",
       "external_id": null,
-      "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "cypress-user@ethyca.com" }
+      },
       "policy": {
         "name": "default_access_policy",
         "key": "default_access_policy",
@@ -314,8 +341,8 @@
       "status": "error",
       "external_id": null,
       "identity": {
-        "phone_number": "+14155551234",
-        "email": "cypress-user@ethyca.com"
+        "phone_number": { "label": "Phone number", "value": "+14155551234" },
+        "email": { "label": "Email", "value": "cypress-user@ethyca.com" }
       },
       "policy": {
         "name": "default_access_policy",

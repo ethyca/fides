@@ -7,10 +7,10 @@ from loguru import logger
 
 import fides.connectors.aws as aws_connector
 from fides.api.common_exceptions import ConnectionException
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_dynamodb import (
     DynamoDBSchema,
 )
@@ -49,7 +49,7 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         except ValueError:
             raise ConnectionException("Value Error connecting to AWS DynamoDB.")
 
-    def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Query wrapper corresponding to the input traversal_node."""
         client = self.client()
         try:
@@ -87,9 +87,10 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """
@@ -132,11 +133,11 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking requestfor DynamoDB"""
 

@@ -7,7 +7,7 @@ import {
   PrivacyExperience,
 } from "fides-js";
 import { TCString } from "@iabtechlabtcf/core";
-import { CookieKeyConsent } from "fides-js/src/lib/consent-types";
+import { NoticeConsent } from "fides-js/src/lib/consent-types";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
 import {
   API_URL,
@@ -84,7 +84,7 @@ const checkDefaultExperienceRender = () => {
     cy.get("input").should("be.checked");
   });
 
-  cy.get("#fides-tab-Features").click();
+  cy.get("#fides-tab-features").click();
   cy.get(".fides-record-header").contains("Features");
   cy.get(".fides-notice-toggle-title").contains(FEATURE_1.name);
   cy.get(".fides-notice-toggle-title").contains(FEATURE_2.name);
@@ -95,11 +95,11 @@ const checkDefaultExperienceRender = () => {
   });
 
   // Vendors
-  cy.get("#fides-tab-Vendors").click();
+  cy.get("#fides-tab-vendors").click();
   cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
     cy.get("input").should("not.be.checked");
   });
-  cy.get("#fides-panel-Vendors").within(() => {
+  cy.get("#fides-panel-vendors").within(() => {
     cy.get("button").contains("Legitimate interest").click();
     cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
       cy.get("input").should("be.checked");
@@ -263,11 +263,9 @@ describe("Fides-js TCF", () => {
         cy.get("span").contains(PURPOSE_6.name);
 
         cy.get("span").contains(STACK_1.name).click();
-        [PURPOSE_4.id, PURPOSE_9.id, PURPOSE_7.id, PURPOSE_2.id].forEach(
-          (id) => {
-            cy.get("li").contains(`Purpose ${id}`);
-          }
-        );
+        [PURPOSE_4, PURPOSE_9, PURPOSE_7, PURPOSE_2].forEach((purpose) => {
+          cy.get("li").contains(purpose.name);
+        });
       });
     });
 
@@ -277,14 +275,14 @@ describe("Fides-js TCF", () => {
           cy.get("button").contains("Manage preferences").click();
         });
       });
-      cy.get("#fides-tab-Purposes");
+      cy.get("#fides-tab-purposes");
     });
 
     it("can open the modal from vendor information", () => {
       cy.get("div#fides-banner").within(() => {
         cy.get("button").contains("Vendors").click();
       });
-      cy.get("#fides-tab-Vendors");
+      cy.get("#fides-tab-vendors");
       cy.getByTestId(`toggle-${VENDOR_1.name}`);
     });
   });
@@ -342,9 +340,9 @@ describe("Fides-js TCF", () => {
           });
         });
 
-        cy.get("#fides-tab-Vendors").click();
-        cy.get("#fides-panel-Vendors").within(() => {
-          cy.getByTestId("records-list-IAB TCF vendors").within(() => {
+        cy.get("#fides-tab-vendors").click();
+        cy.get("#fides-panel-vendors").within(() => {
+          cy.getByTestId("records-list-vendors").within(() => {
             cy.get("span")
               .contains(VENDOR_1.name)
               .within(() => {
@@ -359,7 +357,7 @@ describe("Fides-js TCF", () => {
           cy.get("span").contains(SYSTEM_1.name).should("not.exist");
 
           cy.get("button").contains("Legitimate interest").click();
-          cy.getByTestId("records-list-Other vendors").within(() => {
+          cy.getByTestId("records-list-vendors").within(() => {
             cy.get("span")
               .contains(SYSTEM_1.name)
               .within(() => {
@@ -391,7 +389,7 @@ describe("Fides-js TCF", () => {
       });
 
       it("can render extra vendor info such as cookie and retention data", () => {
-        cy.get("#fides-tab-Vendors").click();
+        cy.get("#fides-tab-vendors").click();
         cy.get(".fides-notice-toggle-title").contains(VENDOR_1.name).click();
         cy.get(".fides-disclosure-visible").within(() => {
           // Check urls
@@ -422,20 +420,20 @@ describe("Fides-js TCF", () => {
 
           // Check cookie disclosure
           cy.get("p").contains(
-            'Captify stores cookies with a maximum duration of about 5 Day(s). These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
+            'Captify stores cookies with a maximum duration of about this many days: 5. These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
           );
         });
         // Check the cookie disclosure on the system
         // First close the vendor
         cy.get(".fides-notice-toggle-title").contains(VENDOR_1.name).click();
         // Then open the system
-        cy.get("#fides-panel-Vendors").within(() => {
+        cy.get("#fides-panel-vendors").within(() => {
           cy.get("button").contains("Legitimate interest").click();
         });
         cy.get(".fides-notice-toggle-title").contains(SYSTEM_1.name).click();
         cy.get(".fides-disclosure-visible").within(() => {
           cy.get("p").contains(
-            "Fides System stores cookies with a maximum duration of about 5 Day(s)"
+            "Fides System stores cookies with a maximum duration of about this many days: 5."
           );
         });
       });
@@ -461,13 +459,14 @@ describe("Fides-js TCF", () => {
           });
           cy.waitUntilFidesInitialized().then(() => {
             cy.get("#fides-modal-link").click();
-            cy.getByTestId(`records-list-Purposes`).should("not.exist");
+            cy.getByTestId(`records-list-purposes`).should("not.exist");
           });
         });
       });
 
       it("separates purpose tab by legal bases", () => {
-        const legintSpecialPurposeName = "Legint special purpose";
+        const legintSpecialPurposeName =
+          "Deliver and present advertising and content";
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience = payload.items[0];
           const specialPurposeCopy = JSON.parse(
@@ -542,8 +541,8 @@ describe("Fides-js TCF", () => {
           });
           cy.waitUntilFidesInitialized().then(() => {
             cy.get("#fides-modal-link").click();
-            cy.get("#fides-tab-Vendors").click();
-            cy.get("#fides-panel-Vendors").within(() => {
+            cy.get("#fides-tab-vendors").click();
+            cy.get("#fides-panel-vendors").within(() => {
               // Toggle the consent toggle on
               cy.getByTestId(`toggle-${VENDOR_1.name}`).click();
               cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
@@ -779,12 +778,12 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           // opt in to purpose 4
           cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
-          cy.get("#fides-tab-Features").click();
+          cy.get("#fides-tab-features").click();
           // opt in to special feat 1
           cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
 
-          cy.get("#fides-tab-Vendors").click();
-          cy.get("#fides-panel-Vendors").within(() => {
+          cy.get("#fides-tab-vendors").click();
+          cy.get("#fides-panel-vendors").within(() => {
             cy.get("button").contains("Legitimate interest").click();
           });
           // opt out of system 1 (default is opt-in)
@@ -895,7 +894,7 @@ describe("Fides-js TCF", () => {
           /* eslint-disable @typescript-eslint/no-unused-vars */
           savePreferencesFn: async (
             consentMethod: ConsentMethod,
-            consent: CookieKeyConsent,
+            consent: NoticeConsent,
             fides_string: string | undefined,
             experience: PrivacyExperience
           ): Promise<void> => {},
@@ -1135,189 +1134,198 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("second layer embedded", () => {
-    it("automatically renders the second layer and can render tabs", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-            fidesEmbed: true,
-          },
-          experience: experience.items[0],
+  describe("when fides_embed is true", () => {
+    describe("when fides_disable_banner is false", () => {
+      it("renders the embedded layer 1 banner", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              fidesEmbed: true,
+            },
+            experience: experience.items[0],
+          });
         });
-      });
-      cy.get("#fides-tab-Purposes");
-      cy.get("@FidesUIShown").should("have.been.calledOnce");
-      checkDefaultExperienceRender();
-    });
-    it("automatically renders the second layer even when fides_disable_banner is true", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-            fidesEmbed: true,
-            fidesDisableBanner: true,
-          },
-          experience: experience.items[0],
-        });
-      });
-      cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("have.been.calledOnce");
-        cy.get("div#fides-banner").should("not.exist");
-        cy.get("div#fides-consent-content").should("exist");
+        cy.get("div#fides-banner").should("be.visible");
+        cy.get("div#fides-banner #fides-banner-title").contains(
+          "[banner] Manage your consent"
+        );
       });
     });
-    it("can opt in to some and opt out of others", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-            fidesEmbed: true,
-          },
-          experience: experience.items[0],
-        });
-      });
-      cy.getByTestId("consent-content").within(() => {
-        cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
-        cy.get("#fides-tab-Features").click();
-        cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
 
-        cy.get("#fides-tab-Vendors").click();
-        cy.get("#fides-panel-Vendors").within(() => {
-          cy.get("button").contains("Legitimate interest").click();
-        });
-        cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
-      });
-      cy.get("button").contains("Save").click();
-      cy.wait("@patchPrivacyPreference").then((interception) => {
-        const { body } = interception.request;
-        expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
-        expect(body.purpose_consent_preferences).to.eql([
-          { id: PURPOSE_4.id, preference: "opt_in" },
-          { id: PURPOSE_6.id, preference: "opt_out" },
-          { id: PURPOSE_7.id, preference: "opt_out" },
-          { id: PURPOSE_9.id, preference: "opt_out" },
-        ]);
-        expect(body.purpose_legitimate_interests_preferences).to.eql([
-          { id: PURPOSE_2.id, preference: "opt_in" },
-        ]);
-        expect(body.special_purpose_preferences).to.eql(undefined);
-        expect(body.feature_preferences).to.eql(undefined);
-        expect(body.special_feature_preferences).to.eql([
-          { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
-        ]);
-        expect(body.vendor_consent_preferences).to.eql([
-          { id: VENDOR_1.id, preference: "opt_out" },
-        ]);
-        expect(body.vendor_legitimate_interests_preferences).to.eql([]);
-        expect(body.system_legitimate_interests_preferences).to.eql([
-          { id: SYSTEM_1.id, preference: "opt_out" },
-        ]);
-        expect(body.system_consent_preferences).to.eql([]);
-      });
-      // embed modal should not close on preferences save
-      cy.getByTestId("consent-content").should("exist");
-      // Verify the cookie on save
-      cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-        const cookieKeyConsent: FidesCookie = JSON.parse(
-          decodeURIComponent(cookie!.value)
-        );
-        expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-          ConsentMethod.SAVE
-        );
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "purposeConsents",
-          ids: [PURPOSE_4.id],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "purposeLegitimateInterests",
-          ids: [PURPOSE_2.id],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "specialFeatureOptins",
-          ids: [SPECIAL_FEATURE_1.id],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "vendorConsents",
-          ids: [],
-        });
-        assertTcOptIns({
-          cookie: cookieKeyConsent,
-          modelType: "vendorLegitimateInterests",
-          ids: [],
-        });
-        expect(
-          cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
-        )
-          .property(`${SYSTEM_1.id}`)
-          .is.eql(false);
-        expect(cookieKeyConsent.tcf_consent.system_consent_preferences).to.eql(
-          {}
-        );
-      });
-    });
-    it("automatically renders the second layer when fidesEmbed is set via cookie", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.getCookie("fides_embed").should("not.exist");
-      cy.setCookie("fides_embed", "true");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-          },
-          experience: experience.items[0],
-        });
-      });
-      checkDefaultExperienceRender();
-    });
-    it("automatically renders the second layer when fidesEmbed is set via query param", () => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig(
-          {
+    describe("when fides_disable_banner is true (Layer 2 only)", () => {
+      it("renders the embedded second layer and can render tabs", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
+              fidesEmbed: true,
+              fidesDisableBanner: true,
             },
             experience: experience.items[0],
-          },
-          null,
-          null,
-          { fides_embed: true }
-        );
+          });
+        });
+        cy.get("#fides-tab-purposes");
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        checkDefaultExperienceRender();
       });
-      checkDefaultExperienceRender();
-    });
-    it("automatically renders the second layer when fidesEmbed is set via window obj", () => {
-      cy.getCookie("fides_string").should("not.exist");
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig(
-          {
+      it("can opt in to some and opt out of others", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
+              fidesEmbed: true,
+              fidesDisableBanner: true,
             },
             experience: experience.items[0],
-          },
-          null,
-          null,
-          null,
-          { fides_embed: true }
-        );
+          });
+        });
+        cy.getByTestId("consent-content").within(() => {
+          cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+          cy.get("#fides-tab-features").click();
+          cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
+
+          cy.get("#fides-tab-vendors").click();
+          cy.get("#fides-panel-vendors").within(() => {
+            cy.get("button").contains("Legitimate interest").click();
+          });
+          cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
+        });
+        cy.get("button").contains("Save").click();
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const { body } = interception.request;
+          expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
+          expect(body.purpose_consent_preferences).to.eql([
+            { id: PURPOSE_4.id, preference: "opt_in" },
+            { id: PURPOSE_6.id, preference: "opt_out" },
+            { id: PURPOSE_7.id, preference: "opt_out" },
+            { id: PURPOSE_9.id, preference: "opt_out" },
+          ]);
+          expect(body.purpose_legitimate_interests_preferences).to.eql([
+            { id: PURPOSE_2.id, preference: "opt_in" },
+          ]);
+          expect(body.special_purpose_preferences).to.eql(undefined);
+          expect(body.feature_preferences).to.eql(undefined);
+          expect(body.special_feature_preferences).to.eql([
+            { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
+          ]);
+          expect(body.vendor_consent_preferences).to.eql([
+            { id: VENDOR_1.id, preference: "opt_out" },
+          ]);
+          expect(body.vendor_legitimate_interests_preferences).to.eql([]);
+          expect(body.system_legitimate_interests_preferences).to.eql([
+            { id: SYSTEM_1.id, preference: "opt_out" },
+          ]);
+          expect(body.system_consent_preferences).to.eql([]);
+        });
+        // embed modal should not close on preferences save
+        cy.getByTestId("consent-content").should("exist");
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.SAVE
+          );
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeConsents",
+            ids: [PURPOSE_4.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeLegitimateInterests",
+            ids: [PURPOSE_2.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "specialFeatureOptins",
+            ids: [SPECIAL_FEATURE_1.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorConsents",
+            ids: [],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorLegitimateInterests",
+            ids: [],
+          });
+          expect(
+            cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
+          )
+            .property(`${SYSTEM_1.id}`)
+            .is.eql(false);
+          expect(
+            cookieKeyConsent.tcf_consent.system_consent_preferences
+          ).to.eql({});
+        });
       });
-      checkDefaultExperienceRender();
+      it("renders the embedded second layer when fidesEmbed is set via cookie", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.getCookie("fides_embed").should("not.exist");
+        cy.setCookie("fides_embed", "true");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              fidesDisableBanner: true,
+            },
+            experience: experience.items[0],
+          });
+        });
+        checkDefaultExperienceRender();
+      });
+      it("renders the embedded second layer when fidesEmbed is set via query param", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+                fidesDisableBanner: true,
+              },
+              experience: experience.items[0],
+            },
+            null,
+            null,
+            { fides_embed: true }
+          );
+        });
+        checkDefaultExperienceRender();
+      });
+      it("renders the embedded second layer when fidesEmbed is set via window obj", () => {
+        cy.getCookie("fides_string").should("not.exist");
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+                fidesDisableBanner: true,
+              },
+              experience: experience.items[0],
+            },
+            null,
+            null,
+            null,
+            { fides_embed: true }
+          );
+        });
+        checkDefaultExperienceRender();
+      });
     });
   });
 
@@ -1584,16 +1592,16 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("not.be.checked");
       });
       // Features
-      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-tab-features").click();
       cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-panel-vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
           cy.get("input").should("not.be.checked");
@@ -1748,18 +1756,18 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("not.be.checked");
       });
       // Features
-      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-tab-features").click();
       cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use false as the default
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
       });
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-panel-vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
           cy.get("input").should("not.be.checked");
@@ -1848,18 +1856,18 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("not.be.checked");
       });
       // Features
-      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-tab-features").click();
       cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use false as the default
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
       });
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-panel-vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         // Should be checked because legitimate interest defaults to true and Systems aren't in the fides string
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -1989,18 +1997,18 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("not.be.checked");
       });
       // Features
-      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-tab-features").click();
       cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use false as the default
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
       });
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-panel-vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
           cy.get("input").should("not.be.checked");
@@ -2165,16 +2173,16 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("not.be.checked");
       });
       // Features
-      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-tab-features").click();
       cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
       });
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-panel-vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
       });
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
@@ -2287,18 +2295,18 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("not.be.checked");
       });
       // Features
-      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-tab-features").click();
       cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use false as the default
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
       });
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-panel-vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
       });
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -2380,16 +2388,16 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("not.be.checked");
       });
       // Features
-      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-tab-features").click();
       cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-panel-vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
           cy.get("input").should("not.be.checked");
@@ -2452,7 +2460,7 @@ describe("Fides-js TCF", () => {
 
       // Verify the vendor toggle
       // this vendor is set to null in the experience but true in the string
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("be.checked");
       });
@@ -2784,10 +2792,6 @@ describe("Fides-js TCF", () => {
           name: "Test",
           description: "A longer description",
           default_preference: "opt_out",
-          current_preference: null,
-          outdated_preference: null,
-          current_served: null,
-          outdated_served: null,
           purpose_consents: [
             {
               id: 4,
@@ -2821,7 +2825,7 @@ describe("Fides-js TCF", () => {
     });
 
     it("can opt in to AC vendors and generate string", () => {
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       AC_IDS.forEach((id) => {
         // Turn all ACs on
         cy.getByTestId(`toggle-AC ${id}`).click();
@@ -2851,7 +2855,7 @@ describe("Fides-js TCF", () => {
     });
 
     it("can opt out of AC vendors and generate string", () => {
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId("consent-modal").within(() => {
         cy.get("button").contains("Opt out of all").click();
       });
@@ -2882,13 +2886,22 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId("consent-modal").within(() => {
         cy.get("button").contains("Opt in to all").click();
       });
       cy.wait("@patchPrivacyPreference").then((interception) => {
         expect(interception.request.body.method).to.eql(ConsentMethod.ACCEPT);
       });
+      // Both FidesUpdating & FidesUpdated should include the fides_string
+      cy.get("@FidesUpdating")
+        .should("have.been.calledOnce")
+        .its("lastCall.args.0.detail.fides_string")
+        .then((fidesString) => {
+          const parts = fidesString.split(",");
+          expect(parts.length).to.eql(2);
+          expect(parts[1]).to.eql(acceptAllAcString);
+        });
       cy.get("@FidesUpdated")
         .should("have.been.calledOnce")
         .its("lastCall.args.0.detail.fides_string")
@@ -2914,7 +2927,7 @@ describe("Fides-js TCF", () => {
     });
 
     it("can get `addtlConsents` from getTCData custom function", () => {
-      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-tab-vendors").click();
       cy.getByTestId("consent-modal").within(() => {
         cy.get("button").contains("Opt in to all").click();
       });
@@ -3055,30 +3068,30 @@ describe("Fides-js TCF", () => {
     });
 
     it("can page through embedded purposes", () => {
-      cy.get("#fides-panel-Purposes").within(() => {
+      cy.get("#fides-panel-purposes").within(() => {
         cy.get("span").contains(PURPOSE_4.name).click();
         const consentIds = VENDOR_IDS.filter((id, idx) => idx % 2 === 0);
         consentIds.slice(0, 10).forEach((id) => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
         cy.get(".fides-paging-previous-button").should("be.disabled");
         // Go to the next page
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("11-20 of 51");
+        cy.get(".fides-paging-info").contains("11-20 / 51");
         consentIds.slice(10, 20).forEach((id) => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
         // Can go back to the previous page
         cy.get(".fides-paging-previous-button").click();
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
         // Check the last page
         Array(5)
           .fill(null)
           .forEach(() => {
             cy.get(".fides-paging-next-button").click();
           });
-        cy.get(".fides-paging-info").contains("51-51 of 51");
+        cy.get(".fides-paging-info").contains("51-51 / 51");
         cy.get(".fides-paging-next-button").should("be.disabled");
 
         // Check legitimate interest
@@ -3089,15 +3102,15 @@ describe("Fides-js TCF", () => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
         // And that paging reset back to 1
-        cy.get(".fides-paging-info").contains("1-10 of 50");
+        cy.get(".fides-paging-info").contains("1-10 / 50");
       });
     });
 
     it("can page through features", () => {
-      cy.get("#fides-tab-Features").click();
-      cy.get("#fides-panel-Features").within(() => {
+      cy.get("#fides-tab-features").click();
+      cy.get("#fides-panel-features").within(() => {
         cy.get("span").contains(FEATURE_1.name).click();
-        cy.get(".fides-paging-info").contains("1-10 of 101");
+        cy.get(".fides-paging-info").contains("1-10 / 101");
         VENDOR_IDS.slice(0, 10).forEach((id) => {
           cy.get(".fides-tcf-purpose-vendor-list").contains(id);
         });
@@ -3105,33 +3118,33 @@ describe("Fides-js TCF", () => {
     });
 
     it("can page through vendors", () => {
-      cy.get("#fides-tab-Vendors").click();
-      cy.get("#fides-panel-Vendors").within(() => {
+      cy.get("#fides-tab-vendors").click();
+      cy.get("#fides-panel-vendors").within(() => {
         const consentIds = VENDOR_IDS.filter((id, idx) => idx % 2 === 0);
         consentIds.slice(0, 10).forEach((id) => {
           cy.get(".fides-notice-toggle-title").contains(id);
         });
-        cy.get(".fides-record-header").contains("IAB TCF vendors");
+        cy.get(".fides-record-header").contains("IAB TCF Vendors");
         cy.get(".fides-record-header")
           .contains("Other vendors")
           .should("not.exist");
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("11-20 of 51");
+        cy.get(".fides-paging-info").contains("11-20 / 51");
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("21-30 of 51");
+        cy.get(".fides-paging-info").contains("21-30 / 51");
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("31-40 of 51");
+        cy.get(".fides-paging-info").contains("31-40 / 51");
         // Now go to a page that will show both IAB and other vendors
         cy.get(".fides-paging-next-button").click();
-        cy.get(".fides-paging-info").contains("41-50 of 51");
-        cy.get(".fides-record-header").contains("IAB TCF vendors");
+        cy.get(".fides-paging-info").contains("41-50 / 51");
+        cy.get(".fides-record-header").contains("IAB TCF Vendors");
         cy.get(".fides-record-header").contains("Other vendors");
         // Last page should only have other vendors
         cy.get(".fides-paging-next-button").click();
         cy.get(".fides-record-header").contains("Other vendors");
         cy.get(".fides-record-header")
-          .contains("IAB TCF vendors")
+          .contains("IAB TCF Vendors")
           .should("not.exist");
 
         // And spot check legitimate interest
@@ -3140,7 +3153,7 @@ describe("Fides-js TCF", () => {
         legintIds.slice(0, 10).forEach((id) => {
           cy.get(".fides-notice-toggle-title").contains(id);
         });
-        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-info").contains("1-10 / 51");
       });
     });
   });

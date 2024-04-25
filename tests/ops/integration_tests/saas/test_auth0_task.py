@@ -1,27 +1,26 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.fixtures.saas.auth0_fixtures import _user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_auth0
 def test_auth0_connection_test(auth0_connection_config) -> None:
     get_connector(auth0_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_auth0
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_auth0_access_request_task(
     db,
     policy,
@@ -29,12 +28,13 @@ async def test_auth0_access_request_task(
     auth0_dataset_config,
     auth0_identity_email,
     auth0_access_data,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full access request based on the Auth0 SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_auth0_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": auth0_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -42,7 +42,7 @@ async def test_auth0_access_request_task(
     merged_graph = auth0_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -64,9 +64,6 @@ async def test_auth0_access_request_task(
             "picture",
             "updated_at",
             "user_id",
-            "last_ip",
-            "last_login",
-            "logins_count",
         ],
     )
 
@@ -93,24 +90,30 @@ async def test_auth0_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_auth0
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_auth0_erasure_request_task(
     db,
-    policy,
     erasure_policy_string_rewrite,
     auth0_connection_config,
     auth0_dataset_config,
     auth0_erasure_identity_email,
     auth0_erasure_data,
     auth0_token,
+    privacy_request_with_erasure_policy,
+    dsr_version,
+    request,
 ) -> None:
     """Full erasure request based on the Auth0 SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_auth0_erasure_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request_with_erasure_policy.policy_id = erasure_policy_string_rewrite.id
+    privacy_request_with_erasure_policy.save(db)
+
     identity = Identity(**{"email": auth0_erasure_identity_email})
-    privacy_request.cache_identity(identity)
+    privacy_request_with_erasure_policy.cache_identity(identity)
 
     dataset_name = auth0_connection_config.get_saas_config().fides_key
     merged_graph = auth0_dataset_config.get_graph()
@@ -119,9 +122,9 @@ async def test_auth0_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    v = await graph_task.run_access_request(
-        privacy_request,
-        policy,
+    v = access_runner_tester(
+        privacy_request_with_erasure_policy,
+        erasure_policy_string_rewrite,
         graph,
         [auth0_connection_config],
         {"email": auth0_erasure_identity_email},
@@ -146,13 +149,13 @@ async def test_auth0_erasure_request_task(
         ],
     )
 
-    x = await graph_task.run_erasure(
-        privacy_request,
+    x = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         erasure_policy_string_rewrite,
         graph,
         [auth0_connection_config],
         {"email": auth0_erasure_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
     assert x == {

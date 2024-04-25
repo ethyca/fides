@@ -1,0 +1,1379 @@
+# The comprehensive country list here is based, at the moment, on the ISO-3166 standard.
+# Specifically, it's informed by the country information at: https://restcountries.com/v3.1/all?fields=name,cca2,region,subregion
+# But we have adjusted and added records as needed.
+
+
+#################
+### Locations ###
+#################
+
+locations:
+
+  ##############
+  ### Africa ###
+  ##############
+- continent: Africa
+  id: er
+  name: Eritrea
+- continent: Africa
+  id: dj
+  name: Djibouti
+- continent: Africa
+  id: mr
+  name: Mauritania
+- continent: Africa
+  id: na
+  name: Namibia
+- continent: Africa
+  id: gh
+  name: Ghana
+- continent: Africa
+  id: ss
+  name: South Sudan
+- continent: Africa
+  id: sc
+  name: Seychelles
+- continent: Africa
+  id: io
+  name: British Indian Ocean Territory
+- continent: Africa
+  id: gq
+  name: Equatorial Guinea
+- continent: Africa
+  id: ao
+  name: Angola
+- continent: Africa
+  id: cg
+  name: Republic of the Congo
+- continent: Africa
+  id: bw
+  name: Botswana
+- continent: Africa
+  id: bi
+  name: Burundi
+- continent: Africa
+  id: dz
+  name: Algeria
+- continent: Africa
+  id: td
+  name: Chad
+- continent: Africa
+  id: ng
+  name: Nigeria
+- continent: Africa
+  id: tz
+  name: Tanzania
+- continent: Africa
+  id: eh
+  name: Western Sahara
+- continent: Africa
+  id: sn
+  name: Senegal
+- continent: Africa
+  id: lr
+  name: Liberia
+- continent: Africa
+  id: za
+  name: South Africa
+- continent: Africa
+  id: cv
+  name: Cape Verde
+- continent: Africa
+  id: gm
+  name: Gambia
+- continent: Africa
+  id: sd
+  name: Sudan
+- continent: Africa
+  id: km
+  name: Comoros
+- continent: Africa
+  id: sz
+  name: Eswatini
+- continent: Africa
+  id: ug
+  name: Uganda
+- continent: Africa
+  id: mg
+  name: Madagascar
+- continent: Africa
+  id: rw
+  name: Rwanda
+- continent: Africa
+  id: cd
+  name: DR Congo
+- continent: Africa
+  id: cm
+  name: Cameroon
+- continent: Africa
+  id: sh
+  name: Saint Helena, Ascension and Tristan da Cunha
+- continent: Africa
+  id: tg
+  name: Togo
+- continent: Africa
+  id: mu
+  name: Mauritius
+- continent: Africa
+  id: ne
+  name: Niger
+- continent: Africa
+  id: bj
+  name: Benin
+- continent: Africa
+  id: eg
+  name: Egypt
+- continent: Africa
+  id: ls
+  name: Lesotho
+- continent: Africa
+  id: et
+  name: Ethiopia
+- continent: Africa
+  id: ma
+  name: Morocco
+- continent: Africa
+  id: yt
+  name: Mayotte
+- continent: Africa
+  id: bf
+  name: Burkina Faso
+- continent: Africa
+  id: re
+  name: Réunion
+- continent: Africa
+  id: st
+  name: São Tomé and Príncipe
+- continent: Africa
+  id: cf
+  name: Central African Republic
+- continent: Africa
+  id: mz
+  name: Mozambique
+- continent: Africa
+  id: mw
+  name: Malawi
+- continent: Africa
+  id: ml
+  name: Mali
+- continent: Africa
+  id: zm
+  name: Zambia
+- continent: Africa
+  id: ly
+  name: Libya
+- continent: Africa
+  id: gw
+  name: Guinea-Bissau
+- continent: Africa
+  id: so
+  name: Somalia
+- continent: Africa
+  id: ke
+  name: Kenya
+- continent: Africa
+  id: gn
+  name: Guinea
+- continent: Africa
+  id: zw
+  name: Zimbabwe
+- continent: Africa
+  id: tn
+  name: Tunisia
+- continent: Africa
+  id: sl
+  name: Sierra Leone
+- continent: Africa
+  id: ga
+  name: Gabon
+- continent: Africa
+  id: ci
+  name: Ivory Coast
+
+  ############
+  ### Asia ###
+  ############
+- continent: Asia
+  id: jo
+  name: Jordan
+- continent: Asia
+  id: pk
+  name: Pakistan
+- continent: Asia
+  id: kp
+  name: North Korea
+- continent: Asia
+  id: mo
+  name: Macau
+- continent: Asia
+  id: am
+  name: Armenia
+- continent: Asia
+  id: sy
+  name: Syria
+- continent: Asia
+  id: tj
+  name: Tajikistan
+- continent: Asia
+  id: sa
+  name: Saudi Arabia
+- continent: Asia
+  id: kr
+  name: South Korea
+- continent: Asia
+  id: np
+  name: Nepal
+- continent: Asia
+  id: ph
+  name: Philippines
+- continent: Asia
+  id: iq
+  name: Iraq
+- continent: Asia
+  id: lb
+  name: Lebanon
+- continent: Asia
+  id: mn
+  name: Mongolia
+- continent: Asia
+  id: ps
+  name: Palestine
+- continent: Asia
+  id: ye
+  name: Yemen
+- continent: Asia
+  id: jp
+  name: Japan
+- continent: Asia
+  id: kz
+  name: Kazakhstan
+- continent: Asia
+  id: lk
+  name: Sri Lanka
+- continent: Asia
+  id: mm
+  name: Myanmar
+- continent: Asia
+  id: kg
+  name: Kyrgyzstan
+- continent: Asia
+  id: cn
+  name: China
+  regulation: [pipl]
+- continent: Asia
+  id: af
+  name: Afghanistan
+- continent: Asia
+  id: om
+  name: Oman
+- continent: Asia
+  id: in
+  name: India
+  regulation: [dpdpa_india]
+- continent: Asia
+  id: la
+  name: Laos
+- continent: Asia
+  id: uz
+  name: Uzbekistan
+- continent: Asia
+  id: mv
+  name: Maldives
+- continent: Asia
+  id: id
+  name: Indonesia
+- continent: Asia
+  id: vn
+  name: Vietnam
+- continent: Asia
+  id: my
+  name: Malaysia
+- continent: Asia
+  id: tw
+  name: Taiwan
+- continent: Asia
+  id: kh
+  name: Cambodia
+- continent: Asia
+  id: ae
+  name: United Arab Emirates
+- continent: Asia
+  id: hk
+  name: Hong Kong
+- continent: Asia
+  id: ge
+  name: Georgia
+- continent: Asia
+  id: bd
+  name: Bangladesh
+- continent: Asia
+  id: kw
+  name: Kuwait
+- continent: Asia
+  id: tm
+  name: Turkmenistan
+- continent: Asia
+  id: qa
+  name: Qatar
+- continent: Asia
+  id: bh
+  name: Bahrain
+- continent: Asia
+  id: bn
+  name: Brunei
+- continent: Asia
+  id: th
+  name: Thailand
+- continent: Asia
+  id: bt
+  name: Bhutan
+- continent: Asia
+  id: sg
+  name: Singapore
+- continent: Asia
+  id: il
+  name: Israel
+- continent: Asia
+  id: az
+  name: Azerbaijan
+- continent: Asia
+  id: tl
+  name: Timor-Leste
+- continent: Asia
+  id: ir
+  name: Iran
+
+  ##############
+  ### Europe ###
+  ##############
+- continent: Europe
+  id: tr
+  name: Turkey
+  belongs_to: [non_eea]
+- continent: Europe
+  id: mk
+  name: North Macedonia
+  belongs_to: [non_eea]
+- continent: Europe
+  id: ie
+  name: Ireland
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: dk
+  name: Denmark
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: sk
+  name: Slovakia
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: md
+  name: Moldova
+  belongs_to: [non_eea]
+- continent: Europe
+  id: ax
+  name: Åland Islands
+- continent: Europe
+  id: pl
+  name: Poland
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: ba
+  name: Bosnia and Herzegovina
+  belongs_to: [non_eea]
+- continent: Europe
+  id: sm
+  name: San Marino
+  belongs_to: [non_eea]
+- continent: Europe
+  id: cz
+  name: Czechia
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: ee
+  name: Estonia
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: xk
+  name: Kosovo
+  belongs_to: [non_eea]
+- continent: Europe
+  id: fo
+  name: Faroe Islands
+- continent: Europe
+  id: sj
+  name: Svalbard and Jan Mayen
+- continent: Europe
+  id: gg
+  name: Guernsey
+- continent: Europe
+  id: fr
+  name: France
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: nl
+  name: Netherlands
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: fi
+  name: Finland
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: pt
+  name: Portugal
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: de
+  name: Germany
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: mt
+  name: Malta
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: je
+  name: Jersey
+- continent: Europe
+  id: is
+  name: Iceland
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: es
+  name: Spain
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: gi
+  name: Gibraltar
+- continent: Europe
+  id: 'no'
+  name: Norway
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: cy
+  name: Cyprus
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: rs
+  name: Serbia
+  belongs_to: [non_eea]
+- continent: Europe
+  id: lt
+  name: Lithuania
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: mc
+  name: Monaco
+  belongs_to: [non_eea]
+- continent: Europe
+  id: lu
+  name: Luxembourg
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: ua
+  name: Ukraine
+  belongs_to: [non_eea]
+- continent: Europe
+  id: im
+  name: Isle of Man
+- continent: Europe
+  id: ro
+  name: Romania
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: be
+  name: Belgium
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: se
+  name: Sweden
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: me
+  name: Montenegro
+  belongs_to: [non_eea]
+- continent: Europe
+  id: lv
+  name: Latvia
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: va
+  name: Vatican City
+  belongs_to: [non_eea]
+- continent: Europe
+  id: at
+  name: Austria
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: al
+  name: Albania
+  belongs_to: [non_eea]
+- continent: Europe
+  id: li
+  name: Liechtenstein
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: gr
+  name: Greece
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: it
+  name: Italy
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: ad
+  name: Andorra
+  belongs_to: [non_eea]
+- continent: Europe
+  id: gb
+  name: United Kingdom
+  belongs_to: [non_eea]
+  regulation: [gdpr_uk]
+  default_selected: True
+- continent: Europe
+  id: ru
+  name: Russia
+  belongs_to: [non_eea]
+- continent: Europe
+  id: si
+  name: Slovenia
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: by
+  name: Belarus
+  belongs_to: [non_eea]
+- continent: Europe
+  id: ch
+  name: Switzerland
+  belongs_to: [non_eea]
+  regulation: [nfadp]
+- continent: Europe
+  id: hu
+  name: Hungary
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: bg
+  name: Bulgaria
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+- continent: Europe
+  id: hr
+  name: Croatia
+  belongs_to: [eea]
+  regulation: [gdpr]
+  default_selected: True
+
+  #####################
+  ### North America ###
+  #####################
+- continent: North America
+  id: tc
+  name: Turks and Caicos Islands
+  belongs_to: [caribbean]
+- continent: North America
+  id: cw
+  name: Curaçao
+  belongs_to: [caribbean]
+- continent: North America
+  id: gp
+  name: Guadeloupe
+  belongs_to: [caribbean]
+- continent: North America
+  id: um
+  name: United States Minor Outlying Islands
+- continent: North America
+  id: gt
+  name: Guatemala
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: pm
+  name: Saint Pierre and Miquelon
+- continent: North America
+  id: bq
+  name: Caribbean Netherlands
+  belongs_to: [caribbean]
+- continent: North America
+  id: gl
+  name: Greenland
+- continent: North America
+  id: sx
+  name: Sint Maarten
+  belongs_to: [caribbean]
+- continent: North America
+  id: pa
+  name: Panama
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: aw
+  name: Aruba
+  belongs_to: [caribbean]
+- continent: North America
+  id: mq
+  name: Martinique
+  belongs_to: [caribbean]
+- continent: North America
+  id: ag
+  name: Antigua and Barbuda
+  belongs_to: [caribbean]
+- continent: North America
+  id: bm
+  name: Bermuda
+- continent: North America
+  id: cu
+  name: Cuba
+  belongs_to: [caribbean]
+- continent: North America
+  id: gd
+  name: Grenada
+  belongs_to: [caribbean]
+- continent: North America
+  id: ni
+  name: Nicaragua
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: lc
+  name: Saint Lucia
+  belongs_to: [caribbean]
+- continent: North America
+  id: kn
+  name: Saint Kitts and Nevis
+  belongs_to: [caribbean]
+- continent: North America
+  id: do
+  name: Dominican Republic
+  belongs_to: [caribbean]
+- continent: North America
+  id: vc
+  name: Saint Vincent and the Grenadines
+  belongs_to: [caribbean]
+- continent: North America
+  id: bz
+  name: Belize
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: ht
+  name: Haiti
+  belongs_to: [caribbean]
+- continent: North America
+  id: jm
+  name: Jamaica
+  belongs_to: [caribbean]
+- continent: North America
+  id: bs
+  name: Bahamas
+  belongs_to: [caribbean]
+- continent: North America
+  id: mx
+  name: Mexico
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: mf
+  name: Saint Martin
+  belongs_to: [caribbean]
+- continent: North America
+  id: sv
+  name: El Salvador
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: bl
+  name: Saint Barthélemy
+  belongs_to: [caribbean]
+- continent: North America
+  id: ai
+  name: Anguilla
+  belongs_to: [caribbean]
+- continent: North America
+  id: ms
+  name: Montserrat
+  belongs_to: [caribbean]
+- continent: North America
+  id: vg
+  name: British Virgin Islands
+  belongs_to: [caribbean]
+- continent: North America
+  id: bb
+  name: Barbados
+  belongs_to: [caribbean]
+- continent: North America
+  id: hn
+  name: Honduras
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: ky
+  name: Cayman Islands
+  belongs_to: [caribbean]
+- continent: North America
+  id: dm
+  name: Dominica
+  belongs_to: [caribbean]
+- continent: North America
+  id: tt
+  name: Trinidad and Tobago
+  belongs_to: [caribbean]
+- continent: North America
+  id: cr
+  name: Costa Rica
+  belongs_to: [mexico_central_america]
+- continent: North America
+  id: sr
+  name: Suriname
+  belongs_to: [caribbean]
+
+  ###############
+  ### Oceania ###
+  ###############
+- continent: Oceania
+  id: cx
+  name: Christmas Island
+- continent: Oceania
+  id: ws
+  name: Samoa
+- continent: Oceania
+  id: pf
+  name: French Polynesia
+- continent: Oceania
+  id: as
+  name: American Samoa
+- continent: Oceania
+  id: nc
+  name: New Caledonia
+- continent: Oceania
+  id: tk
+  name: Tokelau
+- continent: Oceania
+  id: pw
+  name: Palau
+- continent: Oceania
+  id: ki
+  name: Kiribati
+- continent: Oceania
+  id: vu
+  name: Vanuatu
+- continent: Oceania
+  id: pn
+  name: Pitcairn Islands
+- continent: Oceania
+  id: ck
+  name: Cook Islands
+- continent: Oceania
+  id: fj
+  name: Fiji
+- continent: Oceania
+  id: pg
+  name: Papua New Guinea
+- continent: Oceania
+  id: mp
+  name: Northern Mariana Islands
+- continent: Oceania
+  id: nu
+  name: Niue
+- continent: Oceania
+  id: tv
+  name: Tuvalu
+- continent: Oceania
+  id: nf
+  name: Norfolk Island
+- continent: Oceania
+  id: to
+  name: Tonga
+- continent: Oceania
+  id: fm
+  name: Micronesia
+- continent: Oceania
+  id: sb
+  name: Solomon Islands
+- continent: Oceania
+  id: nr
+  name: Nauru
+- continent: Oceania
+  id: wf
+  name: Wallis and Futuna
+- continent: Oceania
+  id: gu
+  name: Guam
+- continent: Oceania
+  id: au
+  name: Australia
+- continent: Oceania
+  id: nz
+  name: New Zealand
+- continent: Oceania
+  id: mh
+  name: Marshall Islands
+- continent: Oceania
+  id: cc
+  name: Cocos (Keeling) Islands
+
+#####################
+### South America ###
+#####################
+- continent: South America
+  id: ve
+  name: Venezuela
+- continent: South America
+  id: py
+  name: Paraguay
+- continent: South America
+  id: br
+  name: Brazil
+  regulation: [lgpd]
+- continent: South America
+  id: co
+  name: Colombia
+- continent: South America
+  id: pe
+  name: Peru
+- continent: South America
+  id: cl
+  name: Chile
+- continent: South America
+  id: uy
+  name: Uruguay
+- continent: South America
+  id: ar
+  name: Argentina
+- continent: South America
+  id: gy
+  name: Guyana
+- continent: South America
+  id: bo
+  name: Bolivia
+- continent: South America
+  id: gf
+  name: French Guiana
+- continent: South America
+  id: ec
+  name: Ecuador
+- continent: South America
+  id: fk
+  name: Falkland Islands
+
+#############################
+### US states/territories ###
+#############################
+
+
+- id: us_al
+  name: Alabama
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ak
+  name: Alaska
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_az
+  name: Arizona
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ar
+  name: Arkansas
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ca
+  name: California
+  belongs_to: [us]
+  continent: North America
+  regulation: [ccpa]
+  default_selected: True
+- id: us_co
+  name: Colorado
+  belongs_to: [us]
+  continent: North America
+  regulation: [cpa]
+  default_selected: True
+- id: us_ct
+  name: Connecticut
+  belongs_to: [us]
+  continent: North America
+  regulation: [ctdpa]
+  default_selected: True
+- id: us_de
+  name: Delaware
+  belongs_to: [us]
+  continent: North America
+  regulation: [dpdpa]
+  default_selected: True
+- id: us_dc
+  name: District of Columbia (DC)
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_fl
+  name: Florida
+  belongs_to: [us]
+  continent: North America
+  regulation: [fdbr]
+  default_selected: True
+- id: us_ga
+  name: Georgia
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_hi
+  name: Hawaii
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_id
+  name: Idaho
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_il
+  name: Illinois
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_in
+  name: Indiana
+  belongs_to: [us]
+  continent: North America
+  regulation: [indcpa]
+  default_selected: True
+- id: us_ia
+  name: Iowa
+  belongs_to: [us]
+  continent: North America
+  regulation: [icdpa]
+  default_selected: True
+- id: us_ks
+  name: Kansas
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ky
+  name: Kentucky
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_la
+  name: Louisiana
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_me
+  name: Maine
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_md
+  name: Maryland
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ma
+  name: Massachusetts
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_mi
+  name: Michigan
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_mn
+  name: Minnesota
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ms
+  name: Mississippi
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_mo
+  name: Missouri
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_mt
+  name: Montana
+  belongs_to: [us]
+  continent: North America
+  regulation: [mcdpa]
+  default_selected: True
+- id: us_ne
+  name: Nebraska
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_nv
+  name: Nevada
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_nh
+  name: New Hampshire
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_nj
+  name: New Jersey
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_nm
+  name: New Mexico
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ny
+  name: New York
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_nc
+  name: North Carolina
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_nd
+  name: North Dakota
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_oh
+  name: Ohio
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_ok
+  name: Oklahoma
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_or
+  name: Oregon
+  belongs_to: [us]
+  continent: North America
+  regulation: [ocpa]
+  default_selected: True
+- id: us_pa
+  name: Pennsylvania
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_pr
+  name: Puerto Rico
+  belongs_to: [caribbean, us]
+  continent: North America
+  default_selected: True
+- id: us_ri
+  name: Rhode Island
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_sc
+  name: South Carolina
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_sd
+  name: South Dakota
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_tn
+  name: Tennessee
+  belongs_to: [us]
+  continent: North America
+  regulation: [tipa]
+  default_selected: True
+- id: us_tx
+  name: Texas
+  belongs_to: [us]
+  continent: North America
+  regulation: [tdpsa]
+  default_selected: True
+- id: us_ut
+  name: Utah
+  belongs_to: [us]
+  continent: North America
+  regulation: [ucpa]
+  default_selected: True
+- id: us_va
+  name: Virginia
+  belongs_to: [us]
+  continent: North America
+  regulation: [vcdpa]
+  default_selected: True
+- id: us_vi
+  name: United States Virgin Islands
+  belongs_to: [caribbean, us]
+  continent: North America
+  default_selected: True
+- id: us_vt
+  name: Vermont
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_wa
+  name: Washington
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_wv
+  name: West Virginia
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_wi
+  name: Wisconsin
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+- id: us_wy
+  name: Wyoming
+  belongs_to: [us]
+  continent: North America
+  default_selected: True
+
+
+##########################
+### Canadian provinces ###
+##########################
+- id: ca_ab
+  name: Alberta
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_bc
+  name: British Columbia
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_mb
+  name: Manitoba
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_nb
+  name: New Brunswick
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_nl
+  name: Newfoundland and Labrador
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_ns
+  name: Nova Scotia
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_on
+  name: Ontario
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_pe
+  name: Prince Edward Island
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_qc
+  name: Quebec
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda, law_25_quebec]
+  default_selected: True
+- id: ca_sk
+  name: Saskatchewan
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_nt
+  name: Northwest Territories
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_nu
+  name: Nunavut
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+- id: ca_yt
+  name: Yukon
+  belongs_to: [ca]
+  continent: North America
+  regulation: [pipeda]
+  default_selected: True
+
+
+
+#######################
+### Location Groups ###
+#######################
+location_groups:
+- continent: North America
+  id: ca
+  name: Canada
+- continent: North America
+  id: us
+  name: United States
+- continent: North America
+  id: mexico_central_america
+  name: Mexico and Central America
+- continent: North America
+  id: caribbean
+  name: Caribbean
+- continent: Europe
+  id: eea
+  name: European Economic Area (EEA)
+- continent: Europe
+  id: non_eea
+  name: Non European Economic Area
+
+
+
+
+###################
+### Regulations ###
+###################
+regulations:
+
+# Asia
+- id: pipl
+  name: PIPL (China)
+  continent: Asia
+- id: dpdpa_india
+  name: DPDPA (India)
+  continent: Asia
+
+# Europe
+- id: gdpr
+  name: GDPR (European Union)
+  continent: Europe
+- id: nfadp
+  name: Switzerland nFADP
+  continent: Europe
+- id: gdpr_uk
+  name: UK GDPR (United Kingdom)
+  continent: Europe
+
+
+# US
+- id: ccpa
+  name: CCPA (California)
+  continent: North America
+- id: cpa
+  name: CPA (Colorado)
+  continent: North America
+- id: ctdpa
+  name: CTDPA (Connecticut)
+  continent: North America
+- id: dpdpa
+  name: DPDPA (Delaware)
+  continent: North America
+- id: fdbr
+  name: FDBR (Florida)
+  continent: North America
+- id: icdpa
+  name: ICDPA (Iowa)
+  continent: North America
+- id: indcpa
+  name: INDCPA (Indiana)
+  continent: North America
+- id: mcdpa
+  name: MCDPA (Montana)
+  continent: North America
+- id: tdpsa
+  name: TDPSA (Texas)
+  continent: North America
+- id: tipa
+  name: TIPA (Tennessee)
+  continent: North America
+- id: ocpa
+  name: OCPA (Oregon)
+  continent: North America
+- id: ucpa
+  name: UCPA (Utah)
+  continent: North America
+- id: vcdpa
+  name: VCDPA (Virginia)
+  continent: North America
+
+# Canada
+- id: pipeda
+  name: PIPEDA (Canada)
+  continent: North America
+- id: law_25_quebec
+  name: Law 25 (Quebec)
+  continent: North America
+
+# South America
+- id: lgpd
+  name: LGPD (Brazil)
+  continent: South America

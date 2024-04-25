@@ -6,13 +6,13 @@ import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import { API_URL } from "../support/constants";
 
 const VERIFICATION_CODE = "112358";
-const PRIVACY_NOTICE_ID_1 = "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061";
-const PRIVACY_NOTICE_ID_2 = "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821";
-const PRIVACY_NOTICE_ID_3 = "pri_4bed96d0-b9e3-4596-a807-26b783836375";
-const PRIVACY_NOTICE_HISTORY_ID_1 = "pri_df14051b-1eaf-4f07-ae63-232bffd2dc3e";
-const PRIVACY_NOTICE_HISTORY_ID_2 = "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707";
-const PRIVACY_NOTICE_HISTORY_ID_3 = "pri_b09058a7-9f54-4360-8da5-4521e8975d4e";
-const PRIVACY_EXPERIENCE_ID = "pri_041acb07-c99b-4085-a435-c0d6f3a42b6f";
+const PRIVACY_NOTICE_ID_1 = "pri_notice-advertising-000";
+const PRIVACY_NOTICE_ID_2 = "pri_notice-analytics-000";
+const PRIVACY_NOTICE_ID_3 = "pri_notice-essential-000";
+const PRIVACY_NOTICE_HISTORY_ID_1 = "pri_notice-history-advertising-en-000";
+const PRIVACY_NOTICE_HISTORY_ID_2 = "pri_notice-history-analytics-en-000";
+const PRIVACY_NOTICE_HISTORY_ID_3 = "pri_notice-history-essential-en-000";
+const PRIVACY_CONFIG_HISTORY_ID = "pri_exp-history-privacy-center-en-000";
 const GEOLOCATION_API_URL = "https://www.example.com/location";
 const SETTINGS = {
   IS_OVERLAY_ENABLED: true,
@@ -48,7 +48,7 @@ describe("Privacy notice driven consent", () => {
 
     // Experience intercept
     cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
-      fixture: "consent/experience.json",
+      fixture: "consent/experience_privacy_center.json",
     }).as("getExperience");
 
     // Patch privacy preference intercept
@@ -72,6 +72,7 @@ describe("Privacy notice driven consent", () => {
       cy.clearAllCookies();
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.visit("/consent");
+      cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
       cy.getByTestId("consent");
       cy.wait("@getVerificationConfig");
@@ -79,9 +80,11 @@ describe("Privacy notice driven consent", () => {
 
     it("populates its header from the experience config", () => {
       cy.wait("@getExperience");
-      cy.getByTestId("consent-heading").contains("Privacy notice driven");
+      cy.getByTestId("consent-heading").contains(
+        "Manage your consent preferences"
+      );
       cy.getByTestId("consent-description").contains(
-        "Manage all of your notices here."
+        "We use cookies and similar methods"
       );
     });
 
@@ -130,10 +133,15 @@ describe("Privacy notice driven consent", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
-        const { preferences, code, method, privacy_experience_id: id } = body;
+        const {
+          preferences,
+          code,
+          method,
+          privacy_experience_config_history_id: id,
+        } = body;
         expect(method).to.eql("save");
         expect(code).to.eql(VERIFICATION_CODE);
-        expect(id).to.eql(PRIVACY_EXPERIENCE_ID);
+        expect(id).to.eql(PRIVACY_CONFIG_HISTORY_ID);
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);
@@ -151,8 +159,8 @@ describe("Privacy notice driven consent", () => {
               cookie.identity.fides_user_device_id
             );
             const expectedConsent = {
-              data_sales: true,
               advertising: true,
+              analytics_opt_out: true,
               essential: true,
             };
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -199,7 +207,7 @@ describe("Privacy notice driven consent", () => {
     describe("cookie enforcement", () => {
       beforeEach(() => {
         // First seed the browser with the cookies that are listed in the notices
-        cy.fixture("consent/experience.json").then((data) => {
+        cy.fixture("consent/experience_privacy_center.json").then((data) => {
           const notices: PrivacyNoticeResponseWithUserPreferences[] =
             data.items[0].privacy_notices;
 
@@ -307,7 +315,11 @@ describe("Privacy notice driven consent", () => {
       const cookie = {
         identity: { fides_user_device_id: uuid },
         fides_meta: { version: "0.9.0", createdAt, updatedAt },
-        consent: { data_sales: true, advertising: false, essential: true },
+        consent: {
+          advertising: true,
+          analytics_opt_out: false,
+          essential: true,
+        },
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       // Visit the consent page with notices enabled

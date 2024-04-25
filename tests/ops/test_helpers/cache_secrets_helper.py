@@ -17,3 +17,12 @@ def cache_secret(masking_secret_cache: MaskingSecretCache, request_id: str) -> N
 def clear_cache_secrets(request_id: str) -> None:
     cache: FidesopsRedis = get_cache()
     cache.delete_keys_by_prefix(f"id-{request_id}-masking-secret)")
+
+
+def clear_cache_identities(request_id: str) -> None:
+    """Testing helper just removes some cached identities from the Privacy Request for testing.
+
+    Some of our Privacy Request fixtures automatically cache identities -
+    """
+    cache: FidesopsRedis = get_cache()
+    cache.delete_keys_by_prefix(f"id-{request_id}-identity-")

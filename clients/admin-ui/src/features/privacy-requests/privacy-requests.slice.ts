@@ -3,8 +3,10 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPostPrivacyRequests,
-  GPPSettings,
+  GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
+  PrivacyCenterConfig,
+  PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
   SecurityApplicationConfig,
 } from "~/types/api";
@@ -293,6 +295,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         });
       },
     }),
+    postPrivacyRequest: build.mutation<
+      PrivacyRequestResponse,
+      PrivacyRequestCreate[]
+    >({
+      query: (payload) => ({
+        url: `privacy-request/authenticated`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: () => ["Request"],
+    }),
     getNotification: build.query<PrivacyRequestNotificationInfo, void>({
       query: () => ({
         url: `privacy-request/notification`,
@@ -471,6 +484,12 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.body,
       }),
     }),
+    getPrivacyCenterConfig: build.query<PrivacyCenterConfig, void>({
+      query: () => ({
+        method: "GET",
+        url: `plus/privacy-center-config`,
+      }),
+    }),
   }),
 });
 
@@ -479,12 +498,14 @@ export const {
   useBulkRetryMutation,
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
+  usePostPrivacyRequestMutation,
   useGetNotificationQuery,
   useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
   useSaveNotificationMutation,
   useUploadManualAccessWebhookDataMutation,
   useUploadManualErasureWebhookDataMutation,
+  useGetPrivacyCenterConfigQuery,
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
@@ -514,12 +535,8 @@ export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
  * be consistent!
  */
 export type CORSOriginsSettings = {
-  // EXTRA NOTE: We also include the "cors_origin_regex" setting here as a read-only config
-  configSet: Pick<
-    SecurityApplicationConfig,
-    "cors_origins" | "cors_origin_regex"
-  >;
-  apiSet: Pick<SecurityApplicationConfig, "cors_origins">;
+  configSet: SecurityApplicationConfig & { cors_origin_regex?: string };
+  apiSet: SecurityApplicationConfig;
 };
 
 export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
@@ -560,29 +577,30 @@ export const selectApplicationConfig = () =>
     (_, { data }) => data as ApplicationConfig
   );
 
-const defaultGppSettings: GPPSettings = {
+const defaultGppSettings: GPPApplicationConfigResponse = {
   enabled: false,
 };
-export const selectGppSettings: (state: RootState) => GPPSettings =
-  createSelector(
-    [
-      (state) => state,
-      privacyRequestApi.endpoints.getConfigurationSettings.select({
-        api_set: true,
-      }),
-      privacyRequestApi.endpoints.getConfigurationSettings.select({
-        api_set: false,
-      }),
-    ],
-    (state, { data: apiSetConfig }, { data: config }) => {
-      const hasApi = apiSetConfig && apiSetConfig.gpp;
-      const hasDefault = config && config.gpp;
-      if (hasApi && hasDefault) {
-        return { ...config.gpp, ...apiSetConfig.gpp };
-      }
-      if (hasDefault) {
-        return config.gpp;
-      }
-      return defaultGppSettings;
+export const selectGppSettings: (
+  state: RootState
+) => GPPApplicationConfigResponse = createSelector(
+  [
+    (state) => state,
+    privacyRequestApi.endpoints.getConfigurationSettings.select({
+      api_set: true,
+    }),
+    privacyRequestApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+  ],
+  (state, { data: apiSetConfig }, { data: config }) => {
+    const hasApi = apiSetConfig && apiSetConfig.gpp;
+    const hasDefault = config && config.gpp;
+    if (hasApi && hasDefault) {
+      return { ...config.gpp, ...apiSetConfig.gpp };
     }
-  );
+    if (hasDefault) {
+      return config.gpp;
+    }
+    return defaultGppSettings;
+  }
+);

@@ -1,49 +1,11 @@
 /**
- * Fides-tcf.js: Javascript library for Fides (https://github.com/ethyca/fides), including
- * features for supporting the Transparency Consent Framework
+ * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
  *
- * This JS module provides easy access to interact with Fides from a webpage, including the ability to:
- * - initialize the page with default consent options (e.g. opt-out of advertising cookies, opt-in to analytics, etc.)
- * - read/write the current user's consent preferences to their browser as a cookie
- * - push the current user's consent preferences to other systems via integrations (Google Tag Manager, Meta, etc.)
+ * This is the primary entry point for the fides-tcf.js module, which includes
+ * everything from fides.js plus adds support for the IAB Transparency and
+ * Consent Framework (TCF).
  *
- * See https://fid.es for more information!
- *
- * Basic usage of this module in an HTML page is:
- * ```
- * <script src="https://privacy.{company}.com/fides.js"></script>
- * <script>
- *   window.Fides.init({
- *     consent: {
- *       options: [{
- *         cookieKeys: ["data_sales"],
- *         default: true,
- *         fidesDataUseKey: "advertising"
- *       }]
- *     },
- *     experience: {},
- *     geolocation: {},
- *     options: {
- *           debug: true,
- *           isDisabled: false,
- *           isGeolocationEnabled: false,
- *           geolocationApiUrl: "",
- *           overlayParentId: null,
- *           modalLinkId: null,
- *           privacyCenterUrl: "http://localhost:3000"
- *         }
- *   });
- * </script>
- * ```
- *
- * ...and later:
- * ```
- * <script>
- *   // Query user consent preferences
- *   if (window.Fides.consent.data_sales) {
- *     // ...enable advertising scripts
- *   }
- * ```
+ * See the overall package docs in ./docs/README.md for more!
  */
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
@@ -52,12 +14,15 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
 import {
-  CookieKeyConsent,
   FidesConfig,
-  FidesOptionsOverrides,
+  FidesExperienceTranslationOverrides,
+  FidesGlobal,
+  FidesInitOptionsOverrides,
+  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  OverrideOptions,
+  NoticeConsent,
+  OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
 
@@ -65,10 +30,9 @@ import { initializeTcfCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
-  getOptionsOverrides,
+  getOverridesByType,
   initialize,
 } from "./lib/initialize";
-import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
 import { debugLog, FidesCookie, defaultShowModal } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
@@ -80,11 +44,12 @@ import {
   buildTcfEntitiesFromCookieAndFidesString,
   updateExperienceFromCookieConsentTcf,
 } from "./lib/tcf/utils";
+import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 
 declare global {
   interface Window {
-    Fides: Fides;
-    fides_overrides: OverrideOptions;
+    Fides: FidesGlobal;
+    fides_overrides: FidesOptions;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
@@ -96,10 +61,6 @@ declare global {
     __gppLocator?: Window;
   }
 }
-
-// The global Fides object; this is bound to window.Fides if available
-// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-let _Fides: Fides;
 
 const updateExperience = ({
   cookie,
@@ -139,12 +100,21 @@ const updateExperience = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-const init = async (config: FidesConfig) => {
-  const optionsOverrides: Partial<FidesOptionsOverrides> =
-    getOptionsOverrides(config);
+async function init(this: FidesGlobal, config: FidesConfig) {
+  this.config = config;
+  const optionsOverrides: Partial<FidesInitOptionsOverrides> =
+    getOverridesByType<Partial<FidesInitOptionsOverrides>>(
+      OverrideType.OPTIONS,
+      config
+    );
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });
+  const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
+      OverrideType.EXPERIENCE_TRANSLATION,
+      config
+    );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // if we don't already have a fidesString override, use fidesString from consent prefs if they exist
@@ -154,9 +124,13 @@ const init = async (config: FidesConfig) => {
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
+    experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrides.optionsOverrides };
+  config = {
+    ...config,
+    options: { ...config.options, ...overrides.optionsOverrides },
+  };
   const cookie = {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
@@ -164,7 +138,7 @@ const init = async (config: FidesConfig) => {
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
-  const savedConsent: CookieKeyConsent = {
+  const savedConsent: NoticeConsent = {
     ...cookie.consent,
   };
 
@@ -198,7 +172,7 @@ const init = async (config: FidesConfig) => {
   // Initialize the CMP API early so that listeners are established
   initializeTcfCmpApi();
   if (initialFides) {
-    Object.assign(_Fides, initialFides);
+    Object.assign(this, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
   const experience = initialFides?.experience ?? config.experience;
@@ -209,15 +183,17 @@ const init = async (config: FidesConfig) => {
     experience,
     renderOverlay,
     updateExperience,
+    overrides,
   });
-  Object.assign(_Fides, updatedFides);
+  Object.assign(this, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-};
+}
 
 // The global Fides object; this is bound to window.Fides if available
-_Fides = {
+// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
@@ -244,6 +220,8 @@ _Fides = {
     preventDismissal: false,
     allowHTMLDescription: null,
     base64Cookie: false,
+    fidesPrimaryColor: null,
+    fidesClearCookie: false,
   },
   fides_meta: {},
   identity: {},
@@ -251,10 +229,18 @@ _Fides = {
   saved_consent: {},
   gtm,
   init,
+  config: undefined,
+  reinitialize() {
+    if (!this.config || !this.initialized) {
+      throw new Error("Fides must be initialized before reinitializing");
+    }
+    return this.init(this.config);
+  },
   initialized: false,
   meta,
   shopify,
   showModal: defaultShowModal,
+  getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
 };
 
 if (typeof window !== "undefined") {
@@ -262,8 +248,7 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides-tcf.mjs as a module
-export * from "./components";
-export * from "./lib/consent";
+export * from "./lib/initOverlay";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";

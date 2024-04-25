@@ -76,7 +76,10 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
-        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
+        scopes: [
+          ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+        ],
       },
       {
         title: "Connection manager",
@@ -99,7 +102,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PROPERTIES_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PROPERTY_READ],
-        requiresFlag: "properties",
       },
       {
         title: "Vendors",

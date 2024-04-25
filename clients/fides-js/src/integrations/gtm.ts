@@ -1,5 +1,5 @@
 import { FidesEventDetail } from "../lib/events";
-import { CookieKeyConsent } from "../lib/consent-types";
+import { NoticeConsent } from "../lib/consent-types";
 
 declare global {
   interface Window {
@@ -11,7 +11,7 @@ declare global {
  * Defines the structure of the Fides variable pushed to the GTM data layer
  */
 interface FidesVariable {
-  consent: CookieKeyConsent;
+  consent: NoticeConsent;
 }
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
@@ -40,6 +40,9 @@ const pushFidesVariableToGTM = (fidesEvent: {
 export const gtm = () => {
   // Listen for Fides events and cross-publish them to GTM
   window.addEventListener("FidesInitialized", (event) =>
+    pushFidesVariableToGTM(event)
+  );
+  window.addEventListener("FidesUpdating", (event) =>
     pushFidesVariableToGTM(event)
   );
   window.addEventListener("FidesUpdated", (event) =>

@@ -1,10 +1,10 @@
+import json
 from typing import Any, Dict, List
 
-import json
 import pydash
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -20,7 +20,7 @@ from fides.api.util.saas_util import get_identity
 @register("oracle_responsys_profile_list_recipients_read", [SaaSRequestType.READ])
 def oracle_responsys_profile_list_recipients_read(
     client: AuthenticatedClient,
-    node: TraversalNode,
+    node: ExecutionNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
     input_data: Dict[str, List[Any]],
@@ -53,7 +53,7 @@ def oracle_responsys_profile_list_recipients_read(
         query_ids = input_data.get("phone_number", [])
         # Oracle Responsys doesn't support the initial + in phone numbers
         for idx, query_id in enumerate(query_ids):
-            query_ids[idx] = query_id[1:] if query_id.startswith('+') else query_id
+            query_ids[idx] = query_id[1:] if query_id.startswith("+") else query_id
         query_attribute = "m"
     else:
         raise FidesopsException(

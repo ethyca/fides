@@ -37,7 +37,7 @@ supported_languages_by_id: Dict[str, Language] = (
 
 
 # dynamically create an enum based on definitions loaded from YAML
-SupportedLanguage = Enum(  # type: ignore[misc]
+SupportedLanguage: Enum = Enum(  # type: ignore[misc]
     "SupportedLanguage",
     {
         to_snake_case(language.name): language.id

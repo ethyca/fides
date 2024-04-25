@@ -2,6 +2,7 @@
 This file invokes a command used to setup infrastructure for use in testing Fidesops
 and related workflows.
 """
+
 # pylint: disable=inconsistent-return-statements
 import argparse
 import subprocess

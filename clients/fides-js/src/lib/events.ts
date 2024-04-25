@@ -1,30 +1,10 @@
 import { debugLog } from "./consent-utils";
 import { FidesCookie } from "./consent-types";
-
-/**
- * Defines the available event names:
- * - FidesInitialized: dispatched when initialization is complete, from Fides.init()
- * - FidesUpdated: dispatched when preferences are updated from updateConsentPreferences()
- * - FidesUIShown: dispatched when either the banner or modal is shown to the user
- * - FidesUIChanged: dispatched when preferences are changed but not saved, i.e. "dirty".
- * - FidesModalClosed: dispatched when the modal is closed
- */
-export type FidesEventType =
-  | "FidesInitialized"
-  | "FidesUpdated"
-  | "FidesUIShown"
-  | "FidesUIChanged"
-  | "FidesModalClosed";
+import type { FidesEventType } from "../docs";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
-  interface WindowEventMap {
-    FidesInitialized: FidesEvent;
-    FidesUpdated: FidesEvent;
-    FidesUIShown: FidesEvent;
-    FidesUIChanged: FidesEvent;
-    FidesModalClosed: FidesEvent;
-  }
+  interface WindowEventMap extends Record<FidesEventType, FidesEvent> {}
 }
 
 /**
@@ -44,6 +24,11 @@ export type FidesEventDetail = FidesCookie & {
   extraDetails?: FidesEventExtraDetails;
 };
 
+/**
+ * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
+ *
+ * However, this will require locking down some types and refactoring usage.
+ */
 export type FidesEvent = CustomEvent<FidesEventDetail>;
 
 /**

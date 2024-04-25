@@ -110,6 +110,8 @@
     "privacy-request:view_data",
     "property:create",
     "property:read",
+    "property:update",
+    "property:delete",
     "rule:create_or_update",
     "rule:delete",
     "rule:read",

@@ -58,7 +58,11 @@ Cypress.Commands.add("overrideSettings", (settings) => {
 
 Cypress.Commands.add(
   "visitConsentDemo",
-  (options?: FidesConfig, queryParams?: any, windowParams?: any) => {
+  (
+    options?: FidesConfig,
+    queryParams?: Cypress.VisitOptions["qs"] | null,
+    windowParams?: any
+  ) => {
     const visitOptions: Partial<VisitOptions> = {
       onBeforeLoad: (win) => {
         // eslint-disable-next-line no-param-reassign
@@ -86,6 +90,7 @@ Cypress.Commands.add(
           "FidesInitialized",
           cy.stub().as("FidesInitialized")
         );
+        win.addEventListener("FidesUpdating", cy.stub().as("FidesUpdating"));
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
         win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
@@ -187,7 +192,7 @@ declare global {
        */
       visitConsentDemo(
         options?: FidesConfig,
-        queryParams?: any,
+        queryParams?: Cypress.VisitOptions["qs"] | null,
         windowParams?: any
       ): Chainable<any>;
       /**

@@ -4,7 +4,7 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- 
+    <!--
       Pass along any params to the fides.js script. For example, visiting
       http://localhost:3000/fides-js-demo.html?geolocation=fr-id
       will pass a geolocation query param to fides.js
@@ -14,11 +14,18 @@
         const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
-        const isValid = VALID_ISO_3166_LOCATION_REGEX.test(geolocation);
-        const src = `/fides.js${isValid ? `?geolocation=${geolocation}` : ""}`;
+        if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
+          params.delete("geolocation");
+        }
+        const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
 
         document.write('<script src="' + src + '"><\/script>');
       })();
+      var deleteCookie = function () {
+        document.cookie =
+          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        location.reload();
+      };
     </script>
     <style>
       body {
@@ -28,6 +35,13 @@
         background-color: #eee;
         padding: 16px;
       }
+      #fides-modal-link {
+        border: none;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+        text-decoration: underline;
+      }
     </style>
   </head>
 
@@ -35,6 +49,12 @@
     <main>
       <h1>fides.js demo page</h1>
       <p>This page exists to demonstrate the fides.js script.</p>
+
+      <div>
+        <button type="button" onclick="deleteCookie()">
+          delete cookie and reload
+        </button>
+      </div>
 
       <div id="fides-embed-container"></div>
 
@@ -45,7 +65,7 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <a id="fides-modal-link">Manage Consent</a>
+      <button id="fides-modal-link"></button>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>
@@ -76,6 +96,10 @@
           null,
           2
         );
+
+        // Display the fides configured modal link label (if any).
+        document.getElementById("fides-modal-link").textContent =
+          Fides.getModalLinkLabel();
 
         // Pretty-print the fides experience config object and add it to the page.
         document.getElementById("consent-experience").textContent =

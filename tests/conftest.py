@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
@@ -9,16 +10,20 @@ from uuid import uuid4
 import pytest
 import requests
 import yaml
+from fastapi import Query
 from fastapi.testclient import TestClient
+from fides.api.models.privacy_request import (
+    generate_request_callback_resume_jwe,
+    generate_request_callback_pre_approval_jwe,
+)
 from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from toml import load as load_toml
 
-from fides.api.app_setup import PRIVACY_EXPERIENCE_CONFIGS_PATH
+from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -28,19 +33,16 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.db.ctl_session import sync_engine
 from fides.api.main import app
-from fides.api.models.privacy_request import generate_request_callback_jwe
+from fides.api.models.privacy_request import (
+    EXITED_EXECUTION_LOG_STATUSES,
+)
 from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import (
-    APPROVER,
-    CONTRIBUTOR,
-    OWNER,
-    VIEWER,
-    VIEWER_AND_APPROVER,
-)
+from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.util.cache import get_cache
-from fides.api.util.consent_util import load_default_experience_configs_on_startup
+from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
@@ -583,9 +585,18 @@ def _generate_auth_header(oauth_client, app_encryption_key):
 
 
 @pytest.fixture
-def generate_webhook_auth_header():
+def generate_policy_webhook_auth_header():
     def _build_jwt(webhook):
-        jwe = generate_request_callback_jwe(webhook)
+        jwe = generate_request_callback_resume_jwe(webhook)
+        return {"Authorization": "Bearer " + jwe}
+
+    return _build_jwt
+
+
+@pytest.fixture
+def generate_pre_approval_webhook_auth_header():
+    def _build_jwt(webhook):
+        jwe = generate_request_callback_pre_approval_jwe(webhook)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt
@@ -626,6 +637,121 @@ def run_privacy_request_task(celery_session_app):
     yield celery_session_app.tasks[
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request"
     ]
+
+
+class DSRThreeTestRunnerTimedOut(Exception):
+    """DSR 3.0 Test Runner Timed Out"""
+
+
+def wait_for_tasks_to_complete(
+    db: Session, pr: PrivacyRequest, action_type: ActionType
+):
+    """Testing Helper for DSR 3.0 - repeatedly checks to see if all Request Tasks
+    have exited so bogged down test doesn't hang"""
+
+    def all_tasks_have_run(tasks: Query) -> bool:
+        return all(tsk.status in EXITED_EXECUTION_LOG_STATUSES for tsk in tasks)
+
+    db.commit()
+    counter = 0
+    while not all_tasks_have_run(
+        (
+            db.query(RequestTask).filter(
+                RequestTask.privacy_request_id == pr.id,
+                RequestTask.action_type == action_type,
+            )
+        )
+    ):
+        time.sleep(1)
+        counter += 1
+        if counter == 5:
+            raise DSRThreeTestRunnerTimedOut()
+
+
+def access_runner_tester(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    session: Session,
+):
+    """
+    Function for testing the access request for either DSR 2.0 and DSR 3.0
+    """
+    try:
+        return access_runner(
+            privacy_request,
+            policy,
+            graph,
+            connection_configs,
+            identity,
+            session,
+            privacy_request_proceed=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+        )
+    except PrivacyRequestExit:
+        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
+        # RequestTasks to finish
+        wait_for_tasks_to_complete(session, privacy_request, ActionType.access)
+        return privacy_request.get_raw_access_results()
+
+
+def erasure_runner_tester(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    access_request_data: Dict[str, List[Row]],
+    session: Session,
+):
+    """
+    Function for testing the erasure runner for either DSR 2.0 and DSR 3.0
+    """
+    try:
+        return erasure_runner(
+            privacy_request,
+            policy,
+            graph,
+            connection_configs,
+            identity,
+            access_request_data,
+            session,
+            privacy_request_proceed=False,  # This allows the DSR 3.0 Erasure Runner to be tested in isolation
+        )
+    except PrivacyRequestExit:
+        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits
+        # for RequestTasks to finish
+        wait_for_tasks_to_complete(session, privacy_request, ActionType.erasure)
+        return privacy_request.get_raw_masking_counts()
+
+
+def consent_runner_tester(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    session: Session,
+):
+    """
+    Function for testing the consent request for either DSR 2.0 and DSR 3.0
+    """
+    try:
+        return consent_runner(
+            privacy_request,
+            policy,
+            graph,
+            connection_configs,
+            identity,
+            session,
+            privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
+        )
+    except PrivacyRequestExit:
+        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
+        # RequestTasks to finish
+        wait_for_tasks_to_complete(session, privacy_request, ActionType.consent)
+        return privacy_request.get_consent_results()
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -1073,6 +1199,107 @@ def system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
+def system_with_dataset_references(db: Session) -> System:
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db, {"fides_key": f"dataset_key-f{uuid4()}", "collections": []}
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "dataset_references": [ctl_dataset.fides_key],
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def system_with_undeclared_data_categories(db: Session) -> System:
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "dataset_references": [ctl_dataset.fides_key],
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def privacy_declaration_with_dataset_references(db: Session) -> System:
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for third party sharing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "third_party_sharing",
+            "data_subjects": ["customer"],
+            "dataset_references": [ctl_dataset.fides_key],
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    return privacy_declaration
+
+
+@pytest.fixture(scope="function")
 def system_multiple_decs(db: Session, system: System) -> System:
     """
     Add an additional PrivacyDeclaration onto the base System to test scenarios with
@@ -1209,14 +1436,3 @@ def load_default_data_uses(db):
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.dict())
-
-
-@pytest.fixture(scope="function", autouse=True)
-def load_default_privacy_experience_configs(db):
-    """Ops tests drop db data, so for now, load these back in if they don't exist"""
-    if not PrivacyExperienceConfig.get_default_config(
-        db, ComponentType.overlay
-    ) or not PrivacyExperienceConfig.get_default_config(
-        db, ComponentType.privacy_center
-    ):
-        load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)

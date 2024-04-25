@@ -10,7 +10,7 @@ import {
   CustomSwitch,
 } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/privacy-requests";
-import { GPPSettings, GPPUSApproach } from "~/types/api";
+import { GPPApplicationConfigResponse, GPPUSApproach } from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
 import SettingsBox from "./SettingsBox";
@@ -34,7 +34,7 @@ const GppConfiguration = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const gppSettings = useAppSelector(selectGppSettings);
   const isEnabled = !!gppSettings.enabled;
-  const { values } = useFormikContext<{ gpp: GPPSettings }>();
+  const { values } = useFormikContext<{ gpp: GPPApplicationConfigResponse }>();
   const showMspa = !!values.gpp.us_approach;
 
   return (

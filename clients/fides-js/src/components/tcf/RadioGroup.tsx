@@ -1,15 +1,22 @@
 import { h } from "preact";
 
+import { I18n } from "../../lib/i18n";
+
 interface Option {
-  label: string;
+  /**
+   * i18n Message ID to use for i18n.t(...), e.g. i18n.t("static.tcf.consent")
+   */
+  i18nMessageID: string;
   value: string;
 }
 
 const RadioGroup = <T extends Option>({
+  i18n,
   active,
   options,
   onChange,
 }: {
+  i18n: I18n;
   options: T[];
   active: T;
   onChange: (filter: T) => void;
@@ -30,7 +37,7 @@ const RadioGroup = <T extends Option>({
             onClick={() => handleClick(option)}
             className="fides-radio-button"
           >
-            {option.label}
+            {i18n.t(option.i18nMessageID)}
           </button>
         );
       })}

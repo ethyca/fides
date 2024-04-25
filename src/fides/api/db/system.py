@@ -1,6 +1,7 @@
 """
 Functions for interacting with System objects in the database.
 """
+
 import copy
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
@@ -203,9 +204,9 @@ async def upsert_cookies(
                         "name": cookie_data.name,
                         "path": cookie_data.path,
                         "domain": cookie_data.domain,
-                        "privacy_declaration_id": privacy_declaration.id
-                        if privacy_declaration
-                        else None,
+                        "privacy_declaration_id": (
+                            privacy_declaration.id if privacy_declaration else None
+                        ),
                         "system_id": system.id if system else None,
                     }
                 )

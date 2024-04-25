@@ -20,15 +20,6 @@ CONSENT_REQUEST_PREFERENCES_WITH_ID = (
 
 CONSENT_REQUEST_VERIFY = "/consent-request/{consent_request_id}/verify"
 
-# Privacy Preference URLs
-CONSENT_REQUEST_NOTICES_SERVED = "/consent-request/{consent_request_id}/notices-served"
-NOTICES_SERVED = "/notices-served"
-
-# Reporting endpoints - have records for *all* users
-HISTORICAL_PRIVACY_PREFERENCES_REPORT = "/historical-privacy-preferences"
-CURRENT_PRIVACY_PREFERENCES_REPORT = "/current-privacy-preferences"
-
-
 # Oauth Client URLs
 TOKEN = "/oauth/token"
 CLIENT = "/oauth/client"
@@ -75,11 +66,6 @@ MESSAGING_TEST = "/messaging/config/test"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
-# Privacy Experience Config URLs
-EXPERIENCE_CONFIG = "/experience-config"
-EXPERIENCE_CONFIG_DETAIL = "/experience-config/{experience_config_id}"
-
-
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
@@ -87,10 +73,11 @@ PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
+REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
+PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
+
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
-PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
-PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
@@ -107,9 +94,10 @@ PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
     "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
 
-# Purpose URLs
-PURPOSES = "/purposes"
-
+# Privacy Request pre-approve URLs
+PRIVACY_REQUEST_PRE_APPROVE = "/privacy-request/{privacy_request_id}/pre-approve"
+PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/eligible"
+PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/not-eligible"
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"
@@ -131,6 +119,10 @@ POLICY_PRE_WEBHOOK_DETAIL = (
 POLICY_POST_WEBHOOK_DETAIL = (
     "/dsr/policy/{policy_key}/webhook/post_execution/{post_webhook_key}"
 )
+
+# Pre-approval webhook URLs
+WEBHOOK_PRE_APPROVAL = "/dsr/webhook/pre_approval"
+WEBHOOK_PRE_APPROVAL_DETAIL = "/dsr/webhook/pre_approval/{webhook_key}"
 
 # Connection Type URLs
 CONNECTION_TYPES = "/connection_type"

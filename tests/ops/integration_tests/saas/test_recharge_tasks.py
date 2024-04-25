@@ -1,38 +1,38 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_recharge
 def test_recharge_connection_test(recharge_connection_config) -> None:
     get_connector(recharge_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_recharge
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_recharge_access_request_task(
     db,
     policy,
     recharge_connection_config,
     recharge_dataset_config,
     recharge_identity_email,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     """Full access request based on the Recharge SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_recharge_access_request_task_{random.randint(0, 1000)}"
-    )
     identity_attribute = "email"
     identity_value = recharge_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -42,7 +42,7 @@ async def test_recharge_access_request_task(
     dataset_name = recharge_connection_config.get_saas_config().fides_key
     merged_graph = recharge_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -124,21 +124,28 @@ async def test_recharge_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_recharge
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_recharge_erasure_request_task(
     db,
-    policy,
+    privacy_request,
     erasure_policy_complete_mask,
     recharge_connection_config,
     recharge_dataset_config,
     recharge_erasure_identity_email,
     recharge_erasure_data,
     recharge_test_client,
+    dsr_version,
+    request,
 ) -> None:
-    privacy_request = PrivacyRequest(
-        id=f"test_recharge_erasure_request_task_{random.randint(0, 1000)}"
-    )
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    privacy_request.policy_id = erasure_policy_complete_mask.id
+    privacy_request.save(db)
+
     identity_attribute = "email"
     identity_value = recharge_erasure_identity_email
     identity_kwargs = {identity_attribute: identity_value}
@@ -149,9 +156,9 @@ async def test_recharge_erasure_request_task(
 
     merged_graph = recharge_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_complete_mask,
         graph,
         [recharge_connection_config],
         {"email": recharge_erasure_identity_email},
@@ -231,7 +238,7 @@ async def test_recharge_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_complete_mask,
         graph,

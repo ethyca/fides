@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import requests
 from loguru import logger
 from pydantic import ValidationError
-from redis.exceptions import DataError
 from sqlalchemy.orm import Query, Session
 
 from fides.api import common_exceptions
@@ -15,21 +14,14 @@ from fides.api.common_exceptions import (
     ManualWebhookFieldsUnset,
     MessageDispatchException,
     NoCachedManualWebhookEntry,
+    PrivacyRequestExit,
     PrivacyRequestPaused,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.analytics_events import (
-    failed_graph_analytics_event,
-    fideslog_graph_failure,
-)
-from fides.api.graph.config import CollectionAddress, GraphDataset
+from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
+from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -63,22 +55,17 @@ from fides.api.service.connectors.fides_connector import filter_fides_connector_
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
+from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.task.graph_task import (
+    build_consent_dataset_graph,
+    filter_by_enabled_actions,
     get_cached_data_for_erasures,
-    run_access_request,
-    run_consent_request,
-    run_erasure,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import (
-    FidesopsRedis,
-    get_async_task_tracking_cache_key,
-    get_cache,
-)
+from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
-from fides.api.util.wrappers import sync
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -226,25 +213,27 @@ def upload_access_results(  # pylint: disable=R0912
     if not access_result:
         logger.info("No results returned for access request {}", privacy_request.id)
 
+    rule_filtered_results: Dict[str, Dict[str, List[Row]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
         storage_destination = rule.get_storage_destination(session)
 
         target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
-        filtered_results: Dict[
-            str, List[Dict[str, Optional[Any]]]
-        ] = filter_data_categories(
-            access_result,
-            target_categories,
-            dataset_graph.data_category_field_mapping,
-            rule.key,
-            fides_connector_datasets,
+        filtered_results: Dict[str, List[Dict[str, Optional[Any]]]] = (
+            filter_data_categories(
+                access_result,
+                target_categories,
+                dataset_graph.data_category_field_mapping,
+                rule.key,
+                fides_connector_datasets,
+            )
         )
 
         filtered_results.update(
             manual_data
         )  # Add manual data directly to each upload packet
+        rule_filtered_results[rule.key] = filtered_results
 
         logger.info(
             "Starting access request upload for rule {} for privacy request {}",
@@ -271,7 +260,12 @@ def upload_access_results(  # pylint: disable=R0912
                 Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
-
+    # Save the results we uploaded to the user for later retrieval
+    privacy_request.save_filtered_access_results(session, rule_filtered_results)
+    # Saving access request URL's on the privacy request in case DSR 3.0
+    # exits processing before the email is sent
+    privacy_request.access_result_urls = {"access_result_urls": download_urls}
+    privacy_request.save(session)
     return download_urls
 
 
@@ -280,29 +274,21 @@ def queue_privacy_request(
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
 ) -> str:
-    cache: FidesopsRedis = get_cache()
-    logger.info("queueing privacy request")
+    logger.info(
+        "Queueing privacy request {} from step {}", privacy_request_id, from_step
+    )
     task = run_privacy_request.delay(
         privacy_request_id=privacy_request_id,
         from_webhook_id=from_webhook_id,
         from_step=from_step,
     )
-    try:
-        cache.set(
-            get_async_task_tracking_cache_key(privacy_request_id),
-            task.task_id,
-        )
-    except DataError:
-        logger.debug(
-            "Error tracking task_id for request with id {}", privacy_request_id
-        )
+    cache_task_tracking_key(privacy_request_id, task.task_id)
 
     return task.task_id
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-@sync
-async def run_privacy_request(
+def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
@@ -330,8 +316,6 @@ async def run_privacy_request(
                 f"Privacy request with id {privacy_request_id} not found"
             )
 
-        privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
-
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logger.info(
                 "Terminating privacy request {}: request canceled.", privacy_request.id
@@ -356,9 +340,11 @@ async def run_privacy_request(
         if not manual_webhook_erasure_results.proceed:
             return
 
+        # Pre-Webhooks CHECKPOINT
         if can_run_checkpoint(
             request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
         ):
+            privacy_request.cache_failed_checkpoint_details(CurrentStep.pre_webhooks)
             # Run pre-execution webhooks
             proceed = run_webhooks_and_report_status(
                 session,
@@ -379,44 +365,70 @@ async def run_privacy_request(
             datasets = DatasetConfig.all(db=session)
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
             dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = privacy_request.get_cached_identity_data()
+            identity_data = {
+                key: value["value"] if isinstance(value, dict) else value
+                for key, value in privacy_request.get_cached_identity_data().items()
+            }
             connection_configs = ConnectionConfig.all(db=session)
             fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
                 connection_configs
             )
-            access_result_urls: List[str] = []
 
+            # Access CHECKPOINT
             if (
                 policy.get_rules_for_action(action_type=ActionType.access)
                 or policy.get_rules_for_action(action_type=ActionType.erasure)
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                access_result: Dict[str, List[Row]] = await run_access_request(
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.access)
+                access_runner(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
+                    privacy_request_proceed=True,  # Should always be True unless we're testing
+                )
+
+            # Upload Access Results CHECKPOINT
+            access_result_urls: List[str] = []
+            raw_access_results: Dict = privacy_request.get_raw_access_results()
+            if (
+                policy.get_rules_for_action(action_type=ActionType.access)
+                or policy.get_rules_for_action(
+                    action_type=ActionType.erasure
+                )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.upload_access,
+                from_checkpoint=resume_step,
+            ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.upload_access
+                )
+                filtered_access_results = filter_by_enabled_actions(
+                    raw_access_results, connection_configs
                 )
                 access_result_urls = upload_access_results(
                     session,
                     policy,
-                    access_result,
+                    filtered_access_results,
                     dataset_graph,
                     privacy_request,
                     manual_webhook_access_results.manual_data,
                     fides_connector_datasets,
                 )
 
+            # Erasure CHECKPOINT
             if policy.get_rules_for_action(
                 action_type=ActionType.erasure
             ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
             ):
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
                 # We only need to run the erasure once until masking strategies are handled
-                await run_erasure(
+                erasure_runner(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
@@ -426,6 +438,18 @@ async def run_privacy_request(
                         privacy_request.id
                     ),
                     session=session,
+                    privacy_request_proceed=True,  # Should always be True unless we're testing
+                )
+
+            # Finalize Erasure CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.finalize_erasure,
+                from_checkpoint=resume_step,
+            ):
+                # This checkpoint allows a Privacy Request to be re-queued
+                # after the Erasure Step is complete for DSR 3.0
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.finalize_erasure
                 )
 
             if policy.get_rules_for_action(
@@ -434,13 +458,26 @@ async def run_privacy_request(
                 request_checkpoint=CurrentStep.consent,
                 from_checkpoint=resume_step,
             ):
-                await run_consent_request(
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
+                consent_runner(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=build_consent_dataset_graph(datasets),
                     connection_configs=connection_configs,
                     identity=identity_data,
                     session=session,
+                    privacy_request_proceed=True,  # Should always be True unless we're testing
+                )
+
+            # Finalize Consent CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.finalize_consent,
+                from_checkpoint=resume_step,
+            ):
+                # This checkpoint allows a Privacy Request to be re-queued
+                # after the Consent Step is complete for DSR 3.0
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.finalize_consent
                 )
 
         except PrivacyRequestPaused as exc:
@@ -448,17 +485,21 @@ async def run_privacy_request(
             _log_warning(exc, CONFIG.dev_mode)
             return
 
+        except PrivacyRequestExit:
+            # Privacy Request Exiting awaiting sub task processing (Request Tasks)
+            # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
+            # Request Tasks have been built.  The Privacy Request will be requeued from
+            # the appropriate checkpoint when all the Request Tasks have run.
+            return
+
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
-            # Send analytics to Fideslog
-            await fideslog_graph_failure(
-                failed_graph_analytics_event(privacy_request, exc)
-            )
             # If dev mode, log traceback
             _log_exception(exc, CONFIG.dev_mode)
             return
 
         # Check if privacy request needs erasure or consent emails sent
+        # Email post-send CHECKPOINT
         if (
             (
                 policy.get_rules_for_action(action_type=ActionType.erasure)
@@ -470,6 +511,7 @@ async def run_privacy_request(
             )
             and needs_batch_email_send(session, identity_data, privacy_request)
         ):
+            privacy_request.cache_failed_checkpoint_details(CurrentStep.email_post_send)
             privacy_request.pause_processing_for_email_send(session)
             logger.info(
                 "Privacy request '{}' exiting: awaiting email send.",
@@ -477,11 +519,12 @@ async def run_privacy_request(
             )
             return
 
-        # Run post-execution webhooks
+        # Post Webhooks CHECKPOINT
         if can_run_checkpoint(
             request_checkpoint=CurrentStep.post_webhooks,
             from_checkpoint=resume_step,
         ):
+            privacy_request.cache_failed_checkpoint_details(CurrentStep.post_webhooks)
             proceed = run_webhooks_and_report_status(
                 db=session,
                 privacy_request=privacy_request,
@@ -496,15 +539,19 @@ async def run_privacy_request(
             action_type=ActionType.consent
         ):
             try:
+                if not access_result_urls:
+                    # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
+                    # from the database because the Privacy Request would have exited
+                    # processing and lost access to the access_result_urls in memory
+                    access_result_urls = (privacy_request.access_result_urls or {}).get(
+                        "access_result_urls", []
+                    )
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
                 )
             except (IdentityNotFoundException, MessageDispatchException) as e:
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, e)
-                )
                 _log_exception(e, CONFIG.dev_mode)
                 return
         privacy_request.finished_processing_at = datetime.utcnow()
@@ -520,31 +567,6 @@ async def run_privacy_request(
         privacy_request.status = PrivacyRequestStatus.complete
         logger.info("Privacy request {} run completed.", privacy_request.id)
         privacy_request.save(db=session)
-
-
-def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
-    """
-    Build the starting DatasetGraph for consent requests.
-
-    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
-    """
-    consent_datasets: List[GraphDataset] = []
-
-    for dataset_config in datasets:
-        connection_type: ConnectionType = (
-            dataset_config.connection_config.connection_type  # type: ignore
-        )
-        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
-        if (
-            connection_type == ConnectionType.saas
-            and saas_config
-            and saas_config.get("consent_requests")
-        ):
-            consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
-            )
-
-    return DatasetGraph(*consent_datasets)
 
 
 def initiate_privacy_request_completion_email(

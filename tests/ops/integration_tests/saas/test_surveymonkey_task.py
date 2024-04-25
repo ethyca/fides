@@ -4,17 +4,26 @@ from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
 class TestSurveyMonkeyConnector:
     def test_connection(self, surveymonkey_runner: ConnectorRunner):
         surveymonkey_runner.test_connection()
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_access_request(
         self,
+        dsr_version,
+        request,
         surveymonkey_runner: ConnectorRunner,
         policy,
         surveymonkey_identity_email: str,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         access_results = await surveymonkey_runner.access_request(
             access_policy=policy, identities={"email": surveymonkey_identity_email}
         )
@@ -29,8 +38,14 @@ class TestSurveyMonkeyConnector:
                 == surveymonkey_identity_email
             )
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_non_strict_erasure_request(
         self,
+        dsr_version,
+        request,
         surveymonkey_runner: ConnectorRunner,
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
@@ -38,6 +53,8 @@ class TestSurveyMonkeyConnector:
         surveymonkey_erasure_data,
         surveymonkey_client,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         (
             access_results,
             erasure_results,

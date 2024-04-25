@@ -375,7 +375,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     identity = browser_identity if browser_identity else Identity()
     setattr(
         identity,
-        provided_identity.field_name.value,  # type:ignore[attr-defined]
+        provided_identity.field_name,  # type:ignore[attr-defined]
         provided_identity.encrypted_value["value"],  # type:ignore[index]
     )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
 
@@ -477,16 +477,16 @@ def set_consent_preferences(
     )
 
     # Note: This just queues the PrivacyRequest for processing
-    privacy_request_creation_results: Optional[
-        BulkPostPrivacyRequests
-    ] = queue_privacy_request_to_propagate_consent_old_workflow(
-        db,
-        provided_identity,
-        data.policy_key or DEFAULT_CONSENT_POLICY,
-        consent_preferences,
-        consent_request,
-        data.executable_options,
-        data.browser_identity,
+    privacy_request_creation_results: Optional[BulkPostPrivacyRequests] = (
+        queue_privacy_request_to_propagate_consent_old_workflow(
+            db,
+            provided_identity,
+            data.policy_key or DEFAULT_CONSENT_POLICY,
+            consent_preferences,
+            consent_request,
+            data.executable_options,
+            data.browser_identity,
+        )
     )
 
     if privacy_request_creation_results:
@@ -508,7 +508,7 @@ def _get_or_create_provided_identity(
         identity = ProvidedIdentity.filter(
             db=db,
             conditions=(
-                (ProvidedIdentity.field_name == ProvidedIdentityType.email)
+                (ProvidedIdentity.field_name == ProvidedIdentityType.email.value)
                 & (
                     ProvidedIdentity.hashed_value
                     == ProvidedIdentity.hash_value(identity_data.email)
@@ -533,7 +533,7 @@ def _get_or_create_provided_identity(
         identity = ProvidedIdentity.filter(
             db=db,
             conditions=(
-                (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number)
+                (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number.value)
                 & (
                     ProvidedIdentity.hashed_value
                     == ProvidedIdentity.hash_value(identity_data.phone_number)

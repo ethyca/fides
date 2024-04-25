@@ -1,40 +1,40 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.fixtures.saas.sendgrid_fixtures import contact_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_sendgrid
 def test_sendgrid_connection_test(sendgrid_connection_config) -> None:
     get_connector(sendgrid_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_sendgrid
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_sendgrid_access_request_task(
     db,
     policy,
+    privacy_request,
     sendgrid_connection_config,
     sendgrid_dataset_config,
     sendgrid_identity_email,
+    request,
+    dsr_version,
 ) -> None:
     """Full access request based on the Sendgrid SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sendgrid_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": sendgrid_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -42,7 +42,7 @@ async def test_sendgrid_access_request_task(
     merged_graph = sendgrid_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -77,11 +77,16 @@ async def test_sendgrid_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_sendgrid
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_sendgrid_erasure_request_task(
     db,
-    policy,
+    privacy_request,
+    dsr_version,
+    request,
     erasure_policy_string_rewrite,
     sendgrid_secrets,
     sendgrid_connection_config,
@@ -90,10 +95,11 @@ async def test_sendgrid_erasure_request_task(
     sendgrid_erasure_data,
 ) -> None:
     """Full erasure request based on the Sendgrid SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sendgrid_erasure_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
+
     identity = Identity(**{"email": sendgrid_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -102,9 +108,9 @@ async def test_sendgrid_erasure_request_task(
     graph = DatasetGraph(merged_graph)
 
     # access our erasure identity
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [sendgrid_connection_config],
         {"email": sendgrid_erasure_identity_email},
@@ -137,7 +143,7 @@ async def test_sendgrid_erasure_request_task(
     )
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow delete
-    erasure = await graph_task.run_erasure(
+    erasure = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

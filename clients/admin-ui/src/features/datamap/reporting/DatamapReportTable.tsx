@@ -29,10 +29,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import _ from "lodash";
+import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
@@ -77,7 +78,7 @@ enum COLUMN_IDS {
   LEGAL_NAME = "legal_name",
   DPO = "dpo",
   LEGAL_BASIS_FOR_PROCESSING = "legal_basis_for_processing",
-  ADMINISTRATING_DEPARTMENT = "adminstrating_department",
+  ADMINISTRATING_DEPARTMENT = "administrating_department",
   COOKIE_MAX_AGE_SECONDS = "cookie_max_age_seconds",
   PRIVACY_POLICY = "privacy_policy",
   LEGAL_ADDRESS = "legal_address",
@@ -114,6 +115,8 @@ enum COLUMN_IDS {
   USES_COOKIES = "uses_cookies",
   USES_NON_COOKIE_ACCESS = "uses_non_cookie_access",
   USES_PROFILING = "uses_profiling",
+  SYSTEM_UNDECLARED_DATA_CATEGORIES = "system_undeclared_data_categories",
+  DATA_USE_UNDECLARED_DATA_CATEGORIES = "data_use_undeclared_data_categories",
 }
 
 const getGrouping = (groupBy: DATAMAP_GROUPING) => {
@@ -208,6 +211,13 @@ export const DatamapReportTable = () => {
     dataSubjectOptions,
     onDataSubjectChange,
   } = useDatamapReportFilters();
+
+  const {
+    getDataUseDisplayName,
+    getDataCategoryDisplayName,
+    getDataSubjectDisplayName,
+    isLoading: isLoadingFidesLang,
+  } = useTaxonomies();
 
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
@@ -356,13 +366,20 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: COLUMN_IDS.DATA_USE,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data uses"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+          return (
+            <GroupCountBadgeCell
+              suffix="data uses"
+              value={
+                isArray(value)
+                  ? map(value, getDataUseDisplayName)
+                  : getDataUseDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           displayText: "Data use",
@@ -370,13 +387,21 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_categories, {
         id: COLUMN_IDS.DATA_CATEGORY,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data categories"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="data categories"
+              value={
+                isArray(value)
+                  ? map(value, getDataCategoryDisplayName)
+                  : getDataCategoryDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
@@ -387,13 +412,21 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.data_subjects, {
         id: COLUMN_IDS.DATA_SUBJECT,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data subjects"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="data subjects"
+              value={
+                isArray(value)
+                  ? map(value, getDataSubjectDisplayName)
+                  : getDataSubjectDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
         header: (props) => (
           <DefaultHeaderCell value="Data subject" {...props} />
         ),
@@ -539,10 +572,10 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS,
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => (
-          <DefaultHeaderCell value="Does internation transfers" {...props} />
+          <DefaultHeaderCell value="Does international transfers" {...props} />
         ),
         meta: {
-          displayText: "Does internation transfers",
+          displayText: "Does international transfers",
         },
       }),
       columnHelper.accessor((row) => row.dpa_location, {
@@ -725,10 +758,10 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.REASON_FOR_EXEMPTION,
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => (
-          <DefaultHeaderCell value="Reason for excemption" {...props} />
+          <DefaultHeaderCell value="Reason for exemption" {...props} />
         ),
         meta: {
-          displayText: "Reason for excemption",
+          displayText: "Reason for exemption",
         },
       }),
       columnHelper.accessor((row) => row.requires_data_protection_assessments, {
@@ -835,6 +868,62 @@ export const DatamapReportTable = () => {
           displayText: "Third parties",
         },
       }),
+      columnHelper.accessor((row) => row.system_undeclared_data_categories, {
+        id: COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES,
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="system undeclared data categories"
+              value={
+                isArray(value)
+                  ? map(value, getDataCategoryDisplayName)
+                  : getDataCategoryDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
+        header: (props) => (
+          <DefaultHeaderCell
+            value="System undeclared data categories"
+            {...props}
+          />
+        ),
+        meta: {
+          displayText: "System undeclared data categories",
+          showHeaderMenu: true,
+        },
+      }),
+      columnHelper.accessor((row) => row.data_use_undeclared_data_categories, {
+        id: COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES,
+        cell: (props) => {
+          const value = props.getValue();
+
+          return (
+            <GroupCountBadgeCell
+              suffix="data use undeclared data categories"
+              value={
+                isArray(value)
+                  ? map(value, getDataCategoryDisplayName)
+                  : getDataCategoryDisplayName(value || "")
+              }
+              {...props}
+            />
+          );
+        },
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Data use undeclared data categories"
+            {...props}
+          />
+        ),
+        meta: {
+          displayText: "Data use undeclared data categories",
+          showHeaderMenu: true,
+        },
+      }),
       columnHelper.accessor((row) => row.uses_cookies, {
         id: COLUMN_IDS.USES_COOKIES,
         cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -868,7 +957,12 @@ export const DatamapReportTable = () => {
       // Tack on the custom field columns to the end
       ...customFieldColumns,
     ],
-    [customFieldColumns]
+    [
+      customFieldColumns,
+      getDataUseDisplayName,
+      getDataSubjectDisplayName,
+      getDataCategoryDisplayName,
+    ]
   );
 
   const {
@@ -886,6 +980,10 @@ export const DatamapReportTable = () => {
     data,
     initialState: {
       columnOrder,
+      columnVisibility: {
+        [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
+        [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
+      },
     },
     state: {
       expanded: true,
@@ -913,7 +1011,7 @@ export const DatamapReportTable = () => {
     }
   };
 
-  if (isReportLoading || isLoadingHealthCheck) {
+  if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
@@ -941,7 +1039,7 @@ export const DatamapReportTable = () => {
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
-        headerText="Data Map Settings"
+        headerText="Data map settings"
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
       />
@@ -987,7 +1085,7 @@ export const DatamapReportTable = () => {
             </MenuList>
           </Menu>
           <Button
-            data-testid="filter-multiple-systems-btn"
+            data-testid="edit-columns-btn"
             size="xs"
             variant="outline"
             onClick={onColumnSettingsOpen}

@@ -1,18 +1,19 @@
 import random
+import uuid
 from typing import Iterable
 
-from fideslang.validation import FidesKey
 from sqlalchemy.engine import Engine
 
 from fides.api.db.base_class import FidesBase
 from fides.api.graph.config import *
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.traversal import *
 from fides.api.graph.traversal import Traversal, TraversalNode
 
 # to avoid having faker spam the logs
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors import BaseConnector, MongoDBConnector
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.graph_task import GraphTask
@@ -43,12 +44,13 @@ class MockSqlConnector(SQLConnector):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        return [generate_collection(node.node.collection) for _ in range(3)]
+        return [generate_collection(node.collection) for _ in range(3)]
 
 
 class MockSqlTask(GraphTask):
@@ -64,20 +66,30 @@ class MockMongoTask(GraphTask):
 #  -------------------------------------------
 #   test utility functions
 #  -------------------------------------------
-def erasure_policy(*erasure_categories: str) -> Policy:
+def erasure_policy(db, *erasure_categories: str) -> Policy:
     """Generate an erasure policy with the given categories"""
-    policy = Policy()
-    targets = [RuleTarget(data_category=c) for c in erasure_categories]
-    policy.rules = [
-        Rule(
-            action_type=ActionType.erasure,
-            targets=targets,
-            masking_strategy={
+    policy = Policy.create(
+        db=db,
+        data={
+            "name": str(uuid.uuid4()),
+            "key": str(uuid.uuid4()),
+        },
+    )
+    rule = Rule.create(
+        db,
+        data={
+            "action_type": ActionType.erasure,
+            "name": str(uuid.uuid4()),
+            "masking_strategy": {
                 "strategy": "null_rewrite",
                 "configuration": {},
             },
-        )
-    ]
+            "policy_id": policy.id,
+        },
+    )
+    for c in erasure_categories:
+        RuleTarget.create(db, data={"data_category": c, "rule_id": rule.id})
+
     return policy
 
 

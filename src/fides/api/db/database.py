@@ -1,6 +1,7 @@
 """
 Contains all of the logic related to the database including connections, setup, teardown, etc.
 """
+
 from os import path
 from typing import Literal
 

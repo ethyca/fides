@@ -5,7 +5,7 @@ import { decode as base64_decode, encode as base64_encode } from "base-64";
 import { ConsentContext } from "./consent-context";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
-  CookieKeyConsent,
+  NoticeConsent,
   Cookies,
   FidesCookie,
   LegacyConsentConfig,
@@ -14,7 +14,7 @@ import {
   SaveConsentPreference,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
+import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
 import {
   transformConsentToFidesUserPreference,
@@ -42,7 +42,7 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
 };
 
 export const consentCookieObjHasSomeConsentSet = (
-  consent: CookieKeyConsent | undefined
+  consent: NoticeConsent | undefined
 ): boolean => {
   if (!consent) {
     return false;
@@ -72,7 +72,7 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
 /**
  * Generate a new Fides cookie with default values for the current user.
  */
-export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
+export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
   const now = new Date();
   const userDeviceId = generateFidesUserDeviceId();
   return {
@@ -127,13 +127,19 @@ export const getFidesConsentCookie = (
  * `saveFidesCookie` with a valid cookie after editing the values.
  */
 export const getOrMakeFidesCookie = (
-  defaults?: CookieKeyConsent,
-  debug: boolean = false
+  defaults?: NoticeConsent,
+  debug: boolean = false,
+  fidesClearCookie: boolean = false
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
-
   if (typeof document === "undefined") {
+    return defaultCookie;
+  }
+
+  if (fidesClearCookie) {
+    document.cookie =
+      "fides_consent=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT";
     return defaultCookie;
   }
 
@@ -164,7 +170,7 @@ export const getOrMakeFidesCookie = (
     // Re-apply the default consent values to the parsed cookie; they may have
     // changed, so new defaults should be added. However, ensure that any
     // existing user preferences override those defaults!
-    const updatedConsent: CookieKeyConsent = {
+    const updatedConsent: NoticeConsent = {
       ...defaults,
       ...parsedCookie.consent,
     };
@@ -271,8 +277,8 @@ export const updateExperienceFromCookieConsentNotices = ({
 
 export const transformTcfPreferencesToCookieKeys = (
   tcfPreferences: TcfSavePreferences
-): TcfCookieConsent => {
-  const cookieKeys: TcfCookieConsent = {};
+): TcfOtherConsent => {
+  const cookieKeys: TcfOtherConsent = {};
   FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
     const preferences = tcfPreferences[cookieKey] ?? [];
     cookieKeys[cookieKey] = Object.fromEntries(
@@ -299,8 +305,8 @@ export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
   context: ConsentContext,
   debug: boolean
-): CookieKeyConsent => {
-  const defaults: CookieKeyConsent = {};
+): NoticeConsent => {
+  const defaults: NoticeConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
     if (current === undefined) {
       return;
@@ -347,7 +353,7 @@ export const updateCookieFromNoticePreferences = async (
       transformUserPreferenceToBoolean(consentPreference),
     ])
   );
-  const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeMap);
+  const consentCookieKey: NoticeConsent = Object.fromEntries(noticeMap);
   return {
     ...oldCookie,
     consent: consentCookieKey,
@@ -362,8 +368,8 @@ export const updateCookieFromNoticePreferences = async (
  */
 export const getConsentStateFromExperience = (
   experience: PrivacyExperience
-): CookieKeyConsent => {
-  const consent: CookieKeyConsent = {};
+): NoticeConsent => {
+  const consent: NoticeConsent = {};
   if (!experience.privacy_notices) {
     return consent;
   }

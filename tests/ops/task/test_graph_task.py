@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict
 from unittest import mock
 from uuid import uuid4
@@ -27,17 +28,19 @@ from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
+from fides.api.task.deprecated_graph_task import (
+    _evaluate_erasure_dependencies,
+    format_data_use_map_for_caching,
+    update_erasure_mapping_from_cache,
+)
 from fides.api.task.graph_task import (
     EMPTY_REQUEST,
+    EMPTY_REQUEST_TASK,
     GraphTask,
     TaskResources,
-    _evaluate_erasure_dependencies,
-    _format_data_use_map_for_caching,
     build_affected_field_logs,
     collect_queries,
     filter_by_enabled_actions,
-    start_function,
-    update_erasure_mapping_from_cache,
 )
 from fides.api.task.task_resources import Connections
 from fides.api.util.consent_util import (
@@ -80,12 +83,13 @@ def combined_traversal_node_dict(integration_mongodb_config, connection_config):
 @pytest.fixture(scope="function")
 def make_graph_task(integration_mongodb_config, connection_config, db):
     def task(node):
+        request_task = node.to_mock_request_task()
         return MockMongoTask(
-            node,
             TaskResources(
                 EMPTY_REQUEST,
                 Policy(),
                 [connection_config, integration_mongodb_config],
+                request_task,
                 db,
             ),
         )
@@ -97,9 +101,10 @@ class TestPreProcessInputData:
     def test_pre_process_input_data_scalar(self, db) -> None:
         t = sample_traversal()
         n = t.traversal_node_dict[CollectionAddress("mysql", "Address")]
+        request_task = n.to_mock_request_task()
 
         task = MockSqlTask(
-            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db)
+            TaskResources(EMPTY_REQUEST, Policy(), connection_configs, request_task, db)
         )
         customers_data = [
             {"contact_address_id": 31, "foo": "X"},
@@ -187,17 +192,18 @@ class TestPreProcessInputData:
         truncated_customer_details_output = [
             {
                 "_id": ObjectId("61f422e0ddc2559e0c300e95"),
-                "travel_identifiers": ["A111-11111", "B111-11111"],
+                "travel_identifiers": ["A111-11111", "B111-11111", "D111-11111"],
             },
             {
                 "_id": ObjectId("61f422e0ddc2559e0c300e95"),
-                "travel_identifiers": ["C111-11111"],
+                "travel_identifiers": ["C111-11111", "D111-11111"],
             },
         ]
         assert task.pre_process_input_data(truncated_customer_details_output) == {
             "passenger_information.passenger_ids": [
                 "A111-11111",
                 "B111-11111",
+                "D111-11111",
                 "C111-11111",
             ],
             "fidesops_grouped_inputs": [],
@@ -285,8 +291,9 @@ class TestPreProcessInputData:
         n = traversal_with_grouped_inputs.traversal_node_dict[
             CollectionAddress("mysql", "User")
         ]
+        request_task = n.to_mock_request_task()
         task = MockSqlTask(
-            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db)
+            TaskResources(EMPTY_REQUEST, Policy(), connection_configs, request_task, db)
         )
 
         project_output = [
@@ -312,7 +319,7 @@ class TestPreProcessInputData:
         assert task.pre_process_input_data(identity_output, project_output) == {
             "email": ["email@gmail.com"],
             "project": ["abcde", "fghij", "klmno"],
-            "organization": ["12345", "54321", "54321"],
+            "organization": ["12345", "54321"],
             "fidesops_grouped_inputs": [],
         }
 
@@ -417,7 +424,9 @@ def test_sql_dry_run_queries(db) -> None:
     traversal = sample_traversal()
     env = collect_queries(
         traversal,
-        TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db),
+        TaskResources(
+            EMPTY_REQUEST, Policy(), connection_configs, EMPTY_REQUEST_TASK, db
+        ),
     )
 
     assert (
@@ -461,6 +470,7 @@ def test_mongo_dry_run_queries(db) -> None:
                     key="postgres", connection_type=ConnectionType.mongodb
                 ),
             ],
+            EMPTY_REQUEST_TASK,
             db,
         ),
     )
@@ -491,44 +501,50 @@ class TestBuildAffectedFieldLogs:
         ]
         dataset = postgres_order_node.node.dataset
 
-        field([dataset], "postgres", "Order", "customer_id").data_categories = ["A"]
-        field([dataset], "postgres", "Order", "shipping_address_id").data_categories = [
-            "B"
+        field([dataset], "postgres", "Order", "customer_id").data_categories = [
+            "user.name"
         ]
-        field([dataset], "postgres", "Order", "order_id").data_categories = ["B"]
+        field([dataset], "postgres", "Order", "shipping_address_id").data_categories = [
+            "system.operations"
+        ]
+        field([dataset], "postgres", "Order", "order_id").data_categories = [
+            "system.operations"
+        ]
         field([dataset], "postgres", "Order", "billing_address_id").data_categories = [
-            "C"
+            "user.contact"
         ]
         return postgres_order_node
 
-    def test_build_affected_field_logs(self, node_fixture):
-        policy = erasure_policy("A", "B")
+    def test_build_affected_field_logs(self, db, node_fixture):
+        policy = erasure_policy(db, "user.name", "system.operations")
 
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node, policy, action_type=ActionType.erasure
         )
 
-        # Only fields for data categories A and B which were specified on the Policy, made it to the logs for this node
-        assert formatted_for_logs == [
+        # Only fields for data categories user.name and system.operations which were specified on the Policy, made it to the logs for this node
+        assert sorted(formatted_for_logs, key=lambda d: d["field_name"]) == [
             {
                 "path": "postgres:Order:customer_id",
                 "field_name": "customer_id",
-                "data_categories": ["A"],
+                "data_categories": ["user.name"],
             },
             {
                 "path": "postgres:Order:order_id",
                 "field_name": "order_id",
-                "data_categories": ["B"],
+                "data_categories": ["system.operations"],
             },
             {
                 "path": "postgres:Order:shipping_address_id",
                 "field_name": "shipping_address_id",
-                "data_categories": ["B"],
+                "data_categories": ["system.operations"],
             },
         ]
 
-    def test_build_affected_field_logs_no_data_categories_on_policy(self, node_fixture):
-        no_categories_policy = erasure_policy()
+    def test_build_affected_field_logs_no_data_categories_on_policy(
+        self, db, node_fixture
+    ):
+        no_categories_policy = erasure_policy(db)
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node,
             no_categories_policy,
@@ -537,8 +553,10 @@ class TestBuildAffectedFieldLogs:
         # No data categories specified on policy, so no fields affected
         assert formatted_for_logs == []
 
-    def test_build_affected_field_logs_no_matching_data_categories(self, node_fixture):
-        d_categories_policy = erasure_policy("D")
+    def test_build_affected_field_logs_no_matching_data_categories(
+        self, db, node_fixture
+    ):
+        d_categories_policy = erasure_policy(db, "user.demographic")
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node,
             d_categories_policy,
@@ -548,9 +566,9 @@ class TestBuildAffectedFieldLogs:
         assert formatted_for_logs == []
 
     def test_build_affected_field_logs_no_data_categories_for_action_type(
-        self, node_fixture
+        self, db, node_fixture
     ):
-        policy = erasure_policy("A", "B")
+        policy = erasure_policy(db, "user.name", "system.operations")
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node,
             policy,
@@ -559,38 +577,43 @@ class TestBuildAffectedFieldLogs:
         # We only have data categories specified on an erasure policy, and we're looking for access action type
         assert formatted_for_logs == []
 
-    def test_multiple_rules_targeting_same_field(self, node_fixture):
-        policy = erasure_policy("A")
+    def test_multiple_rules_targeting_same_field(self, db, node_fixture):
+        policy = erasure_policy(db, "user.name")
 
-        policy.rules = [
-            Rule(
-                action_type=ActionType.erasure,
-                targets=[RuleTarget(data_category="A")],
-                masking_strategy={
-                    "strategy": "null_rewrite",
-                    "configuration": {},
-                },
-            ),
-            Rule(
-                action_type=ActionType.erasure,
-                targets=[RuleTarget(data_category="A")],
-                masking_strategy={
-                    "strategy": "null_rewrite",
-                    "configuration": {},
-                },
-            ),
-        ]
+        rule_1 = Rule(
+            action_type=ActionType.erasure,
+            targets=[RuleTarget(data_category="user.name")],
+            masking_strategy={
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+            policy_id=policy.id,
+        )
+
+        target_1 = RuleTarget(data_category="user.name", rule_id=rule_1.id)
+
+        rule_2 = Rule(
+            action_type=ActionType.erasure,
+            targets=[RuleTarget(data_category="user.name")],
+            masking_strategy={
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+            policy_id=policy.id,
+        )
+
+        target_2 = RuleTarget(data_category="user.name", rule_id=rule_2.id)
 
         formatted_for_logs = build_affected_field_logs(
             node_fixture.node, policy, action_type=ActionType.erasure
         )
 
-        # No duplication of the matching customer_id field, even though multiple rules targeted data category A
+        # No duplication of the matching customer_id field, even though multiple rules targeted data category user.name
         assert formatted_for_logs == [
             {
                 "path": "postgres:Order:customer_id",
                 "field_name": "customer_id",
-                "data_categories": ["A"],
+                "data_categories": ["user.name"],
             }
         ]
 
@@ -598,7 +621,7 @@ class TestBuildAffectedFieldLogs:
 class TestUpdateErasureMappingFromCache:
     @pytest.fixture(scope="function")
     def task_resource(self, privacy_request, policy, db, connection_config):
-        tr = TaskResources(privacy_request, policy, [], db)
+        tr = TaskResources(privacy_request, policy, [], EMPTY_REQUEST_TASK, db)
         tr.get_connector = lambda x: Connections.build_connector(connection_config)
         return tr
 
@@ -609,7 +632,8 @@ class TestUpdateErasureMappingFromCache:
         ) -> None:
             """Run the traversal, as an action creating a GraphTask for each traversal_node."""
             if not tn.is_root_node():
-                data[tn.address] = GraphTask(tn, task_resource)
+                task_resource.privacy_request_task = tn.to_mock_request_task()
+                data[tn.address] = GraphTask(task_resource)
 
         return collect_tasks_fn
 
@@ -726,7 +750,7 @@ class TestFormatDataUseMapForCaching:
             data={
                 "name": str(uuid4()),
                 "key": "connection_config_data_use_map_no_system",
-                "connection_type": ConnectionType.manual,
+                "connection_type": ConnectionType.timescale,
                 "access": AccessLevel.write,
                 "disabled": False,
             },
@@ -749,7 +773,7 @@ class TestFormatDataUseMapForCaching:
             data={
                 "name": str(uuid4()),
                 "key": "connection_config_data_use_map",
-                "connection_type": ConnectionType.manual,
+                "connection_type": ConnectionType.timescale,
                 "access": AccessLevel.write,
                 "disabled": False,
                 "system_id": system.id,
@@ -776,7 +800,7 @@ class TestFormatDataUseMapForCaching:
             data={
                 "name": str(uuid4()),
                 "key": "connection_config_data_use_map_system_multiple_decs",
-                "connection_type": ConnectionType.manual,
+                "connection_type": ConnectionType.timescale,
                 "access": AccessLevel.write,
                 "disabled": False,
                 "system_id": system_multiple_decs.id,
@@ -801,7 +825,9 @@ class TestFormatDataUseMapForCaching:
                 [
                     "connection_config_no_system"
                 ],  # connection config no system, no data uses
-                {"postgres_example_subscriptions_dataset_no_system:subscriptions": {}},
+                {
+                    "postgres_example_subscriptions_dataset_no_system:subscriptions": set()
+                },
             ),
             (
                 [
@@ -830,7 +856,7 @@ class TestFormatDataUseMapForCaching:
                     "connection_config_system_multiple_decs",
                 ],
                 {
-                    "postgres_example_subscriptions_dataset_no_system:subscriptions": {},
+                    "postgres_example_subscriptions_dataset_no_system:subscriptions": set(),
                     "postgres_example_subscriptions_dataset_multiple_decs:subscriptions": {
                         "marketing.advertising",
                         "third_party_sharing",
@@ -866,7 +892,9 @@ class TestFormatDataUseMapForCaching:
             dataset_graph, {"email": {"test_user@example.com"}}
         )
         env: Dict[CollectionAddress, Any] = {}
-        task_resources = TaskResources(privacy_request, policy, connection_configs, db)
+        task_resources = TaskResources(
+            privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, db
+        )
 
         # perform the traversal to populate our `env` dict
         def collect_tasks_fn(
@@ -874,7 +902,8 @@ class TestFormatDataUseMapForCaching:
         ) -> None:
             """Run the traversal, as an action creating a GraphTask for each traversal_node."""
             if not tn.is_root_node():
-                data[tn.address] = GraphTask(tn, task_resources)
+                task_resources.privacy_request_task = tn.to_mock_request_task()
+                data[tn.address] = GraphTask(task_resources)
 
         traversal.traverse(
             env,
@@ -882,7 +911,16 @@ class TestFormatDataUseMapForCaching:
         )
 
         # ensure that the generated data_use_map looks as expected based on `env` dict
-        assert _format_data_use_map_for_caching(env) == expected_data_use_map
+        assert (
+            format_data_use_map_for_caching(
+                {
+                    coll_address: gt.execution_node.connection_key
+                    for (coll_address, gt) in env.items()
+                },
+                connection_configs,
+            )
+            == expected_data_use_map
+        )
 
 
 class TestGraphTaskAffectedConsentSystems:
@@ -897,13 +935,15 @@ class TestGraphTaskAffectedConsentSystems:
             privacy_request_with_consent_policy,
             privacy_request_with_consent_policy.policy,
             [mailchimp_transactional_connection_config_no_secrets],
+            EMPTY_REQUEST_TASK,
             db,
         )
         tn = TraversalNode(generate_node("a", "b", "c", "c2"))
         tn.node.dataset.connection_key = (
             mailchimp_transactional_connection_config_no_secrets.key
         )
-        return GraphTask(tn, task_resources)
+        task_resources.privacy_request_task = tn.to_mock_request_task()
+        return GraphTask(task_resources)
 
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
@@ -954,12 +994,14 @@ class TestGraphTaskAffectedConsentSystems:
         )
         assert logs.first().status == ExecutionLogStatus.skipped
 
+    @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_errored_consent_task_for_connector_no_relevant_preferences(
         self,
         mock_run_consent_request,
+        mark_current_and_downstream_nodes_as_failed_mock,
         mailchimp_transactional_connection_config_no_secrets,
         mock_graph_task,
         db,
@@ -1008,6 +1050,7 @@ class TestGraphTaskAffectedConsentSystems:
             .order_by(ExecutionLog.created_at.desc())
         )
         assert logs.first().status == ExecutionLogStatus.error
+        assert mark_current_and_downstream_nodes_as_failed_mock.called
 
 
 class TestFilterByEnabledActions:
@@ -1098,3 +1141,137 @@ class TestFilterByEnabledActions:
         assert filter_by_enabled_actions(access_results, connection_configs) == {
             "dataset1:collection": "data",
         }
+
+
+class TestGraphTaskLogging:
+    @pytest.fixture(scope="function")
+    def graph_task(self, privacy_request, policy, db):
+        resources = TaskResources(
+            privacy_request,
+            policy,
+            [
+                ConnectionConfig(
+                    key="mock_connection_config_key_a",
+                    connection_type=ConnectionType.postgres,
+                )
+            ],
+            EMPTY_REQUEST_TASK,
+            db,
+        )
+        tn = TraversalNode(generate_node("a", "b", "c"))
+        rq = tn.to_mock_request_task()
+        rq.action_type = ActionType.access
+        rq.status = ExecutionLogStatus.pending
+        rq.id = str(uuid.uuid4())
+        db.add(rq)
+        db.commit()
+
+        resources.privacy_request_task = rq
+        return GraphTask(resources)
+
+    def test_log_start(self, graph_task, db, privacy_request):
+        graph_task.log_start(action_type=ActionType.access)
+
+        assert graph_task.request_task.status == ExecutionLogStatus.in_processing
+
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+        assert execution_log.status == ExecutionLogStatus.in_processing
+
+    def test_log_retry(self, graph_task, db, privacy_request):
+        graph_task.log_retry(action_type=ActionType.access)
+
+        assert graph_task.request_task.status == ExecutionLogStatus.retrying
+
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+        assert execution_log.status == ExecutionLogStatus.retrying
+
+    def test_log_skipped(self, graph_task, db, privacy_request):
+        graph_task.log_skipped(action_type=ActionType.access, ex="Skipping node")
+
+        assert graph_task.request_task.status == ExecutionLogStatus.skipped
+        assert graph_task.request_task.consent_sent is None, "Not applicable for access"
+
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+        assert execution_log.status == ExecutionLogStatus.skipped
+
+        graph_task.log_skipped(action_type=ActionType.consent, ex="Skipping node")
+        assert graph_task.request_task.consent_sent is False
+
+    @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
+    def test_log_end_error(
+        self,
+        mark_current_and_downstream_nodes_as_failed_mock,
+        graph_task,
+        db,
+        privacy_request,
+    ):
+        graph_task.log_end(action_type=ActionType.access, ex=Exception("Key Error"))
+
+        assert graph_task.request_task.status == ExecutionLogStatus.error
+
+        assert mark_current_and_downstream_nodes_as_failed_mock.called
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+
+        assert execution_log.status == ExecutionLogStatus.error
+
+    @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
+    def test_log_end_complete(
+        self,
+        mark_current_and_downstream_nodes_as_failed_mock,
+        graph_task,
+        db,
+        privacy_request,
+    ):
+        graph_task.log_end(action_type=ActionType.access)
+
+        assert graph_task.request_task.status == ExecutionLogStatus.complete
+
+        assert not mark_current_and_downstream_nodes_as_failed_mock.called
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+                ExecutionLog.action_type == ActionType.access,
+            )
+            .first()
+        )
+
+        assert execution_log.status == ExecutionLogStatus.complete

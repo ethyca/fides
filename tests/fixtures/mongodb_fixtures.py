@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
@@ -9,12 +9,14 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from fides.api.models.sql_models import Dataset as CtlDataset
 
 from .application_fixtures import integration_secrets
 
@@ -38,6 +40,33 @@ def mongo_connection_config(db: Session) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture
+def mongo_dataset_config(
+    mongo_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    mongo_dataset = example_datasets[1]
+    fides_key = mongo_dataset["fides_key"]
+    mongo_connection_config.name = fides_key
+    mongo_connection_config.key = fides_key
+    mongo_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, mongo_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": mongo_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

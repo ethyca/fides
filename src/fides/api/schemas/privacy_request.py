@@ -136,6 +136,19 @@ class ExecutionLogResponse(FidesSchema):
         use_enum_values = True
 
 
+class PrivacyRequestTaskSchema(FidesSchema):
+    """Schema for Privacy Request Tasks, which are individual nodes that are queued"""
+
+    id: str
+    collection_address: str
+    status: ExecutionLogStatus
+    created_at: datetime
+    updated_at: datetime
+    upstream_tasks: List[str]
+    downstream_tasks: List[str]
+    action_type: ActionType
+
+
 class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 
@@ -207,7 +220,7 @@ class PrivacyRequestResponse(FidesSchema):
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Optional[str]]]
+    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]]
     custom_privacy_request_fields: Optional[Dict[str, Any]]
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
