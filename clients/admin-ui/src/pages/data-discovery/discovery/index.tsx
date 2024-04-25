@@ -16,8 +16,8 @@ const DataDiscoveryActivityPage = () => {
       }}
     >
       <DiscoveryMonitorBreadcrumbs
-        parentLink={DATA_DISCOVERY_ROUTE}
         parentTitle="Data discovery"
+        parentLink={DATA_DISCOVERY_ROUTE}
       />
 
       {/* TODO: Add filters to get appropiate results */}

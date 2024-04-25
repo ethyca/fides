@@ -3,9 +3,7 @@ import React from "react";
 import FixedLayout from "~/features/common/FixedLayout";
 import { DATA_DISCOVERY_ROUTE } from "~/features/common/nav/v2/routes";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
-import DiscoveryMonitorListTable from "~/features/data-discovery-and-detection/DiscoveryMonitorListTable";
 import DiscoveryMonitorResultTable from "~/features/data-discovery-and-detection/DiscoveryMonitorResultTable";
-import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 
 const DataDetectionActivityPage = () => {
   return (
@@ -17,8 +15,8 @@ const DataDetectionActivityPage = () => {
       }}
     >
       <DiscoveryMonitorBreadcrumbs
-        parentLink={DATA_DISCOVERY_ROUTE}
         parentTitle="Data detection"
+        parentLink={DATA_DISCOVERY_ROUTE}
       />
 
       {/* TODO: Add filters to get appropiate results */}

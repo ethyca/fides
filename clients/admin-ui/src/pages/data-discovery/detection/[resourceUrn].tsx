@@ -7,7 +7,7 @@ import DiscoveryMonitorResultTable from "~/features/data-discovery-and-detection
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 
 const DataDetectionActivityPage = () => {
-  const { resourceUrn } = useDiscoveryRoutes();
+  const { resourceUrn, navigateToDetectionResults } = useDiscoveryRoutes();
 
   return (
     <FixedLayout
@@ -18,8 +18,12 @@ const DataDetectionActivityPage = () => {
       }}
     >
       <DiscoveryMonitorBreadcrumbs
-        parentLink={DATA_DISCOVERY_ROUTE}
         parentTitle="Data detection"
+        parentLink={DATA_DISCOVERY_ROUTE}
+        resourceUrn={resourceUrn}
+        onPathClick={(resourceUrn) =>
+          navigateToDetectionResults({ resourceUrn })
+        }
       />
 
       {/* TODO: Add filters to get appropiate results */}

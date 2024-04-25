@@ -14,11 +14,9 @@ const DataDiscoveryAndDetectionActivityPage = () => (
     }}
   >
     <DiscoveryMonitorBreadcrumbs
-      parentLink={DETECTION_DISCOVERY_ACTIVITY_ROUTE}
       parentTitle="Detection & discovery"
+      parentLink={DETECTION_DISCOVERY_ACTIVITY_ROUTE}
     />
-
-    {/* TODO: Replace table with table that displays activity results */}
     <ActivityTable />
   </FixedLayout>
 );
