@@ -17,7 +17,7 @@ const getResourceChangeIcon = (resource: StagedResource) => {
     resource.diff_status === DiffStatus.CLASSIFICATION_ADDITION ||
     resource.diff_status === DiffStatus.CLASSIFICATION_UPDATE
   ) {
-    return <TagIcon color="orange.400" boxSize={2} mr={2} />;
+    return <TagIcon color="orange.400" boxSize={3} mr={2} />;
   }
   if (
     resource.child_diff_statuses!.addition ||

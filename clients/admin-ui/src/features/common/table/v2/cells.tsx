@@ -11,6 +11,7 @@ import {
   WarningIcon,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
+import { formatDistance } from "date-fns";
 import { ChangeEvent, FC, ReactNode } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -49,6 +50,23 @@ const FidesBadge: FC = ({ children }) => (
     {children}
   </Badge>
 );
+
+export const RelativeTimestampCell = ({
+  time,
+}: {
+  time?: string | number | Date;
+}) => {
+  if (!time) {
+    return <DefaultCell value="N/A" />;
+  }
+  return (
+    <DefaultCell
+      value={formatDistance(new Date(time), new Date(), {
+        addSuffix: true,
+      })}
+    />
+  );
+};
 
 export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
   <Flex alignItems="center" height="100%" mr={2}>

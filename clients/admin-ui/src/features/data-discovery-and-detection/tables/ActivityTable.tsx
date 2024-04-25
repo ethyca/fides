@@ -9,7 +9,6 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { formatDistance } from "date-fns";
 import { useEffect, useMemo } from "react";
 
 import {
@@ -20,6 +19,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import { Database, StagedResource } from "~/types/api";
@@ -120,13 +120,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({ onRowClick }) => {
       }),
       columnHelper.accessor((row) => row.modified, {
         id: "time",
-        cell: (props) => (
-          <DefaultCell
-            value={formatDistance(new Date(props.getValue()), new Date(), {
-              addSuffix: true,
-            })}
-          />
-        ),
+        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
       }),
     ],
