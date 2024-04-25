@@ -1509,9 +1509,14 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe.only("when localizing privacy_center components", () => {
+  describe("when localizing privacy_center components", () => {
     const GEOLOCATION_API_URL = "https://www.example.com/location";
     const VERIFICATION_CODE = "112358";
+    const SETTINGS = {
+      IS_OVERLAY_ENABLED: true,
+      IS_GEOLOCATION_ENABLED: true,
+      GEOLOCATION_API_URL,
+    };
 
     const beforeAll = () => {
       cy.clearAllCookies();
@@ -1568,12 +1573,12 @@ describe("Consent i18n", () => {
       }).as("getExperience");
     };
 
-    describe.only("displays localized texts", () => {
+    describe("displays localized texts", () => {
       beforeEach(() => {
         beforeAll();
         cy.visitWithLanguage("/consent", SPANISH_LOCALE);
         cy.getByTestId("consent");
-        cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.overrideSettings(SETTINGS);
         cy.getByTestId("consent");
         cy.wait("@getVerificationConfig");
         cy.wait("@getExperience");
@@ -1631,7 +1636,7 @@ describe("Consent i18n", () => {
 
         cy.visitWithLanguage("/", SPANISH_LOCALE);
         cy.wait("@getVerificationConfig");
-        cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.overrideSettings(SETTINGS);
         cy.wait("@getExperience");
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
