@@ -17,6 +17,7 @@ class SaaSRequestType(Enum):
     An `Enum` containing the different possible types of SaaS requests
     """
 
+    TEST = "test"
     READ = "read"
     UPDATE = "update"
     DATA_PROTECTION_REQUEST = "data_protection_request"
@@ -69,7 +70,9 @@ class SaaSRequestOverrideFactory:
                 )
 
                 # perform some basic validation on the function that's been provided
-                if request_type is SaaSRequestType.READ:
+                if request_type is SaaSRequestType.TEST:
+                    validate_test_override_function(override_function)
+                elif request_type is SaaSRequestType.READ:
                     validate_read_override_function(override_function)
                 elif request_type in (
                     SaaSRequestType.UPDATE,
@@ -120,6 +123,24 @@ class SaaSRequestOverrideFactory:
         return override_function
 
 
+def validate_test_override_function(f: Callable) -> None:
+    """
+    Perform some basic checks on the user-provided SaaS request override function
+    that will be used with `test` actions.
+
+    The validation is not overly strict to allow for some flexibility in
+    the functions that are used for overrides, but we check to ensure that
+    the function meets the framework's basic expectations.
+
+    Specifically, the validation checks that function declares at least 2 parameters.
+    """
+    sig: Signature = signature(f)
+    if len(sig.parameters) < 2:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS request override function must declare at least 2 parameters"
+        )
+
+
 def validate_read_override_function(f: Callable) -> None:
     """
     Perform some basic checks on the user-provided SaaS request override function
@@ -130,7 +151,7 @@ def validate_read_override_function(f: Callable) -> None:
     the function meets the framework's basic expectations.
 
     Specifically, the validation checks that function's return type is `List[Row]`
-    and that it declares at least 5 parameters.
+    and that it declares at least 6 parameters.
     """
     sig: Signature = signature(f)
     if sig.return_annotation != List[Row]:

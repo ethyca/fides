@@ -14,6 +14,23 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 
 
+@register("marigold_engage_test", [SaaSRequestType.TEST])
+def marigold_engage_test(
+    client: AuthenticatedClient, secrets: Dict[str, Any]
+) -> None:
+    """
+    Calls Marigold Engage's `GET /list` endpoint with a signed payload.
+    """
+    
+    client.send(
+        SaaSRequestParams(
+            method=HTTPMethod.GET,
+            path="/list",
+            query_params=signed_payload(secrets, {})
+        )
+    )
+
+
 @register("marigold_engage_user_read", [SaaSRequestType.READ])
 def marigold_engage_user_read(
     client: AuthenticatedClient,
@@ -23,7 +40,9 @@ def marigold_engage_user_read(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
-    """Calls Marigold Engage's `GET /user` endpoint with a signed payload."""
+    """
+    Calls Marigold Engage's `GET /user` endpoint with a signed payload.
+    """
 
     output = []
     emails = input_data.get("email", [])
@@ -66,7 +85,9 @@ def marigold_engage_user_delete(
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
 ) -> int:
-    """Calls Marigold Engage's `DELETE /user` endpoint with a signed payload."""
+    """
+    Calls Marigold Engage's `DELETE /user` endpoint with a signed payload.
+    """
 
     rows_deleted = 0
     for row_param_values in param_values_per_row:
