@@ -3,8 +3,8 @@ import React from "react";
 import FixedLayout from "~/features/common/FixedLayout";
 import { DATA_DISCOVERY_ROUTE } from "~/features/common/nav/v2/routes";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
-import DiscoveryMonitorResultTable from "~/features/data-discovery-and-detection/DiscoveryMonitorResultTable";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
+import DetectionResultTable from "~/features/data-discovery-and-detection/tables/DetectionResultTable";
 
 const DataDetectionActivityPage = () => {
   const { resourceUrn, navigateToDetectionResults } = useDiscoveryRoutes();
@@ -25,13 +25,7 @@ const DataDetectionActivityPage = () => {
           navigateToDetectionResults({ resourceUrn })
         }
       />
-
-      <DiscoveryMonitorResultTable
-        resourceUrn={resourceUrn}
-        onSelectResource={(resource) =>
-          navigateToDetectionResults({ resourceUrn: resource.urn })
-        }
-      />
+      <DetectionResultTable resourceUrn={resourceUrn} />
     </FixedLayout>
   );
 };

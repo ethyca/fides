@@ -6,8 +6,8 @@
  * An enumeration.
  */
 export enum DiffStatus {
-  ADDITION = "Addition",
-  REMOVAL = "Removal",
-  CLASSIFICATION_ADDITION = "Classification Addition",
-  CLASSIFICATION_UPDATE = "Classification Update",
+  ADDITION = "addition",
+  REMOVAL = "removal",
+  CLASSIFICATION_ADDITION = "classification_addition",
+  CLASSIFICATION_UPDATE = "classification_update",
 }
