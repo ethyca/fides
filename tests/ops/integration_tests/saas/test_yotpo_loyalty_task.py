@@ -1,16 +1,13 @@
-import random
-from time import sleep
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import get_config
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
@@ -23,18 +20,23 @@ def test_yotpo_loyalty_connection_test(yotpo_loyalty_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_yotpo_loyalty_access_request_task_with_email(
     db,
+    privacy_request,
     policy,
+    dsr_version,
+    request,
     yotpo_loyalty_connection_config,
     yotpo_loyalty_dataset_config,
     yotpo_loyalty_identity_email,
 ) -> None:
     """Full access request based on the Yotpo Loyalty & Referrals SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_yotpo_loyalty_access_request_task_with_email_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": yotpo_loyalty_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -42,7 +44,7 @@ async def test_yotpo_loyalty_access_request_task_with_email(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -86,18 +88,25 @@ async def test_yotpo_loyalty_access_request_task_with_email(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_yotpo_loyalty_access_request_task_with_phone_number(
     db,
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     yotpo_loyalty_connection_config,
     yotpo_loyalty_dataset_config,
     yotpo_loyalty_identity_phone_number,
 ) -> None:
     """Full access request based on the Yotpo Loyalty & Referrals SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    # Privacy request fixture caches email and phone identities - clearing this first -
+    clear_cache_identities(privacy_request.id)
 
-    privacy_request = PrivacyRequest(
-        id=f"test_yotpo_loyalty_access_request_task_with_phone_number_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"phone_number": yotpo_loyalty_identity_phone_number})
     privacy_request.cache_identity(identity)
 
@@ -105,7 +114,7 @@ async def test_yotpo_loyalty_access_request_task_with_phone_number(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -152,9 +161,15 @@ async def test_yotpo_loyalty_access_request_task_with_phone_number(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_yotpo_loyalty_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
+    privacy_request,
     erasure_policy_string_rewrite,
     yotpo_loyalty_connection_config,
     yotpo_loyalty_dataset_config,
@@ -163,13 +178,14 @@ async def test_yotpo_loyalty_erasure_request_task(
     yotpo_loyalty_test_client,
 ) -> None:
     """Full erasure request based on the Yotpo Loyalty & Referrals SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    privacy_request = PrivacyRequest(
-        id=f"test_yotpo_loyalty_erasure_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": yotpo_loyalty_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -177,9 +193,9 @@ async def test_yotpo_loyalty_erasure_request_task(
     merged_graph = yotpo_loyalty_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [yotpo_loyalty_connection_config],
         {"email": yotpo_loyalty_erasure_identity_email},
@@ -215,7 +231,7 @@ async def test_yotpo_loyalty_erasure_request_task(
         ],
     )
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

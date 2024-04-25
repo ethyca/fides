@@ -5,6 +5,7 @@ Revises: 2661f31daffb
 Create Date: 2023-05-18 19:48:33.268790
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from fideslang.validation import FidesKey, FidesValidationError

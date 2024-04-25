@@ -7,6 +7,7 @@ Revises: 14acee6f5459
 Create Date: 2024-03-05 17:08:07.093568
 
 """
+
 from datetime import datetime
 
 import sqlalchemy as sa

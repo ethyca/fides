@@ -29,9 +29,9 @@ class SaaSRequestOverrideFactory:
     user-defined functions that act as overrides to SaaS request execution
     """
 
-    registry: Dict[
-        SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int]]]
-    ] = {}
+    registry: Dict[SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int]]]] = (
+        {}
+    )
     valid_overrides: Dict[SaaSRequestType, str] = {}
 
     # initialize each request type's inner dicts with an empty dict

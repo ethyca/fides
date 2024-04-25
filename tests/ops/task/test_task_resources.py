@@ -1,10 +1,13 @@
+from fides.api.task.graph_task import EMPTY_REQUEST_TASK
 from fides.api.task.task_resources import TaskResources
 
 
 class TestTaskResources:
     def test_cache_object(self, db, privacy_request, policy, integration_manual_config):
+        # DSR 3.0 introduced RequestTasks, but you can pass in an empty Request Task for DSR 2.0
+        # or for testing into TaskResources
         resources = TaskResources(
-            privacy_request, policy, [integration_manual_config], db
+            privacy_request, policy, [integration_manual_config], EMPTY_REQUEST_TASK, db
         )
 
         assert resources.get_all_cached_objects() == {}
@@ -37,7 +40,7 @@ class TestTaskResources:
         self, db, privacy_request, policy, integration_manual_config
     ):
         resources = TaskResources(
-            privacy_request, policy, [integration_manual_config], db
+            privacy_request, policy, [integration_manual_config], EMPTY_REQUEST_TASK, db
         )
 
         assert resources.get_all_cached_erasures() == {}

@@ -270,7 +270,9 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = AuthenticationStrategy.get_strategy(
+        auth_strategy: (
+            OAuth2AuthorizationCodeAuthenticationStrategy
+        ) = AuthenticationStrategy.get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config, referer)
@@ -303,9 +305,9 @@ def instantiate_connection(
     Looks up the connector type in the SaaS connector registry and, if all required
     fields are provided, persists the associated connection config and dataset to the database.
     """
-    connector_template: Optional[
-        ConnectorTemplate
-    ] = ConnectorRegistry.get_connector_template(saas_connector_type)
+    connector_template: Optional[ConnectorTemplate] = (
+        ConnectorRegistry.get_connector_template(saas_connector_type)
+    )
     if not connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

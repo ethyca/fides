@@ -370,7 +370,7 @@ class TestPatchPreApprovalWebhook:
         assert resp.status_code == 404
 
     def test_patch_pre_approval_webhook_nonexistent_connection_config_key(
-            self, api_client, url, generate_auth_header
+        self, api_client, url, generate_auth_header
     ):
         request_body = {"connection_config_key": "nonexistent_key"}
         auth_header = generate_auth_header(scopes=[WEBHOOK_CREATE_OR_UPDATE])

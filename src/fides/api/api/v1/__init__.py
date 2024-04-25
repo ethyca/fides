@@ -3,6 +3,7 @@ Define routes for the ctl-related objects.
 
 All routes should get imported here and added to the CTL_ROUTER
 """
+
 from fastapi import APIRouter
 
 from .endpoints.generate import GENERATE_ROUTER

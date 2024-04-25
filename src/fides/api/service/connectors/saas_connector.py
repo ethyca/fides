@@ -11,10 +11,10 @@ from fides.api.common_exceptions import (
     PostProcessingException,
     SkippingConsentPropagation,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
@@ -77,7 +77,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.current_privacy_request: Optional[PrivacyRequest] = None
         self.current_saas_request: Optional[SaaSRequest] = None
 
-    def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
+    def query_config(self, node: ExecutionNode) -> SaaSQueryConfig:
         """
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
@@ -117,7 +117,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         )
 
     def set_privacy_request_state(
-        self, privacy_request: PrivacyRequest, node: TraversalNode
+        self, privacy_request: PrivacyRequest, node: ExecutionNode
     ) -> None:
         """
         Sets the class state for the current privacy request
@@ -175,9 +175,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.access.value)
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
@@ -193,9 +194,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
         #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
         read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
-        delete_request: Optional[
-            SaaSRequest
-        ] = query_config.get_erasure_request_by_action("delete")
+        delete_request: Optional[SaaSRequest] = (
+            query_config.get_erasure_request_by_action("delete")
+        )
 
         if not read_requests:
             # if a delete request is specified for this endpoint without a read request
@@ -391,11 +392,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.erasure.value)
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node)
@@ -478,9 +479,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:
@@ -509,9 +511,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
             )
 
-        matching_consent_requests: List[
-            SaaSRequest
-        ] = self._get_consent_requests_by_preference(should_opt_in)
+        matching_consent_requests: List[SaaSRequest] = (
+            self._get_consent_requests_by_preference(should_opt_in)
+        )
 
         query_config.action = (
             "opt_in" if should_opt_in else "opt_out"
@@ -611,7 +613,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        node: TraversalNode,
+        node: ExecutionNode,
         input_data: Dict[str, List],
         secrets: Any,
     ) -> List[Row]:
@@ -620,10 +622,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType.READ
+        override_function: Callable[..., Union[List[Row], int]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.READ
+            )
         )
         try:
             return override_function(
@@ -660,10 +662,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType(query_config.action)
+        override_function: Callable[..., Union[List[Row], int]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType(query_config.action)
+            )
         )
         try:
             # if using a saas override, we still need to use the core framework
@@ -692,9 +694,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
     def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
-        consent_requests: Optional[
-            ConsentRequestMap
-        ] = self.saas_config.consent_requests
+        consent_requests: Optional[ConsentRequestMap] = (
+            self.saas_config.consent_requests
+        )
 
         if not consent_requests:
             return []

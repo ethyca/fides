@@ -114,17 +114,17 @@ def request_details(
         # assign error group only if error should not be ignored
         if not ignore_error:
             if response.status_code in [401, 403]:
-                details[
-                    LoggerContextKeys.error_group.value
-                ] = ErrorGroup.authentication_error.value
+                details[LoggerContextKeys.error_group.value] = (
+                    ErrorGroup.authentication_error.value
+                )
             elif 400 <= response.status_code < 500:
-                details[
-                    LoggerContextKeys.error_group.value
-                ] = ErrorGroup.client_error.value
+                details[LoggerContextKeys.error_group.value] = (
+                    ErrorGroup.client_error.value
+                )
             elif 500 <= response.status_code:
-                details[
-                    LoggerContextKeys.error_group.value
-                ] = ErrorGroup.server_error.value
+                details[LoggerContextKeys.error_group.value] = (
+                    ErrorGroup.server_error.value
+                )
     return details
 
 
@@ -137,21 +137,21 @@ def connection_exception_details(exception: Exception, url: str) -> Dict[str, An
         LoggerContextKeys.status_code.value: None,
     }
     if isinstance(exception, ConnectTimeout):
-        details[
-            LoggerContextKeys.error_details.value
-        ] = f"Timeout occurred connecting to {url}."
+        details[LoggerContextKeys.error_details.value] = (
+            f"Timeout occurred connecting to {url}."
+        )
     elif isinstance(exception, ReadTimeout):
-        details[
-            LoggerContextKeys.error_details.value
-        ] = f"Timeout occurred waiting for a response from {url}."
+        details[LoggerContextKeys.error_details.value] = (
+            f"Timeout occurred waiting for a response from {url}."
+        )
     elif isinstance(exception, SSLError):
-        details[
-            LoggerContextKeys.error_details.value
-        ] = f"SSL exception occurred connecting to {url}."
+        details[LoggerContextKeys.error_details.value] = (
+            f"SSL exception occurred connecting to {url}."
+        )
     elif isinstance(exception, TooManyRedirects):
-        details[
-            LoggerContextKeys.error_details.value
-        ] = f"Too many redirects occurred connecting to {url}."
+        details[LoggerContextKeys.error_details.value] = (
+            f"Too many redirects occurred connecting to {url}."
+        )
     elif isinstance(exception, ConnectionError):
         details[LoggerContextKeys.error_details.value] = f"Unable to connect to {url}."
     return details

@@ -16,7 +16,6 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.limiter.rate_limiter import (
@@ -25,11 +24,12 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterRequest,
     RateLimiterTimeoutException,
 )
-from fides.api.task import graph_task
+from fides.api.task.graph_runners import access_runner
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from tests.conftest import access_runner_tester
 
 
 @pytest.fixture
@@ -220,22 +220,29 @@ def test_limiter_times_out_when_bucket_full() -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_rate_limiter_full_integration(
     db,
+    dsr_version,
+    request,
     policy,
+    privacy_request,
     stripe_connection_config,
     stripe_dataset_config,
     stripe_identity_email,
 ) -> None:
     """Test rate limiter by creating privacy request to Stripe and setting a rate limit"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     rate_limit = 1
     rate_limit_config = {"limits": [{"rate": rate_limit, "period": "second"}]}
     stripe_connection_config.saas_config["rate_limit_config"] = rate_limit_config
 
     # set up privacy request to Stripe
-    privacy_request = PrivacyRequest(
-        id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
-    )
+
     identity = Identity(**{"email": stripe_identity_email})
     privacy_request.cache_identity(identity)
     merged_graph = stripe_dataset_config.get_graph()
@@ -244,7 +251,7 @@ async def test_rate_limiter_full_integration(
     # create call log spy and execute request
     spy = call_log_spy(Session.send)
     with mock.patch.object(Session, "send", spy):
-        await graph_task.run_access_request(
+        v = access_runner_tester(
             privacy_request,
             policy,
             graph,

@@ -51,6 +51,7 @@ module = [
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
+  "networkx.*",
   "okta.*",
   "pandas.*",
   "plotly.*",
@@ -65,7 +66,7 @@ module = [
   "twilio.*",
   "uvicorn.*",
   "validators.*",
-  "pygtrie.*"
+  "pygtrie.*",
 ]
 ignore_missing_imports = true
 
@@ -73,7 +74,7 @@ ignore_missing_imports = true
 ## Black ##
 ###########
 [tool.black]
-py39 = true
+target-version = ["py39"]
 line-length = 88
 include = '\.pyi?$'
 exclude = '''

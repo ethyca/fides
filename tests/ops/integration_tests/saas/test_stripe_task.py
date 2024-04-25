@@ -1,18 +1,17 @@
-import random
 from typing import List
 
 import pytest
 import requests
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
 @pytest.mark.integration_saas
@@ -22,18 +21,23 @@ def test_stripe_connection_test(stripe_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_stripe_access_request_task_with_email(
     db,
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     stripe_connection_config,
     stripe_dataset_config,
     stripe_identity_email,
 ) -> None:
     """Full access request based on the Stripe SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": stripe_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -41,7 +45,7 @@ async def test_stripe_access_request_task_with_email(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -592,19 +596,27 @@ async def test_stripe_access_request_task_with_email(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_stripe_access_request_task_with_phone_number(
     db,
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     stripe_connection_config,
     stripe_dataset_config,
     stripe_identity_email,
     stripe_identity_phone_number,
 ) -> None:
     """Full access request based on the Stripe SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    # The Privacy request fixture we're using already has an email/phone cached
+    # so I'm clearing that first
+    clear_cache_identities(privacy_request.id)
 
-    privacy_request = PrivacyRequest(
-        id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"phone_number": stripe_identity_phone_number})
     privacy_request.cache_identity(identity)
 
@@ -612,7 +624,7 @@ async def test_stripe_access_request_task_with_phone_number(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -657,9 +669,15 @@ async def test_stripe_access_request_task_with_phone_number(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_stripe_erasure_request_task(
     db,
-    policy,
+    privacy_request,
+    dsr_version,
+    request,
     erasure_policy_string_rewrite,
     stripe_connection_config,
     stripe_dataset_config,
@@ -667,10 +685,11 @@ async def test_stripe_erasure_request_task(
     stripe_create_erasure_data,
 ) -> None:
     """Full erasure request based on the Stripe SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_stripe_erasure_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
+
     identity = Identity(**{"email": stripe_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -678,9 +697,9 @@ async def test_stripe_erasure_request_task(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [stripe_connection_config],
         {"email": stripe_erasure_identity_email},
@@ -1099,7 +1118,7 @@ async def test_stripe_erasure_request_task(
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
