@@ -7,11 +7,12 @@ interface DiscoveryMonitorBreadcrumbsProps {
   resourceUrn?: string;
   parentTitle: string;
   parentLink: string;
+  onPathClick?: (urn: string) => void;
 }
 
 const DiscoveryMonitorBreadcrumbs: React.FC<
   DiscoveryMonitorBreadcrumbsProps
-> = ({ resourceUrn, parentTitle, parentLink }) => {
+> = ({ resourceUrn, parentTitle, parentLink, onPathClick = () => {} }) => {
   const {} = useDiscoveryRoutes();
 
   const urnParts = resourceUrn ? resourceUrn.split(".") : [];
@@ -49,7 +50,13 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
             key={urnPart}
             color={isLastPart ? "black" : "gray.500"}
           >
-            <BreadcrumbLink onClick={() => {}}>{urnPart}</BreadcrumbLink>
+            <BreadcrumbLink
+              onClick={() =>
+                onPathClick(urnParts.slice(0, index + 1).join("."))
+              }
+            >
+              {urnPart}
+            </BreadcrumbLink>
           </BreadcrumbItem>
         );
       })}
