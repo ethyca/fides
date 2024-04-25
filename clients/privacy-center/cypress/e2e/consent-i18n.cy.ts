@@ -1572,7 +1572,10 @@ describe("Consent i18n", () => {
       beforeEach(() => {
         beforeAll();
         cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+        cy.getByTestId("consent");
         cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.getByTestId("consent");
+        cy.wait("@getVerificationConfig");
         cy.wait("@getExperience");
       });
 
