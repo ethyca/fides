@@ -29,7 +29,9 @@ const DataDiscoveryActivityPage = () => {
       {/* TODO: Add filters to get appropiate results */}
       <DiscoveryMonitorResultTable
         resourceUrn={resourceUrn}
-        onSelectResource={() => {}}
+        onSelectResource={(resource) =>
+          navigateToDiscoveryResults({ resourceUrn: resource.urn })
+        }
       />
     </FixedLayout>
   );

@@ -37,23 +37,11 @@ const useDiscoveryRoutes = () => {
     });
   };
 
-  const navigateToResourceResults = (resource: StagedResource) => {
-    if (
-      resource.diff_status === DiffStatus.ADDITION ||
-      resource.diff_status === DiffStatus.REMOVAL
-    ) {
-      navigateToDetectionResults({ resourceUrn: resource.urn });
-      return;
-    }
-    navigateToDiscoveryResults({ resourceUrn: resource.urn });
-  };
-
   return {
     monitorId,
     resourceUrn,
     navigateToDetectionResults,
     navigateToDiscoveryResults,
-    navigateToResourceResults,
   };
 };
 export default useDiscoveryRoutes;

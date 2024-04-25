@@ -26,10 +26,11 @@ const DataDetectionActivityPage = () => {
         }
       />
 
-      {/* TODO: Add filters to get appropiate results */}
       <DiscoveryMonitorResultTable
         resourceUrn={resourceUrn}
-        onSelectResource={() => {}}
+        onSelectResource={(resource) =>
+          navigateToDetectionResults({ resourceUrn: resource.urn })
+        }
       />
     </FixedLayout>
   );

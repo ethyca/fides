@@ -4,8 +4,11 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { DATA_DISCOVERY_ROUTE } from "~/features/common/nav/v2/routes";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import DiscoveryMonitorResultTable from "~/features/data-discovery-and-detection/DiscoveryMonitorResultTable";
+import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 
 const DataDetectionActivityPage = () => {
+  const { navigateToDetectionResults } = useDiscoveryRoutes();
+
   return (
     <FixedLayout
       title="Data detection"
@@ -19,10 +22,11 @@ const DataDetectionActivityPage = () => {
         parentLink={DATA_DISCOVERY_ROUTE}
       />
 
-      {/* TODO: Add filters to get appropiate results */}
       <DiscoveryMonitorResultTable
         resourceUrn={undefined}
-        onSelectResource={() => {}}
+        onSelectResource={(resource) =>
+          navigateToDetectionResults({ resourceUrn: resource.urn })
+        }
       />
     </FixedLayout>
   );
