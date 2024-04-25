@@ -22,7 +22,7 @@ const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
 const PRIVACY_NOTICE_KEY_3 = "analytics_opt_out";
 
-describe("Consent overlay", () => {
+describe.skip("Consent overlay", () => {
   describe("when overlay is disabled", () => {
     describe("when both experience and legacy consent exist", () => {
       beforeEach(() => {

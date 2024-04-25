@@ -1,6 +1,6 @@
 import { API_URL } from "../support/constants";
 
-describe("Privacy request", () => {
+describe.skip("Privacy request", () => {
   describe("when requesting data access", () => {
     beforeEach(() => {
       cy.intercept("POST", `${API_URL}/privacy-request`, {

@@ -85,6 +85,7 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
+          record: true
 
       - uses: actions/upload-artifact@v3
         if: failure()
@@ -123,4 +124,3 @@ jobs:
           working-directory: clients/${{ matrix.clients }}
           install: false
           component: true
-

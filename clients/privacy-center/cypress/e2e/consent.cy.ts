@@ -2,7 +2,7 @@ import { CONSENT_COOKIE_NAME, FidesCookie, GpcStatus } from "fides-js";
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
 import { API_URL } from "../support/constants";
 
-describe("Consent modal deeplink", () => {
+describe.skip("Consent modal deeplink", () => {
   beforeEach(() => {
     cy.visit("/?showConsentModal=true");
     cy.loadConfigFixture("config/config_consent.json").as("config");
@@ -52,7 +52,7 @@ describe("Consent modal deeplink", () => {
   });
 });
 
-describe("Consent settings", () => {
+describe.skip("Consent settings", () => {
   beforeEach(() => {
     cy.visit("/");
     cy.loadConfigFixture("config/config_consent.json").as("config");

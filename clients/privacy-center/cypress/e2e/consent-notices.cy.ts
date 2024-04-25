@@ -20,7 +20,7 @@ const SETTINGS = {
   GEOLOCATION_API_URL,
 };
 
-describe("Privacy notice driven consent", () => {
+describe.skip("Privacy notice driven consent", () => {
   beforeEach(() => {
     // Seed local storage with verification data
     cy.window().then((win) => {

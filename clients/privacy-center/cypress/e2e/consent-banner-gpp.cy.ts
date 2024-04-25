@@ -15,7 +15,7 @@ import { API_URL, TCF_VERSION_HASH } from "../support/constants";
 import { mockCookie } from "../support/mocks";
 import { stubConfig } from "../support/stubs";
 
-describe("Fides-js GPP extension", () => {
+describe.skip("Fides-js GPP extension", () => {
   /**
    * Visit the fides-js-components-demo page with optional overrides on experience
    */

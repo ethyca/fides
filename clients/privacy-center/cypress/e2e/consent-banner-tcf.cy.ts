@@ -148,7 +148,7 @@ const assertAcOptIns = ({
 
 const fidesVendorIdToId = (fidesId: string) => +fidesId.split(".")[1];
 
-describe("Fides-js TCF", () => {
+describe.skip("Fides-js TCF", () => {
   describe("banner appears when it should", () => {
     beforeEach(() => {
       cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {

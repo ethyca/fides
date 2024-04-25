@@ -1568,16 +1568,16 @@ describe("Consent i18n", () => {
       }).as("getExperience");
     };
 
-    describe.only("displays localized texts", () => {
+    describe("displays localized texts", () => {
       beforeEach(() => {
         beforeAll();
         cy.visitWithLanguage("/consent", SPANISH_LOCALE);
         cy.getByTestId("consent");
         cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
-        cy.getByTestId("consent-heading").should("be.visible");
       });
 
       it("displays localized text from experience", () => {
+        cy.getByTestId("consent-heading").contains("exp.title");
         cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
         cy.getByTestId("consent-description").contains(
           SPANISH_MODAL.description

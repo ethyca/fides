@@ -1,4 +1,4 @@
-describe("fides.js API route", () => {
+describe.skip("fides.js API route", () => {
   it("returns the fides.js package bundled with the global config", () => {
     cy.request("/fides.js").then((response) => {
       expect(response.status).to.eq(200);

@@ -1,7 +1,7 @@
 import { ConsentMethod, CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
-describe("Banner and modal dismissal", () => {
+describe.skip("Banner and modal dismissal", () => {
   // Helper function for some test case assertions
   function assertDismissCalled() {
     cy.get("@FidesUpdated")

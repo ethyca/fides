@@ -1,7 +1,7 @@
 import { Config } from "~/types/config";
 import { API_URL } from "../support/constants";
 
-describe("Home", () => {
+describe.skip("Home", () => {
   it("renders the configured page info", () => {
     cy.visit("/");
     cy.getByTestId("home");

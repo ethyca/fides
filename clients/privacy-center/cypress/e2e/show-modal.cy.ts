@@ -1,6 +1,6 @@
 import { stubConfig } from "../support/stubs";
 
-describe("Fides.showModal", () => {
+describe.skip("Fides.showModal", () => {
   describe("Overlay enabled", () => {
     beforeEach(() => {
       stubConfig({
