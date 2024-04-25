@@ -75,12 +75,13 @@ Field identities:
 
 
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, validator
@@ -214,6 +215,22 @@ class FieldAddress:
     def collection_address(self) -> CollectionAddress:
         """Return the collection prefix of this field address."""
         return CollectionAddress(self.dataset, self.collection)
+
+    @staticmethod
+    def from_string(field_address_string: str) -> FieldAddress:
+        """Creates a Field Address from a string - especially useful for instantiating
+        Fields in Collections that are built from data in RequestTask.collection"""
+        try:
+            split_string = field_address_string.split(":")
+            dataset = split_string[0]
+            collection = split_string[1]
+            fields = split_string[2]
+            split_fields = fields.split(".")
+            return FieldAddress(dataset, collection, *split_fields)
+        except Exception:
+            raise FidesopsException(
+                f"'{field_address_string}' is not a valid field address"
+            )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, FieldAddress):
@@ -487,10 +504,90 @@ class Collection(BaseModel):
                 categories[category].append(field_path)
         return categories
 
+    def contains_field(self, func: Callable[[Field], bool]) -> bool:
+        """True if any field in this collection matches the condition of the callable
+
+        Currently used to assert at least one field in the collection contains a primary
+        key before erasing
+        """
+        return any(self.recursively_collect_matches(func))
+
+    @classmethod
+    def parse_from_request_task(cls, data: Dict) -> Collection:
+        """
+        Take raw collection data saved on RequestTask.collection and converts it back into a Collection.
+
+        See Config > json_encoders for some of the fields that needed special handling for serialization for
+        database storage.
+        """
+        data = data.copy()
+
+        def build_field(serialized_field: dict) -> Field:
+            """Convert a serialized field on RequestTask.collection.fields into a Scalar Field
+            or Object Field"""
+            converted_references: List[Tuple[FieldAddress, Optional[EdgeDirection]]] = (
+                []
+            )
+            for reference in serialized_field.pop("references", []):
+                field_address: str = reference[0]
+                edge_direction: Optional[str] = reference[1]
+                converted_references.append(
+                    (FieldAddress.from_string(field_address), edge_direction)  # type: ignore
+                )
+
+            data_type_converter: DataTypeConverter = get_data_type_converter(
+                serialized_field.pop("data_type_converter")
+            )
+
+            # We can't convert the fields to abstract class Field - they need to be proper
+            # Scalar or ObjectFields
+            converted: Union[ObjectField, ScalarField]
+            if serialized_field.get("fields"):
+                # Recursively build nested fields under Object field
+                serialized_field["fields"] = {
+                    field_name: build_field(fld)
+                    for field_name, fld in serialized_field["fields"].items()
+                }
+                converted = ObjectField.parse_obj(serialized_field)
+                converted.references = converted_references
+                converted.data_type_converter = data_type_converter
+                return converted
+
+            converted = ScalarField.parse_obj(serialized_field)
+            converted.references = converted_references
+            converted.data_type_converter = data_type_converter
+            return converted
+
+        converted_fields = []
+        for field in data.pop("fields"):
+            converted_fields.append(build_field(field))
+
+        data["fields"] = converted_fields
+        data["after"] = {
+            CollectionAddress.from_string(addr_string)
+            for addr_string in data.get("after", [])
+        }
+        data["erase_after"] = {
+            CollectionAddress.from_string(addr_string)
+            for addr_string in data.get("erase_after", [])
+        }
+
+        return Collection.parse_obj(data)
+
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
 
         arbitrary_types_allowed = True
+        # This supports running Collection.json() to serialize less standard
+        # types so it can be saved to the database under RequestTask.collection
+        json_encoders = {
+            Set: lambda val: list(  # pylint: disable=unhashable-member,unnecessary-lambda
+                val
+            ),
+            DataTypeConverter: lambda dtc: dtc.name if dtc.name else None,
+            FieldAddress: lambda fa: fa.value,
+            CollectionAddress: lambda ca: ca.value,
+        }
 
 
 class GraphDataset(BaseModel):

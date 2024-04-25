@@ -2,14 +2,14 @@ from typing import Any, Dict, List, Optional, Set
 
 from loguru import logger as log
 
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
 )
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
 )
@@ -26,7 +26,10 @@ DEFAULT_POLLING_INTERVAL: int = 30
 
 
 class FidesConnector(BaseConnector[FidesClient]):
-    """A connector that forwards requests to other Fides instances"""
+    """A connector that forwards requests to other Fides instances
+
+    This has not been updated to work with DSR 3.0 and is assumed to break.
+    """
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
@@ -42,7 +45,7 @@ class FidesConnector(BaseConnector[FidesClient]):
             else DEFAULT_POLLING_INTERVAL
         )
 
-    def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
         # no query config for fides connectors
 
@@ -82,9 +85,10 @@ class FidesConnector(BaseConnector[FidesClient]):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Execute access request and fetch access data from remote Fides"""
@@ -132,11 +136,11 @@ class FidesConnector(BaseConnector[FidesClient]):
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute an erasure request on remote fides"""
         identity_data = {

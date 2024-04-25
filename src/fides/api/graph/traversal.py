@@ -1,31 +1,40 @@
 from __future__ import annotations
 
+import json
 from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
+from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
     Collection,
     CollectionAddress,
-    Field,
     FieldAddress,
     FieldPath,
     GraphDataset,
 )
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge, Node
-from fides.api.util.collection_util import Row, append
+from fides.api.models.privacy_request import RequestTask, TraversalDetails
+from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
+
+ARTIFICIAL_NODES: List[CollectionAddress] = [
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+]
 
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
 
 
 class TraversalNode(Contextualizable):
-    """Base traversal traversal_node type. This type will never be used directly."""
+    """Traversal_node type. This type is used for building the graph, not for executing the graph."""
 
     def __init__(self, node: Node):
         self.node = node
@@ -71,18 +80,6 @@ class TraversalNode(Contextualizable):
             for _, parent_field_path, self_field_path in tuples
         }
 
-    def incoming_edges_from_same_dataset(self) -> Set[Edge]:
-        """Return the incoming edges from the same dataset"""
-        return {
-            Edge(
-                p_collection_address.field_address(parent_field_path),
-                self.address.field_address(self_field_path),
-            )
-            for p_collection_address, tuples in self.parents.items()
-            if p_collection_address.dataset == self.address.dataset
-            for _, parent_field_path, self_field_path in tuples
-        }
-
     def outgoing_edges(self) -> Set[Edge]:
         """Return the outgoing edges to this traversal_node,in (self.address -> other.address) order."""
         return {
@@ -94,36 +91,21 @@ class TraversalNode(Contextualizable):
             for _, self_field_path, child_field_path in tuples
         }
 
-    @property
-    def query_field_paths(self) -> Set[FieldPath]:
-        """
-        All of the possible field paths that we can query for possible filter values.
-        These are field paths that are the ends of incoming edges.
-        """
-        return {edge.f2.field_path for edge in self.incoming_edges()}
+    def incoming_edges_by_collection(self) -> Dict[CollectionAddress, List[Edge]]:
+        return partition(self.incoming_edges(), lambda e: e.f1.collection_address())
 
-    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
+    def input_keys(self) -> List[CollectionAddress]:
+        """Returns the inputs to the current node that are data dependencies
+        This is copied and saved to the RequestTask and used to maintain a consistent order
+        for passing in data for an access task
         """
-        Return a filtered list of key/value sets of data items that are both in
-        the list of incoming edge fields, and contain data in the input data set.
-
-        The values are cast based on field types, if those types are specified.
-        """
-        out = {}
-        for key, values in input_data.items():
-            path: FieldPath = FieldPath.parse(key)
-            field: Field | None = self.node.collection.field(path)
-
-            if field and path in self.query_field_paths and isinstance(values, list):
-                cast_values = [field.cast(v) for v in values]
-                filtered = list(filter(lambda x: x is not None, cast_values))
-                if filtered:
-                    out[key] = filtered
-        return out
+        return sorted(self.incoming_edges_by_collection().keys())
 
     def can_run_given(self, remaining_node_keys: Set[CollectionAddress]) -> bool:
         """True if finished_node_keys covers all the nodes that this traversal_node is waiting for.  If
         all nodes this traversal_node is waiting for have finished, it's ok for this traversal_node to run.
+
+        NOTE: "After" functionality may not work as expected.
         """
         if self.node.collection.after.intersection(
             remaining_node_keys
@@ -164,6 +146,49 @@ class TraversalNode(Contextualizable):
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
         return {LoggerContextKeys.collection: self.node.collection.name}
+
+    def format_traversal_details_for_save(self) -> Dict:
+        """Convert key traversal details from the TraversalNode for save on the RequestTask.
+
+        The RequestTask will be retrieved from the database and the traversal details
+        used to build the ExecutionNode for DSR 3.0.
+        """
+
+        connection_key: FidesKey = self.node.dataset.connection_key
+
+        return TraversalDetails(
+            dataset_connection_key=connection_key,
+            incoming_edges=[
+                [edge.f1.value, edge.f2.value] for edge in self.incoming_edges()
+            ],
+            outgoing_edges=[
+                [edge.f1.value, edge.f2.value] for edge in self.outgoing_edges()
+            ],
+            input_keys=[tn.value for tn in self.input_keys()],
+        ).dict()
+
+    def to_mock_request_task(self) -> RequestTask:
+        """Converts a portion of the TraversalNode into a RequestTask - used in building
+        dry run queries or for supporting Deprecated DSR 2.0. Request Tasks were introduced in DSR 3.0
+        """
+        collection_data = json.loads(self.node.collection.json())
+        return RequestTask(  # Mock a RequestTask object in memory
+            collection_address=self.node.address.value,
+            dataset_name=self.node.address.dataset,
+            collection_name=self.node.address.collection,
+            collection=collection_data,
+            traversal_details=self.format_traversal_details_for_save(),
+        )
+
+    def to_mock_execution_node(self) -> ExecutionNode:
+        """Converts a TraversalNode into an ExecutionNode - used for supporting DSR 2.0, to convert
+        Traversal Nodes into the Execution Node format which is needed for executing the graph in
+        DSR 3.0
+
+        DSR 3.0 on the other hand, creates ExecutionNodes from data on the RequestTask.
+        """
+        request_task: RequestTask = self.to_mock_request_task()
+        return ExecutionNode(request_task)
 
 
 def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
@@ -260,8 +285,6 @@ class Traversal:
 
         Returns a list of termination traversal_node addresses so that we can take action on completed
         traversal.
-
-
 
         We define the root traversal_node as a traversal_node whose children are any nodes that have identity (seed)
         data.

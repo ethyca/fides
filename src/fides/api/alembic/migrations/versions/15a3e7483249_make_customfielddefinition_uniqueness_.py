@@ -5,6 +5,7 @@ Revises: e92da354691e
 Create Date: 2023-05-02 15:03:56.256982
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.exc import IntegrityError

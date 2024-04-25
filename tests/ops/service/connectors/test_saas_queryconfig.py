@@ -82,7 +82,7 @@ class TestSaaSQueryConfig:
         ]
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
-        ]
+        ].to_mock_execution_node()
 
         # static path with single query param
         config = SaaSQueryConfig(
@@ -179,7 +179,7 @@ class TestSaaSQueryConfig:
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
-        ]
+        ].to_mock_execution_node()
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
@@ -208,15 +208,15 @@ class TestSaaSQueryConfig:
         combined_traversal,
         saas_example_connection_config,
     ):
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
+        saas_config: Optional[SaaSConfig] = (
+            saas_example_connection_config.get_saas_config()
+        )
         saas_config.endpoints[2].requests.update.method = HTTPMethod.POST
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
-        ]
+        ].to_mock_execution_node()
         update_request = endpoints["member"].requests.update
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
@@ -246,12 +246,10 @@ class TestSaaSQueryConfig:
         combined_traversal,
         saas_example_connection_config,
     ):
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
-        saas_config.endpoints[
-            2
-        ].requests.update.body = (
+        saas_config: Optional[SaaSConfig] = (
+            saas_example_connection_config.get_saas_config()
+        )
+        saas_config.endpoints[2].requests.update.body = (
             '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
         )
         body_param_value = ParamValue(
@@ -270,10 +268,10 @@ class TestSaaSQueryConfig:
         update_request = endpoints["member"].requests.update
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
-        ]
+        ].to_mock_execution_node()
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
-        ]
+        ].to_mock_execution_node()
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
@@ -323,13 +321,13 @@ class TestSaaSQueryConfig:
         saas_example_connection_config,
         saas_example_secrets,
     ):
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
+        saas_config: Optional[SaaSConfig] = (
+            saas_example_connection_config.get_saas_config()
+        )
         endpoints = saas_config.top_level_endpoint_dict
         customer = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "customer")
-        ]
+        ].to_mock_execution_node()
 
         # update with multidimensional urlcoding
         # omit read-only fields and fields not defined in the dataset
@@ -366,9 +364,9 @@ class TestSaaSQueryConfig:
     ):
         mock_identity_data.return_value = {"email": "test@example.com"}
 
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
+        saas_config: Optional[SaaSConfig] = (
+            saas_example_connection_config.get_saas_config()
+        )
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -414,9 +412,9 @@ class TestSaaSQueryConfig:
     def test_get_masking_request(
         self, combined_traversal, saas_example_connection_config
     ):
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
+        saas_config: Optional[SaaSConfig] = (
+            saas_example_connection_config.get_saas_config()
+        )
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -483,9 +481,9 @@ class TestSaaSQueryConfig:
     def test_list_param_values(
         self, combined_traversal, saas_example_connection_config, policy
     ):
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
+        saas_config: Optional[SaaSConfig] = (
+            saas_example_connection_config.get_saas_config()
+        )
         endpoints = saas_config.top_level_endpoint_dict
 
         accounts = combined_traversal.traversal_node_dict[
@@ -545,9 +543,9 @@ class TestSaaSQueryConfig:
         more prepared_requests if they are not used by the request
         """
 
-        saas_config: Optional[
-            SaaSConfig
-        ] = saas_example_connection_config.get_saas_config()
+        saas_config: Optional[SaaSConfig] = (
+            saas_example_connection_config.get_saas_config()
+        )
         endpoints = saas_config.top_level_endpoint_dict
 
         mailing_lists = combined_traversal.traversal_node_dict[
@@ -652,7 +650,7 @@ class TestSaaSQueryConfig:
 
         internal_information = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "internal_information")
-        ]
+        ].to_mock_execution_node()
 
         config = SaaSQueryConfig(
             internal_information,

@@ -71,6 +71,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: webhook_id
+      data_categories:
+      - system.operations
   - name: audit_log_resource
     fields:
     - name: created_at
@@ -1276,6 +1279,8 @@ dataset:
   - name: privacyrequest
     data_categories: []
     fields:
+    - name: access_result_urls
+      data_categories: [user]
     - name: cancel_reason
       data_categories: [system.operations]
     - name: canceled_at
@@ -1289,6 +1294,8 @@ dataset:
       data_categories: [system.operations]
     - name: external_id
       data_categories: [system.operations]
+    - name: filtered_final_upload
+      data_categories: [user]
     - name: finished_processing_at
       data_categories: [system.operations]
     - name: id
@@ -2109,3 +2116,43 @@ dataset:
       data_categories: [ system.operations ]
     - name: is_eligible
       data_categories: [ system.operations ]
+
+      data_categories: [system.operations]
+  - name: requesttask
+    fields:
+    - name: access_data
+      data_categories: [user]
+    - name: action_type
+      data_categories: [system]
+    - name: all_descendant_tasks
+      data_categories: [system]
+    - name: collection
+      data_categories: [system]
+    - name: collection_address
+      data_categories: [system]
+    - name: collection_name
+      data_categories: [system]
+    - name: consent_sent
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: data_for_erasures
+      data_categories: [user]
+    - name: dataset_name
+      data_categories: [system]
+    - name: downstream_tasks
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: privacy_request_id
+      data_categories: [system]
+    - name: rows_masked
+      data_categories: [system]
+    - name: status
+      data_categories: [system]
+    - name: traversal_details
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: upstream_tasks
+      data_categories: [system]

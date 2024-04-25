@@ -9,9 +9,11 @@ from loguru import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
 from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
+from redis.exceptions import DataError
 
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
+from fides.api.tasks import celery_app
 from fides.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
@@ -240,3 +242,61 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
     return f"id-{privacy_request_id}-async-execution"
+
+
+def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
+    """
+    Cache the celery task id created to run the Privacy Request or Request Task.
+
+    Note that it is possible a Privacy Request or Request Task is queued multiple times
+    over the life of a Priavcy Request so the cached id is the latest task queued
+
+    :param request_id: Can be the Privacy Request Id or a Request Task ID - these are cached in the same place.
+    :param celery_task_id: The id of the Celery task itself that was queued to run the
+    Privacy Request or the Request Task
+    :return: None
+    """
+
+    cache: FidesopsRedis = get_cache()
+
+    try:
+        cache.set(
+            get_async_task_tracking_cache_key(request_id),
+            celery_task_id,
+        )
+    except DataError:
+        logger.debug(
+            "Error tracking task_id for privacy request or request task with id {}",
+            request_id,
+        )
+
+
+def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
+    """Returns True if supplied Celery Tasks appear to be in-flight"""
+    if not celery_task_ids:
+        return False
+
+    queried_tasks = celery_app.control.inspect().query_task(*celery_task_ids)
+    if not queried_tasks:
+        return False
+
+    # Expected format: {HOSTNAME: {TASK_ID: [STATE, TASK_INFO]}}
+    for _, task_details in queried_tasks.items():
+        for _, state_array in task_details.items():
+            state: str = state_array[0]
+            # Note, not positive of states here,
+            # some seen in testing, some from here:
+            # https://github.com/celery/celery/blob/main/celery/worker/control.py or
+            # https://github.com/celery/celery/blob/main/celery/states.py
+            if state in [
+                "active",
+                "received",
+                "registered",
+                "reserved",
+                "retry",
+                "scheduled",
+                "started",
+            ]:
+                return True
+
+    return False

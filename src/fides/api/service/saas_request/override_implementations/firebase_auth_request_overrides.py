@@ -6,7 +6,7 @@ from firebase_admin.auth import UserNotFoundError, UserRecord
 from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -22,7 +22,7 @@ from fides.api.util.saas_util import get_identity
 @register("firebase_auth_user_access", [SaaSRequestType.READ])
 def firebase_auth_user_access(  # pylint: disable=R0914
     client: AuthenticatedClient,
-    node: TraversalNode,
+    node: ExecutionNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
     input_data: Dict[str, List[Any]],

@@ -73,10 +73,11 @@ PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
+REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
+PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
+
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
-PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
-PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
@@ -92,6 +93,11 @@ PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
 PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
     "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
+
+# Privacy Request pre-approve URLs
+PRIVACY_REQUEST_PRE_APPROVE = "/privacy-request/{privacy_request_id}/pre-approve"
+PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/eligible"
+PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/not-eligible"
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"

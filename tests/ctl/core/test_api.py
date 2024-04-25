@@ -2009,9 +2009,9 @@ class TestSystemUpdate:
         )
 
         db.refresh(system_multiple_decs)
-        updated_decs: List[
-            PrivacyDeclaration
-        ] = system_multiple_decs.privacy_declarations.copy()
+        updated_decs: List[PrivacyDeclaration] = (
+            system_multiple_decs.privacy_declarations.copy()
+        )
 
         for old_dec_updated in old_decs_updated:
             updated_dec = next(

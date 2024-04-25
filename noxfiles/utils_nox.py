@@ -1,4 +1,5 @@
 """Contains various utility-related nox sessions."""
+
 from pathlib import Path
 
 import nox

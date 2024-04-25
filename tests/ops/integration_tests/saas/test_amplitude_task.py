@@ -1,14 +1,11 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import get_config
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
@@ -21,18 +18,23 @@ def test_amplitude_connection_test(amplitude_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_amplitude_access_request_task(
     db,
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     amplitude_connection_config,
     amplitude_dataset_config,
     amplitude_identity_email,
 ) -> None:
     """Full access request based on the Amplitude SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_amplitude_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": amplitude_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -40,7 +42,7 @@ async def test_amplitude_access_request_task(
     merged_graph = amplitude_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -174,9 +176,15 @@ async def test_amplitude_access_request_task(
 @pytest.mark.skip(reason="Temporarily disabled test")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_amplitude_erasure_request_task(
     db,
-    policy,
+    dsr_version,
+    request,
+    privacy_request,
     erasure_policy_string_rewrite,
     amplitude_connection_config,
     amplitude_dataset_config,
@@ -184,13 +192,14 @@ async def test_amplitude_erasure_request_task(
     amplitude_create_erasure_data,
 ) -> None:
     """Full erasure request based on the Amplitude SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
 
-    privacy_request = PrivacyRequest(
-        id=f"test_amplitude_erasure_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": amplitude_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -198,9 +207,9 @@ async def test_amplitude_erasure_request_task(
     merged_graph = amplitude_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [amplitude_connection_config],
         {"email": amplitude_erasure_identity_email},
@@ -256,7 +265,7 @@ async def test_amplitude_erasure_request_task(
         ],
     )
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

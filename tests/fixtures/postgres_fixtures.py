@@ -312,9 +312,9 @@ def postgres_connection_config_with_schema(
             "description": "Backup postgres data",
         },
     )
-    connection_config.secrets[
-        "db_schema"
-    ] = "backup_schema"  # Matches the second schema created in postgres_example.schema
+    connection_config.secrets["db_schema"] = (
+        "backup_schema"  # Matches the second schema created in postgres_example.schema
+    )
     connection_config.save(db)
     yield connection_config
     connection_config.delete(db)

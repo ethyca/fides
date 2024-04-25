@@ -19,6 +19,7 @@ from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
+    ManualAction,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
@@ -26,10 +27,14 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.service.connectors.manual_connector import ManualAction
-from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
+from fides.api.util.cache import (
+    FidesopsRedis,
+    cache_task_tracking_key,
+    get_identity_cache_key,
+)
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 
@@ -488,65 +493,16 @@ class TestCachePausedLocation:
         assert privacy_request.get_paused_collection_details() is None
 
 
-class TestCacheManualInput:
-    def test_cache_manual_access_input(self, privacy_request):
-        manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
-
-        privacy_request.cache_manual_access_input(paused_location, manual_data)
-        assert (
-            privacy_request.get_manual_access_input(
-                paused_location,
-            )
-            == manual_data
-        )
-
-    def test_cache_empty_manual_input(self, privacy_request):
-        manual_data = []
-        privacy_request.cache_manual_access_input(paused_location, manual_data)
-
-        assert (
-            privacy_request.get_manual_access_input(
-                paused_location,
-            )
-            == []
-        )
-
-    def test_no_manual_data_in_cache(self, privacy_request):
-        assert (
-            privacy_request.get_manual_access_input(
-                paused_location,
-            )
-            is None
-        )
-
-
-class TestCacheManualErasureCount:
-    def test_cache_manual_erasure_count(self, privacy_request):
-        privacy_request.cache_manual_erasure_count(paused_location, 5)
-
-        cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert cached_data == 5
-
-    def test_no_erasure_data_cached(self, privacy_request):
-        cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert cached_data is None
-
-    def test_zero_cached(self, privacy_request):
-        privacy_request.cache_manual_erasure_count(paused_location, 0)
-        cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert cached_data == 0
-
-
 class TestPrivacyRequestCacheFailedStep:
-    def test_cache_failed_step_and_collection(self, privacy_request):
-        privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure, collection=paused_location
-        )
+    def test_cache_failed_step(self, privacy_request):
+        privacy_request.cache_failed_checkpoint_details(step=CurrentStep.erasure)
 
         cached_data = privacy_request.get_failed_checkpoint_details()
         assert cached_data.step == CurrentStep.erasure
-        assert cached_data.collection == paused_location
-        assert cached_data.action_needed is None
+        assert cached_data.collection is None  # This is deprecated
+        assert (
+            cached_data.action_needed is None
+        )  # This isn't applicable for failed details
 
     def test_cache_null_step_and_location(self, privacy_request):
         privacy_request.cache_failed_checkpoint_details()
@@ -1228,3 +1184,19 @@ class TestPrivacyRequestCustomIdentities:
             customer_id=LabeledIdentity(label="Custom ID", value=123),
             account_id=LabeledIdentity(label="Account ID", value="456"),
         )
+
+
+class TestGetCeleryTaskRequestTaskIds:
+    def test_get_celery_task_request_task_ids(self, privacy_request, request_task):
+        """Not all request tasks have celery task ids in this test -"""
+
+        assert privacy_request.get_request_task_celery_task_ids() == []
+
+        cache_task_tracking_key(request_task.id, "test_celery_task_key")
+        root_task = privacy_request.get_root_task_by_action(ActionType.access)
+        cache_task_tracking_key(root_task.id, "test_root_task_celery_key")
+
+        assert set(privacy_request.get_request_task_celery_task_ids()) == {
+            "test_celery_task_key",
+            "test_root_task_celery_key",
+        }

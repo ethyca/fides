@@ -99,13 +99,12 @@ class TestPreApprovalWebhookModel:
         self,
         db: Session,
         privacy_request_status_pending,
-        https_connection_config,
         pre_approval_webhooks,
     ):
         reply = PreApprovalWebhookReply.create(
             db=db,
             data={
-                "webhook_id": https_connection_config.id,
+                "webhook_id": pre_approval_webhooks[0].id,
                 "privacy_request_id": privacy_request_status_pending.id,
                 "is_eligible": True,
             },
@@ -117,7 +116,7 @@ class TestPreApprovalWebhookModel:
             db, field="privacy_request_id", value=privacy_request_status_pending.id
         )
 
-        assert loaded_reply.webhook_id == https_connection_config.id
+        assert loaded_reply.webhook_id == pre_approval_webhooks[0].id
         assert loaded_reply.privacy_request_id == privacy_request_status_pending.id
         assert loaded_reply.is_eligible is True
         assert loaded_reply.created_at is not None

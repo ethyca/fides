@@ -2,7 +2,6 @@ import copy
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
-from uuid import uuid4
 
 import pytest
 from fideslang import Dataset
@@ -21,13 +20,13 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 
+from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import (
     assert_rows_match,
     erasure_policy,
@@ -40,45 +39,50 @@ from ..task.traversal_data import (
     str_converter,
 )
 
-sample_postgres_configuration_policy = erasure_policy(
-    "system.operations",
-    "user.unique_id",
-    "user.sensor",
-    "user.contact.address.city",
-    "user.contact.email",
-    "user.contact.address.postal_code",
-    "user.contact.address.state",
-    "user.contact.address.street",
-    "user.financial.bank_account",
-    "user.financial",
-    "user.name",
-    "user",
-)
-
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_sql_erasure_ignores_collections_without_pk(
-    db, postgres_inserts, integration_postgres_config
+    db,
+    postgres_inserts,
+    integration_postgres_config,
+    privacy_request,
+    dsr_version,
+    request,
 ):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     seed_email = postgres_inserts["customer"][0]["email"]
     policy = erasure_policy(
-        "A", "B"
+        db, "user.contact", "system.operations"
     )  # makes an erasure policy with two data categories to match against
+    privacy_request.policy_id = policy.id
+    privacy_request.save(db)
     dataset = integration_db_dataset("postgres_example", "postgres_example")
 
     field([dataset], "postgres_example", "address", "id").primary_key = False
 
-    # set categories: A,B will be marked erasable, C will not
-    field([dataset], "postgres_example", "address", "city").data_categories = ["A"]
-    field([dataset], "postgres_example", "address", "state").data_categories = ["B"]
-    field([dataset], "postgres_example", "address", "zip").data_categories = ["C"]
-    field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
+    # set categories: user.contact, system.operations will be marked erasable, user.sensor will not
+    field([dataset], "postgres_example", "address", "city").data_categories = [
+        "user.contact"
+    ]
+    field([dataset], "postgres_example", "address", "state").data_categories = [
+        "system.operations"
+    ]
+    field([dataset], "postgres_example", "address", "zip").data_categories = [
+        "user.sensor"
+    ]
+    field([dataset], "postgres_example", "customer", "name").data_categories = [
+        "user.contact"
+    ]
 
     graph = DatasetGraph(dataset)
-    privacy_request = PrivacyRequest(id=str(uuid4()))
-    await graph_task.run_access_request(
+    access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -86,7 +90,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
         {"email": seed_email},
         db,
     )
-    v = await graph_task.run_erasure(
+    v = erasure_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -125,12 +129,23 @@ async def test_sql_erasure_ignores_collections_without_pk(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
+    dsr_version,
+    request,
+    privacy_request,
+    privacy_request_with_erasure_policy,
 ) -> None:
-    privacy_request = PrivacyRequest(id=str(uuid4()))
-    policy = erasure_policy("A")
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    policy = erasure_policy(db, "user")
+    privacy_request_with_erasure_policy.policy_id = policy.id
+    privacy_request_with_erasure_policy.save(db)
     customer = Collection(
         name="customer",
         fields=[
@@ -159,7 +174,7 @@ async def test_composite_key_erasure(
             ScalarField(
                 name="description",
                 data_type_converter=StringTypeConverter(),
-                data_categories=["A"],
+                data_categories=["user"],
             ),
             ScalarField(
                 name="customer_id",
@@ -177,8 +192,8 @@ async def test_composite_key_erasure(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = await graph_task.run_access_request(
-        privacy_request,
+    access_request_data = access_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_postgres_config],
@@ -192,13 +207,13 @@ async def test_composite_key_erasure(
     assert composite_pk_test["customer_id"] == 1
 
     # erasure
-    erasure = await graph_task.run_erasure(
-        privacy_request,
+    erasure = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_postgres_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 
@@ -209,8 +224,7 @@ async def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
-    privacy_request = PrivacyRequest(id=str(uuid4()))
-    access_request_data = await graph_task.run_access_request(
+    access_request_data = access_runner_tester(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -230,20 +244,44 @@ async def test_composite_key_erasure(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+async def test_sql_erasure_task(
+    db,
+    postgres_inserts,
+    integration_postgres_config,
+    privacy_request,
+    dsr_version,
+    request,
+):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     seed_email = postgres_inserts["customer"][0]["email"]
 
-    policy = erasure_policy("A", "B")
+    policy = erasure_policy(db, "user.name", "system")
+    privacy_request.policy_id = policy.id
+    privacy_request.save(db)
+
     dataset = integration_db_dataset("postgres_example", "postgres_example")
     field([dataset], "postgres_example", "address", "id").primary_key = True
-    # set categories: A,B will be marked erasable, C will not
-    field([dataset], "postgres_example", "address", "city").data_categories = ["A"]
-    field([dataset], "postgres_example", "address", "state").data_categories = ["B"]
-    field([dataset], "postgres_example", "address", "zip").data_categories = ["C"]
-    field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
+    # set categories: user.name,system will be marked erasable, user.contact will not
+    # (data category labels are arbitrary)
+    field([dataset], "postgres_example", "address", "city").data_categories = [
+        "user.name"
+    ]
+    field([dataset], "postgres_example", "address", "state").data_categories = [
+        "system"
+    ]
+    field([dataset], "postgres_example", "address", "zip").data_categories = [
+        "user.contact"
+    ]
+    field([dataset], "postgres_example", "customer", "name").data_categories = [
+        "user.name"
+    ]
     graph = DatasetGraph(dataset)
-    privacy_request = PrivacyRequest(id=str(uuid4()))
-    await graph_task.run_access_request(
+    access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -251,7 +289,7 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
         {"email": seed_email},
         db,
     )
-    v = await graph_task.run_erasure(
+    v = erasure_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -272,15 +310,23 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_postgres_access_request_task(
     db,
     policy,
     integration_postgres_config,
     postgres_integration_db,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
-    privacy_request = PrivacyRequest(id=str(uuid4()))
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),
@@ -359,27 +405,41 @@ async def test_postgres_access_request_task(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_postgres_privacy_requests_against_non_default_schema(
     db,
-    policy,
     postgres_connection_config_with_schema,
     postgres_integration_db,
     erasure_policy,
+    request,
+    dsr_version,
+    privacy_request_with_erasure_policy,
 ) -> None:
     """Assert that the postgres connector can make access and erasure requests against the non-default (public) schema"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(id=str(uuid4()))
     database_name = "postgres_backup"
     customer_email = "customer-500@example.com"
 
     dataset = integration_db_dataset(
         database_name, postgres_connection_config_with_schema.key
     )
+    # Update data category on customer name - need to do this before the access runner,
+    # DSR 3.0 saves this upfront on the access and erasure Request Tasks
+    field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user"
+    target.save(db)
+
     graph = DatasetGraph(dataset)
 
-    access_results = await graph_task.run_access_request(
-        privacy_request,
-        policy,
+    access_results = access_runner_tester(
+        privacy_request_with_erasure_policy,
+        erasure_policy,
         graph,
         [postgres_connection_config_with_schema],
         {"email": customer_email},
@@ -409,20 +469,13 @@ async def test_postgres_privacy_requests_against_non_default_schema(
         ],
     }
 
-    rule = erasure_policy.rules[0]
-    target = rule.targets[0]
-    target.data_category = "user"
-    target.save(db)
-    # Update data category on customer name
-    field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
-
-    erasure_results = await graph_task.run_erasure(
-        privacy_request,
+    erasure_results = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         erasure_policy,
         graph,
         [postgres_connection_config_with_schema],
         {"email": customer_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 
@@ -444,15 +497,22 @@ async def test_postgres_privacy_requests_against_non_default_schema(
 @pytest.mark.integration_mssql
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mssql_access_request_task(
     db,
     policy,
     connection_config_mssql,
     mssql_integration_db,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
-    privacy_request = PrivacyRequest(id=str(uuid4()))
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         integration_db_graph("my_mssql_db_1"),
@@ -531,15 +591,22 @@ async def test_mssql_access_request_task(
 @pytest.mark.integration_mysql
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mysql_access_request_task(
     db,
     policy,
     connection_config_mysql,
     mysql_integration_db,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
-    privacy_request = PrivacyRequest(id=str(uuid4()))
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         integration_db_graph("my_mysql_db_1"),
@@ -618,15 +685,22 @@ async def test_mysql_access_request_task(
 @pytest.mark.integration_mariadb
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_mariadb_access_request_task(
     db,
     policy,
     connection_config_mariadb,
     mariadb_integration_db,
+    dsr_version,
+    request,
+    privacy_request,
 ) -> None:
-    privacy_request = PrivacyRequest(id=str(uuid4()))
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         integration_db_graph("my_maria_db_1"),
@@ -704,14 +778,21 @@ async def test_mariadb_access_request_task(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_filter_on_data_categories(
     db,
     privacy_request,
     connection_config,
     example_datasets,
     policy,
+    dsr_version,
+    request,
     integration_postgres_config,
 ):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     postgres_config = copy.copy(integration_postgres_config)
 
     rule = Rule.create(
@@ -739,7 +820,7 @@ async def test_filter_on_data_categories(
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
-    access_request_results = await graph_task.run_access_request(
+    access_request_results = access_runner_tester(
         privacy_request,
         policy,
         dataset_graph,
@@ -845,15 +926,24 @@ async def test_filter_on_data_categories(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_access_erasure_type_conversion(
     db,
     integration_postgres_config: ConnectionConfig,
+    privacy_request_with_erasure_policy,
+    dsr_version,
+    request,
 ) -> None:
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee id field, which is an int, and converting it into a string to query
     against the type_link_test.id field."""
-    privacy_request = PrivacyRequest(id=str(uuid4()))
-    policy = erasure_policy("A")
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    policy = erasure_policy(db, "user.name")
+    privacy_request_with_erasure_policy.policy_id = policy.id
+    privacy_request_with_erasure_policy.save(db)
     employee = Collection(
         name="employee",
         fields=[
@@ -881,7 +971,7 @@ async def test_access_erasure_type_conversion(
             ScalarField(
                 name="name",
                 data_type_converter=StringTypeConverter(),
-                data_categories=["A"],
+                data_categories=["user.name"],
             ),
         ],
     )
@@ -892,8 +982,8 @@ async def test_access_erasure_type_conversion(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = await graph_task.run_access_request(
-        privacy_request,
+    access_request_data = access_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_postgres_config],
@@ -908,13 +998,13 @@ async def test_access_erasure_type_conversion(
     assert link["id"] == "1"
 
     # erasure
-    erasure = await graph_task.run_erasure(
-        privacy_request,
+    erasure = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         policy,
         DatasetGraph(dataset),
         [integration_postgres_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 
@@ -932,24 +1022,22 @@ class TestRetrievingData:
         return get_connector(integration_postgres_config)
 
     @pytest.fixture
-    def traversal_node(self, example_datasets, integration_postgres_config):
+    def execution_node(self, example_datasets, integration_postgres_config):
         dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         node = Node(graph, graph.collections[1])  # customer collection
         traversal_node = TraversalNode(node)
-        return traversal_node
+        return traversal_node.to_mock_execution_node()
 
-    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
-        mock_incoming_edges: Mock,
         privacy_request,
         db,
         connector,
-        traversal_node,
+        execution_node,
         postgres_integration_db,
     ):
-        mock_incoming_edges.return_value = {
+        execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
                 FieldAddress("postgres_example_test_dataset", "customer", "email"),
@@ -957,9 +1045,10 @@ class TestRetrievingData:
         }
 
         results = connector.retrieve_data(
-            traversal_node,
+            execution_node,
             Policy(),
             privacy_request,
+            RequestTask(),
             {"email": ["customer-1@example.com"]},
         )
         assert len(results) is 1
@@ -973,16 +1062,14 @@ class TestRetrievingData:
             }
         ]
 
-    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
-        mock_incoming_edges: Mock,
         privacy_request,
         db,
         connector,
-        traversal_node,
+        execution_node,
     ):
-        mock_incoming_edges.return_value = {
+        execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
                 FieldAddress("postgres_example_test_dataset", "customer", "email"),
@@ -990,47 +1077,50 @@ class TestRetrievingData:
         }
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": []}
+            execution_node, Policy(), privacy_request, RequestTask(), {"email": []}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {}
+            execution_node, Policy(), privacy_request, RequestTask(), {}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"bad_key": ["test"]}
+            execution_node,
+            Policy(),
+            privacy_request,
+            RequestTask(),
+            {"bad_key": ["test"]},
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": [None]}
+            execution_node, Policy(), privacy_request, RequestTask(), {"email": [None]}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": None}
+            execution_node, Policy(), privacy_request, RequestTask(), {"email": None}
         )
 
-    @mock.patch("fides.api.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
-        mock_incoming_edges: Mock,
         db,
         privacy_request,
         connection_config,
         example_datasets,
         connector,
-        traversal_node,
+        execution_node,
         postgres_integration_db,
     ):
-        mock_incoming_edges.return_value = {
+        execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
                 FieldAddress("postgres_example_test_dataset", "customer", "email"),
             )
         }
         results = connector.retrieve_data(
-            traversal_node,
+            execution_node,
             Policy(),
             privacy_request,
+            RequestTask(),
             {"email": ["customer_not_in_dataset@example.com"]},
         )
         assert results == []
@@ -1041,6 +1131,10 @@ class TestRetrievingData:
 class TestRetryIntegration:
     @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_retry_access_request(
         self,
         mock_retrieve,
@@ -1048,9 +1142,26 @@ class TestRetryIntegration:
         privacy_request,
         connection_config,
         example_datasets,
-        policy,
         integration_postgres_config,
+        dsr_version,
+        request,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        sample_postgres_configuration_policy = erasure_policy(
+            db,
+            "system.operations",
+            "user.unique_id",
+            "user.sensor",
+            "user.contact.address.city",
+            "user.contact.email",
+            "user.contact.address.postal_code",
+            "user.contact.address.state",
+            "user.contact.address.street",
+            "user.financial.bank_account",
+            "user.name",
+        )
+
         CONFIG.execution.task_retry_count = 1
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
@@ -1063,8 +1174,40 @@ class TestRetryIntegration:
         mock_retrieve.side_effect = Exception("Insufficient data")
 
         # Call run_access_request with an email that isn't in the database
-        with pytest.raises(Exception) as exc:
-            await graph_task.run_access_request(
+
+        if dsr_version == "use_dsr_2_0":
+            with pytest.raises(Exception) as exc:
+                # DSR 2.0 will raise an exception when the first node is hit,
+                # stopping all other nodes from running
+                access_runner_tester(
+                    privacy_request,
+                    sample_postgres_configuration_policy,
+                    dataset_graph,
+                    [integration_postgres_config],
+                    {"email": "customer-5@example.com"},
+                    db,
+                )
+                execution_logs = db.query(ExecutionLog).filter_by(
+                    privacy_request_id=privacy_request.id
+                )
+                assert 3 == execution_logs.count()
+
+                # Execution starts with the employee collection, retries once on failure, and then errors
+                assert [
+                    (
+                        CollectionAddress(log.dataset_name, log.collection_name).value,
+                        log.status.value,
+                    )
+                    for log in execution_logs.order_by("created_at")
+                ] == [
+                    ("postgres_example_test_dataset:employee", "in_processing"),
+                    ("postgres_example_test_dataset:employee", "retrying"),
+                    ("postgres_example_test_dataset:employee", "error"),
+                ]
+        else:
+            # DSR 3.0 will run the nodes that can run, an exception on one node
+            # will not necessarily stop all nodes from running
+            access_runner_tester(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,
@@ -1072,27 +1215,57 @@ class TestRetryIntegration:
                 {"email": "customer-5@example.com"},
                 db,
             )
-
-        execution_logs = db.query(ExecutionLog).filter_by(
-            privacy_request_id=privacy_request.id
-        )
-
-        assert 3 == execution_logs.count()
-
-        # Execution starts with the employee collection, retries once on failure, and then errors
-        assert [
-            (
-                CollectionAddress(log.dataset_name, log.collection_name).value,
-                log.status.value,
+            execution_logs = db.query(ExecutionLog).filter_by(
+                privacy_request_id=privacy_request.id
             )
-            for log in execution_logs.order_by("created_at")
-        ] == [
-            ("postgres_example_test_dataset:employee", "in_processing"),
-            ("postgres_example_test_dataset:employee", "retrying"),
-            ("postgres_example_test_dataset:employee", "error"),
-        ]
+            assert 12 == execution_logs.count()
+
+            # All four nodes directly downstream of the root node attempt to process,
+            # and nothing further processes downstream
+            assert [
+                (
+                    CollectionAddress(log.dataset_name, log.collection_name).value,
+                    log.status.value,
+                )
+                for log in execution_logs.order_by(
+                    ExecutionLog.collection_name, ExecutionLog.created_at
+                )
+            ] == [
+                ("postgres_example_test_dataset:customer", "in_processing"),
+                ("postgres_example_test_dataset:customer", "retrying"),
+                ("postgres_example_test_dataset:customer", "error"),
+                ("postgres_example_test_dataset:employee", "in_processing"),
+                ("postgres_example_test_dataset:employee", "retrying"),
+                ("postgres_example_test_dataset:employee", "error"),
+                ("postgres_example_test_dataset:report", "in_processing"),
+                ("postgres_example_test_dataset:report", "retrying"),
+                ("postgres_example_test_dataset:report", "error"),
+                ("postgres_example_test_dataset:visit", "in_processing"),
+                ("postgres_example_test_dataset:visit", "retrying"),
+                ("postgres_example_test_dataset:visit", "error"),
+            ]
+            # Downstream request tasks were marked as error
+            assert [rt.status.value for rt in privacy_request.access_tasks] == [
+                "complete",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+            ]
 
     @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     @pytest.mark.asyncio
     async def test_retry_erasure(
         self,
@@ -1103,7 +1276,25 @@ class TestRetryIntegration:
         example_datasets,
         policy,
         integration_postgres_config,
+        dsr_version,
+        request,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        sample_postgres_configuration_policy = erasure_policy(
+            db,
+            "system.operations",
+            "user.unique_id",
+            "user.sensor",
+            "user.contact.address.city",
+            "user.contact.email",
+            "user.contact.address.postal_code",
+            "user.contact.address.state",
+            "user.contact.address.street",
+            "user.financial.bank_account",
+            "user.name",
+        )
+
         CONFIG.execution.task_retry_count = 2
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
@@ -1115,64 +1306,133 @@ class TestRetryIntegration:
         # Mock errors with masking data
         mock_mask.side_effect = Exception("Insufficient data")
 
+        access_runner_tester(
+            privacy_request,
+            sample_postgres_configuration_policy,
+            dataset_graph,
+            [integration_postgres_config],
+            {"email": "customer-5@example.com"},
+            db,
+        )
+
         # Call run_erasure with an email that isn't in the database
-        with pytest.raises(Exception):
-            await graph_task.run_erasure(
+        if dsr_version == "use_dsr_2_0":
+            with pytest.raises(Exception):
+                erasure_runner_tester(
+                    privacy_request,
+                    sample_postgres_configuration_policy,
+                    dataset_graph,
+                    [integration_postgres_config],
+                    {"email": "customer-5@example.com"},
+                    {
+                        "postgres_example_test_dataset:employee": [],
+                        "postgres_example_test_dataset:visit": [],
+                        "postgres_example_test_dataset:customer": [],
+                        "postgres_example_test_dataset:report": [],
+                        "postgres_example_test_dataset:orders": [],
+                        "postgres_example_test_dataset:payment_card": [],
+                        "postgres_example_test_dataset:service_request": [],
+                        "postgres_example_test_dataset:login": [],
+                        "postgres_example_test_dataset:address": [],
+                        "postgres_example_test_dataset:order_item": [],
+                        "postgres_example_test_dataset:product": [],
+                    },
+                    db,
+                )
+                execution_logs = db.query(ExecutionLog).filter_by(
+                    privacy_request_id=privacy_request.id
+                )
+
+                # DSR 2.0 raises an exception on the first node hit
+                assert 4 == execution_logs.count()
+
+                # Execution starts with the address collection, retries twice on failure, and then errors
+                assert [
+                    (
+                        CollectionAddress(log.dataset_name, log.collection_name).value,
+                        log.status.value,
+                    )
+                    for log in execution_logs.order_by("created_at")
+                ] == [
+                    ("postgres_example_test_dataset:address", "in_processing"),
+                    ("postgres_example_test_dataset:address", "retrying"),
+                    ("postgres_example_test_dataset:address", "retrying"),
+                    ("postgres_example_test_dataset:address", "error"),
+                ]
+        else:
+            # DSR 3.0 does not raise an exception on the first node hit.
+            # Every node has a chance to process
+            erasure_runner_tester(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,
                 [integration_postgres_config],
                 {"email": "customer-5@example.com"},
-                {
-                    "postgres_example_test_dataset:employee": [],
-                    "postgres_example_test_dataset:visit": [],
-                    "postgres_example_test_dataset:customer": [],
-                    "postgres_example_test_dataset:report": [],
-                    "postgres_example_test_dataset:orders": [],
-                    "postgres_example_test_dataset:payment_card": [],
-                    "postgres_example_test_dataset:service_request": [],
-                    "postgres_example_test_dataset:login": [],
-                    "postgres_example_test_dataset:address": [],
-                    "postgres_example_test_dataset:order_item": [],
-                    "postgres_example_test_dataset:product": [],
-                },
+                {},
                 db,
             )
-
-        execution_logs = db.query(ExecutionLog).filter_by(
-            privacy_request_id=privacy_request.id
-        )
-
-        assert 4 == execution_logs.count()
-
-        # Execution starts with the address collection, retries twice on failure, and then errors
-        assert [
-            (
-                CollectionAddress(log.dataset_name, log.collection_name).value,
-                log.status.value,
+            execution_logs = db.query(ExecutionLog).filter_by(
+                privacy_request_id=privacy_request.id, action_type=ActionType.erasure
             )
-            for log in execution_logs.order_by("created_at")
-        ] == [
-            ("postgres_example_test_dataset:address", "in_processing"),
-            ("postgres_example_test_dataset:address", "retrying"),
-            ("postgres_example_test_dataset:address", "retrying"),
-            ("postgres_example_test_dataset:address", "error"),
-        ]
+            assert 40 == execution_logs.count()
+
+            # These nodes were able to complete because they didn't have a PK - nothing to erase
+            visit_logs = execution_logs.filter_by(collection_name="visit")
+            assert {"in_processing", "complete"} == {
+                el.status.value for el in visit_logs
+            }
+
+            order_item_logs = execution_logs.filter_by(collection_name="order_item")
+            assert {"in_processing", "complete"} == {
+                el.status.value for el in order_item_logs
+            }
+            # Address log mask data couldn't run, attempted to retry twice per configuration
+            address_logs = execution_logs.filter_by(collection_name="address").order_by(
+                ExecutionLog.created_at
+            )
+            assert ["in_processing", "retrying", "retrying", "error"] == [
+                el.status.value for el in address_logs
+            ]
+
+            # Downstream request tasks were marked as error. Some tasks completed because there is no PK
+            # on their collection and we can't erase
+            assert {rt.status.value for rt in privacy_request.erasure_tasks} == {
+                "complete",
+                "error",
+                "error",
+                "error",
+                "complete",
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+                "complete",
+                "error",
+                "error",
+            }
 
 
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_timescale_access_request_task(
     db,
     policy,
     timescale_connection_config,
     timescale_integration_db,
+    privacy_request,
+    dsr_version,
+    request,
 ) -> None:
     database_name = "my_timescale_db_1"
-    privacy_request = PrivacyRequest(id=str(uuid4()))
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         integration_db_graph(database_name),
@@ -1255,19 +1515,27 @@ async def test_timescale_access_request_task(
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_timescale_erasure_request_task(
     db,
     erasure_policy,
     timescale_connection_config,
     timescale_integration_db,
+    privacy_request_with_erasure_policy,
+    dsr_version,
+    request,
 ) -> None:
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     rule = erasure_policy.rules[0]
     target = rule.targets[0]
     target.data_category = "user"
     target.save(db)
 
     database_name = "my_timescale_db_1"
-    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     dataset = integration_db_dataset(database_name, timescale_connection_config.key)
 
@@ -1278,76 +1546,22 @@ async def test_timescale_erasure_request_task(
 
     graph = DatasetGraph(dataset)
 
-    access_results = {  # To avoid running a separate access request, just feed in what the access results would be
-        f"{database_name}:payment_card": [
-            {
-                "id": "pay_aaa-aaa",
-                "name": "Example Card 1",
-                "ccn": 123456789,
-                "customer_id": 1,
-                "billing_address_id": 1,
-            },
-            {
-                "id": "pay_bbb-bbb",
-                "name": "Example Card 2",
-                "ccn": 987654321,
-                "customer_id": 2,
-                "billing_address_id": 1,
-            },
-        ],
-        f"{database_name}:customer": [
-            {
-                "id": 1,
-                "name": "John Customer",
-                "email": "customer-1@example.com",
-                "address_id": 1,
-            }
-        ],
-        f"{database_name}:address": [
-            {
-                "id": 1,
-                "street": "Example Street",
-                "city": "Exampletown",
-                "state": "NY",
-                "zip": "12345",
-            },
-            {
-                "id": 2,
-                "street": "Example Lane",
-                "city": "Exampletown",
-                "state": "NY",
-                "zip": "12321",
-            },
-        ],
-        f"{database_name}:orders": [
-            {
-                "id": "ord_aaa-aaa",
-                "customer_id": 1,
-                "shipping_address_id": 2,
-                "payment_card_id": "pay_aaa-aaa",
-            },
-            {
-                "id": "ord_ccc-ccc",
-                "customer_id": 1,
-                "shipping_address_id": 1,
-                "payment_card_id": "pay_aaa-aaa",
-            },
-            {
-                "id": "ord_ddd-ddd",
-                "customer_id": 1,
-                "shipping_address_id": 1,
-                "payment_card_id": "pay_bbb-bbb",
-            },
-        ],
-    }
-
-    v = await graph_task.run_erasure(
-        privacy_request,
+    v = access_runner_tester(
+        privacy_request_with_erasure_policy,
         erasure_policy,
         graph,
         [timescale_connection_config],
         {"email": "customer-1@example.com"},
-        access_results,
+        db,
+    )
+
+    v = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
+        erasure_policy,
+        graph,
+        [timescale_connection_config],
+        {"email": "customer-1@example.com"},
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
     assert v == {
@@ -1388,11 +1602,22 @@ async def test_timescale_erasure_request_task(
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_timescale_query_and_mask_hypertable(
-    db, policy, erasure_policy, timescale_connection_config, timescale_integration_db
+    db,
+    erasure_policy,
+    timescale_connection_config,
+    timescale_integration_db,
+    privacy_request_with_erasure_policy,
+    dsr_version,
+    request,
 ) -> None:
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
     database_name = "my_timescale_db_1"
-    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     dataset = integration_db_dataset(database_name, timescale_connection_config.key)
     # For this test, add a new collection to our standard dataset corresponding to the
@@ -1411,10 +1636,18 @@ async def test_timescale_query_and_mask_hypertable(
 
     dataset.collections.append(onsite_personnel_collection)
     graph = DatasetGraph(dataset)
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user"
+    target.save(db)
+    # Update data category on responsible field
+    field(
+        [dataset], database_name, "onsite_personnel", "responsible"
+    ).data_categories = ["user.contact.email"]
 
-    access_results = await graph_task.run_access_request(
-        privacy_request,
-        policy,
+    access_results = access_runner_tester(
+        privacy_request_with_erasure_policy,
+        erasure_policy,
         graph,
         [timescale_connection_config],
         {"email": "employee-1@example.com"},
@@ -1429,23 +1662,14 @@ async def test_timescale_query_and_mask_hypertable(
         {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 5, 9, 0)},
     ]
 
-    rule = erasure_policy.rules[0]
-    target = rule.targets[0]
-    target.data_category = "user"
-    target.save(db)
-    # Update data category on responsible field
-    field(
-        [dataset], database_name, "onsite_personnel", "responsible"
-    ).data_categories = ["user.contact.email"]
-
     # Run an erasure on the hypertable targeting the responsible field
-    v = await graph_task.run_erasure(
-        privacy_request,
+    v = erasure_runner_tester(
+        privacy_request_with_erasure_policy,
         erasure_policy,
         graph,
         [timescale_connection_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
         db,
     )
 

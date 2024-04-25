@@ -139,11 +139,15 @@ def has_system_permissions(
         authorization, db
     )  # Can raise permission errors if issues with client or token
 
-    has_model_level_permissions: bool = has_permissions(  # Token has the correct scope(s) or role(s) associated with the correct scopes
-        token_data, client, security_scopes
+    has_model_level_permissions: bool = (
+        has_permissions(  # Token has the correct scope(s) or role(s) associated with the correct scopes
+            token_data, client, security_scopes
+        )
     )
-    has_system_manager_permissions: bool = _has_scope_as_system_manager(  # Token indicates system manager permissions of the current system(s)
-        token_data, client, security_scopes, system_auth_data.system
+    has_system_manager_permissions: bool = (
+        _has_scope_as_system_manager(  # Token indicates system manager permissions of the current system(s)
+            token_data, client, security_scopes, system_auth_data.system
+        )
     )
 
     has_perms: bool = has_model_level_permissions or has_system_manager_permissions

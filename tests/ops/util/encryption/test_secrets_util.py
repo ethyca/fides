@@ -81,9 +81,9 @@ def test_generate_secret() -> None:
 
 def test_build_masking_secrets_for_cache() -> None:
     # build masking secret meta for all HMAC secrets
-    masking_meta: Dict[
-        SecretType, MaskingSecretMeta
-    ] = HmacMaskingStrategy._build_masking_secret_meta()
+    masking_meta: Dict[SecretType, MaskingSecretMeta] = (
+        HmacMaskingStrategy._build_masking_secret_meta()
+    )
     result: List[MaskingSecretCache] = SecretsUtil.build_masking_secrets_for_cache(
         masking_meta
     )
