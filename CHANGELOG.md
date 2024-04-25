@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.35.0...main)
+
+## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 
 ### Added
 - Added DSR 3.0 Scheduling which supports running DSR's in parallel with first-class request tasks [#4760](https://github.com/ethyca/fides/pull/4760)
