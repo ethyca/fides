@@ -3,6 +3,7 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  DiffStatus,
   DiscoveryMonitorConfig,
   Page_DiscoveryMonitorConfig_,
   Page_StagedResource_,
@@ -25,6 +26,7 @@ interface MonitorQueryParams {
 
 interface MonitorResultQueryParams {
   staged_resource_urn?: string;
+  diff_status?: DiffStatus[];
   page?: number;
   size?: number;
 }

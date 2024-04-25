@@ -22,7 +22,7 @@ import {
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
-import { Database, StagedResource } from "~/types/api";
+import { Database, DiffStatus, StagedResource } from "~/types/api";
 
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findActivityType from "../utils/findResourceActivityType";
@@ -59,9 +59,13 @@ const columnHelper = createColumnHelper<Database>();
 
 interface ActivityTableProps {
   onRowClick: (resource: StagedResource) => void;
+  statusFilters?: DiffStatus[];
 }
 
-const ActivityTable: React.FC<ActivityTableProps> = ({ onRowClick }) => {
+const ActivityTable: React.FC<ActivityTableProps> = ({
+  onRowClick,
+  statusFilters,
+}) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -81,6 +85,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({ onRowClick }) => {
     isLoading,
     data: resources,
   } = useGetMonitorResultsQuery({
+    diff_status: statusFilters,
     page: pageIndex,
     size: pageSize,
   });
