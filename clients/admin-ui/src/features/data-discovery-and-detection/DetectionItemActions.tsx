@@ -11,11 +11,13 @@ import { useState } from "react";
 
 import {
   ClassificationStatus,
+  DiffStatus,
   MonitorStatus,
   StagedResource,
 } from "~/types/api";
 import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
+import { TrashCanOutlineIcon } from "../common/Icon/TrashCanOutlineIcon";
 import ActionButton from "./ActionButton";
 
 import {
@@ -26,26 +28,23 @@ import {
 } from "./discovery-detection.slice";
 import { StagedResourceType } from "./types/StagedResourceType";
 
-interface DiscoveryMonitorItemActionsProps {
+interface DetectionItemActionProps {
   resource: StagedResource;
   resourceType: StagedResourceType;
 }
 
-const DiscoveryMonitorItemActions: React.FC<
-  DiscoveryMonitorItemActionsProps
-> = ({ resource, resourceType }) => {
+const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
+  resource,
+  resourceType,
+}) => {
   const [monitorResourceMutation] = useMonitorResourceMutation();
-  const [acceptResourceMutation] = useAcceptResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
-  const [unmuteResourceMutation] = useUnmuteResourceMutation();
+  const [acceptResourceMutation] = useAcceptResourceMutation();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
-  const {
-    monitor_status: monitorStatus,
-    classification_status: classificationStatus,
-    diff_status: diffStatus,
-  } = resource;
+  const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
+    resource;
 
   // No actions for database level
   if (resourceType === StagedResourceType.DATABASE) {
@@ -56,22 +55,12 @@ const DiscoveryMonitorItemActions: React.FC<
   // Tables and field levels can mute/unmute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
 
-  const showMuteAction = monitorStatus !== MonitorStatus.MUTED && !isSchemaType;
-  const showUnmuteAction =
-    monitorStatus === MonitorStatus.MUTED && !isSchemaType;
-  const showAcceptAction =
-    classificationStatus === ClassificationStatus.COMPLETE && diffStatus;
-  const showRejectAction =
-    classificationStatus === ClassificationStatus.COMPLETE && diffStatus;
-
   const showStartMonitoringAction =
-    isSchemaType && monitorStatus !== MonitorStatus.MONITORED;
+    isSchemaType &&
+    (diffStatus === undefined || diffStatus === DiffStatus.MUTED);
   const showStopMonitoringAction =
-    isSchemaType && monitorStatus !== MonitorStatus.MUTED;
-
-  const showEditAction =
-    resourceType === StagedResourceType.FIELD &&
-    classificationStatus === ClassificationStatus.COMPLETE;
+    isSchemaType && diffStatus !== DiffStatus.MUTED;
+  const showRemoveAction = isSchemaType && diffStatus === DiffStatus.REMOVAL;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
@@ -104,46 +93,10 @@ const DiscoveryMonitorItemActions: React.FC<
           disabled={isProcessingAction}
         />
       )}
-      {showMuteAction && (
+      {showRemoveAction && (
         <ActionButton
-          title="Ignore"
-          icon={<ViewOffIcon />}
-          onClick={async () => {
-            setIsProcessingAction(true);
-            await muteResourceMutation({
-              staged_resource_urn: resource.urn,
-            });
-            setIsProcessingAction(false);
-          }}
-          disabled={isProcessingAction}
-        />
-      )}
-      {showUnmuteAction && (
-        <ActionButton
-          title="Unmute - Include in monitoring"
-          icon={<ViewIcon />}
-          onClick={async () => {
-            setIsProcessingAction(true);
-            await unmuteResourceMutation({
-              staged_resource_urn: resource.urn,
-            });
-            setIsProcessingAction(false);
-          }}
-          disabled={isProcessingAction}
-        />
-      )}
-      {showRejectAction && (
-        <ActionButton
-          title="Reject"
-          icon={<CloseIcon />}
-          onClick={() => {}}
-          disabled={isProcessingAction}
-        />
-      )}
-      {showAcceptAction && (
-        <ActionButton
-          title="Accept"
-          icon={<CheckIcon />}
+          title="Drop"
+          icon={<TrashCanOutlineIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
             await acceptResourceMutation({
@@ -154,17 +107,10 @@ const DiscoveryMonitorItemActions: React.FC<
           disabled={isProcessingAction}
         />
       )}
-      {showEditAction && (
-        <ActionButton
-          title="Edit"
-          icon={<EditIcon />}
-          onClick={() => {}}
-          disabled={isProcessingAction}
-        />
-      )}
+
       {isProcessingAction ? <ButtonSpinner position="static" /> : null}
     </HStack>
   );
 };
 
-export default DiscoveryMonitorItemActions;
+export default DetectionItemAction;
