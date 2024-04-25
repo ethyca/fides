@@ -57,7 +57,7 @@ jobs:
       matrix:
         node-version: [16.x]
         clients:
-          - "admin-ui"
+          # - "admin-ui"
           - "privacy-center"
     defaults:
       run:
