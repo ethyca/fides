@@ -357,6 +357,33 @@ def test_unsupported_dialect_error() -> None:
         _dataset.generate_dataset_db(test_url, "test_file.yml", False)
 
 
+@pytest.mark.unit
+def test_field_data_categories(db) -> None:
+    """
+    Verify that field_data_categories works for fields with and without data categories.
+    """
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                        {"name": "first_name"},
+                    ],
+                }
+            ],
+        },
+    )
+    assert ctl_dataset.field_data_categories
+
+
 # Generate Dataset Database Integration Tests
 
 # These URLs are for the databases in the docker-compose.integration-tests.yml file
