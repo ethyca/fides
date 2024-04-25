@@ -165,7 +165,7 @@ COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-buil
 RUN python setup.py sdist
 
 USER root
-RUN pip install dist/ethyca-fides-*.tar.gz
+RUN pip install dist/ethyca_fides-*.tar.gz
 
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build
