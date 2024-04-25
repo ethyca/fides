@@ -32,11 +32,6 @@ const useDiscoveryResultColumns = ({
         cell: () => <DefaultCell value="Table" />,
         header: "Type",
       }),
-      columnHelper.display({
-        id: "category",
-        cell: () => <DefaultCell value="classifications (placeholder)" />,
-        header: "Categories",
-      }),
       columnHelper.accessor((row) => row.modified, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
