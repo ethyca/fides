@@ -135,7 +135,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   useEffect(() => {
     if (experience && experience.privacy_notices) {
       const experienceConfigTranslation = selectExperienceConfigTranslation(
-        experience.experience_config!
+        experience.experience_config
       );
 
       updateNoticesServedMutationTrigger({
@@ -242,7 +242,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     );
 
     const experienceConfigTranslation = selectExperienceConfigTranslation(
-      experience?.experience_config!
+      experience?.experience_config
     );
 
     const payload: PrivacyPreferencesRequest = {

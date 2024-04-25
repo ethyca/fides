@@ -17,7 +17,10 @@ const useI18n = () => {
 
   // Useful wrapper for selectBestExperienceConfigTranslation
   const selectExperienceConfigTranslation = useCallback(
-    (experienceConfig: ExperienceConfig) => {
+    (experienceConfig: ExperienceConfig | undefined) => {
+      if (!experienceConfig) {
+        throw new Error("ExperienceConfig must be defined");
+      }
       const experienceConfigTransalation =
         selectBestExperienceConfigTranslation(i18n, experienceConfig);
       if (!experienceConfigTransalation) {
