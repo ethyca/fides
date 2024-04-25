@@ -1509,7 +1509,7 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe("when localizing privacy_center components", () => {
+  describe.only("when localizing privacy_center components", () => {
     const GEOLOCATION_API_URL = "https://www.example.com/location";
     const VERIFICATION_CODE = "112358";
     const SETTINGS = {
