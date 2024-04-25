@@ -110,7 +110,12 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
-        header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value={isField ? "Field name" : "Table name"}
+            {...props}
+          />
+        ),
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
