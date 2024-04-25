@@ -27,6 +27,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import { StagedResource } from "~/types/api";
+
 import DetectionItemAction from "../DetectionItemActions";
 
 const EMPTY_RESPONSE = {
