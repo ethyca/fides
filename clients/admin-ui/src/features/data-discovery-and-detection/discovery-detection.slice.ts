@@ -57,11 +57,14 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
-    monitorResource: build.mutation<any, ResourceActionQueryParams>({
+    monitorResource: build.mutation<
+      any,
+      ResourceActionQueryParams & { monitor_config_id: string }
+    >({
       query: (params) => ({
         params,
         method: "POST",
-        url: `/plus/discovery-monitor/${params.staged_resource_urn}/monitor`,
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -85,7 +88,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: (params) => ({
         params,
         method: "POST",
-        url: `/plus/discovery-monitor/${params.staged_resource_urn}/accept`,
+        url: `/plus/discovery-monitor/${params.staged_resource_urn}/promote`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),

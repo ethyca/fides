@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
+  Button,
   ButtonSpinner,
   CheckIcon,
   CloseIcon,
   EditIcon,
   HStack,
-  IconButton,
-  Spinner,
-  Tooltip,
+  Text,
   ViewIcon,
   ViewOffIcon,
 } from "@fidesui/react";
@@ -18,9 +17,9 @@ import {
   MonitorStatus,
   StagedResource,
 } from "~/types/api";
+import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
+import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
 
-import { PlayIcon } from "../common/Icon/Play";
-import { StopIcon } from "../common/Icon/Stop";
 import {
   useAcceptResourceMutation,
   useMonitorResourceMutation,
@@ -70,7 +69,7 @@ const DiscoveryMonitorItemActions: React.FC<
   const showStartMonitoringAction =
     isSchemaType && monitorStatus !== MonitorStatus.MONITORED;
   const showStopMonitoringAction =
-    isSchemaType && monitorStatus === MonitorStatus.MONITORED;
+    isSchemaType && monitorStatus !== MonitorStatus.MUTED;
 
   const showEditAction =
     resourceType === StagedResourceType.FIELD &&
@@ -79,13 +78,14 @@ const DiscoveryMonitorItemActions: React.FC<
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
       {showStartMonitoringAction && (
-        <ActionIcon
-          title="Start Monitoring"
-          icon={<PlayIcon />}
+        <ActionButton
+          title="Monitor"
+          icon={<MonitorOnIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
             await monitorResourceMutation({
               staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id,
             });
             setIsProcessingAction(false);
           }}
@@ -93,9 +93,9 @@ const DiscoveryMonitorItemActions: React.FC<
         />
       )}
       {showStopMonitoringAction && (
-        <ActionIcon
-          title="Stop Monitoring"
-          icon={<StopIcon />}
+        <ActionButton
+          title="Ignore"
+          icon={<MonitorOffIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
             await muteResourceMutation({
@@ -107,8 +107,8 @@ const DiscoveryMonitorItemActions: React.FC<
         />
       )}
       {showMuteAction && (
-        <ActionIcon
-          title="Mute - Exclude from monitoring"
+        <ActionButton
+          title="Ignore"
           icon={<ViewOffIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
@@ -121,7 +121,7 @@ const DiscoveryMonitorItemActions: React.FC<
         />
       )}
       {showUnmuteAction && (
-        <ActionIcon
+        <ActionButton
           title="Unmute - Include in monitoring"
           icon={<ViewIcon />}
           onClick={async () => {
@@ -135,7 +135,7 @@ const DiscoveryMonitorItemActions: React.FC<
         />
       )}
       {showRejectAction && (
-        <ActionIcon
+        <ActionButton
           title="Reject"
           icon={<CloseIcon />}
           onClick={() => {}}
@@ -143,7 +143,7 @@ const DiscoveryMonitorItemActions: React.FC<
         />
       )}
       {showAcceptAction && (
-        <ActionIcon
+        <ActionButton
           title="Accept"
           icon={<CheckIcon />}
           onClick={async () => {
@@ -157,7 +157,7 @@ const DiscoveryMonitorItemActions: React.FC<
         />
       )}
       {showEditAction && (
-        <ActionIcon
+        <ActionButton
           title="Edit"
           icon={<EditIcon />}
           onClick={() => {}}
@@ -169,7 +169,7 @@ const DiscoveryMonitorItemActions: React.FC<
   );
 };
 
-const ActionIcon = ({
+const ActionButton = ({
   title,
   icon,
   onClick,
@@ -180,16 +180,12 @@ const ActionIcon = ({
   onClick: () => void;
   disabled?: boolean;
 }) => (
-  <Tooltip label={title}>
-    <IconButton
-      aria-label={title}
-      variant="outline"
-      size="xs"
-      icon={icon}
-      onClick={onClick}
-      disabled={disabled}
-    />
-  </Tooltip>
+  <Button size="xs" variant="outline" onClick={onClick} disabled={disabled}>
+    {icon}
+    <Text marginLeft={1} fontWeight="semibold" fontSize={12}>
+      {title}
+    </Text>
+  </Button>
 );
 
 export default DiscoveryMonitorItemActions;
