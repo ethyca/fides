@@ -9,6 +9,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { formatDistance } from "date-fns";
 import { useEffect, useMemo } from "react";
 
 import {
@@ -113,7 +114,13 @@ const ActivityTable = () => {
       }),
       columnHelper.accessor((row) => row.modified, {
         id: "time",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell
+            value={formatDistance(new Date(props.getValue()), new Date(), {
+              addSuffix: true,
+            })}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
       }),
     ],
