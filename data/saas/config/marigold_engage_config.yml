@@ -7,7 +7,6 @@ saas_config:
 
   connector_params:
     - name: domain
-      label: Domain
       default_value: api.sailthru.com
     - name: api_key
       label: API key
@@ -21,8 +20,7 @@ saas_config:
     host: <domain>
 
   test_request:
-    method: GET
-    path: /user
+    request_override: marigold_engage_test
 
   endpoints:
     - name: user
@@ -30,18 +28,10 @@ saas_config:
         read:
           request_override: marigold_engage_user_read
           param_values:
-            - name: api_key
-              connector_param: api_key
-            - name: secret
-              connector_param: secret
             - name: email
               identity: email
         delete:
           request_override: marigold_engage_user_delete
           param_values:
-            - name: api_key
-              connector_param: api_key
-            - name: secret
-              connector_param: secret
             - name: email
               identity: email

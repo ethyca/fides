@@ -1,11 +1,6 @@
 import hashlib
 import json
-import urllib
-import urllib.parse
 from typing import Any, Dict, List
-from urllib.parse import quote
-
-import pydash
 
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
@@ -28,9 +23,8 @@ def marigold_engage_user_read(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
-    """
-    TBD
-    """
+    """Calls Marigold Engage's `GET /user` endpoint with a signed payload."""
+
     output = []
     emails = input_data.get("email", [])
     for email in emails:
@@ -51,22 +45,11 @@ def marigold_engage_user_read(
                 "lifetime": 1,
             },
         }
-        stringified_payload = json.dumps(payload, separators=(",", ":"))
-        # import pdb
-
-        # pdb.set_trace()
-        sig = payload_signature(secrets, stringified_payload)
-
         response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.GET,
                 path="/user",
-                query_params={
-                    "api_key": secrets["api_key"],
-                    "sig": sig,
-                    "format": "json",
-                    "json": stringified_payload,
-                },
+                query_params=signed_payload(secrets, payload),
             )
         )
         user = response.json()
@@ -74,63 +57,48 @@ def marigold_engage_user_read(
 
     return output
 
+
 @register("marigold_engage_user_delete", [SaaSRequestType.DELETE])
 def marigold_engage_user_delete(
     client: AuthenticatedClient,
-    node: TraversalNode,
+    param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
-    input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
-    marigold_engage_secrets,
-    marigold_engage_erasure_identity_email,
-) -> List[Row]:
-    base_url = f'https://api.sailthru.com/user'
-    emails = input_data.get("email", [])
-    for email in emails:
-        email_test = email
-        # email_test = marigold_engage_erasure_identity_email
-        email_prep = '{"id":"'+email_test+'"}'
-        ''' Setup to deal with the signature (sig) requirement
-        Here we need to generate an MD5 hash based on the secret, api_key, format and the email of the user, converted into a string to compose the email into the format required.
-        '''
-        output = []
-        sig_prep = marigold_engage_secrets["secret"]+marigold_engage_secrets["api_key"]+"json"+email_prep
-        sig_chk = md5_any(sig_prep)
-        md5_readable = sig_chk.hexdigest()
-        ### end sig prep    
+) -> int:
+    """Calls Marigold Engage's `DELETE /user` endpoint with a signed payload."""
 
-
-        response = client.send(
+    rows_deleted = 0
+    for row_param_values in param_values_per_row:
+        email = row_param_values["email"]
+        client.send(
             SaaSRequestParams(
                 method=HTTPMethod.DELETE,
                 path="/user",
-                query_params={
-                    "api_key": secrets["api_key"],
-                    "sig": md5_readable,
-                    "format": "json",
-                    "json": email_prep,
-                },
+                query_params=signed_payload(secrets, {"id": email}),
             )
         )
-        
-        assert response.ok
-        user = response.json()
-        output.append(user)
-
-    return output    
+        rows_deleted += 1
+    return rows_deleted
 
 
+def signed_payload(secrets: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Creates a signed payload dictionary with an MD5 hash of the secret, API key, format, and payload.
+    """
 
+    # the signature is the md5 hash of the concatenated string
+    # of secret, API key, format, and stringified payload
+    stringified_payload = json.dumps(payload)
+    parameter_values = (
+        f'{secrets["secret"]}{secrets["api_key"]}json{stringified_payload}'
+    )
+    hash_value = hashlib.md5(parameter_values.encode())
+    sig = hash_value.hexdigest()
 
-def payload_signature(secrets: Dict[str, Any], payload: str):
-    values = [secrets["secret"], secrets["api_key"], "json", payload]
-    return md5_any("".join(values)).hexdigest()
-
-
-def md5_any(value_to_MD5) -> str:
-    return hashlib.md5(value_to_MD5.encode())
-
-
-def url_encode(value_to_encode) -> str:
-    return urllib.parse.quote_plus(value_to_encode)
+    return {
+        "api_key": secrets["api_key"],
+        "sig": sig,
+        "format": "json",
+        "json": stringified_payload,
+    }

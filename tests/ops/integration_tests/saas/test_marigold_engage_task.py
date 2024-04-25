@@ -1,5 +1,5 @@
 import pytest
-#from marigold_engage_fixtures import marigold_engage_erasure_data
+
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
@@ -18,6 +18,8 @@ class TestMarigoldEngageConnector:
         access_results = await marigold_engage_runner.access_request(
             access_policy=policy, identities={"email": marigold_engage_identity_email}
         )
+        for user in access_results["marigold_engage_instance:user"]:
+            assert user["keys"]["email"] == marigold_engage_identity_email
 
     async def test_non_strict_erasure_request(
         self,
@@ -28,16 +30,11 @@ class TestMarigoldEngageConnector:
         marigold_engage_erasure_data,
     ):
         (
-            access_results,
+            _,
             erasure_results,
         ) = await marigold_engage_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": marigold_engage_erasure_identity_email},
         )
-        # import pdb
-        # pdb.set_trace()
-
-        # assert erasure_results == {
-        #     "marigold_engage_instance": 1,
-        # }
+        assert erasure_results == {"marigold_engage_instance:user": 1}
