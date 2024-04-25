@@ -1,7 +1,7 @@
 import { Badge, Box, EditIcon, Select } from "@fidesui/react";
 import { useState } from "react";
+
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import SelectDropdown from "~/features/common/dropdown/SelectDropdown";
 
 interface TaxonomyDisplayAndEditProps {
   fidesLangKey?: string;

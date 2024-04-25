@@ -3,6 +3,7 @@
 import { Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
+  createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
@@ -11,6 +12,8 @@ import {
 import { useEffect, useMemo } from "react";
 
 import {
+  DefaultCell,
+  DefaultHeaderCell,
   FidesTableV2,
   PaginationBar,
   TableSkeletonLoader,
@@ -18,12 +21,7 @@ import {
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
-import useStagedResourceColumns from "~/features/data-discovery-and-detection/hooks/useStagedResourceColumns";
-import { StagedResource } from "~/types/api";
-
-import { DiscoveryMonitorItem } from "./types/DiscoveryMonitorItem";
-import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType } from "./utils/findResourceType";
+import { Database, DiffStatus, StagedResource } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -46,22 +44,16 @@ const EmptyTableNotice = () => (
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
-        No results found.
+        No activity found
       </Text>
-      <Text fontSize="sm">
-        [insert some copy about how to find results here]
-      </Text>
+      <Text fontSize="sm">You&apos;re up to date!</Text>
     </VStack>
   </VStack>
 );
 
-interface MonitorResultTableProps {
-  resourceUrn?: string;
-}
+const columnHelper = createColumnHelper<Database>();
 
-const DiscoveryMonitorResultTable = ({
-  resourceUrn,
-}: MonitorResultTableProps) => {
+const ActivityTable = () => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -81,16 +73,9 @@ const DiscoveryMonitorResultTable = ({
     isLoading,
     data: resources,
   } = useGetMonitorResultsQuery({
-    staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
   });
-
-  const resourceType = findResourceType(
-    resources?.items[0] as DiscoveryMonitorItem
-  );
-
-  const { columns } = useStagedResourceColumns({ resourceType });
 
   const {
     items: data,
@@ -103,16 +88,39 @@ const DiscoveryMonitorResultTable = ({
   }, [totalPages, setTotalPages]);
 
   const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
-    () => columns,
-    [columns]
+    () => [
+      columnHelper.accessor((row) => row.name, {
+        id: "name",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+      }),
+      columnHelper.accessor(
+        (row) =>
+          row.diff_status === DiffStatus.ADDITION ||
+          row.diff_status === DiffStatus.REMOVAL
+            ? "Dataset"
+            : "Classification",
+        {
+          id: "type",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+        }
+      ),
+      columnHelper.accessor((row) => row.monitor_config_id, {
+        id: "monitor",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.modified, {
+        id: "time",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="When" {...props} />,
+      }),
+    ],
+    []
   );
 
   const { navigateToResourceResults } = useDiscoveryRoutes();
-
-  const handleRowClicked =
-    resourceType !== StagedResourceType.FIELD
-      ? (row: StagedResource) => navigateToResourceResults(row)
-      : undefined;
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),
@@ -131,7 +139,7 @@ const DiscoveryMonitorResultTable = ({
     <>
       <FidesTableV2
         tableInstance={tableInstance}
-        onRowClick={handleRowClicked}
+        onRowClick={navigateToResourceResults}
         emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
@@ -149,4 +157,4 @@ const DiscoveryMonitorResultTable = ({
   );
 };
 
-export default DiscoveryMonitorResultTable;
+export default ActivityTable;
