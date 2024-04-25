@@ -57,10 +57,12 @@ const EmptyTableNotice = () => (
 
 interface MonitorResultTableProps {
   resourceUrn?: string;
+  onSelectResource: (resource: StagedResource) => void;
 }
 
 const DiscoveryMonitorResultTable = ({
   resourceUrn,
+  onSelectResource,
 }: MonitorResultTableProps) => {
   const {
     PAGE_SIZES,
@@ -107,11 +109,9 @@ const DiscoveryMonitorResultTable = ({
     [columns]
   );
 
-  const { navigateToResourceResults } = useDiscoveryRoutes();
-
   const handleRowClicked =
     resourceType !== StagedResourceType.FIELD
-      ? (row: StagedResource) => navigateToResourceResults(row)
+      ? (row: StagedResource) => onSelectResource(row)
       : undefined;
 
   const tableInstance = useReactTable<StagedResource>({

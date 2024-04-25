@@ -21,40 +21,17 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
-import { Database, DiffStatus, StagedResource } from "~/types/api";
-
-const EMPTY_RESPONSE = {
-  items: [],
-  total: 0,
-  page: 1,
-  size: 50,
-  pages: 1,
-};
-
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="empty-state"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No activity found
-      </Text>
-      <Text fontSize="sm">You&apos;re up to date!</Text>
-    </VStack>
-  </VStack>
-);
+import { Database, StagedResource } from "~/types/api";
+import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
+import findActivityType from "../utils/findResourceActivityType";
 
 const columnHelper = createColumnHelper<Database>();
 
-const ActivityTable = () => {
+interface ActivityTableProps {
+  onRowClick: (resource: StagedResource) => void;
+}
+
+const ActivityTable: React.FC<ActivityTableProps> = ({ onRowClick }) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -96,9 +73,8 @@ const ActivityTable = () => {
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
       columnHelper.accessor(
-        (row) =>
-          row.diff_status === DiffStatus.ADDITION ||
-          row.diff_status === DiffStatus.REMOVAL
+        (resource) =>
+          findActivityType(resource) === ResourceActivityTypeEnum.DATASET
             ? "Dataset"
             : "Classification",
         {
@@ -127,8 +103,6 @@ const ActivityTable = () => {
     []
   );
 
-  const { navigateToResourceResults } = useDiscoveryRoutes();
-
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
@@ -146,7 +120,7 @@ const ActivityTable = () => {
     <>
       <FidesTableV2
         tableInstance={tableInstance}
-        onRowClick={navigateToResourceResults}
+        onRowClick={onRowClick}
         emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
@@ -163,5 +137,33 @@ const ActivityTable = () => {
     </>
   );
 };
+
+const EMPTY_RESPONSE = {
+  items: [],
+  total: 0,
+  page: 1,
+  size: 50,
+  pages: 1,
+};
+
+const EmptyTableNotice = () => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    borderRadius="base"
+    maxW="70%"
+    data-testid="empty-state"
+    alignSelf="center"
+    margin="auto"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        No activity found
+      </Text>
+      <Text fontSize="sm">You&apos;re up to date!</Text>
+    </VStack>
+  </VStack>
+);
 
 export default ActivityTable;
