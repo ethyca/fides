@@ -1215,7 +1215,9 @@ describe("Consent i18n", () => {
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
             ).contains(t.stacked_purpose_example);
           }
-          cy.get(".fides-notice-toggle-title").contains(title).click();
+          cy.get(".fides-notice-toggle-title")
+            .contains(title)
+            .click({ force: true });
         });
       });
     };
@@ -1509,9 +1511,14 @@ describe("Consent i18n", () => {
     });
   });
 
-  describe.skip("when localizing privacy_center components", () => {
+  describe("when localizing privacy_center components", () => {
     const GEOLOCATION_API_URL = "https://www.example.com/location";
     const VERIFICATION_CODE = "112358";
+    const SETTINGS = {
+      IS_OVERLAY_ENABLED: true,
+      IS_GEOLOCATION_ENABLED: true,
+      GEOLOCATION_API_URL,
+    };
 
     const beforeAll = () => {
       cy.clearAllCookies();
@@ -1573,7 +1580,8 @@ describe("Consent i18n", () => {
         beforeAll();
         cy.visitWithLanguage("/consent", SPANISH_LOCALE);
         cy.getByTestId("consent");
-        cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.overrideSettings(SETTINGS);
+        cy.wait("@getExperience");
       });
 
       it("displays localized text from experience", () => {
@@ -1626,15 +1634,9 @@ describe("Consent i18n", () => {
       beforeEach(() => {
         beforeAll();
 
-        cy.intercept("GET", `${API_URL}/id-verification/config`, {
-          body: {
-            identity_verification_required: true,
-          },
-        }).as("getVerificationConfig");
-
         cy.visitWithLanguage("/", SPANISH_LOCALE);
         cy.wait("@getVerificationConfig");
-        cy.overrideSettings({ IS_OVERLAY_ENABLED: true });
+        cy.overrideSettings(SETTINGS);
         cy.wait("@getExperience");
         cy.getByTestId("card").contains("Manage your consent").click();
         cy.getByTestId("consent-request-form").within(() => {
