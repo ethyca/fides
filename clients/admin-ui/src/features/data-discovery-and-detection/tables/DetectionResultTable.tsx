@@ -9,7 +9,6 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { formatDistance } from "date-fns";
 import { useEffect, useMemo } from "react";
 
 import {
@@ -20,6 +19,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
@@ -118,15 +118,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       columnHelper.accessor((row) => row.modified, {
         id: "time",
         cell: (props) => (
-          <DefaultCell
-            value={formatDistance(
-              new Date(props.getValue() ?? new Date()),
-              new Date(),
-              {
-                addSuffix: true,
-              }
-            )}
-          />
+          <RelativeTimestampCell time={props.getValue() ?? new Date()} />
         ),
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
       }),
