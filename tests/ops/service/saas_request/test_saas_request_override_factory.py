@@ -23,6 +23,16 @@ def uuid():
     return str(uuid4())
 
 
+def valid_test_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+) -> None:
+    """
+    A sample override function for test requests with a valid function signature
+    """
+    pass
+
+
 def valid_read_override(
     client: AuthenticatedClient,
     node: TraversalNode,
@@ -69,6 +79,20 @@ class TestSaasRequestOverrideFactory:
     """
     Unit tests on SaaS request override factory functionality
     """
+
+    def test_register_test(self):
+        """
+        Test registering a valid `test` override function
+        """
+        f_id = uuid()
+        register(f_id, SaaSRequestType.TEST)(valid_test_override)
+        assert valid_test_override == SaaSRequestOverrideFactory.get_override(
+            f_id, SaaSRequestType.TEST
+        )
+
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
 
     def test_register_read(self):
         """
@@ -174,6 +198,34 @@ class TestSaasRequestOverrideFactory:
         assert valid_read_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.READ
         )
+
+    def test_register_invalid_test(self):
+        """
+        Test registering some invalid `test` override functions is handled
+        as expected
+        """
+        f_id = uuid()
+
+        def too_few_params(client: AuthenticatedClient) -> List[Row]:
+            pass
+
+        def no_params() -> List[Row]:
+            pass
+
+        params_functions = [too_few_params, no_params]
+
+        def assert_validation_error(override_function: Callable, exc_string: str):
+            with pytest.raises(InvalidSaaSRequestOverrideException) as exc:
+                register(f_id, SaaSRequestType.TEST)(override_function)
+            assert exc_string in str(exc.value)
+            with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+                SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.TEST)
+            assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
+
+        for override_function in params_functions:
+            assert_validation_error(
+                override_function, "must declare at least 2 parameters"
+            )
 
     def test_register_invalid_read(self):
         """

@@ -15,18 +15,16 @@ from fides.api.util.collection_util import Row
 
 
 @register("marigold_engage_test", [SaaSRequestType.TEST])
-def marigold_engage_test(
-    client: AuthenticatedClient, secrets: Dict[str, Any]
-) -> None:
+def marigold_engage_test(client: AuthenticatedClient, secrets: Dict[str, Any]) -> None:
     """
     Calls Marigold Engage's `GET /list` endpoint with a signed payload.
     """
-    
+
     client.send(
         SaaSRequestParams(
             method=HTTPMethod.GET,
             path="/list",
-            query_params=signed_payload(secrets, {})
+            query_params=signed_payload(secrets, {}),
         )
     )
 
