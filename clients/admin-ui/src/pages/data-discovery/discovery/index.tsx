@@ -5,6 +5,7 @@ import { DATA_DISCOVERY_ROUTE } from "~/features/common/nav/v2/routes";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import ActivityTable from "~/features/data-discovery-and-detection/tables/ActivityTable";
+import { DiffStatus } from "~/types/api";
 
 const DataDiscoveryActivityPage = () => {
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
@@ -26,6 +27,10 @@ const DataDiscoveryActivityPage = () => {
         onRowClick={(row) =>
           navigateToDiscoveryResults({ resourceUrn: row.urn })
         }
+        statusFilters={[
+          DiffStatus.CLASSIFICATION_ADDITION,
+          DiffStatus.CLASSIFICATION_UPDATE,
+        ]}
       />
     </FixedLayout>
   );
