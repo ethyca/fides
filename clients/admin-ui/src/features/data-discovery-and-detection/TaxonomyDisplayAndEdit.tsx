@@ -1,19 +1,25 @@
-import { Badge, Box, EditIcon, Select } from "@fidesui/react";
+import { Badge, Box, EditIcon } from "@fidesui/react";
+import { Options, OptionsOrGroups, Select } from "chakra-react-select";
 import { useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { StagedResource } from "~/types/api";
+import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
 
 interface TaxonomyDisplayAndEditProps {
   fidesLangKey?: string;
   isEditable?: boolean;
+  resource: StagedResource;
 }
 
 const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
   fidesLangKey,
   isEditable = false,
+  resource,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { getDataCategoryDisplayName, getDataCategories } = useTaxonomies();
+  const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
   const dataCategories = getDataCategories();
 
   if (!fidesLangKey) {
@@ -28,7 +34,26 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
     setIsEditing(true);
   };
 
-  const categoryDisplayName = getDataCategoryDisplayName(fidesLangKey);
+  const categoryDisplayName = getDataCategoryDisplayName(
+    resource.user_assigned_data_categories?.length
+      ? resource.user_assigned_data_categories[0]
+      : fidesLangKey
+  );
+
+  const handleCategoryChange = ({ value }) => {
+    updateResourceCategoryMutation({
+      staged_resource_urn: resource.urn,
+      monitor_config_id: resource.monitor_config_id,
+      user_assigned_data_categories: [value],
+    });
+  };
+
+  const options: Options<{ value: string; label: string }> = dataCategories.map(
+    (category) => ({
+      value: category.fides_key,
+      label: getDataCategoryDisplayName(category.fides_key),
+    })
+  );
 
   return (
     <Box display="flex" h="100%" alignItems="center" position="relative">
@@ -54,16 +79,13 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
         >
           <Select
             placeholder="Select option"
-            value={fidesLangKey}
-            height={35}
-            onChange={() => {}}
-          >
-            {dataCategories.map((category) => (
-              <option value={category.fides_key} key={category.fides_key}>
-                {category.name}
-              </option>
-            ))}
-          </Select>
+            defaultValue={fidesLangKey}
+            onChange={handleCategoryChange}
+            options={options}
+            size="sm"
+            menuPosition="absolute"
+            menuPlacement="auto"
+          />
         </Box>
       )}
     </Box>
