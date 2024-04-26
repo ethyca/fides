@@ -1,3 +1,4 @@
+import { Flex } from "@fidesui/react";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
@@ -74,6 +75,7 @@ const useDiscoveryResultColumns = ({
             />
           );
         },
+        meta: { overflow: "visible" },
         header: "Data category",
         minSize: 240, // keep a minimum width so the Select has space to display the options properly
       }),

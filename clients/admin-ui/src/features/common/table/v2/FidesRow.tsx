@@ -8,6 +8,7 @@ type Props<T> = {
   onRowClick?: (row: T) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   displayAllColumns: string[];
+  overflow={overflow}
 };
 
 export const FidesRow = <T,>({
