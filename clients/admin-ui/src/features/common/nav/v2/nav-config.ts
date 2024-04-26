@@ -410,7 +410,6 @@ export const configureNavGroups = ({
       title: group.title,
       children: [],
     };
-    navGroups.push(navGroup);
 
     group.routes.forEach((route) => {
       const routeConfig = configureNavRoute({
@@ -425,6 +424,11 @@ export const configureNavGroups = ({
         navGroup.children.push(routeConfig);
       }
     });
+
+    // Add navgroup if it has routes available
+    if (navGroup.children.length) {
+      navGroups.push(navGroup);
+    }
   });
 
   return navGroups;
