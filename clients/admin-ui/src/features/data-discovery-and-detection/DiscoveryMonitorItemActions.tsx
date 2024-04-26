@@ -20,7 +20,7 @@ import ActionButton from "./ActionButton";
 
 import {
   useAcceptResourceMutation,
-  useMonitorResourceMutation,
+  useConfirmResourceMutation,
   useMuteResourceMutation,
   useUnmuteResourceMutation,
 } from "./discovery-detection.slice";
@@ -34,7 +34,7 @@ interface DiscoveryMonitorItemActionsProps {
 const DiscoveryMonitorItemActions: React.FC<
   DiscoveryMonitorItemActionsProps
 > = ({ resource, resourceType }) => {
-  const [monitorResourceMutation] = useMonitorResourceMutation();
+  const [monitorResourceMutation] = useConfirmResourceMutation();
   const [acceptResourceMutation] = useAcceptResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
   const [unmuteResourceMutation] = useUnmuteResourceMutation();

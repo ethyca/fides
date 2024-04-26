@@ -9,12 +9,7 @@ import {
 } from "@fidesui/react";
 import { useState } from "react";
 
-import {
-  ClassificationStatus,
-  DiffStatus,
-  MonitorStatus,
-  StagedResource,
-} from "~/types/api";
+import { DiffStatus, StagedResource } from "~/types/api";
 import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
 import { TrashCanOutlineIcon } from "../common/Icon/TrashCanOutlineIcon";
@@ -22,7 +17,7 @@ import ActionButton from "./ActionButton";
 
 import {
   useAcceptResourceMutation,
-  useMonitorResourceMutation,
+  useConfirmResourceMutation,
   useMuteResourceMutation,
   useUnmuteResourceMutation,
 } from "./discovery-detection.slice";
@@ -37,8 +32,10 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
   resource,
   resourceType,
 }) => {
-  const [monitorResourceMutation] = useMonitorResourceMutation();
+  const [confirmResourceMutation] = useConfirmResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
+  const [unmuteResourceMutation] = useUnmuteResourceMutation();
+
   const [acceptResourceMutation] = useAcceptResourceMutation();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
@@ -55,12 +52,15 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
   // Tables and field levels can mute/unmute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
 
-  const showStartMonitoringAction =
-    isSchemaType &&
-    (diffStatus === undefined || diffStatus === DiffStatus.MUTED);
-  const showStopMonitoringAction =
-    isSchemaType && diffStatus !== DiffStatus.MUTED;
-  const showRemoveAction = isSchemaType && diffStatus === DiffStatus.REMOVAL;
+  const showStartMonitoringAction = isSchemaType && diffStatus === undefined;
+  const showMuteAction = diffStatus !== DiffStatus.MUTED;
+  const showUnmuteAction = diffStatus === DiffStatus.MUTED;
+  const showConfirmAction =
+    childDiffStatus &&
+    (childDiffStatus[DiffStatus.ADDITION] ||
+      childDiffStatus[DiffStatus.REMOVAL]);
+
+  const showRemoveAction = diffStatus === DiffStatus.REMOVAL;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
@@ -70,7 +70,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           icon={<MonitorOnIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
-            await monitorResourceMutation({
+            await confirmResourceMutation({
               staged_resource_urn: resource.urn,
               monitor_config_id: resource.monitor_config_id,
             });
@@ -79,10 +79,10 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           disabled={isProcessingAction}
         />
       )}
-      {showStopMonitoringAction && (
+      {showMuteAction && (
         <ActionButton
           title="Ignore"
-          icon={<MonitorOffIcon />}
+          icon={isSchemaType ? <MonitorOffIcon /> : <ViewOffIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
             await muteResourceMutation({
@@ -93,6 +93,36 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           disabled={isProcessingAction}
         />
       )}
+      {showUnmuteAction && (
+        <ActionButton
+          title="Monitor"
+          icon={isSchemaType ? <MonitorOnIcon /> : <ViewIcon />}
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await unmuteResourceMutation({
+              staged_resource_urn: resource.urn,
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
+        />
+      )}
+      {showConfirmAction && (
+        <ActionButton
+          title="Confirm"
+          icon={<CheckIcon />}
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await confirmResourceMutation({
+              staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id,
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
+        />
+      )}
+
       {showRemoveAction && (
         <ActionButton
           title="Drop"
