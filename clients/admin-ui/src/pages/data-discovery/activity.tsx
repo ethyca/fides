@@ -38,8 +38,18 @@ const DataDiscoveryAndDetectionActivityPage = () => {
       />
       <ActivityTable
         onRowClick={navigateToResourceResults}
-        statusFilters={[DiffStatus.ADDITION, DiffStatus.REMOVAL]}
-        childsStatusFilters={[DiffStatus.ADDITION, DiffStatus.REMOVAL]}
+        statusFilters={[
+          DiffStatus.ADDITION,
+          DiffStatus.REMOVAL,
+          DiffStatus.CLASSIFICATION_ADDITION,
+          DiffStatus.CLASSIFICATION_UPDATE,
+        ]}
+        childsStatusFilters={[
+          DiffStatus.ADDITION,
+          DiffStatus.REMOVAL,
+          DiffStatus.CLASSIFICATION_ADDITION,
+          DiffStatus.CLASSIFICATION_UPDATE,
+        ]}
       />
     </FixedLayout>
   );

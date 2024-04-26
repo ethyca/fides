@@ -22,7 +22,7 @@ import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/us
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
-import { StagedResource } from "~/types/api";
+import { DiffStatus, StagedResource } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -57,6 +57,16 @@ interface MonitorResultTableProps {
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
+  const diffStatusFilter: DiffStatus[] = [
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+  ];
+
+  const childDiffStatusFilter: DiffStatus[] = [
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+  ];
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -79,6 +89,8 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
+    child_diff_status: childDiffStatusFilter,
+    diff_status: diffStatusFilter,
   });
 
   const resourceType = findResourceType(

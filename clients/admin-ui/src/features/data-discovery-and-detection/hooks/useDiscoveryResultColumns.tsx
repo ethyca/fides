@@ -4,6 +4,7 @@ import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import DiscoveryItemActions from "../DiscoveryItemActions";
 
 import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
 
@@ -39,7 +40,7 @@ const useDiscoveryResultColumns = ({
       }),
       columnHelper.display({
         id: "actions",
-        cell: () => <DefaultCell value="actions (placeholder)" />,
+        cell: (props) => <DiscoveryItemActions resource={props.row.original} />,
         header: "Actions",
       }),
     ];
