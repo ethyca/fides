@@ -14,9 +14,20 @@ const findResourceChangeType = (resource: StagedResource) => {
   ) {
     return ResourceChangeType.CLASSIFICATION;
   }
+  if (!resource.child_diff_statuses) {
+    return ResourceChangeType.NONE;
+  }
+
   if (
-    resource.child_diff_statuses?.addition ||
-    resource.child_diff_statuses?.removal
+    resource.child_diff_statuses[DiffStatus.CLASSIFICATION_ADDITION] ||
+    resource.child_diff_statuses[DiffStatus.CLASSIFICATION_UPDATE]
+  ) {
+    return ResourceChangeType.CLASSIFICATION;
+  }
+
+  if (
+    resource.child_diff_statuses[DiffStatus.ADDITION] ||
+    resource.child_diff_statuses[DiffStatus.REMOVAL]
   ) {
     return ResourceChangeType.CHANGE;
   }
