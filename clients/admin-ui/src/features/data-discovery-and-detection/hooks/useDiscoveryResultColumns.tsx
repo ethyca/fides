@@ -70,6 +70,7 @@ const useDiscoveryResultColumns = ({
             <TaxonomyDisplayAndEdit
               fidesLangKey={bestTaxonomyMatch?.label}
               isEditable
+              resource={props.row.original}
             />
           );
         },

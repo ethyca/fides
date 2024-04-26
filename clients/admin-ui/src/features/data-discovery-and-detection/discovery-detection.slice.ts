@@ -37,6 +37,12 @@ interface ResourceActionQueryParams {
   staged_resource_urn?: string;
 }
 
+interface ChangeResourceCategoryQueryParam {
+  staged_resource_urn: string;
+  user_assigned_data_categories: string[];
+  monitor_config_id: string;
+}
+
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllMonitors: build.query<
@@ -97,6 +103,23 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    updateResourceCategory: build.mutation<
+      any,
+      ChangeResourceCategoryQueryParam
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/results`,
+        body: [
+          {
+            urn: params.staged_resource_urn,
+            user_assigned_data_categories: params.user_assigned_data_categories,
+          },
+        ],
+      }),
+
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -107,6 +130,7 @@ export const {
   useMuteResourceMutation,
   useConfirmResourceMutation,
   useUnmuteResourceMutation,
+  useUpdateResourceCategoryMutation,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({
