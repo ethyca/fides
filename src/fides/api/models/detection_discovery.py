@@ -35,11 +35,11 @@ class StagedResource(Base):
     Base DB model that represents a staged resource, fields common to all types of staged resources
     """
 
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=True)
     urn = Column(String, index=True, unique=True, nullable=False)
-    resource_type = Column(String, index=True, nullable=False)
+    resource_type = Column(String, index=True, nullable=True)
     description = Column(String, nullable=True)
-    monitor_config_id = Column(String, nullable=False)  # just a "soft" pointer, for now
+    monitor_config_id = Column(String, nullable=True)  # just a "soft" pointer, for now
     source_modified = Column(
         DateTime(timezone=True),
         nullable=True,
@@ -84,7 +84,7 @@ class StagedResource(Base):
     )
 
     @classmethod
-    def get_urn(cls, db: Session, urn: str):
+    def get_urn(cls, db: Session, urn: str) -> StagedResource:
         return cls.get_by(db=db, field="urn", value=urn)
 
     def add_child_diff_status(self, diff_status: DiffStatus):
