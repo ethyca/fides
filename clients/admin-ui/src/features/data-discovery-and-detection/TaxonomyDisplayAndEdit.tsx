@@ -56,7 +56,13 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
   );
 
   return (
-    <Box display="flex" h="100%" alignItems="center" position="relative">
+    <Box
+      display="flex"
+      h="100%"
+      alignItems="center"
+      position="relative"
+      width="100%"
+    >
       <Badge
         fontWeight="normal"
         textTransform="none"
@@ -70,7 +76,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
         <Box
           className="select-wrapper"
           position="absolute"
-          zIndex={1}
+          zIndex={10}
           top="0"
           left="0"
           width="100%"

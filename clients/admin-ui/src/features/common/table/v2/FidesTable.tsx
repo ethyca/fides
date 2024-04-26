@@ -41,6 +41,7 @@ declare module "@tanstack/table-core" {
     maxWidth?: string;
     displayText?: string;
     showHeaderMenu?: boolean;
+    overflow?: "auto" | "visible" | "hidden";
   }
 }
 /* eslint-enable */
