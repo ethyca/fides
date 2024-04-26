@@ -40,7 +40,6 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: smart_lists
-          # the vars here could be holding any kind of data, I'm not sure how best to cope with that
           - name: vars
           - name: purchases
           - name: device
