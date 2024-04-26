@@ -1,4 +1,4 @@
 export enum ResourceActivityTypeEnum {
-  DATASET = "DATASET",
-  CLASSIFICATION = "CLASSIFICATION",
+  DATASET = "Dataset",
+  CLASSIFICATION = "Classification",
 }

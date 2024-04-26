@@ -24,8 +24,7 @@ import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detecti
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import { Database, DiffStatus, StagedResource } from "~/types/api";
 
-import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
-import findActivityType from "../utils/findResourceActivityType";
+import findActivityType from "../utils/getResourceActivityLabel";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -107,17 +106,11 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
-      columnHelper.accessor(
-        (resource) =>
-          findActivityType(resource) === ResourceActivityTypeEnum.DATASET
-            ? "Dataset"
-            : "Classification",
-        {
-          id: "type",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
-          header: (props) => <DefaultHeaderCell value="Type" {...props} />,
-        }
-      ),
+      columnHelper.accessor((resource) => findActivityType(resource), {
+        id: "type",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+      }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
         cell: (props) => <DefaultCell value={props.getValue()} />,
