@@ -456,8 +456,6 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         privacy_request,
         integration_postgres_config,
         example_datasets,
-        dsr_version,
-        request,
     ) -> None:
         """Assert that disabling a collection while the privacy request is in progress can affect the current execution plan.
         ConnectionConfigs that are disabled while a request is in progress will be skipped after the current session is committed.
