@@ -49,7 +49,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||
-    (!isSchemaType && diffStatus === DiffStatus.ADDITION);
+    diffStatus === DiffStatus.ADDITION;
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showUnmuteAction = diffStatus === DiffStatus.MUTED;
   const showConfirmAction =
