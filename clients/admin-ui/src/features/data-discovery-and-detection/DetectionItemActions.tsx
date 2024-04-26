@@ -46,10 +46,11 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
   // We enable monitor / stop monitoring at the schema level only
   // Tables and field levels can mute/unmute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
+  const isFieldType = resourceType === StagedResourceType.FIELD;
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||
-    diffStatus === DiffStatus.ADDITION;
+    (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showUnmuteAction = diffStatus === DiffStatus.MUTED;
   const showConfirmAction =
