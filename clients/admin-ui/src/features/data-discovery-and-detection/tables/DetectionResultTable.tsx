@@ -3,7 +3,6 @@
 import { Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
-  createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
@@ -12,22 +11,18 @@ import {
 import { useEffect, useMemo } from "react";
 
 import {
-  DefaultCell,
-  DefaultHeaderCell,
   FidesTableV2,
   PaginationBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import useDetectionResultColumns from "~/features/data-discovery-and-detection/hooks/useDetectionResultColumns";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
-import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import { StagedResource } from "~/types/api";
-import DetectionItemAction from "../DetectionItemActions";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -36,8 +31,6 @@ const EMPTY_RESPONSE = {
   size: 50,
   pages: 1,
 };
-
-const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
 const EmptyTableNotice = () => (
   <VStack
@@ -92,7 +85,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     resources?.items[0] as DiscoveryMonitorItem
   );
 
-  const isField = resourceType === StagedResourceType.FIELD;
+  const { columns } = useDetectionResultColumns({ resourceType });
 
   const {
     items: data,
@@ -104,51 +97,18 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(() => {
-    const columns = [
-      columnHelper.accessor((row) => row.name, {
-        id: "name",
-        cell: (props) => <ResultStatusCell result={props.row.original} />,
-        header: (props) => <DefaultHeaderCell value="Name" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.monitor_config_id, {
-        id: "monitor",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.modified, {
-        id: "time",
-        cell: (props) => (
-          <RelativeTimestampCell time={props.getValue() ?? new Date()} />
-        ),
-        header: (props) => <DefaultHeaderCell value="When" {...props} />,
-      }),
-    ];
-
-    if (!isField) {
-      const actionColumn: ColumnDef<StagedResource, any> =
-        columnHelper.accessor((row) => row, {
-          id: "action",
-          cell: (props) => (
-            <DetectionItemAction
-              resource={props.getValue()}
-              resourceType={findResourceType(props.getValue())}
-            />
-          ),
-          header: (props) => <DefaultHeaderCell value="Action" {...props} />,
-        });
-      columns.push(actionColumn);
-    }
-
-    return columns;
-  }, [isField]);
+  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
+    () => columns,
+    [columns]
+  );
 
   const { navigateToDetectionResults } = useDiscoveryRoutes();
 
-  const handleRowClicked = !isField
-    ? (row: StagedResource) =>
-        navigateToDetectionResults({ resourceUrn: row.urn })
-    : undefined;
+  const handleRowClicked =
+    resourceType !== StagedResourceType.FIELD
+      ? (row: StagedResource) =>
+          navigateToDetectionResults({ resourceUrn: row.urn })
+      : undefined;
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),

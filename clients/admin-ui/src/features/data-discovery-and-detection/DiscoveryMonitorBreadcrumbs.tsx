@@ -1,8 +1,6 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@fidesui/react";
 import Link from "next/link";
 
-import useDiscoveryRoutes from "./hooks/useDiscoveryRoutes";
-
 interface DiscoveryMonitorBreadcrumbsProps {
   resourceUrn?: string;
   parentTitle: string;
@@ -13,8 +11,6 @@ interface DiscoveryMonitorBreadcrumbsProps {
 const DiscoveryMonitorBreadcrumbs: React.FC<
   DiscoveryMonitorBreadcrumbsProps
 > = ({ resourceUrn, parentTitle, parentLink, onPathClick = () => {} }) => {
-  const {} = useDiscoveryRoutes();
-
   const urnParts = resourceUrn ? resourceUrn.split(".") : [];
 
   return (
@@ -38,8 +34,9 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
       ) : null}
 
       {urnParts.map((urnPart, index) => {
-        // don't display  first part of the url since it's the monitor id again
-        if (index === 0) {
+        // don't display the first or second parts of the URN (monitor ID or
+        // database) because there's no table view for them
+        if (index === 0 || index === 1) {
           return null;
         }
 

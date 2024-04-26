@@ -4,33 +4,28 @@ import { CircleIcon } from "~/features/common/Icon/CircleIcon";
 import { RightDownArrowIcon } from "~/features/common/Icon/RightDownArrowIcon";
 import { RightUpArrowIcon } from "~/features/common/Icon/RightUpArrowIcon";
 import { TagIcon } from "~/features/common/Icon/TagIcon";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
+import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
+import { StagedResource } from "~/types/api";
 
-const getResourceChangeIcon = (resource: StagedResource) => {
-  if (resource.diff_status === DiffStatus.ADDITION) {
-    return <RightUpArrowIcon color="green.400" boxSize={2} mr={2} />;
+const getResourceChangeIcon = (changeType: ResourceChangeType) => {
+  switch (changeType) {
+    case ResourceChangeType.ADDITION:
+      return <RightUpArrowIcon color="green.400" boxSize={2} mr={2} />;
+    case ResourceChangeType.REMOVAL:
+      return <RightDownArrowIcon color="red.400" boxSize={2} mr={2} />;
+    case ResourceChangeType.CLASSIFICATION:
+      return <TagIcon color="orange.400" boxSize={3} mr={2} />;
+    case ResourceChangeType.CHANGE:
+      return <CircleIcon color="blue.400" boxSize={2} mr={2} />;
+    default:
+      return null;
   }
-  if (resource.diff_status === DiffStatus.REMOVAL) {
-    return <RightDownArrowIcon color="red.400" boxSize={2} mr={2} />;
-  }
-  if (
-    resource.diff_status === DiffStatus.CLASSIFICATION_ADDITION ||
-    resource.diff_status === DiffStatus.CLASSIFICATION_UPDATE
-  ) {
-    return <TagIcon color="orange.400" boxSize={3} mr={2} />;
-  }
-  if (
-    resource.child_diff_statuses!.addition ||
-    resource.child_diff_statuses!.removal
-  ) {
-    return <CircleIcon color="blue.400" boxSize={2} mr={2} />;
-  }
-  return null;
 };
 
 const ResultStatusCell = ({ result }: { result: StagedResource }) => (
   <Flex alignItems="center" height="100%">
-    {getResourceChangeIcon(result)}
+    {getResourceChangeIcon(findResourceChangeType(result))}
     <Text
       fontSize="xs"
       lineHeight={4}

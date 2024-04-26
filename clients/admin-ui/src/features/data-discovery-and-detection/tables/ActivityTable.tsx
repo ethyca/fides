@@ -22,10 +22,9 @@ import {
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
-import { Database, StagedResource } from "~/types/api";
+import { Database, DiffStatus, StagedResource } from "~/types/api";
 
-import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
-import findActivityType from "../utils/findResourceActivityType";
+import findActivityType from "../utils/getResourceActivityLabel";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -59,9 +58,13 @@ const columnHelper = createColumnHelper<Database>();
 
 interface ActivityTableProps {
   onRowClick: (resource: StagedResource) => void;
+  statusFilters?: DiffStatus[];
 }
 
-const ActivityTable: React.FC<ActivityTableProps> = ({ onRowClick }) => {
+const ActivityTable: React.FC<ActivityTableProps> = ({
+  onRowClick,
+  statusFilters,
+}) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -81,6 +84,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({ onRowClick }) => {
     isLoading,
     data: resources,
   } = useGetMonitorResultsQuery({
+    diff_status: statusFilters,
     page: pageIndex,
     size: pageSize,
   });
@@ -102,17 +106,11 @@ const ActivityTable: React.FC<ActivityTableProps> = ({ onRowClick }) => {
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
-      columnHelper.accessor(
-        (resource) =>
-          findActivityType(resource) === ResourceActivityTypeEnum.DATASET
-            ? "Dataset"
-            : "Classification",
-        {
-          id: "type",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
-          header: (props) => <DefaultHeaderCell value="Type" {...props} />,
-        }
-      ),
+      columnHelper.accessor((resource) => findActivityType(resource), {
+        id: "type",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+      }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
         cell: (props) => <DefaultCell value={props.getValue()} />,

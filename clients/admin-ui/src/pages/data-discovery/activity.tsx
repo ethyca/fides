@@ -6,7 +6,7 @@ import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import ActivityTable from "~/features/data-discovery-and-detection/tables/ActivityTable";
 import { ResourceActivityTypeEnum } from "~/features/data-discovery-and-detection/types/ResourceActivityTypeEnum";
-import findActivityType from "~/features/data-discovery-and-detection/utils/findResourceActivityType";
+import findActivityType from "~/features/data-discovery-and-detection/utils/getResourceActivityLabel";
 import { StagedResource } from "~/types/api";
 
 const DataDiscoveryAndDetectionActivityPage = () => {
