@@ -1,8 +1,6 @@
 import {
   ButtonSpinner,
   CheckIcon,
-  CloseIcon,
-  EditIcon,
   HStack,
   ViewIcon,
   ViewOffIcon,
@@ -14,9 +12,9 @@ import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
 import { TrashCanOutlineIcon } from "../common/Icon/TrashCanOutlineIcon";
 import ActionButton from "./ActionButton";
+import { findResourceType } from "./utils/findResourceType";
 
 import {
-  useAcceptResourceMutation,
   useConfirmResourceMutation,
   useMuteResourceMutation,
   useUnmuteResourceMutation,
@@ -25,18 +23,15 @@ import { StagedResourceType } from "./types/StagedResourceType";
 
 interface DetectionItemActionProps {
   resource: StagedResource;
-  resourceType: StagedResourceType;
 }
 
 const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
   resource,
-  resourceType,
 }) => {
+  const resourceType = findResourceType(resource);
   const [confirmResourceMutation] = useConfirmResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
   const [unmuteResourceMutation] = useUnmuteResourceMutation();
-
-  const [acceptResourceMutation] = useAcceptResourceMutation();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
@@ -56,6 +51,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showUnmuteAction = diffStatus === DiffStatus.MUTED;
   const showConfirmAction =
+    diffStatus !== DiffStatus.MUTED &&
     childDiffStatus &&
     (childDiffStatus[DiffStatus.ADDITION] ||
       childDiffStatus[DiffStatus.REMOVAL]);
@@ -101,6 +97,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             setIsProcessingAction(true);
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id,
             });
             setIsProcessingAction(false);
           }}
@@ -129,7 +126,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           icon={<TrashCanOutlineIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
-            await acceptResourceMutation({
+            await confirmResourceMutation({
               staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);

@@ -86,7 +86,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    acceptResource: build.mutation<any, ResourceActionQueryParams>({
+    promoteResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
         params,
         method: "POST",
@@ -100,7 +100,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
 export const {
   useGetAllMonitorsQuery,
   useGetMonitorResultsQuery,
-  useAcceptResourceMutation,
+  usePromoteResourceMutation,
   useMuteResourceMutation,
   useConfirmResourceMutation,
   useUnmuteResourceMutation,

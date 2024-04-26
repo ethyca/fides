@@ -71,12 +71,7 @@ const useDetectionResultColumns = ({
       }),
       columnHelper.display({
         id: "actions",
-        cell: (props) => (
-          <DetectionItemAction
-            resource={props.row.original}
-            resourceType={StagedResourceType.TABLE}
-          />
-        ),
+        cell: (props) => <DetectionItemAction resource={props.row.original} />,
         header: "Actions",
       }),
     ];
@@ -107,12 +102,7 @@ const useDetectionResultColumns = ({
       }),
       columnHelper.display({
         id: "actions",
-        cell: (props) => (
-          <DetectionItemAction
-            resource={props.row.original}
-            resourceType={StagedResourceType.FIELD}
-          />
-        ),
+        cell: (props) => <DetectionItemAction resource={props.row.original} />,
         header: "Actions",
       }),
     ];
