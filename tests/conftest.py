@@ -1232,6 +1232,7 @@ def system_with_undeclared_data_categories(db: Session) -> System:
                             "name": "email",
                             "data_categories": ["user.contact.email"],
                         },
+                        {"name": "first_name"},
                     ],
                 }
             ],
@@ -1266,6 +1267,7 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
                             "name": "email",
                             "data_categories": ["user.contact.email"],
                         },
+                        {"name": "first_name"},
                     ],
                 }
             ],
