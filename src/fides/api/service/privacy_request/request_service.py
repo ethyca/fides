@@ -187,7 +187,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
     can be reprocessed.
     """
     with self.get_new_session() as db:
-        logger.info("Polling for privacy requests awaiting status change")
+        logger.debug("Polling for privacy requests awaiting status change")
         in_progress_privacy_requests = (
             db.query(PrivacyRequest)
             .filter(PrivacyRequest.status == PrivacyRequestStatus.in_processing)
