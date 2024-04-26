@@ -47,11 +47,13 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
   // Tables and field levels can mute/unmute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
 
-  const showStartMonitoringAction = isSchemaType && diffStatus === undefined;
+  const showStartMonitoringAction =
+    (isSchemaType && diffStatus === undefined) ||
+    (!isSchemaType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showUnmuteAction = diffStatus === DiffStatus.MUTED;
   const showConfirmAction =
-    diffStatus !== DiffStatus.MUTED &&
+    diffStatus === DiffStatus.MONITORED &&
     childDiffStatus &&
     (childDiffStatus[DiffStatus.ADDITION] ||
       childDiffStatus[DiffStatus.REMOVAL]);
@@ -97,7 +99,6 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             setIsProcessingAction(true);
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
-              monitor_config_id: resource.monitor_config_id,
             });
             setIsProcessingAction(false);
           }}
@@ -128,6 +129,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             setIsProcessingAction(true);
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id,
             });
             setIsProcessingAction(false);
           }}
