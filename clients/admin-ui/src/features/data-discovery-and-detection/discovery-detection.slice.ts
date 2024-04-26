@@ -57,7 +57,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
-    monitorResource: build.mutation<
+    confirmResource: build.mutation<
       any,
       ResourceActionQueryParams & { monitor_config_id: string }
     >({
@@ -100,7 +100,7 @@ export const {
   useGetMonitorResultsQuery,
   useAcceptResourceMutation,
   useMuteResourceMutation,
-  useMonitorResourceMutation,
+  useConfirmResourceMutation,
   useUnmuteResourceMutation,
 } = discoveryDetectionApi;
 
