@@ -142,9 +142,9 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
-    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
+    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -1160,9 +1160,9 @@ def _approve_request(
         "action": AuditLogAction.approved,
         "message": "",
         "user_id": user_id if user_id else None,
-        "webhook_id": webhook_id
-        if webhook_id
-        else None,  # the last webhook reply received is what approves the entire request
+        "webhook_id": (
+            webhook_id if webhook_id else None
+        ),  # the last webhook reply received is what approves the entire request
     }
     AuditLog.create(
         db=db,
@@ -1226,11 +1226,11 @@ def deny_privacy_request(
     user_id = client.user_id
 
     def _deny_request(
-            db: Session,
-            config_proxy: ConfigProxy,
-            privacy_request: PrivacyRequest,
-            webhook_id: Optional[str],
-            user_id: Optional[str],
+        db: Session,
+        config_proxy: ConfigProxy,
+        privacy_request: PrivacyRequest,
+        webhook_id: Optional[str],
+        user_id: Optional[str],
     ) -> None:
         """Method for how to process requests - denied"""
         privacy_request.status = PrivacyRequestStatus.denied
