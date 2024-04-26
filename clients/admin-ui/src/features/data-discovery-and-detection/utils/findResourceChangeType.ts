@@ -8,6 +8,7 @@ const findResourceChangeType = (resource: StagedResource) => {
   if (resource.diff_status === DiffStatus.REMOVAL) {
     return ResourceChangeType.REMOVAL;
   }
+
   if (
     resource.diff_status === DiffStatus.CLASSIFICATION_ADDITION ||
     resource.diff_status === DiffStatus.CLASSIFICATION_UPDATE

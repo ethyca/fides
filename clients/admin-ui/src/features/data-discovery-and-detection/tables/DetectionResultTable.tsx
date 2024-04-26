@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Text, VStack } from "@fidesui/react";
+import { Flex, Switch, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -8,11 +8,12 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   FidesTableV2,
   PaginationBar,
+  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
@@ -57,10 +58,17 @@ interface MonitorResultTableProps {
 }
 
 const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
+  const [isShowingFullSchema, setIsShowingFullSchema] =
+    useState<boolean>(false);
+
   const diffStatusFilter: DiffStatus[] = [
     DiffStatus.ADDITION,
     DiffStatus.REMOVAL,
   ];
+  if (isShowingFullSchema) {
+    diffStatusFilter.push(DiffStatus.MONITORED);
+    diffStatusFilter.push(DiffStatus.MUTED);
+  }
 
   const childDiffStatusFilter: DiffStatus[] = [
     DiffStatus.ADDITION,
@@ -137,6 +145,23 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
+      <TableActionBar>
+        <Flex
+          direction="row"
+          alignItems="center"
+          justifyContent="flex-end"
+          width="full"
+        >
+          <Switch
+            size="sm"
+            isChecked={isShowingFullSchema}
+            onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
+          />
+          <Text marginLeft={1} fontSize="xs" fontWeight={"medium"}>
+            Show full schema
+          </Text>
+        </Flex>
+      </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
