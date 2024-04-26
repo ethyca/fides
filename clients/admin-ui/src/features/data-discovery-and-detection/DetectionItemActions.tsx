@@ -58,7 +58,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
     (childDiffStatus[DiffStatus.ADDITION] ||
       childDiffStatus[DiffStatus.REMOVAL]);
 
-  const showRemoveAction = diffStatus === DiffStatus.REMOVAL;
+  const showRemoveAction = false;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
