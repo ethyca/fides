@@ -73,9 +73,9 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       ResourceActionQueryParams & { monitor_config_id: string }
     >({
       query: (params) => ({
-        params,
         method: "POST",
         url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm`,
+        params: {},
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
