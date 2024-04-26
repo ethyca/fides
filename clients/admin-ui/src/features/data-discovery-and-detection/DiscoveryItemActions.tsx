@@ -1,7 +1,7 @@
 import { ButtonSpinner, CheckIcon, HStack } from "@fidesui/react";
 import { useState } from "react";
 
-import { StagedResource } from "~/types/api";
+import { DiffStatus, StagedResource } from "~/types/api";
 import ActionButton from "./ActionButton";
 import { findResourceType } from "./utils/findResourceType";
 
@@ -20,14 +20,25 @@ const DiscoveryItemActions: React.FC<DiscoveryItemActionsProps> = ({
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
-  const {} = resource;
+  const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
+    resource;
 
   // No actions for database level
   if (resourceType === StagedResourceType.DATABASE) {
     return null;
   }
 
-  const showPromoteAction = true;
+  const itemHasClassificationChanges =
+    diffStatus === DiffStatus.CLASSIFICATION_ADDITION ||
+    diffStatus === DiffStatus.CLASSIFICATION_UPDATE;
+
+  const childItemsHaveClassificationChanges =
+    childDiffStatus &&
+    (childDiffStatus[DiffStatus.CLASSIFICATION_ADDITION] ||
+      childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE]);
+
+  const showPromoteAction =
+    itemHasClassificationChanges || childItemsHaveClassificationChanges;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
