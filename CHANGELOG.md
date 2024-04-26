@@ -16,6 +16,8 @@ The types of changes are:
 - `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.35.0...main)
+### Added
+- Added access and erasure support for Marigold Engage by Sailthru integration [#4826](https://github.com/ethyca/fides/pull/4826)
 
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 
