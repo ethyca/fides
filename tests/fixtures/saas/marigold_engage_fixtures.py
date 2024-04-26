@@ -15,6 +15,7 @@ from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("marigold_engage")
 
+
 @pytest.fixture(scope="session")
 def marigold_engage_secrets(saas_config) -> Dict[str, Any]:
     return {
