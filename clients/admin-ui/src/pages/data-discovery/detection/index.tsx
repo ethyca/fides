@@ -17,7 +17,6 @@ const DataDetectionActivityPage = () => (
       parentTitle="Data detection"
       parentLink={DATA_DETECTION_ROUTE}
     />
-
     <DetectionResultTable />
   </FixedLayout>
 );

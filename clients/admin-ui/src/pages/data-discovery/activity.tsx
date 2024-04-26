@@ -7,7 +7,7 @@ import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/us
 import ActivityTable from "~/features/data-discovery-and-detection/tables/ActivityTable";
 import { ResourceActivityTypeEnum } from "~/features/data-discovery-and-detection/types/ResourceActivityTypeEnum";
 import findActivityType from "~/features/data-discovery-and-detection/utils/getResourceActivityLabel";
-import { StagedResource } from "~/types/api";
+import { DiffStatus, StagedResource } from "~/types/api";
 
 const DataDiscoveryAndDetectionActivityPage = () => {
   const { navigateToDetectionResults, navigateToDiscoveryResults } =
@@ -36,7 +36,11 @@ const DataDiscoveryAndDetectionActivityPage = () => {
         parentTitle="Detection & discovery"
         parentLink={DETECTION_DISCOVERY_ACTIVITY_ROUTE}
       />
-      <ActivityTable onRowClick={navigateToResourceResults} />
+      <ActivityTable
+        onRowClick={navigateToResourceResults}
+        statusFilters={[DiffStatus.ADDITION, DiffStatus.REMOVAL]}
+        childsStatusFilters={[DiffStatus.ADDITION, DiffStatus.REMOVAL]}
+      />
     </FixedLayout>
   );
 };

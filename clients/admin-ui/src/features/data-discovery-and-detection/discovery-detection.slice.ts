@@ -1,4 +1,5 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
+import queryString from "query-string";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
@@ -27,6 +28,7 @@ interface MonitorQueryParams {
 interface MonitorResultQueryParams {
   staged_resource_urn?: string;
   diff_status?: DiffStatus[];
+  child_diff_status?: DiffStatus[];
   page?: number;
   size?: number;
 }
@@ -53,9 +55,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       MonitorResultQueryParams
     >({
       query: (params) => ({
-        params,
         method: "GET",
-        url: `/plus/discovery-monitor/results`,
+        url: `/plus/discovery-monitor/results?${queryString.stringify(params, {
+          arrayFormat: "none",
+        })}`,
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
