@@ -31,6 +31,10 @@ const DataDiscoveryActivityPage = () => {
           DiffStatus.CLASSIFICATION_ADDITION,
           DiffStatus.CLASSIFICATION_UPDATE,
         ]}
+        childsStatusFilters={[
+          DiffStatus.CLASSIFICATION_ADDITION,
+          DiffStatus.CLASSIFICATION_UPDATE,
+        ]}
       />
     </FixedLayout>
   );

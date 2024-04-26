@@ -62,11 +62,13 @@ const columnHelper = createColumnHelper<Database>();
 interface ActivityTableProps {
   onRowClick: (resource: StagedResource) => void;
   statusFilters?: DiffStatus[];
+  childsStatusFilters?: DiffStatus[];
 }
 
 const ActivityTable: React.FC<ActivityTableProps> = ({
   onRowClick,
   statusFilters,
+  childsStatusFilters,
 }) => {
   const {
     PAGE_SIZES,
@@ -88,6 +90,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
     data: resources,
   } = useGetMonitorResultsQuery({
     diff_status: statusFilters,
+    child_diff_status: childsStatusFilters,
     page: pageIndex,
     size: pageSize,
   });

@@ -25,8 +25,6 @@ const DataDiscoveryActivityPage = () => {
           navigateToDiscoveryResults({ resourceUrn })
         }
       />
-
-      {/* TODO: Add filters to get appropiate results */}
       <DiscoveryResultTable resourceUrn={resourceUrn} />
     </FixedLayout>
   );
