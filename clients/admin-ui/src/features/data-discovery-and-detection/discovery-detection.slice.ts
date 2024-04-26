@@ -97,9 +97,13 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     promoteResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
-        params,
         method: "POST",
-        url: `/plus/discovery-monitor/${params.staged_resource_urn}/promote`,
+        url: `/plus/discovery-monitor/promote?${queryString.stringify(
+          { staged_resource_urns: [params.staged_resource_urn] },
+          {
+            arrayFormat: "none",
+          }
+        )}`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),

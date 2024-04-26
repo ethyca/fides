@@ -82,6 +82,11 @@ const useDiscoveryResultColumns = ({
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
       }),
+      columnHelper.display({
+        id: "actions",
+        cell: (props) => <DiscoveryItemActions resource={props.row.original} />,
+        header: "Actions",
+      }),
     ];
     return { columns };
   }
