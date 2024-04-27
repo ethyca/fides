@@ -6,9 +6,8 @@ Create Date: 2024-04-26 23:47:27.821607
 
 """
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "9e83545ed9b6"
@@ -55,6 +54,13 @@ def upgrade():
         ["privacy_request_id"],
         unique=False,
     )
+    # Index the PreApprovalWebhookReply.webhook_id
+    op.create_index(
+        op.f("ix_preapprovalwebhookreply_webhook_id"),
+        "preapprovalwebhookreply",
+        ["webhook_id"],
+        unique=False,
+    )
     # Remove FK on preapprovalwebhookreply.privacy_request_id
     op.drop_constraint(
         "preapprovalwebhookreply_privacy_request_id_fkey",
@@ -98,6 +104,10 @@ def downgrade():
         "privacyrequest",
         ["privacy_request_id"],
         ["id"],
+    )
+    op.drop_index(
+        op.f("ix_preapprovalwebhookreply_webhook_id"),
+        table_name="preapprovalwebhookreply",
     )
     op.drop_index(
         op.f("ix_preapprovalwebhookreply_privacy_request_id"),
