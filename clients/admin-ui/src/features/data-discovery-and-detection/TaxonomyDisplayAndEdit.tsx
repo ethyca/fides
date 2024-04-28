@@ -40,7 +40,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
       : fidesLangKey
   );
 
-  const handleCategoryChange = ({ value }) => {
+  const handleCategoryChange = ({ value: string }) => {
     updateResourceCategoryMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id,
