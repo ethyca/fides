@@ -20,7 +20,7 @@ router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 def get_id_verification_config(
     *,
     db: Session = Depends(deps.get_db),
-    config_proxy: ConfigProxy = Depends(deps.get_config_proxy)
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
 ) -> IdentityVerificationConfigResponse:
     """Returns id verification config."""
     messaging_config: Optional[MessagingConfig] = db.query(MessagingConfig).first()

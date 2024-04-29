@@ -63,9 +63,9 @@ def test_retry_decorator(privacy_request, policy, db):
     input_data = {"test": "data"}
     graph: DatasetGraph = integration_db_graph("postgres_example")
     traversal = Traversal(graph, {"email": "X"})
-    traversal_nodes: Dict[
-        CollectionAddress, TraversalNode
-    ] = traversal.traversal_node_dict
+    traversal_nodes: Dict[CollectionAddress, TraversalNode] = (
+        traversal.traversal_node_dict
+    )
     payment_card_node = traversal_nodes[
         CollectionAddress("postgres_example", "payment_card")
     ]

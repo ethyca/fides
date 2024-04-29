@@ -209,9 +209,11 @@ def base_task_data(
         "collection_address": node.value,
         "dataset_name": node.dataset,
         "collection_name": node.collection,
-        "status": ExecutionLogStatus.complete
-        if node == ROOT_COLLECTION_ADDRESS
-        else ExecutionLogStatus.pending,
+        "status": (
+            ExecutionLogStatus.complete
+            if node == ROOT_COLLECTION_ADDRESS
+            else ExecutionLogStatus.pending
+        ),
         "collection": collection_representation,
         "traversal_details": traversal_details,
     }
@@ -248,9 +250,11 @@ def persist_new_access_request_tasks(
                 **base_task_data(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
-                "access_data": json.dumps([traversal.seed_data], cls=CustomJSONEncoder)
-                if node == ROOT_COLLECTION_ADDRESS
-                else [],  # For consistent treatment of nodes, add the seed data to the root node.  Subsequent
+                "access_data": (
+                    json.dumps([traversal.seed_data], cls=CustomJSONEncoder)
+                    if node == ROOT_COLLECTION_ADDRESS
+                    else []
+                ),  # For consistent treatment of nodes, add the seed data to the root node.  Subsequent
                 # tasks will save the data collected on the same field.
                 "action_type": ActionType.access,
             },
@@ -310,12 +314,12 @@ def _get_data_for_erasures(
     """
     # Get the access task of the same name as the erasure task so we can transfer the data
     # collected for masking onto the current erasure task
-    corresponding_access_task: Optional[
-        RequestTask
-    ] = privacy_request.get_existing_request_task(
-        db=session,
-        action_type=ActionType.access,
-        collection_address=request_task.request_task_address,
+    corresponding_access_task: Optional[RequestTask] = (
+        privacy_request.get_existing_request_task(
+            db=session,
+            action_type=ActionType.access,
+            collection_address=request_task.request_task_address,
+        )
     )
     retrieved_task_data: List[Dict] = []
     if (
@@ -382,9 +386,11 @@ def persist_new_consent_request_tasks(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
                 # Consent nodes take in identity data from their upstream root node
-                "access_data": json.dumps([identity], cls=CustomJSONEncoder)
-                if node == ROOT_COLLECTION_ADDRESS
-                else [],
+                "access_data": (
+                    json.dumps([identity], cls=CustomJSONEncoder)
+                    if node == ROOT_COLLECTION_ADDRESS
+                    else []
+                ),
                 "action_type": ActionType.consent,
             },
         )

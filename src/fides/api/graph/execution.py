@@ -48,9 +48,9 @@ class ExecutionNode(Contextualizable):  # pylint: disable=too-many-instance-attr
             traversal_details.dataset_connection_key
         )
 
-        self.incoming_edges_by_collection: Dict[
-            CollectionAddress, List[Edge]
-        ] = partition(self.incoming_edges, lambda e: e.f1.collection_address())
+        self.incoming_edges_by_collection: Dict[CollectionAddress, List[Edge]] = (
+            partition(self.incoming_edges, lambda e: e.f1.collection_address())
+        )
 
         # Input should be passed into accessing data in this order
         self.input_keys: List[CollectionAddress] = [

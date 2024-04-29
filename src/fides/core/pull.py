@@ -1,4 +1,5 @@
 """This module handles the logic for syncing remote resource versions into their local file."""
+
 from typing import Dict, List, Optional
 
 import yaml

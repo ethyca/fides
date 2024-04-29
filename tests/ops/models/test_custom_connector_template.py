@@ -24,10 +24,10 @@ class TestCustomConnectorTemplate:
 
         # assert we can retrieve a connector template by key and
         # that the values are the same as what we persisted
-        custom_connector: Optional[
-            CustomConnectorTemplate
-        ] = CustomConnectorTemplate.get_by_key_or_id(
-            db=db, data={"key": "planet_express"}
+        custom_connector: Optional[CustomConnectorTemplate] = (
+            CustomConnectorTemplate.get_by_key_or_id(
+                db=db, data={"key": "planet_express"}
+            )
         )
         assert custom_connector
         assert custom_connector.name == "Planet Express"

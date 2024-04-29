@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.35.0...main)
+
+## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 
 ### Added
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
@@ -27,6 +29,8 @@ The types of changes are:
 - Added FidesUpdating event to FidesJS SDK [#4816](https://github.com/ethyca/fides/pull/4816)
 - Added `reinitialize` method to FidesJS SDK [#4812](https://github.com/ethyca/fides/pull/4812)
 - Added undeclared data category columns to data map report table [#4781](https://github.com/ethyca/fides/pull/4781)
+- Fully implement pre-approval webhooks [#4822](https://github.com/ethyca/fides/pull/4822)
+- Sync models and database for pre-approval webhooks [#4838](https://github.com/ethyca/fides/pull/4838)
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)

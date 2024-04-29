@@ -98,9 +98,9 @@ def instantiate_connector(
     """
     Helper to genericize instantiation of a SaaS connector
     """
-    connector_template: Optional[
-        ConnectorTemplate
-    ] = ConnectorRegistry.get_connector_template(connector_type)
+    connector_template: Optional[ConnectorTemplate] = (
+        ConnectorRegistry.get_connector_template(connector_type)
+    )
     template_vals = SaasConnectionTemplateValues(
         key=fides_key,
         description=description,

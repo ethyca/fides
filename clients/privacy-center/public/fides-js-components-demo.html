@@ -5,14 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- TODO: (#1953) use the NextJS router version of `/fides.js` insetad of direct files for more accurate testing -->
     <!--
-      We use the fides*.js file directly so that we can dynamically inject options.
-      We read fidesConfig.options to determine which fides*.js bundle to use.
+      Pass along any params to the fides.js script. For example, visiting
+      http://localhost:3000/fides-js-demo.html?geolocation=fr-id
+      will pass a geolocation query param to fides.js
     -->
     <script>
       (function () {
-        var src = window.fidesConfig?.options?.tcfEnabled
-          ? "./lib/fides-tcf.js"
-          : "./lib/fides.js";
+        const tcfEnabled = window.fidesConfig?.options?.tcfEnabled;
+        const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+        const params = new URLSearchParams(window.location.search);
+        const geolocation = params.get("geolocation");
+        if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
+          params.delete("geolocation");
+        }
+        const src = `/fides.js?e2e=true${tcfEnabled ? "&tcf=true" : ""}${
+          !!params.size ? `&${params.toString()}` : ""
+        }`;
+
         document.write('<script src="' + src + '"><\/script>');
       })();
       (function () {

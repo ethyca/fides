@@ -34,9 +34,9 @@ def use_dsr_3_0_scheduler(
     """
     use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
 
-    prev_results: Dict[
-        str, Optional[List[Row]]
-    ] = privacy_request.get_raw_access_results()
+    prev_results: Dict[str, Optional[List[Row]]] = (
+        privacy_request.get_raw_access_results()
+    )
     existing_tasks_count: int = privacy_request.get_tasks_by_action(action_type).count()
 
     if prev_results and use_dsr_3_0 and not existing_tasks_count:

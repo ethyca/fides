@@ -83,9 +83,9 @@ def cache_data(
         unique_masking_strategies_by_name.add(strategy_name)
         masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
         if masking_strategy.secrets_required():
-            masking_secrets: List[
-                MaskingSecretCache
-            ] = masking_strategy.generate_secrets_for_cache()
+            masking_secrets: List[MaskingSecretCache] = (
+                masking_strategy.generate_secrets_for_cache()
+            )
             for masking_secret in masking_secrets:
                 privacy_request.cache_masking_secret(masking_secret)
     if drp_request_body:
@@ -187,7 +187,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
     can be reprocessed.
     """
     with self.get_new_session() as db:
-        logger.info("Polling for privacy requests awaiting status change")
+        logger.debug("Polling for privacy requests awaiting status change")
         in_progress_privacy_requests = (
             db.query(PrivacyRequest)
             .filter(PrivacyRequest.status == PrivacyRequestStatus.in_processing)

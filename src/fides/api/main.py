@@ -1,6 +1,7 @@
 """
 Contains the code that sets up the API.
 """
+
 import os
 import sys
 from datetime import datetime, timezone
@@ -143,9 +144,9 @@ async def prepare_and_log_request(
             endpoint=endpoint,
             status_code=status_code,
             error=error_class or None,
-            extra_data={ExtraData.fides_source.value: fides_source}
-            if fides_source
-            else None,
+            extra_data=(
+                {ExtraData.fides_source.value: fides_source} if fides_source else None
+            ),
         )
     )
 

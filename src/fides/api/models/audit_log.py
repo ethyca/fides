@@ -27,3 +27,4 @@ class AuditLog(Base):
         nullable=False,
     )
     message = Column(String, nullable=True)
+    webhook_id = Column(String, nullable=True, index=True)

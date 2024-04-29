@@ -278,7 +278,8 @@ class Dataset(Base, FidesBase):
         for collection in self.collections:
             dataset_collection = FideslangDatasetCollection(**collection)
             for field in dataset_collection.fields:
-                data_categories.update(field.data_categories)
+                if field.data_categories is not None:
+                    data_categories.update(field.data_categories)
         return data_categories
 
 

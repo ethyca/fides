@@ -1,6 +1,7 @@
 """
 Contains api endpoints for fides web pages
 """
+
 from fastapi import Depends, Security
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession

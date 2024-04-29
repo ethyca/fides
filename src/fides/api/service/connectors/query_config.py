@@ -135,9 +135,9 @@ class QueryConfig(Generic[T], ABC):
         with null values.
 
         """
-        rule_to_collection_field_paths: Dict[
-            Rule, List[FieldPath]
-        ] = self.build_rule_target_field_paths(policy)
+        rule_to_collection_field_paths: Dict[Rule, List[FieldPath]] = (
+            self.build_rule_target_field_paths(policy)
+        )
 
         value_map: Dict[str, Any] = {}
         for rule, field_paths in rule_to_collection_field_paths.items():

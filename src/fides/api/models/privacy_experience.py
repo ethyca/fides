@@ -285,9 +285,9 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         config_updated = update_if_modified(self, db=db, data=data)
 
         for translation_data in request_translations:
-            existing_translation: Optional[
-                ExperienceTranslation
-            ] = self.get_translation_by_language(db, translation_data.get("language"))
+            existing_translation: Optional[ExperienceTranslation] = (
+                self.get_translation_by_language(db, translation_data.get("language"))
+            )
             if existing_translation:
                 # Do a patch update of the existing experience translation if applicable
                 translation_updated: bool = update_if_modified(
@@ -565,14 +565,14 @@ def upsert_privacy_experiences_after_config_update(
     Links regions to a PrivacyExperienceConfig by adding or removing PrivacyExperience records.
     """
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
-    removed_regions: List[
-        PrivacyNoticeRegion
-    ] = [  # Regions that were not in the request, but currently attached to the Config
-        PrivacyNoticeRegion(reg)
-        for reg in {reg.value for reg in current_regions}.difference(
-            {reg.value for reg in regions}
-        )
-    ]
+    removed_regions: List[PrivacyNoticeRegion] = (
+        [  # Regions that were not in the request, but currently attached to the Config
+            PrivacyNoticeRegion(reg)
+            for reg in {reg.value for reg in current_regions}.difference(
+                {reg.value for reg in regions}
+            )
+        ]
+    )
 
     # Delete any PrivacyExperiences whose regions are not in the request
     experience_config.experiences.filter(  # type: ignore[call-arg]
@@ -699,9 +699,9 @@ def delete_experience_config_translations(
 ) -> None:
     """Removes any translations that are currently stored on the PrivacyExperienceConfig
     but not in the update request"""
-    experience_translations: List[
-        ExperienceTranslation
-    ] = privacy_experience_config.translations
+    experience_translations: List[ExperienceTranslation] = (
+        privacy_experience_config.translations
+    )
     translations_to_remove: Set[SupportedLanguage] = set(  # type: ignore[assignment]
         translation.language for translation in experience_translations
     ).difference(

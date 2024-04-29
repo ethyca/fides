@@ -220,14 +220,14 @@ def upload_access_results(  # pylint: disable=R0912
         storage_destination = rule.get_storage_destination(session)
 
         target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
-        filtered_results: Dict[
-            str, List[Dict[str, Optional[Any]]]
-        ] = filter_data_categories(
-            access_result,
-            target_categories,
-            dataset_graph.data_category_field_mapping,
-            rule.key,
-            fides_connector_datasets,
+        filtered_results: Dict[str, List[Dict[str, Optional[Any]]]] = (
+            filter_data_categories(
+                access_result,
+                target_categories,
+                dataset_graph.data_category_field_mapping,
+                rule.key,
+                fides_connector_datasets,
+            )
         )
 
         filtered_results.update(

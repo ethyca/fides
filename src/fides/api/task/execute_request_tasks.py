@@ -219,10 +219,10 @@ def run_access_node(
                 )
                 # Currently, upstream tasks and "input keys" (which are built by data dependencies)
                 # are the same, but they may not be the same in the future.
-                ordered_upstream_tasks: List[
-                    Optional[RequestTask]
-                ] = _order_tasks_by_input_key(
-                    graph_task.execution_node.input_keys, upstream_results
+                ordered_upstream_tasks: List[Optional[RequestTask]] = (
+                    _order_tasks_by_input_key(
+                        graph_task.execution_node.input_keys, upstream_results
+                    )
                 )
                 # Pass in access data dependencies in the same order as the input keys.
                 # If we don't have access data for an upstream node, pass in an empty list

@@ -1,4 +1,5 @@
 """Contains the nox sessions for running development environments."""
+
 import time
 from pathlib import Path
 from typing import Literal

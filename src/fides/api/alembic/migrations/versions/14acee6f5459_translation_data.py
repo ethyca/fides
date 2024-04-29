@@ -326,9 +326,9 @@ def load_default_experience_configs():
             experience_config["regions"] = set(experience_config["regions"])
 
         experience_config["privacy_notices"] = set()
-        experience_config[
-            "needs_migration"
-        ] = False  # indicator whether the record requires migration, or we can default to the template values
+        experience_config["needs_migration"] = (
+            False  # indicator whether the record requires migration, or we can default to the template values
+        )
         _reconciled_experience_config_map[experience_config_type] = experience_config
         experience_config["needs_migration"] = False
     return _reconciled_experience_config_map, _raw_experience_config_map

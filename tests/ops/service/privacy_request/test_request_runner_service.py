@@ -362,9 +362,9 @@ def get_privacy_request_results(
         unique_masking_strategies_by_name.add(strategy_name)
         masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
         if masking_strategy.secrets_required():
-            masking_secrets: List[
-                MaskingSecretCache
-            ] = masking_strategy.generate_secrets_for_cache()
+            masking_secrets: List[MaskingSecretCache] = (
+                masking_strategy.generate_secrets_for_cache()
+            )
             for masking_secret in masking_secrets:
                 privacy_request.cache_masking_secret(masking_secret)
 

@@ -1,6 +1,7 @@
 """
 Contains all of the endpoints required to manage generating resources.
 """
+
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
