@@ -39,12 +39,12 @@ class TestPreApprovalWebhookModel:
         db.add(webhook_2)
         db.commit()
 
-        loaded_webhook = db.query(PreApprovalWebhook).filter_by(name=name_1).first()
+        db.refresh(webhook_1)
 
-        assert loaded_webhook.key == "some_service_webhook"
-        assert loaded_webhook.name == name_1
-        assert loaded_webhook.connection_config_id == https_connection_config.id
-        assert loaded_webhook.created_at is not None
+        assert webhook_1.key == "some_service_webhook"
+        assert webhook_1.name == name_1
+        assert webhook_1.connection_config_id == https_connection_config.id
+        assert webhook_1.created_at is not None
 
         # assert relationship with ConnectionConfig
         all_webhooks_with_specific_connection_config = (
@@ -55,18 +55,23 @@ class TestPreApprovalWebhookModel:
         connection_config = (
             db.query(ConnectionConfig).filter_by(id=https_connection_config.id).first()
         )
-        assert loaded_webhook.connection_config == connection_config
+        assert webhook_1.connection_config == connection_config
         assert (
             connection_config.pre_approval_webhooks
             == all_webhooks_with_specific_connection_config
         )
 
+        webhook_1_id = webhook_1.id
+        webhook_2_id = webhook_2.id
         connection_config.delete(db=db)
-        for webhook in all_webhooks_with_specific_connection_config:
-            webhook.delete(db=db)
 
+        # Deleting the Connection Config also deletes any attached PreApproval Webhooks
+        assert db.query(PreApprovalWebhook).get(webhook_1_id) is None
+        assert db.query(PreApprovalWebhook).get(webhook_2_id) is None
+
+    @pytest.mark.usefixtures("pre_approval_webhooks")
     def test_create_connection_config_errors(
-        self, db: Session, https_connection_config, pre_approval_webhooks
+        self, db: Session, https_connection_config
     ):
         with pytest.raises(KeyValidationError) as exc:
             new_webhook_no_key = PreApprovalWebhook.create(
@@ -129,5 +134,13 @@ class TestPreApprovalWebhookModel:
         )
         assert loaded_reply.privacy_request == privacy_request
         assert privacy_request.pre_approval_webhook_replies[0] == loaded_reply
+
+        # Deleting the webhook or the Privacy Request causes these ids on the Replies to be null
+        pre_approval_webhooks[0].delete(db)
+        privacy_request.delete(db)
+        db.refresh(reply)
+
+        assert reply.privacy_request_id is None
+        assert reply.webhook_id is None
 
         reply.delete(db=db)

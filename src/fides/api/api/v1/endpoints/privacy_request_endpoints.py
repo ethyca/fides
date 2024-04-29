@@ -1305,6 +1305,7 @@ def mark_privacy_request_pre_approve_eligible(
         webhook.key,
         webhook.connection_config.key,
     )
+
     try:
         PreApprovalWebhookReply.create(
             db=db,
@@ -1343,11 +1344,17 @@ def mark_privacy_request_pre_approve_eligible(
             privacy_request_id,
         )
         return
-    # Check if all replies are true
-    replies_for_privacy_request = PreApprovalWebhookReply.filter(
-        db=db,
-        conditions=(PreApprovalWebhookReply.privacy_request_id == privacy_request_id),
-    ).all()
+
+    # Check if all replies are true.  Reply ignored if its webhook has since been deleted.
+    replies_for_privacy_request = (
+        db.query(PreApprovalWebhookReply)
+        .filter(
+            PreApprovalWebhookReply.privacy_request_id == privacy_request_id,
+            PreApprovalWebhookReply.webhook_id.isnot(None),
+        )
+        .all()
+    )
+
     if not all(reply.is_eligible for reply in replies_for_privacy_request):
         logger.info(
             "Not all pre-approval webhooks have responded with eligible for privacy request '{}'. Cannot automatically approve request.",

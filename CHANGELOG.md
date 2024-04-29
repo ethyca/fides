@@ -29,6 +29,7 @@ The types of changes are:
 - Added `reinitialize` method to FidesJS SDK [#4812](https://github.com/ethyca/fides/pull/4812)
 - Added undeclared data category columns to data map report table [#4781](https://github.com/ethyca/fides/pull/4781)
 - Fully implement pre-approval webhooks [#4822](https://github.com/ethyca/fides/pull/4822)
+- Sync models and database for pre-approval webhooks [#4838](https://github.com/ethyca/fides/pull/4838)
 
 ### Changed
 - Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
