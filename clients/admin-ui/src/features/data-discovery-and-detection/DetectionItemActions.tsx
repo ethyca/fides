@@ -71,7 +71,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             setIsProcessingAction(true);
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
-              monitor_config_id: resource.monitor_config_id,
+              monitor_config_id: resource.monitor_config_id!,
             });
             setIsProcessingAction(false);
           }}
@@ -100,7 +100,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             setIsProcessingAction(true);
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
-              monitor_config_id: resource.monitor_config_id,
+              monitor_config_id: resource.monitor_config_id!,
             });
             setIsProcessingAction(false);
           }}
@@ -115,7 +115,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             setIsProcessingAction(true);
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
-              monitor_config_id: resource.monitor_config_id,
+              monitor_config_id: resource.monitor_config_id!,
             });
             setIsProcessingAction(false);
           }}

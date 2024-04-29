@@ -3,12 +3,7 @@ import queryString from "query-string";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import {
-  DiffStatus,
-  DiscoveryMonitorConfig,
-  Page_DiscoveryMonitorConfig_,
-  Page_StagedResource_,
-} from "~/types/api";
+import { DiffStatus, Page_StagedResource_ } from "~/types/api";
 
 interface State {
   page?: number;
@@ -19,11 +14,6 @@ const initialState: State = {
   page: 1,
   pageSize: 50,
 };
-
-interface MonitorQueryParams {
-  page?: number;
-  size?: number;
-}
 
 interface MonitorResultQueryParams {
   staged_resource_urn?: string;
@@ -45,17 +35,6 @@ interface ChangeResourceCategoryQueryParam {
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllMonitors: build.query<
-      Page_DiscoveryMonitorConfig_,
-      MonitorQueryParams
-    >({
-      query: (params) => ({
-        params,
-        method: "GET",
-        url: `/plus/discovery-monitor`,
-      }),
-      providesTags: () => ["Discovery Monitor Configs"],
-    }),
     getMonitorResults: build.query<
       Page_StagedResource_,
       MonitorResultQueryParams
@@ -128,7 +107,6 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetAllMonitorsQuery,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   useMuteResourceMutation,
@@ -156,17 +134,4 @@ export const selectPage = createSelector(
 export const selectPageSize = createSelector(
   selectDiscoveryDetectionState,
   (state) => state.pageSize
-);
-
-const EMPTY_MONITORS: DiscoveryMonitorConfig[] = [];
-
-export const selectAllMonitors = createSelector(
-  [(RootState) => RootState, selectPage, selectPageSize],
-  (RootState, page, pageSize) => {
-    const data = discoveryDetectionApi.endpoints.getAllMonitors.select({
-      page,
-      size: pageSize,
-    })(RootState)?.data;
-    return data ? data.items : EMPTY_MONITORS;
-  }
 );

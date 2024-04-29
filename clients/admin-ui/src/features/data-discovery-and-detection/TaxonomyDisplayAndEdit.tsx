@@ -44,7 +44,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
   const handleCategoryChange = ({ value }: { value: string }) => {
     updateResourceCategoryMutation({
       staged_resource_urn: resource.urn,
-      monitor_config_id: resource.monitor_config_id,
+      monitor_config_id: resource.monitor_config_id!,
       user_assigned_data_categories: [value],
     });
   };
