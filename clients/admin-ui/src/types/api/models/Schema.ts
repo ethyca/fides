@@ -11,10 +11,11 @@ import type { DiffStatus } from "./DiffStatus";
 export type Schema = {
   urn: string;
   user_assigned_data_categories?: Array<string>;
-  name: string;
+  name?: string;
   description?: string;
-  monitor_config_id: string;
-  modified?: string;
+  monitor_config_id?: string;
+  updated_at?: string;
+  source_modified?: string;
   classifications?: Array<Classification>;
   diff_status?: DiffStatus;
   child_diff_statuses?: Record<string, number>;
