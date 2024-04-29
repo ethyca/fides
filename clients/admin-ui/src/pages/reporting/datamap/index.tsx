@@ -7,8 +7,7 @@ const DatamapReportingPage = () => (
   <FixedLayout
     title="Datamap Report"
     mainProps={{
-      padding: "40px",
-      paddingRight: "48px",
+      padding: "24px 40px",
     }}
   >
     <DatamapReportTable />

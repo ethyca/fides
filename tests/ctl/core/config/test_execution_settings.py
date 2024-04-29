@@ -27,13 +27,13 @@ class TestExecutionSettings:
     ):
         kwargs = {}
         if subject_verification_required is not None:
-            kwargs[
-                "subject_identity_verification_required"
-            ] = subject_verification_required
+            kwargs["subject_identity_verification_required"] = (
+                subject_verification_required
+            )
         if disable_consent_verification is not None:
-            kwargs[
-                "disable_consent_identity_verification"
-            ] = disable_consent_verification
+            kwargs["disable_consent_identity_verification"] = (
+                disable_consent_verification
+            )
 
         settings = ExecutionSettings(**kwargs)
         assert settings.disable_consent_identity_verification is expected

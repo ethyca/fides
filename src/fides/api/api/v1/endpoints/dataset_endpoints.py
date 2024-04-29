@@ -298,7 +298,7 @@ def patch_datasets(
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
     status_code=200,
     response_model=BulkPutDataset,
-    include_in_schema=False  # Not including this path in the schema.
+    include_in_schema=False,  # Not including this path in the schema.
     # Since this yaml function needs to access the request, the open api spec will not be generated correctly.
     # To include this path, extend open api: https://fastapi.tiangolo.com/advanced/extending-openapi/
 )

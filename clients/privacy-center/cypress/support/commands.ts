@@ -60,7 +60,7 @@ Cypress.Commands.add(
   "visitConsentDemo",
   (
     options?: FidesConfig,
-    queryParams?: Cypress.VisitOptions["qs"],
+    queryParams?: Cypress.VisitOptions["qs"] | null,
     windowParams?: any
   ) => {
     const visitOptions: Partial<VisitOptions> = {
@@ -90,6 +90,7 @@ Cypress.Commands.add(
           "FidesInitialized",
           cy.stub().as("FidesInitialized")
         );
+        win.addEventListener("FidesUpdating", cy.stub().as("FidesUpdating"));
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
         win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
@@ -191,7 +192,7 @@ declare global {
        */
       visitConsentDemo(
         options?: FidesConfig,
-        queryParams?: Cypress.VisitOptions["qs"],
+        queryParams?: Cypress.VisitOptions["qs"] | null,
         windowParams?: any
       ): Chainable<any>;
       /**

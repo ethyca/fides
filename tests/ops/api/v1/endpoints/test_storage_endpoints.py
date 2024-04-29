@@ -930,9 +930,7 @@ class TestPutDefaultStorageConfig:
         payload,
     ):
         payload["type"] = StorageType.local.value
-        payload[
-            "format"
-        ] = (
+        payload["format"] = (
             ResponseFormat.json.value
         )  # change to JSON because that's what local expects
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
@@ -966,9 +964,7 @@ class TestPutDefaultStorageConfig:
         payload: dict,
     ):
         payload["type"] = StorageType.local.value
-        payload[
-            "format"
-        ] = (
+        payload["format"] = (
             ResponseFormat.json.value
         )  # change to JSON because that's what local expects
         payload["details"] = {
@@ -1027,9 +1023,7 @@ class TestPutDefaultStorageConfig:
     ):
         mock_create_or_update.side_effect = KeyOrNameAlreadyExists("Key already exists")
         payload["type"] = StorageType.local.value
-        payload[
-            "format"
-        ] = (
+        payload["format"] = (
             ResponseFormat.json.value
         )  # change to JSON because that's what local expects
         payload["details"] = {
@@ -1053,9 +1047,7 @@ class TestPutDefaultStorageConfig:
     ):
         mock_create_or_update.side_effect = KeyValidationError()
         payload["type"] = StorageType.local.value
-        payload[
-            "format"
-        ] = (
+        payload["format"] = (
             ResponseFormat.json.value
         )  # change to JSON because that's what local expects
         payload["details"] = {

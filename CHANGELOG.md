@@ -15,7 +15,31 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.34.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.35.0...main)
+
+## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
+
+### Added
+- Added DSR 3.0 Scheduling which supports running DSR's in parallel with first-class request tasks [#4760](https://github.com/ethyca/fides/pull/4760)
+- Added carets to collapsible sections in the overlay modal [#4793](https://github.com/ethyca/fides/pull/4793)
+- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
+- Added support for configuration of pre-approval webhooks [#4795](https://github.com/ethyca/fides/pull/4795)
+- Added fides_clear_cookie option to FidesJS SDK to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
+- Added FidesUpdating event to FidesJS SDK [#4816](https://github.com/ethyca/fides/pull/4816)
+- Added `reinitialize` method to FidesJS SDK [#4812](https://github.com/ethyca/fides/pull/4812)
+- Added undeclared data category columns to data map report table [#4781](https://github.com/ethyca/fides/pull/4781)
+- Fully implement pre-approval webhooks [#4822](https://github.com/ethyca/fides/pull/4822)
+
+### Changed
+- Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
+- Improve performance of Snowflake schema generation [#4587](https://github.com/ethyca/fides/pull/4587)
+
+### Fixed
+- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+- Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
+- Fixed bug where Language selector button was overlapping other buttons when Privacy Policy wasn't present. [#4815](https://github.com/ethyca/fides/pull/4815)
+- Fixed bug where icons of the Language selector were displayed too small on some sites [#4815](https://github.com/ethyca/fides/pull/4815)
+- Fixed bug where GPP US National Section was incorrectly included when the State by State approach was selected [#4823]https://github.com/ethyca/fides/pull/4823
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
@@ -25,18 +49,23 @@ The types of changes are:
 - Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
 - Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
 - Added support for custom identities [#4764](https://github.com/ethyca/fides/pull/4764)
+- Added developer option to force GPP API on FidesJS bundles [#4799](https://github.com/ethyca/fides/pull/4799)
 
 ### Changed
 - Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
 - Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
 - Update active disabled Fides.js toggle color to light grey [#4778](https://github.com/ethyca/fides/pull/4778)
 - Update FidesJS fides_embed option to support embedding both banner & modal components [#4782](https://github.com/ethyca/fides/pull/4782)
+- Add a few CSS classes to help with styling FidesJS button groups [#4789](https://github.com/ethyca/fides/pull/4789)
+- Changed GPP extension to be pre-bundled in appropriate circumstances, as opposed to another fetch [#4780](https://github.com/ethyca/fides/pull/4780)
 
 ### Fixed
 - Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
 - Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
 - Fixed issue when loading the privacy request detail page [#4775](https://github.com/ethyca/fides/pull/4775)
 - Fixed connection test for Aircall [#4756](https://github.com/ethyca/fides/pull/4756/pull)
+- Fixed issues connecting to Redshift due to character encoding and SSL requirements [#4790](https://github.com/ethyca/fides/pull/4790)
+- Fixed the way the name identity is handled in the Privacy Center [#4791](https://github.com/ethyca/fides/pull/4791)
 
 ### Developer Experience
 - Build a `fides-types.d.ts` type declaration file to include alongside our FidesJS developer docs [#4772](https://github.com/ethyca/fides/pull/4772)

@@ -4,13 +4,7 @@ import type { FidesEventType } from "../docs";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
-  interface WindowEventMap {
-    FidesInitialized: FidesEvent;
-    FidesUpdated: FidesEvent;
-    FidesUIShown: FidesEvent;
-    FidesUIChanged: FidesEvent;
-    FidesModalClosed: FidesEvent;
-  }
+  interface WindowEventMap extends Record<FidesEventType, FidesEvent> {}
 }
 
 /**

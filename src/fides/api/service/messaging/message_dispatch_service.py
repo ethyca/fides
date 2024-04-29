@@ -199,9 +199,11 @@ def dispatch_message(
     dispatcher(
         messaging_config,
         message,
-        to_identity.email
-        if messaging_method == MessagingMethod.EMAIL
-        else to_identity.phone_number,
+        (
+            to_identity.email
+            if messaging_method == MessagingMethod.EMAIL
+            else to_identity.phone_number
+        ),
     )
 
 

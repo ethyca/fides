@@ -1,10 +1,12 @@
 """Module that adds functionality for generating or scanning datasets."""
+
 from typing import Dict, List, Optional, Tuple
 
 import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
+from joblib import Parallel, delayed
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
@@ -400,6 +402,10 @@ def get_snowflake_schemas(
     and being able to fall back to using the connector.
 
     Reference: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/157
+
+    Due to performance issues resulting in FastAPI timeouts, parallelization is
+    now used. The default number of threads to be used is 4 to cover most existing
+    use cases, bumping to 8 when the number of tables is over 250.
     """
     schema_cursor = engine.execute(text("SHOW SCHEMAS"))
     db_schemas = [row[1] for row in schema_cursor]
@@ -409,10 +415,23 @@ def get_snowflake_schemas(
             metadata[schema] = {}
             table_cursor = engine.execute(text(f'SHOW TABLES IN "{schema}"'))
             db_tables = [row[1] for row in table_cursor]
-            for table in db_tables:
-                column_cursor = engine.execute(
-                    text(f'SHOW COLUMNS IN "{schema}"."{table}"')
-                )
-                columns = [row[2] for row in column_cursor]
+            number_of_threads = 8 if len(db_tables) > 250 else 4
+            fields = Parallel(n_jobs=number_of_threads, backend="threading")(
+                delayed(get_snowflake_table_fields)(engine, schema, table)
+                for table in db_tables
+            )
+            for table, columns in fields:
                 metadata[schema][table] = columns
     return metadata
+
+
+def get_snowflake_table_fields(
+    engine: Engine, schema: str, table: str
+) -> Tuple[str, List]:
+    """
+    Returns fields for a Snowflake table, ideally in parallel. Part of the
+    workaround strategy to improve performance when generating a Snowflake schema
+    """
+    column_cursor = engine.execute(text(f'SHOW COLUMNS IN "{schema}"."{table}"'))
+    columns = [row[2] for row in column_cursor]
+    return table, columns

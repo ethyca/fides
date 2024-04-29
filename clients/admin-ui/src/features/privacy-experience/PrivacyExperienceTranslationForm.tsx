@@ -300,7 +300,7 @@ const PrivacyExperienceTranslationForm = ({
         <CustomTextInput
           name={`translations.${translationIndex}.modal_link_label`}
           id={`translations.${translationIndex}.modal_link_label`}
-          label="Trigger Link Label (optional)"
+          label="Trigger link label (optional)"
           tooltip="Include text here if you would like the Fides CMP to manage the copy of the button that is included on your site to open the CMP."
           variant="stacked"
         />

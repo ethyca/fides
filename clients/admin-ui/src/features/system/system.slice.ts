@@ -69,6 +69,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: [
+        "Datamap",
         "System",
         "Datastore Connection",
         "Privacy Notices",

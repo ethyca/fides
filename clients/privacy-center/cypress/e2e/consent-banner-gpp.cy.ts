@@ -40,20 +40,6 @@ describe("Fides-js GPP extension", () => {
       });
     });
   };
-  /**
-   * TODO (PROD-1439): remove this workaround by fixing GPP initialization!
-   *
-   * Our current GPP extension waits until the very end of the FidesJS
-   * initialize() method to register, but not during the getInitialFides() phase
-   * used to immediately setup Fides for returning users. This means the tests
-   * below for returning users all fail - to workaround this and get the test
-   * passing for now, we add an ugly delay before we check for GPP in this function.
-   */
-  const workaroundGppInitializationDelayBug = () => {
-    /* eslint-disable-next-line cypress/no-unnecessary-waiting */
-    cy.wait(200);
-    cy.get("@FidesInitialized").should("have.been.calledTwice");
-  };
 
   beforeEach(() => {
     cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
@@ -206,9 +192,6 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        workaroundGppInitializationDelayBug();
-
         cy.get("@FidesUIShown").should("not.have.been.called");
         // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events
         // 3 and 4 yet.
@@ -308,9 +291,6 @@ describe("Fides-js GPP extension", () => {
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        workaroundGppInitializationDelayBug();
-
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
@@ -357,11 +337,6 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        // NOTE: this is super-specific - waitUntilFidesInitialized() completes
-        // *just* before the FidesInitialized event fires, so our GPP extension
-        // isn't ready yet. Workaround that by waiting just long enough for the
-        // FidesInitialized event to complete
         cy.get("@FidesInitialized").should("have.been.calledOnce");
 
         cy.window().then((win) => {
@@ -381,7 +356,7 @@ describe("Fides-js GPP extension", () => {
               supportedAPIs,
             } = data.pingData;
             expect(signalStatus).to.eql("ready");
-            expect(applicableSections).to.eql([]);
+            expect(applicableSections).to.eql([-1]);
             expect(supportedAPIs).to.eql([]);
             expect(gppString).to.eql("DBAA");
           });
@@ -546,9 +521,6 @@ describe("Fides-js GPP extension", () => {
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
         visitDemoWithGPP({});
         cy.waitUntilFidesInitialized().then(() => {
-          // TODO(PROD-1439): remove this workaround
-          workaroundGppInitializationDelayBug();
-
           cy.get("@FidesUIShown").should("not.have.been.called");
 
           cy.window().then((win) => {
@@ -639,9 +611,6 @@ describe("Fides-js GPP extension", () => {
           },
         });
         cy.waitUntilFidesInitialized().then(() => {
-          // TODO(PROD-1439): remove this workaround
-          workaroundGppInitializationDelayBug();
-
           cy.get("@FidesUIShown").should("not.have.been.called");
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));
@@ -657,6 +626,26 @@ describe("Fides-js GPP extension", () => {
               expect(data.pingData.gppString).to.eql("DBAA");
             });
         });
+      });
+    });
+  });
+
+  describe("with GPP forced", () => {
+    it("loads the gpp extension", () => {
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { gpp: "true", geolocation: "us-nc" },
+      });
+      cy.window().then((win) => {
+        win.__gpp("ping", cy.stub().as("gppPing"));
+        cy.get("@gppPing")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([data, success]) => {
+            expect(success).to.eql(true);
+            expect(data.signalStatus).to.eql("ready");
+            expect(data.applicableSections).to.eql([-1]);
+          });
       });
     });
   });

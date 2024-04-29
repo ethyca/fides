@@ -1,4 +1,4 @@
-black==23.1.0
+black==24.3.0
 debugpy==1.6.3
 Faker==14.1.0
 GitPython==3.1.41

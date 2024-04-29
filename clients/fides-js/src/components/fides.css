@@ -65,16 +65,29 @@
   --fides-overlay-padding: 24px;
   --fides-overlay-button-border-radius: 6px;
   --fides-overlay-button-padding: 8px 16px;
-  --fides-overlay-link-padding: 4px 3px;
+  --fides-overlay-link-v-padding: 4px;
+  --fides-overlay-link-h-padding: 4px;
+  --fides-overlay-link-padding: var(--fides-overlay-link-v-padding)
+    var(--fides-overlay-link-h-padding);
   --fides-overlay-container-border-radius: 12px;
+  --fides-overlay-container-border-width: 1px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
   --fides-banner-font-size-title: var(--16px);
 }
 
-div#fides-overlay {
+/*
+  WARNING: the `#fides-overlay` id is unreliable as it can be customized! Do not use here!!
+  However `.fides-overlay` gets applied to that same element and is consistently present.
+ */
+
+div.fides-overlay {
   z-index: 1000;
   position: fixed;
+}
+
+div#fides-overlay-wrapper * {
+  box-sizing: border-box;
 }
 
 .fides-banner,
@@ -112,7 +125,6 @@ div#fides-banner {
   font-size: var(--fides-overlay-font-size-body);
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
-  box-sizing: border-box;
   padding: 24px;
   overflow-y: hidden;
 
@@ -122,7 +134,8 @@ div#fides-banner {
   justify-content: space-between;
   align-items: center;
   position: relative;
-  border-top: 1px solid var(--fides-overlay-primary-color);
+  border-top: var(--fides-overlay-container-border-width) solid
+    var(--fides-overlay-primary-color);
 }
 
 .fides-embedded div#fides-banner {
@@ -166,6 +179,14 @@ div#fides-banner-inner div#fides-button-group {
   margin-bottom: 0px;
   width: 100%;
   align-items: center;
+  flex-direction: row-reverse;
+}
+
+.fides-modal-footer div#fides-button-group {
+  flex-direction: column;
+  align-items: center;
+  margin-inline: var(--fides-overlay-padding);
+  gap: 12px;
 }
 
 div#fides-banner-inner-container {
@@ -299,9 +320,9 @@ div.fides-modal-content {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   color: var(--fides-overlay-body-font-color);
-  box-sizing: border-box;
   padding: var(--fides-overlay-padding);
-  border: 1px solid var(--fides-overlay-primary-color);
+  border: var(--fides-overlay-container-border-width) solid
+    var(--fides-overlay-primary-color);
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
   max-height: 680px;
@@ -350,7 +371,6 @@ div#fides-embed-container div#fides-consent-content {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   color: var(--fides-overlay-body-font-color);
-  box-sizing: border-box;
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
   border-bottom-left-radius: 0;
@@ -399,12 +419,13 @@ div#fides-consent-content .fides-modal-body {
 }
 
 .fides-modal-footer {
+  position: relative;
   display: flex;
   flex-direction: column;
   z-index: 5;
   background-color: var(--fides-overlay-background-color);
   bottom: 0px;
-  width: var(--fides-overlay-width);
+  width: 100%;
   border-bottom-left-radius: var(--fides-overlay-component-border-radius);
   border-bottom-right-radius: var(--fides-overlay-component-border-radius);
 }
@@ -425,6 +446,18 @@ div#fides-consent-content .fides-modal-description {
   flex-direction: row;
   gap: 12px;
   margin-inline: var(--fides-overlay-padding);
+}
+
+.fides-banner-secondary-actions {
+  justify-content: space-between;
+}
+
+.fides-modal-secondary-actions {
+  justify-content: center;
+}
+
+.fides-banner-secondary-actions {
+  gap: 36px;
 }
 
 .fides-tcf-banner-container
@@ -489,14 +522,12 @@ div#fides-banner .fides-close-button {
 div#fides-banner-inner .fides-privacy-policy {
   display: block;
   text-align: center;
-  margin-bottom: 0px;
   color: var(--fides-overlay-primary-color);
 }
 
 .fides-privacy-policy {
   display: block;
   text-align: center;
-  margin-bottom: var(--fides-overlay-padding);
   color: var(--fides-overlay-primary-color);
   font-family: var(--fides-overlay-font-family);
 }
@@ -544,7 +575,6 @@ div.fides-i18n-pseudo-button {
   display: inline-flex !important;
   align-items: center;
   justify-content: space-around;
-  box-sizing: content-box;
   position: relative;
   border-radius: 100vw;
   background-color: var(--fides-overlay-inactive-color);
@@ -556,6 +586,10 @@ div.fides-i18n-pseudo-button {
   width: 34px;
   height: 24px;
   justify-content: end;
+}
+
+div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
+  box-sizing: content-box;
 }
 
 .fides-toggle .fides-toggle-display::before {
@@ -654,6 +688,23 @@ div.fides-i18n-pseudo-button {
 .fides-notice-toggle .fides-notice-toggle-title:hover {
   cursor: pointer;
   background-color: var(--fides-overlay-row-hover-color);
+}
+
+.fides-notice-toggle .fides-notice-toggle-trigger:before {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: calc(0.5rem + 2px);
+  content: "";
+  transition: transform 0.12s ease-in-out;
+  transform: translateY(-2px) rotate(135deg);
+  border-style: solid;
+  border-width: 2px 2px 0 0;
+}
+
+.fides-notice-toggle.fides-notice-toggle-expanded
+  .fides-notice-toggle-trigger:before {
+  transform: translateY(2px) rotate(-45deg);
 }
 
 #fides-tcf-banner-inner .fides-disclosure-visible {
@@ -1087,10 +1138,17 @@ div.fides-i18n-pseudo-button {
 .fides-i18n-menu {
   position: relative;
 }
+
 .fides-modal-container .fides-i18n-menu {
   position: absolute;
-  bottom: var(--fides-overlay-padding);
   left: var(--fides-overlay-padding);
+}
+
+.fides-modal-container .fides-button-group-i18n {
+  min-height: calc(
+    var(--fides-overlay-font-size-body) +
+      (var(--fides-overlay-link-v-padding) * 2)
+  );
 }
 
 div.fides-i18n-pseudo-button {
@@ -1103,6 +1161,10 @@ div.fides-i18n-pseudo-button {
   align-items: center;
   gap: 2px;
   white-space: nowrap;
+}
+
+div#fides-overlay-wrapper .fides-i18n-pseudo-button {
+  box-sizing: content-box;
 }
 
 .fides-i18n-popover {

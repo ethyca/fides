@@ -12,6 +12,7 @@ from fides.api.graph.config import (
     ObjectField,
     ScalarField,
 )
+from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
@@ -39,16 +40,23 @@ from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secre
 graph: DatasetGraph = integration_db_graph("postgres_example")
 traversal = Traversal(graph, {"email": "X"})
 traversal_nodes: Dict[CollectionAddress, TraversalNode] = traversal.traversal_node_dict
-payment_card_node = traversal_nodes[
+payment_card_traversal_node = traversal_nodes[
     CollectionAddress("postgres_example", "payment_card")
 ]
-user_node = traversal_nodes[CollectionAddress("postgres_example", "payment_card")]
+payment_card_request_task = payment_card_traversal_node.to_mock_request_task()
+payment_card_node: ExecutionNode = ExecutionNode(payment_card_request_task)
+
+user_traversal_node = traversal_nodes[
+    CollectionAddress("postgres_example", "payment_card")
+]
+user_request_task = user_traversal_node.to_mock_request_task()
+user_node = ExecutionNode(user_request_task)
 privacy_request = PrivacyRequest(id="234544")
 
 
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
-        def found_query_keys(node: TraversalNode, values: Dict[str, Any]) -> Set[str]:
+        def found_query_keys(node: ExecutionNode, values: Dict[str, Any]) -> Set[str]:
             return set(node.typed_filtered_values(values).keys())
 
         config = SQLQueryConfig(payment_card_node)
@@ -177,7 +185,7 @@ class TestSQLQueryConfig:
 
         customer_node = traversal.traversal_node_dict[
             CollectionAddress("postgres_example_test_dataset", "customer")
-        ]
+        ].to_mock_execution_node()
 
         rule = erasure_policy.rules[0]
         config = SQLQueryConfig(customer_node)
@@ -195,7 +203,7 @@ class TestSQLQueryConfig:
         # Check different collection
         address_node = traversal.traversal_node_dict[
             CollectionAddress("postgres_example_test_dataset", "address")
-        ]
+        ].to_mock_execution_node()
         config = SQLQueryConfig(address_node)
         assert config.build_rule_target_field_paths(erasure_policy) == {
             rule: [FieldPath(x) for x in ["city", "house", "street", "state", "zip"]]
@@ -211,7 +219,7 @@ class TestSQLQueryConfig:
 
         customer_node = traversal.traversal_node_dict[
             CollectionAddress("postgres_example_test_dataset", "customer")
-        ]
+        ].to_mock_execution_node()
 
         config = SQLQueryConfig(customer_node)
         row = {
@@ -238,7 +246,7 @@ class TestSQLQueryConfig:
 
         customer_node = traversal.traversal_node_dict[
             CollectionAddress("postgres_example_test_dataset", "customer")
-        ]
+        ].to_mock_execution_node()
 
         config = SQLQueryConfig(customer_node)
         row = {
@@ -269,7 +277,7 @@ class TestSQLQueryConfig:
 
         customer_node = traversal.traversal_node_dict[
             CollectionAddress("postgres_example_test_dataset", "customer")
-        ]
+        ].to_mock_execution_node()
 
         config = SQLQueryConfig(customer_node)
         row = {
@@ -334,7 +342,7 @@ class TestSQLQueryConfig:
 
         customer_node = traversal.traversal_node_dict[
             CollectionAddress("postgres_example_test_dataset", "customer")
-        ]
+        ].to_mock_execution_node()
 
         config = SQLQueryConfig(customer_node)
 
@@ -370,13 +378,13 @@ class TestMongoQueryConfig:
     def customer_details_node(self, combined_traversal):
         return combined_traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
-        ]
+        ].to_mock_execution_node()
 
     @pytest.fixture(scope="function")
     def customer_feedback_node(self, combined_traversal):
         return combined_traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_feedback")
-        ]
+        ].to_mock_execution_node()
 
     def test_field_map_nested(self, customer_details_node):
         config = MongoQueryConfig(customer_details_node)
@@ -442,7 +450,7 @@ class TestMongoQueryConfig:
         # Test query on nested field
         customer_feedback = traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_feedback")
-        ]
+        ].to_mock_execution_node()
         config = MongoQueryConfig(customer_feedback)
         input_data = {"customer_information.email": ["customer-1@example.com"]}
         # Tuple of query, projection - Searching for documents with nested
@@ -455,7 +463,7 @@ class TestMongoQueryConfig:
         # Test query nested data
         customer_details = traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
-        ]
+        ].to_mock_execution_node()
         config = MongoQueryConfig(customer_details)
         input_data = {"customer_id": [1]}
         # Tuple of query, projection - Projection is specifying fields at the top-level. Nested data will
@@ -493,7 +501,7 @@ class TestMongoQueryConfig:
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
         customer_details = traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
-        ]
+        ].to_mock_execution_node()
         config = MongoQueryConfig(customer_details)
         row = {
             "birthday": "1988-01-10",
@@ -557,7 +565,7 @@ class TestMongoQueryConfig:
 
         customer_details = traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
-        ]
+        ].to_mock_execution_node()
 
         config = MongoQueryConfig(customer_details)
         row = {
@@ -633,13 +641,13 @@ class TestDynamoDBQueryConfig:
     def customer_node(self, traversal):
         return traversal.traversal_node_dict[
             CollectionAddress("dynamodb_example_test_dataset", "customer")
-        ]
+        ].to_mock_execution_node()
 
     @pytest.fixture(scope="function")
     def customer_identifier_node(self, traversal):
         return traversal.traversal_node_dict[
             CollectionAddress("dynamodb_example_test_dataset", "customer_identifier")
-        ]
+        ].to_mock_execution_node()
 
     @pytest.fixture(scope="function")
     def customer_row(self):

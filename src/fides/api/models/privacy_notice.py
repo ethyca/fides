@@ -271,9 +271,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         base_notice_updated: bool = update_if_modified(self, db=db, data=data)
 
         for translation_data in request_translations:
-            existing_translation: Optional[
-                NoticeTranslation
-            ] = self.get_translation_by_language(db, translation_data.get("language"))
+            existing_translation: Optional[NoticeTranslation] = (
+                self.get_translation_by_language(db, translation_data.get("language"))
+            )
 
             if existing_translation:
                 translation: NoticeTranslation = existing_translation
