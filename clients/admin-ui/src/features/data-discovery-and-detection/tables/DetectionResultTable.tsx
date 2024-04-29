@@ -74,6 +74,10 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     DiffStatus.ADDITION,
     DiffStatus.REMOVAL,
   ];
+  if (isShowingFullSchema) {
+    childDiffStatusFilter.push(DiffStatus.MONITORED);
+    childDiffStatusFilter.push(DiffStatus.MUTED);
+  }
 
   const {
     PAGE_SIZES,
