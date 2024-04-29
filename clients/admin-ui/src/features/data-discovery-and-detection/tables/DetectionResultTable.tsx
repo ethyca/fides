@@ -8,6 +8,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -58,8 +59,11 @@ interface MonitorResultTableProps {
 }
 
 const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const [isShowingFullSchema, setIsShowingFullSchema] =
-    useState<boolean>(false);
+  const router = useRouter();
+
+  const [isShowingFullSchema, setIsShowingFullSchema] = useState<boolean>(
+    router.query?.showFullSchema === "true" || false
+  );
 
   const diffStatusFilter: DiffStatus[] = [
     DiffStatus.ADDITION,
@@ -131,7 +135,10 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const handleRowClicked =
     resourceType !== StagedResourceType.FIELD
       ? (row: StagedResource) =>
-          navigateToDetectionResults({ resourceUrn: row.urn })
+          navigateToDetectionResults({
+            resourceUrn: row.urn,
+            showFullSchema: isShowingFullSchema,
+          })
       : undefined;
 
   const tableInstance = useReactTable<StagedResource>({

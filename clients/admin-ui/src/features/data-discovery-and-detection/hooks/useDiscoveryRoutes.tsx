@@ -12,13 +12,16 @@ const useDiscoveryRoutes = () => {
 
   const navigateToDetectionResults = ({
     resourceUrn,
+    showFullSchema = false,
   }: {
     resourceUrn: string;
+    showFullSchema?: boolean;
   }) => {
     router.push({
       pathname: DATA_DETECTION_ROUTE_DETAIL,
       query: {
         resourceUrn,
+        showFullSchema,
       },
     });
   };
