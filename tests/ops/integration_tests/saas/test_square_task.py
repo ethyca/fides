@@ -1,16 +1,15 @@
-import random
 from time import sleep
 
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
 @pytest.mark.integration_saas
@@ -20,18 +19,23 @@ def test_square_connection_test(square_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_square_access_request_task_by_email(
     db,
     policy,
+    privacy_request,
+    dsr_version,
+    request,
     square_connection_config,
     square_dataset_config,
     square_identity_email,
 ) -> None:
     """Full access request based on the Square SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_square_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": square_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -39,7 +43,7 @@ async def test_square_access_request_task_by_email(
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -103,19 +107,27 @@ async def test_square_access_request_task_by_email(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_square_access_request_task_by_phone_number(
     db,
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     square_connection_config,
     square_dataset_config,
     square_identity_email,
     square_identity_phone_number,
 ) -> None:
     """Full access request based on the Square SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    # Privacy request fixture already caches an email and a phone number, so
+    # clearing those first
+    clear_cache_identities(privacy_request.id)
 
-    privacy_request = PrivacyRequest(
-        id=f"test_square_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"phone_number": square_identity_phone_number})
     privacy_request.cache_identity(identity)
 
@@ -123,7 +135,7 @@ async def test_square_access_request_task_by_phone_number(
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -161,19 +173,24 @@ async def test_square_access_request_task_by_phone_number(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_square_access_request_task_with_multiple_identities(
     db,
     policy,
+    dsr_version,
+    request,
+    privacy_request,
     square_connection_config,
     square_dataset_config,
     square_identity_email,
     square_identity_phone_number,
 ) -> None:
     """Full access request based on the Square SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_square_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(
         **{"email": square_identity_email, "phone_number": square_identity_phone_number}
     )
@@ -183,7 +200,7 @@ async def test_square_access_request_task_with_multiple_identities(
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,
@@ -226,9 +243,15 @@ async def test_square_access_request_task_with_multiple_identities(
 @pytest.mark.integration_saas
 @pytest.mark.integration_square
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_square_erasure_request_task(
     db,
-    policy,
+    privacy_request,
+    dsr_version,
+    request,
     erasure_policy_string_rewrite,
     square_connection_config,
     square_dataset_config,
@@ -237,10 +260,11 @@ async def test_square_erasure_request_task(
     square_test_client,
 ) -> None:
     """Full erasure request based on the Square SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_square_erasure_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.save(db)
+
     identity_kwargs = {"email": square_erasure_identity_email}
     identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
@@ -248,9 +272,9 @@ async def test_square_erasure_request_task(
     dataset_name = square_connection_config.get_saas_config().fides_key
     merged_graph = square_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [square_connection_config],
         identity_kwargs,
@@ -310,7 +334,7 @@ async def test_square_erasure_request_task(
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 
-    x = await graph_task.run_erasure(
+    x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

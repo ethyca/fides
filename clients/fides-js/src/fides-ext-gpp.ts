@@ -130,7 +130,7 @@ const getSupportedApis = () => {
   return supportedApis;
 };
 
-export const initializeGppCmpApi = () => {
+const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
@@ -156,7 +156,10 @@ export const initializeGppCmpApi = () => {
       if (tcSet) {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
       }
-      setGppNoticesProvidedFromExperience({ cmpApi, experience });
+      const sectionsSet = setGppNoticesProvidedFromExperience({
+        cmpApi,
+        experience,
+      });
       const sectionsChanged = setGppOptOutsFromCookieAndExperience({
         cmpApi,
         cookie: event.detail,
@@ -164,6 +167,9 @@ export const initializeGppCmpApi = () => {
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      }
+      if (!tcSet && !sectionsSet.length && !sectionsChanged.length) {
+        cmpApi.setApplicableSections([-1]);
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
@@ -235,5 +241,4 @@ export const initializeGppCmpApi = () => {
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };
-
 initializeGppCmpApi();

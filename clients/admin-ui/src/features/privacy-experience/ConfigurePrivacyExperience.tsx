@@ -61,7 +61,7 @@ const translationSchema = (requirePreferencesLink: boolean) =>
     is_default: Yup.boolean(),
     privacy_preferences_link_label: requirePreferencesLink
       ? Yup.string().required().label("Privacy preferences link label")
-      : Yup.string().label("Privacy preferences link label"),
+      : Yup.string().nullable().label("Privacy preferences link label"),
   });
 
 const validationSchema = Yup.object().shape({

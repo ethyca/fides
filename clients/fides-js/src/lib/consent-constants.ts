@@ -66,6 +66,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     overrideKey: "fides_primary_color",
     validationRegex: /(.*)/,
   },
+  {
+    overrideName: "fidesClearCookie",
+    overrideType: "string",
+    overrideKey: "fides_clear_cookie",
+    validationRegex: /(.*)/,
+  },
 ];
 
 /**

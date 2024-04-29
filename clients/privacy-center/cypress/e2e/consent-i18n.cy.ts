@@ -434,7 +434,7 @@ describe("Consent i18n", () => {
         );
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (t.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label && t.privacy_policy_url) {
           cy.get("#fides-privacy-policy-link").contains(
             t.privacy_policy_link_label
           );
@@ -468,7 +468,7 @@ describe("Consent i18n", () => {
         cy.get(".fides-gpc-banner").contains(t.gpc_title);
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (t.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label && t.privacy_policy_url) {
           cy.get("#fides-privacy-policy-link").contains(
             t.privacy_policy_link_label
           );
@@ -1215,7 +1215,9 @@ describe("Consent i18n", () => {
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
             ).contains(t.stacked_purpose_example);
           }
-          cy.get(".fides-notice-toggle-title").contains(title).click();
+          cy.get(".fides-notice-toggle-title")
+            .contains(title)
+            .click({ force: true });
         });
       });
     };

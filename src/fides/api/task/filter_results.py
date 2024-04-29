@@ -188,9 +188,9 @@ def unpack_fides_connector_results(
             # if we get a ValueError, a given CollectionAddress key
             # already exists in the results dict. Handle that here.
             for key, value in rule_results.items():
-                filtered: Optional[
-                    List[Dict[str, Optional[Any]]]
-                ] = filtered_access_results.get(key)
+                filtered: Optional[List[Dict[str, Optional[Any]]]] = (
+                    filtered_access_results.get(key)
+                )
                 if not filtered:
                     filtered_access_results[key] = value  # type: ignore
                 else:

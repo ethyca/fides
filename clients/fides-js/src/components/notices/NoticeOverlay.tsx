@@ -1,6 +1,6 @@
 import "../fides.css";
 
-import { Fragment, FunctionComponent, h } from "preact";
+import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { getConsentContext } from "../../lib/consent-context";
@@ -31,7 +31,6 @@ import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
-import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 import { useI18n } from "../../lib/i18n/i18n-context";
@@ -306,26 +305,23 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         </div>
       )}
       renderModalFooter={({ onClose, isMobile }) => (
-        <Fragment>
-          <NoticeConsentButtons
-            experience={experience}
-            i18n={i18n}
-            enabledKeys={draftEnabledNoticeKeys}
-            onSave={(
-              consentMethod: ConsentMethod,
-              keys: Array<PrivacyNotice["notice_key"]>
-            ) => {
-              handleUpdatePreferences(consentMethod, keys);
-              onClose();
-            }}
-            isInModal
-            isAcknowledge={isAllNoticeOnly}
-            isMobile={isMobile}
-            saveOnly={privacyNoticeItems.length === 1}
-            options={options}
-          />
-          <PrivacyPolicyLink i18n={i18n} />
-        </Fragment>
+        <NoticeConsentButtons
+          experience={experience}
+          i18n={i18n}
+          enabledKeys={draftEnabledNoticeKeys}
+          onSave={(
+            consentMethod: ConsentMethod,
+            keys: Array<PrivacyNotice["notice_key"]>
+          ) => {
+            handleUpdatePreferences(consentMethod, keys);
+            onClose();
+          }}
+          isInModal
+          isAcknowledge={isAllNoticeOnly}
+          isMobile={isMobile}
+          saveOnly={privacyNoticeItems.length === 1}
+          options={options}
+        />
       )}
     />
   );

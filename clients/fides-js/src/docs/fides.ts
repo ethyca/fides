@@ -91,6 +91,34 @@ export interface Fides {
   initialized: boolean;
 
   /**
+   * The modal's "Trigger link label" text can be customized, per regulation, for each language defined in the `experience`.
+   *
+   * Use this function to get the label in the appropriate language for the user's current locale.
+   * To always return in the default language only, pass the `disableLocalization` option as `true`.
+   *
+   * @example
+   * Getting the link text in the user's current locale (eg. Spanish):
+   * ```ts
+   * console.log(Fides.getModalLinkLabel()); // "Tus preferencias de privacidad"
+   * ```
+   *
+   * Getting the link text in the default locale to match other links on the page:
+   * ```ts
+   * console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
+   * ```
+   *
+   * @example
+   * Applying the link text to a custom modal link element:
+   * ```html
+   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
+   * <script>
+   *  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+   * </script>
+   * ```
+   */
+  getModalLinkLabel: (options?: { disableLocalization: boolean }) => string;
+
+  /**
    * Display the FidesJS modal component on the page, if the current user's
    * session (location, property ID, etc.) matches an `experience` with a modal
    * component. If the `experience` does not match, this function has no effect
@@ -150,34 +178,6 @@ export interface Fides {
   showModal: () => void;
 
   /**
-   * The modal's "Trigger link label" text can be customized, per regulation, for each language defined in the `experience`.
-   *
-   * Use this function to get the label in the appropriate language for the user's current locale.
-   * To always return in the default language only, pass the `disableLocalization` option as `true`.
-   *
-   * @example
-   * Getting the link text in the user's current locale (eg. Spanish):
-   * ```ts
-   * console.log(Fides.getModalLinkLabel()); // "Tus preferencias de privacidad"
-   * ```
-   *
-   * Getting the link text in the default locale to match other links on the page:
-   * ```ts
-   * console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
-   * ```
-   *
-   * @example
-   * Applying the link text to a custom modal link element:
-   * ```html
-   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
-   * <script>
-   *  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
-   * </script>
-   * ```
-   */
-  getModalLinkLabel: (options?: { disableLocalization: boolean }) => string;
-
-  /**
    * Enable the Google Tag Manager (GTM) integration. This should be called
    * immediately after FidesJS is included, and once enabled, FidesJS will
    * automatically push all {@link FidesEvent} events to the GTM data layer as
@@ -209,6 +209,17 @@ export interface Fides {
   init: (config: any) => Promise<void>;
 
   /**
+   * Reinitialize FidesJS with the initial configuration, but taking into account
+   * any new overrides such as the `fides_overrides` global or the query params.
+   * 
+   * This is useful when you're working on a single page application (SPA) and you
+   * want to modify any FidesJS options after initialization - for example,
+   * switching between regular/embedded mode with `fides_embed`, overriding the
+   * user's language with `fides_locale`, etc. 
+   */
+  reinitialize: () => Promise<void>;
+
+  /**
    * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid
@@ -216,11 +227,26 @@ export interface Fides {
    */
 
   /**
+   * @internal
+   */
+  config?: any;
+
+  /**
+   * @internal
+   */
+  experience?: any;
+
+  /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
    * 
    * @internal
    */
   fides_meta: Record<any, any>;
+
+  /**
+   * @internal
+   */
+  geolocation?: any;
 
   /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
@@ -232,27 +258,17 @@ export interface Fides {
   /**
    * @internal
    */
-  experience?: any;
-
-  /**
-   * @internal
-   */
-  geolocation?: any;
-
-  /**
-   * @internal
-   */
   options: any;
 
   /**
    * @internal
    */
-  tcf_consent: any;
+  saved_consent: Record<string, boolean>;
 
   /**
    * @internal
    */
-  saved_consent: Record<string, boolean>;
+  tcf_consent: any;
 
   /**
    * @internal

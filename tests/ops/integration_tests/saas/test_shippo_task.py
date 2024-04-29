@@ -1,13 +1,10 @@
-import random
-
 import pytest
 
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
 from fides.config import get_config
+from tests.conftest import access_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
@@ -20,18 +17,23 @@ def test_shippo_connection_test(shippo_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
 async def test_shippo_access_request_task(
     db,
     policy,
+    privacy_request,
+    dsr_version,
+    request,
     shippo_connection_config,
     shippo_dataset_config,
     shippo_identity_email,
 ) -> None:
     """Full access request based on the Shippo SaaS config"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request = PrivacyRequest(
-        id=f"test_shippo_access_request_task_{random.randint(0, 1000)}"
-    )
     identity = Identity(**{"email": shippo_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -39,7 +41,7 @@ async def test_shippo_access_request_task(
     merged_graph = shippo_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
+    v = access_runner_tester(
         privacy_request,
         policy,
         graph,

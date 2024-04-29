@@ -48,6 +48,18 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Allows custom privacy request fields to be used in request execution.",
     )
+    request_task_ttl: int = Field(
+        default=604800,
+        description="The number of seconds a request task should live.",
+    )
+    state_polling_interval: int = Field(
+        default=30,
+        description="Seconds between polling for Privacy Requests that should change state",
+    )
+    use_dsr_3_0: bool = Field(
+        default=False,
+        description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
+    )
 
     class Config:
         env_prefix = ENV_PREFIX

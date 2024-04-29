@@ -102,6 +102,7 @@ const datamapApi = baseApi.injectEndpoints({
           url: `plus/datamap/minimal?${queryString}`,
         };
       },
+      providesTags: ["Datamap"],
     }),
     getDatamap: build.query<DatamapTableData, { organizationName: string }>({
       query: ({ organizationName }) => ({

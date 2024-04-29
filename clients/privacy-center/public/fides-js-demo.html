@@ -14,8 +14,10 @@
         const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
-        const isValid = VALID_ISO_3166_LOCATION_REGEX.test(geolocation);
-        const src = `/fides.js${isValid ? `?geolocation=${geolocation}` : ""}`;
+        if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
+          params.delete("geolocation");
+        }
+        const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
 
         document.write('<script src="' + src + '"><\/script>');
       })();

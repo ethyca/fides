@@ -1,4 +1,5 @@
 """Tests for the webserver and its various configurations."""
+
 import pytest
 from fastapi import FastAPI
 from starlette.testclient import TestClient

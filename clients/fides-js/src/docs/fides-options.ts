@@ -36,6 +36,15 @@
  */
 export interface FidesOptions {
   /**
+   * When `true`, deletes the `fides_consent` cookie when FidesJS is
+   * initialized, to clear any previously saved consent preferences from the
+   * user's device.
+   * 
+   * Defaults to `false`.
+  */
+  fides_clear_cookie: boolean;
+
+  /**
    * When `true`, disable the FidesJS banner from being shown.
    * 
    * Defaults to `false`.

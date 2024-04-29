@@ -40,6 +40,7 @@ order of precedence:
 
 ### Properties
 
+- [fides\_clear\_cookie](FidesOptions.md#fides_clear_cookie)
 - [fides\_disable\_banner](FidesOptions.md#fides_disable_banner)
 - [fides\_disable\_save\_api](FidesOptions.md#fides_disable_save_api)
 - [fides\_embed](FidesOptions.md#fides_embed)
@@ -48,6 +49,18 @@ order of precedence:
 - [fides\_tcf\_gdpr\_applies](FidesOptions.md#fides_tcf_gdpr_applies)
 
 ## Properties
+
+### fides\_clear\_cookie
+
+• **fides\_clear\_cookie**: `boolean`
+
+When `true`, deletes the `fides_consent` cookie when FidesJS is
+initialized, to clear any previously saved consent preferences from the
+user's device.
+
+Defaults to `false`.
+
+___
 
 ### fides\_disable\_banner
 

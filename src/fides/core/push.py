@@ -1,4 +1,5 @@
 """This module handles the logic required for pushing manifest files to the server."""
+
 from json import loads
 from pprint import pprint
 from typing import Dict, List, Tuple

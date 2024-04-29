@@ -491,8 +491,8 @@ class TestLoadSamples:
             assert len(systems) == 5
             assert len(datasets) == 4
             assert len(policies) == 1
-            assert len(connections) == 3
-            assert len(dataset_configs) == 3
+            assert len(connections) == 2
+            assert len(dataset_configs) == 2
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
@@ -513,13 +513,11 @@ class TestLoadSamples:
             # expected to exist; the others defined in the sample_connections.yml
             # will be ignored since they are missing secrets!
             assert sorted([e.key for e in connections]) == [
-                "cookie_house_loyalty_database",
                 "cookie_house_postgresql_database",
                 "stripe_connector",
             ]
             assert sorted([e.fides_key for e in dataset_configs]) == [
                 "postgres_example_test_dataset",
-                "postgres_example_test_extended_dataset",
                 "stripe_connector",
             ]
 
@@ -588,9 +586,8 @@ class TestLoadSamples:
             assert False, error_message
 
         # Assert that only the connections with all their secrets are returned
-        assert len(connections) == 3
+        assert len(connections) == 2
         assert sorted([e.key for e in connections]) == [
-            "cookie_house_loyalty_database",
             "cookie_house_postgresql_database",
             "stripe_connector",
         ]

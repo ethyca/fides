@@ -16,7 +16,11 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
-from fides.api.util.cache import get_drp_request_body_cache_key, get_identity_cache_key
+from fides.api.util.cache import (
+    cache_task_tracking_key,
+    get_drp_request_body_cache_key,
+    get_identity_cache_key,
+)
 from fides.common.api.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
@@ -558,8 +562,15 @@ class TestDrpRevoke:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.canceled_at is None
 
+    @mock.patch("fides.api.models.privacy_request.celery_app.control.revoke")
     def test_revoke(
-        self, db, api_client: TestClient, generate_auth_header, url, privacy_request
+        self,
+        revoke_task_mock,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_request,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db)
@@ -582,3 +593,55 @@ class TestDrpRevoke:
         assert data["request_id"] == privacy_request.id
         assert data["status"] == "revoked"
         assert data["reason"] == canceled_reason
+
+        assert (
+            not revoke_task_mock.called
+        ), "No celery task cached, so we don't attempt to revoke"
+
+    @mock.patch("fides.api.models.privacy_request.celery_app.control.revoke")
+    def test_revoke_with_request_tasks(
+        self,
+        revoke_task_mock,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        privacy_request,
+        request_task,
+    ):
+        """Generally you can only revoke pending Privacy Requests, but model level
+        logic does have the beginnings to try to revoke celery tasks"""
+
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db)
+        canceled_reason = "Accidentally submitted"
+
+        cache_task_tracking_key(
+            privacy_request.id, "mock_celery_task_id_for_privacy_request"
+        )
+        cache_task_tracking_key(request_task.id, "mock_celery_task_id_for_request_task")
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"request_id": privacy_request.id, "reason": canceled_reason},
+        )
+        assert 200 == response.status_code
+        db.refresh(privacy_request)
+
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+
+        assert revoke_task_mock.called
+        assert revoke_task_mock._mock_call_count == 2
+
+        # Revokes privacy request and request task celery task
+        assert {
+            revoke_task_mock._mock_call_args_list[0][0][0],
+            revoke_task_mock._mock_call_args_list[1][0][0],
+        } == {
+            "mock_celery_task_id_for_request_task",
+            "mock_celery_task_id_for_privacy_request",
+        }
+
+        revoke_task_mock._mock_call_args_list[0][1] == {"terminate": False}

@@ -81,6 +81,26 @@ describe("fides.js API route", () => {
     });
   });
 
+  describe("when GPP is forced as a '?gpp' query param", () => {
+    it("always returns GPP extension regardless of location", () => {
+      cy.request("/fides.js?gpp=true").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=US-ID").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=US-CA").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=FR-IDF").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?geolocation=US-ID").then((response) => {
+        expect(response.body).not.to.match(/window.__gpp/);
+      });
+    });
+  });
+
   it("caches in the browser", () => {
     cy.intercept("/fides.js").as("fidesJS");
 
@@ -182,3 +202,6 @@ describe("fides.js API route", () => {
     });
   });
 });
+
+// Convert this to a module instead of script (allows import/export)
+export {};

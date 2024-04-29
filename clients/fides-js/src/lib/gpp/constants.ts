@@ -6,11 +6,9 @@ import {
   UsUtV1,
   UsVaV1,
 } from "@iabgpp/cmpapi";
+import { GPPSection } from "./types";
 
-export const FIDES_REGION_TO_GPP_SECTION: Record<
-  string,
-  { name: string; id: number; prefix: string }
-> = {
+export const FIDES_REGION_TO_GPP_SECTION: Record<string, GPPSection> = {
   us: { name: UsNatV1.NAME, id: UsNatV1.ID, prefix: "usnat" },
   us_ca: { name: UsCaV1.NAME, id: UsCaV1.ID, prefix: "usca" },
   us_ct: { name: UsCtV1.NAME, id: UsCtV1.ID, prefix: "usct" },

@@ -33,7 +33,7 @@ class PrivacyRequestResumeFormat(BaseModel):
 
 class WebhookJWE(BaseModel):
     """Describes JWE that is given to the user that they need to send with their request
-    to resume a privacy request"""
+    to resume or pre-approve a privacy request"""
 
     webhook_id: str
     scopes: List[str]

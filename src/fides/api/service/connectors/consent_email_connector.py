@@ -152,14 +152,14 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         ):
             return False
 
-        old_workflow_consent_preferences: Optional[
-            Any
-        ] = privacy_request.consent_preferences
-        new_workflow_consent_preferences: List[
-            PrivacyPreferenceHistory
-        ] = filter_privacy_preferences_for_propagation(
-            self.configuration.system,
-            privacy_request.privacy_preferences,  # type: ignore[attr-defined]
+        old_workflow_consent_preferences: Optional[Any] = (
+            privacy_request.consent_preferences
+        )
+        new_workflow_consent_preferences: List[PrivacyPreferenceHistory] = (
+            filter_privacy_preferences_for_propagation(
+                self.configuration.system,
+                privacy_request.privacy_preferences,  # type: ignore[attr-defined]
+            )
         )
         if not (old_workflow_consent_preferences or new_workflow_consent_preferences):
             return False
@@ -217,9 +217,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
 
         for privacy_request in privacy_requests:
             user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
-            filtered_user_identities: Dict[
-                str, Any
-            ] = filter_user_identities_for_connector(self.config, user_identities)
+            filtered_user_identities: Dict[str, Any] = (
+                filter_user_identities_for_connector(self.config, user_identities)
+            )
 
             # Backwards-compatible consent preferences for old workflow
             consent_preference_schemas: List[Consent] = [
@@ -227,10 +227,10 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             ]
 
             # Privacy preferences for new workflow
-            filtered_privacy_preference_records: List[
-                PrivacyPreferenceHistory
-            ] = filter_privacy_preferences_for_propagation(
-                self.configuration.system, privacy_request.privacy_preferences
+            filtered_privacy_preference_records: List[PrivacyPreferenceHistory] = (
+                filter_privacy_preferences_for_propagation(
+                    self.configuration.system, privacy_request.privacy_preferences
+                )
             )
             filtered_privacy_request_schemas: List[
                 MinimalPrivacyPreferenceHistorySchema
