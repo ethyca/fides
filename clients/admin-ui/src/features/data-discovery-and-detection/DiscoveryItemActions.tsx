@@ -1,10 +1,13 @@
-import { ButtonSpinner, CheckIcon, HStack } from "@fidesui/react";
+import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "@fidesui/react";
 import { useState } from "react";
 
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import ActionButton from "./ActionButton";
-import { usePromoteResourceMutation } from "./discovery-detection.slice";
+import {
+  useMuteResourceMutation,
+  usePromoteResourceMutation,
+} from "./discovery-detection.slice";
 import { StagedResourceType } from "./types/StagedResourceType";
 import { findResourceType } from "./utils/findResourceType";
 
@@ -17,6 +20,7 @@ const DiscoveryItemActions: React.FC<DiscoveryItemActionsProps> = ({
 }) => {
   const resourceType = findResourceType(resource);
   const [promoteResourceMutation] = usePromoteResourceMutation();
+  const [muteResourceMutation] = useMuteResourceMutation();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
@@ -40,6 +44,9 @@ const DiscoveryItemActions: React.FC<DiscoveryItemActionsProps> = ({
   const showPromoteAction =
     itemHasClassificationChanges || childItemsHaveClassificationChanges;
 
+  const showMuteAction =
+    itemHasClassificationChanges || childItemsHaveClassificationChanges;
+
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
       {showPromoteAction && (
@@ -49,6 +56,20 @@ const DiscoveryItemActions: React.FC<DiscoveryItemActionsProps> = ({
           onClick={async () => {
             setIsProcessingAction(true);
             await promoteResourceMutation({
+              staged_resource_urn: resource.urn,
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
+        />
+      )}
+      {showMuteAction && (
+        <ActionButton
+          title="Ignore"
+          icon={<ViewOffIcon />}
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await muteResourceMutation({
               staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);
