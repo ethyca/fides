@@ -58,17 +58,10 @@ interface MonitorResultTableProps {
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const [isShowingFullSchema, setIsShowingFullSchema] =
-    useState<boolean>(false);
-
   const diffStatusFilter: DiffStatus[] = [
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
   ];
-  if (isShowingFullSchema) {
-    diffStatusFilter.push(DiffStatus.MONITORED);
-    diffStatusFilter.push(DiffStatus.MUTED);
-  }
 
   const childDiffStatusFilter: DiffStatus[] = [
     DiffStatus.CLASSIFICATION_ADDITION,
@@ -146,23 +139,6 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
-      <TableActionBar>
-        <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="flex-end"
-          width="full"
-        >
-          <Switch
-            size="sm"
-            isChecked={isShowingFullSchema}
-            onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
-          />
-          <Text marginLeft={1} fontSize="xs" fontWeight="medium">
-            Show full schema
-          </Text>
-        </Flex>
-      </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
