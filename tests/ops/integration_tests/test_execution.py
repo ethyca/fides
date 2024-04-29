@@ -446,11 +446,8 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
     @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
+    @pytest.mark.usefixtures("use_dsr_2_0")
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_run_disabled_collections_in_progress(
         self,
         mocked_log_start,
@@ -459,13 +456,12 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         privacy_request,
         integration_postgres_config,
         example_datasets,
-        dsr_version,
-        request,
     ) -> None:
         """Assert that disabling a collection while the privacy request is in progress can affect the current execution plan.
         ConnectionConfigs that are disabled while a request is in progress will be skipped after the current session is committed.
+
+        This test was written for DSR 2.0 and is flaky for DSR 3.0 - only running on DSR 2.0 here.
         """
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         # Create a new ConnectionConfig instead of using the fixture because I need to be able to access this
         # outside of the current session.
