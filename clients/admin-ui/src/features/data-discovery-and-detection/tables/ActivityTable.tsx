@@ -28,6 +28,7 @@ import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findActivityType from "../utils/getResourceActivityLabel";
+import findProjectFromUrn from "../utils/findProjectFromUrn";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -111,6 +112,13 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.urn, {
+        id: "project",
+        cell: (props) => (
+          <DefaultCell value={findProjectFromUrn(props.getValue())} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Project" {...props} />,
       }),
       columnHelper.accessor((resource) => findActivityType(resource), {
         id: "type",

@@ -7,6 +7,7 @@ import ResultStatusCell from "~/features/data-discovery-and-detection/tables/Res
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
+import findProjectFromUrn from "../utils/findProjectFromUrn";
 
 const useDetectionResultColumns = ({
   resourceType,
@@ -27,6 +28,13 @@ const useDetectionResultColumns = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.urn, {
+        id: "project",
+        cell: (props) => (
+          <DefaultCell value={findProjectFromUrn(props.getValue())} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Project" {...props} />,
       }),
       columnHelper.display({
         id: "type",
