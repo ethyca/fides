@@ -1,5 +1,5 @@
 from fides.api.models.privacy_notice import UserConsentPreference
-from fides.api.models.privacy_preference_v2 import (
+from fides.api.models.privacy_preference import (
     ConsentIdentitiesMixin,
     LastServedNoticeV2,
     PrivacyPreferenceHistory,
