@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Flex, Switch, Text, VStack } from "@fidesui/react";
+import { Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -8,12 +8,11 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import {
   FidesTableV2,
   PaginationBar,
-  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";

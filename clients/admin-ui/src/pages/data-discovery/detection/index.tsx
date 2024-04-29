@@ -5,8 +5,7 @@ import { DATA_DETECTION_ROUTE } from "~/features/common/nav/v2/routes";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import DetectionResultTable from "~/features/data-discovery-and-detection/tables/DetectionResultTable";
 
-const DataDetectionActivityPage = () => {
-  return (
+const DataDetectionActivityPage = () => (
     <FixedLayout
       title="Data detection"
       mainProps={{
@@ -21,6 +20,5 @@ const DataDetectionActivityPage = () => {
       <DetectionResultTable />
     </FixedLayout>
   );
-};
 
 export default DataDetectionActivityPage;

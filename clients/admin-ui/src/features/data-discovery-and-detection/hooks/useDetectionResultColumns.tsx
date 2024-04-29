@@ -7,6 +7,7 @@ import ResultStatusCell from "~/features/data-discovery-and-detection/tables/Res
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
+
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 
 const useDetectionResultColumns = ({

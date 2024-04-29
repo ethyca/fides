@@ -27,8 +27,8 @@ import { Database, DiffStatus, StagedResource } from "~/types/api";
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
-import findActivityType from "../utils/getResourceActivityLabel";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
+import findActivityType from "../utils/getResourceActivityLabel";
 
 const EMPTY_RESPONSE = {
   items: [],
