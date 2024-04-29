@@ -78,20 +78,6 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           disabled={isProcessingAction}
         />
       )}
-      {showMuteAction && (
-        <ActionButton
-          title="Ignore"
-          icon={isSchemaType ? <MonitorOffIcon /> : <ViewOffIcon />}
-          onClick={async () => {
-            setIsProcessingAction(true);
-            await muteResourceMutation({
-              staged_resource_urn: resource.urn,
-            });
-            setIsProcessingAction(false);
-          }}
-          disabled={isProcessingAction}
-        />
-      )}
       {showUnmuteAction && (
         <ActionButton
           title="Monitor"
@@ -121,7 +107,6 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           disabled={isProcessingAction}
         />
       )}
-
       {showRemoveAction && (
         <ActionButton
           title="Drop"
@@ -131,6 +116,21 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
               monitor_config_id: resource.monitor_config_id,
+            });
+            setIsProcessingAction(false);
+          }}
+          disabled={isProcessingAction}
+        />
+      )}
+      {/* Negative actions should be last */}
+      {showMuteAction && (
+        <ActionButton
+          title="Ignore"
+          icon={isSchemaType ? <MonitorOffIcon /> : <ViewOffIcon />}
+          onClick={async () => {
+            setIsProcessingAction(true);
+            await muteResourceMutation({
+              staged_resource_urn: resource.urn,
             });
             setIsProcessingAction(false);
           }}
