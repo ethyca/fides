@@ -41,7 +41,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
       : fidesLangKey
   );
 
-  const handleCategoryChange = ({ value }) => {
+  const handleCategoryChange = ({ value }: { value: string }) => {
     updateResourceCategoryMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id,
@@ -52,7 +52,8 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
   const options: Options<{ value: string; label: string }> = dataCategories.map(
     (category) => ({
       value: category.fides_key,
-      label: getDataCategoryDisplayName(category.fides_key),
+      // Actually, it's a react node because it contains a <strong> element, bit the library handles it
+      label: getDataCategoryDisplayName(category.fides_key) as string,
     })
   );
 
@@ -87,8 +88,8 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
           <Select
             placeholder="Select option"
             defaultValue={fidesLangKey}
-            onChange={handleCategoryChange}
-            options={options}
+            onChange={handleCategoryChange as any}
+            options={options as any}
             size="sm"
             menuPosition="absolute"
             menuPlacement="auto"
