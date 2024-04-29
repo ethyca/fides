@@ -6,6 +6,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 
 import DiscoveryItemActions from "../DiscoveryItemActions";
+import ResultStatusCell from "../tables/ResultStatusCell";
 import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
 
 const useDiscoveryResultColumns = ({
@@ -25,7 +26,7 @@ const useDiscoveryResultColumns = ({
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "tables",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
       }),
       columnHelper.display({
@@ -51,7 +52,7 @@ const useDiscoveryResultColumns = ({
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
       }),
       columnHelper.display({
