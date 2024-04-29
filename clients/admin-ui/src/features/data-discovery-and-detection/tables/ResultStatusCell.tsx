@@ -1,4 +1,4 @@
-import { Flex, Text } from "@fidesui/react";
+import { Flex, Text, Tooltip } from "@fidesui/react";
 
 import { CircleIcon } from "~/features/common/Icon/CircleIcon";
 import { RightDownArrowIcon } from "~/features/common/Icon/RightDownArrowIcon";
@@ -11,13 +11,29 @@ import { StagedResource } from "~/types/api";
 const getResourceChangeIcon = (changeType: ResourceChangeType) => {
   switch (changeType) {
     case ResourceChangeType.ADDITION:
-      return <RightUpArrowIcon color="green.400" boxSize={2} mr={2} />;
+      return (
+        <Tooltip label="Addition">
+          <RightUpArrowIcon color="green.400" boxSize={2} mr={2} />
+        </Tooltip>
+      );
     case ResourceChangeType.REMOVAL:
-      return <RightDownArrowIcon color="red.400" boxSize={2} mr={2} />;
+      return (
+        <Tooltip label="Removal">
+          <RightDownArrowIcon color="red.400" boxSize={2} mr={2} />
+        </Tooltip>
+      );
     case ResourceChangeType.CLASSIFICATION:
-      return <TagIcon color="orange.400" boxSize={3} mr={2} />;
+      return (
+        <Tooltip label="Classification">
+          <TagIcon color="orange.400" boxSize={3} mr={2} />
+        </Tooltip>
+      );
     case ResourceChangeType.CHANGE:
-      return <CircleIcon color="blue.400" boxSize={2} mr={2} />;
+      return (
+        <Tooltip label="Update">
+          <CircleIcon color="blue.400" boxSize={2} mr={2} />
+        </Tooltip>
+      );
     default:
       return null;
   }
