@@ -142,9 +142,9 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
-    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
+    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -1160,9 +1160,9 @@ def _approve_request(
         "action": AuditLogAction.approved,
         "message": "",
         "user_id": user_id if user_id else None,
-        "webhook_id": webhook_id
-        if webhook_id
-        else None,  # the last webhook reply received is what approves the entire request
+        "webhook_id": (
+            webhook_id if webhook_id else None
+        ),  # the last webhook reply received is what approves the entire request
     }
     AuditLog.create(
         db=db,
@@ -1226,11 +1226,11 @@ def deny_privacy_request(
     user_id = client.user_id
 
     def _deny_request(
-            db: Session,
-            config_proxy: ConfigProxy,
-            privacy_request: PrivacyRequest,
-            webhook_id: Optional[str],
-            user_id: Optional[str],
+        db: Session,
+        config_proxy: ConfigProxy,
+        privacy_request: PrivacyRequest,
+        webhook_id: Optional[str],
+        user_id: Optional[str],
     ) -> None:
         """Method for how to process requests - denied"""
         privacy_request.status = PrivacyRequestStatus.denied
@@ -1305,6 +1305,7 @@ def mark_privacy_request_pre_approve_eligible(
         webhook.key,
         webhook.connection_config.key,
     )
+
     try:
         PreApprovalWebhookReply.create(
             db=db,
@@ -1343,11 +1344,17 @@ def mark_privacy_request_pre_approve_eligible(
             privacy_request_id,
         )
         return
-    # Check if all replies are true
-    replies_for_privacy_request = PreApprovalWebhookReply.filter(
-        db=db,
-        conditions=(PreApprovalWebhookReply.privacy_request_id == privacy_request_id),
-    ).all()
+
+    # Check if all replies are true.  Reply ignored if its webhook has since been deleted.
+    replies_for_privacy_request = (
+        db.query(PreApprovalWebhookReply)
+        .filter(
+            PreApprovalWebhookReply.privacy_request_id == privacy_request_id,
+            PreApprovalWebhookReply.webhook_id.isnot(None),
+        )
+        .all()
+    )
+
     if not all(reply.is_eligible for reply in replies_for_privacy_request):
         logger.info(
             "Not all pre-approval webhooks have responded with eligible for privacy request '{}'. Cannot automatically approve request.",
