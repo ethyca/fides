@@ -23,10 +23,10 @@ import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import { Database, DiffStatus, StagedResource } from "~/types/api";
+
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
-
 import findActivityType from "../utils/getResourceActivityLabel";
 
 const EMPTY_RESPONSE = {

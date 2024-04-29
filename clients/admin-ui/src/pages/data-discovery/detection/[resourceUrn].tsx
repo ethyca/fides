@@ -21,8 +21,8 @@ const DataDetectionActivityPage = () => {
         parentTitle="Data detection"
         parentLink={DATA_DETECTION_ROUTE}
         resourceUrn={resourceUrn}
-        onPathClick={(resourceUrn) =>
-          navigateToDetectionResults({ resourceUrn })
+        onPathClick={(newResourceUrn) =>
+          navigateToDetectionResults({ resourceUrn: newResourceUrn })
         }
       />
       <DetectionResultTable resourceUrn={resourceUrn} />

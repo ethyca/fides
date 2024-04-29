@@ -8,18 +8,18 @@ import {
 import { useState } from "react";
 
 import { DiffStatus, StagedResource } from "~/types/api";
+
 import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
 import { TrashCanOutlineIcon } from "../common/Icon/TrashCanOutlineIcon";
 import ActionButton from "./ActionButton";
-import { findResourceType } from "./utils/findResourceType";
-
 import {
   useConfirmResourceMutation,
   useMuteResourceMutation,
   useUnmuteResourceMutation,
 } from "./discovery-detection.slice";
 import { StagedResourceType } from "./types/StagedResourceType";
+import { findResourceType } from "./utils/findResourceType";
 
 interface DetectionItemActionProps {
   resource: StagedResource;

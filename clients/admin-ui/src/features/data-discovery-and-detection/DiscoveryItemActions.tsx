@@ -2,11 +2,11 @@ import { ButtonSpinner, CheckIcon, HStack } from "@fidesui/react";
 import { useState } from "react";
 
 import { DiffStatus, StagedResource } from "~/types/api";
-import ActionButton from "./ActionButton";
-import { findResourceType } from "./utils/findResourceType";
 
+import ActionButton from "./ActionButton";
 import { usePromoteResourceMutation } from "./discovery-detection.slice";
 import { StagedResourceType } from "./types/StagedResourceType";
+import { findResourceType } from "./utils/findResourceType";
 
 interface DiscoveryItemActionsProps {
   resource: StagedResource;

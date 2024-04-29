@@ -21,8 +21,8 @@ const DataDiscoveryActivityPage = () => {
         parentTitle="Data discovery"
         parentLink={DATA_DISCOVERY_ROUTE}
         resourceUrn={resourceUrn}
-        onPathClick={(resourceUrn) =>
-          navigateToDiscoveryResults({ resourceUrn })
+        onPathClick={(newResourceUrn) =>
+          navigateToDiscoveryResults({ resourceUrn: newResourceUrn })
         }
       />
       <DiscoveryResultTable resourceUrn={resourceUrn} />

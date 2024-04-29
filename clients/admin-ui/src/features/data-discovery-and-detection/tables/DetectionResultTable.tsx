@@ -157,7 +157,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
             isChecked={isShowingFullSchema}
             onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
           />
-          <Text marginLeft={1} fontSize="xs" fontWeight={"medium"}>
+          <Text marginLeft={1} fontSize="xs" fontWeight="medium">
             Show full schema
           </Text>
         </Flex>

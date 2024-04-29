@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Box, Flex, HStack, Switch, Text, VStack } from "@fidesui/react";
+import { Flex, Switch, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -24,7 +24,6 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import { DiffStatus, StagedResource } from "~/types/api";
-import ShowFullResultsSwitch from "../ShowFullResultsSwitch";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -159,7 +158,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
             isChecked={isShowingFullSchema}
             onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
           />
-          <Text marginLeft={1} fontSize="xs" fontWeight={"medium"}>
+          <Text marginLeft={1} fontSize="xs" fontWeight="medium">
             Show full schema
           </Text>
         </Flex>

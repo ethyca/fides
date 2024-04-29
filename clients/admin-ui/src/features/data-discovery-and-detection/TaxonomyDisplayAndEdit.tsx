@@ -1,9 +1,10 @@
 import { Badge, Box, EditIcon } from "@fidesui/react";
-import { Options, OptionsOrGroups, Select } from "chakra-react-select";
+import { Options, Select } from "chakra-react-select";
 import { useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { StagedResource } from "~/types/api";
+
 import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
 
 interface TaxonomyDisplayAndEditProps {

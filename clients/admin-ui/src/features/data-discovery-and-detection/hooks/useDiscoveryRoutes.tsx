@@ -4,12 +4,11 @@ import {
   DATA_DETECTION_ROUTE_DETAIL,
   DATA_DISCOVERY_ROUTE_DETAIL,
 } from "~/features/common/nav/v2/routes";
-import { DiffStatus, StagedResource } from "~/types/api";
 
 const useDiscoveryRoutes = () => {
   const router = useRouter();
   const monitorId = router.query.monitorId as string;
-  const resourceUrn = router.query.resourceUrn as string;
+  const currentResourceUrn = router.query.resourceUrn as string;
 
   const navigateToDetectionResults = ({
     resourceUrn,
@@ -39,7 +38,7 @@ const useDiscoveryRoutes = () => {
 
   return {
     monitorId,
-    resourceUrn,
+    resourceUrn: currentResourceUrn,
     navigateToDetectionResults,
     navigateToDiscoveryResults,
   };
