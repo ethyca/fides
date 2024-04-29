@@ -41,6 +41,7 @@ The types of changes are:
 - Fixed bug where Language selector button was overlapping other buttons when Privacy Policy wasn't present. [#4815](https://github.com/ethyca/fides/pull/4815)
 - Fixed bug where icons of the Language selector were displayed too small on some sites [#4815](https://github.com/ethyca/fides/pull/4815)
 - Fixed bug where GPP US National Section was incorrectly included when the State by State approach was selected [#4823]https://github.com/ethyca/fides/pull/4823
+- Fixed DSR 3.0 Scheduling bug where Approved Privacy Requests that failed wouldn't change status [#4837](https://github.com/ethyca/fides/pull/4837)
 
 ## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
 
