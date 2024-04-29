@@ -87,6 +87,8 @@ div.fides-overlay {
 }
 
 div#fides-overlay-wrapper * {
+  /* some websites may have this set globally, but not all.
+  Let's set it globaly on the overlay for consistency and predictability. */
   box-sizing: border-box;
 }
 
@@ -586,6 +588,7 @@ div.fides-i18n-pseudo-button {
   width: 34px;
   height: 24px;
   justify-content: end;
+  box-sizing: content-box;
 }
 
 div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
