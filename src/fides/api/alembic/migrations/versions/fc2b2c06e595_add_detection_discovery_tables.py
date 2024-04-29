@@ -83,6 +83,33 @@ def upgrade():
         ["resource_type"],
         unique=False,
     )
+
+    op.create_table(
+        "monitorconfig",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column("connection_config_id", sa.String(), nullable=False),
+        sa.Column(
+            "classify_params", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+        sa.ForeignKeyConstraint(
+            ["connection_config_id"],
+            ["connectionconfig.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+
     # ### end Alembic commands ###
 
 
@@ -92,4 +119,10 @@ def downgrade():
     op.drop_index(op.f("ix_stagedresource_key"), table_name="stagedresource")
     op.drop_index(op.f("ix_stagedresource_id"), table_name="stagedresource")
     op.drop_table("stagedresource")
+
+    op.drop_index(op.f("ix_monitorconfig_id"), table_name="monitorconfig")
+    op.drop_index(
+        op.f("ix_monitorconfig_connection_config_id"), table_name="monitorconfig"
+    )
+    op.drop_table("monitorconfig")
     # ### end Alembic commands ###

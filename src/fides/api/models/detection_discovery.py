@@ -3,12 +3,13 @@ from __future__ import annotations
 from enum import Enum
 from typing import Iterable
 
-from sqlalchemy import ARRAY, Column, DateTime, String
+from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+from fides.api.models.connectionconfig import ConnectionConfig
 
 # class MonitorExecution(BaseModel):
 #     id: str
@@ -28,6 +29,30 @@ class DiffStatus(Enum):
     CLASSIFICATION_UPDATE = "classification_update"
     MONITORED = "monitored"
     MUTED = "muted"
+
+
+class MonitorConfig(Base):
+    """
+    Monitor configuration used for data detection and discovery.
+
+    Each monitor configuration references `ConnectionConfig`, which provide it with underlying
+    configuration details used in connecting to the external data store.
+    """
+
+    connection_config_id = Column(
+        String,
+        ForeignKey(ConnectionConfig.id_field_path),
+        nullable=False,
+        index=True,
+    )
+    classify_params = Column(
+        MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )  # parameters that the monitor will use for classification execution
+
+    # TODO: establish column(s) for parameterization of filters/scoping within the monitors, i.e. for particular databases
+    # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
+
+    connection_config = relationship(ConnectionConfig)
 
 
 class StagedResource(Base):

@@ -2,7 +2,12 @@ import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
-from fides.api.models.detection_discovery import DiffStatus, StagedResource
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.detection_discovery import (
+    DiffStatus,
+    MonitorConfig,
+    StagedResource,
+)
 
 
 class TestStagedResourceModel:
@@ -149,4 +154,39 @@ class TestStagedResourceModel:
         assert updated_resource.child_diff_statuses == {
             DiffStatus.REMOVAL.value: 1,
             DiffStatus.CLASSIFICATION_ADDITION.value: 10,
+        }
+
+
+class TestMonitorConfigModel:
+    @pytest.fixture
+    def create_monitor_config(self, db: Session, connection_config: ConnectionConfig):
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "num_samples": 25,
+                    "num_threads": 2,
+                },
+            },
+        )
+        yield mc
+        db.delete(mc)
+
+    def test_create_staged_resource(
+        self, db: Session, create_monitor_config, connection_config: ConnectionConfig
+    ) -> None:
+        """
+        Creation fixture creates the config, this tests that it was created successfully
+        and that we can access its attributes as expected
+        """
+        mc: MonitorConfig = MonitorConfig.get(db=db, object_id=create_monitor_config.id)
+        mc_connection_config = mc.connection_config
+        assert mc_connection_config.id == connection_config.id
+        assert mc_connection_config.key == connection_config.key
+        assert mc_connection_config.connection_type == connection_config.connection_type
+
+        assert mc.classify_params == {
+            "num_samples": 25,
+            "num_threads": 2,
         }
