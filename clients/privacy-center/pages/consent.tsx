@@ -275,7 +275,7 @@ const Consent: NextPage = () => {
           {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
           <ConsentToggles storePreferences={storeConsentPreferences} />
         </Stack>
-      ) : null}
+      )}
     </Stack>
   );
 };
