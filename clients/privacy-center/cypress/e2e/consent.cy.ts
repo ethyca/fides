@@ -299,9 +299,18 @@ describe("Consent settings", () => {
         cy.getToggle().uncheck();
       });
       cy.getByTestId("save-btn").click();
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+        const cookie = JSON.parse(
+          decodeURIComponent(cookieJson!.value)
+        ) as FidesCookie;
+        expect(cookie.fides_meta.consentMethod).to.eql("save");
+      });
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
+      // Ensure both fidesInitialized calls are made. Needs 1000, doesn't work with 500
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(1000);
       cy.waitUntilFidesInitialized().then(() => {
         cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
         cy.window().then((win) => {
@@ -312,6 +321,7 @@ describe("Consent settings", () => {
             analytics: true,
             gpc_test: true,
           });
+          expect(win).to.have.property("dataLayer").to.have.lengthOf(2);
 
           // GTM configuration
           expect(win)
@@ -325,6 +335,27 @@ describe("Consent settings", () => {
                   analytics: true,
                   gpc_test: true,
                 },
+                extraDetails: undefined,
+                fides_string: undefined,
+              },
+            });
+
+          // fidesInitialized is called twice
+          expect(win)
+            .to.have.nested.property("dataLayer[1]")
+            .that.eql({
+              event: "FidesInitialized",
+              Fides: {
+                consent: {
+                  data_sales: false,
+                  tracking: false,
+                  analytics: true,
+                  gpc_test: true,
+                },
+                extraDetails: {
+                  consentMethod: "save",
+                },
+                fides_string: undefined,
               },
             });
 
@@ -426,6 +457,8 @@ describe("Consent settings", () => {
                   tracking: true,
                   analytics: true,
                 },
+                extraDetails: undefined,
+                fides_string: undefined,
               },
             });
 

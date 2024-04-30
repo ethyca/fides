@@ -664,6 +664,45 @@ describe("Fides-js TCF", () => {
             vendorsDisclosed
           );
         });
+        // verify the data layer variables
+        cy.get("@dataLayerPush")
+          .should("have.been.calledThrice")
+          // First call should be from initialization, before the user accepts all
+          .its("firstCall.args.0")
+          .should("deep.equal", {
+            event: "FidesInitialized",
+            Fides: {
+              consent: {},
+              extraDetails: undefined,
+              fides_string: undefined,
+            },
+          });
+        cy.get("@dataLayerPush")
+          // Second call is when the user accepts all
+          .its("secondCall.args.0")
+          .should("deep.equal", {
+            event: "FidesUpdating",
+            Fides: {
+              consent: {},
+              extraDetails: {
+                consentMethod: "accept",
+              },
+              fides_string: "CP94g0AP94g0AGXABBENArEoABaAAEAAAAAAABEAAAAA,1~",
+            },
+          });
+        cy.get("@dataLayerPush")
+          // Third call is when the preferences finish updating
+          .its("thirdCall.args.0")
+          .should("deep.equal", {
+            event: "FidesUpdated",
+            Fides: {
+              consent: {},
+              extraDetails: {
+                consentMethod: "accept",
+              },
+              fides_string: "CP94g0AP94g0AGXABBENArEoABaAAEAAAAAAABEAAAAA,1~",
+            },
+          });
       });
 
       it("can opt out of all", () => {

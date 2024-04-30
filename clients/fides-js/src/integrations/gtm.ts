@@ -1,5 +1,5 @@
 import { FidesEventDetail } from "../lib/events";
-import { NoticeConsent } from "../lib/consent-types";
+import { FidesEvent } from "../docs";
 
 declare global {
   interface Window {
@@ -10,9 +10,7 @@ declare global {
 /**
  * Defines the structure of the Fides variable pushed to the GTM data layer
  */
-interface FidesVariable {
-  consent: NoticeConsent;
-}
+type FidesVariable = FidesEvent["detail"];
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
 const pushFidesVariableToGTM = (fidesEvent: {
@@ -26,6 +24,8 @@ const pushFidesVariableToGTM = (fidesEvent: {
   // Construct the Fides variable that will be pushed to GTM
   const Fides: FidesVariable = {
     consent: fidesEvent.detail.consent,
+    extraDetails: fidesEvent.detail.extraDetails,
+    fides_string: fidesEvent.detail.fides_string,
   };
 
   // Push to the GTM dataLayer
