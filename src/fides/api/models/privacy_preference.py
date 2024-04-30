@@ -133,12 +133,17 @@ class ConsentIdentitiesMixin:
         return ProvidedIdentity.hash_value(value, encoding)
 
 
-class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
+class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
     """Stores the latest saved privacy preferences for a given user
 
     Email/phone/fides device must be unique.  If we later tie identities together, these records
     are consolidated.
     """
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        """Table name is currentprivacypreferencev2 - currentprivacypreference was deprecated and removed"""
+        return "currentprivacypreferencev2"
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
@@ -171,11 +176,16 @@ class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
     )
 
 
-class LastServedNoticeV2(ConsentIdentitiesMixin, Base):
+class LastServedNotice(ConsentIdentitiesMixin, Base):
     """Stores the latest served notices for a given user
 
     Email/device id/phone must be unique in this table.
     """
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        """Table name is lastservednoticev2 - lastservednotice was deprecated and removed"""
+        return "lastservednoticev2"
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
@@ -308,7 +318,7 @@ class ServedNoticeHistory(ConsentReportingMixinV2, Base):
 
     serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
 
-    # Identifier generated when a LastServedNoticeV2 is created and returned in the response.
+    # Identifier generated when a LastServedNotice is created and returned in the response.
     # This is saved on all corresponding ServedNoticeHistory records and can be used to link
     # PrivacyPreferenceHistory records.
     served_notice_history_id = Column(String, index=True)

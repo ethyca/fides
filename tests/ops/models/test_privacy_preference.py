@@ -1,7 +1,7 @@
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_preference import (
     ConsentIdentitiesMixin,
-    LastServedNoticeV2,
+    LastServedNotice,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
 )
@@ -126,4 +126,4 @@ class TestConsentIdentitiesHashMixin:
 
 class TestServedNoticeHistoryId:
     def test_generate_served_notice_history_id(self):
-        assert LastServedNoticeV2.generate_served_notice_history_id().startswith("ser_")
+        assert LastServedNotice.generate_served_notice_history_id().startswith("ser_")
