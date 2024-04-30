@@ -24,6 +24,7 @@ const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
       size="xl"
       {...props}
       onConfirm={() => onConfirm(downloadType)}
+      data-testid="export-modal"
     >
       <Flex direction="column" gap={3} pb={3}>
         <Text textAlign="left">
@@ -35,6 +36,7 @@ const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
           <Select
             value={downloadType}
             onChange={(e) => setDownloadType(e.target.value as ExportFormat)}
+            data-testid="export-format-select"
           >
             <option value={ExportFormat.csv}>CSV</option>
             <option value={ExportFormat.xlsx}>XLSX</option>

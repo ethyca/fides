@@ -40,7 +40,7 @@ const StandardDialog = ({
   return (
     <Modal closeOnOverlayClick={isLoading} {...props}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent data-testid={testId}>
         {heading && <ModalHeader>{heading}</ModalHeader>}
         <ModalCloseButton disabled={isLoading} />
         {children && <ModalBody>{children}</ModalBody>}
@@ -66,7 +66,7 @@ const StandardDialog = ({
           <Button
             colorScheme="primary"
             onClick={onConfirm}
-            data-testid={`${testId ? `${testId}-` : ""}cancel-btn`}
+            data-testid={`${testId ? `${testId}-` : ""}continue-btn`}
             isLoading={isLoading}
             {...cancelButtonThemingProps}
           >
