@@ -310,7 +310,7 @@ describe("Consent settings", () => {
       cy.get("#consent-json");
       // Ensure both fidesInitialized calls are made.
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(2000);
+      cy.wait(3000);
       cy.waitUntilFidesInitialized().then(() => {
         cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
         cy.window().then((win) => {
