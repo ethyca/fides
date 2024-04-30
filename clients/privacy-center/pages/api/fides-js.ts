@@ -8,10 +8,10 @@ import {
   constructFidesRegionString,
   fetchExperience,
   ComponentType,
-  debugLog,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
+import { debugLog } from "~/common/logger";
 import { safeLookupPropertyId } from "~/common/property-id";
 
 // one hour, how long the client should cache fides.js for
@@ -82,8 +82,36 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Load the configured consent options (data uses, defaults, etc.) from environment
+  /**
+   * Step 1: Load the server environment, including all settings from ENV
+   * variables, legacy config.json options, etc.
+   */
   const environment = await loadPrivacyCenterEnvironment();
+
+  /**
+   * Step 2: Initialize our debugging log context, which we use to provide
+   * consistent traces when troubleshooting.
+   */
+  const logContext: any = {
+    req,
+    res,
+    isOverlayEnabled: environment.settings.IS_OVERLAY_ENABLED,
+    isPrefetchEnabled: environment.settings.IS_PREFETCH_ENABLED,
+    geolocation: null,
+    propertyId: null,
+    isExperiencePrefetched: false,
+    experienceConfigName: null,
+    experienceConfigComponent: null,
+    isTcfEnabled: false,
+    isGppEnabled: false,
+    isCustomCSSIncluded: false,
+  };
+  debugLog("/fides.js started handling request", logContext);
+
+  /**
+   * Step 3: Parse any "legacy" consent options from the config.json, which are
+   * loaded into the fides.js bundle as defaults
+   */
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
     const configuredOptions = environment.config.consent.page.consentOptions;
@@ -94,21 +122,49 @@ export default async function handler(
     }));
   }
 
+  /**
+   * Step 4: Lookup the geolocation for the request, if provided via CloudFront
+   * headers or the "geolocation" query param
+   */
+  const geolocation = await lookupGeolocation(req);
+  logContext.geolocation = geolocation;
+  debugLog(
+    `/fides.js geolocation lookup finished (geolocation=${JSON.stringify(
+      geolocation
+    )})})`,
+    logContext
+  );
+
+  // Check to see if a fidesString should be overriden for all fides.js bundles
+  // DEFER: Remove this custom setting, it's dangerous!
   const fidesString = environment.settings.FIDES_STRING;
 
-  // Check if a geolocation was provided via headers or query param
-  const geolocation = await lookupGeolocation(req);
-
+  /**
+   * Step 5: Lookup the propertyId for the request, if provided with the
+   * "property_id" query param
+   *
+   * NOTE: This is a "safe" lookup that will throw errors if a propertyId is
+   * provided but a server-side fetch cannot be supported (e.g. no geolocation)
+   */
   const propertyId = safeLookupPropertyId(
     req,
     geolocation,
     environment,
     fidesString
   );
+  logContext.propertyId = propertyId;
+  debugLog(
+    `/fides.js propertyId lookup finished (propertyId=${JSON.stringify(
+      propertyId
+    )})`,
+    logContext
+  );
 
-  // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
-  // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
-
+  /**
+   * Step 6: Try to "prefetch" the experience for this request from the Fides
+   * API server-side. This allows the experience to be preloaded into the
+   * fides.js bundle in the response so it can initialize instantly!
+   */
   let experience;
   if (
     geolocation &&
@@ -120,8 +176,8 @@ export default async function handler(
 
     if (fidesRegionString) {
       debugLog(
-        environment.settings.DEBUG,
-        "Fetching relevant experiences from server-side..."
+        `/fides.js pre-fetching experience server-side from Fides API (region=${fidesRegionString} and property_id=${propertyId})...`,
+        logContext
       );
       experience = await fetchExperience(
         fidesRegionString,
@@ -134,32 +190,67 @@ export default async function handler(
     }
   }
 
+  // Update our logger context so it's clear if a server-side experience succeeded
+  logContext.isExperiencePrefetched = Boolean(experience);
+  logContext.experienceConfigName = experience?.experience_config?.name;
+  logContext.experienceConfigComponent =
+    experience?.experience_config?.component;
+  debugLog(
+    `/fides.js experience lookup finished (isExperiencePrefetched=${logContext.isExperiencePrefetched}, experienceConfigName=${logContext.experienceConfigName})`,
+    logContext
+  );
+
   // These query params are used for testing purposes only, and should not be used
   // in production. They allow for the config to be injected by the test framework
   // and delay the initialization of fides.js until the test framework is ready.
   const { e2e: e2eQuery, tcf: tcfQuery } = req.query;
 
-  // We determine server-side whether or not to send the TCF bundle, which is based
-  // on whether or not the experience is marked as TCF. This means for TCF, we *must*
-  // be able to prefetch the experience. This can also be forced via query param for
-  // internal testing when we know the experience will be injected by the test framework.
+  /**
+   * Step 7: Enable TCF in the fides.js bundle, if needed.
+   *
+   * We *have* to determine whether or not to send the TCF bundle server-side,
+   * since we need to serve different JavaScript files. Therefore, for TCF, we
+   * *must* be able to prefetch the experience successfully above.
+   *
+   * If an experience cannot be prefetched, TCF can also be enabled with the
+   * "tcf" query param, or by the IS_FORCED_TCF server setting.
+   */
   const tcfEnabled =
     tcfQuery === "true" ||
     (experience
       ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
       : environment.settings.IS_FORCED_TCF);
+  logContext.isTcfEnabled = tcfEnabled;
+  debugLog(
+    `/fides.js TCF configuration finished (isTcfEnabled=${logContext.isTcfEnabled})`,
+    logContext
+  );
 
-  // Check for a provided "gpp" query param.
-  // If the experience has GPP enabled, or the query param is present,
-  // include the GPP extension in the bundle.
+  /**
+   * Step 8: Enable GPP in the fides.js bundle, if needed.
+   *
+   * Similar to TCF, this is based on the prefetched experience, or by providing
+   * the "gpp" query param in the request.
+   *
+   */
   const { gpp: forcedGppQuery } = req.query;
   if (forcedGppQuery === "true" && experience === undefined) {
     experience = {};
   }
   const gppEnabled =
     !!experience?.gpp_settings?.enabled || forcedGppQuery === "true";
+  logContext.isGppEnabled = gppEnabled;
+  debugLog(
+    `/fides.js GPP configuration finished (isGppEnabled=${logContext.isGppEnabled})`,
+    logContext
+  );
 
-  // Create the FidesConfig JSON that will be used to initialize fides.js unless in E2E mode (see below)
+  /**
+   * Step 9: Create the FidesConfig JSON that will be used to initialize fides.js.
+   *
+   * NOTE: This config object will be discarded if the "e2e" query param is
+   * provided, so that E2E tests can inject their own configuration (see below)
+   */
   const fidesConfig: FidesConfig = {
     consent: {
       options,
@@ -198,9 +289,13 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
+  /**
+   * Step 10: Start building the fides.js bundle for this request by loading the
+   * necessary JavaScript files from public/lib/...
+   */
   debugLog(
-    environment.settings.DEBUG,
-    "Bundling generic fides.js & Privacy Center configuration together..."
+    "/fides.js finished setup, start bundling fides.js, extensions, and configuration together...",
+    logContext
   );
   const fidesJsFile = tcfEnabled
     ? "public/lib/fides-tcf.js"
@@ -213,10 +308,10 @@ export default async function handler(
   let fidesGPP: string = "";
   if (gppEnabled) {
     debugLog(
-      environment.settings.DEBUG,
-      `GPP extension ${
+      `/fides.js bundling fides-ext-gpp.js extension (GPP was ${
         forcedGppQuery === "true" ? "forced" : "enabled"
-      }, bundling fides-ext-gpp.js...`
+      })...`,
+      { req, res }
     );
     const fidesGPPBuffer = await fsPromises.readFile(
       "public/lib/fides-ext-gpp.js"
@@ -227,9 +322,23 @@ export default async function handler(
     }
   }
 
+  /**
+   * Step 11: Fetch any custom CSS stylesheet from the Fides API to be included
+   */
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
+  logContext.isCustomCSSIncluded = Boolean(customFidesCss);
+  debugLog(
+    `/fides.js custom CSS lookup finished (isCustomCSSIncluded=${logContext.isCustomCSSIncluded})`,
+    logContext
+  );
 
+  /**
+   * Step 12: Create the fides.js bundle! This is as simple as some basic string
+   * concatenation, with the entire contents of the module wrapped in a IIFE
+   * (immediately-invoked-function-expression) so it is ready to be executed in
+   * the user's browser
+   */
   const script = `
   (function () {
     // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request
@@ -260,13 +369,20 @@ export default async function handler(
   })();
   `;
 
-  // Instruct any caches to store this response, since these bundles do not change often
+  /**
+   * Step 12: Send the completed fides.js bundle to the user, ready to be loaded
+   * directly into a page!
+   *
+   * Note that we set relevant Cache-Control directives to instruct caches to
+   * store this response, since these bundles do not change often. We also set
+   * the "Vary" header with the CloudFront geolocation headers, to instruct
+   * caches to store different responses for different geolocations, since the
+   * bundles are expected to be different for different locations.
+   */
   const cacheHeaders: CacheControl = {
     "max-age": FIDES_JS_MAX_AGE_SECONDS,
     public: true,
   };
-
-  // Send the bundled script, ready to be loaded directly into a page!
   res
     .status(200)
     .setHeader("Content-Type", "application/javascript")
@@ -275,6 +391,10 @@ export default async function handler(
     .setHeader("Cache-Control", stringify(cacheHeaders))
     .setHeader("Vary", LOCATION_HEADERS)
     .send(script);
+  debugLog(
+    `/fides.js response complete! (statusCode=${res.statusCode})`,
+    logContext
+  );
 }
 
 async function fetchCustomFidesCss(

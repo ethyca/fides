@@ -9,8 +9,8 @@ const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
 // Constants for the supported CloudFront geolocation headers
 // (see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/adding-cloudfront-headers.html#cloudfront-headers-viewer-location)
-const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
-const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
+export const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
+export const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
 export const LOCATION_HEADERS = [
   CLOUDFRONT_HEADER_COUNTRY,
   CLOUDFRONT_HEADER_REGION,

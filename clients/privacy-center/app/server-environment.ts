@@ -295,6 +295,7 @@ export const loadPrivacyCenterEnvironment =
       );
     }
     // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
+    // TODO: switch to debugLog in this file
     if (process.env.NODE_ENV === "development") {
       console.log("Load Privacy Center environment for session...");
     }
