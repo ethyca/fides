@@ -311,7 +311,7 @@ export default async function handler(
       `/fides.js bundling fides-ext-gpp.js extension (GPP was ${
         forcedGppQuery === "true" ? "forced" : "enabled"
       })...`,
-      { req, res }
+      logContext
     );
     const fidesGPPBuffer = await fsPromises.readFile(
       "public/lib/fides-ext-gpp.js"

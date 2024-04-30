@@ -49,8 +49,6 @@ export function debugLog(
     }
     // Write the log as a JSON string
     // eslint-disable-next-line no-console
-    // console.log(JSON.stringify(log));
-    // eslint-disable-next-line no-console
-    console.log(log);
+    console.log(JSON.stringify(log));
   }
 }
