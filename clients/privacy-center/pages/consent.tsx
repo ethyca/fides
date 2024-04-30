@@ -266,7 +266,7 @@ const Consent: NextPage = () => {
     <Stack as="main" align="center" data-testid="consent">
       {/* Wait until i18n is initalized so we can diplay the correct language and
        also we can use the correct history ids */}
-      {isI18nInitialized ? (
+      {isI18nInitialized && (
         <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
           <Stack align="center" spacing={3}>
             <ConsentHeading />
