@@ -38,7 +38,10 @@ import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { ExportFormat } from "~/features/datamap/constants";
-import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
+import {
+  useExportMinimalDatamapReportMutation,
+  useGetMinimalDatamapReportQuery,
+} from "~/features/datamap/datamap.slice";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import {
   DatamapReportFilterModal,
@@ -268,6 +271,11 @@ export const DatamapReportTable = () => {
     dataSubjects: selectedDataSubjectFilters,
     dataCategories: selectedDataCategoriesFilters,
   });
+
+  const [
+    exportMinimalDatamapReport,
+    { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
+  ] = useExportMinimalDatamapReportMutation();
 
   const {
     items: data,
@@ -981,11 +989,8 @@ export const DatamapReportTable = () => {
     onClose: onExportReportClose,
   } = useDisclosure();
 
-  const [isExporting, setIsExporting] = useState<boolean>(false);
-
   const onExport = (downloadType: ExportFormat) => {
-    // TASK: Implement export functionality
-    console.log("Export report here!", downloadType, {
+    exportMinimalDatamapReport({
       pageIndex,
       pageSize,
       groupBy,
@@ -993,9 +998,12 @@ export const DatamapReportTable = () => {
       dataUses: selectedDataUseFilters,
       dataSubjects: selectedDataSubjectFilters,
       dataCategories: selectedDataCategoriesFilters,
+      format: downloadType,
+    }).then(() => {
+      if (isExportReportSuccess) {
+        onExportReportClose();
+      }
     });
-
-    setIsExporting(true);
   };
 
   const tableInstance = useReactTable<DatamapReport>({
@@ -1074,7 +1082,7 @@ export const DatamapReportTable = () => {
         isOpen={isExportReportOpen}
         onClose={onExportReportClose}
         onConfirm={onExport}
-        isLoading={isExporting}
+        isLoading={isExportingReport}
       />
       <TableActionBar>
         <GlobalFilterV2

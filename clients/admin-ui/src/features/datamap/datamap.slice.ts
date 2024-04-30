@@ -1,10 +1,13 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { saveAs } from "file-saver";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
+import { getFileNameFromContentDisposition } from "~/features/common/utils";
 import {
   COLUMN_NAME_MAP,
   DATA_CATEGORY_COLUMN_ID,
+  ExportFormat,
   SYSTEM_DESCRIPTION,
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
@@ -104,6 +107,60 @@ const datamapApi = baseApi.injectEndpoints({
       },
       providesTags: ["Datamap"],
     }),
+    exportMinimalDatamapReport: build.mutation<
+      Page_DatamapReport_,
+      {
+        groupBy: DATAMAP_GROUPING;
+        pageIndex: number;
+        pageSize: number;
+        search: string;
+        dataUses?: string;
+        dataCategories?: string;
+        dataSubjects?: string;
+        format?: ExportFormat;
+      }
+    >({
+      query: ({
+        groupBy,
+        pageIndex,
+        pageSize,
+        search,
+        dataUses,
+        dataCategories,
+        dataSubjects,
+        format,
+      }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
+        if (dataUses) {
+          queryString += `&${dataUses}`;
+        }
+        if (dataCategories) {
+          queryString += `&${dataCategories}`;
+        }
+        if (dataSubjects) {
+          queryString += `&${dataSubjects}`;
+        }
+        if (search) {
+          queryString += `&search=${search}`;
+        }
+        return {
+          url: `plus/datamap/minimal/${format}?${queryString}`,
+          responseHandler: async (response) => {
+            const filename = await getFileNameFromContentDisposition(
+              response.headers.get("content-disposition")
+            );
+            const arrayBuffer = await response.arrayBuffer();
+            const blob = new Blob([arrayBuffer], {
+              type:
+                response.headers.get("content-type") ||
+                "application/octet-stream",
+            });
+            saveAs(blob, filename);
+            return { data: undefined };
+          },
+        };
+      },
+    }),
     getDatamap: build.query<DatamapTableData, { organizationName: string }>({
       query: ({ organizationName }) => ({
         url: `plus/datamap/${organizationName}`,
@@ -156,6 +213,7 @@ export const {
   useGetDatamapQuery,
   useLazyGetDatamapQuery,
   useGetMinimalDatamapReportQuery,
+  useExportMinimalDatamapReportMutation,
 } = datamapApi;
 
 export interface SettingsState {

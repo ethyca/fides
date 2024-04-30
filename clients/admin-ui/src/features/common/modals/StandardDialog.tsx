@@ -38,11 +38,11 @@ const StandardDialog = ({
 }: StandardDialogProps): JSX.Element => {
   const { onClose } = props;
   return (
-    <Modal {...props}>
+    <Modal closeOnOverlayClick={isLoading} {...props}>
       <ModalOverlay />
       <ModalContent>
         {heading && <ModalHeader>{heading}</ModalHeader>}
-        <ModalCloseButton />
+        <ModalCloseButton disabled={isLoading} />
         {children && <ModalBody>{children}</ModalBody>}
         <ModalFooter
           gap={3}
