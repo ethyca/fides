@@ -253,7 +253,7 @@ const Consent: NextPage = () => {
       window?.navigator,
       experience as PrivacyExperience,
       {
-        debug: true,
+        debug: process.env.NODE_ENV === "development",
       },
       {}
     );
