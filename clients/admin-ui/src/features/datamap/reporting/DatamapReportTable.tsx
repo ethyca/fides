@@ -3,16 +3,12 @@ import {
   Button,
   ChevronDownIcon,
   Flex,
-  FormControl,
-  FormLabel,
   Heading,
   IconButton,
   Menu,
   MenuButton,
   MenuItemOption,
   MenuList,
-  Select,
-  Text,
   useDisclosure,
 } from "@fidesui/react";
 import {
@@ -40,10 +36,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { ExportFormat } from "~/features/datamap/constants";
 import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
+import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import {
   DatamapReportFilterModal,
   useDatamapReportFilters,
@@ -986,13 +982,19 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [downloadType, setDownloadType] = useState<ExportFormat>(
-    ExportFormat.csv
-  );
 
-  const onExport = () => {
+  const onExport = (downloadType: ExportFormat) => {
     // TASK: Implement export functionality
-    console.log("Export report here!", downloadType);
+    console.log("Export report here!", downloadType, {
+      pageIndex,
+      pageSize,
+      groupBy,
+      search: globalFilter,
+      dataUses: selectedDataUseFilters,
+      dataSubjects: selectedDataSubjectFilters,
+      dataCategories: selectedDataCategoriesFilters,
+    });
+
     setIsExporting(true);
   };
 
@@ -1068,31 +1070,9 @@ export const DatamapReportTable = () => {
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
       />
-      <ConfirmationModal
+      <ReportExportModal
         isOpen={isExportReportOpen}
         onClose={onExportReportClose}
-        title="Export report"
-        continueButtonText="Download"
-        message={
-          <Flex direction="column" gap={3} pb={3}>
-            <Text textAlign="left">
-              Export your data map report using the options below. Depending on
-              the number of rows, the file may take a few minutes to process.
-            </Text>
-            <FormControl>
-              <FormLabel>Choose Format</FormLabel>
-              <Select
-                value={downloadType}
-                onChange={(e) =>
-                  setDownloadType(e.target.value as ExportFormat)
-                }
-              >
-                <option value={ExportFormat.csv}>CSV</option>
-                <option value={ExportFormat.xlsx}>XLSX</option>
-              </Select>
-            </FormControl>
-          </Flex>
-        }
         onConfirm={onExport}
         isLoading={isExporting}
       />
