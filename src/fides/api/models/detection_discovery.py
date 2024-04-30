@@ -39,6 +39,8 @@ class MonitorConfig(Base):
     configuration details used in connecting to the external data store.
     """
 
+    name = Column(String, nullable=True)
+    key = Column(String, index=True, unique=True, nullable=False)
     connection_config_id = Column(
         String,
         ForeignKey(ConnectionConfig.id_field_path),

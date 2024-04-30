@@ -163,6 +163,8 @@ class TestMonitorConfigModel:
         mc = MonitorConfig.create(
             db=db,
             data={
+                "name": "test monitor config 1",
+                "key": "test_monitor_config_1",
                 "connection_config_id": connection_config.id,
                 "classify_params": {
                     "num_samples": 25,
@@ -173,7 +175,7 @@ class TestMonitorConfigModel:
         yield mc
         db.delete(mc)
 
-    def test_create_staged_resource(
+    def test_create_monitor_config(
         self, db: Session, create_monitor_config, connection_config: ConnectionConfig
     ) -> None:
         """
@@ -181,12 +183,14 @@ class TestMonitorConfigModel:
         and that we can access its attributes as expected
         """
         mc: MonitorConfig = MonitorConfig.get(db=db, object_id=create_monitor_config.id)
-        mc_connection_config = mc.connection_config
-        assert mc_connection_config.id == connection_config.id
-        assert mc_connection_config.key == connection_config.key
-        assert mc_connection_config.connection_type == connection_config.connection_type
-
+        assert mc.name == "test monitor config 1"
+        assert mc.key == "test_monitor_config_1"
         assert mc.classify_params == {
             "num_samples": 25,
             "num_threads": 2,
         }
+
+        mc_connection_config = mc.connection_config
+        assert mc_connection_config.id == connection_config.id
+        assert mc_connection_config.key == connection_config.key
+        assert mc_connection_config.connection_type == connection_config.connection_type
