@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
 
+### Updated
+- Hydrates GTM datalayer to match supported FidesEvent Properties [#4847](https://github.com/ethyca/fides/pull/4847) 
+
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 
 ### Added
