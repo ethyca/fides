@@ -17,7 +17,12 @@ const SaveCancel = ({
 
   return (
     <Stack direction="row" justifyContent="flex-start" width="full" {...props}>
-      <Button size="sm" variant="outline" onClick={onCancel}>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={onCancel}
+        aria-label="Cancel"
+      >
         {cancelLabel || "←"}
       </Button>
       <Button
