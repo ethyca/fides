@@ -11,8 +11,8 @@ Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args)
 );
 
-Cypress.Commands.add("getRadio", (value = "true", ...args) =>
-  cy.get(`input[type="radio"][value="${value}"]`, ...args)
+Cypress.Commands.add("getToggle", (...args) =>
+  cy.get(`input[type="checkbox"]`, ...args)
 );
 
 Cypress.Commands.add("dispatch", (action) => {
@@ -54,6 +54,17 @@ Cypress.Commands.add("overrideSettings", (settings) => {
   cy.dispatch({ type: "settings/overrideSettings", payload: settings }).then(
     () => settings
   );
+});
+
+Cypress.Commands.add("visitWithLanguage", (url: string, language: string) => {
+  cy.visit(url, {
+    onBeforeLoad(win) {
+      Object.defineProperty(win.navigator, "language", {
+        value: language,
+        writable: true,
+      });
+    },
+  });
 });
 
 Cypress.Commands.add(
@@ -125,10 +136,10 @@ declare global {
         >
       ): Chainable<JQuery<HTMLElement>>;
       /**
-       * Custom command to select a radio input by its value. Value defaults to "true".
-       * @example cy.getRadio().should("be.checked");
+       * Custom command to select a checkbox input by its value.
+       * @example cy.getToggle().should("be.checked");
        */
-      getRadio(
+      getToggle(
         value?: string,
         options?: Partial<
           Cypress.Loggable &
@@ -186,6 +197,11 @@ declare global {
         fixtureName: string,
         options?: Partial<Cypress.Timeoutable>
       ): Chainable<any>;
+      /**
+       * Visit the specified url with a different browser language
+       */
+      visitWithLanguage(url: string, language: string): Chainable<any>;
+
       /**
        * Visit the /fides-js-components-demo page and inject config options
        * @example cy.visitConsentDemo(fidesConfig, {fidesEmbed: true});
