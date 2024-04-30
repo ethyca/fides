@@ -308,9 +308,9 @@ describe("Consent settings", () => {
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
-      // Ensure both fidesInitialized calls are made. Needs 1000, doesn't work with 500
+      // Ensure both fidesInitialized calls are made.
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(1000);
+      cy.wait(2000);
       cy.waitUntilFidesInitialized().then(() => {
         cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
         cy.window().then((win) => {
