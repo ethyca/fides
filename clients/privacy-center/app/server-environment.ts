@@ -142,9 +142,10 @@ const loadConfigFile = async (
         path = urlString.replace("file:", "");
       }
       const file = await fsPromises.readFile(path || url, "utf-8");
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Loaded configuration file: ${urlString}`);
-      }
+      // TODO: switch to debugLog in this file and reduce verbosity
+      // if (process.env.NODE_ENV === "development") {
+      //   console.log(`Loaded configuration file: ${urlString}`);
+      // }
       return file;
     } catch (err: any) {
       // Catch "file not found" errors (ENOENT)
@@ -295,10 +296,10 @@ export const loadPrivacyCenterEnvironment =
       );
     }
     // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
-    // TODO: switch to debugLog in this file
-    if (process.env.NODE_ENV === "development") {
-      console.log("Load Privacy Center environment for session...");
-    }
+    // TODO: switch to debugLog in this file and reduce verbosity
+    // if (process.env.NODE_ENV === "development") {
+    //   console.log("Load Privacy Center environment for session...");
+    // }
 
     // Load environment variables
     const settings: PrivacyCenterSettings = {
