@@ -156,7 +156,7 @@ const datamapApi = baseApi.injectEndpoints({
                 "application/octet-stream",
             });
             saveAs(blob, filename);
-            return { data: undefined };
+            return { data: undefined }; // once the file is downloaded, we no longer want this to be cached in the browser so we return undefined to RTK Query
           },
         };
       },
