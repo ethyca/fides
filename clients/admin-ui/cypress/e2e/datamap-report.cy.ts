@@ -144,5 +144,8 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId("export-modal-cancel-btn").click();
       cy.getByTestId("export-modal").should("not.exist");
     });
+
+    // ideally we should test the downloads, but it's a bit complex and time consuming so deferring for now
+    it.skip("should download the export file", () => {});
   });
 });

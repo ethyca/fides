@@ -40,9 +40,10 @@ export const utf8ToB64 = (str: string): string =>
 export const getFileNameFromContentDisposition = (
   contentDisposition: string | null
 ) => {
+  const defaultName = "export";
   if (!contentDisposition) {
-    return "export";
+    return defaultName;
   }
   const match = contentDisposition.match(/filename=(.+)/);
-  return match ? match[1] : "export";
+  return match ? match[1] : defaultName;
 };
