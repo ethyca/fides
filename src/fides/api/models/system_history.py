@@ -1,3 +1,4 @@
+from json import dumps
 from typing import Optional
 
 from sqlalchemy import Column, ForeignKey, Index, String
@@ -6,8 +7,9 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.fides_user import FidesUser
+from fides.api.util.cache import CustomJSONEncoder
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -46,3 +48,9 @@ class SystemHistory(Base):
         user: Optional[FidesUser] = FidesUser.get_by(db, field="id", value=self.user_id)
 
         return user.username if user else self.user_id
+
+    def save(self, db: Session) -> FidesBase:
+        """Overrides the base class save to ensure JSON fields are well-serialized"""
+        self.before = dumps(self.before, cls=CustomJSONEncoder)
+        self.after = dumps(self.after, cls=CustomJSONEncoder)
+        return super().save(db=db)
