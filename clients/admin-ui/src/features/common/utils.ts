@@ -36,3 +36,14 @@ export const formatDate = (value: string | number | Date): string =>
 
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
+
+export const getFileNameFromContentDisposition = (
+  contentDisposition: string | null
+) => {
+  const defaultName = "export";
+  if (!contentDisposition) {
+    return defaultName;
+  }
+  const match = contentDisposition.match(/filename=(.+)/);
+  return match ? match[1] : defaultName;
+};
