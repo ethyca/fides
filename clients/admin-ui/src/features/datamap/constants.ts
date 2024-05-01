@@ -73,3 +73,8 @@ COLUMN_NAME_MAP[SYSTEM_EGRESS] = "Destination Systems";
 // COLUMN_NAME_MAP[] = 'Legal Name & Address'; #new;
 // COLUMN_NAME_MAP[] = 'Privacy Policy'; #new;
 // COLUMN_NAME_MAP[] = 'Data Protection Officer (DPO)'; #new;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export enum DATAMAP_LOCAL_STORAGE_KEYS {
+  TABLE_STATE = "datamap-report-table-state",
+}

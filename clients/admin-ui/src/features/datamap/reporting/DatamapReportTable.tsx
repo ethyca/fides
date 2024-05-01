@@ -16,6 +16,7 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
+  TableState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -34,10 +35,14 @@ import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
-import { ExportFormat } from "~/features/datamap/constants";
+import {
+  DATAMAP_LOCAL_STORAGE_KEYS,
+  ExportFormat,
+} from "~/features/datamap/constants";
 import {
   useExportMinimalDatamapReportMutation,
   useGetMinimalDatamapReportQuery,
@@ -190,6 +195,17 @@ const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
 };
 
 export const DatamapReportTable = () => {
+  const [tableState, setTableState] = useLocalStorage<TableState | undefined>(
+    "datamap-report-table-state",
+    undefined
+  );
+  const storedTableState = useMemo(
+    // snag the stored table state from local storage if it exists and use it to initialize the tableInstance.
+    // memoize this so we don't get stuck in a loop as the tableState gets updated during the session.
+    () => tableState,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     PAGE_SIZES,
@@ -1019,14 +1035,21 @@ export const DatamapReportTable = () => {
         [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
         [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
       },
+      ...storedTableState,
     },
     state: {
       expanded: true,
       grouping,
     },
-    // column resizing
     columnResizeMode: "onChange",
     enableColumnResizing: true,
+    onStateChange: (updater) => {
+      const valueToStore =
+        updater instanceof Function
+          ? updater(tableInstance.getState())
+          : updater;
+      setTableState(valueToStore);
+    },
   });
 
   const getMenuDisplayValue = () => {
