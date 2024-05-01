@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
 
+### Changed
+- Included searching by `email` for the Segment integration [#4851](https://github.com/ethyca/fides/pull/4851)
+
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 
 ### Added
