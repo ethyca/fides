@@ -1,4 +1,4 @@
-from json import dumps
+from json import dumps, loads
 from typing import Optional
 
 from sqlalchemy import Column, ForeignKey, Index, String
@@ -51,6 +51,6 @@ class SystemHistory(Base):
 
     def save(self, db: Session) -> FidesBase:
         """Overrides the base class save to ensure JSON fields are well-serialized"""
-        self.before = dumps(self.before, cls=CustomJSONEncoder)
-        self.after = dumps(self.after, cls=CustomJSONEncoder)
+        self.before = loads(dumps(self.before, cls=CustomJSONEncoder))
+        self.after = loads(dumps(self.after, cls=CustomJSONEncoder))
         return super().save(db=db)
