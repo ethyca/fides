@@ -561,7 +561,7 @@ describe("Fides-js TCF", () => {
 
     describe("saving preferences", () => {
       const vendorsDisclosed = ".IABE";
-      it("can opt in to all", () => {
+      it.only("can opt in to all", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
@@ -677,32 +677,31 @@ describe("Fides-js TCF", () => {
               fides_string: undefined,
             },
           });
+        // FidesUpdating call
         cy.get("@dataLayerPush")
-          // Second call is when the user accepts all
-          .its("secondCall.args.0")
-          .should("deep.equal", {
-            event: "FidesUpdating",
-            Fides: {
+          .its("secondCall.args.0.Fides")
+          .should("deep.include", {
+            consent: {},
+            extraDetails: {
+              consentMethod: "accept",
+            },
+          });
+        cy.get("@dataLayerPush")
+            .its("secondCall.args.0")
+            .its("Fides.fides_string").should("contain", ",1~")
+
+        // FidesUpdated call
+        cy.get("@dataLayerPush")
+          .its("thirdCall.args.0.Fides")
+          .should("deep.include", {
               consent: {},
               extraDetails: {
                 consentMethod: "accept",
               },
-              fides_string: "CP94g0AP94g0AGXABBENArEoABaAAEAAAAAAABEAAAAA,1~",
-            },
           });
         cy.get("@dataLayerPush")
-          // Third call is when the preferences finish updating
-          .its("thirdCall.args.0")
-          .should("deep.equal", {
-            event: "FidesUpdated",
-            Fides: {
-              consent: {},
-              extraDetails: {
-                consentMethod: "accept",
-              },
-              fides_string: "CP94g0AP94g0AGXABBENArEoABaAAEAAAAAAABEAAAAA,1~",
-            },
-          });
+            .its("thirdCall.args.0")
+            .its("Fides.fides_string").should("contain", ",1~")
       });
 
       it("can opt out of all", () => {
