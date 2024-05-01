@@ -51,6 +51,9 @@ class SystemHistory(Base):
 
     def save(self, db: Session) -> FidesBase:
         """Overrides the base class save to ensure JSON fields are well-serialized"""
+        # this needs a serialization "round-trip":
+        # first we serialize with the custom encoder, to handle datetime fields
+        # then we deserialize back into a dict so that SQLAlchemy can save correctly as a JSONB column
         self.before = loads(dumps(self.before, cls=CustomJSONEncoder))
         self.after = loads(dumps(self.after, cls=CustomJSONEncoder))
         return super().save(db=db)
