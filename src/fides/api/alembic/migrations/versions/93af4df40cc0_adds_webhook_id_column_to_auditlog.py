@@ -1,7 +1,7 @@
 """adds webhook_id column to auditLog
 
 Revision ID: 93af4df40cc0
-Revises: 6cfd59e7920a
+Revises: 55bedede956d
 Create Date: 2024-04-20 13:17:33.928813
 
 """
