@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import type { PrivacyCenterEnvironment } from "~/app/server-environment";
 import {
   CLOUDFRONT_HEADER_COUNTRY,
   CLOUDFRONT_HEADER_REGION,
