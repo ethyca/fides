@@ -4,6 +4,7 @@ import {
   ChevronDownIcon,
   Flex,
   Heading,
+  IconButton,
   Menu,
   MenuButton,
   MenuItemOption,
@@ -34,8 +35,14 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { DownloadLightIcon } from "~/features/common/Icon";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
-import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
+import { ExportFormat } from "~/features/datamap/constants";
+import {
+  useExportMinimalDatamapReportMutation,
+  useGetMinimalDatamapReportQuery,
+} from "~/features/datamap/datamap.slice";
+import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import {
   DatamapReportFilterModal,
   useDatamapReportFilters,
@@ -265,6 +272,11 @@ export const DatamapReportTable = () => {
     dataCategories: selectedDataCategoriesFilters,
   });
 
+  const [
+    exportMinimalDatamapReport,
+    { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
+  ] = useExportMinimalDatamapReportMutation();
+
   const {
     items: data,
     total: totalRows,
@@ -281,9 +293,9 @@ export const DatamapReportTable = () => {
 
     /*
       It's important that `grouping` and `columnOrder` are updated
-      in this `useMemo`. It makes it so grouping and column order 
+      in this `useMemo`. It makes it so grouping and column order
       updates are synced up with when the data changes. Otherwise
-      the table will update the grouping and column order before 
+      the table will update the grouping and column order before
       the correct data loads.
     */
     return {
@@ -971,6 +983,29 @@ export const DatamapReportTable = () => {
     onClose: onColumnSettingsClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isExportReportOpen,
+    onOpen: onExportReportOpen,
+    onClose: onExportReportClose,
+  } = useDisclosure();
+
+  const onExport = (downloadType: ExportFormat) => {
+    exportMinimalDatamapReport({
+      pageIndex,
+      pageSize,
+      groupBy,
+      search: globalFilter,
+      dataUses: selectedDataUseFilters,
+      dataSubjects: selectedDataSubjectFilters,
+      dataCategories: selectedDataCategoriesFilters,
+      format: downloadType,
+    }).then(() => {
+      if (isExportReportSuccess) {
+        onExportReportClose();
+      }
+    });
+  };
+
   const tableInstance = useReactTable<DatamapReport>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
@@ -1043,19 +1078,24 @@ export const DatamapReportTable = () => {
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
       />
+      <ReportExportModal
+        isOpen={isExportReportOpen}
+        onClose={onExportReportClose}
+        onConfirm={onExport}
+        isLoading={isExportingReport}
+      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
           setGlobalFilter={updateGlobalFilter}
           placeholder="System name, Fides key, or ID"
         />
-        <Flex alignItems="center">
+        <Flex alignItems="center" gap={2}>
           <Menu>
             <MenuButton
               as={Button}
               size="xs"
               variant="outline"
-              mr={2}
               rightIcon={<ChevronDownIcon />}
               spinnerPlacement="end"
               isLoading={groupChangeStarted}
@@ -1089,7 +1129,6 @@ export const DatamapReportTable = () => {
             size="xs"
             variant="outline"
             onClick={onColumnSettingsOpen}
-            mr={2}
           >
             Edit columns
           </Button>
@@ -1101,6 +1140,14 @@ export const DatamapReportTable = () => {
           >
             Filter
           </Button>
+          <IconButton
+            aria-label="Export report"
+            data-testid="export-btn"
+            size="xs"
+            variant="outline"
+            onClick={onExportReportOpen}
+            icon={<DownloadLightIcon />}
+          />
         </Flex>
       </TableActionBar>
 
