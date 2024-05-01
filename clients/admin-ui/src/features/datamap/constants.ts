@@ -10,6 +10,11 @@ export const ItemTypes = {
   DraggableColumnListItem: "DraggableColumnListItem",
 };
 
+export enum ExportFormat {
+  csv = "csv",
+  xlsx = "xlsx",
+}
+
 export const SYSTEM_FIDES_KEY_COLUMN_ID = "system.fides_key";
 export const SYSTEM_NAME = "system.name";
 export const SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME =

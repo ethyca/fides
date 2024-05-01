@@ -187,10 +187,19 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
     can be reprocessed.
     """
     with self.get_new_session() as db:
-        logger.debug("Polling for privacy requests awaiting status change")
+        logger.debug("Polling for privacy requests awaiting errored status change")
+
+        # Privacy Requests that needed approval are in "Approved" status as they process.
+        # Privacy Requests that didn't need approval are "In Processing".
+        # Privacy Requests in these states should be examined to see if all of its Request Tasks have had a chance
+        # to complete.
         in_progress_privacy_requests = (
             db.query(PrivacyRequest)
-            .filter(PrivacyRequest.status == PrivacyRequestStatus.in_processing)
+            .filter(
+                PrivacyRequest.status.in_(
+                    [PrivacyRequestStatus.in_processing, PrivacyRequestStatus.approved]
+                )
+            )
             .order_by(PrivacyRequest.created_at)
         )
 
