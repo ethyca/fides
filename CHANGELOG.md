@@ -39,6 +39,7 @@ The types of changes are:
 ### Changed
 - Sets `sslmode` to prefer for Redshift connections when generating datasets [#4849](https://github.com/ethyca/fides/pull/4849)
 
+
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 
 ### Added
