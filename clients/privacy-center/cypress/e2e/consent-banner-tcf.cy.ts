@@ -561,7 +561,7 @@ describe("Fides-js TCF", () => {
 
     describe("saving preferences", () => {
       const vendorsDisclosed = ".IABE";
-      it.only("can opt in to all", () => {
+      it("can opt in to all", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
@@ -687,21 +687,23 @@ describe("Fides-js TCF", () => {
             },
           });
         cy.get("@dataLayerPush")
-            .its("secondCall.args.0")
-            .its("Fides.fides_string").should("contain", ",1~")
+          .its("secondCall.args.0")
+          .its("Fides.fides_string")
+          .should("contain", ",1~");
 
         // FidesUpdated call
         cy.get("@dataLayerPush")
           .its("thirdCall.args.0.Fides")
           .should("deep.include", {
-              consent: {},
-              extraDetails: {
-                consentMethod: "accept",
-              },
+            consent: {},
+            extraDetails: {
+              consentMethod: "accept",
+            },
           });
         cy.get("@dataLayerPush")
-            .its("thirdCall.args.0")
-            .its("Fides.fides_string").should("contain", ",1~")
+          .its("thirdCall.args.0")
+          .its("Fides.fides_string")
+          .should("contain", ",1~");
       });
 
       it("can opt out of all", () => {
