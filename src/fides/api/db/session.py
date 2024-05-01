@@ -7,7 +7,6 @@ from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, sessionmaker
 
 from fides.api.common_exceptions import MissingConfig
-from fides.api.db import json_serializer
 from fides.config import FidesConfig
 
 
@@ -33,11 +32,7 @@ def get_db_engine(
         else:
             database_uri = config.database.sqlalchemy_database_uri
     return create_engine(
-        database_uri,
-        pool_pre_ping=True,
-        pool_size=pool_size,
-        max_overflow=max_overflow,
-        json_serializer=json_serializer,
+        database_uri, pool_pre_ping=True, pool_size=pool_size, max_overflow=max_overflow
     )
 
 

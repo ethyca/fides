@@ -5,7 +5,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from fides.api.db import json_serializer
 from fides.api.db.session import ExtendedSession
 from fides.config import CONFIG
 
@@ -32,7 +31,6 @@ sync_engine = create_engine(
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
     logging_name="SyncEngine",
-    json_serializer=json_serializer,
 )
 sync_session = sessionmaker(
     sync_engine,
