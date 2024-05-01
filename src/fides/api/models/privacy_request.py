@@ -153,7 +153,9 @@ class PrivacyRequestStatus(str, EnumType):
 
     identity_unverified = "identity_unverified"
     requires_input = "requires_input"
-    pending = "pending"
+    pending = (
+        "pending"  # Privacy Request likely awaiting approval, if hanging in this state.
+    )
     approved = "approved"
     denied = "denied"
     in_processing = "in_processing"

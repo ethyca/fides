@@ -12,10 +12,6 @@ import requests
 import yaml
 from fastapi import Query
 from fastapi.testclient import TestClient
-from fides.api.models.privacy_request import (
-    generate_request_callback_resume_jwe,
-    generate_request_callback_pre_approval_jwe,
-)
 from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
 from loguru import logger
@@ -35,6 +31,8 @@ from fides.api.db.ctl_session import sync_engine
 from fides.api.main import app
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
+    generate_request_callback_pre_approval_jwe,
+    generate_request_callback_resume_jwe,
 )
 from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
