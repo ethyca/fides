@@ -37,6 +37,7 @@ export interface PrivacyCenterSettings {
   SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
+  LOG_LEVEL: string | null; // e.g. "DEBUG", "INFO"
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
@@ -314,6 +315,7 @@ export const loadPrivacyCenterEnvironment =
       CONFIG_CSS_URL:
         process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL ||
         "file:///app/config/config.css",
+      LOG_LEVEL: process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL || "INFO",
 
       // Overlay options
       DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG

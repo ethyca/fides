@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+import type { PrivacyCenterEnvironment } from "~/app/server-environment";
 import {
   CLOUDFRONT_HEADER_COUNTRY,
   CLOUDFRONT_HEADER_REGION,
@@ -14,7 +15,9 @@ export function debugLog(
   message: string,
   context: { req?: NextApiRequest; res?: NextApiResponse; [key: string]: any }
 ) {
-  if (process.env.NODE_ENV === "development") {
+  // TODO: ensure this LOG_LEVEL env var is forwards-compatible with a real logger
+  // TODO: load this LOG_LEVEL env var through a server-environment helper
+  if (process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL === "DEBUG") {
     // NOTE: in a real JSON logger, we wouldn't stringify this ourselves ;)
     const { req, res, ...other } = context;
     let log: any = {
