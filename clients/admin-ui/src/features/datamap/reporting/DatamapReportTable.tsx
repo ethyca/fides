@@ -264,8 +264,19 @@ export const DatamapReportTable = () => {
     setGlobalFilter(searchTerm);
   };
 
-  const [groupBy, setGroupBy] = useState<DATAMAP_GROUPING>(
+  const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
+    DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
     DATAMAP_GROUPING.SYSTEM_DATA_USE
+  );
+
+  const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
+    getColumnOrder(groupBy)
+  );
+
+  const [grouping, setGrouping] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.TABLE_GROUPING,
+    getGrouping(groupBy)
   );
 
   const onGroupChange = (group: DATAMAP_GROUPING) => {
@@ -293,13 +304,7 @@ export const DatamapReportTable = () => {
     { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
   ] = useExportMinimalDatamapReportMutation();
 
-  const {
-    items: data,
-    total: totalRows,
-    pages: totalPages,
-    grouping,
-    columnOrder,
-  } = useMemo(() => {
+  const { data, totalRows } = useMemo(() => {
     const report = datamapReport || emptyMinimalDatamapReportResponse;
     // Type workaround since extending BaseDatamapReport with custom fields causes some trouble
     const items = report.items as DatamapReport[];
@@ -307,26 +312,24 @@ export const DatamapReportTable = () => {
       setGroupChangeStarted(false);
     }
 
-    /*
-      It's important that `grouping` and `columnOrder` are updated
-      in this `useMemo`. It makes it so grouping and column order
-      updates are synced up with when the data changes. Otherwise
-      the table will update the grouping and column order before
-      the correct data loads.
-    */
+    setTotalPages(report.pages);
+
     return {
-      ...report,
-      items,
-      grouping: getGrouping(groupBy),
-      columnOrder: getColumnOrder(groupBy),
+      totalRows: report.total,
+      data: items,
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datamapReport]);
 
   useEffect(() => {
-    setTotalPages(totalPages);
-  }, [totalPages, setTotalPages]);
+    // changing the groupBy should wait until the data is loaded to update the grouping
+    const newGrouping = getGrouping(groupBy);
+    if (datamapReport) {
+      setGrouping(newGrouping);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datamapReport]);
 
   // Get custom fields
   useGetAllCustomFieldDefinitionsQuery();
@@ -1030,7 +1033,6 @@ export const DatamapReportTable = () => {
     manualPagination: true,
     data,
     initialState: {
-      columnOrder,
       columnVisibility: {
         [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
         [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
@@ -1040,6 +1042,7 @@ export const DatamapReportTable = () => {
     state: {
       expanded: true,
       grouping,
+      columnOrder,
     },
     columnResizeMode: "onChange",
     enableColumnResizing: true,
@@ -1100,6 +1103,9 @@ export const DatamapReportTable = () => {
         headerText="Data map settings"
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
+        onColumnOrderChange={(newColumnOrder) => {
+          setColumnOrder(newColumnOrder);
+        }}
       />
       <ReportExportModal
         isOpen={isExportReportOpen}
