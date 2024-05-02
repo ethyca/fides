@@ -27,7 +27,6 @@ from fides.api.models.privacy_request import (
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
-from fides.api.util.cache import CustomJSONEncoder
 
 
 def _add_edge_if_no_nodes(
@@ -251,9 +250,7 @@ def persist_new_access_request_tasks(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
                 "access_data": (
-                    json.dumps([traversal.seed_data], cls=CustomJSONEncoder)
-                    if node == ROOT_COLLECTION_ADDRESS
-                    else []
+                    [traversal.seed_data] if node == ROOT_COLLECTION_ADDRESS else []
                 ),  # For consistent treatment of nodes, add the seed data to the root node.  Subsequent
                 # tasks will save the data collected on the same field.
                 "action_type": ActionType.access,
@@ -352,9 +349,7 @@ def update_erasure_tasks_with_access_data(
         retrieved_task_data = _get_data_for_erasures(
             session, privacy_request, request_task
         )
-        request_task.data_for_erasures = json.dumps(
-            retrieved_task_data, cls=CustomJSONEncoder
-        )
+        request_task.data_for_erasures = retrieved_task_data
         request_task.save(session)
 
 
@@ -386,11 +381,7 @@ def persist_new_consent_request_tasks(
                     graph, dataset_graph, privacy_request, node, traversal_nodes
                 ),
                 # Consent nodes take in identity data from their upstream root node
-                "access_data": (
-                    json.dumps([identity], cls=CustomJSONEncoder)
-                    if node == ROOT_COLLECTION_ADDRESS
-                    else []
-                ),
+                "access_data": ([identity] if node == ROOT_COLLECTION_ADDRESS else []),
                 "action_type": ActionType.consent,
             },
         )

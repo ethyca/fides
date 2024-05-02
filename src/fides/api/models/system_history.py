@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.fides_user import FidesUser
-from fides.api.util.cache import CustomJSONEncoder
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -48,12 +47,3 @@ class SystemHistory(Base):
         user: Optional[FidesUser] = FidesUser.get_by(db, field="id", value=self.user_id)
 
         return user.username if user else self.user_id
-
-    def save(self, db: Session) -> FidesBase:
-        """Overrides the base class save to ensure JSON fields are well-serialized"""
-        # this needs a serialization "round-trip":
-        # first we serialize with the custom encoder, to handle datetime fields
-        # then we deserialize back into a dict so that SQLAlchemy can save correctly as a JSONB column
-        self.before = loads(dumps(self.before, cls=CustomJSONEncoder))
-        self.after = loads(dumps(self.after, cls=CustomJSONEncoder))
-        return super().save(db=db)

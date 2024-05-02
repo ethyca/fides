@@ -76,9 +76,7 @@ from fides.api.schemas.redis_cache import (
 )
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
-    CustomJSONEncoder,
     FidesopsRedis,
-    _custom_decoder,
     celery_tasks_in_flight,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
@@ -91,6 +89,7 @@ from fides.api.util.cache import (
 )
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
+from fides.api.util.custom_json_encoder import CustomJSONEncoder
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
@@ -329,7 +328,7 @@ class PrivacyRequest(
     # Encrypted filtered access results saved for later retrieval
     filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
         StringEncryptedType(
-            type_in=String(),
+            type_in=JSONTypeOverride,
             key=CONFIG.security.app_encryption_key,
             engine=AesGcmEngine,
             padding="pkcs5",
@@ -1209,17 +1208,14 @@ class PrivacyRequest(
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
             return None
 
-        self.filtered_final_upload = json.dumps(results, cls=CustomJSONEncoder)
+        self.filtered_final_upload = results
         self.save(db)
 
         return None
 
     def get_filtered_access_results(self) -> Dict[str, Dict[str, List[Row]]]:
         """Fetched the same filtered access results we uploaded to the user"""
-        return json.loads(
-            self.filtered_final_upload or "{}",
-            object_hook=_custom_decoder,
-        )
+        return self.filtered_final_upload or {}
 
 
 class PrivacyRequestError(Base):
@@ -1753,7 +1749,7 @@ class RequestTask(Base):
     # by data category for the end user.
     access_data = Column(  # An encrypted JSON String - saved as a list of Rows
         StringEncryptedType(
-            type_in=String(),
+            type_in=JSONTypeOverride,
             key=CONFIG.security.app_encryption_key,
             engine=AesGcmEngine,
             padding="pkcs5",
@@ -1764,7 +1760,7 @@ class RequestTask(Base):
     # First saved on the access node, and then copied to the corresponding erasure node.
     data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
         StringEncryptedType(
-            type_in=String(),
+            type_in=JSONTypeOverride,
             key=CONFIG.security.app_encryption_key,
             engine=AesGcmEngine,
             padding="pkcs5",
@@ -1812,11 +1808,11 @@ class RequestTask(Base):
 
     def get_decoded_access_data(self) -> List[Row]:
         """Decode the collected access data"""
-        return json.loads(self.access_data or "[]", object_hook=_custom_decoder)
+        return self.access_data or []
 
     def get_decoded_data_for_erasures(self) -> List[Row]:
         """Decode the erasure data needed to build masking requests"""
-        return json.loads(self.data_for_erasures or "[]", object_hook=_custom_decoder)
+        return self.data_for_erasures or []
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
         """Helper method to update a task's status"""

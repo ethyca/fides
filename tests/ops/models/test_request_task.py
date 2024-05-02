@@ -10,12 +10,7 @@ from fides.api.graph.config import (
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, RequestTask
 from fides.api.schemas.policy import ActionType
-from fides.api.util.cache import (
-    CustomJSONEncoder,
-    FidesopsRedis,
-    cache_task_tracking_key,
-    get_cache,
-)
+from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
 
 
 class TestRequestTask:
@@ -218,9 +213,7 @@ class TestGetRawAccessResults:
         """DSR 3.0 stores results on RequestTask.access_data"""
         assert request_task.get_decoded_access_data() == []
 
-        request_task.access_data = json.dumps(
-            [{"name": "Jane", "street": "102 Test Town"}], cls=CustomJSONEncoder
-        )
+        request_task.access_data = [{"name": "Jane", "street": "102 Test Town"}]
         request_task.update_status(db, ExecutionLogStatus.complete)
         assert request_task.get_decoded_access_data() == [
             {"name": "Jane", "street": "102 Test Town"}
@@ -318,9 +311,7 @@ class TestGetDecodedDataForErasures:
         assert request_task.get_decoded_data_for_erasures() == []
 
     def test_request_task_has_erasure_data(self, db, request_task):
-        request_task.data_for_erasures = json.dumps(
-            [{"id": 1, "name": "Jane"}], cls=CustomJSONEncoder
-        )
+        request_task.data_for_erasures = [{"id": 1, "name": "Jane"}]
         request_task.save(db)
 
         assert request_task.get_decoded_data_for_erasures() == [
