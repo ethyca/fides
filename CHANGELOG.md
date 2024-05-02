@@ -18,8 +18,13 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.35.0...main)
 
 ### Added
+- Added access and erasure support for Marigold Engage by Sailthru integration [#4826](https://github.com/ethyca/fides/pull/4826)
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
 - Added ability to export the contents of datamap report [#1545](https://ethyca.atlassian.net/browse/PROD-1545)
+
+### Fixed
+- Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+
 
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 
