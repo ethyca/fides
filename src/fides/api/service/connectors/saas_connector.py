@@ -145,14 +145,22 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """Generates and executes a test connection based on the SaaS config"""
         test_request: SaaSRequest = self.saas_config.test_request
         self.set_saas_request_state(test_request)
-        prepared_request = map_param_values(
-            "test",
-            f"{self.configuration.name}",
-            test_request,
-            self.secrets,
-        )
         client: AuthenticatedClient = self.create_client()
-        client.send(prepared_request, test_request.ignore_errors)
+
+        if test_request.request_override:
+            self._invoke_test_request_override(
+                test_request.request_override,
+                client,
+                self.secrets,
+            )
+        else:
+            prepared_request = map_param_values(
+                "test",
+                f"{self.configuration.name}",
+                test_request,
+                self.secrets,
+            )
+            client.send(prepared_request, test_request.ignore_errors)
         self.unset_connector_state()
         return ConnectionTestStatus.succeeded
 
@@ -612,6 +620,35 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
 
     @staticmethod
+    def _invoke_test_request_override(
+        override_function_name: str,
+        client: AuthenticatedClient,
+        secrets: Any,
+    ) -> List[Row]:
+        """
+        Invokes the appropriate user-defined SaaS request override for a test request.
+
+        Contains error handling for uncaught exceptions coming out of the override.
+        """
+        override_function: Callable[..., Union[List[Row], int, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.TEST
+            )
+        )
+        try:
+            return override_function(
+                client,
+                secrets,
+            )  # type: ignore
+        except Exception as exc:
+            logger.error(
+                "Encountered error executing override test function '{}'",
+                override_function_name,
+                exc_info=True,
+            )
+            raise FidesopsException(str(exc))
+
+    @staticmethod
     def _invoke_read_request_override(
         override_function_name: str,
         client: AuthenticatedClient,
@@ -626,7 +663,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int]] = (
+        override_function: Callable[..., Union[List[Row], int, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType.READ
             )
@@ -666,7 +703,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[..., Union[List[Row], int]] = (
+        override_function: Callable[..., Union[List[Row], int, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType(query_config.action)
             )
