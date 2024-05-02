@@ -5,6 +5,7 @@ import pydash
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.common_exceptions import (
     FidesopsException,
@@ -596,6 +597,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """
         Unwrap given Response using data_path in the given SaasRequest
         """
+        if response.status_code == HTTP_204_NO_CONTENT:
+            return {}
+
         try:
             return (
                 pydash.get(response.json(), saas_request.data_path)
