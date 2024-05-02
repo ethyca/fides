@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+- Ensure only GVL vendors from Compass are labeled as such [#4857](https://github.com/ethyca/fides/pull/4857)
 - Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
 
 
