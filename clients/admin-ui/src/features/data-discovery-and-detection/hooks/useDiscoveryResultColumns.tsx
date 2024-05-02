@@ -1,7 +1,10 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
+import {
+  IndeterminateCheckboxCell,
+  RelativeTimestampCell,
+} from "~/features/common/table/v2/cells";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 
@@ -24,6 +27,23 @@ const useDiscoveryResultColumns = ({
 
   if (resourceType === StagedResourceType.TABLE) {
     const columns = [
+      columnHelper.display({
+        id: "select",
+        cell: ({ row }) => (
+          <IndeterminateCheckboxCell
+            isChecked={row.getIsSelected()}
+            onChange={row.getToggleSelectedHandler()}
+          />
+        ),
+        header: ({ table }) => (
+          <IndeterminateCheckboxCell
+            isChecked={table.getIsAllPageRowsSelected()}
+            isIndeterminate={table.getIsSomeRowsSelected()}
+            onChange={table.getToggleAllRowsSelectedHandler()}
+          />
+        ),
+        maxSize: 25,
+      }),
       columnHelper.accessor((row) => row.name, {
         id: "tables",
         cell: (props) => <ResultStatusCell result={props.row.original} />,

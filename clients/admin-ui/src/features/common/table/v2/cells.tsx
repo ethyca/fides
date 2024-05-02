@@ -139,7 +139,11 @@ export const IndeterminateCheckboxCell = ({
   dataTestId,
   ...rest
 }: CheckboxProps & { dataTestId?: string }) => (
-  <Flex alignItems="center" justifyContent="center">
+  <Flex
+    alignItems="center"
+    justifyContent="center"
+    onClick={(e) => e.stopPropagation()}
+  >
     <Checkbox
       data-testid={dataTestId || undefined}
       {...rest}

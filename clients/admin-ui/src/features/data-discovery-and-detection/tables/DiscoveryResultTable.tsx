@@ -1,24 +1,28 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Text, VStack } from "@fidesui/react";
+import { Box, Input, InputRightAddon, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
+  RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import SearchBar from "~/features/common/SearchBar";
 
 import {
   FidesTableV2,
   PaginationBar,
+  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
+import DiscoveryBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryBulkActions";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
@@ -53,7 +57,7 @@ const EmptyTableNotice = () => (
 );
 
 interface MonitorResultTableProps {
-  resourceUrn?: string;
+  resourceUrn: string;
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
@@ -66,6 +70,8 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
   ];
+
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const {
     PAGE_SIZES,
@@ -129,6 +135,11 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     getExpandedRowModel: getExpandedRowModel(),
     columns: resourceColumns,
     manualPagination: true,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
+    getRowId: (row) => row.urn,
     data,
   });
 
@@ -138,6 +149,15 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
+      <TableActionBar>
+        <Box w="full" maxW={64}>
+          <Input size="xs" placeholder="Search..." />
+        </Box>
+        <DiscoveryBulkActions
+          resourceType={resourceType}
+          resourceUrn={resourceUrn}
+        />
+      </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
