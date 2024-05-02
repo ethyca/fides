@@ -10,7 +10,7 @@ import {
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
-import { dispatchFidesEvent, FidesEventExtraDetails } from "./events";
+import { dispatchFidesEvent } from "./events";
 import { patchUserPreference } from "../services/api";
 import { TcfSavePreferences } from "./tcf/types";
 
@@ -89,16 +89,13 @@ export const updateConsentPreferences = async ({
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
-  // Collect any "extra" details that should be recorded on the cookie & event
-  const extraDetails: FidesEventExtraDetails = { consentMethod };
-
   // 1. Update the cookie object based on new preferences & extra details
   const updatedCookie = await updateCookie(cookie);
   Object.assign(cookie, updatedCookie);
-  Object.assign(cookie.fides_meta, extraDetails); // save extra details to meta (i.e. consentMethod)
+  Object.assign(cookie.fides_meta, { consentMethod }); // save extra details to meta (i.e. consentMethod)
 
   // 2. Dispatch a "FidesUpdating" event with the new preferences
-  dispatchFidesEvent("FidesUpdating", cookie, options.debug, extraDetails);
+  dispatchFidesEvent("FidesUpdating", cookie, options.debug);
 
   // 3. Update the window.Fides object
   debugLog(options.debug, "Updating window.Fides");
@@ -147,5 +144,5 @@ export const updateConsentPreferences = async ({
   }
 
   // 7. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, options.debug, extraDetails);
+  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
 };

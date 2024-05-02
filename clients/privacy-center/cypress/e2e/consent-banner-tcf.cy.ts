@@ -673,7 +673,9 @@ describe("Fides-js TCF", () => {
             event: "FidesInitialized",
             Fides: {
               consent: {},
-              extraDetails: undefined,
+              extraDetails: {
+                consentMethod: undefined,
+              },
               fides_string: undefined,
             },
           });
