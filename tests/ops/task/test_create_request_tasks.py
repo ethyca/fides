@@ -622,7 +622,7 @@ class TestPersistErasureRequestTasks:
                 "customer_id": 1,
                 "id": "pay_aaa-aaa",
                 "name": "Example Card 1",
-                "preferred": true,
+                "preferred": True,
             }
         ]
         assert payment_card_task.get_decoded_data_for_erasures() == [
