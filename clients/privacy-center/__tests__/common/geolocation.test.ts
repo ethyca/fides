@@ -56,6 +56,17 @@ describe("getGeolocation", () => {
       expect(geolocation).toBeNull();
     });
 
+    it("ignores invalid, numeric country geolocation headers", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "00",
+        },
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
     it("discards invalid region geolocation headers", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
@@ -75,12 +86,14 @@ describe("getGeolocation", () => {
       const tests = [
         { input: { country: "US", region: undefined }, expected: "US" },
         { input: { country: "us", region: undefined }, expected: "us" },
+        { input: { country: "USA", region: "NY" }, expected: "USA-NY" },
         { input: { country: "SE", region: "O" }, expected: "SE-O" },
         { input: { country: "gb", region: "eng" }, expected: "gb-eng" },
         { input: { country: "RU", region: "PRI" }, expected: "RU-PRI" },
         { input: { country: "TR", region: "09" }, expected: "TR-09" },
         { input: { country: "BF", region: "03" }, expected: "BF-03" },
         { input: { country: "CZ", region: "321" }, expected: "CZ-321" },
+        { input: { country: "EEA", region: undefined }, expected: "EEA" },
       ];
       return Promise.all(
         tests.map(async (value) => {
@@ -126,7 +139,7 @@ describe("getGeolocation", () => {
 
     it("ignores invalid, numeric geolocation query param", async () => {
       const req = createRequest({
-        url: "https://privacy.example.com/fides.js?geolocation=12345",
+        url: "https://privacy.example.com/fides.js?geolocation=12",
       });
       const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
@@ -159,6 +172,10 @@ describe("getGeolocation", () => {
           expected: { location: "us", country: "us", region: undefined },
         },
         {
+          input: "USA-NY",
+          expected: { location: "USA-NY", country: "USA", region: "NY" },
+        },
+        {
           input: "SE-O",
           expected: { location: "SE-O", country: "SE", region: "O" },
         },
@@ -181,6 +198,10 @@ describe("getGeolocation", () => {
         {
           input: "CZ-321",
           expected: { location: "CZ-321", country: "CZ", region: "321" },
+        },
+        {
+          input: "EEA",
+          expected: { location: "EEA", country: "EEA", region: undefined },
         },
       ];
       return Promise.all(
