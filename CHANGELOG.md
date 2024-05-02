@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+- Fixing issue where privacy requests not approved before upgrading to 2.34 couldn't be processed [#4855](https://github.com/ethyca/fides/pull/4855)
 
 
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
