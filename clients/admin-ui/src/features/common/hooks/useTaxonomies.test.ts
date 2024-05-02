@@ -42,7 +42,9 @@ describe("Fides Language Helper Hook", () => {
         ReactDomServer.renderToStaticMarkup(
           getDataCategoryDisplayName("system.authentication")
         )
-      ).toBe("<span><strong>System Data:</strong> Authentication Data</span>");
+      ).toBe(
+        "<span><strong>Authentication Data:</strong> Authentication Data</span>"
+      );
     });
     it("returns the key if it can't find the data category", () => {
       expect(getDataCategoryDisplayName("invalidkey")).toBe("invalidkey");
