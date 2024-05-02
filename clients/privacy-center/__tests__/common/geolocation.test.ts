@@ -56,6 +56,21 @@ describe("getGeolocation", () => {
       expect(geolocation).toBeNull();
     });
 
+    it("discards invalid region geolocation headers", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "US",
+          "CloudFront-Viewer-Country-Region": "NewYork",
+        },
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toEqual({
+        country: "US",
+        location: "US",
+      });
+    });
+
     it("handles various ISO-3166 edge cases (numeric regions, single-character codes, etc.)", async () => {
       const tests = [
         { input: { country: "US", region: undefined }, expected: "US" },
@@ -99,7 +114,7 @@ describe("getGeolocation", () => {
       });
     });
 
-    it("handles invalid geolocation query param", async () => {
+    it("ignores invalid geolocation query param", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=America",
       });
@@ -107,9 +122,25 @@ describe("getGeolocation", () => {
       expect(geolocation).toBeNull();
     });
 
-    it("handles invalid, partial geolocation query param", async () => {
+    it("ignores invalid, numeric geolocation query param", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=12345",
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid, partial locations from geolocation query param (e.g. 'US-')", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=US-",
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid regions from geolocation query param (e.g. 'US-NewYork')", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=US-NewYork",
       });
       const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
