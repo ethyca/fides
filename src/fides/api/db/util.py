@@ -1,6 +1,6 @@
 # pylint: skip-file
 from json import dumps, loads
-from typing import TYPE_CHECKING, Any, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Type, TypeVar
 
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 
@@ -18,7 +18,7 @@ else:
     from sqlalchemy import Enum as EnumColumn
 
 
-def custom_json_deserializer(string):
+def custom_json_deserializer(string: str) -> Dict:
     """
     JSON deserializer function to be used in SQLAlchemy engine creation.
     Leverages our custom JSON decoder function, which deserializes JSON
@@ -28,7 +28,7 @@ def custom_json_deserializer(string):
     return loads(string, object_hook=_custom_decoder)
 
 
-def custom_json_serializer(obj):
+def custom_json_serializer(obj: Any) -> str:
     """
     JSON serializer function to be used in SQLAlchemy engine creation.
     Leverages our CustomJSONEncoder, which can serialize data types that are

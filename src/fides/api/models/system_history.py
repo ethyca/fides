@@ -1,4 +1,3 @@
-from json import dumps, loads
 from typing import Optional
 
 from sqlalchemy import Column, ForeignKey, Index, String
@@ -7,7 +6,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
 
-from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser
 from fides.config import get_config
 
