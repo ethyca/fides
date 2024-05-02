@@ -24,10 +24,12 @@ The types of changes are:
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+- Ensure only GVL vendors from Compass are labeled as such [#4857](https://github.com/ethyca/fides/pull/4857)
+- Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
 
-
-### Updated
-- Hydrates GTM datalayer to match supported FidesEvent Properties [#4847](https://github.com/ethyca/fides/pull/4847) 
+### Changed
+- Included searching by `email` for the Segment integration [#4851](https://github.com/ethyca/fides/pull/4851)
+- Hydrates GTM datalayer to match supported FidesEvent Properties [#4847](https://github.com/ethyca/fides/pull/4847)
 
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 

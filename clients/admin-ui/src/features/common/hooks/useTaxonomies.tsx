@@ -19,7 +19,11 @@ import {
 const useTaxonomies = () => {
   const { dataUses, dataCategories, dataSubjects, isLoading } = useData();
 
-  const getTopLevelKey = (fidesLangKey: string) => fidesLangKey.split(".")[0];
+  const getPrimaryKey = (fidesLangKey: string, level = 1) => {
+    const delimiter = ".";
+    const tokens = fidesLangKey.split(delimiter).slice(0, level);
+    return tokens.join(delimiter);
+  };
 
   /**
    * getDataDisplayName
@@ -34,7 +38,8 @@ const useTaxonomies = () => {
           parent_key?: string;
           name?: string;
         }
-      | undefined
+      | undefined,
+    primaryLevel = 1
   ): string | ReactNode => {
     const data = getDataFunction(fidesLangKey);
     if (!data) {
@@ -42,40 +47,46 @@ const useTaxonomies = () => {
       return fidesLangKey;
     }
 
-    const isChild = !!data?.parent_key;
-    if (!isChild) {
-      return <strong>{data.name}</strong>;
+    const primaryLevelData = getDataFunction(
+      getPrimaryKey(fidesLangKey, primaryLevel)
+    );
+
+    const isChild = !!data.parent_key;
+
+    if (!isChild || primaryLevelData?.name === data.name) {
+      // must include a key since this function is used as an iterator
+      return <strong key={fidesLangKey}>{data.name}</strong>;
     }
 
-    const topLevelData = getDataFunction(getTopLevelKey(fidesLangKey));
     return (
-      <span>
-        <strong>{topLevelData?.name}:</strong> {data.name}
+      // must include a key since this function is used as an iterator
+      <span key={fidesLangKey}>
+        <strong>{primaryLevelData?.name}:</strong> {data.name}
       </span>
     );
   };
 
-  /* 
-    Data Uses 
+  /*
+    Data Uses
   */
   const getDataUses = () => dataUses;
   const getDataUseByKey = (dataUseKey: string) =>
     find(dataUses, { fides_key: dataUseKey });
 
   const getDataUseDisplayName = (dataUseKey: string): ReactNode =>
-    getDataDisplayName(dataUseKey, getDataUseByKey);
+    getDataDisplayName(dataUseKey, getDataUseByKey, 1);
 
-  /* 
-    Data Categories 
+  /*
+    Data Categories
   */
   const getDataCategories = () => dataCategories;
   const getDataCategoryByKey = (dataCategoryKey: string) =>
     find(dataCategories, { fides_key: dataCategoryKey });
   const getDataCategoryDisplayName = (dataCategoryKey: string): ReactNode =>
-    getDataDisplayName(dataCategoryKey, getDataCategoryByKey);
+    getDataDisplayName(dataCategoryKey, getDataCategoryByKey, 2);
 
-  /* 
-    Data Subjects 
+  /*
+    Data Subjects
   */
   const getDataSubjects = () => dataSubjects;
   const getDataSubjectByKey = (dataSubjectKey: string) =>
