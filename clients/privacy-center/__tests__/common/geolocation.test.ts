@@ -45,7 +45,7 @@ describe("getGeolocation", () => {
       expect(geolocation).toBeNull();
     });
 
-    it("handles invalid geolocation headers", async () => {
+    it("ignores invalid geolocation headers", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
         headers: {
