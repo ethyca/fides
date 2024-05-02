@@ -1783,7 +1783,9 @@ describe("Consent overlay", () => {
               [PRIVACY_NOTICE_KEY_2]: true,
               [PRIVACY_NOTICE_KEY_3]: true,
             },
-            extraDetails: undefined,
+            extraDetails: {
+              consentMethod: undefined,
+            },
             fides_string: undefined,
           },
         });
