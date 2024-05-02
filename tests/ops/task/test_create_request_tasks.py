@@ -154,7 +154,6 @@ class TestPersistAccessRequestTasks:
         traversal: Traversal = Traversal(postgres_dataset_graph, identity)
         traversal_nodes = {}
         end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
-
         ready_tasks = persist_new_access_request_tasks(
             db,
             privacy_request,
@@ -190,7 +189,7 @@ class TestPersistAccessRequestTasks:
             == privacy_request.access_tasks.count() - 1
         )
         # Identity data is saved as encrypted access data -
-        assert root_task.access_data == '[{"email": "customer-1@example.com"}]'
+        assert root_task.access_data == [{"email": "customer-1@example.com"}]
         assert root_task.get_decoded_access_data() == [
             {"email": "customer-1@example.com"}
         ]
@@ -220,7 +219,7 @@ class TestPersistAccessRequestTasks:
 
         assert terminator_task.downstream_tasks == []
         assert terminator_task.all_descendant_tasks == []
-        assert terminator_task.access_data == "[]"
+        assert terminator_task.access_data == []
         # ARTIFICIAL NODES don't have collections or traversal details
         assert terminator_task.collection is None
         assert terminator_task.traversal_details == {}
@@ -246,7 +245,7 @@ class TestPersistAccessRequestTasks:
             "__TERMINATE__:__TERMINATE__",
             "postgres_example_test_dataset:address",
         ]
-        assert payment_card_task.access_data == "[]"
+        assert payment_card_task.access_data == []
         assert payment_card_task.collection == payment_card_serialized_collection
         assert (
             payment_card_task.traversal_details
@@ -1002,7 +1001,7 @@ class TestPersistConsentRequestTasks:
             "google_analytics_instance:google_analytics_instance",
         ]
         assert root_task.status == ExecutionLogStatus.complete
-        assert root_task.access_data == '[{"ga_client_id": "test_id"}]'
+        assert root_task.access_data == [{"ga_client_id": "test_id"}]
         assert root_task.get_decoded_access_data() == [{"ga_client_id": "test_id"}]
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.consent
