@@ -620,7 +620,13 @@ class PrivacyRequest(
         for key in keys:
             value = cache.get(key)
             if value:
-                result[key.split("-")[-1]] = json.loads(value)
+                try:
+                    # try parsing the value as JSON
+                    parsed_value = json.loads(value)
+                except json.JSONDecodeError:
+                    # if parsing as JSON fails, assume it's a string
+                    parsed_value = value
+                result[key.split("-")[-1]] = parsed_value
         return result
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
