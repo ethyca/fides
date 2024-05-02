@@ -1129,16 +1129,18 @@ export const DatamapReportTable = () => {
               spinnerPlacement="end"
               isLoading={groupChangeStarted}
               loadingText={`Group by ${getMenuDisplayValue()}`}
+              data-testid="group-by-menu"
             >
               Group by {getMenuDisplayValue()}
             </MenuButton>
-            <MenuList zIndex={11}>
+            <MenuList zIndex={11} data-testid="group-by-menu-list">
               <MenuItemOption
                 onClick={() => {
                   onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
                 }}
                 isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
                 value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
+                data-testid="group-by-system-data-use"
               >
                 System
               </MenuItemOption>
@@ -1148,6 +1150,7 @@ export const DatamapReportTable = () => {
                 }}
                 isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
                 value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
+                data-testid="group-by-data-use-system"
               >
                 Data use
               </MenuItemOption>
