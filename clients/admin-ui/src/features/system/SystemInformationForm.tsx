@@ -612,6 +612,12 @@ const SystemInformationForm = ({
                   id="legitimate_interest_disclosure_url"
                   disabled={lockedForGVL}
                 />
+                <DictSuggestionTextInput
+                  label="Vendor deleted date"
+                  name="vendor_deleted_date"
+                  id="vendor_deleted_date"
+                  disabled={true} // deleted date is populated by the GVL and should not be editable by users
+                />
               </SystemFormInputGroup>
               {values.fides_key ? (
                 <CustomFieldsList

@@ -77,6 +77,10 @@ export type SystemResponse = {
    */
   previous_vendor_id?: string;
   /**
+   * The deleted date of the vendor that's associated with this system.
+   */
+  vendor_deleted_date?: string;
+  /**
    * Referenced Dataset fides keys used by the system.
    */
   dataset_references?: Array<string>;
