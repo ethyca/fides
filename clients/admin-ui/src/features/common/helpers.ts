@@ -170,5 +170,7 @@ export const extractVendorSource = (vendorId: string) => {
   if (source === VendorSources.AC) {
     return VendorSources.AC;
   }
-  return VendorSources.GVL;
+  else if (source === VendorSources.GVL) {
+    return  VendorSources.GVL
+  }
 };
