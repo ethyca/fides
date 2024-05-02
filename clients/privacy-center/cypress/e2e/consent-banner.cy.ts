@@ -289,16 +289,9 @@ describe("Consent overlay", () => {
             options: Partial<FidesInitOptions> = {}
           ) => {
             const HTMLDescription = `
-            <p>
-              This test is overriding the <pre>experience_config.description</pre> with
-              an <strong>HTML</strong> description, which is used to allow users to configure
-              banners with <a href='https://example.com'>clickable links</a> and...
-            </p>
-            <p>
-              ...multiple paragraphs with ease. However, it's not enabled by default unless
-              the <pre>options.allowHTMLDescription</pre> flag is <pre>true</pre> to reduce
-              the likelihood of XSS attacks.
-            </p>
+            This test is overriding the <pre>experience_config.description</pre> with a <strong>HTML</strong> description, which is used to allow users to configure banners with <a href='https://example.com'>clickable links</a> and...
+
+            ...multiple paragraphs with ease. However, it's not enabled by default unless the <pre>options.allowHTMLDescription</pre> flag is <pre>true</pre> to reduce the likelihood of XSS attacks.
             `;
             cy.fixture("consent/fidesjs_options_banner_modal.json").then(
               (config) => {
