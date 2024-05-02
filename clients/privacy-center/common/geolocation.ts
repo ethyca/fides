@@ -54,7 +54,7 @@ export const lookupGeolocation = async (
     geolocation = country;
     if (typeof req.headers[CLOUDFRONT_HEADER_REGION] === "string") {
       [region] = req.headers[CLOUDFRONT_HEADER_REGION].split(",");
-      // Check if the region header is expected; otherwise discard as optional
+      // Check if the region header is valid; otherwise discard (it's optional!)
       if (VALID_ISO_3166_2_REGION_REGEX.test(region)) {
         geolocation = `${country}-${region}`;
       } else {
