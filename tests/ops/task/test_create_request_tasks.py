@@ -614,10 +614,17 @@ class TestPersistErasureRequestTasks:
         ).first()
 
         # access data collected for masking was added to this erasure node of the same address
-        assert (
-            payment_card_task.data_for_erasures
-            == '[{"billing_address_id": 1, "ccn": 123456789, "code": 321, "customer_id": 1, "id": "pay_aaa-aaa", "name": "Example Card 1", "preferred": true}]'
-        )
+        assert payment_card_task.data_for_erasures == [
+            {
+                "billing_address_id": 1,
+                "ccn": 123456789,
+                "code": 321,
+                "customer_id": 1,
+                "id": "pay_aaa-aaa",
+                "name": "Example Card 1",
+                "preferred": true,
+            }
+        ]
         assert payment_card_task.get_decoded_data_for_erasures() == [
             {
                 "billing_address_id": 1,
