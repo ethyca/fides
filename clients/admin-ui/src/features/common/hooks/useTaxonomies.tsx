@@ -47,15 +47,17 @@ const useTaxonomies = () => {
       return fidesLangKey;
     }
 
-    const isChild = !!data?.parent_key;
-    if (!isChild) {
+    const primaryLevelData = getDataFunction(
+      getPrimaryKey(fidesLangKey, primaryLevel)
+    );
+
+    const isChild = !!data.parent_key;
+
+    if (!isChild || primaryLevelData?.name === data.name) {
       // must include a key since this function is used as an iterator
       return <strong key={fidesLangKey}>{data.name}</strong>;
     }
 
-    const primaryLevelData = getDataFunction(
-      getPrimaryKey(fidesLangKey, primaryLevel)
-    );
     return (
       // must include a key since this function is used as an iterator
       <span key={fidesLangKey}>
