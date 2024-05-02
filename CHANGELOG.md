@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+- Fix handling of some ISO-3166 geolocation edge cases in Privacy Center /fides.js endpoint [#4858](https://github.com/ethyca/fides/pull/4858)
 
 
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
