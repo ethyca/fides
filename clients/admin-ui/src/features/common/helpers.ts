@@ -168,6 +168,13 @@ export const vendorSourceLabels = {
     label: "AC",
     fullName: "Google Additional Consent List",
   },
+  // this is just a generic placeholder/fallback for now
+  // TODO: update this to a proper vendor source once we've
+  // finalized what we are labeling non-GVL/AC compass vendors
+  [VendorSources.COMPASS]: {
+    label: "",
+    fullName: "",
+  },
 };
 
 export const extractVendorSource = (vendorId: string) => {

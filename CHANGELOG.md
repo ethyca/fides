@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+- Ensure only GVL vendors from Compass are labeled as such [#4857](https://github.com/ethyca/fides/pull/4857)
 
 
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
