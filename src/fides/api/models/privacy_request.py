@@ -626,7 +626,7 @@ class PrivacyRequest(
                 except json.JSONDecodeError:
                     # if parsing as JSON fails, assume it's a string.
                     # this is purely for backward compatibility: to ensure
-                    # that identity data stored pre-2.34.0 in the "old" format 
+                    # that identity data stored pre-2.34.0 in the "old" format
                     # can still be correctly retrieved from the cache.
                     parsed_value = value
                 result[key.split("-")[-1]] = parsed_value
