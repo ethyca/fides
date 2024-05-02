@@ -6,11 +6,11 @@ import {
 } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 
-// Regex to validate a location string, which must:
-// 1) Start with a 2-3 character country code (e.g. "US")
-// 2) Optionally end with a 2-3 character region code (e.g. "CA")
+// Regex to validate an ISO-3166 location string, which must:
+// 1) Start with a 2-3 letter country code (e.g. "US", "USA", "EEA")
+// 2) Optionally end with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X")
 // 3) Separated by a dash (e.g. "US-CA")
-export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+export const VALID_ISO_3166_LOCATION_REGEX = /^[a-z]{2,3}(-[a-z0-9]{1,3})?$/i;
 
 /**
  * Define the mapping of a FidesOption (e.g. "fides_locale") to a
