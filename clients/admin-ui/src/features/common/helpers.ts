@@ -176,7 +176,7 @@ export const extractVendorSource = (vendorId: string) => {
     return VendorSources.AC;
   }
   if (source === VendorSources.GVL) {
-    return  VendorSources.GVL
+    return VendorSources.GVL;
   }
-  return VendorSources.COMPASS
+  return VendorSources.COMPASS;
 };
