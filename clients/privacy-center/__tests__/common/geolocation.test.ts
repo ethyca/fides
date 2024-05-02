@@ -81,23 +81,25 @@ describe("getGeolocation", () => {
         { input: { country: "TR", region: "09" }, expected: "TR-09" },
         { input: { country: "BF", region: "03" }, expected: "BF-03" },
         { input: { country: "CZ", region: "321" }, expected: "CZ-321" },
-      ]
-      return Promise.all(tests.map(async value => {
-        const { input, expected } = value;
-        const req = createRequest({
-          url: "https://privacy.example.com/fides.js",
-          headers: {
-            "CloudFront-Viewer-Country": input.country,
-            "CloudFront-Viewer-Country-Region": input.region,
-          },
-        });
-        const geolocation = await lookupGeolocation(req);
-        expect(geolocation).toEqual({
-          country: input.country,
-          region: input.region,
-          location: expected,
-        });
-      }));
+      ];
+      return Promise.all(
+        tests.map(async (value) => {
+          const { input, expected } = value;
+          const req = createRequest({
+            url: "https://privacy.example.com/fides.js",
+            headers: {
+              "CloudFront-Viewer-Country": input.country,
+              "CloudFront-Viewer-Country-Region": input.region,
+            },
+          });
+          const geolocation = await lookupGeolocation(req);
+          expect(geolocation).toEqual({
+            country: input.country,
+            region: input.region,
+            location: expected,
+          });
+        })
+      );
     });
   });
 
@@ -148,27 +150,53 @@ describe("getGeolocation", () => {
 
     it("handles various ISO-3166 edge cases (numeric regions, single-character codes, etc.)", async () => {
       const tests = [
-        { input: "US", expected: { location: "US", country: "US", region: undefined } },
-        { input: "us", expected: { location: "us", country: "us", region: undefined } },
-        { input: "SE-O", expected: { location: "SE-O", country: "SE", region: "O" } },
-        { input: "gb-eng", expected: { location: "gb-eng", country: "gb", region: "eng" } },
-        { input: "RU-PRI", expected: { location: "RU-PRI", country: "RU", region: "PRI" } },
-        { input: "TR-09", expected: { location: "TR-09", country: "TR", region: "09" } },
-        { input: "BF-03", expected: { location: "BF-03", country: "BF", region: "03" } },
-        { input: "CZ-321", expected: { location: "CZ-321", country: "CZ", region: "321" } },
-      ]
-      return Promise.all(tests.map(async value => {
-        const { input, expected } = value;
-        const req = createRequest({
-          url: `https://privacy.example.com/fides.js?geolocation=${input}`,
-        });
-        const geolocation = await lookupGeolocation(req);
-        expect(geolocation).toEqual({
-          country: expected.country,
-          region: expected.region,
-          location: expected.location,
-        });
-      }));
+        {
+          input: "US",
+          expected: { location: "US", country: "US", region: undefined },
+        },
+        {
+          input: "us",
+          expected: { location: "us", country: "us", region: undefined },
+        },
+        {
+          input: "SE-O",
+          expected: { location: "SE-O", country: "SE", region: "O" },
+        },
+        {
+          input: "gb-eng",
+          expected: { location: "gb-eng", country: "gb", region: "eng" },
+        },
+        {
+          input: "RU-PRI",
+          expected: { location: "RU-PRI", country: "RU", region: "PRI" },
+        },
+        {
+          input: "TR-09",
+          expected: { location: "TR-09", country: "TR", region: "09" },
+        },
+        {
+          input: "BF-03",
+          expected: { location: "BF-03", country: "BF", region: "03" },
+        },
+        {
+          input: "CZ-321",
+          expected: { location: "CZ-321", country: "CZ", region: "321" },
+        },
+      ];
+      return Promise.all(
+        tests.map(async (value) => {
+          const { input, expected } = value;
+          const req = createRequest({
+            url: `https://privacy.example.com/fides.js?geolocation=${input}`,
+          });
+          const geolocation = await lookupGeolocation(req);
+          expect(geolocation).toEqual({
+            country: expected.country,
+            region: expected.region,
+            location: expected.location,
+          });
+        })
+      );
     });
   });
 
