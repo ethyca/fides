@@ -97,7 +97,7 @@ const useDiscoveryResultColumns = ({
         },
         meta: { overflow: "visible" },
         header: "Data category",
-        minSize: 240, // keep a minimum width so the Select has space to display the options properly
+        minSize: 280, // keep a minimum width so the Select has space to display the options properly
       }),
       columnHelper.accessor((row) => row.source_modified, {
         id: "time",

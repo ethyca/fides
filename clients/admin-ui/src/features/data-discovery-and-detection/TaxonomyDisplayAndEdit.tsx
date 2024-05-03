@@ -1,9 +1,12 @@
 import { Badge, Box, EditIcon } from "@fidesui/react";
-import { Options, Select } from "chakra-react-select";
+import { Options } from "chakra-react-select";
 import { useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { StagedResource } from "~/types/api";
+import TaxonomySelectDropdown, {
+  TaxonomySelectOption,
+} from "../common/dropdown/TaxonomySelectDropdown";
 
 import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
 
@@ -21,7 +24,6 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const { getDataCategoryDisplayName, getDataCategories } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
-  const dataCategories = getDataCategories();
 
   if (!fidesLangKey) {
     return <Badge textTransform="none">None</Badge>;
@@ -41,21 +43,13 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
       : fidesLangKey
   );
 
-  const handleCategoryChange = ({ value }: { value: string }) => {
+  const handleCategoryChange = (option: TaxonomySelectOption) => {
     updateResourceCategoryMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id!,
-      user_assigned_data_categories: [value],
+      user_assigned_data_categories: [option.value],
     });
   };
-
-  const options: Options<{ value: string; label: string }> = dataCategories.map(
-    (category) => ({
-      value: category.fides_key,
-      // Actually, it's a react node because it contains a <strong> element, bit the library handles it
-      label: getDataCategoryDisplayName(category.fides_key) as string,
-    })
-  );
 
   return (
     <Box
@@ -85,14 +79,10 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
           height="max"
           bgColor="#fff"
         >
-          <Select
-            placeholder="Select option"
-            defaultValue={fidesLangKey}
-            onChange={handleCategoryChange as any}
-            options={options as any}
-            size="sm"
-            menuPosition="absolute"
-            menuPlacement="auto"
+          <TaxonomySelectDropdown
+            taxonomyKey={fidesLangKey}
+            onChange={handleCategoryChange}
+            menuIsOpen={true}
           />
         </Box>
       )}
