@@ -158,6 +158,34 @@ class TestPollForExitedPrivacyRequests:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.error
 
+    def test_approved_privacy_request_task_with_errored_tasks(
+        self, db, privacy_request, request_task
+    ):
+        """Approved privacy requests remain in approved status while they are processing,
+        so if there's an error, they will be in this state.
+
+        The "poll_for_exited_privacy_request_tasks" task looks for Privacy Requests in both
+        "approved" and "in_processing" states.
+        """
+
+        privacy_request.status = PrivacyRequestStatus.approved
+        privacy_request.save(db)
+
+        # Put all tasks in an exited state - completed, errored, or skipped
+        root_task = privacy_request.get_root_task_by_action(ActionType.access)
+        assert root_task.status == ExecutionLogStatus.complete
+        request_task.update_status(db, ExecutionLogStatus.error)
+        terminator_task = privacy_request.get_terminate_task_by_action(
+            ActionType.access
+        )
+        terminator_task.update_status(db, ExecutionLogStatus.error)
+
+        errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
+        assert errored_prs == {privacy_request.id}
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.error
+
     def test_request_tasks_all_exited_none_errored(
         self, db, privacy_request, request_task
     ):

@@ -4,7 +4,7 @@ from hashlib import sha1
 from os import getenv
 from os.path import isfile
 from pathlib import Path
-from typing import Dict, Iterator, List
+from typing import Any, Dict, Iterator, List
 
 import sqlalchemy
 import toml
@@ -36,7 +36,11 @@ def get_db_engine(connection_string: str) -> Engine:
     """
 
     # Pymssql doesn't support this arg
-    connect_args = {"connect_timeout": 10} if "pymssql" not in connection_string else {}
+    connect_args: Dict[str, Any] = (
+        {"connect_timeout": 10} if "pymssql" not in connection_string else {}
+    )
+    if "redshift" in connection_string:
+        connect_args["sslmode"] = "prefer"
     try:
         engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
     except Exception as err:

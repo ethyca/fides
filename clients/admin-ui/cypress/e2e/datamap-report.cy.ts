@@ -82,6 +82,19 @@ describe("Minimal datamap report table", () => {
     cy.getByTestId("datamap-report-heading").should("be.visible");
   });
 
+  it("can group by data use", () => {
+    cy.getByTestId("group-by-menu").should("contain.text", "Group by system");
+    cy.getByTestId("group-by-menu").click();
+    cy.getByTestId("group-by-menu-list").within(() => {
+      cy.getByTestId("group-by-data-use-system").click();
+    });
+    cy.getByTestId("group-by-menu").should("contain.text", "Group by data use");
+
+    // should persist the grouping when navigating away
+    cy.reload();
+    cy.getByTestId("group-by-menu").should("contain.text", "Group by data use");
+  });
+
   describe("Undeclared data category columns", () => {
     it("should have the undeclared data columns disabled by default", () => {
       cy.getByTestId("row-0-col-system_undeclared_data_categories").should(
@@ -98,6 +111,15 @@ describe("Minimal datamap report table", () => {
       cy.contains("div", "Data use undeclared data categories").click();
       cy.getByTestId("save-button").click();
 
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+        "2 system undeclared data categories"
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
+        "2 data use undeclared data categories"
+      );
+
+      // should persist the columns when navigating away
+      cy.reload();
       cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
         "2 system undeclared data categories"
       );
@@ -129,6 +151,34 @@ describe("Minimal datamap report table", () => {
           "row-0-col-data_use_undeclared_data_categories"
         ).contains(pokemon);
       });
+
+      // should persist the expanded columns when navigating away
+      cy.reload();
+      ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
+        cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+          pokemon
+        );
+        cy.getByTestId(
+          "row-0-col-data_use_undeclared_data_categories"
+        ).contains(pokemon);
+      });
     });
+  });
+
+  describe("Exporting", () => {
+    it("should open the export modal", () => {
+      cy.getByTestId("export-btn").click();
+      cy.getByTestId("export-modal").should("be.visible");
+      cy.getByTestId("export-format-select").should("be.visible");
+      cy.getByTestId("export-modal-continue-btn").should(
+        "contain.text",
+        "Download"
+      );
+      cy.getByTestId("export-modal-cancel-btn").click();
+      cy.getByTestId("export-modal").should("not.exist");
+    });
+
+    // ideally we should test the downloads, but it's a bit complex and time consuming so deferring for now
+    it.skip("should download the export file", () => {});
   });
 });

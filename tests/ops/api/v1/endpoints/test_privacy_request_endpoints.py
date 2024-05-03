@@ -78,9 +78,9 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
-    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
+    PRIVACY_REQUEST_REQUEUE,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -2471,6 +2471,49 @@ class TestMarkPrivacyRequestPreApproveEligible:
         assert response.status_code == 200
         assert not submit_mock.called
         assert not mock_dispatch_message.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_mark_eligible_webhook_deleted(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request_status_pending,
+        pre_approval_webhooks,
+        generate_pre_approval_webhook_auth_header,
+        privacy_request_review_notification_enabled,
+    ):
+        """If a webhook is deleted, its eligibility is no longer needed"""
+        # mock previous webhook reply
+        PreApprovalWebhookReply.create(
+            db=db,
+            data={
+                "webhook_id": pre_approval_webhooks[0].id,
+                "privacy_request_id": privacy_request_status_pending.id,
+                "is_eligible": False,
+            },
+        )
+        pre_approval_webhooks[0].delete(db)
+
+        auth_header = generate_pre_approval_webhook_auth_header(
+            webhook=pre_approval_webhooks[1]
+        )
+
+        # new webhook reply
+        response = api_client.post(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert submit_mock.called
+        assert mock_dispatch_message.called
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
