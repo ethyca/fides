@@ -2151,39 +2151,37 @@ describe("Consent overlay", () => {
     });
   });
 
-  describe.only("consent reporting", () => {
+  describe("consent reporting APIs (notices-served, privacy-preferences)", () => {
     const historyId1 = "pri_mock_history_id_1";
     const historyId2 = "pri_mock_history_id_2";
-    const buildMockNotices = (): PrivacyNotice[] => {
-      return [
-        mockPrivacyNotice(
-          {
+    const buildMockNotices = (): PrivacyNotice[] => [
+      mockPrivacyNotice(
+        {
+          title: "Data Sales and Sharing",
+          id: "pri_notice-data-sales",
+          notice_key: "data_sales_and_sharing",
+        },
+        [
+          mockPrivacyNoticeTranslation({
             title: "Data Sales and Sharing",
-            id: "pri_notice-data-sales",
-            notice_key: "data_sales_and_sharing",
-          },
-          [
-            mockPrivacyNoticeTranslation({
-              title: "Data Sales and Sharing",
-              privacy_notice_history_id: historyId1,
-            }),
-          ]
-        ),
-        mockPrivacyNotice(
-          {
+            privacy_notice_history_id: historyId1,
+          }),
+        ]
+      ),
+      mockPrivacyNotice(
+        {
+          title: "Essential",
+          notice_key: "essential",
+          id: "pri_notice-essential",
+        },
+        [
+          mockPrivacyNoticeTranslation({
             title: "Essential",
-            notice_key: "essential",
-            id: "pri_notice-essential",
-          },
-          [
-            mockPrivacyNoticeTranslation({
-              title: "Essential",
-              privacy_notice_history_id: historyId2,
-            }),
-          ]
-        ),
-      ]
-    };
+            privacy_notice_history_id: historyId2,
+          }),
+        ]
+      ),
+    ];
 
     it("can go through consent reporting flow", () => {
       stubConfig({
@@ -2234,16 +2232,13 @@ describe("Consent overlay", () => {
     });
 
     it("can set acknowledge mode to true", () => {
-      const noticeOnlyNotices = buildMockNotices().map(notice => {
-        notice.consent_mechanism
-        return {
-          ...notice,
-          ...{ consent_mechanism: ConsentMechanism.NOTICE_ONLY }
-        }
-      });
+      const noticeOnlyNotices = buildMockNotices().map((notice) => ({
+        ...notice,
+        ...{ consent_mechanism: ConsentMechanism.NOTICE_ONLY },
+      }));
       stubConfig({
         experience: {
-          privacy_notices: noticeOnlyNotices
+          privacy_notices: noticeOnlyNotices,
         },
       });
       cy.get("@FidesUIShown").should("have.been.calledOnce");
@@ -2252,7 +2247,7 @@ describe("Consent overlay", () => {
         expect(interception.request.body.acknowledge_mode).to.eql(true);
       });
     });
-    
+
     it("can call custom notices served fn instead of Fides API", () => {
       /* eslint-disable @typescript-eslint/no-unused-vars */
       const apiOptions = {
@@ -2294,7 +2289,7 @@ describe("Consent overlay", () => {
           });
         });
       });
-    });    
+    });
 
     it("when fides_disable_save_api option is set, disables notices-served & privacy-preferences APIs", () => {
       stubConfig({
