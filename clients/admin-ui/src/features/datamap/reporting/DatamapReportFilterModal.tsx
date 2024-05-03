@@ -1,12 +1,21 @@
-import { Accordion, useDisclosure } from "@fidesui/react";
-import { useEffect, useState } from "react";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionItemProps,
+  AccordionPanel,
+  Box,
+  Heading,
+} from "@fidesui/react";
+import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  AccordionMultifieldFilter,
-  FilterModal,
-  Option,
-} from "~/features/common/modals/FilterModal";
+import CheckboxTree from "~/features/common/CheckboxTree";
+import StandardDialog, {
+  StandardDialogProps,
+} from "~/features/common/modals/StandardDialog";
+import { TreeNode } from "~/features/common/types";
 import {
   selectDataSubjects,
   useGetAllDataSubjectsQuery,
@@ -15,167 +24,131 @@ import {
   selectDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
+import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 
-export const useDatamapReportFilters = () => {
-  const { isOpen, onClose, onOpen } = useDisclosure();
-  useGetAllDataUsesQuery();
-  const dataUses = useAppSelector(selectDataUses);
-  useGetAllDataSubjectsQuery();
-  const dataSubjects = useAppSelector(selectDataSubjects);
-  useGetAllDataCategoriesQuery();
-  const dataCategories = useAppSelector(selectDataCategories);
-
-  const [dataUseOptions, setDataUseOptions] = useState<Option[]>([]);
-  const [dataCategoriesOptions, setDataCategoriesOptions] = useState<Option[]>(
-    []
-  );
-  const [dataSubjectOptions, setDataSubjectOptions] = useState<Option[]>([]);
-
-  useEffect(() => {
-    if (dataUseOptions.length === 0) {
-      setDataUseOptions(
-        dataUses.map((dataUse) => ({
-          value: dataUse.fides_key,
-          displayText: dataUse.name || dataUse.fides_key,
-          isChecked: false,
-        }))
-      );
-    }
-  }, [dataUses, dataUseOptions, setDataUseOptions]);
-
-  useEffect(() => {
-    if (dataCategoriesOptions.length === 0) {
-      setDataCategoriesOptions(
-        dataCategories.map((dataCategory) => ({
-          value: dataCategory.fides_key,
-          displayText: dataCategory.name || dataCategory.fides_key,
-          isChecked: false,
-        }))
-      );
-    }
-  }, [dataCategories, dataCategoriesOptions, setDataCategoriesOptions]);
-
-  useEffect(() => {
-    if (dataSubjectOptions.length === 0) {
-      setDataSubjectOptions(
-        dataSubjects.map((dataSubject) => ({
-          value: dataSubject.fides_key,
-          displayText: dataSubject.name || dataSubject.fides_key,
-          isChecked: false,
-        }))
-      );
-    }
-  }, [dataSubjects, dataSubjectOptions, setDataSubjectOptions]);
-
-  const resetFilters = () => {
-    setDataUseOptions((prev) => prev.map((o) => ({ ...o, isChecked: false })));
-    setDataCategoriesOptions((prev) =>
-      prev.map((o) => ({ ...o, isChecked: false }))
-    );
-    setDataSubjectOptions((prev) =>
-      prev.map((o) => ({ ...o, isChecked: false }))
-    );
-  };
-
-  const onCheckBoxChange = (
-    newValue: string,
-    checked: boolean,
-    options: Option[],
-    setOptions: (options: Option[]) => void
-  ) => {
-    const newOptions = options.map((option) => {
-      if (option.value === newValue) {
-        return {
-          ...option,
-          isChecked: checked,
-        };
-      }
-      return option;
-    });
-
-    setOptions(newOptions);
-  };
-
-  const onDataUseChange = (fidesKey: string, checked: boolean) => {
-    onCheckBoxChange(fidesKey, checked, dataUseOptions, setDataUseOptions);
-  };
-
-  const onDataCategoriesChange = (fidesKey: string, checked: boolean) => {
-    onCheckBoxChange(
-      fidesKey,
-      checked,
-      dataCategoriesOptions,
-      setDataCategoriesOptions
-    );
-  };
-
-  const onDataSubjectChange = (fidesKey: string, checked: boolean) => {
-    onCheckBoxChange(
-      fidesKey,
-      checked,
-      dataSubjectOptions,
-      setDataSubjectOptions
-    );
-  };
-
-  return {
-    isOpen,
-    onClose,
-    onOpen,
-    resetFilters,
-    dataUseOptions,
-    onDataUseChange,
-    dataCategoriesOptions,
-    onDataCategoriesChange,
-    dataSubjectOptions,
-    onDataSubjectChange,
-  };
+export type DatamapReportFilterSelections = {
+  dataUses: string[];
+  dataSubjects: string[];
+  dataCategories: string[];
 };
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  resetFilters: () => void;
-  dataUseOptions: Option[];
-  onDataUseChange: (fidesKey: string, checked: boolean) => void;
-  dataCategoriesOptions: Option[];
-  onDataCategoriesChange: (fidesKey: string, checked: boolean) => void;
-  dataSubjectOptions: Option[];
-  onDataSubjectChange: (fidesKey: string, checked: boolean) => void;
-};
+interface DatamapReportFilterModalProps
+  extends Omit<StandardDialogProps, "children" | "onConfirm"> {
+  onFilterChange: (selectedFilters: DatamapReportFilterSelections) => void;
+}
+
+const FilterModalAccordionItem = ({
+  label,
+  children,
+  ...props
+}: { label: string } & AccordionItemProps): JSX.Element => (
+  <AccordionItem {...props}>
+    <Heading>
+      <AccordionButton
+        height="100%"
+        data-testid="filter-modal-accordion-button"
+        textAlign="left"
+        fontWeight={600}
+      >
+        <Box flex={1}>{label}</Box>
+        <AccordionIcon boxSize={7} />
+      </AccordionButton>
+    </Heading>
+    <AccordionPanel>{children}</AccordionPanel>
+  </AccordionItem>
+);
 
 export const DatamapReportFilterModal = ({
-  isOpen,
   onClose,
-  resetFilters,
-  dataUseOptions,
-  onDataUseChange,
-  dataCategoriesOptions,
-  onDataCategoriesChange,
-  dataSubjectOptions,
-  onDataSubjectChange,
-}: Props) => (
-  <FilterModal isOpen={isOpen} onClose={onClose} resetFilters={resetFilters}>
-    <Accordion width="100%" allowToggle>
-      <AccordionMultifieldFilter
-        options={dataUseOptions}
-        onCheckboxChange={onDataUseChange}
-        header="Data uses"
-      />
-      <AccordionMultifieldFilter
-        options={dataCategoriesOptions}
-        onCheckboxChange={onDataCategoriesChange}
-        header="Data categories"
-      />
-      <AccordionMultifieldFilter
-        options={dataSubjectOptions}
-        onCheckboxChange={onDataSubjectChange}
-        header="Data subjects"
-      />
-    </Accordion>
-  </FilterModal>
-);
+  onFilterChange,
+  ...props
+}: DatamapReportFilterModalProps): JSX.Element => {
+  useGetAllDataUsesQuery();
+  useGetAllDataSubjectsQuery();
+  useGetAllDataCategoriesQuery();
+
+  const dataUses = useAppSelector(selectDataUses);
+  const dataSubjects = useAppSelector(selectDataSubjects);
+  const dataCategories = useAppSelector(selectDataCategories);
+
+  const [checkedUses, setCheckedUses] = useState<string[]>([]);
+  const [checkedSubjects, setCheckedSubjects] = useState<string[]>([]);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+
+  const dataUseNodes: TreeNode[] = useMemo(
+    () => transformTaxonomyEntityToNodes(dataUses),
+    [dataUses]
+  );
+  const dataSubjectNodes: TreeNode[] = useMemo(
+    () => transformTaxonomyEntityToNodes(dataSubjects),
+    [dataSubjects]
+  );
+  const dataCategoryNodes: TreeNode[] = useMemo(
+    () => transformTaxonomyEntityToNodes(dataCategories),
+    [dataCategories]
+  );
+
+  const resetFilters = () => {
+    setCheckedUses([]);
+    setCheckedSubjects([]);
+    setCheckedCategories([]);
+    onFilterChange({
+      dataUses: [],
+      dataSubjects: [],
+      dataCategories: [],
+    });
+    onClose();
+  };
+
+  const handleFilterChange = () => {
+    onFilterChange({
+      dataUses: checkedUses,
+      dataSubjects: checkedSubjects,
+      dataCategories: checkedCategories,
+    });
+    onClose();
+  };
+  return (
+    <StandardDialog
+      heading="Filter Datamap Report"
+      {...props}
+      onCancel={resetFilters}
+      onConfirm={handleFilterChange}
+      onClose={onClose}
+      cancelButtonText="Reset filters"
+      continueButtonText="Done"
+      data-testid="datamap-report-filter-modal"
+    >
+      <Accordion allowToggle>
+        <FilterModalAccordionItem label="Data uses">
+          <CheckboxTree
+            nodes={dataUseNodes}
+            selected={checkedUses}
+            onSelected={setCheckedUses}
+            data-testid="filter-modal-checkbox-tree-uses"
+          />
+        </FilterModalAccordionItem>
+        <FilterModalAccordionItem label="Data categories">
+          <CheckboxTree
+            nodes={dataCategoryNodes}
+            selected={checkedCategories}
+            onSelected={setCheckedCategories}
+            data-testid="filter-modal-checkbox-tree-categories"
+          />
+        </FilterModalAccordionItem>
+        <FilterModalAccordionItem label="Data subjects">
+          <CheckboxTree
+            nodes={dataSubjectNodes}
+            selected={checkedSubjects}
+            onSelected={setCheckedSubjects}
+            data-testid="filter-modal-checkbox-tree-subjects"
+          />
+        </FilterModalAccordionItem>
+      </Accordion>
+    </StandardDialog>
+  );
+};

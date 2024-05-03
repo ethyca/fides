@@ -47,3 +47,13 @@ export const getFileNameFromContentDisposition = (
   const match = contentDisposition.match(/filename=(.+)/);
   return match ? match[1] : defaultName;
 };
+
+export const getQueryParamsFromArray = (
+  strings: string[],
+  queryParam: string
+) => {
+  if (strings.length > 0) {
+    return `${queryParam}=${strings.join(`&${queryParam}=`)}`;
+  }
+  return undefined;
+};
