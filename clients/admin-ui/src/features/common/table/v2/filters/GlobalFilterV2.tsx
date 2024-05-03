@@ -36,6 +36,7 @@ export const GlobalFilterV2 = ({
         onClear={onClear}
         search={value || ""}
         placeholder={placeholder}
+        data-testid="global-text-filter"
       />
     </Box>
   );

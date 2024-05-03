@@ -1,4 +1,7 @@
-import { getFileNameFromContentDisposition } from "~/features/common/utils";
+import {
+  getFileNameFromContentDisposition,
+  getQueryParamsFromArray,
+} from "~/features/common/utils";
 
 describe("common utils", () => {
   describe(getFileNameFromContentDisposition.name, () => {
@@ -10,6 +13,18 @@ describe("common utils", () => {
       const contentDisposition = "attachment; filename=something-special.csv";
       expect(getFileNameFromContentDisposition(contentDisposition)).toEqual(
         "something-special.csv"
+      );
+    });
+  });
+  describe(getQueryParamsFromArray.name, () => {
+    it("should return undefined when strings is empty", () => {
+      expect(getQueryParamsFromArray([], "test")).toBeUndefined();
+    });
+    it("should return query params from strings", () => {
+      const strings = ["a", "b", "c"];
+      const queryParam = "test";
+      expect(getQueryParamsFromArray(strings, queryParam)).toEqual(
+        "test=a&test=b&test=c"
       );
     });
   });

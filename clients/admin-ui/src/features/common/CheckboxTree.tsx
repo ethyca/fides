@@ -8,10 +8,10 @@
  */
 
 import {
-  ArrowDownLineIcon,
-  ArrowUpLineIcon,
   Box,
+  BoxProps,
   Checkbox,
+  ChevronDownIcon,
   IconButton,
 } from "@fidesui/react";
 import { Fragment, ReactNode, useEffect, useState } from "react";
@@ -115,16 +115,11 @@ const CheckboxItem = ({
           <IconButton
             data-testid={`expand-${label}`}
             aria-label={isExpanded ? "collapse" : "expand"}
-            icon={
-              isExpanded ? (
-                <ArrowUpLineIcon boxSize={5} />
-              ) : (
-                <ArrowDownLineIcon boxSize={5} />
-              )
-            }
+            icon={<ChevronDownIcon boxSize={5} />}
             variant="ghost"
             onClick={() => onExpanded(node)}
             size="sm"
+            style={{ transform: isExpanded ? "rotate(180deg)" : "" }}
           />
         ) : null}
       </Box>
@@ -133,13 +128,18 @@ const CheckboxItem = ({
   );
 };
 
-interface CheckboxTreeProps {
+interface CheckboxTreeProps extends BoxProps {
   nodes: TreeNode[];
   selected: string[];
   onSelected: (newSelected: string[]) => void;
 }
 
-const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
+const CheckboxTree = ({
+  nodes,
+  selected,
+  onSelected,
+  ...props
+}: CheckboxTreeProps) => {
   const [checked, setChecked] = useState<string[]>([]);
   const [expanded, setExpanded] = useState<string[]>([]);
 
@@ -236,7 +236,7 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
   };
 
   return (
-    <Box>
+    <Box {...props}>
       {nodes.map((child) => (
         <Box key={child.value}>{createTree(child)}</Box>
       ))}
