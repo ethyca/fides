@@ -21,11 +21,20 @@ The types of changes are:
 - Added access and erasure support for Marigold Engage by Sailthru integration [#4826](https://github.com/ethyca/fides/pull/4826)
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
 - Added ability to export the contents of datamap report [#1545](https://ethyca.atlassian.net/browse/PROD-1545)
+- Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+- Ensure only GVL vendors from Compass are labeled as such [#4857](https://github.com/ethyca/fides/pull/4857)
+- Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
+- Fix handling of some ISO-3166 geolocation edge cases in Privacy Center /fides.js endpoint [#4858](https://github.com/ethyca/fides/pull/4858)
 - Fixing issue where privacy requests not approved before upgrading to 2.34 couldn't be processed [#4855](https://github.com/ethyca/fides/pull/4855)
 
+### Changed
+- Included searching by `email` for the Segment integration [#4851](https://github.com/ethyca/fides/pull/4851)
+
+### Changed
+- Sets `sslmode` to prefer for Redshift connections when generating datasets [#4849](https://github.com/ethyca/fides/pull/4849)
 
 ## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
 

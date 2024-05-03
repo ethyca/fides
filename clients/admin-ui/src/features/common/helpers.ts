@@ -152,6 +152,11 @@ export const enumToOptions = (e: { [s: number]: string }) =>
 export enum VendorSources {
   GVL = "gvl",
   AC = "gacp",
+
+  // this is just a generic placeholder/fallback for now
+  // TODO: update this to a proper vendor source once we've
+  // finalized what we are labeling non-GVL/AC compass vendors
+  COMPASS = "compass",
 }
 
 export const vendorSourceLabels = {
@@ -163,6 +168,13 @@ export const vendorSourceLabels = {
     label: "AC",
     fullName: "Google Additional Consent List",
   },
+  // this is just a generic placeholder/fallback for now
+  // TODO: update this to a proper vendor source once we've
+  // finalized what we are labeling non-GVL/AC compass vendors
+  [VendorSources.COMPASS]: {
+    label: "",
+    fullName: "",
+  },
 };
 
 export const extractVendorSource = (vendorId: string) => {
@@ -170,5 +182,8 @@ export const extractVendorSource = (vendorId: string) => {
   if (source === VendorSources.AC) {
     return VendorSources.AC;
   }
-  return VendorSources.GVL;
+  if (source === VendorSources.GVL) {
+    return VendorSources.GVL;
+  }
+  return VendorSources.COMPASS;
 };
