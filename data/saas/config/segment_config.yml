@@ -4,7 +4,7 @@ saas_config:
   type: segment
   description: A sample schema representing the Segment connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/segment
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: domain
@@ -44,20 +44,34 @@ saas_config:
     - name: segment_user
       requests:
         read:
-          method: GET
-          path: /v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata
-          param_values:
-            - name: namespace_id
-              connector_param: namespace_id
-            - name: user_id
-              identity: email
-          client_config:
-            protocol: https
-            host: <personas_domain>
-            authentication:
-              strategy: basic
-              configuration:
-                username: <access_secret>
+          - method: GET
+            path: /v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata
+            param_values:
+              - name: namespace_id
+                connector_param: namespace_id
+              - name: user_id
+                identity: email
+            client_config:
+              protocol: https
+              host: <personas_domain>
+              authentication:
+                strategy: basic
+                configuration:
+                  username: <access_secret>
+          - method: GET
+            path: /v1/spaces/<namespace_id>/collections/users/profiles/email:<email>/metadata
+            param_values:
+              - name: namespace_id
+                connector_param: namespace_id
+              - name: email
+                identity: email
+            client_config:
+              protocol: https
+              host: <personas_domain>
+              authentication:
+                strategy: basic
+                configuration:
+                  username: <access_secret>
     - name: track_events
       requests:
         read:

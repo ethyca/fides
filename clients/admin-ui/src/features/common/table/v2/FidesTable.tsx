@@ -22,11 +22,13 @@ import {
   RowData,
   Table as TableInstance,
 } from "@tanstack/react-table";
-import React, { ReactNode, useMemo, useState } from "react";
+import React, { ReactNode, useMemo } from "react";
 
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
+import { DATAMAP_LOCAL_STORAGE_KEYS } from "~/features/datamap/constants";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -176,7 +178,10 @@ export const FidesTableV2 = <T,>({
   renderRowTooltipLabel,
   emptyTableNotice,
 }: Props<T>) => {
-  const [displayAllColumns, setDisplayAllColumns] = useState<string[]>([]);
+  const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
+    []
+  );
 
   const handleAddDisplayColumn = (id: string) => {
     setDisplayAllColumns([...displayAllColumns, id]);

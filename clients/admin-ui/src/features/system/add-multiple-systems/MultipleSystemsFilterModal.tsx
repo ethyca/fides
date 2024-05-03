@@ -66,6 +66,7 @@ type FilterState = {
 const initialFilterState: FilterState = {
   GVL: false,
   AC: false,
+  COMPASS: false,
 };
 
 const MultipleSystemsFilterModal = <T,>({
