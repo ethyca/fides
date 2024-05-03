@@ -616,7 +616,9 @@ const SystemInformationForm = ({
                   label="Vendor deleted date"
                   name="vendor_deleted_date"
                   id="vendor_deleted_date"
-                  disabled={true} // deleted date is populated by the GVL and should not be editable by users
+                  // disable this field for editing:
+                  // deleted date is populated by the GVL and should not be editable by users
+                  disabled
                 />
               </SystemFormInputGroup>
               {values.fides_key ? (
