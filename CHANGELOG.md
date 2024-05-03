@@ -33,6 +33,7 @@ The types of changes are:
 
 ### Changed
 - Included searching by `email` for the Segment integration [#4851](https://github.com/ethyca/fides/pull/4851)
+- Hydrates GTM datalayer to match supported FidesEvent Properties [#4847](https://github.com/ethyca/fides/pull/4847)
 
 ### Changed
 - Sets `sslmode` to prefer for Redshift connections when generating datasets [#4849](https://github.com/ethyca/fides/pull/4849)

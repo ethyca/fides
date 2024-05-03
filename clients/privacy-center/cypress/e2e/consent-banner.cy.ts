@@ -1784,6 +1784,10 @@ describe("Consent overlay", () => {
               [PRIVACY_NOTICE_KEY_2]: true,
               [PRIVACY_NOTICE_KEY_3]: true,
             },
+            extraDetails: {
+              consentMethod: undefined,
+            },
+            fides_string: undefined,
           },
         });
       cy.get("@dataLayerPush")
@@ -1797,6 +1801,10 @@ describe("Consent overlay", () => {
               [PRIVACY_NOTICE_KEY_2]: true,
               [PRIVACY_NOTICE_KEY_3]: true,
             },
+            extraDetails: {
+              consentMethod: "accept",
+            },
+            fides_string: undefined,
           },
         });
       cy.get("@dataLayerPush")
@@ -1810,6 +1818,10 @@ describe("Consent overlay", () => {
               [PRIVACY_NOTICE_KEY_2]: true,
               [PRIVACY_NOTICE_KEY_3]: true,
             },
+            extraDetails: {
+              consentMethod: "accept",
+            },
+            fides_string: undefined,
           },
         });
     });
