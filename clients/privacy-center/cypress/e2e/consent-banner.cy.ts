@@ -1,14 +1,15 @@
 import {
-  ComponentType,
   CONSENT_COOKIE_NAME,
+  ComponentType,
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
   FidesInitOptions,
+  PrivacyNotice,
+  RecordConsentServedRequest,
   UserConsentPreference,
 } from "fides-js";
 
-import { RecordConsentServedRequest } from "fides-js/src/lib/consent-types";
 import { TEST_OVERRIDE_WINDOW_PATH } from "~/cypress/support/constants";
 
 import {
@@ -2150,40 +2151,42 @@ describe("Consent overlay", () => {
     });
   });
 
-  describe("consent reporting", () => {
+  describe("consent reporting APIs (notices-served, privacy-preferences)", () => {
     const historyId1 = "pri_mock_history_id_1";
     const historyId2 = "pri_mock_history_id_2";
+    const buildMockNotices = (): PrivacyNotice[] => [
+      mockPrivacyNotice(
+        {
+          title: "Data Sales and Sharing",
+          id: "pri_notice-data-sales",
+          notice_key: "data_sales_and_sharing",
+        },
+        [
+          mockPrivacyNoticeTranslation({
+            title: "Data Sales and Sharing",
+            privacy_notice_history_id: historyId1,
+          }),
+        ]
+      ),
+      mockPrivacyNotice(
+        {
+          title: "Essential",
+          notice_key: "essential",
+          id: "pri_notice-essential",
+        },
+        [
+          mockPrivacyNoticeTranslation({
+            title: "Essential",
+            privacy_notice_history_id: historyId2,
+          }),
+        ]
+      ),
+    ];
+
     it("can go through consent reporting flow", () => {
       stubConfig({
         experience: {
-          privacy_notices: [
-            mockPrivacyNotice(
-              {
-                title: "Data Sales and Sharing",
-                id: "pri_notice-mock-1",
-                notice_key: "data_sales_and_sharing",
-              },
-              [
-                mockPrivacyNoticeTranslation({
-                  title: "Data Sales and Sharing",
-                  privacy_notice_history_id: historyId1,
-                }),
-              ]
-            ),
-            mockPrivacyNotice(
-              {
-                title: "Essential",
-                id: "pri_notice-mock-2",
-                notice_key: "essential",
-              },
-              [
-                mockPrivacyNoticeTranslation({
-                  title: "Essential",
-                  privacy_notice_history_id: historyId2,
-                }),
-              ]
-            ),
-          ],
+          privacy_notices: buildMockNotices(),
         },
       });
       cy.get("#fides-modal-link").click();
@@ -2229,38 +2232,13 @@ describe("Consent overlay", () => {
     });
 
     it("can set acknowledge mode to true", () => {
+      const noticeOnlyNotices = buildMockNotices().map((notice) => ({
+        ...notice,
+        ...{ consent_mechanism: ConsentMechanism.NOTICE_ONLY },
+      }));
       stubConfig({
         experience: {
-          privacy_notices: [
-            mockPrivacyNotice(
-              {
-                title: "Data Sales and Sharing",
-                id: "pri_notice-data-sales",
-                notice_key: "data_sales_and_sharing",
-                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-              },
-              [
-                mockPrivacyNoticeTranslation({
-                  title: "Data Sales and Sharing",
-                  privacy_notice_history_id: historyId1,
-                }),
-              ]
-            ),
-            mockPrivacyNotice(
-              {
-                title: "Essential",
-                notice_key: "essential",
-                id: "pri_notice-essential",
-                consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-              },
-              [
-                mockPrivacyNoticeTranslation({
-                  title: "Essential",
-                  privacy_notice_history_id: historyId2,
-                }),
-              ]
-            ),
-          ],
+          privacy_notices: noticeOnlyNotices,
         },
       });
       cy.get("@FidesUIShown").should("have.been.calledOnce");
@@ -2269,6 +2247,7 @@ describe("Consent overlay", () => {
         expect(interception.request.body.acknowledge_mode).to.eql(true);
       });
     });
+
     it("can call custom notices served fn instead of Fides API", () => {
       /* eslint-disable @typescript-eslint/no-unused-vars */
       const apiOptions = {
@@ -2279,34 +2258,7 @@ describe("Consent overlay", () => {
       const spyObject = cy.spy(apiOptions, "patchNoticesServedFn");
       stubConfig({
         experience: {
-          privacy_notices: [
-            mockPrivacyNotice(
-              {
-                title: "Data Sales and Sharing",
-                id: "pri_notice-data-sales",
-                notice_key: "data_sales_and_sharing",
-              },
-              [
-                mockPrivacyNoticeTranslation({
-                  title: "Data Sales and Sharing",
-                  privacy_notice_history_id: historyId1,
-                }),
-              ]
-            ),
-            mockPrivacyNotice(
-              {
-                title: "Essential",
-                id: "pri_notice-essential",
-                notice_key: "essential",
-              },
-              [
-                mockPrivacyNoticeTranslation({
-                  title: "Essential",
-                  privacy_notice_history_id: historyId2,
-                }),
-              ]
-            ),
-          ],
+          privacy_notices: buildMockNotices(),
         },
         options: {
           apiOptions,
@@ -2331,6 +2283,50 @@ describe("Consent overlay", () => {
           });
           // check that notices aren't patched to Fides API
           cy.wait("@patchNoticesServed", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+        });
+      });
+    });
+
+    it("when fides_disable_save_api option is set, disables notices-served & privacy-preferences APIs", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: buildMockNotices(),
+        },
+        options: {
+          fidesDisableSaveApi: true,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("#fides-modal-link").click();
+
+        // Check that notices-served API is not called when the modal is shown
+        cy.get("@FidesUIShown").then(() => {
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          cy.wait("@patchNoticesServed", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+        });
+
+        // Also, check that privacy-preferences API is not called after saving
+        cy.getByTestId("Save-btn").click();
+        cy.get("@FidesUpdated").then(() => {
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          cy.wait("@patchPrivacyPreference", {
             requestTimeout: 100,
           }).then((xhr) => {
             assert.isNull(xhr?.response?.body);
