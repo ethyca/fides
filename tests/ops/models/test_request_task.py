@@ -173,7 +173,7 @@ class TestRequestTask:
         assert request_task.status == ExecutionLogStatus.complete
 
     def test_save_filtered_access_results(self, db, privacy_request):
-        assert privacy_request.get_filtered_access_results() == {}
+        assert privacy_request.get_filtered_final_upload() == {}
 
         privacy_request.save_filtered_access_results(
             db,
@@ -189,7 +189,7 @@ class TestRequestTask:
             },
         )
 
-        assert privacy_request.get_filtered_access_results() == {
+        assert privacy_request.get_filtered_final_upload() == {
             "policy_rule_key": {
                 "test_dataset:test_collection": [
                     {"name": "Jane", "address": "101 Test Town"}
@@ -211,11 +211,11 @@ class TestGetRawAccessResults:
 
     def test_request_tasks_complete_dsr_3_0(self, db, privacy_request, request_task):
         """DSR 3.0 stores results on RequestTask.access_data"""
-        assert request_task.get_decoded_access_data() == []
+        assert request_task.get_access_data() == []
 
         request_task.access_data = [{"name": "Jane", "street": "102 Test Town"}]
         request_task.update_status(db, ExecutionLogStatus.complete)
-        assert request_task.get_decoded_access_data() == [
+        assert request_task.get_access_data() == [
             {"name": "Jane", "street": "102 Test Town"}
         ]
 
@@ -308,12 +308,10 @@ class TestGetConsentResults:
 
 class TestGetDecodedDataForErasures:
     def test_no_data(self, request_task):
-        assert request_task.get_decoded_data_for_erasures() == []
+        assert request_task.get_data_for_erasures() == []
 
     def test_request_task_has_erasure_data(self, db, request_task):
         request_task.data_for_erasures = [{"id": 1, "name": "Jane"}]
         request_task.save(db)
 
-        assert request_task.get_decoded_data_for_erasures() == [
-            {"id": 1, "name": "Jane"}
-        ]
+        assert request_task.get_data_for_erasures() == [{"id": 1, "name": "Jane"}]

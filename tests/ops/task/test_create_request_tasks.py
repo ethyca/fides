@@ -190,9 +190,7 @@ class TestPersistAccessRequestTasks:
         )
         # Identity data is saved as encrypted access data -
         assert root_task.access_data == [{"email": "customer-1@example.com"}]
-        assert root_task.get_decoded_access_data() == [
-            {"email": "customer-1@example.com"}
-        ]
+        assert root_task.get_access_data() == [{"email": "customer-1@example.com"}]
         # ARTIFICIAL NODES don't have collections or traversal details
         assert root_task.collection is None
         assert root_task.traversal_details == {}
@@ -509,7 +507,7 @@ class TestPersistErasureRequestTasks:
         )
         assert root_task.access_data is None
         assert root_task.data_for_erasures is None
-        assert root_task.get_decoded_access_data() == []
+        assert root_task.get_access_data() == []
         # ARTIFICIAL NODES don't have collections or traversal details
         assert root_task.collection is None
         assert root_task.traversal_details == {}
@@ -625,7 +623,7 @@ class TestPersistErasureRequestTasks:
                 "preferred": True,
             }
         ]
-        assert payment_card_task.get_decoded_data_for_erasures() == [
+        assert payment_card_task.get_data_for_erasures() == [
             {
                 "billing_address_id": 1,
                 "ccn": 123456789,
@@ -709,7 +707,7 @@ class TestPersistErasureRequestTasks:
             RequestTask.collection_address == "mongo_test:conversations"
         ).first()
         # Erasure format may save array elements to denote what elements should not be masked while preserving original index
-        assert conversations_task.get_decoded_data_for_erasures()[1]["thread"] == [
+        assert conversations_task.get_data_for_erasures()[1]["thread"] == [
             {
                 "comment": "com_0013",
                 "message": "should we text Grace when we land or should we just surprise her?",
@@ -1009,7 +1007,7 @@ class TestPersistConsentRequestTasks:
         ]
         assert root_task.status == ExecutionLogStatus.complete
         assert root_task.access_data == [{"ga_client_id": "test_id"}]
-        assert root_task.get_decoded_access_data() == [{"ga_client_id": "test_id"}]
+        assert root_task.get_access_data() == [{"ga_client_id": "test_id"}]
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.consent
         )

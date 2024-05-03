@@ -326,7 +326,7 @@ def _get_data_for_erasures(
         # IMPORTANT. Use "data_for_erasures" - not RequestTask.access_data.
         # For arrays, "access_data" may remove non-matched elements from arrays, but to build erasure
         # queries we need the original data in the appropriate indices
-        retrieved_task_data = corresponding_access_task.get_decoded_data_for_erasures()
+        retrieved_task_data = corresponding_access_task.get_data_for_erasures()
 
     return retrieved_task_data
 

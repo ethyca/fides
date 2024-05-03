@@ -1141,7 +1141,7 @@ class PrivacyRequest(
                     [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
                 ),
             ):
-                final_results[task.collection_address] = task.get_decoded_access_data()
+                final_results[task.collection_address] = task.get_access_data()
 
             return final_results
 
@@ -1213,7 +1213,7 @@ class PrivacyRequest(
 
         return None
 
-    def get_filtered_access_results(self) -> Dict[str, Dict[str, List[Row]]]:
+    def get_filtered_final_upload(self) -> Dict[str, Dict[str, List[Row]]]:
         """Fetched the same filtered access results we uploaded to the user"""
         return self.filtered_final_upload or {}
 
@@ -1806,12 +1806,12 @@ class RequestTask(Base):
         task_id = cache.get(get_async_task_tracking_cache_key(self.id))
         return task_id
 
-    def get_decoded_access_data(self) -> List[Row]:
-        """Decode the collected access data"""
+    def get_access_data(self) -> List[Row]:
+        """Helper to retrieve access data or default to empty list"""
         return self.access_data or []
 
-    def get_decoded_data_for_erasures(self) -> List[Row]:
-        """Decode the erasure data needed to build masking requests"""
+    def get_data_for_erasures(self) -> List[Row]:
+        """Helper to retrieve erasure data needed to build masking requests or default to empty list"""
         return self.data_for_erasures or []
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
