@@ -2297,7 +2297,7 @@ describe("Consent overlay", () => {
           privacy_notices: buildMockNotices(),
         },
         options: {
-          fidesDisableSaveApi: false,
+          fidesDisableSaveApi: true,
         },
       });
       cy.waitUntilFidesInitialized().then(() => {
