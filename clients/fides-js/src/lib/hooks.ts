@@ -97,15 +97,24 @@ export const useConsentServed = ({
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
-      // The only time a notices served API call isn't triggered is when
-      // the BANNER is shown or preview mode is enabled. Calls can be triggered for
-      // TCF_BANNER, TCF_OVERLAY, and OVERLAY
+      // Disable the notices-served API if the fides_disable_save_api option is set
+      if (options.fidesDisableSaveApi) {
+        return;
+      }
+
+      // Disable the notices-served API if the serving component is a regular
+      // banner (or unknown!). This means we trigger the API for:
+      // 1) MODAL
+      // 2) TCF_OVERLAY
+      // 3) TCF_BANNER
       if (
         !event.detail.extraDetails ||
         event.detail.extraDetails.servingComponent === ServingComponent.BANNER
       ) {
         return;
       }
+
+      // Construct the notices-served API request and send!
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
         privacy_experience_config_history_id:

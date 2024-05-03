@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from time import sleep
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 from uuid import uuid4
 
 import pytest
@@ -33,6 +33,7 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.util.cache import (
     FidesopsRedis,
     cache_task_tracking_key,
+    get_cache,
     get_identity_cache_key,
 )
 from fides.api.util.constants import API_DATE_FORMAT
@@ -1168,6 +1169,43 @@ class TestPrivacyRequestCustomIdentities:
             "email": "test@example.com",
             "customer_id": {"label": "Custom ID", "value": 123},
             "account_id": {"label": "Account ID", "value": "456"},
+        }
+
+    def test_old_cache_can_be_read(self, privacy_request):
+        """
+        Previously we were storing unencoded values, but with 2.34 we updated
+        the `cache_identity` function to JSON encode the values before caching.
+        We need to make sure we can still read these old values using the
+        new `get_cached_identity_data` function.
+        """
+
+        def cache_identity(identity: Identity, privacy_request_id: str) -> None:
+            """Old function for caching identity"""
+            cache: FidesopsRedis = get_cache()
+            identity_dict: Dict[str, Any] = dict(identity)
+            for key, value in identity_dict.items():
+                if value is not None:
+                    cache.set_with_autoexpire(
+                        get_identity_cache_key(privacy_request_id, key),
+                        value,
+                    )
+
+        cache_identity(
+            identity=Identity(
+                email="user@example.com",
+                phone_number="+15558675309",
+                ga_client_id="GA123",
+                ljt_readerID="LJT456",
+                fides_user_device_id="4fbb6edf-34f6-4717-a6f1-541fd1e5d585",
+            ),
+            privacy_request_id=privacy_request.id,
+        )
+        assert privacy_request.get_cached_identity_data() == {
+            "phone_number": "+15558675309",
+            "email": "user@example.com",
+            "ga_client_id": "GA123",
+            "ljt_readerID": "LJT456",
+            "fides_user_device_id": "4fbb6edf-34f6-4717-a6f1-541fd1e5d585",
         }
 
     def test_persist_custom_identities(self, db, privacy_request):
