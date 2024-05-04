@@ -40,7 +40,8 @@ class PreApprovalWebhookReply(Base):
 
     webhook_id = Column(
         String,
-        ForeignKey(PreApprovalWebhook.id_field_path, ondelete="SET NULL"), index=True
+        ForeignKey(PreApprovalWebhook.id_field_path, ondelete="SET NULL"),
+        index=True,
     )
     privacy_request_id = Column(
         String, ForeignKey("privacyrequest.id", ondelete="SET NULL"), index=True

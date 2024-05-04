@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     ActionDisabled,
+    AwaitingAsyncTaskCallback,
     CollectionDisabled,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
@@ -111,6 +112,16 @@ def retry(
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
                     raise
+                except AwaitingAsyncTaskCallback as ex:
+                    traceback.print_exc()
+                    logger.warning(
+                        "Privacy request {} paused {}",
+                        method_name,
+                        self.execution_node.address,
+                    )
+                    self.log_paused(action_type, ex)
+                    # Re-raise to stop privacy request execution on pause.
+                    return
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
                     self.request_task.rows_masked = 0

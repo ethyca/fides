@@ -38,3 +38,12 @@ class WebhookJWE(BaseModel):
     webhook_id: str
     scopes: List[str]
     iat: str
+
+
+class RequestTaskJWE(BaseModel):
+    """Describes JWE that is given to the user that they need to send with their request
+    to resume or pre-approve a privacy request"""
+
+    request_task_id: str
+    scopes: List[str]
+    iat: str

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.common_exceptions import (
+    AwaitingAsyncTaskCallback,
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,
@@ -76,6 +77,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.secrets = cast(Dict, configuration.secrets)
         self.current_collection_name: Optional[str] = None
         self.current_privacy_request: Optional[PrivacyRequest] = None
+        self.current_request_task: Optional[RequestTask] = None
         self.current_saas_request: Optional[SaaSRequest] = None
 
     def query_config(self, node: ExecutionNode) -> SaaSQueryConfig:
@@ -84,13 +86,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         and connector param values for the current collection.
         """
         privacy_request = self.current_privacy_request
-        assert privacy_request is not None
+        request_task = self.current_request_task
+        assert privacy_request is not None and request_task is not None
         return SaaSQueryConfig(
             node,
             self.endpoints,
             self.secrets,
             self.saas_config.data_protection_request,
             privacy_request,
+            request_task,
         )
 
     def get_client_config(self) -> ClientConfig:
@@ -118,13 +122,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         )
 
     def set_privacy_request_state(
-        self, privacy_request: PrivacyRequest, node: ExecutionNode
+        self,
+        privacy_request: PrivacyRequest,
+        node: ExecutionNode,
+        request_task: RequestTask,
     ) -> None:
         """
         Sets the class state for the current privacy request
         """
         self.current_collection_name = node.address.collection
         self.current_privacy_request = privacy_request
+        self.current_request_task = request_task
 
     def set_saas_request_state(self, current_saas_request: SaaSRequest) -> None:
         """
@@ -138,6 +146,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """
         self.current_collection_name = None
         self.current_privacy_request = None
+        self.current_request_task = None
         self.current_saas_request = None
 
     @log_context
@@ -191,7 +200,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
-        self.set_privacy_request_state(privacy_request, node)
+        self.set_privacy_request_state(privacy_request, node, request_task)
+        if request_task.callback_succeeded:
+            logger.info("Access callback succeeded for {}", request_task.id)
+            return request_task.get_decoded_access_data()
+
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
@@ -229,8 +242,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
+        awaiting_async_callback: bool = False
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
+            if read_request.needs_async_callback:
+                awaiting_async_callback = True
+
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
                 input_data, read_request.param_values
@@ -265,6 +282,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     rows.extend(processed_rows)
         self.unset_connector_state()
+        if awaiting_async_callback and request_task.id:
+            raise AwaitingAsyncTaskCallback()
         return rows
 
     def _missing_dataset_reference_values(
@@ -408,7 +427,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
-        self.set_privacy_request_state(privacy_request, node)
+        self.set_privacy_request_state(privacy_request, node, request_task)
+        if request_task.callback_succeeded:
+            logger.info("Masking callback succeeded for {}", request_task.id)
+            # If we've received the callback for this node, return rows_masked directly
+            return request_task.rows_masked
+
+        self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
         masking_request = query_config.get_masking_request()
         if not masking_request:
@@ -418,6 +443,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
 
         self.set_saas_request_state(masking_request)
+        awaiting_async_callback: bool = masking_request.needs_async_callback
 
         # hook for user-provided request override functions
         if masking_request.request_override:
@@ -466,6 +492,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             rows_updated += 1
 
         self.unset_connector_state()
+        if awaiting_async_callback and request_task.id:
+            raise AwaitingAsyncTaskCallback()
         return rows_updated
 
     @staticmethod
@@ -504,7 +532,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             "Starting consent request for node: '{}'",
             node.address.value,
         )
-        self.set_privacy_request_state(privacy_request, node)
+        self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
 
         should_opt_in, filtered_preferences = should_opt_in_to_service(

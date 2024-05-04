@@ -18,6 +18,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
+from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.config import CONFIG
 
@@ -309,3 +310,8 @@ class ConsentRequestVerification(FidesSchema):
     data_use: str
     data_use_description: Optional[str] = None
     opt_in: bool
+
+
+class RequestTaskCallbackRequest(FidesSchema):
+    access_results: Optional[List[Row]] = None
+    rows_masked: Optional[int] = None

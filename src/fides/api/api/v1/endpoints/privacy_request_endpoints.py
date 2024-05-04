@@ -2,6 +2,7 @@
 
 import csv
 import io
+import json
 from collections import defaultdict
 from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
@@ -75,6 +76,7 @@ from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
     verify_oauth_client,
+    verify_request_task_callback,
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
@@ -96,6 +98,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestResponse,
     PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
+    RequestTaskCallbackRequest,
     ReviewPrivacyRequestIds,
     VerificationCode,
 )
@@ -113,12 +116,13 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
-from fides.api.util.cache import FidesopsRedis
+from fides.api.util.cache import CustomJSONEncoder, FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
@@ -153,6 +157,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
+    REQUEST_TASK_CALLBACK,
     REQUEST_TASKS,
     V1_URL_PREFIX,
 )
@@ -179,6 +184,21 @@ def get_privacy_request_or_error(
         )
 
     return privacy_request
+
+
+def get_request_task_or_error(db: Session, request_task_id: str) -> PrivacyRequest:
+    """Load the request task or throw a 404"""
+    logger.info("Finding request task with id '{}'", request_task_id)
+
+    request_task = RequestTask.get(db, object_id=request_task_id)
+
+    if not request_task:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No request_task found with id '{request_task}'.",
+        )
+
+    return request_task
 
 
 @router.post(
@@ -2065,3 +2085,60 @@ def requeue_privacy_request(
         resume_step,
         db,
     )
+
+
+@router.post(
+    REQUEST_TASK_CALLBACK,
+    response_model=Dict,
+)
+def task_callback(
+    *,
+    data: RequestTaskCallbackRequest,
+    request_task: RequestTask = Security(
+        verify_request_task_callback, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME]
+    ),
+) -> Dict:
+    """
+    Request task callback endpoint -
+    """
+    db = Session.object_session(
+        request_task
+    )  # Use the session created in the jwe verification
+
+    privacy_request: PrivacyRequest = request_task.privacy_request
+    if privacy_request.status not in [
+        PrivacyRequestStatus.in_processing,
+        PrivacyRequestStatus.approved,
+    ]:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Callback failed. Cannot run {request_task.action_type.value} task {request_task.id} with privacy request of status {request_task.status.value}",
+        )
+    if request_task.status != ExecutionLogStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Callback failed. Cannot run {request_task.action_type.value} task {request_task.id} with status {request_task.status.value}",
+        )
+    logger.info(
+        "Callback received for {} task {} {}",
+        request_task.action_type.value,
+        request_task.collection_address,
+        request_task.id,
+    )
+    # Mark that the callback was received on the task itself - just experimenting here. We could also save data
+    # to the request task itself in another column
+
+    request_task.callback_succeeded = True
+    if data.access_results:
+        request_task.access_data = json.dumps(
+            data.access_results or [], cls=CustomJSONEncoder
+        )
+    if data.rows_masked:
+        request_task.rows_masked = data.rows_masked
+    request_task.update_status(db, ExecutionLogStatus.pending)
+    request_task.save(db)
+
+    log_task_queued(request_task, "callback")
+    queue_request_task(request_task, privacy_request_proceed=True)
+
+    return {"task_queued": True}

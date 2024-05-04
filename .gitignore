@@ -258,3 +258,6 @@ saas_config.toml
 # Frontend files
 **/node_modules
 **/.next
+
+
+multilang_migration_backup_*

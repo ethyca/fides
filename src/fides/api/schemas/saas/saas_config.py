@@ -105,6 +105,7 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[Union[bool, List[int]]] = False
     rate_limit_config: Optional[RateLimitConfig]
+    needs_async_callback: Optional[bool] = False
     skip_missing_param_values: Optional[bool] = (
         False  # Skip instead of raising an exception if placeholders can't be populated in body
     )

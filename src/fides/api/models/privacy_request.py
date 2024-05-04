@@ -62,7 +62,11 @@ from fides.api.models.pre_approval_webhook import (
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
+from fides.api.schemas.external_https import (
+    RequestTaskJWE,
+    SecondPartyResponseFormat,
+    WebhookJWE,
+)
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import (
@@ -216,6 +220,21 @@ def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> s
     jwe = WebhookJWE(
         webhook_id=webhook.id,
         scopes=[PRIVACY_REQUEST_REVIEW],
+        iat=datetime.now().isoformat(),
+    )
+    return generate_jwe(
+        json.dumps(jwe.dict()),
+        CONFIG.security.app_encryption_key,
+    )
+
+
+def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
+    """
+    Generate a JWE to be used to resume privacy request execution.
+    """
+    jwe = RequestTaskJWE(
+        request_task_id=request_task.id,
+        scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
@@ -1785,6 +1804,9 @@ class RequestTask(Base):
     # Written after a consent request is completed - not all consent
     # connectors will end up sending a request
     consent_sent = Column(Boolean)
+
+    # For async tasks awaiting callback
+    callback_succeeded = Column(Boolean)
 
     # Stores a serialized collection that can be transformed back into a Collection to help
     # execute the current task
