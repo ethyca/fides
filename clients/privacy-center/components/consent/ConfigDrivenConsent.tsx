@@ -19,7 +19,7 @@ import { getGpcStatus, makeNoticeConsent } from "~/features/consent/helpers";
 import { useConfig } from "~/features/common/config.slice";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
-import { ConsentPreferences } from "~/types/api";
+import { ConsentMethod, ConsentPreferences } from "~/types/api";
 import { useRouter } from "next/router";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import ConsentItem from "./ConsentItem";
@@ -79,6 +79,7 @@ const ConfigDrivenConsent = ({
       };
     });
     const cookie: FidesCookie = getOrMakeFidesCookie();
+    cookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
     saveFidesCookie({ ...cookie, consent: newConsent }, base64Cookie);
 
     const executableOptions = consentOptions.map((option) => ({
@@ -201,7 +202,12 @@ const ConfigDrivenConsent = ({
           </React.Fragment>
         );
       })}
-      <SaveCancel onSave={saveUserConsentOptions} onCancel={handleCancel} />
+      <SaveCancel
+        onSave={saveUserConsentOptions}
+        onCancel={handleCancel}
+        cancelLabel="Cancel"
+        saveLabel="Save"
+      />
     </Stack>
   );
 };

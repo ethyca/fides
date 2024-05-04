@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 from requests import Response
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import SkippingConsentPropagation
 from fides.api.graph.execution import ExecutionNode
@@ -129,6 +129,15 @@ class TestSaasConnector:
         unwrapped = SaaSConnector._unwrap_response_data(fake_request, fake_response)
         assert response_body == unwrapped
 
+    def test_unwrap_response_no_content(self):
+        fake_request: SaaSRequest = SaaSRequest(
+            path="test/path", method=HTTPMethod.GET, data_path="user"
+        )
+        fake_response: Response = Response()
+        fake_response.status_code = HTTP_204_NO_CONTENT
+
+        assert SaaSConnector._unwrap_response_data(fake_request, fake_response) == {}
+
     def test_delete_only_endpoint(
         self, saas_example_config, saas_example_connection_config
     ):
@@ -195,6 +204,49 @@ class TestSaasConnector:
             request_task,
             {"fidesops_grouped_inputs": [], "conversation_id": ["456"]},
         ) == [{"id": "123", "from_email": "test@example.com"}]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_no_content_response(
+        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+    ):
+        """
+        Verifies that no rows are returned if the status code is 204 No Content
+        """
+
+        # mock the 204 No Content response
+        mock_response = Response()
+        mock_response.status_code = HTTP_204_NO_CONTENT
+        mock_send.return_value = mock_response
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "messages"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        privacy_request = PrivacyRequest(id="123")
+        privacy_request.cache_identity(Identity(email="test@example.com"))
+
+        assert (
+            connector.retrieve_data(
+                execution_node,
+                Policy(),
+                privacy_request,
+                request_task,
+                {"fidesops_grouped_inputs": [], "conversation_id": ["456"]},
+            )
+            == []
+        )
 
     def test_missing_input_values(
         self, saas_example_config, saas_example_connection_config

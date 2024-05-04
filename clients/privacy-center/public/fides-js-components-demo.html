@@ -12,12 +12,8 @@
     <script>
       (function () {
         const tcfEnabled = window.fidesConfig?.options?.tcfEnabled;
-        const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
-        if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
-          params.delete("geolocation");
-        }
         const src = `/fides.js?e2e=true${tcfEnabled ? "&tcf=true" : ""}${
           !!params.size ? `&${params.toString()}` : ""
         }`;
@@ -206,6 +202,7 @@
         },
       };
       window.Fides.init(fidesConfig);
+      Fides.gtm();
     </script>
 
     <style>
@@ -306,7 +303,6 @@
         );
 
         // Test behavior of integrations that can be configured without/before their platform scripts.
-        Fides.gtm();
         Fides.meta({
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,

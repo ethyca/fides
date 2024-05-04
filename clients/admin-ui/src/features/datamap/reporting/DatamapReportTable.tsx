@@ -4,6 +4,7 @@ import {
   ChevronDownIcon,
   Flex,
   Heading,
+  IconButton,
   Menu,
   MenuButton,
   MenuItemOption,
@@ -15,6 +16,7 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
+  TableState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -33,9 +35,19 @@ import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { DownloadLightIcon } from "~/features/common/Icon";
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
-import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
+import {
+  DATAMAP_LOCAL_STORAGE_KEYS,
+  ExportFormat,
+} from "~/features/datamap/constants";
+import {
+  useExportMinimalDatamapReportMutation,
+  useGetMinimalDatamapReportQuery,
+} from "~/features/datamap/datamap.slice";
+import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import {
   DatamapReportFilterModal,
   useDatamapReportFilters,
@@ -183,6 +195,17 @@ const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
 };
 
 export const DatamapReportTable = () => {
+  const [tableState, setTableState] = useLocalStorage<TableState | undefined>(
+    "datamap-report-table-state",
+    undefined
+  );
+  const storedTableState = useMemo(
+    // snag the stored table state from local storage if it exists and use it to initialize the tableInstance.
+    // memoize this so we don't get stuck in a loop as the tableState gets updated during the session.
+    () => tableState,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     PAGE_SIZES,
@@ -241,8 +264,19 @@ export const DatamapReportTable = () => {
     setGlobalFilter(searchTerm);
   };
 
-  const [groupBy, setGroupBy] = useState<DATAMAP_GROUPING>(
+  const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
+    DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
     DATAMAP_GROUPING.SYSTEM_DATA_USE
+  );
+
+  const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
+    getColumnOrder(groupBy)
+  );
+
+  const [grouping, setGrouping] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.TABLE_GROUPING,
+    getGrouping(groupBy)
   );
 
   const onGroupChange = (group: DATAMAP_GROUPING) => {
@@ -265,13 +299,12 @@ export const DatamapReportTable = () => {
     dataCategories: selectedDataCategoriesFilters,
   });
 
-  const {
-    items: data,
-    total: totalRows,
-    pages: totalPages,
-    grouping,
-    columnOrder,
-  } = useMemo(() => {
+  const [
+    exportMinimalDatamapReport,
+    { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
+  ] = useExportMinimalDatamapReportMutation();
+
+  const { data, totalRows } = useMemo(() => {
     const report = datamapReport || emptyMinimalDatamapReportResponse;
     // Type workaround since extending BaseDatamapReport with custom fields causes some trouble
     const items = report.items as DatamapReport[];
@@ -279,26 +312,24 @@ export const DatamapReportTable = () => {
       setGroupChangeStarted(false);
     }
 
-    /*
-      It's important that `grouping` and `columnOrder` are updated
-      in this `useMemo`. It makes it so grouping and column order 
-      updates are synced up with when the data changes. Otherwise
-      the table will update the grouping and column order before 
-      the correct data loads.
-    */
+    setTotalPages(report.pages);
+
     return {
-      ...report,
-      items,
-      grouping: getGrouping(groupBy),
-      columnOrder: getColumnOrder(groupBy),
+      totalRows: report.total,
+      data: items,
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datamapReport]);
 
   useEffect(() => {
-    setTotalPages(totalPages);
-  }, [totalPages, setTotalPages]);
+    // changing the groupBy should wait until the data is loaded to update the grouping
+    const newGrouping = getGrouping(groupBy);
+    if (datamapReport) {
+      setGrouping(newGrouping);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datamapReport]);
 
   // Get custom fields
   useGetAllCustomFieldDefinitionsQuery();
@@ -971,6 +1002,29 @@ export const DatamapReportTable = () => {
     onClose: onColumnSettingsClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isExportReportOpen,
+    onOpen: onExportReportOpen,
+    onClose: onExportReportClose,
+  } = useDisclosure();
+
+  const onExport = (downloadType: ExportFormat) => {
+    exportMinimalDatamapReport({
+      pageIndex,
+      pageSize,
+      groupBy,
+      search: globalFilter,
+      dataUses: selectedDataUseFilters,
+      dataSubjects: selectedDataSubjectFilters,
+      dataCategories: selectedDataCategoriesFilters,
+      format: downloadType,
+    }).then(() => {
+      if (isExportReportSuccess) {
+        onExportReportClose();
+      }
+    });
+  };
+
   const tableInstance = useReactTable<DatamapReport>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
@@ -979,19 +1033,26 @@ export const DatamapReportTable = () => {
     manualPagination: true,
     data,
     initialState: {
-      columnOrder,
       columnVisibility: {
         [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
         [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
       },
+      ...storedTableState,
     },
     state: {
       expanded: true,
       grouping,
+      columnOrder,
     },
-    // column resizing
     columnResizeMode: "onChange",
     enableColumnResizing: true,
+    onStateChange: (updater) => {
+      const valueToStore =
+        updater instanceof Function
+          ? updater(tableInstance.getState())
+          : updater;
+      setTableState(valueToStore);
+    },
   });
 
   const getMenuDisplayValue = () => {
@@ -1042,6 +1103,15 @@ export const DatamapReportTable = () => {
         headerText="Data map settings"
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
+        onColumnOrderChange={(newColumnOrder) => {
+          setColumnOrder(newColumnOrder);
+        }}
+      />
+      <ReportExportModal
+        isOpen={isExportReportOpen}
+        onClose={onExportReportClose}
+        onConfirm={onExport}
+        isLoading={isExportingReport}
       />
       <TableActionBar>
         <GlobalFilterV2
@@ -1049,27 +1119,28 @@ export const DatamapReportTable = () => {
           setGlobalFilter={updateGlobalFilter}
           placeholder="System name, Fides key, or ID"
         />
-        <Flex alignItems="center">
+        <Flex alignItems="center" gap={2}>
           <Menu>
             <MenuButton
               as={Button}
               size="xs"
               variant="outline"
-              mr={2}
               rightIcon={<ChevronDownIcon />}
               spinnerPlacement="end"
               isLoading={groupChangeStarted}
               loadingText={`Group by ${getMenuDisplayValue()}`}
+              data-testid="group-by-menu"
             >
               Group by {getMenuDisplayValue()}
             </MenuButton>
-            <MenuList zIndex={11}>
+            <MenuList zIndex={11} data-testid="group-by-menu-list">
               <MenuItemOption
                 onClick={() => {
                   onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
                 }}
                 isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
                 value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
+                data-testid="group-by-system-data-use"
               >
                 System
               </MenuItemOption>
@@ -1079,6 +1150,7 @@ export const DatamapReportTable = () => {
                 }}
                 isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
                 value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
+                data-testid="group-by-data-use-system"
               >
                 Data use
               </MenuItemOption>
@@ -1089,7 +1161,6 @@ export const DatamapReportTable = () => {
             size="xs"
             variant="outline"
             onClick={onColumnSettingsOpen}
-            mr={2}
           >
             Edit columns
           </Button>
@@ -1101,6 +1172,14 @@ export const DatamapReportTable = () => {
           >
             Filter
           </Button>
+          <IconButton
+            aria-label="Export report"
+            data-testid="export-btn"
+            size="xs"
+            variant="outline"
+            onClick={onExportReportOpen}
+            icon={<DownloadLightIcon />}
+          />
         </Flex>
       </TableActionBar>
 
