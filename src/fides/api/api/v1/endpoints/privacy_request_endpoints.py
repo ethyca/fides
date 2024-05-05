@@ -58,7 +58,7 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
-from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
