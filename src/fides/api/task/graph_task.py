@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,too-many-statements
 import copy
 import json
 import traceback
@@ -120,8 +120,8 @@ def retry(
                         self.execution_node.address,
                     )
                     self.log_paused(action_type, ex)
-                    # Re-raise to stop privacy request execution on pause.
-                    return
+                    # Request Task paused and exited, awaiting Async Callback
+                    return None
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
                     self.request_task.rows_masked = 0

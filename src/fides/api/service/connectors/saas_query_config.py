@@ -1,3 +1,4 @@
+# pylint: disable=too-many-instance-attributes
 from __future__ import annotations
 
 from datetime import datetime
@@ -322,7 +323,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         param_values[UUID] = str(uuid4())
         param_values[ISO_8601_DATETIME] = datetime.now().date().isoformat()
-        if self.request_task.id:
+        if self.request_task and self.request_task.id:
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
             )
@@ -428,7 +429,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
         param_values[UUID] = str(uuid4())
         param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-        if self.request_task.id:
+        if self.request_task and self.request_task.id:
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
             )

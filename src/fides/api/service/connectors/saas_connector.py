@@ -431,7 +431,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if request_task.callback_succeeded:
             logger.info("Masking callback succeeded for {}", request_task.id)
             # If we've received the callback for this node, return rows_masked directly
-            return request_task.rows_masked
+            return request_task.rows_masked or 0
 
         self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
@@ -443,7 +443,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
 
         self.set_saas_request_state(masking_request)
-        awaiting_async_callback: bool = masking_request.needs_async_callback
+        awaiting_async_callback: Optional[bool] = masking_request.needs_async_callback
 
         # hook for user-provided request override functions
         if masking_request.request_override:

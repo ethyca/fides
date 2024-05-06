@@ -186,7 +186,7 @@ def get_privacy_request_or_error(
     return privacy_request
 
 
-def get_request_task_or_error(db: Session, request_task_id: str) -> PrivacyRequest:
+def get_request_task_or_error(db: Session, request_task_id: str) -> RequestTask:
     """Load the request task or throw a 404"""
     logger.info("Finding request task with id '{}'", request_task_id)
 
