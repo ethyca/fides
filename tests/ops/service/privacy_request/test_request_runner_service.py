@@ -61,6 +61,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
 from fides.api.util.data_category import DataCategory
+from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
@@ -3081,3 +3082,141 @@ def test_create_and_process_erasure_request_dynamodb(
     assert deserializer.deserialize(customer["Item"]["name"]) == None
     assert deserializer.deserialize(customer_identifier["Item"]["name"]) == None
     assert deserializer.deserialize(login["Item"]["name"]) == None
+
+
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+def test_async_access_request(
+    mock_send,
+    api_client,
+    saas_example_async_dataset_config,
+    saas_async_example_connection_config: Dict[str, str],
+    db,
+    policy,
+    dsr_version,
+    request,
+    run_privacy_request_task,
+):
+    """Demonstrate end-to-end support for tasks expecting async callbacks for DSR 3.0"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    mock_send().json.return_value = {"id": "123"}
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        {"identity": {"email": "customer-1@example.com"}},
+        task_timeout=120,
+    )
+    db.refresh(pr)
+
+    if dsr_version == "use_dsr_3_0":
+        assert pr.status == PrivacyRequestStatus.in_processing
+
+        request_tasks = pr.access_tasks
+        assert request_tasks[0].status == ExecutionLogStatus.complete
+
+        # SaaS Request was marked as needing async results, so the Request
+        # Task was put in a paused state
+        assert request_tasks[1].status == ExecutionLogStatus.paused
+        assert request_tasks[1].collection_address == "saas_async_config:user"
+
+        # Terminator task is downstream so it is still in a pending state
+        assert request_tasks[2].status == ExecutionLogStatus.pending
+
+        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+        auth_header = {"Authorization": "Bearer " + jwe_token}
+        # Post to callback URL to supply access results async
+        # This requeues task and proceeds downstream
+        api_client.post(
+            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+            headers=auth_header,
+            json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+        assert pr.get_raw_access_results() == {
+            "saas_async_config:user": [{"id": 1, "user_id": "abcde", "state": "VA"}]
+        }
+        # User data supplied async was filtered before being returned to the end user
+        assert pr.get_filtered_access_results() == {
+            "access_request_rule": {
+                "saas_async_config:user": [{"state": "VA", "id": 1}]
+            }
+        }
+    else:
+        # Async Access Requests not supported for DSR 2.0 - the given
+        # node cannot be paused
+        assert pr.status == PrivacyRequestStatus.complete
+
+
+@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+def test_async_erasure_request(
+    mock_send,
+    saas_example_async_dataset_config,
+    saas_async_example_connection_config: Dict[str, str],
+    db,
+    api_client,
+    erasure_policy,
+    dsr_version,
+    request,
+    run_privacy_request_task,
+):
+    """Demonstrate end-to-end support for erasure tasks expecting async callbacks for DSR 3.0"""
+    mock_send().json.return_value = {"id": "123"}
+
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {"identity": {"email": "customer-1@example.com"}},
+        task_timeout=120,
+    )
+
+    if dsr_version == "use_dsr_3_0":
+        # Access async task fired first
+        assert pr.access_tasks[1].status == ExecutionLogStatus.paused
+        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+        auth_header = {"Authorization": "Bearer " + jwe_token}
+        # Post to callback URL to supply access results async
+        # This requeues task and proceeds downstream
+        response = api_client.post(
+            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+            headers=auth_header,
+            json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+        )
+        assert response.status_code == 200
+
+        # Erasure task is also expected async results and is now paused
+        assert pr.erasure_tasks[1].status == ExecutionLogStatus.paused
+        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+        auth_header = {"Authorization": "Bearer " + jwe_token}
+        # Post to callback URL to supply erasure results async
+        # This requeues task and proceeds downstream to complete privacy request
+        response = api_client.post(
+            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+            headers=auth_header,
+            json={"rows_masked": 2},
+        )
+        assert response.status_code == 200
+
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+
+        assert pr.erasure_tasks[1].rows_masked == 2
+        assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
+
+    else:
+        # Async Erasure Requests not supported for DSR 2.0 - the given
+        # node cannot be paused
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete

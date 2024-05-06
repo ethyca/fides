@@ -203,7 +203,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if request_task.callback_succeeded:
             logger.info("Access callback succeeded for {}", request_task.id)
             return request_task.get_decoded_access_data()
-
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
