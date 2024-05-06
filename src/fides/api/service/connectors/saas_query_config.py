@@ -327,9 +327,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
             )
-            param_values[REPLY_TO] = REQUEST_TASK_CALLBACK.format(
-                task_id=self.request_task.id
-            )
+            param_values[REPLY_TO] = REQUEST_TASK_CALLBACK
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -433,9 +431,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
             )
-            param_values[REPLY_TO] = REQUEST_TASK_CALLBACK.format(
-                task_id=self.request_task.id
-            )
+            param_values[REPLY_TO] = REQUEST_TASK_CALLBACK
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
