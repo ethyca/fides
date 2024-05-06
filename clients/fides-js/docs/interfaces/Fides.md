@@ -14,7 +14,7 @@ the `Fides` object is available. Therefore, your code should check for the
 existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 [FidesEvent](FidesEvent.md)) for details) before using the `Fides` object in your own code.
 
-**`Example`**
+## Example
 
 ```html
 <head>
@@ -32,24 +32,11 @@ existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 </body>
 ```
 
-## Table of contents
-
-### Properties
-
-- [consent](Fides.md#consent)
-- [fides\_string](Fides.md#fides_string)
-- [initialized](Fides.md#initialized)
-- [getModalLinkLabel](Fides.md#getmodallinklabel)
-- [showModal](Fides.md#showmodal)
-- [gtm](Fides.md#gtm)
-- [init](Fides.md#init)
-- [reinitialize](Fides.md#reinitialize)
-
 ## Properties
 
 ### consent
 
-• **consent**: `Record`\<`string`, `boolean`\>
+> **consent**: `Record`\<`string`, `boolean`\>
 
 User's current consent preferences, formatted as a key/value object with:
 - key: the applicable Fides `notice_key` (e.g. `data_sales_and_sharing`, `analytics`)
@@ -65,7 +52,7 @@ The specific keys provided in the `Fides.consent` property are determined
 based on your Fides configuration, and are provided to the browser based on
 the user's location, property ID, etc.
 
-**`Example`**
+#### Example
 
 A `Fides.consent` value showing the user has opted-out of data sales & sharing:
 ```ts
@@ -74,7 +61,7 @@ A `Fides.consent` value showing the user has opted-out of data sales & sharing:
 }
 ```
 
-**`Example`**
+#### Example
 
 A `Fides.consent` value showing the user has opted-in to analytics, but not marketing:
 ```ts
@@ -84,17 +71,17 @@ A `Fides.consent` value showing the user has opted-in to analytics, but not mark
 }
 ```
 
-___
+***
 
-### fides\_string
+### fides\_string?
 
-• `Optional` **fides\_string**: `string`
+> `optional` **fides\_string**: `string`
 
 User's current consent string(s) combined into a single value. Currently,
 this is used by FidesJS to store IAB consent strings from various
 frameworks such as TCF, GPP, and Google's "Additional Consent" string.
 
-**`Example`**
+#### Example
 
 Example `fides_string` showing a combination of:
 - IAB TC string: `CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA`
@@ -103,11 +90,11 @@ Example `fides_string` showing a combination of:
 console.log(Fides.fides_string); // CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70
 ```
 
-___
+***
 
 ### initialized
 
-• **initialized**: `boolean`
+> **initialized**: `boolean`
 
 Whether or not FidesJS has finished initialization and has loaded the
 current user's experience, consent preferences, etc.
@@ -115,18 +102,18 @@ current user's experience, consent preferences, etc.
 NOTE: To be notified when initialization has completed, you can subscribe
 to the `FidesInitialized` event. See [FidesEvent](FidesEvent.md) for details.
 
-___
+***
 
-### getModalLinkLabel
+### getModalLinkLabel()
 
-• **getModalLinkLabel**: (`options?`: \{ `disableLocalization`: `boolean`  }) => `string`
+> **getModalLinkLabel**: (`options`?) => `string`
 
 The modal's "Trigger link label" text can be customized, per regulation, for each language defined in the `experience`.
 
 Use this function to get the label in the appropriate language for the user's current locale.
 To always return in the default language only, pass the `disableLocalization` option as `true`.
 
-**`Example`**
+#### Example
 
 Getting the link text in the user's current locale (eg. Spanish):
 ```ts
@@ -138,7 +125,7 @@ Getting the link text in the default locale to match other links on the page:
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-**`Example`**
+#### Example
 
 Applying the link text to a custom modal link element:
 ```html
@@ -148,26 +135,22 @@ Applying the link text to a custom modal link element:
 </script>
 ```
 
-#### Type declaration
+#### Parameters
 
-▸ (`options?`): `string`
-
-##### Parameters
-
-| Name | Type |
+| Parameter | Type |
 | :------ | :------ |
-| `options?` | `Object` |
-| `options.disableLocalization` | `boolean` |
+| `options`? | `object` |
+| `options.disableLocalization`? | `boolean` |
 
-##### Returns
+#### Returns
 
 `string`
 
-___
+***
 
-### showModal
+### showModal()
 
-• **showModal**: () => `void`
+> **showModal**: () => `void`
 
 Display the FidesJS modal component on the page, if the current user's
 session (location, property ID, etc.) matches an `experience` with a modal
@@ -186,7 +169,7 @@ When not used as a click handler, `Fides.showModal()` can be called
 programmatically at any time from your own custom JavaScript logic as
 desired.
 
-**`Example`**
+#### Example
 
 Showing the FidesJS modal via an `onclick` handler on a custom button element:
 ```html
@@ -214,7 +197,7 @@ Showing/hiding the custom element using the `fides-overlay-modal-link` CSS class
 }
 ```
 
-**`Example`**
+#### Example
 
 Showing the FidesJS modal programmatically in a JavaScript function:
 ```ts
@@ -226,19 +209,15 @@ function myCustomShowModalFunction() {
 }
 ```
 
-#### Type declaration
-
-▸ (): `void`
-
-##### Returns
+#### Returns
 
 `void`
 
-___
+***
 
-### gtm
+### gtm()
 
-• **gtm**: () => `void`
+> **gtm**: () => `void`
 
 Enable the Google Tag Manager (GTM) integration. This should be called
 immediately after FidesJS is included, and once enabled, FidesJS will
@@ -248,7 +227,7 @@ they occur, which can then be used to trigger/block tags in GTM based on
 
 See the Google Tag Manager tutorial for more: [https://fid.es/configuring-gtm-consent](https://fid.es/configuring-gtm-consent)
 
-**`Example`**
+#### Example
 
 Enabling the GTM integration in your site's `<head>`:
 ```html
@@ -258,19 +237,15 @@ Enabling the GTM integration in your site's `<head>`:
 </head>
 ```
 
-#### Type declaration
-
-▸ (): `void`
-
-##### Returns
+#### Returns
 
 `void`
 
-___
+***
 
-### init
+### init()
 
-• **init**: (`config`: `any`) => `Promise`\<`void`\>
+> **init**: (`config`) => `Promise`\<`void`\>
 
 Initializes FidesJS with an initial configuration object.
 
@@ -279,25 +254,21 @@ Fides Cloud will automatically bundle a `Fides.init(...)` call server-side
 with the appropriate configuration options for the user's session based on
 their location, property ID, and the matching experience config from Fides.
 
-#### Type declaration
+#### Parameters
 
-▸ (`config`): `Promise`\<`void`\>
-
-##### Parameters
-
-| Name | Type |
+| Parameter | Type |
 | :------ | :------ |
 | `config` | `any` |
 
-##### Returns
+#### Returns
 
 `Promise`\<`void`\>
 
-___
+***
 
-### reinitialize
+### reinitialize()
 
-• **reinitialize**: () => `Promise`\<`void`\>
+> **reinitialize**: () => `Promise`\<`void`\>
 
 Reinitialize FidesJS with the initial configuration, but taking into account
 any new overrides such as the `fides_overrides` global or the query params.
@@ -307,10 +278,6 @@ want to modify any FidesJS options after initialization - for example,
 switching between regular/embedded mode with `fides_embed`, overriding the
 user's language with `fides_locale`, etc.
 
-#### Type declaration
-
-▸ (): `Promise`\<`void`\>
-
-##### Returns
+#### Returns
 
 `Promise`\<`void`\>
