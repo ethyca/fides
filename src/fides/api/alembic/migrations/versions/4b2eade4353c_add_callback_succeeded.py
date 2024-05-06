@@ -1,7 +1,7 @@
 """add_callback_succeeded
 
 Revision ID: 4b2eade4353c
-Revises: 9e83545ed9b6
+Revises: 23e01f8f4652
 Create Date: 2024-05-02 19:38:46.537231
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "4b2eade4353c"
-down_revision = "9e83545ed9b6"
+down_revision = "23e01f8f4652"
 branch_labels = None
 depends_on = None
 
