@@ -100,7 +100,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     def get_client_config(self) -> ClientConfig:
         """Utility method for getting client config according to the current class state"""
         saas_config_client_config = self.saas_config.client_config
-
         required_current_saas_request = self.current_saas_request
         assert required_current_saas_request is not None
         current_request_client_config = required_current_saas_request.client_config
@@ -283,6 +282,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     rows.extend(processed_rows)
         self.unset_connector_state()
         if awaiting_async_callback and request_task.id:
+            # If a read request was marked to expect async results, original response data here is ignored
             raise AwaitingAsyncTaskCallback()
         return rows
 
@@ -493,6 +493,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         self.unset_connector_state()
         if awaiting_async_callback and request_task.id:
+            # If the masking request was marked to expect async results, original responses are ignored
+            # and we raise an AwaitingAsyncTaskCallback to put this task in a paused state
             raise AwaitingAsyncTaskCallback()
         return rows_updated
 
