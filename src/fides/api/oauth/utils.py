@@ -135,9 +135,13 @@ def _get_request_task_jwe_or_error(
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 
-    token_data = json.loads(
-        extract_payload(authorization, CONFIG.security.app_encryption_key)
-    )
+    try:
+        token_data = json.loads(
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
+        )
+    except exceptions.JWEError:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
     try:
         token = RequestTaskJWE(**token_data)
     except ValidationError:

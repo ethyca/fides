@@ -2,8 +2,9 @@ import ast
 import csv
 import io
 import json
+import string
 from datetime import datetime, timedelta
-from random import randint
+from random import choice, randint
 from typing import List
 from unittest import mock
 from uuid import uuid4
@@ -39,6 +40,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestError,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
+    generate_request_task_callback_jwe,
 )
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
@@ -88,6 +90,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
+    REQUEST_TASK_CALLBACK,
     REQUEST_TASKS,
     V1_URL_PREFIX,
 )
@@ -5777,3 +5780,247 @@ class TestRequeuePrivacyRequest:
             privacy_request_id=privacy_request.id,
             from_step=CurrentStep.access.value,
         )
+
+
+class TestRequestTaskAsyncCallback:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + REQUEST_TASK_CALLBACK
+
+    def test_request_task_async_callback_unauthenticated(
+        self, api_client: TestClient, url
+    ):
+        response = api_client.post(url, headers={})
+        assert 401 == response.status_code
+        assert response.json()["detail"] == "Failed to authenticate"
+
+    def test_request_task_async_callback_invalid_request_task_in_jwe(
+        self, api_client: TestClient, url
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "request_task_id": "bad_id",
+                        "scopes": [PRIVACY_REQUEST_CALLBACK_RESUME],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                CONFIG.security.app_encryption_key,
+            )
+        }
+
+        response = api_client.post(url, headers=auth_header)
+        assert 404 == response.status_code
+        assert response.json()["detail"] == "No Request Task found with id 'bad_id'."
+
+    def test_request_task_async_callback_invalid_scope_in_jwe(
+        self, api_client: TestClient, url, request_task
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "request_task_id": request_task.id,
+                        "scopes": [PRIVACY_REQUEST_READ],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                CONFIG.security.app_encryption_key,
+            )
+        }
+
+        response = api_client.post(url, headers=auth_header)
+        assert 403 == response.status_code
+        assert response.json()["detail"] == "Not Authorized for this action"
+
+    def test_request_task_async_callback_unsupported_data_in_jwe(
+        self, api_client: TestClient, url
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "webhook_id": "test_webhook_id",
+                        "scopes": [PRIVACY_REQUEST_READ],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                CONFIG.security.app_encryption_key,
+            )
+        }
+
+        response = api_client.post(url, headers=auth_header)
+        assert 403 == response.status_code
+        assert response.json()["detail"] == "Not Authorized for this action"
+
+    def test_request_task_async_callback_jwe_encrypted_with_invalid_token(
+        self, api_client: TestClient, url, request_task
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "request_task_id": request_task.id,
+                        "scopes": [PRIVACY_REQUEST_CALLBACK_RESUME],
+                        "iat": datetime.now().isoformat(),
+                    }
+                ),
+                "1MBlw12k9EIjEBVMnL6Myy4lTDpw41c4",
+            )
+        }
+
+        response = api_client.post(url, headers=auth_header)
+        assert 403 == response.status_code
+        assert response.json()["detail"] == "Not Authorized for this action"
+
+    def test_request_task_async_callback_invalid_privacy_request_status(
+        self, db, api_client: TestClient, url, request_task, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_request_task_callback_jwe(request_task)
+        }
+
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Callback failed. Cannot queue access task '{request_task.id}' with privacy request status 'complete'"
+        )
+
+    def test_request_task_async_callback_invalid_request_task_status(
+        self, api_client: TestClient, url, request_task
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_request_task_callback_jwe(request_task)
+        }
+
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Callback failed. Cannot queue access task '{request_task.id}' with request task status 'pending'"
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
+    )
+    def test_request_task_async_callback_no_results_supplied(
+        self,
+        mock_queue_request_task,
+        db,
+        api_client: TestClient,
+        url,
+        request_task,
+        privacy_request,
+    ):
+        """Hitting this endpoint with an empty json result will still resume privacy request processing.
+        Hitting this endpoint is assumed to mean the async action was completed"""
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        request_task.status = ExecutionLogStatus.paused
+        request_task.save(db)
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_request_task_callback_jwe(request_task)
+        }
+
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 200 == response.status_code
+        assert response.json() == {"task_queued": True}
+        assert mock_queue_request_task.called
+
+        db.refresh(request_task)
+        assert request_task.callback_succeeded
+        assert request_task.access_data is None
+        assert request_task.rows_masked is None
+        assert request_task.get_decoded_access_data() == []
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
+    )
+    def test_request_task_async_callback_access_data_supplied(
+        self, _, db, api_client: TestClient, url, request_task, privacy_request
+    ):
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        request_task.status = ExecutionLogStatus.paused
+        request_task.save(db)
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_request_task_callback_jwe(request_task)
+        }
+
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+        )
+        assert 200 == response.status_code
+        assert response.json() == {"task_queued": True}
+
+        db.refresh(request_task)
+        assert request_task.callback_succeeded
+        assert request_task.get_decoded_access_data() == [
+            {"id": 1, "user_id": "abcde", "state": "VA"}
+        ]
+
+    def test_request_task_async_callback_incorrect_format_of_access_data_supplied(
+        self, db, api_client: TestClient, url, request_task, privacy_request
+    ):
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        request_task.status = ExecutionLogStatus.paused
+        request_task.save(db)
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_request_task_callback_jwe(request_task)
+        }
+
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"access_results": {"id": 1, "user_id": "abcde", "state": "VA"}},
+        )
+        assert 422 == response.status_code
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
+    )
+    def test_erasure_request_task_async_callback(
+        self,
+        mock_queue_request_task,
+        db,
+        api_client: TestClient,
+        url,
+        erasure_request_task,
+        privacy_request,
+    ):
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        erasure_request_task.status = ExecutionLogStatus.paused
+        erasure_request_task.save(db)
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_request_task_callback_jwe(erasure_request_task)
+        }
+
+        response = api_client.post(url, headers=auth_header, json={"rows_masked": 2})
+        assert 200 == response.status_code
+        assert response.json() == {"task_queued": True}
+
+        assert mock_queue_request_task.called
+
+        db.refresh(erasure_request_task)
+        assert erasure_request_task.callback_succeeded
+        assert erasure_request_task.access_data is None
+        assert erasure_request_task.rows_masked == 2

@@ -186,21 +186,6 @@ def get_privacy_request_or_error(
     return privacy_request
 
 
-def get_request_task_or_error(db: Session, request_task_id: str) -> RequestTask:
-    """Load the request task or throw a 404"""
-    logger.info("Finding request task with id '{}'", request_task_id)
-
-    request_task = RequestTask.get(db, object_id=request_task_id)
-
-    if not request_task:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No request_task found with id '{request_task}'.",
-        )
-
-    return request_task
-
-
 @router.post(
     PRIVACY_REQUESTS,
     status_code=HTTP_200_OK,
@@ -2091,7 +2076,7 @@ def requeue_privacy_request(
     REQUEST_TASK_CALLBACK,
     response_model=Dict,
 )
-def task_callback(
+def request_task_async_callback(
     *,
     data: RequestTaskCallbackRequest,
     request_task: RequestTask = Security(
@@ -2099,7 +2084,11 @@ def task_callback(
     ),
 ) -> Dict:
     """
-    Request task callback endpoint -
+    For DSR 3.0: Async Callback Endpoint for Request Tasks
+
+    Re-queues Request Task with asynchronously-retrieved results.  If you don't want to supply results, hitting
+    this endpoint with an empty json request body will be taken as verification the async or erasure request
+    for this request task is complete.
     """
     db = Session.object_session(
         request_task
@@ -2112,12 +2101,12 @@ def task_callback(
     ]:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Callback failed. Cannot run {request_task.action_type.value} task {request_task.id} with privacy request of status {request_task.status.value}",
+            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
         )
     if request_task.status != ExecutionLogStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Callback failed. Cannot run {request_task.action_type.value} task {request_task.id} with status {request_task.status.value}",
+            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with request task status '{request_task.status.value}'",
         )
     logger.info(
         "Callback received for {} task {} {}",
@@ -2125,16 +2114,20 @@ def task_callback(
         request_task.collection_address,
         request_task.id,
     )
-    # Mark that the callback was received on the task itself - just experimenting here. We could also save data
-    # to the request task itself in another column
-
+    # Mark that the callback was received on the task itself.
     request_task.callback_succeeded = True
-    if data.access_results:
+
+    if data.access_results and request_task.action_type == ActionType.access:
+        # If access data should be added to results package, it should be
+        # supplied in request body as a list of rows.  This data will be further filtered
+        # by the policy before uploading to the end user
         request_task.access_data = json.dumps(
             data.access_results or [], cls=CustomJSONEncoder
         )
-    if data.rows_masked:
+    if data.rows_masked and request_task.action_type == ActionType.erasure:
+        # For erasure requests, rows masked can be supplied here.
         request_task.rows_masked = data.rows_masked
+
     request_task.update_status(db, ExecutionLogStatus.pending)
     request_task.save(db)
 

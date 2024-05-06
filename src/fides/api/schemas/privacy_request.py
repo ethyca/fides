@@ -313,5 +313,12 @@ class ConsentRequestVerification(FidesSchema):
 
 
 class RequestTaskCallbackRequest(FidesSchema):
-    access_results: Optional[List[Row]] = None
-    rows_masked: Optional[int] = None
+    """Request body for Async Callback"""
+
+    access_results: Optional[List[Row]] = Field(
+        default=None,
+        description="Access results collected asynchronously, as a list of rows.  Use caution; this data may be used by dependent tasks downstream and/or uploaded to the end user.",
+    )
+    rows_masked: Optional[int] = Field(
+        default=None, description="Number of records masked, as an integer"
+    )

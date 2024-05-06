@@ -37,7 +37,7 @@ from fides.api.util.saas_util import (
     get_identities,
     unflatten_dict,
 )
-from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK
+from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 
 T = TypeVar("T")
@@ -327,7 +327,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
             )
-            param_values[REPLY_TO] = REQUEST_TASK_CALLBACK
+            param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -431,7 +431,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
             )
-            param_values[REPLY_TO] = REQUEST_TASK_CALLBACK
+            param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
