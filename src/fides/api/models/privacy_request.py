@@ -230,7 +230,8 @@ def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> s
 
 def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
     """
-    Generate a JWE to be used to resume privacy request execution.
+    Generate a JWE to be used to resume privacy request execution when a
+    callback endpoint is hit for a RequestTask
     """
     jwe = RequestTaskJWE(
         request_task_id=request_task.id,

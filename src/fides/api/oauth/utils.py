@@ -211,13 +211,8 @@ def verify_request_task_callback(
     db: Session = Depends(get_db),
 ) -> RequestTask:
     """
-    Verifies the specific token that accompanies a request when the caller wants to mark a PrivacyRequest
-    as eligible or not eligible for pre-approval.
-
-    Note that this token was sent along with the request when calling the webhook originally.
-    Verifies that the webhook token hasn't expired and loads the webhook from that token.
-    Also verifies scopes, but note that this was given to the user in a request header and they've
-    just returned it back.
+    Verifies that the specific token when the request task callback endpoint is hit is valid.
+    Loads the Request Task included in the token
     """
     token = _get_request_task_jwe_or_error(security_scopes, authorization)
 
