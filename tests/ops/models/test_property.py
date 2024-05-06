@@ -36,11 +36,17 @@ class TestProperty:
                 name="New Property",
                 type=PropertyType.website,
                 experiences=[minimal_experience],
+                privacy_center_config={"name": "New Property"},
+                stylesheet="--fides-overlay-primary-color: #00ff00;",
+                paths=["test"],
             ).dict(),
         )
         assert prop.name == "New Property"
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
+        assert prop.privacy_center_config == {"name": "New Property"}
+        assert prop.stylesheet == "--fides-overlay-primary-color: #00ff00;"
+        assert prop.paths == ["test"]
         assert len(prop.experiences) == 1
 
         experience = prop.experiences[0]

@@ -5,11 +5,22 @@ import string
 from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.schemas.property import PropertyType
 from fides.config import get_config
@@ -43,6 +54,9 @@ class Property(Base):
     )
     name = Column(String, nullable=False, unique=True)
     type = Column(EnumColumn(PropertyType), nullable=False)
+    privacy_center_config = Column(MutableDict.as_mutable(JSONB), nullable=True)
+    stylesheet = Column(Text, nullable=True)
+    paths = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
 
     experiences: RelationshipProperty[List[PrivacyExperienceConfig]] = relationship(
         "PrivacyExperienceConfig",
