@@ -27,6 +27,9 @@ The types of changes are:
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
 - Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
 
+### Developer Experience
+- Update typedoc-plugin-markdown to 4.0.0 [#4870](https://github.com/ethyca/fides/pull/4870)
+
 ## [2.35.1](https://github.com/ethyca/fides/compare/2.35.0...2.35.1)
 
 ### Added
