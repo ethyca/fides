@@ -5,22 +5,14 @@ import string
 from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
-from sqlalchemy import (
-    ARRAY,
-    Boolean,
-    CheckConstraint,
-    Column,
-    ForeignKey,
-    String,
-    Text,
-    UniqueConstraint,
-)
+from sqlalchemy import Column, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
-from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
 from fides.api.schemas.property import PropertyType
 from fides.config import get_config
@@ -56,7 +48,11 @@ class Property(Base):
     type = Column(EnumColumn(PropertyType), nullable=False)
     privacy_center_config = Column(MutableDict.as_mutable(JSONB), nullable=True)
     stylesheet = Column(Text, nullable=True)
-    paths = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
+
+    _property_paths = relationship(
+        "PropertyPath", backref="property", cascade="all, delete-orphan"
+    )
+    paths = association_proxy("_property_paths", "path")
 
     experiences: RelationshipProperty[List[PrivacyExperienceConfig]] = relationship(
         "PrivacyExperienceConfig",
@@ -74,19 +70,53 @@ class Property(Base):
         check_name: bool = True,
     ) -> Property:
         experiences = data.pop("experiences", [])
+        paths = data.pop("paths", None) or []
+
         prop: Property = super().create(db=db, data=data, check_name=check_name)
         link_experience_configs_to_property(
             db, experience_configs=experiences, prop=prop
         )
-        return prop
+
+        property_paths = [
+            PropertyPath(property_id=prop.id, path=path) for path in paths
+        ]
+        prop._property_paths = property_paths
+
+        return cls.persist_obj(db, prop)
 
     def update(self, db: Session, *, data: Dict[str, Any]) -> Property:
         experiences = data.pop("experiences", [])
+        paths = data.pop("paths", None) or []
+
         super().update(db=db, data=data)
         link_experience_configs_to_property(
             db, experience_configs=experiences, prop=self
         )
-        return self
+
+        property_paths = [
+            PropertyPath(property_id=self.id, path=path) for path in paths
+        ]
+        self._property_paths = property_paths
+
+        return self.save(db)
+
+
+class PropertyPath(Base):
+    """Table mapping url paths to properties"""
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "plus_property_path"
+
+    property_id = Column(
+        String,
+        ForeignKey("plus_property.id"),
+        index=True,
+        nullable=False,
+        primary_key=True,
+        unique=False,
+    )
+    path = Column(String, nullable=False, unique=True)
 
 
 class PrivacyExperienceConfigProperty(Base):

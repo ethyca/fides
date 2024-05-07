@@ -1,6 +1,7 @@
 from typing import Any, Dict, Generator
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.property import Property
@@ -53,6 +54,20 @@ class TestProperty:
         assert experience.id == minimal_experience["id"]
         assert experience.name == minimal_experience["name"]
 
+    def test_create_property_duplicate_paths(self, db, minimal_experience):
+        with pytest.raises(IntegrityError):
+            Property.create(
+                db=db,
+                data=PropertySchema(
+                    name="New Property",
+                    type=PropertyType.website,
+                    experiences=[minimal_experience],
+                    privacy_center_config={"name": "New Property"},
+                    stylesheet="--fides-overlay-primary-color: #00ff00;",
+                    paths=["test", "test"],
+                ).dict(),
+            )
+
     def test_create_property_with_special_characters(self, db):
         prop = Property.create(
             db=db,
@@ -84,6 +99,20 @@ class TestProperty:
         experience = updated_property.experiences[0]
         assert experience.id == minimal_experience["id"]
         assert experience.name == minimal_experience["name"]
+
+    def test_update_property_duplicate_paths(
+        self, db: Session, property_a, minimal_experience
+    ):
+        with pytest.raises(IntegrityError):
+            property_a.update(
+                db=db,
+                data={
+                    "name": "Property B",
+                    "type": PropertyType.other,
+                    "experiences": [minimal_experience],
+                    "paths": ["test", "test"],
+                },
+            )
 
     def test_delete_property(self, db: Session, property_a):
         property_a.delete(db=db)
