@@ -98,6 +98,7 @@ const CheckboxItem = ({
         justifyContent="space-between"
         _hover={{ backgroundColor: "gray.100", cursor: "pointer" }}
         onClick={() => onExpanded(node)}
+        minHeight={8}
       >
         <Checkbox
           colorScheme="complimentary"
