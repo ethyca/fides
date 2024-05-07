@@ -31,8 +31,7 @@ In order to get started quickly with Fides, a sample project is bundled within t
 
 You can easily download and install Fides using `pip`. Run the following command to get started:
 
-> :blue_book: Good Idea
->
+> [!TIP]
 > We highly recommend installing into a virtual environment such as venv, and we include those steps below as well as on our [docs site](https://ethyca.com/docs/dev-docs/cli/fides-cloud/connecting-cli-to-fides-cloud#create-and-use-a-new-python-virtual-environment)
 
 ```sh
