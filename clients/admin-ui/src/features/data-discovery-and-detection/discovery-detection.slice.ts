@@ -26,6 +26,9 @@ interface MonitorResultQueryParams {
 interface ResourceActionQueryParams {
   staged_resource_urn?: string;
 }
+interface BulkResourceActionQueryParams {
+  staged_resource_urns: string[];
+}
 
 interface ChangeResourceCategoryQueryParam {
   staged_resource_urn: string;
@@ -86,6 +89,26 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    muteResources: build.mutation<any, BulkResourceActionQueryParams>({
+      query: ({ staged_resource_urns }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/mute?${queryString.stringify(
+          { staged_resource_urns },
+          { arrayFormat: "none" }
+        )}`,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    promoteResources: build.mutation<any, BulkResourceActionQueryParams>({
+      query: ({ staged_resource_urns }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/promote?${queryString.stringify(
+          { staged_resource_urns },
+          { arrayFormat: "none" }
+        )}`,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
     updateResourceCategory: build.mutation<
       any,
       ChangeResourceCategoryQueryParam
@@ -109,7 +132,9 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
 export const {
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
+  usePromoteResourcesMutation,
   useMuteResourceMutation,
+  useMuteResourcesMutation,
   useConfirmResourceMutation,
   useUnmuteResourceMutation,
   useUpdateResourceCategoryMutation,
