@@ -21,6 +21,7 @@ interface MonitorResultQueryParams {
   child_diff_status?: DiffStatus[];
   page?: number;
   size?: number;
+  search?: string;
 }
 
 interface ResourceActionQueryParams {

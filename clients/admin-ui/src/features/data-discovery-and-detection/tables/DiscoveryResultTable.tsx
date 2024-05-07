@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Box, Input, InputRightAddon, Text, VStack } from "@fidesui/react";
+import { Box, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -27,6 +27,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import { DiffStatus, StagedResource } from "~/types/api";
+import SearchInput from "../SearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -71,6 +72,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     DiffStatus.CLASSIFICATION_UPDATE,
   ];
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const {
@@ -97,6 +99,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     size: pageSize,
     child_diff_status: childDiffStatusFilter,
     diff_status: diffStatusFilter,
+    search: searchQuery,
   });
 
   const resourceType = findResourceType(
@@ -151,7 +154,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     <>
       <TableActionBar>
         <Box w="full" maxW={64}>
-          <Input size="xs" placeholder="Search..." />
+          <SearchInput value={searchQuery} onChange={setSearchQuery} />
         </Box>
         <DiscoveryBulkActions
           resourceType={resourceType}
