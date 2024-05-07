@@ -21,9 +21,9 @@ describe("common utils", () => {
       expect(getQueryParamsFromArray([], "test")).toBeUndefined();
     });
     it("should return query params from strings", () => {
-      const strings = ["a", "b", "c"];
+      const valueList = ["a", "b", "c"];
       const queryParam = "test";
-      expect(getQueryParamsFromArray(strings, queryParam)).toEqual(
+      expect(getQueryParamsFromArray(valueList, queryParam)).toEqual(
         "test=a&test=b&test=c"
       );
     });
