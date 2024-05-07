@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Flex, Switch, Text, VStack } from "@fidesui/react";
+import { Box, Flex, Switch, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -25,6 +25,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import { DiffStatus, StagedResource } from "~/types/api";
+import SearchInput from "../SearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -60,6 +61,7 @@ interface MonitorResultTableProps {
 
 const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [isShowingFullSchema, setIsShowingFullSchema] = useState<boolean>(
     router.query?.showFullSchema === "true" || false
@@ -107,6 +109,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     size: pageSize,
     child_diff_status: childDiffStatusFilter,
     diff_status: diffStatusFilter,
+    search: searchQuery,
   });
 
   const resourceType = findResourceType(
@@ -160,17 +163,23 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
         <Flex
           direction="row"
           alignItems="center"
-          justifyContent="flex-end"
+          justifyContent="space-between"
           width="full"
         >
-          <Switch
-            size="sm"
-            isChecked={isShowingFullSchema}
-            onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
-          />
-          <Text marginLeft={1} fontSize="xs" fontWeight="medium">
-            Show full schema
-          </Text>
+          <Box w={400} flexShrink={0}>
+            <SearchInput value={searchQuery} onChange={setSearchQuery} />
+          </Box>
+          <Flex direction="row" alignItems="center">
+            <Switch
+              size="sm"
+              isChecked={isShowingFullSchema}
+              onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
+              colorScheme="purple"
+            />
+            <Text marginLeft={2} fontSize="xs" fontWeight="medium">
+              Show full schema
+            </Text>
+          </Flex>
         </Flex>
       </TableActionBar>
       <FidesTableV2

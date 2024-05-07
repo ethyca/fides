@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Text, VStack } from "@fidesui/react";
+import { Box, Flex, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   createColumnHelper,
@@ -9,13 +9,14 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
   PaginationBar,
+  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
@@ -26,6 +27,7 @@ import { Database, DiffStatus, StagedResource } from "~/types/api";
 
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
+import SearchInput from "../SearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
@@ -71,6 +73,8 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
   statusFilters,
   childsStatusFilters,
 }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -94,6 +98,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
     child_diff_status: childsStatusFilters,
     page: pageIndex,
     size: pageSize,
+    search: searchQuery,
   });
 
   const {
@@ -165,6 +170,13 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
 
   return (
     <>
+      <TableActionBar>
+        <Flex gap={6}>
+          <Box w={400} flexShrink={0}>
+            <SearchInput value={searchQuery} onChange={setSearchQuery} />
+          </Box>
+        </Flex>
+      </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={onRowClick}
