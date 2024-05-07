@@ -78,7 +78,7 @@ class Property(Base):
         )
 
         property_paths = [
-            PropertyPath(property_id=prop.id, path=path) for path in paths
+            PropertyPath(property_id=prop.id, path=path) for path in set(paths)
         ]
         prop._property_paths = property_paths
 
@@ -93,10 +93,16 @@ class Property(Base):
             db, experience_configs=experiences, prop=self
         )
 
-        property_paths = [
-            PropertyPath(property_id=self.id, path=path) for path in paths
-        ]
-        self._property_paths = property_paths
+        existing_paths = {path.path: path for path in self._property_paths}
+        updated_paths = set(paths)
+
+        # delete PropertyPath instances that are not in the updated paths
+        for path in set(existing_paths.keys()) - updated_paths:
+            db.delete(existing_paths[path])
+
+        # create new PropertyPath instances for paths that don't exist
+        for path in updated_paths - set(existing_paths.keys()):
+            self._property_paths.append(PropertyPath(property_id=self.id, path=path))
 
         return self.save(db)
 
