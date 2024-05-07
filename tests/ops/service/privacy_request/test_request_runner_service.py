@@ -3089,7 +3089,7 @@ def test_create_and_process_erasure_request_dynamodb(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
-def test_async_access_request(
+def test_async_callback_access_request(
     mock_send,
     api_client,
     saas_example_async_dataset_config,
@@ -3158,7 +3158,7 @@ def test_async_access_request(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
-def test_async_erasure_request(
+def test_async_callback_erasure_request(
     mock_send,
     saas_example_async_dataset_config,
     saas_async_example_connection_config: Dict[str, str],

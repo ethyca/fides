@@ -34,21 +34,23 @@ saas_config:
           param_values:
             - name: email
               identity: email
-          needs_async_callback: true
+          async_config:
+            strategy: callback
           headers:
             - name: reply-to
-              value: <reply-to>
+              value: <reply_to>
             - name: reply-to-token
-              value: <reply-to-token>
+              value: <reply_to_token>
         update:
           method: DELETE
           path: /api/v1/user/<user_id>
-          needs_async_callback: true
+          async_config:
+            strategy: callback
           headers:
             - name: reply-to
-              value: <reply-to>
+              value: <reply_to>
             - name: reply-to-token
-              value: <reply-to-token>
+              value: <reply_to_token>
           param_values:
             - name: user_id
               references:

@@ -20,6 +20,7 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
+    AsyncStrategy,
     ClientConfig,
     ConsentRequestMap,
     ParamValue,
@@ -243,7 +244,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         awaiting_async_callback: bool = False
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
-            if read_request.needs_async_callback:
+            if (
+                read_request.async_config
+                and read_request.async_config.strategy == AsyncStrategy.callback
+                and request_task.id  # Only supported in DSR 3.0
+            ):
                 awaiting_async_callback = True
 
             # check all the values specified by param_values are provided in input_data
@@ -280,8 +285,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     rows.extend(processed_rows)
         self.unset_connector_state()
-        if awaiting_async_callback and request_task.id:
-            # If a read request was marked to expect async results, original response data here is ignored
+        if awaiting_async_callback:
+            # If a read request was marked to expect async results, original response data here is ignored.
+            # We'll instead use the data received in the callback URL
             raise AwaitingAsyncTaskCallback()
         return rows
 
@@ -442,7 +448,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
 
         self.set_saas_request_state(masking_request)
-        awaiting_async_callback: Optional[bool] = masking_request.needs_async_callback
 
         # hook for user-provided request override functions
         if masking_request.request_override:
@@ -491,9 +496,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             rows_updated += 1
 
         self.unset_connector_state()
-        if awaiting_async_callback and request_task.id:
+
+        awaiting_async_callback: bool = bool(
+            masking_request.async_config
+            and masking_request.async_config.strategy == AsyncStrategy.callback
+        ) and bool(
+            request_task.id
+        )  # Only supported in DSR 3.0
+        if awaiting_async_callback:
             # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncTaskCallback to put this task in a paused state
+            # and we raise an AwaitingAsyncTaskCallback to put this task in a paused state.
             raise AwaitingAsyncTaskCallback()
         return rows_updated
 

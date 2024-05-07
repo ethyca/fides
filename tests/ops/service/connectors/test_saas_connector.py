@@ -842,7 +842,7 @@ class TestAsyncConnectors:
 
         call_args = mock_send.call_args[0][0]
         assert call_args.path == "/api/v1/user"
-        assert call_args.headers["reply-to"]
+        assert call_args.headers["reply-to"] == "/api/v1/request-task/callback"
         jwe_token = call_args.headers["reply-to-token"]
 
         token_data = json.loads(
@@ -936,7 +936,7 @@ class TestAsyncConnectors:
 
         call_args = mock_send.call_args[0][0]
         assert call_args.path == "/api/v1/user/1"
-        assert call_args.headers["reply-to"]
+        assert call_args.headers["reply-to"] == "/api/v1/request-task/callback"
         jwe_token = call_args.headers["reply-to-token"]
 
         token_data = json.loads(

@@ -22,6 +22,7 @@ The types of changes are:
 - Added ability to export the contents of datamap report [#1545](https://ethyca.atlassian.net/browse/PROD-1545)
 - Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
 - Removed currentprivacypreference and lastservednotice tables [#4846](https://github.com/ethyca/fides/pull/4846)
+- Adds generic async callback integration support [#4865](https://github.com/ethyca/fides/pull/4865) 
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
