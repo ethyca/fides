@@ -28,14 +28,15 @@ const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
   };
 
   return (
-    <InputGroup size="xs">
+    <InputGroup size="xs" w="full">
       <Input
         size="xs"
         placeholder="Search..."
         value={currentInput}
         onChange={handleOnChange}
+        w="full"
       />
-      <InputRightAddon>
+      <InputRightAddon px={0}>
         <Button size="xs" fontWeight="normal" onClick={onClear}>
           Clear
         </Button>

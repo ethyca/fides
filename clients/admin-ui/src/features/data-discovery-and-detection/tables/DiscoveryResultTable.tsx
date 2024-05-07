@@ -156,7 +156,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     <>
       <TableActionBar>
         <Flex gap={6}>
-          <Box w="full" maxW={64}>
+          <Box w={400} flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
           {!!selectedUrns.length && (
