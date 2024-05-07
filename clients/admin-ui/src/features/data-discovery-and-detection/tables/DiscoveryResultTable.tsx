@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Box, Text, VStack } from "@fidesui/react";
+import { Box, Flex, Input, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -10,7 +10,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
-import SearchBar from "~/features/common/SearchBar";
 
 import {
   FidesTableV2,
@@ -22,7 +21,8 @@ import {
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
-import DiscoveryBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryBulkActions";
+import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
+import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
@@ -146,6 +146,8 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     data,
   });
 
+  const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+
   if (isLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
@@ -153,13 +155,27 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   return (
     <>
       <TableActionBar>
-        <Box w="full" maxW={64}>
-          <SearchInput value={searchQuery} onChange={setSearchQuery} />
-        </Box>
-        <DiscoveryBulkActions
-          resourceType={resourceType}
-          resourceUrn={resourceUrn}
-        />
+        <Flex gap={6}>
+          <Box w="full" maxW={64}>
+            <SearchInput value={searchQuery} onChange={setSearchQuery} />
+          </Box>
+          {!!selectedUrns.length && (
+            <Flex align="center">
+              <Text
+                fontSize="xs"
+                fontWeight="semibold"
+                minW={16}
+                mr={6}
+              >{`${selectedUrns.length} selected`}</Text>
+              {resourceType === StagedResourceType.TABLE && (
+                <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
+              )}
+              {resourceType === StagedResourceType.FIELD && (
+                <DiscoveryFieldBulkActions resourceUrn={resourceUrn} />
+              )}
+            </Flex>
+          )}
+        </Flex>
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
