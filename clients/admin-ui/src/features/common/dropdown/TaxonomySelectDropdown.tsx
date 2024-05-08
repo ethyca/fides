@@ -1,5 +1,6 @@
 import { Badge, Box, HStack, Text } from "@fidesui/react";
-import { OptionProps, Options, Select, components } from "chakra-react-select";
+import { OptionProps, Options, Select } from "chakra-react-select";
+
 import useTaxonomies from "../hooks/useTaxonomies";
 
 interface TaxonomySelectDropdownProps {
