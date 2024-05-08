@@ -1,12 +1,13 @@
 import { Badge, Box, EditIcon } from "@fidesui/react";
 import { Options } from "chakra-react-select";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { StagedResource } from "~/types/api";
 import TaxonomySelectDropdown, {
   TaxonomySelectOption,
 } from "../common/dropdown/TaxonomySelectDropdown";
+import { useOutsideClick } from "../common/hooks";
 
 import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
 
@@ -22,8 +23,13 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
   resource,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const { getDataCategoryDisplayName, getDataCategories } = useTaxonomies();
+  const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
+
+  const handleClickOutside = useCallback(() => {
+    setIsEditing(false);
+  }, []);
+  const { ref } = useOutsideClick(handleClickOutside);
 
   if (!fidesLangKey) {
     return <Badge textTransform="none">None</Badge>;
@@ -58,6 +64,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
       alignItems="center"
       position="relative"
       width="100%"
+      ref={ref}
     >
       <Badge
         fontWeight="normal"
@@ -82,7 +89,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
           <TaxonomySelectDropdown
             taxonomyKey={fidesLangKey}
             onChange={handleCategoryChange}
-            menuIsOpen={true}
+            menuIsOpen
           />
         </Box>
       )}
