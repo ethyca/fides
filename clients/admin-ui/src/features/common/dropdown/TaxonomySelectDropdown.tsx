@@ -15,17 +15,44 @@ export interface TaxonomySelectOption {
   description: string;
 }
 
+const Option = ({ data, setValue }: OptionProps<TaxonomySelectOption>) => {
+  const { getPrimaryKey, getDataCategoryByKey } = useTaxonomies();
+  const primaryKey = getPrimaryKey(data.value, 2);
+  const primaryCategory = getDataCategoryByKey(primaryKey);
+
+  return (
+    <Box
+      onClick={() => setValue(data, "select-option")}
+      cursor="pointer"
+      borderBottomColor="gray.100"
+      borderBottomWidth={1}
+      paddingX={3}
+      paddingY={1.5}
+      _hover={{
+        backgroundColor: "gray.100",
+      }}
+    >
+      <HStack gap={0} alignItems="flex-start">
+        <Badge paddingX={1} paddingY={0} bgColor="gray.300" fontSize="xx-small">
+          {primaryCategory?.name}
+        </Badge>
+        <Text fontSize="xs" whiteSpace="normal">
+          : {data.description}
+        </Text>
+      </HStack>
+      <Text fontSize="xs" color="gray.500">
+        {data.value}
+      </Text>
+    </Box>
+  );
+};
+
 const TaxonomySelectDropdown: React.FC<TaxonomySelectDropdownProps> = ({
   taxonomyKey,
   onChange,
   menuIsOpen,
 }) => {
-  const {
-    getDataCategoryDisplayName,
-    getDataCategories,
-    getPrimaryKey,
-    getDataCategoryByKey,
-  } = useTaxonomies();
+  const { getDataCategoryDisplayName, getDataCategories } = useTaxonomies();
   const dataCategories = getDataCategories();
 
   const options: Options<TaxonomySelectOption> = dataCategories.map(
@@ -36,42 +63,6 @@ const TaxonomySelectDropdown: React.FC<TaxonomySelectDropdownProps> = ({
       description: category.description || "",
     })
   );
-
-  const Option = (props: OptionProps<TaxonomySelectOption>) => {
-    const primaryKey = getPrimaryKey(props.data.value, 2);
-    const primaryCategory = getDataCategoryByKey(primaryKey);
-
-    return (
-      <Box
-        onClick={() => props.setValue(props.data, "select-option")}
-        cursor="pointer"
-        borderBottomColor="gray.100"
-        borderBottomWidth={1}
-        paddingX={3}
-        paddingY={1.5}
-        _hover={{
-          backgroundColor: "gray.100",
-        }}
-      >
-        <HStack gap={0} alignItems="flex-start">
-          <Badge
-            paddingX={1}
-            paddingY={0}
-            bgColor="gray.300"
-            fontSize="xx-small"
-          >
-            {primaryCategory?.name}
-          </Badge>
-          <Text fontSize="xs" whiteSpace="normal">
-            : {props.data.description}
-          </Text>
-        </HStack>
-        <Text fontSize="xs" color="gray.500">
-          {props.data.value}
-        </Text>
-      </Box>
-    );
-  };
 
   return (
     <Select

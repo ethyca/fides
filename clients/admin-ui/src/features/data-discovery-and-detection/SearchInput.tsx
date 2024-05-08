@@ -1,6 +1,6 @@
 import { Button, Input, InputGroup, InputRightAddon } from "@fidesui/react";
 import { debounce } from "lodash";
-import { ChangeEventHandler, useCallback, useEffect, useState } from "react";
+import { ChangeEventHandler, useCallback, useState } from "react";
 
 interface SearchInputProps {
   value: string;
@@ -19,6 +19,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
       setCurrentInput(e.currentTarget.value);
       debouncedOnChange(e.currentTarget.value);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
