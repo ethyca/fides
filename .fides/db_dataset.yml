@@ -701,6 +701,9 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+    - name: vendor_deleted_date
+      data_categories:
+      - system.operations
   - name: messagingconfig
     description: 'Fides Generated Description for Table: messagingconfig'
     data_categories: []

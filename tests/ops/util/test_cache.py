@@ -10,12 +10,14 @@ import pytest
 from bson.objectid import ObjectId
 
 from fides.api.util.cache import (
-    ENCODED_BYTES_PREFIX,
-    ENCODED_DATE_PREFIX,
-    ENCODED_MONGO_OBJECT_ID_PREFIX,
     FidesopsRedis,
     cache_task_tracking_key,
     celery_tasks_in_flight,
+)
+from fides.api.util.custom_json_encoder import (
+    ENCODED_BYTES_PREFIX,
+    ENCODED_DATE_PREFIX,
+    ENCODED_MONGO_OBJECT_ID_PREFIX,
 )
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import faker

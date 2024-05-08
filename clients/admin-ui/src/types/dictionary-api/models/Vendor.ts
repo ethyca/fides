@@ -2,10 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ContactDetails } from "./ContactDetails";
 import type { Cookie } from "./Cookie";
 import type { DataFlow } from "./DataFlow";
-import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
 import type { PrivacyDeclaration } from "./PrivacyDeclaration";
@@ -52,10 +50,15 @@ export type Vendor = {
    * An optional value to identify the owning department or group of the system within your organization
    */
   administrating_department?: string;
+  vendor_id: string;
   /**
-   * The unique identifier for the vendor that's associated with this system.
+   * If specified, the unique identifier for the vendor that was previously associated with this system.
    */
-  vendor_id?: string;
+  previous_vendor_id?: string;
+  /**
+   * The deleted date of the vendor that's associated with this system.
+   */
+  vendor_deleted_date?: string;
   /**
    * Referenced Dataset fides keys used by the system.
    */
@@ -155,6 +158,10 @@ export type Vendor = {
    */
   legitimate_interest_disclosure_url?: string;
   /**
+   * The Cookies associated with the record
+   */
+  cookies?: Array<Cookie>;
+  /**
    * The record's GVL purposes
    */
   purposes?: Array<number>;
@@ -214,8 +221,4 @@ export type Vendor = {
    * The version of GVL from which the record is derived
    */
   gvl_version?: string;
-  /**
-   * The Cookies associated with the record
-   */
-  cookies?: Array<Cookie>;
 };
