@@ -47,7 +47,7 @@ dataset:
             fidesops_meta:
               data_type: string[]
           - name: identity
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: chat_service_sid
@@ -143,7 +143,7 @@ dataset:
       - name: conversation_messages
         fields:
           - name: body
-            data_categories: [system.operations]
+            data_categories: [user.content]
             fidesops_meta:
               data_type: string
           - name: index
@@ -159,7 +159,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: media
-            data_categories: [system.operations]
+            data_categories: [user.content.public]
             fidesops_meta:
               data_type: string
           - name: participant_sid
@@ -244,7 +244,7 @@ dataset:
             fidesops_meta:
               data_type: string[]
           - name: identity
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: messaging_binding
