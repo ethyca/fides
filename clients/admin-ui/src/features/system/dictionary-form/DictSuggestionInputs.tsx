@@ -230,7 +230,7 @@ export const DictSuggestionSwitch = ({
             isChecked={field.checked}
             onChange={field.onChange}
             onBlur={field.onBlur}
-            colorScheme="purple"
+            colorScheme="complimentary"
             mr={2}
             data-testid={`input-${field.name}`}
             size="sm"
@@ -400,12 +400,12 @@ export const DictSuggestionCreatableSelect = ({
   const selected =
     field.value.length > 0
       ? field.value.map(
-          (fieldValue: string) =>
-            options.find((o) => o.value === fieldValue) ?? {
-              value: fieldValue,
-              label: fieldValue,
-            }
-        )
+        (fieldValue: string) =>
+          options.find((o) => o.value === fieldValue) ?? {
+            value: fieldValue,
+            label: fieldValue,
+          }
+      )
       : [];
 
   const { setFieldValue } = useFormikContext();
@@ -545,7 +545,7 @@ export const DictSuggestionNumberInput = ({
               setFieldValue(field.name, v);
             }}
             w="100%"
-            colorScheme="purple"
+            colorScheme="complimentary"
             inputMode="numeric"
             data-testid={`input-${field.name}`}
             color={

@@ -119,7 +119,7 @@ export const IndeterminateCheckboxCell = ({
     <Checkbox
       data-testid={dataTestId || undefined}
       {...rest}
-      colorScheme="purple"
+      colorScheme="complimentary"
     />
   </Flex>
 );

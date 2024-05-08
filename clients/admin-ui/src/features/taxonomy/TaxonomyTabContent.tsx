@@ -29,7 +29,7 @@ const CustomTag = ({ node }: { node: TaxonomyEntityNode }) => {
   const { is_default: isDefault } = node;
   return !isDefault ? (
     <Tag
-      backgroundColor="purple.500"
+      backgroundColor="complimentary.500"
       color="white"
       size="sm"
       height="fit-content"
@@ -182,8 +182,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
       } else {
         toast(
           successToastParams(
-            `Successfully ${
-              isDisabling ? "disabled" : "enabled"
+            `Successfully ${isDisabling ? "disabled" : "enabled"
             } ${taxonomyType}`
           )
         );
@@ -268,9 +267,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
           isOpen={disableIsOpen}
           onClose={onDisableClose}
           onConfirm={handleToggleEnabled}
-          title={`${
-            nodeToToggleEnabled.active ? "Disable" : "Enable"
-          } ${taxonomyType}`}
+          title={`${nodeToToggleEnabled.active ? "Disable" : "Enable"
+            } ${taxonomyType}`}
           message={
             <Stack>
               <Text>

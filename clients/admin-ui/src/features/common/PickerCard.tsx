@@ -111,7 +111,7 @@ const PickerCard = <T extends { id: string; name: string }>({
         </Flex>
         {numSelected > 0 ? (
           <Badge
-            colorScheme="purple"
+            colorScheme="complimentary"
             variant="solid"
             width="fit-content"
             data-testid="num-selected-badge"

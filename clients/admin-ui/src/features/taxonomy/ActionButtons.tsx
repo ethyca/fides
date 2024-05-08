@@ -48,7 +48,7 @@ const ActionButtons = ({
       </ButtonGroup>
       <Switch
         size="sm"
-        colorScheme="purple"
+        colorScheme="complimentary"
         defaultChecked={node.active}
         onChange={() => onDisable(node)}
       />

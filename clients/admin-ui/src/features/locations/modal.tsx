@@ -56,7 +56,7 @@ export const HeaderCheckboxRow = ({
         </Text>
       </Checkbox>
       <Badge
-        colorScheme="purple"
+        colorScheme="complimentary"
         variant="solid"
         width="fit-content"
         data-testid="num-selected-badge"
