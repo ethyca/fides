@@ -143,7 +143,7 @@ dataset:
       - name: conversation_messages
         fields:
           - name: body
-            data_categories: [user.content]
+            data_categories: [user.content.public]
             fidesops_meta:
               data_type: string
           - name: index
