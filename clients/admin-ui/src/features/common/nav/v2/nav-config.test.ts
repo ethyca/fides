@@ -220,6 +220,8 @@ describe("configureNavGroups", () => {
         userScopes: [
           ScopeRegistryEnum.CONFIG_READ,
           ScopeRegistryEnum.CONFIG_UPDATE,
+          // include this so Management group is non-empty without domains
+          ScopeRegistryEnum.USER_READ,
         ],
         flags: undefined,
         hasPlus: false,
