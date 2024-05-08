@@ -2,12 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type { ContactDetails } from "./models/ContactDetails";
 export type { Cookie } from "./models/Cookie";
 export type { Cookies } from "./models/Cookies";
 export { CookieType } from "./models/CookieType";
 export type { DataFlow } from "./models/DataFlow";
-export type { DataProtectionImpactAssessment } from "./models/DataProtectionImpactAssessment";
 export { DataResponsibilityTitle } from "./models/DataResponsibilityTitle";
 export type { DataUseDeclaration } from "./models/DataUseDeclaration";
 export type { HTTPValidationError } from "./models/HTTPValidationError";

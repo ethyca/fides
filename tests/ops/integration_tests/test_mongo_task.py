@@ -738,7 +738,7 @@ async def test_get_saved_data_for_erasures_3_0(
 
     # Assert access task saved data in erasure format, that will be copied over to the erasure
     # nodes of the same name
-    assert conversations_task.get_decoded_data_for_erasures()[0]["thread"] == [
+    assert conversations_task.get_data_for_erasures()[0]["thread"] == [
         {
             "comment": "com_0001",
             "message": "hello, testing in-flight chat feature",
@@ -749,7 +749,7 @@ async def test_get_saved_data_for_erasures_3_0(
     ]
 
     # The access request results are filtered on array data, because it was an entrypoint into the node.
-    assert conversations_task.get_decoded_access_data()[0]["thread"] == [
+    assert conversations_task.get_access_data()[0]["thread"] == [
         {
             "comment": "com_0001",
             "message": "hello, testing in-flight chat feature",

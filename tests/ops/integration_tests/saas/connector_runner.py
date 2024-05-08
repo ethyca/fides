@@ -42,7 +42,7 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.api.util.cache import CustomJSONEncoder, FidesopsRedis
+from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import (
     load_config_with_replacement,
@@ -610,12 +610,8 @@ def mock_external_results_3_0(
         RequestTask.collection_address
         == f"{connector_type}_external_dataset:{connector_type}_external_collection"
     ).first()
-    external_request_task.access_data = json.dumps(
-        [external_references], cls=CustomJSONEncoder
-    )
-    external_request_task.data_for_erasures = json.dumps(
-        [external_references], cls=CustomJSONEncoder
-    )
+    external_request_task.access_data = [external_references]
+    external_request_task.data_for_erasures = [external_references]
     external_request_task.save(session)
     external_request_task.update_status(session, ExecutionLogStatus.complete)
     erasure_end_nodes: List[CollectionAddress] = list(dataset_graph.nodes.keys())

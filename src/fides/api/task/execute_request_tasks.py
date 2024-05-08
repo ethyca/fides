@@ -227,7 +227,7 @@ def run_access_node(
                 # Pass in access data dependencies in the same order as the input keys.
                 # If we don't have access data for an upstream node, pass in an empty list
                 upstream_access_data: List[List[Row]] = [
-                    upstream.get_decoded_access_data() if upstream else []
+                    upstream.get_access_data() if upstream else []
                     for upstream in ordered_upstream_tasks
                 ]
                 # Run the main access function
@@ -273,9 +273,7 @@ def run_erasure_node(
                 )
                 # Get access data that was saved in the erasure format that was collected from the
                 # access task for the same collection.  This data is used to build the masking request
-                retrieved_data: List[Row] = (
-                    request_task.get_decoded_data_for_erasures() or []
-                )
+                retrieved_data: List[Row] = request_task.get_data_for_erasures() or []
 
                 # Run the main erasure function!
                 graph_task.erasure_request(retrieved_data)
@@ -323,9 +321,7 @@ def run_consent_node(
                     # For consent, expected that there is only one upstream node, the root node,
                     # and it holds the identity data (stored in a list for consistency with other
                     # data stored in access_data)
-                    access_data: List = (
-                        upstream_results[0].get_decoded_access_data() or []
-                    )
+                    access_data: List = upstream_results[0].get_access_data() or []
 
                 graph_task.consent_request(access_data[0] if access_data else {})
 

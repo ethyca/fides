@@ -8,7 +8,7 @@ interface and include a [detail](FidesEvent.md#detail) object with various prope
 can be used for inspecting current consent preferences, generating analytics,
 etc.
 
-**`Example`**
+## Example
 
 ```ts
 window.addEventListener("FidesUpdated", (evt) => {
@@ -54,27 +54,19 @@ preferences in the FidesJS UI but has yet to *save* those changes (i.e.
 
 - `FidesModalClosed`: Dispatched whenever the FidesJS modal is closed.
 
-## Hierarchy
+## Extends
 
 - `CustomEvent`
-
-  ↳ **`FidesEvent`**
-
-## Table of contents
-
-### Properties
-
-- [detail](FidesEvent.md#detail)
 
 ## Properties
 
 ### detail
 
-• **detail**: `Object`
+> **detail**: `object`
 
 Event properties passed by FidesJS when dispatched. Depending on the event type, some properties may or may not be set, so most of these are marked as optional.
 
-**`Example`**
+#### Example
 
 ```ts
 window.addEventListener("FidesUpdated", (evt) => {
@@ -84,16 +76,14 @@ window.addEventListener("FidesUpdated", (evt) => {
 });
 ```
 
-#### Type declaration
-
-| Name | Type | Description |
+| Member | Type | Description |
 | :------ | :------ | :------ |
 | `consent` | `Record`\<`string`, `boolean`\> | User's current consent preferences; see [Fides.consent](Fides.md#consent) for detail. |
-| `fides_string?` | `string` | User's current consent string; see [Fides.fides_string](Fides.md#fides_string) for detail. |
-| `extraDetails?` | \{ `servingComponent?`: ``"banner"`` \| ``"modal"`` \| ``"tcf_banner"`` \| ``"tcf_overlay"`` ; `consentMethod?`: ``"accept"`` \| ``"reject"`` \| ``"save"`` \| ``"dismiss"`` \| ``"gpc"``  } | Extra event properties, for additional context. |
-| `extraDetails.servingComponent?` | ``"banner"`` \| ``"modal"`` \| ``"tcf_banner"`` \| ``"tcf_overlay"`` | Which FidesJS UI component (if any) caused this event. |
-| `extraDetails.consentMethod?` | ``"accept"`` \| ``"reject"`` \| ``"save"`` \| ``"dismiss"`` \| ``"gpc"`` | What consent method (if any) caused this event. |
+| `fides_string` | `string` | User's current consent string; see [Fides.fides_string](Fides.md#fides_string) for detail. |
+| `extraDetails` | `object` | Extra event properties, for additional context. |
+| `extraDetails.servingComponent` | `"banner"` \| `"modal"` \| `"tcf_banner"` \| `"tcf_overlay"` | Which FidesJS UI component (if any) caused this event. |
+| `extraDetails.consentMethod` | `"accept"` \| `"reject"` \| `"save"` \| `"dismiss"` \| `"gpc"` | What consent method (if any) caused this event. |
 
 #### Overrides
 
-CustomEvent.detail
+`CustomEvent.detail`
