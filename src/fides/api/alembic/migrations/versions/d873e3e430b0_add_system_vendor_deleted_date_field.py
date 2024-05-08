@@ -1,7 +1,7 @@
 """add system vendor_deleted_date field
 
 Revision ID: d873e3e430b0
-Revises: 9e83545ed9b6
+Revises: 23e01f8f4652
 Create Date: 2024-04-22 14:25:13.232408
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d873e3e430b0"
-down_revision = "9e83545ed9b6"
+down_revision = "23e01f8f4652"
 branch_labels = None
 depends_on = None
 
