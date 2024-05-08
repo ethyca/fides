@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "7fb7063664f60be288632d0a65b9211f" # string
+analytics_id = "7d87f79cadbcfb8bcf6f8e5cc471a855" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
