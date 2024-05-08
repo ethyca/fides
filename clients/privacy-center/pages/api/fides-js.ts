@@ -52,6 +52,12 @@ let autoRefresh: boolean = true;
  *         description: Signals fides.js to use the latest custom-fides.css (if available)
  *         schema:
  *           type: boolean
+ *       - in: query
+ *         name: gpp
+ *         required: false
+ *         description: Forces the GPP extension to be included in the bundle if the experience has GPP enabled
+ *         schema:
+ *           type: boolean
  *       - in: header
  *         name: CloudFront-Viewer-Country
  *         required: false
