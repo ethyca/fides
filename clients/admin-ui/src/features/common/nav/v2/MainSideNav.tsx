@@ -35,8 +35,8 @@ import { INDEX_ROUTE } from "./routes";
 
 const LINK_HOVER_BACKGROUND_COLOR = "complimentary.600";
 const LINK_ACTIVE_BACKGROUND_COLOR = "complimentary.500";
-const LINK_COLOR = "#CBD5E0";
-const NAV_BACKGROUND_COLOR = "#191D27";
+const LINK_COLOR = "white";
+const NAV_BACKGROUND_COLOR = "primary.800";
 const NAV_WIDTH = "200px";
 
 const FidesLogoHomeLink = () => (
