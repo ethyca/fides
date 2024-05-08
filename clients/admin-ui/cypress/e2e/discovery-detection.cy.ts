@@ -332,7 +332,7 @@ describe("discovery and detection", () => {
         cy.url().should("not.contain", "User_geography");
       });
 
-      it.only("allows classifications to be changed using the dropdown", () => {
+      it("allows classifications to be changed using the dropdown", () => {
         cy.intercept("GET", "/api/v1/data_category", [
           { fides_key: "system" },
           { fides_key: "user.contact" },
