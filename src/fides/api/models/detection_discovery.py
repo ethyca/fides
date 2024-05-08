@@ -111,10 +111,12 @@ class StagedResource(Base):
     )
 
     @classmethod
-    def get_urn(cls, db: Session, urn: str) -> StagedResource:
+    def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
+        """Utility to retrieve the staged resource with the given URN"""
         return cls.get_by(db=db, field="urn", value=urn)
 
-    def add_child_diff_status(self, diff_status: DiffStatus):
+    def add_child_diff_status(self, diff_status: DiffStatus) -> None:
+        """Increments the specified child diff status"""
         self.child_diff_statuses[diff_status.value] = (
             self.child_diff_statuses.get(diff_status.value, 0) + 1
         )
@@ -124,9 +126,13 @@ class StagedResource(Base):
         db: Session,
         parent_resource_urns: Iterable[str] = [],
     ) -> None:
+        """
+        Marks the resource as an addition and the child diff status of
+        the given parent resource URNs accordingly
+        """
         self.diff_status = DiffStatus.ADDITION.value
         for parent_resource_urn in parent_resource_urns:
             parent_resource: StagedResource = StagedResource.get_urn(
                 db, parent_resource_urn
             )
-            parent_resource.add_child_diff_status(DiffStatus.ADDITION.value)
+            parent_resource.add_child_diff_status(DiffStatus.ADDITION)
