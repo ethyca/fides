@@ -1,7 +1,7 @@
 """add detection discovery tables
 
 Revision ID: fc2b2c06e595
-Revises: c85a641cc92c
+Revises: d873e3e430b0
 Create Date: 2024-04-25 19:53:59.562332
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "fc2b2c06e595"
-down_revision = "c85a641cc92c"
+down_revision = "d873e3e430b0"
 branch_labels = None
 depends_on = None
 
