@@ -612,6 +612,15 @@ const SystemInformationForm = ({
                   id="legitimate_interest_disclosure_url"
                   disabled={lockedForGVL}
                 />
+                <DictSuggestionTextInput
+                  label="Vendor deleted date"
+                  name="vendor_deleted_date"
+                  id="vendor_deleted_date"
+                  tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
+                  // disable this field for editing:
+                  // deleted date is populated by the GVL and should not be editable by users
+                  disabled
+                />
               </SystemFormInputGroup>
               {values.fides_key ? (
                 <CustomFieldsList

@@ -49,12 +49,12 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
-from fides.api.models.privacy_preference import ServingComponent
-from fides.api.models.privacy_preference_v2 import (
+from fides.api.models.privacy_preference import (
     ConsentIdentitiesMixin,
-    CurrentPrivacyPreferenceV2,
+    CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
+    ServingComponent,
 )
 from fides.api.models.privacy_request import (
     Consent,
@@ -2447,7 +2447,7 @@ def current_privacy_preference(
     privacy_experience_privacy_center,
     served_notice_history,
 ):
-    pref = CurrentPrivacyPreferenceV2.create(
+    pref = CurrentPrivacyPreference.create(
         db=db,
         data={
             "email": "test@email.com",

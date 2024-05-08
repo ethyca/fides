@@ -20,7 +20,6 @@ from fides.api.service.privacy_request.request_service import (
     poll_server_for_completion,
     remove_saved_dsr_data,
 )
-from fides.api.util.cache import CustomJSONEncoder
 from fides.common.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.config import CONFIG
 
@@ -294,10 +293,10 @@ class TestRemoveSavedCustomerData:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         privacy_request.save(db)
 
-        privacy_request.filtered_final_upload = json.dumps(
+        privacy_request.filtered_final_upload = (
             {"rule_key": {"test_dataset:test_collection": [{"id": 1, "name": "Jane"}]}},
-            cls=CustomJSONEncoder,
         )
+
         privacy_request.access_result_urls = {"access_result_urls": ["www.example.com"]}
         privacy_request.save(db)
 
@@ -322,10 +321,10 @@ class TestRemoveSavedCustomerData:
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db)
 
-        privacy_request.filtered_final_upload = json.dumps(
+        privacy_request.filtered_final_upload = (
             {"rule_key": {"test_dataset:test_collection": [{"id": 1, "name": "Jane"}]}},
-            cls=CustomJSONEncoder,
         )
+
         privacy_request.access_result_urls = {"access_result_urls": ["www.example.com"]}
         privacy_request.save(db)
 

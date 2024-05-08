@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from fides.api.db.session import ExtendedSession
+from fides.api.db.util import custom_json_deserializer, custom_json_serializer
 from fides.config import CONFIG
 
 # Associated with a workaround in fides.core.config.database_settings
@@ -23,6 +24,8 @@ async_engine = create_async_engine(
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
     logging_name="AsyncEngine",
+    json_serializer=custom_json_serializer,
+    json_deserializer=custom_json_deserializer,
 )
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -31,6 +34,8 @@ sync_engine = create_engine(
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
     logging_name="SyncEngine",
+    json_serializer=custom_json_serializer,
+    json_deserializer=custom_json_deserializer,
 )
 sync_session = sessionmaker(
     sync_engine,
