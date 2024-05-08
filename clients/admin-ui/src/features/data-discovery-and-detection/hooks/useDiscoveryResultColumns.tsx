@@ -33,6 +33,7 @@ const useDiscoveryResultColumns = ({
           <IndeterminateCheckboxCell
             isChecked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
+            dataTestId={`select-${row.original.name ?? row.id}`}
           />
         ),
         header: ({ table }) => (
@@ -40,6 +41,7 @@ const useDiscoveryResultColumns = ({
             isChecked={table.getIsAllPageRowsSelected()}
             isIndeterminate={table.getIsSomeRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
+            dataTestId="select-all-rows"
           />
         ),
         maxSize: 25,

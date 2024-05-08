@@ -148,6 +148,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getRowId: (row) => row.name ?? row.urn,
     columns: resourceColumns,
     manualPagination: true,
     data,
@@ -175,6 +176,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
               isChecked={isShowingFullSchema}
               onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
               colorScheme="purple"
+              data-testid="full-schema-toggle"
             />
             <Text marginLeft={2} fontSize="xs" fontWeight="medium">
               Show full schema
