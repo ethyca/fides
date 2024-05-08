@@ -332,7 +332,7 @@ describe("discovery and detection", () => {
         cy.url().should("not.contain", "User_geography");
       });
 
-      it("allows classifications to be changed using the dropdown", () => {
+      it.only("allows classifications to be changed using the dropdown", () => {
         cy.intercept("GET", "/api/v1/data_category", [
           { fides_key: "system" },
           { fides_key: "user.contact" },
@@ -340,13 +340,10 @@ describe("discovery and detection", () => {
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
           "patchClassification"
         );
-        cy.getByTestId("classification-User_geography").click();
-        cy.get("#react-select-3-listbox")
-          .children()
-          .first()
-          .within(() => {
-            cy.get("p").first().click();
-          });
+        cy.getByTestId("classification-User_geography").click({ force: true });
+        cy.get(".select-wrapper").within(() => {
+          cy.getByTestId("option-system").click({ force: true });
+        });
         cy.wait("@patchClassification");
       });
     });

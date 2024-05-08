@@ -31,6 +31,7 @@ const Option = ({ data, setValue }: OptionProps<TaxonomySelectOption>) => {
       _hover={{
         backgroundColor: "gray.100",
       }}
+      data-testid={`option-${data.value}`}
     >
       <HStack gap={0} alignItems="flex-start">
         <Badge paddingX={1} paddingY={0} bgColor="gray.300" fontSize="xx-small">
