@@ -71,6 +71,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
         textTransform="none"
         onClick={handleClickBadge}
         cursor={isEditable ? "pointer" : "default"}
+        data-testid={`classification-${resource.name ?? resource.urn}`}
       >
         {categoryDisplayName} {isEditable && <EditIcon marginLeft={0.5} />}
       </Badge>

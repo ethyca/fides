@@ -20,6 +20,7 @@ const ActionButton = ({
     disabled={disabled}
     variant={variant}
     colorScheme={colorScheme}
+    data-testid={`action-${title}`}
   >
     {icon}
     <Text marginLeft={1} fontWeight="semibold" fontSize={12}>

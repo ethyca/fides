@@ -13,25 +13,45 @@ const getResourceChangeIcon = (changeType: ResourceChangeType) => {
     case ResourceChangeType.ADDITION:
       return (
         <Tooltip label="Addition">
-          <RightUpArrowIcon color="green.400" boxSize={2} mr={2} />
+          <RightUpArrowIcon
+            color="green.400"
+            boxSize={2}
+            mr={2}
+            data-testid="add-icon"
+          />
         </Tooltip>
       );
     case ResourceChangeType.REMOVAL:
       return (
         <Tooltip label="Removal">
-          <RightDownArrowIcon color="red.400" boxSize={2} mr={2} />
+          <RightDownArrowIcon
+            color="red.400"
+            boxSize={2}
+            mr={2}
+            data-testid="remove-icon"
+          />
         </Tooltip>
       );
     case ResourceChangeType.CLASSIFICATION:
       return (
         <Tooltip label="Classification">
-          <TagIcon color="orange.400" boxSize={3} mr={2} />
+          <TagIcon
+            color="orange.400"
+            boxSize={3}
+            mr={2}
+            data-testid="classify-icon"
+          />
         </Tooltip>
       );
     case ResourceChangeType.CHANGE:
       return (
         <Tooltip label="Update">
-          <CircleIcon color="blue.400" boxSize={2} mr={2} />
+          <CircleIcon
+            color="blue.400"
+            boxSize={2}
+            mr={2}
+            data-testid="change-icon"
+          />
         </Tooltip>
       );
     default:

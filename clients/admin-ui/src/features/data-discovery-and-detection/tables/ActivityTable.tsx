@@ -159,6 +159,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getRowId: (row) => row.name ?? row.urn,
     columns: resourceColumns,
     manualPagination: true,
     data,

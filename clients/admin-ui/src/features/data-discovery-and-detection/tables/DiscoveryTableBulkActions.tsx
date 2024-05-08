@@ -1,4 +1,10 @@
-import { ButtonGroup, CheckIcon, Flex, ViewOffIcon } from "@fidesui/react";
+import {
+  ButtonGroup,
+  CheckIcon,
+  Flex,
+  Text,
+  ViewOffIcon,
+} from "@fidesui/react";
 
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
@@ -35,7 +41,19 @@ const DiscoveryTableBulkActions = ({
   }
 
   return (
-    <Flex direction="row" align="center" justify="center" w="full">
+    <Flex
+      direction="row"
+      align="center"
+      justify="center"
+      w="full"
+      data-testid="bulk-actions-menu"
+    >
+      <Text
+        fontSize="xs"
+        fontWeight="semibold"
+        minW={16}
+        mr={6}
+      >{`${selectedUrns.length} selected`}</Text>
       <ButtonGroup>
         <ActionButton
           title="Confirm"

@@ -161,19 +161,13 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
           </Box>
           {!!selectedUrns.length && (
             <Flex align="center">
-              <Text
-                fontSize="xs"
-                fontWeight="semibold"
-                minW={16}
-                mr={6}
-              >{`${selectedUrns.length} selected`}</Text>
               {resourceType === StagedResourceType.TABLE && (
                 <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
               )}
-              {resourceType === StagedResourceType.FIELD && (
-                <DiscoveryFieldBulkActions resourceUrn={resourceUrn} />
-              )}
             </Flex>
+          )}
+          {resourceType === StagedResourceType.FIELD && (
+            <DiscoveryFieldBulkActions resourceUrn={resourceUrn} />
           )}
         </Flex>
       </TableActionBar>
