@@ -55,7 +55,7 @@ let autoRefresh: boolean = true;
  *       - in: query
  *         name: gpp
  *         required: false
- *         description: Forces the GPP extension to be included in the bundle if the experience has GPP enabled
+ *         description: Forces the GPP extension to be included in the bundle, even if the experience does not have GPP enabled
  *         schema:
  *           type: boolean
  *       - in: header
