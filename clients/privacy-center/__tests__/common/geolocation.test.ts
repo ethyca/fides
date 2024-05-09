@@ -34,6 +34,20 @@ describe("getGeolocation", () => {
       });
     });
 
+    it("supports the special 'EEA' code in country header", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "EEA",
+        },
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toEqual({
+        country: "EEA",
+        location: "EEA",
+      });
+    });
+
     it("ignores only region headers", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
@@ -50,6 +64,17 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js",
         headers: {
           "CloudFront-Viewer-Country": "Magicland",
+        },
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid three-character country geolocation headers", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "USA",
         },
       });
       const geolocation = await lookupGeolocation(req);
@@ -86,7 +111,6 @@ describe("getGeolocation", () => {
       const tests = [
         { input: { country: "US", region: undefined }, expected: "US" },
         { input: { country: "us", region: undefined }, expected: "us" },
-        { input: { country: "USA", region: "NY" }, expected: "USA-NY" },
         { input: { country: "SE", region: "O" }, expected: "SE-O" },
         { input: { country: "gb", region: "eng" }, expected: "gb-eng" },
         { input: { country: "RU", region: "PRI" }, expected: "RU-PRI" },
@@ -129,9 +153,28 @@ describe("getGeolocation", () => {
       });
     });
 
+    it("supports the special 'EEA' code in geolocation query param", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=EEA"
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toEqual({
+        country: "EEA",
+        location: "EEA",
+      });
+    });
+
     it("ignores invalid geolocation query param", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=America",
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid three-character country codes in geolocation query param", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=USA",
       });
       const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
@@ -170,10 +213,6 @@ describe("getGeolocation", () => {
         {
           input: "us",
           expected: { location: "us", country: "us", region: undefined },
-        },
-        {
-          input: "USA-NY",
-          expected: { location: "USA-NY", country: "USA", region: "NY" },
         },
         {
           input: "SE-O",

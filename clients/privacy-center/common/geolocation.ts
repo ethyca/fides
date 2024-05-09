@@ -11,8 +11,7 @@ import { UserGeolocation } from "fides-js";
  * Economic Area; this is not part of ISO 3166-2, but is supported for
  * convenience.
  */
-// TODO: EEA
- const VALID_ISO_3166_LOCATION_REGEX = /^[a-z]{2}(-[a-z0-9]{1,3})?$/i;
+ const VALID_ISO_3166_LOCATION_REGEX = /^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$/i;
 
 // Regex to validate a standalone ISO-3166-2 region code, which must be a 1-3
 // alphanumeric character region code (e.g. "CA", "123", "X")
