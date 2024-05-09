@@ -18,10 +18,10 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
 
 ### Changed
-- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
+ - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 
-## Fixed
- - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB.
+### Fixed
+ - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB [#4878](https://github.com/ethyca/fides/pull/4878)
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
