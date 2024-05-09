@@ -1,16 +1,28 @@
+import json
 from typing import Any, Dict, Generator
 
 import pytest
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.property import Property, PropertyPath
+from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
+from fides.api.util.saas_util import load_as_string
+from fides.config.helpers import load_file
 
 
 class TestProperty:
+
+    @pytest.fixture
+    def privacy_center_config(self) -> PrivacyCenterConfig:
+        return PrivacyCenterConfig(
+            **json.loads(
+                load_as_string("tests/ops/resources/privacy_center_config.json")
+            )
+        )
+
     @pytest.fixture(scope="function")
     def property_a(self, db) -> Generator:
         prop_a = Property.create(
@@ -31,14 +43,14 @@ class TestProperty:
         experience_config.save(db=db)
         return {"id": experience_config.id, "name": experience_config.name}
 
-    def test_create_property(self, db, minimal_experience):
+    def test_create_property(self, db, minimal_experience, privacy_center_config):
         prop = Property.create(
             db=db,
             data=PropertySchema(
                 name="New Property",
                 type=PropertyType.website,
                 experiences=[minimal_experience],
-                privacy_center_config={"name": "New Property"},
+                privacy_center_config=privacy_center_config,
                 stylesheet="--fides-overlay-primary-color: #00ff00;",
                 paths=["test"],
             ).dict(),
@@ -46,7 +58,7 @@ class TestProperty:
         assert prop.name == "New Property"
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
-        assert prop.privacy_center_config == {"name": "New Property"}
+        assert prop.privacy_center_config == privacy_center_config
         assert prop.stylesheet == "--fides-overlay-primary-color: #00ff00;"
         assert prop.paths == ["test"]
         assert len(prop.experiences) == 1
@@ -57,14 +69,16 @@ class TestProperty:
 
         prop.delete(db)
 
-    def test_create_property_duplicate_paths(self, db, minimal_experience):
+    def test_create_property_duplicate_paths(
+        self, db, minimal_experience, privacy_center_config
+    ):
         first_prop = Property.create(
             db=db,
             data=PropertySchema(
                 name="First Property",
                 type=PropertyType.website,
                 experiences=[minimal_experience],
-                privacy_center_config={"name": "New Property"},
+                privacy_center_config=privacy_center_config,
                 stylesheet="--fides-overlay-primary-color: #00ff00;",
                 paths=["test"],
             ).dict(),
@@ -77,7 +91,7 @@ class TestProperty:
                     name="Second Property",
                     type=PropertyType.website,
                     experiences=[minimal_experience],
-                    privacy_center_config={"name": "New Property"},
+                    privacy_center_config=privacy_center_config,
                     stylesheet="--fides-overlay-primary-color: #00ff00;",
                     paths=["test"],
                 ).dict(),
@@ -146,7 +160,7 @@ class TestProperty:
         second_prop.delete(db)
 
     def test_property_paths_are_deleted(
-        self, db: Session, property_a, minimal_experience
+        self, db: Session, property_a, minimal_experience, privacy_center_config
     ):
         prop = Property.create(
             db=db,
@@ -154,7 +168,7 @@ class TestProperty:
                 name="New Property with Paths",
                 type=PropertyType.website,
                 experiences=[minimal_experience],
-                privacy_center_config={"name": "New Property"},
+                privacy_center_config=privacy_center_config,
                 stylesheet="--fides-overlay-primary-color: #00ff00;",
                 paths=["first", "second", "third"],
             ).dict(),

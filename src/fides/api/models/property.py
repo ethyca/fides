@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 from __future__ import annotations
 
 import random
@@ -49,7 +50,7 @@ class Property(Base):
     privacy_center_config = Column(MutableDict.as_mutable(JSONB), nullable=True)
     stylesheet = Column(Text, nullable=True)
 
-    _property_paths = relationship(
+    _property_paths: RelationshipProperty[List[PropertyPath]] = relationship(
         "PropertyPath", backref="property", cascade="all, delete-orphan"
     )
     paths = association_proxy("_property_paths", "path")
@@ -78,7 +79,8 @@ class Property(Base):
         )
 
         property_paths = [
-            PropertyPath(property_id=prop.id, path=path) for path in set(paths)
+            PropertyPath.create(db, data={"property_id": prop.id, "path": path})
+            for path in set(paths)
         ]
         prop._property_paths = property_paths
 
@@ -104,7 +106,8 @@ class Property(Base):
         for path in updated_paths - set(existing_paths.keys()):
             self._property_paths.append(PropertyPath(property_id=self.id, path=path))
 
-        return self.save(db)
+        self.save(db)
+        return self
 
 
 class PropertyPath(Base):

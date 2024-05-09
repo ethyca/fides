@@ -1,7 +1,8 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 
 
 class MinimalPrivacyExperience(FidesSchema):
@@ -29,6 +30,6 @@ class Property(FidesSchema):
     type: PropertyType
     id: Optional[str] = None
     experiences: List[MinimalPrivacyExperience]
-    privacy_center_config: Optional[Dict[str, Any]]
+    privacy_center_config: Optional[PrivacyCenterConfig]
     stylesheet: Optional[str]
     paths: Optional[List[str]] = None
