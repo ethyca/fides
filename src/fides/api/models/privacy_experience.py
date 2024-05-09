@@ -44,6 +44,13 @@ FidesJSUXTypes: List[ComponentType] = [
     ComponentType.modal,
 ]
 
+# Fides JS Overlay Types - there should only be one of these defined per region + property
+FidesJSOverlayTypes: List[ComponentType] = [
+    ComponentType.banner_and_modal,
+    ComponentType.modal,
+    ComponentType.tcf_overlay
+]
+
 
 class PrivacyExperienceConfigBase:
     """
