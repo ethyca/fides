@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
 
+## Fixed
+ - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB.
+
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
 ### Added
