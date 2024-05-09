@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.35.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
+
+## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
 ### Added
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
@@ -189,6 +191,7 @@ The types of changes are:
 - Update privacy experiences page to use the new table component [#4652](https://github.com/ethyca/fides/pull/4652)
 - Update privacy notices page to use the new table component [#4641](https://github.com/ethyca/fides/pull/4641)
 - Bumped supported Python versions to `3.10.13`, `3.9.18`, and `3.8.18`. Bumped Debian base image from `-bullseye` to `-bookworm`. [#4630](https://github.com/ethyca/fides/pull/4630)
+- Bumped Node.js base image from `16` to `20`. [#4684](https://github.com/ethyca/fides/pull/4684)
 
 ### Fixed
 
