@@ -53,7 +53,7 @@ class Property(Base):
     _property_paths: RelationshipProperty[List[PropertyPath]] = relationship(
         "PropertyPath", backref="property", cascade="all, delete-orphan"
     )
-    paths = association_proxy("_property_paths", "path")
+    paths: List[str] = association_proxy("_property_paths", "path")
 
     experiences: RelationshipProperty[List[PrivacyExperienceConfig]] = relationship(
         "PrivacyExperienceConfig",
@@ -79,8 +79,7 @@ class Property(Base):
         )
 
         property_paths = [
-            PropertyPath.create(db, data={"property_id": prop.id, "path": path})
-            for path in set(paths)
+            PropertyPath(property_id=prop.id, path=path) for path in set(paths)  # type: ignore
         ]
         prop._property_paths = property_paths
 

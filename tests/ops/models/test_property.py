@@ -10,7 +10,6 @@ from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
 from fides.api.util.saas_util import load_as_string
-from fides.config.helpers import load_file
 
 
 class TestProperty:
@@ -51,7 +50,7 @@ class TestProperty:
                 type=PropertyType.website,
                 experiences=[minimal_experience],
                 privacy_center_config=privacy_center_config,
-                stylesheet="--fides-overlay-primary-color: #00ff00;",
+                stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                 paths=["test"],
             ).dict(),
         )
@@ -59,7 +58,7 @@ class TestProperty:
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
         assert prop.privacy_center_config == privacy_center_config
-        assert prop.stylesheet == "--fides-overlay-primary-color: #00ff00;"
+        assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
         assert prop.paths == ["test"]
         assert len(prop.experiences) == 1
 
@@ -79,7 +78,7 @@ class TestProperty:
                 type=PropertyType.website,
                 experiences=[minimal_experience],
                 privacy_center_config=privacy_center_config,
-                stylesheet="--fides-overlay-primary-color: #00ff00;",
+                stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                 paths=["test"],
             ).dict(),
         )
@@ -92,7 +91,7 @@ class TestProperty:
                     type=PropertyType.website,
                     experiences=[minimal_experience],
                     privacy_center_config=privacy_center_config,
-                    stylesheet="--fides-overlay-primary-color: #00ff00;",
+                    stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                     paths=["test"],
                 ).dict(),
             )
@@ -169,7 +168,7 @@ class TestProperty:
                 type=PropertyType.website,
                 experiences=[minimal_experience],
                 privacy_center_config=privacy_center_config,
-                stylesheet="--fides-overlay-primary-color: #00ff00;",
+                stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                 paths=["first", "second", "third"],
             ).dict(),
         )
