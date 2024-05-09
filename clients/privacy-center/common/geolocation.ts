@@ -6,12 +6,13 @@ import { UserGeolocation } from "fides-js";
  * 1. Starts with a 2 letter country code (e.g. "US", "GB") (see [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
  * 2. (Optional) Ends with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X") (see [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2))
  * 3. Country & region codes must be separated by a hyphen (e.g. "US-CA")
- * 
+ *
  * Fides also supports a special `EEA` geolocation code to denote the European
  * Economic Area; this is not part of ISO 3166-2, but is supported for
  * convenience.
  */
- const VALID_ISO_3166_LOCATION_REGEX = /^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$/i;
+const VALID_ISO_3166_LOCATION_REGEX =
+  /^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$/i;
 
 // Regex to validate a standalone ISO-3166-2 region code, which must be a 1-3
 // alphanumeric character region code (e.g. "CA", "123", "X")

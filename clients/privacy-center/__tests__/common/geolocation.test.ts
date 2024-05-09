@@ -155,7 +155,7 @@ describe("getGeolocation", () => {
 
     it("supports the special 'EEA' code in geolocation query param", async () => {
       const req = createRequest({
-        url: "https://privacy.example.com/fides.js?geolocation=EEA"
+        url: "https://privacy.example.com/fides.js?geolocation=EEA",
       });
       const geolocation = await lookupGeolocation(req);
       expect(geolocation).toEqual({
