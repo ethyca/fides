@@ -36,7 +36,13 @@ let autoRefresh: boolean = true;
  *       - in: query
  *         name: geolocation
  *         required: false
- *         description: Geolocation string to inject into the bundle (e.g. "US-CA"), containing ISO 3166 country code (e.g. "US") and optional region code (e.g. "CA"), separated by a "-"
+ *         description: |
+ *           Override FidesJS to use a specific geolocation by providing a valid [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:
+ *           1. Starts with a 2 letter country code (e.g. "US", "GB") (see [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
+ *           2. (Optional) Ends with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X") (see [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2))
+ *           3. Country & region codes must be separated by a hyphen (e.g. "US-CA")
+ * 
+ *           Fides also supports a special `EEA` geolocation code to denote the European Economic Area; this is not part of ISO 3166-2, but is supported for convenience.
  *         schema:
  *           type: string
  *         example: US-CA
@@ -52,6 +58,7 @@ let autoRefresh: boolean = true;
  *         description: Signals fides.js to use the latest custom-fides.css (if available)
  *         schema:
  *           type: boolean
+ *         example: FDS-A0B1C2
  *       - in: query
  *         name: gpp
  *         required: false
