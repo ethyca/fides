@@ -6,6 +6,7 @@
   "eslint.workingDirectories": [
     "./clients/admin-ui",
     "./clients/fides-js",
+    "./clients/fidesui",
     "./clients/privacy-center",
     "./clients/cypress-e2e",
     "./clients/simple-app"

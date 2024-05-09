@@ -19,7 +19,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 
-import { FidesProvider } from "@fidesui/react";
+import { FidesUIProvider } from "fidesui";
 import { EnhancedStore } from "@reduxjs/toolkit";
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
@@ -56,7 +56,7 @@ declare global {
  */
 Cypress.Commands.add("mount", (component, options = {}) => {
   const { reduxStore = makeStore(), ...mountOptions } = options;
-  const wrapChakra = React.createElement(FidesProvider, { theme }, component);
+  const wrapChakra = React.createElement(FidesUIProvider, { theme }, component);
   const wrapRedux = React.createElement(
     Provider,
     { store: reduxStore },

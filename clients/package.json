@@ -2,7 +2,8 @@
   "workspaces": [
     "admin-ui",
     "fides-js",
-    "privacy-center"
+    "privacy-center",
+    "fidesui"
   ],
   "scripts": {
     "build": "turbo run build",

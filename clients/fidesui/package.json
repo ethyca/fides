@@ -1,0 +1,21 @@
+{
+  "name": "fidesui",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@chakra-ui/provider": "^1.7.7",
+    "@chakra-ui/react": "^1.8.0",
+    "@chakra-ui/utils": "^1.10.2",
+    "typescript": "^4.9.5"
+  },
+  "peerDependencies": {
+    "@chakra-ui/system": "^1.10.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}
