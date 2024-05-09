@@ -122,7 +122,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           disabled={isProcessingAction}
         />
       )}
-      {/* Negative actions should be last */}
+      {/* Positive Actions (Monitor, Confirm) goes first. Negative actions such as ignore should be last */}
       {showMuteAction && (
         <ActionButton
           title="Ignore"

@@ -1,5 +1,6 @@
 import { Badge, Box, HStack, Text } from "@fidesui/react";
 import { OptionProps, Options, Select } from "chakra-react-select";
+import { ReactNode } from "react";
 
 import useTaxonomies from "../hooks/useTaxonomies";
 
@@ -11,7 +12,7 @@ interface TaxonomySelectDropdownProps {
 
 export interface TaxonomySelectOption {
   value: string;
-  label: string;
+  label: string | ReactNode;
   description: string;
 }
 
@@ -49,7 +50,6 @@ const Option = ({ data, setValue }: OptionProps<TaxonomySelectOption>) => {
 };
 
 const TaxonomySelectDropdown: React.FC<TaxonomySelectDropdownProps> = ({
-  taxonomyKey,
   onChange,
   menuIsOpen,
 }) => {
@@ -59,8 +59,7 @@ const TaxonomySelectDropdown: React.FC<TaxonomySelectDropdownProps> = ({
   const options: Options<TaxonomySelectOption> = dataCategories.map(
     (category) => ({
       value: category.fides_key,
-      // Actually, it's a react node because it contains a <strong> element, bit the library handles it
-      label: getDataCategoryDisplayName(category.fides_key) as string,
+      label: getDataCategoryDisplayName(category.fides_key),
       description: category.description || "",
     })
   );
@@ -68,7 +67,6 @@ const TaxonomySelectDropdown: React.FC<TaxonomySelectDropdownProps> = ({
   return (
     <Select
       placeholder="Select a category"
-      defaultValue={{ value: taxonomyKey, description: "", label: "" }}
       onChange={onChange as any}
       options={options}
       size="sm"

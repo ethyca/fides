@@ -29,9 +29,19 @@ In order to get started quickly with Fides, a sample project is bundled within t
 
 #### Download and install Fides
 
-You can easily download and install Fides using `pip`. Run the following command to get started:
+> [!TIP]
+> We highly recommend setting up a Python virtual environment such as `venv` to install Fides into. For example:
+> 
+> ```sh
+> mkdir ~/fides
+> cd ~/fides
+> python3 -m venv venv
+> source venv/bin/activate
+> ```
 
-```sh
+Once your virtual environment is ready, you can easily download and install Fides using `pip`. Run the following command to get started:
+
+```
 pip install ethyca-fides
 ```
 
