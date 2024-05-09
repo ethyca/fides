@@ -6,19 +6,19 @@ import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection
 import DetectionResultTable from "~/features/data-discovery-and-detection/tables/DetectionResultTable";
 
 const DataDetectionActivityPage = () => (
-    <FixedLayout
-      title="Data detection"
-      mainProps={{
-        padding: "40px",
-        paddingRight: "48px",
-      }}
-    >
-      <DiscoveryMonitorBreadcrumbs
-        parentTitle="Data detection"
-        parentLink={DATA_DETECTION_ROUTE}
-      />
-      <DetectionResultTable />
-    </FixedLayout>
-  );
+  <FixedLayout
+    title="Data detection"
+    mainProps={{
+      padding: "40px",
+      paddingRight: "48px",
+    }}
+  >
+    <DiscoveryMonitorBreadcrumbs
+      parentTitle="Data detection"
+      parentLink={DATA_DETECTION_ROUTE}
+    />
+    <DetectionResultTable />
+  </FixedLayout>
+);
 
 export default DataDetectionActivityPage;

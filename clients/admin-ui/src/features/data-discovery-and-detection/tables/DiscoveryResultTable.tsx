@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Box, Flex, Input, Text, VStack } from "@fidesui/react";
+import { Box, Flex, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,

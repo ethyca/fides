@@ -340,13 +340,10 @@ describe("discovery and detection", () => {
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
           "patchClassification"
         );
-        cy.getByTestId("classification-User_geography").click();
-        cy.get("#react-select-3-listbox")
-          .children()
-          .first()
-          .within(() => {
-            cy.get("p").first().click();
-          });
+        cy.getByTestId("classification-User_geography").click({ force: true });
+        cy.get(".select-wrapper").within(() => {
+          cy.getByTestId("option-system").click({ force: true });
+        });
         cy.wait("@patchClassification");
       });
     });
