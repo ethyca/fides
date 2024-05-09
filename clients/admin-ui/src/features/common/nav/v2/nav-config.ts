@@ -35,7 +35,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Detection & Disovery",
+    title: "Detection & Discovery",
     routes: [
       {
         title: "Activity",
