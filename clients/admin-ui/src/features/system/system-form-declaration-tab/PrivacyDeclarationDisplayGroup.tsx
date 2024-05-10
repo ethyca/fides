@@ -1,7 +1,8 @@
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
+  AddIcon,
   Box,
   Button,
+  DeleteIcon,
   Divider,
   Heading,
   HStack,
