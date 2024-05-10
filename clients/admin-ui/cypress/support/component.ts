@@ -19,12 +19,12 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 
-import { FidesUIProvider } from "fidesui";
 import { EnhancedStore } from "@reduxjs/toolkit";
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { mount, MountOptions, MountReturn } from "cypress/react";
+import { FidesUIProvider } from "fidesui";
 import * as React from "react";
 import { Provider } from "react-redux";
 
