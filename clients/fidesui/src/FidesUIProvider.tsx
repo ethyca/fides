@@ -1,7 +1,7 @@
 import {
   ChakraProvider as BaseChakraProvider,
   ChakraProviderProps,
-} from "@chakra-ui/provider";
+} from "@chakra-ui/react";
 import { theme as defaultTheme } from "./FidesUITheme";
 
 export const FidesUIProvider = ({
@@ -11,4 +11,4 @@ export const FidesUIProvider = ({
   <BaseChakraProvider theme={theme}>{children}</BaseChakraProvider>
 );
 
-export type { ChakraProviderProps as FidesProviderProps } from "@chakra-ui/provider";
+export type { ChakraProviderProps as FidesProviderProps } from "@chakra-ui/react";
