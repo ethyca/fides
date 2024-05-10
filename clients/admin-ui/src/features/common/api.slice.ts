@@ -32,6 +32,8 @@ export const baseApi = createApi({
     "Datastore Connection",
     "Dataset",
     "Datasets",
+    "Discovery Monitor Configs",
+    "Discovery Monitor Results",
     "Fides Cloud Config",
     "Languages",
     "Locations",

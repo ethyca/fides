@@ -17,11 +17,17 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
 
+### Added
+- Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
 ### Changed
  - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 
 ### Fixed
  - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB [#4878](https://github.com/ethyca/fides/pull/4878)
+
+### Fixed
+- Fixed an issue with the Iterate connector returning at least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
+- Enhanced classification of the dataset used with Twilio [#4872](https://github.com/ethyca/fides/pull/4872)
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
@@ -39,6 +45,7 @@ The types of changes are:
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
 - Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
+- Ignore invalid three-character country codes for FidesJS geolocation (e.g. "USA") [#4877](https://github.com/ethyca/fides/pull/4877)
 
 ### Developer Experience
 - Update typedoc-plugin-markdown to 4.0.0 [#4870](https://github.com/ethyca/fides/pull/4870)
@@ -359,7 +366,6 @@ The types of changes are:
 - Fix an error where a connector response value of None causes a DSR failure due to a missing value [#4483](https://github.com/ethyca/fides/pull/4483)
 - Fixed system name being non-editable when locked for GVL [#4475](https://github.com/ethyca/fides/pull/4475)
 - Fixed a bug with "null" values for retention period field on data uses [#4487](https://github.com/ethyca/fides/pull/4487)
-- Fixed an issue with the Iterate connector returning At least one param_value references an invalid field for the 'update' request of user [#4514]
 
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
