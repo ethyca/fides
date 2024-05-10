@@ -96,6 +96,19 @@ class ConsentConfigPage(FidesSchema):
     policy_key: Optional[str]
     title: str
 
+    @root_validator(pre=True)
+    def validate_consent_options(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        consent_options = values.get("consentOptions")
+        if consent_options:
+            executable_count = sum(
+                option.get("executable", False) for option in consent_options
+            )
+            if executable_count > 1:
+                raise ValueError(
+                    "Cannot have more than one consent option be executable."
+                )
+        return values
+
 
 class ConsentConfig(FidesSchema):
     button: ConsentConfigButton
