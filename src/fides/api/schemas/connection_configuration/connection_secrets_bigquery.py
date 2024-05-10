@@ -38,10 +38,6 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         title="BigQuery Dataset",
         description="The dataset within your BigQuery project that contains the tables you want to access.",
     )
-    project: List[str] = Field(
-        title="BigQuery projects",
-        description="The projects within your BigQuery organization that you want to scope your connection to.",
-    )
 
     _required_components: List[str] = ["keyfile_creds"]
 
