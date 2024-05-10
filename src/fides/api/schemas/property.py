@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Iterable, List, Optional
+
+from pydantic import validator
 
 from fides.api.custom_types import CssStr
 from fides.api.schemas.base_class import FidesSchema
@@ -34,3 +36,7 @@ class Property(FidesSchema):
     privacy_center_config: Optional[PrivacyCenterConfig]
     stylesheet: Optional[CssStr]
     paths: Optional[List[str]] = None
+
+    @validator("paths", pre=True)
+    def convert_to_list(cls, value):
+        return list(value)

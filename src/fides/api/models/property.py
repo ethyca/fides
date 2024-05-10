@@ -51,7 +51,9 @@ class Property(Base):
     stylesheet = Column(Text, nullable=True)
 
     _property_paths: RelationshipProperty[List[PropertyPath]] = relationship(
-        "PropertyPath", backref="property", cascade="all, delete-orphan"
+        "PropertyPath",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )
     paths: List[str] = association_proxy("_property_paths", "path")
 
