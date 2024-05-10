@@ -20,6 +20,9 @@ The types of changes are:
 ### Changed
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 
+### Fixed
+- Fixed an issue with the Iterate connector returning At least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
+
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
 ### Added
@@ -358,7 +361,6 @@ The types of changes are:
 - Fix an error where a connector response value of None causes a DSR failure due to a missing value [#4483](https://github.com/ethyca/fides/pull/4483)
 - Fixed system name being non-editable when locked for GVL [#4475](https://github.com/ethyca/fides/pull/4475)
 - Fixed a bug with "null" values for retention period field on data uses [#4487](https://github.com/ethyca/fides/pull/4487)
-- Fixed an issue with the Iterate connector returning At least one param_value references an invalid field for the 'update' request of user [#4514]
 
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
