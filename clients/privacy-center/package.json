@@ -23,7 +23,6 @@
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2"
   },
   "dependencies": {
-    "@chakra-ui/react": "^1.8.9",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@fontsource/inter": "^4.5.15",
