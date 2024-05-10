@@ -36,3 +36,36 @@ export const formatDate = (value: string | number | Date): string =>
 
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
+
+export const getFileNameFromContentDisposition = (
+  contentDisposition: string | null
+) => {
+  const defaultName = "export";
+  if (!contentDisposition) {
+    return defaultName;
+  }
+  const match = contentDisposition.match(/filename=(.+)/);
+  return match ? match[1] : defaultName;
+};
+
+/**
+ * Constructs a query string from an array of values.
+ *
+ * @param valueList - An array of string values to be included in the query string.
+ * @param queryParam - The name of the query parameter.
+ * @returns A query string where each value from the array is assigned to the query parameter.
+ * If the array is empty, the function returns undefined.
+ *
+ * @example
+ * getQueryParamsFromArray(['1', '2', '3'], 'id');
+ * // returns 'id=1&id=2&id=3'
+ */
+export const getQueryParamsFromArray = (
+  valueList: string[],
+  queryParam: string
+) => {
+  if (valueList.length > 0) {
+    return `${queryParam}=${valueList.join(`&${queryParam}=`)}`;
+  }
+  return undefined;
+};

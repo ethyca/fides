@@ -3,14 +3,14 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesApiOptions,
-  FidesOptions,
-  LastServedConsentSchema,
+  FidesCookie,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
+  RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
-import { FidesCookie } from "../lib/cookie";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
@@ -27,18 +27,17 @@ export const fetchExperience = async (
   fidesApiUrl: string,
   debug: boolean,
   apiOptions?: FidesApiOptions | null,
-  fidesUserDeviceId?: string | null
+  propertyId?: string | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
-  debugLog(
-    debug,
-    `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`
-  );
+  debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
     debugLog(debug, "Calling custom fetch experience fn");
     try {
       return await apiOptions.getPrivacyExperienceFn(
         userLocationString,
-        fidesUserDeviceId
+        // We no longer support handling user preferences on the experience using fidesUserDeviceId.
+        // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
+        null
       );
     } catch (e) {
       debugLog(
@@ -59,16 +58,16 @@ export const fetchExperience = async (
   let params: any = {
     show_disabled: "false",
     region: userLocationString,
+    // ComponentType.OVERLAY is deprecated but “overlay” is still a backwards compatible filter.
+    // Backend will filter to component that matches modal, banner_and_modal, or tcf_overlay
     component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
     include_gvl: "true",
     include_meta: "true",
+    ...(propertyId && { property_id: propertyId }),
   };
-  if (fidesUserDeviceId) {
-    params.fides_user_device_id = fidesUserDeviceId;
-  }
   params = new URLSearchParams(params);
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
@@ -117,7 +116,7 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
 export const patchUserPreference = async (
   consentMethod: ConsentMethod,
   preferences: PrivacyPreferencesRequest,
-  options: FidesOptions,
+  options: FidesInitOptions,
   cookie: FidesCookie,
   experience: PrivacyExperience
 ): Promise<void> => {
@@ -165,8 +164,8 @@ export const patchNoticesServed = async ({
   options,
 }: {
   request: RecordConsentServedRequest;
-  options: FidesOptions;
-}): Promise<Array<LastServedConsentSchema> | null> => {
+  options: FidesInitOptions;
+}): Promise<RecordsServedResponse | null> => {
   debugLog(options.debug, "Saving that notices were served...");
   if (options.apiOptions?.patchNoticesServedFn) {
     debugLog(options.debug, "Calling custom patch notices served fn");

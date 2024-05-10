@@ -1,6 +1,7 @@
 """
 Contains the code that sets up the API.
 """
+
 import os
 import sys
 from datetime import datetime, timezone
@@ -31,6 +32,10 @@ from fides.api.schemas.analytics import Event, ExtraData
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
+)
+from fides.api.service.privacy_request.request_service import (
+    initiate_poll_for_exited_privacy_request_tasks,
+    initiate_scheduled_dsr_data_removal,
 )
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.ui import (
@@ -139,9 +144,9 @@ async def prepare_and_log_request(
             endpoint=endpoint,
             status_code=status_code,
             error=error_class or None,
-            extra_data={ExtraData.fides_source.value: fides_source}
-            if fides_source
-            else None,
+            extra_data=(
+                {ExtraData.fides_source.value: fides_source} if fides_source else None
+            ),
         )
     )
 
@@ -278,6 +283,8 @@ async def setup_server() -> None:
         async_scheduler.start()
 
     initiate_scheduled_batch_email_send()
+    initiate_poll_for_exited_privacy_request_tasks()
+    initiate_scheduled_dsr_data_removal()
 
     logger.debug("Sending startup analytics events...")
     # Avoid circular imports

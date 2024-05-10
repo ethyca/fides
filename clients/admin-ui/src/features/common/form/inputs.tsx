@@ -4,6 +4,8 @@
 
 import {
   Box,
+  Checkbox,
+  Code,
   EyeIcon,
   Flex,
   FormControl,
@@ -33,6 +35,7 @@ import {
 } from "@fidesui/react";
 import {
   chakraComponents,
+  ChakraStylesConfig,
   CreatableSelect,
   GroupBase,
   MenuPosition,
@@ -53,6 +56,7 @@ import React, {
   useState,
 } from "react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 type Variant = "inline" | "stacked" | "block";
@@ -64,6 +68,7 @@ export interface CustomInputProps {
   variant?: Variant;
   isRequired?: boolean;
   textColor?: string;
+  inputRightElement?: React.ReactNode;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -87,7 +92,17 @@ export const Label = ({
 );
 
 export const TextInput = forwardRef(
-  ({ isPassword, ...props }: InputProps & { isPassword: boolean }, ref) => {
+  (
+    {
+      isPassword,
+      inputRightElement,
+      ...props
+    }: InputProps & {
+      isPassword: boolean;
+      inputRightElement?: React.ReactNode;
+    },
+    ref
+  ) => {
     const [type, setType] = useState<"text" | "password">(
       isPassword ? "password" : "text"
     );
@@ -105,6 +120,9 @@ export const TextInput = forwardRef(
           background="white"
           focusBorderColor="primary.600"
         />
+        {inputRightElement ? (
+          <InputRightElement pr={2}>{inputRightElement}</InputRightElement>
+        ) : null}
         {isPassword ? (
           <InputRightElement pr="2">
             <IconButton
@@ -152,6 +170,7 @@ export interface Option {
   value: string;
   label: string;
   description?: string;
+  tooltip?: string;
 }
 
 const CustomOption: React.FC<
@@ -201,6 +220,28 @@ export interface SelectProps {
   textColor?: string;
 }
 
+export const SELECT_STYLES: ChakraStylesConfig<
+  Option,
+  boolean,
+  GroupBase<Option>
+> = {
+  container: (provided) => ({
+    ...provided,
+    flexGrow: 1,
+    backgroundColor: "white",
+  }),
+  dropdownIndicator: (provided) => ({
+    ...provided,
+    bg: "transparent",
+    px: 2,
+    cursor: "inherit",
+  }),
+  indicatorSeparator: (provided) => ({
+    ...provided,
+    display: "none",
+  }),
+};
+
 export const SelectInput = ({
   options,
   fieldName,
@@ -211,7 +252,7 @@ export const SelectInput = ({
   isMulti = false,
   singleValueBlock,
   isDisabled = false,
-  menuPosition = "absolute",
+  menuPosition = "fixed",
   onChange,
   isCustomOption,
   textColor,
@@ -290,26 +331,7 @@ export const SelectInput = ({
       placeholder={placeholder}
       focusBorderColor="primary.600"
       chakraStyles={{
-        container: (provided) => ({
-          ...provided,
-          flexGrow: 1,
-          backgroundColor: "white",
-        }),
-        option: (provided, state) => ({
-          ...provided,
-          background: state.isSelected || state.isFocused ? "gray.50" : "unset",
-          color: textColor ?? "gray.600",
-        }),
-        dropdownIndicator: (provided) => ({
-          ...provided,
-          bg: "transparent",
-          px: 2,
-          cursor: "inherit",
-        }),
-        indicatorSeparator: (provided) => ({
-          ...provided,
-          display: "none",
-        }),
+        ...SELECT_STYLES,
         multiValueLabel: (provided) => ({
           ...provided,
           display: "flex",
@@ -338,7 +360,7 @@ export const SelectInput = ({
               ...provided,
               fontSize: "12px",
               background: "gray.200",
-              color: "gray.600",
+              color: textColor ?? "gray.600",
               fontWeight: "400",
               borderRadius: "2px",
               py: 1,
@@ -353,6 +375,7 @@ export const SelectInput = ({
       isMulti={isMulti}
       isDisabled={isDisabled}
       menuPosition={menuPosition}
+      menuPlacement="auto"
     />
   );
 };
@@ -510,6 +533,7 @@ export const CustomTextInput = ({
   disabled,
   variant = "inline",
   isRequired = false,
+  inputRightElement,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -518,6 +542,17 @@ export const CustomTextInput = ({
   const field = { ...initialField, value: initialField.value ?? "" };
 
   const isPassword = initialType === "password";
+
+  const innerInput = (
+    <TextInput
+      {...field}
+      isDisabled={disabled}
+      data-testid={`input-${field.name}`}
+      placeholder={placeholder}
+      isPassword={isPassword}
+      inputRightElement={inputRightElement}
+    />
+  );
 
   if (variant === "inline") {
     return (
@@ -528,13 +563,7 @@ export const CustomTextInput = ({
           ) : null}
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
-              <TextInput
-                {...field}
-                isDisabled={disabled}
-                data-testid={`input-${field.name}`}
-                placeholder={placeholder}
-                isPassword={isPassword}
-              />
+              {innerInput}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
@@ -558,13 +587,7 @@ export const CustomTextInput = ({
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Flex>
         ) : null}
-        <TextInput
-          {...field}
-          isDisabled={disabled}
-          data-testid={`input-${field.name}`}
-          placeholder={placeholder}
-          isPassword={isPassword}
-        />
+        {innerInput}
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}
@@ -860,22 +883,72 @@ export const CustomTextArea = ({
 };
 
 interface CustomRadioGroupProps {
-  label: string;
+  label?: string;
   options: Option[];
+  variant?: "inline" | "stacked";
+  defaultFirstSelected?: boolean;
 }
 export const CustomRadioGroup = ({
   label,
   options,
+  variant,
+  defaultFirstSelected = true,
   ...props
 }: CustomRadioGroupProps & StringField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
-  const selected = options.find((o) => o.value === field.value) ?? options[0];
+  const defaultSelected = defaultFirstSelected ? options[0] : undefined;
+  const selected =
+    options.find((o) => o.value === field.value) ?? defaultSelected;
 
   const handleChange = (o: string) => {
     field.onChange(props.name)(o);
   };
+
+  if (variant === "stacked") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Stack width="fit-content">
+          {label ? (
+            <Label htmlFor={props.id || props.name}>{label}</Label>
+          ) : null}
+          <RadioGroup
+            onChange={handleChange}
+            value={selected?.value}
+            data-testid={`input-${field.name}`}
+            colorScheme="complimentary"
+          >
+            <Stack direction="column" spacing={3}>
+              {options.map(
+                ({ value, label: optionLabel, tooltip: optionTooltip }) => (
+                  <Radio
+                    key={value}
+                    value={value}
+                    data-testid={`option-${value}`}
+                  >
+                    <HStack alignItems="center" spacing={2}>
+                      <Text fontSize="sm" fontWeight="medium">
+                        {optionLabel}
+                      </Text>
+                      {optionTooltip ? (
+                        <QuestionTooltip label={optionTooltip} />
+                      ) : null}
+                    </HStack>
+                  </Radio>
+                )
+              )}
+            </Stack>
+          </RadioGroup>
+        </Stack>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -883,7 +956,7 @@ export const CustomRadioGroup = ({
         <Label htmlFor={props.id || props.name}>{label}</Label>
         <RadioGroup
           onChange={handleChange}
-          value={selected.value}
+          value={selected?.value}
           data-testid={`input-${field.name}`}
           colorScheme="secondary"
         >
@@ -991,7 +1064,7 @@ export const CustomNumberInput = ({
 interface CustomSwitchProps {
   label?: string;
   tooltip?: string;
-  variant?: "inline" | "condensed" | "stacked";
+  variant?: "inline" | "condensed" | "stacked" | "switchFirst";
   isDisabled?: boolean;
 }
 export const CustomSwitch = ({
@@ -1022,6 +1095,7 @@ export const CustomSwitch = ({
       data-testid={`input-${field.name}`}
       disabled={isDisabled}
       size="sm"
+      id={field.name}
     />
   );
 
@@ -1037,6 +1111,20 @@ export const CustomSwitch = ({
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
         </Grid>
+      </FormControl>
+    );
+  }
+
+  if (variant === "switchFirst") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Flex alignItems="center">
+          {innerSwitch}
+          <Label htmlFor={props.id || props.name} my={0} fontSize="sm" mr={2}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
       </FormControl>
     );
   }
@@ -1072,6 +1160,102 @@ export const CustomSwitch = ({
         {innerSwitch}
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Box>
+    </FormControl>
+  );
+};
+
+export const CustomCheckbox = ({
+  label,
+  tooltip,
+  onChange,
+  isDisabled,
+  ...props
+}: Omit<CustomSwitchProps, "variant"> & FieldHookConfig<boolean>) => {
+  const [field, meta] = useField({ ...props, type: "checkbox" });
+  const isInvalid = !!(meta.touched && meta.error);
+
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Flex alignItems="center">
+        <Checkbox
+          name={field.name}
+          isChecked={field.checked}
+          onChange={field.onChange}
+          onBlur={field.onBlur}
+          data-testid={`input-${field.name}`}
+          disabled={isDisabled}
+          colorScheme="complimentary"
+          mr="2"
+        >
+          <Text fontSize="sm" fontWeight="medium">
+            {label}
+          </Text>
+        </Checkbox>
+
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      </Flex>
+    </FormControl>
+  );
+};
+
+interface CustomClipboardCopyProps {
+  label?: string;
+  tooltip?: string;
+  variant?: Variant;
+}
+
+export const CustomClipboardCopy = ({
+  label,
+  tooltip,
+  variant = "inline",
+  ...props
+}: CustomClipboardCopyProps & StringField) => {
+  const [initialField] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
+
+  const innerInput = (
+    <Code
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+      p={0}
+      width="100%"
+    >
+      <Text px={4}>{field.value}</Text>
+      <ClipboardButton copyText={field.value} />
+    </Code>
+  );
+
+  if (variant === "inline") {
+    return (
+      <FormControl>
+        <Grid templateColumns="1fr 3fr">
+          {label ? (
+            <Label htmlFor={props.id || props.name}>{label}</Label>
+          ) : null}
+          <Flex alignItems="center">
+            <Flex flexDir="column" flexGrow={1} mr="2">
+              {innerInput}
+            </Flex>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
+        </Grid>
+      </FormControl>
+    );
+  }
+  return (
+    <FormControl>
+      <VStack alignItems="start">
+        {label ? (
+          <Flex alignItems="center">
+            <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
+              {label}
+            </Label>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
+        ) : null}
+        {innerInput}
+      </VStack>
     </FormControl>
   );
 };

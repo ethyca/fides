@@ -29,7 +29,13 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
 
   return (
     <>
-      <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
+      <Heading
+        color="gray.900"
+        fontSize="lg"
+        fontWeight="semibold"
+        mt={4}
+        mb={4}
+      >
         Request details
       </Heading>
       <Divider />

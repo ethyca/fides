@@ -15,25 +15,325 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.26.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
 
-### Added
-- Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
-- Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
+### Changed
+- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 
 ### Fixed
-- Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
 - Fixed an issue with the Iterate connector returning At least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
 
-### Changed
-- Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
+## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
+
+### Added
+- Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
+- Added ability to export the contents of datamap report [#1545](https://ethyca.atlassian.net/browse/PROD-1545)
+- Added `System` model support for new `vendor_deleted_date` field on Compass vendor records [#4818](https://github.com/ethyca/fides/pull/4818)
+- Added custom JSON (de)serialization to shared DB engines to handle non-standard data types in JSONB columns [#4818](https://github.com/ethyca/fides/pull/4818)
+- Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
+- Removed currentprivacypreference and lastservednotice tables [#4846](https://github.com/ethyca/fides/pull/4846)
 
 ### Changed
+- Changed filters on the data map report table to use checkbox collapsible tree view [#4864](https://github.com/ethyca/fides/pull/4864)
+
+### Fixed
+- Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
+- Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
+- Ignore invalid three-character country codes for FidesJS geolocation (e.g. "USA") [#4877](https://github.com/ethyca/fides/pull/4877)
+
+### Developer Experience
+- Update typedoc-plugin-markdown to 4.0.0 [#4870](https://github.com/ethyca/fides/pull/4870)
+
+## [2.35.1](https://github.com/ethyca/fides/compare/2.35.0...2.35.1)
+
+### Added
+- Added access and erasure support for Marigold Engage by Sailthru integration [#4826](https://github.com/ethyca/fides/pull/4826)
+- Update fides_disable_save_api option in FidesJS SDK to disable both privacy-preferences & notice-served APIs [#4860](https://github.com/ethyca/fides/pull/4860)
+
+### Fixed
+- Fixing issue where privacy requests not approved before upgrading to 2.34 couldn't be processed [#4855](https://github.com/ethyca/fides/pull/4855)
+- Ensure only GVL vendors from Compass are labeled as such [#4857](https://github.com/ethyca/fides/pull/4857)
+- Fix handling of some ISO-3166 geolocation edge cases in Privacy Center /fides.js endpoint [#4858](https://github.com/ethyca/fides/pull/4858)
+
+### Changed
+- Hydrates GTM datalayer to match supported FidesEvent Properties [#4847](https://github.com/ethyca/fides/pull/4847)
+- Allows a SaaS integration request to process HTTP 204 No Content without erroring trying to unwrap the response. [#4834](https://github.com/ethyca/fides/pull/4834)
+- Sets `sslmode` to prefer for Redshift connections when generating datasets [#4849](https://github.com/ethyca/fides/pull/4849)
+- Included searching by `email` for the Segment integration [#4851](https://github.com/ethyca/fides/pull/4851)
+
+## [2.35.0](https://github.com/ethyca/fides/compare/2.34.0...2.35.0)
+
+### Added
+- Added DSR 3.0 Scheduling which supports running DSR's in parallel with first-class request tasks [#4760](https://github.com/ethyca/fides/pull/4760)
+- Added carets to collapsible sections in the overlay modal [#4793](https://github.com/ethyca/fides/pull/4793)
+- Added erasure support for OpenWeb [#4735](https://github.com/ethyca/fides/pull/4735)
+- Added support for configuration of pre-approval webhooks [#4795](https://github.com/ethyca/fides/pull/4795)
+- Added fides_clear_cookie option to FidesJS SDK to load CMP without preferences on refresh [#4810](https://github.com/ethyca/fides/pull/4810)
+- Added FidesUpdating event to FidesJS SDK [#4816](https://github.com/ethyca/fides/pull/4816)
+- Added `reinitialize` method to FidesJS SDK [#4812](https://github.com/ethyca/fides/pull/4812)
+- Added undeclared data category columns to data map report table [#4781](https://github.com/ethyca/fides/pull/4781)
+- Fully implement pre-approval webhooks [#4822](https://github.com/ethyca/fides/pull/4822)
+- Sync models and database for pre-approval webhooks [#4838](https://github.com/ethyca/fides/pull/4838)
+
+### Changed
+- Removed the Celery startup banner from the Fides worker logs [#4814](https://github.com/ethyca/fides/pull/4814)
+- Improve performance of Snowflake schema generation [#4587](https://github.com/ethyca/fides/pull/4587)
+
+### Fixed
+- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+- Fixed bug where Privacy Policy links would be shown without a configured URL [#4801](https://github.com/ethyca/fides/pull/4801)
+- Fixed bug prevented adding new privacy center translations [#4786](https://github.com/ethyca/fides/pull/4786)
+- Fixed bug where Language selector button was overlapping other buttons when Privacy Policy wasn't present. [#4815](https://github.com/ethyca/fides/pull/4815)
+- Fixed bug where icons of the Language selector were displayed too small on some sites [#4815](https://github.com/ethyca/fides/pull/4815)
+- Fixed bug where GPP US National Section was incorrectly included when the State by State approach was selected [#4823]https://github.com/ethyca/fides/pull/4823
+- Fixed DSR 3.0 Scheduling bug where Approved Privacy Requests that failed wouldn't change status [#4837](https://github.com/ethyca/fides/pull/4837)
+
+## [2.34.0](https://github.com/ethyca/fides/compare/2.33.1...2.34.0)
+
+### Added
+
+- Added new field for modal trigger link translation [#4761](https://github.com/ethyca/fides/pull/4761)
+- Added `getModalLinkLabel` method to global fides object [#4766](https://github.com/ethyca/fides/pull/4766)
+- Added language switcher to fides overlay modal [#4773](https://github.com/ethyca/fides/pull/4773)
+- Added modal link label to experience translation model [#4767](https://github.com/ethyca/fides/pull/4767)
+- Added support for custom identities [#4764](https://github.com/ethyca/fides/pull/4764)
+- Added developer option to force GPP API on FidesJS bundles [#4799](https://github.com/ethyca/fides/pull/4799)
+
+### Changed
+
+- Changed the Stripe integration for `Cards` to delete instead of update due to possible issues of a past expiration date [#4768](https://github.com/ethyca/fides/pull/4768)
+- Changed display of Data Uses, Categories and Subjects to user friendly names in the Data map report [#4774](https://github.com/ethyca/fides/pull/4774)
+- Update active disabled Fides.js toggle color to light grey [#4778](https://github.com/ethyca/fides/pull/4778)
+- Update FidesJS fides_embed option to support embedding both banner & modal components [#4782](https://github.com/ethyca/fides/pull/4782)
+- Add a few CSS classes to help with styling FidesJS button groups [#4789](https://github.com/ethyca/fides/pull/4789)
+- Changed GPP extension to be pre-bundled in appropriate circumstances, as opposed to another fetch [#4780](https://github.com/ethyca/fides/pull/4780)
+
+### Fixed
+
+- Fixed select dropdowns being cut off by edges of modal forms [#4757](https://github.com/ethyca/fides/pull/4757)
+- Changed "allow user to dismiss" toggle to show on config form for TCF experience [#4755](https://github.com/ethyca/fides/pull/4755)
+- Fixed issue when loading the privacy request detail page [#4775](https://github.com/ethyca/fides/pull/4775)
+- Fixed connection test for Aircall [#4756](https://github.com/ethyca/fides/pull/4756/pull)
+- Fixed issues connecting to Redshift due to character encoding and SSL requirements [#4790](https://github.com/ethyca/fides/pull/4790)
+- Fixed the way the name identity is handled in the Privacy Center [#4791](https://github.com/ethyca/fides/pull/4791)
+
+### Developer Experience
+
+- Build a `fides-types.d.ts` type declaration file to include alongside our FidesJS developer docs [#4772](https://github.com/ethyca/fides/pull/4772)
+
+## [2.33.1](https://github.com/ethyca/fides/compare/2.33.0...2.33.1)
+
+### Added
+
+- Adds CUSTOM_OPTIONS_PATH to Privacy Center env vars [#4769](https://github.com/ethyca/fides/pull/4769)
+
+## [2.33.0](https://github.com/ethyca/fides/compare/2.32.0...2.33.0)
+
+### Added
+
+- Added models for Privacy Center configuration (for plus users) [#4716](https://github.com/ethyca/fides/pull/4716)
+- Added ability to delete properties [#4708](https://github.com/ethyca/fides/pull/4708)
+- Add interface for submitting privacy requests in admin UI [#4738](https://github.com/ethyca/fides/pull/4738)
+- Added language switching support to the FidesJS UI based on configured translations [#4737](https://github.com/ethyca/fides/pull/4737)
+- Added ability to override some experience language and primary color [#4743](https://github.com/ethyca/fides/pull/4743)
+- Generate FidesJS SDK Reference Docs from tsdoc comments [#4736](https://github.com/ethyca/fides/pull/4736)
+- Added erasure support for Adyen [#4735](https://github.com/ethyca/fides/pull/4735)
+- Added erasure support for Iterable [#4695](https://github.com/ethyca/fides/pull/4695)
+
+### Changed
+
+- Updated privacy notice & experience forms to hide translation UI when user doesn't have translation feature [#4728](https://github.com/ethyca/fides/pull/4728), [#4734](https://github.com/ethyca/fides/pull/4734)
+- Custom privacy request fields now support list values [#4686](https://github.com/ethyca/fides/pull/4686)
+- Update when GPP API reports signal status: ready [#4635](https://github.com/ethyca/fides/pull/4635)
+- Update non-dismissable TCF and notice banners to show a black overlay and prevent scrolling [#4748](https://github.com/ethyca/fidesplus/pull/4748)
+- Cleanup config vars for preview in Admin-UI [#4745](https://github.com/ethyca/fides/pull/4745)
+- Show a "systems displayed" count on datamap map & table reporting page [#4752](https://github.com/ethyca/fides/pull/4752)
+- Change default Canada Privacy Experience Config in migration to reference generic `ca` region [#4762](https://github.com/ethyca/fides/pull/4762)
+
+### Fixed
+
+- Fixed responsive issues with the buttons on the integration screen [#4729](https://github.com/ethyca/fides/pull/4729)
+- Fixed hover/focus issues with the v2 tables [#4730](https://github.com/ethyca/fides/pull/4730)
+- Disable editing of data use declaration name and type after creation [#4731](https://github.com/ethyca/fides/pull/4731)
+- Cleaned up table borders [#4733](https://github.com/ethyca/fides/pull/4733)
+- Initialization issues with ExperienceNotices (#4723)[https://github.com/ethyca/fides/pull/4723]
+- Re-add CORS origin regex field to admin UI (#4742)[https://github.com/ethyca/fides/pull/4742]
+
+### Developer Experience
+
+- Added new script to allow recompiling of fides-js when the code changes [#4744](https://github.com/ethyca/fides/pull/4744)
+- Update Cookie House to support for additional locations (Canada, Quebec, EEA) and a "property_id" override [#4750](https://github.com/ethyca/fides/pull/4750)
+
+## [2.32.0](https://github.com/ethyca/fides/compare/2.31.1...2.32.0)
+
+### Added
+
+- Updated configuration pages for Experiences with live Preview of FidesJS banner & modal components [#4576](https://github.com/ethyca/fides/pull/4576)
+- Added ability to configure multiple language translations for Notices & Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
+- Automatically localize all strings in FidesJS CMP UIs (banner, modal, and TCF overlay) based on user's locale and experience configuration [#4576](https://github.com/ethyca/fides/pull/4576)
+- Added fides_locale option to override FidesJS locale detection [#4576](https://github.com/ethyca/fides/pull/4576)
+- Update FidesJS to report notices served and preferences saved linked to the specific translations displayed [#4576](https://github.com/ethyca/fides/pull/4576)
+- Added ability to prevent dismissal of FidesJS CMP UI via Experience configuration [#4576](https://github.com/ethyca/fides/pull/4576)
+- Added ability to create & link Properties to support multiple Experiences in a single location [#4658](https://github.com/ethyca/fides/pull/4658)
+- Added property_id query param to fides.js to filter experiences by Property when installed [#4676](https://github.com/ethyca/fides/pull/4676)
+- Added Locations & Regulations pages to allow a wider selection of locations for consent [#4660](https://github.com/ethyca/fides/pull/4660)
+- Erasure support for Simon Data [#4552](https://github.com/ethyca/fides/pull/4552)
+- Added notice there will be no preview for Privacy Center types in the Experience preview [#4709](https://github.com/ethyca/fides/pull/4709)
+- Removed properties beta flag [#4710](https://github.com/ethyca/fides/pull/4710)
+- Add acknowledge button label to default Experience English form [#4714](https://github.com/ethyca/fides/pull/4714)
+- Update FidesJS to support localizing CMP UI with configurable, non-English default locales [#4720](https://github.com/ethyca/fides/pull/4720)
+- Add loading of template translations for notices and experiences [#4718](https://github.com/ethyca/fides/pull/4718)
+
+### Changed
+
+- Moved location-targeting from Notices to Experiences [#4576](https://github.com/ethyca/fides/pull/4576)
+- Replaced previous default Notices & Experiences with new versions with updated locations, translations, etc. [#4576](https://github.com/ethyca/fides/pull/4576)
+- Automatically migrate existing Notices & Experiences to updated model where possible [#4576](https://github.com/ethyca/fides/pull/4576)
+- Replaced ability to configure banner "display configuration" to separate banner & modal components [#4576](https://github.com/ethyca/fides/pull/4576)
+- Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
+- Data model changes to support Notice and Experience-level translations [#4576](https://github.com/ethyca/fides/pull/4576)
+- Data model changes to support Consent setup being Experience instead of Notice-driven [#4576](https://github.com/ethyca/fides/pull/4576)
+- Build PrivacyNoticeRegion from locations and location groups [#4620](https://github.com/ethyca/fides/pull/4620)
+- When saving locations, calculate and save location groups [#4620](https://github.com/ethyca/fides/pull/4620)
+- Update privacy experiences page to use the new table component [#4652](https://github.com/ethyca/fides/pull/4652)
+- Update privacy notices page to use the new table component [#4641](https://github.com/ethyca/fides/pull/4641)
+- Bumped supported Python versions to `3.10.13`, `3.9.18`, and `3.8.18`. Bumped Debian base image from `-bullseye` to `-bookworm`. [#4630](https://github.com/ethyca/fides/pull/4630)
+- Bumped Node.js base image from `16` to `20`. [#4684](https://github.com/ethyca/fides/pull/4684)
+
+### Fixed
+
+- Ignore 404 errors from Delighted and Kustomer when an erasure client is not found [#4593](https://github.com/ethyca/fides/pull/4593)
+- Various FE fixes for Admin-UI experience config form [#4707](https://github.com/ethyca/fides/pull/4707)
+- Fix modal preview in Admin-UI experience config form [#4712](https://github.com/ethyca/fides/pull/4712)
+- Optimize FidesJS bundle size by only loading TCF static stings when needed [#4711](https://github.com/ethyca/fides/pull/4711)
+
+## [2.31.0](https://github.com/ethyca/fides/compare/2.30.1...2.31.0)
+
+### Added
+
+- Add Great Britain as a consent option [#4628](https://github.com/ethyca/fides/pull/4628)
+- Navbar update and new properties page [#4633](https://github.com/ethyca/fides/pull/4633)
+- Access and erasure support for Oracle Responsys [#4618](https://github.com/ethyca/fides/pull/4618)
+
+### Fixed
+
+- Fix issue where "x" button on Fides.js components overwrites saved preferences [#4649](https://github.com/ethyca/fides/pull/4649)
+- Initialize Fides.consent with default values from experience when saved consent cookie (fides_consent) does not exist [#4665](https://github.com/ethyca/fides/pull/4665)
+
+### Changed
+
+- Sets GPP applicableSections to -1 when a user visits from a state that is not part of the GPP [#4727](https://github.com/ethyca/fides/pull/4727)
+
+## [2.30.1](https://github.com/ethyca/fides/compare/2.30.0...2.30.1)
+
+### Fixed
+
+- Configure logger correctly on worker initialization [#4624](https://github.com/ethyca/fides/pull/4624)
+
+## [2.30.0](https://github.com/ethyca/fides/compare/2.29.0...2.30.0)
+
+### Added
+
+- Add enum and registry of supported languages [#4592](https://github.com/ethyca/fides/pull/4592)
+- Access and erasure support for Talkable [#4589](https://github.com/ethyca/fides/pull/4589)
+- Support temporary credentials in AWS generate + scan features [#4607](https://github.com/ethyca/fides/pull/4603), [#4608](https://github.com/ethyca/fides/pull/4608)
+- Add ability to store and read Fides cookie in Base64 format [#4556](https://github.com/ethyca/fides/pull/4556)
+- Structured logging for SaaS connector requests [#4594](https://github.com/ethyca/fides/pull/4594)
+- Added Fides.showModal() to fides.js to allow programmatic opening of consent modals [#4617](https://github.com/ethyca/fides/pull/4617)
+
+### Fixed
+
+- Fixing issue when modifying Policies, Rules, or RuleTargets as a root user [#4582](https://github.com/ethyca/fides/pull/4582)
+
+## [2.29.0](https://github.com/ethyca/fides/compare/2.28.0...2.29.0)
+
+### Added
+
+- View more modal to regulations page [#4574](https://github.com/ethyca/fides/pull/4574)
+- Columns in data map reporting, adding multiple systems, and consent configuration tables can be resized. In the data map reporting table, fields with multiple values can show all or collapse all [#4569](https://github.com/ethyca/fides/pull/4569)
+- Show custom fields in the data map report table [#4579](https://github.com/ethyca/fides/pull/4579)
+
+### Changed
+
+- Delay rendering the nav until all necessary queries are finished loading [#4571](https://github.com/ethyca/fides/pull/4571)
+- Updating return value for crud.get_custom_fields_filtered [#4575](https://github.com/ethyca/fides/pull/4575)
+- Updated user deletion confirmation flow to only require one confirmatory input [#4402](https://github.com/ethyca/fides/pull/4402)
+- Moved `pymssl` to an optional dependency no longer installed by default with our python package [#4581](https://github.com/ethyca/fides/pull/4581)
+- Fixed CORS domain update functionality [#4570](https://github.com/ethyca/fides/pull/4570)
+- Update Domains page with ability to add/remove "organization" domains, view "administrator" domains set via security settings, and improve various UX bugs and copy [#4584](https://github.com/ethyca/fides/pull/4584)
+
+### Fixed
+
+- Fixed CORS domain update functionality [#4570](https://github.com/ethyca/fides/pull/4570)
+- Completion emails are no longer attempted for consent requests [#4578](https://github.com/ethyca/fides/pull/4578)
+
+## [2.28.0](https://github.com/ethyca/fides/compare/2.27.0...2.28.0)
+
+### Added
+
+- Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
+- Datamap Reporting page [#4519](https://github.com/ethyca/fides/pull/4519)
+- Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
+- Form for configuring GPP settings [#4557](https://github.com/ethyca/fides/pull/4557)
+- Custom privacy request field support for consent requests [#4546](https://github.com/ethyca/fides/pull/4546)
+- Support GPP in privacy notices [#4554](https://github.com/ethyca/fides/pull/4554)
+
+### Changed
+
+- Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
+- Fides.js GPP for US geographies now derives values from backend privacy notices [#4559](https://github.com/ethyca/fides/pull/4559)
+- No longer generate the `vendors_disclosed` section of the TC string in `fides.js` [#4553](https://github.com/ethyca/fides/pull/4553)
+- Changed consent management vendor add flow [#4550](https://github.com/ethyca/fides/pull/4550)
+
+### Fixed
+
+- Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
+- Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
+- Fixed browser compatibility issues with Object.hasOwn [#4568](https://github.com/ethyca/fides/pull/4568)
+
+### Developer Experience
+
+- Switch to anyascii for unicode transliteration [#4550](https://github.com/ethyca/fides/pull/4564)
+
+## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
+
+### Added
+
+- Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
+- Preliminary GPP support for US regions [#4498](https://github.com/ethyca/fides/pull/4504)
+- Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
+- New page for setting locations [#4517](https://github.com/ethyca/fides/pull/4517)
+- New modal for setting granular locations [#4531](https://github.com/ethyca/fides/pull/4531)
+- New page for setting regulations [#4530](https://github.com/ethyca/fides/pull/4530)
+- Update fides.js to support multiple descriptions (banner, overlay) and render HTML descriptions [#4542](https://github.com/ethyca/fides/pull/4542)
+
+### Fixed
+
+- Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
+- Omit certain fields from system payload when empty [#4508](https://github.com/ethyca/fides/pull/4525)
+- Fixed issues with Compass vendor selector behavior [#4521](https://github.com/ethyca/fides/pull/4521)
+- Fixed an issue where the background overlay remained visible after saving consent preferences [#4515](https://github.com/ethyca/fides/pull/4515)
+- Fixed system name being editable when editing GVL systems [#4533](https://github.com/ethyca/fides/pull/4533)
+- Fixed an issue where a privacy policy link could not be removed from privacy experiences [#4542](https://github.com/ethyca/fides/pull/4542)
+
+### Changed
+
+- Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
+- Model overhaul for saving privacy preferences and notices served [#4481](https://github.com/ethyca/fides/pull/4481)
+- Moves served notice endpoints, consent reporting, purpose endpoints and TCF queries to plus [#4481](https://github.com/ethyca/fides/pull/4481)
+- Moves served notice endpoints, consent reporting, and TCF queries to plus [#4481](https://github.com/ethyca/fides/pull/4481)
+- Update frontend to account for changes to notices served and preferences saved APIs [#4518](https://github.com/ethyca/fides/pull/4518)
 - `fides.js` now sets `supportsOOB` to `false` [#4516](https://github.com/ethyca/fides/pull/4516)
+- Save consent method ("accept", "reject", "save", etc.) to `fides_consent` cookie as extra metadata [#4529](https://github.com/ethyca/fides/pull/4529)
+- Allow CORS for privacy center `fides.js` and `fides-ext-gpp.js` endpoints
+- Replace `GPP_EXT_PATH` env var in favor of a more flexible `FIDES_JS_BASE_URL` environment variable
+- Change vendor add modal on consent configuration screen to use new vendor selector [#4532](https://github.com/ethyca/fides/pull/4532)
+- Remove vendor add modal [#4535](https://github.com/ethyca/fides/pull/4535)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
+
 - Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
 - Paging to vendors in the TCF overlay [#4463](https://github.com/ethyca/fides/pull/4463)
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
@@ -46,12 +346,14 @@ The types of changes are:
 - Option to prevent the dismissal of the consent banner and modal [#4470](https://github.com/ethyca/fides/pull/4470)
 
 ### Changed
+
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
 - Reduce size of tcf_consent payload in fides_consent cookie [#4480](https://github.com/ethyca/fides/pull/4480)
 - Change log level for FidesUserPermission retrieval to `debug` [#4482](https://github.com/ethyca/fides/pull/4482)
 - Remove Add Vendor button from the Manage your vendors page[#4509](https://github.com/ethyca/fides/pull/4509)
 
 ### Fixed
+
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
 - Fixed an error where editing an AC system would mistakenly lock it for GVL [#4471](https://github.com/ethyca/fides/pull/4471)
 - Refactor custom Get Preferences function to occur after our CMP API initialization [#4466](https://github.com/ethyca/fides/pull/4466)
@@ -62,6 +364,7 @@ The types of changes are:
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
 ### Added
+
 - Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
 - Added confirmation modal on deleting a data use declaration [#4439](https://github.com/ethyca/fides/pull/4439)
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
@@ -69,6 +372,7 @@ The types of changes are:
 - New override option `fides_tcf_gdpr_applies` for setting `gdprApplies` on the CMP API [#4453](https://github.com/ethyca/fides/pull/4453)
 
 ### Changed
+
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
 - Flexible legal basis for processing has a db default of True [#4434](https://github.com/ethyca/fides/pull/4434)
 - Give contributor role access to config API, including cors origin updates [#4438](https://github.com/ethyca/fides/pull/4438)
@@ -78,6 +382,7 @@ The types of changes are:
 - Change focus outline color of form inputs [#4467](https://github.com/ethyca/fides/pull/4467)
 
 ### Fixed
+
 - Fixed a bug where selected vendors in "configure consent" add vendor modal were unstyled [#4454](https://github.com/ethyca/fides/pull/4454)
 - Use correct defaults when there is no associated preference in the cookie [#4451](https://github.com/ethyca/fides/pull/4451)
 - IP Addresses behind load balancers for consent reporting [#4440](https://github.com/ethyca/fides/pull/4440)
@@ -85,10 +390,12 @@ The types of changes are:
 ## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
 
 ### Added
+
 - Logging when root user and client credentials are used [#4432](https://github.com/ethyca/fides/pull/4432)
 - Allow for custom path at which to retrieve Fides override options [#4462](https://github.com/ethyca/fides/pull/4462)
 
 ### Changed
+
 - Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
@@ -113,7 +420,7 @@ The types of changes are:
 
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
-- Moved Experiences and Preferences endpoints to Plus to take advantage of dynamic GVL  [#4367](https://github.com/ethyca/fides/pull/4367)
+- Moved Experiences and Preferences endpoints to Plus to take advantage of dynamic GVL [#4367](https://github.com/ethyca/fides/pull/4367)
 - Add legal bases to Special Purpose schemas on the backend for display [#4387](https://github.com/ethyca/fides/pull/4387)
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 - "isServiceSpecific" default updated when building TC strings on the frontend [#4384](https://github.com/ethyca/fides/pull/4384)
@@ -123,33 +430,39 @@ The types of changes are:
 - Updates default consent preference to opt-out for TCF when fides_string exists [#4430](https://github.com/ethyca/fides/pull/4430)
 
 ### Fixed
+
 - Persist bulk system add filter modal state [#4412](https://github.com/ethyca/fides/pull/4412)
 - Fixing labels for request type field [#4414](https://github.com/ethyca/fides/pull/4414)
 - User preferences from cookie should always override experience preferences [#4405](https://github.com/ethyca/fides/pull/4405)
 - Allow fides_consent cookie to be set from a subdirectory [#4426](https://github.com/ethyca/fides/pull/4426)
 
 ### Security
+
 -- Use a more cryptographically secure random function for security code generation
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
 ### Fixed
+
 - Fix button arrangment and spacing for TCF and non-TCF consent overlay banner and modal [#4391](https://github.com/ethyca/fides/pull/4391)
 - Replaced h1 element with div to use exisitng fides styles in consent modal [#4399](https://github.com/ethyca/fides/pull/4399)
 - Fixed privacy policy alignment for non-TCF consent overlay banner and modal [#4403](https://github.com/ethyca/fides/pull/4403)
 - Fix dynamic class name for TCF-variant of consent banner [#4404](https://github.com/ethyca/fides/pull/4403)
 
 ### Security
+
 -- Fix an HTML Injection vulnerability in DSR Packages
 
 ## [2.23.2](https://github.com/ethyca/fides/compare/2.23.1...2.23.2)
 
 ### Fixed
+
 - Fixed fides.css to vary banner width based on tcf [[#4381](https://github.com/ethyca/fides/issues/4381)]
 
 ## [2.23.1](https://github.com/ethyca/fides/compare/2.23.0...2.23.1)
 
 ### Changed
+
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
 - Only call `FidesUpdated` when a preference has been saved, not during initialization [#4365](https://github.com/ethyca/fides/pull/4365)
 - Updated double toggle styling in favor of single toggles with a radio group to select legal basis [#4376](https://github.com/ethyca/fides/pull/4376)

@@ -1,5 +1,8 @@
 from functools import reduce
-from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Union
+
+import immutables
+from ordered_set import OrderedSet
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -7,6 +10,34 @@ U = TypeVar("U")
 NodeInput = Dict[str, List[Any]]  # Of format {node_address: []}
 Row = Dict[str, Any]
 FIDESOPS_DO_NOT_MASK_INDEX = "FIDESOPS_DO_NOT_MASK"
+
+
+def make_immutable(obj: Any) -> Any:
+    """
+    Recursively converts a mutable object into an immutable version.
+    Dictionaries are converted to immutable `Map`s from the `immutables` library,
+    lists are converted to tuples, and other objects are returned unchanged.
+    """
+    if isinstance(obj, dict):
+        return immutables.Map(
+            {key: make_immutable(value) for key, value in obj.items()}
+        )
+    if isinstance(obj, list):
+        return tuple(make_immutable(item) for item in obj)
+    return obj
+
+
+def make_mutable(obj: Any) -> Any:
+    """
+    Recursively converts an immutable object into a mutable version.
+    `Map`s from the `immutables` library and dictionaries are converted to mutable dictionaries,
+    tuples and `OrderedSet`s are converted to lists, and other objects are returned unchanged.
+    """
+    if isinstance(obj, (dict, immutables.Map)):
+        return {key: make_mutable(value) for key, value in obj.items()}
+    if isinstance(obj, (tuple, OrderedSet)):
+        return [make_mutable(item) for item in obj]
+    return obj
 
 
 def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
@@ -36,6 +67,24 @@ def append(d: Dict[T, List[U]], key: T, value: U) -> None:
                 d[key].append(value)
         else:
             d[key] = value if isinstance(value, list) else [value]
+
+
+def append_unique(d: Dict[T, OrderedSet[U]], key: T, value: Union[U, List[U]]) -> None:
+    """Append to values stored under a dictionary key.
+
+    append_unique({}, "A", 1) sets dict to {"A": {1}}
+    append_unique({"A": {1}}, "A", 2) sets dict to {"A": {1, 2}}
+    append_unique({"A": {1}}, "A", [2, 3, 4]) sets dict to {"A": {1, 2, 3, 4}}
+    append_unique({"A": {1, 2}}, "A", [2, 3, 4]) sets dict to {"A": {1, 2, 3, 4}}
+    """
+    if value:
+        if key not in d:
+            d[key] = OrderedSet()
+
+        if isinstance(value, list):
+            d[key].update(make_immutable(value))
+        else:
+            d[key].add(make_immutable(value))
 
 
 def partition(_iterable: Iterable[T], extractor: Callable[[T], U]) -> Dict[U, List[T]]:

@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import type { Consent } from "./Consent";
-import type { CustomPrivacyRequestField } from "./CustomPrivacyRequestField";
+import type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from "./fides__api__schemas__redis_cache__CustomPrivacyRequestField";
 import type { Identity } from "./Identity";
 
 /**
@@ -15,7 +15,11 @@ export type PrivacyRequestCreate = {
   finished_processing_at?: string;
   requested_at?: string;
   identity: Identity;
-  custom_privacy_request_fields?: Record<string, CustomPrivacyRequestField>;
+  consent_request_id?: string;
+  custom_privacy_request_fields?: Record<
+    string,
+    fides__api__schemas__redis_cache__CustomPrivacyRequestField
+  >;
   policy_key: string;
   encryption_key?: string;
   consent_preferences?: Array<Consent>;

@@ -1,36 +1,14 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-  LinkBox,
-} from "@fidesui/react";
+import { Box, Heading, LinkBox } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
 
 const ConfigurePrivacyRequests: NextPage = () => (
   <Layout title="Configure Privacy Requests">
-    <Box mb={8}>
-      <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
-        <BreadcrumbItem>
-          <BreadcrumbLink as={NextLink} href="/privacy-requests">
-            Privacy requests
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem color="complimentary.500">
-          <BreadcrumbLink
-            as={NextLink}
-            href="/privacy-requests/configure"
-            isCurrentPage
-          >
-            Configuration
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
-    </Box>
+    <BackButton backPath={PRIVACY_REQUESTS_ROUTE} />
     <Heading mb={5} fontSize="2xl" fontWeight="semibold">
       Configure your privacy requests
     </Heading>

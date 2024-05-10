@@ -1,10 +1,6 @@
-import { Box, Flex, FlexProps } from "@fidesui/react";
+import { Flex, FlexProps } from "@fidesui/react";
 import Head from "next/head";
 import React from "react";
-
-import Header from "~/features/common/Header";
-import { NavSideBar } from "~/features/common/nav/v2/NavSideBar";
-import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
 
 const FixedLayout = ({
   children,
@@ -24,21 +20,27 @@ const FixedLayout = ({
   // Ideally we could have one common layout used by *all* pages, but we couldn't
   // come up with a common method here without introducing other gotchas, so having
   // a slightly different layout was decided as the most maintainable option
-  <Flex data-testid={title} direction="column" height="100vh">
+  <Flex
+    data-testid={title}
+    direction="column"
+    height="calc(100vh - 48px)"
+    width="calc(100vw - 200px)"
+  >
     <Head>
       <title>Fides Admin UI - {title}</title>
       <meta name="description" content="Privacy Engineering Platform" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <Header />
-    <NavTopBar />
-    <Flex as="main" overflow="auto" flexGrow={1} gap={10} {...mainProps}>
-      <Box flex={0} flexShrink={0}>
-        <NavSideBar />
-      </Box>
-      <Flex direction="column" flex={1} minWidth={0}>
-        {children}
-      </Flex>
+    <Flex
+      pt={6}
+      as="main"
+      overflow="auto"
+      direction="column"
+      flex={1}
+      minWidth={0}
+      {...mainProps}
+    >
+      {children}
     </Flex>
   </Flex>
 );

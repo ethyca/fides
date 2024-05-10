@@ -24,10 +24,7 @@ from fides.api.service.privacy_request.email_batch_service import (
 )
 from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.config import get_config
-from tests.fixtures.application_fixtures import (
-    _create_privacy_request_for_policy,
-    privacy_preference_history_us_ca_provide,
-)
+from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
 
@@ -492,6 +489,7 @@ class TestConsentEmailBatchSend:
         requeue_privacy_requests,
         send_single_consent_email,
         db,
+        privacy_notice,
         privacy_request_awaiting_consent_email_send,
         second_privacy_request_awaiting_consent_email_send,
         sovrn_email_connection_config,
@@ -540,19 +538,17 @@ class TestConsentEmailBatchSend:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
                             notice_key="example_privacy_notice",
-                            description="user&#x27;s description &lt;script /&gt;",  # This isn't actually sent in the email
-                            regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,
-                            displayed_in_privacy_center=True,
-                            displayed_in_api=False,
-                            displayed_in_overlay=True,
                             id=privacy_preference_history.privacy_notice_history.id,
+                            translation_id=privacy_preference_history.privacy_notice_history.translation_id,
+                            origin=privacy_notice.translations[
+                                0
+                            ].privacy_notice_history.origin,
                             version=1.0,
-                            privacy_notice_id=privacy_preference_history.privacy_notice_history.privacy_notice_id,
                         ),
                     )
                 ],
@@ -622,6 +618,7 @@ class TestConsentEmailBatchSend:
         requeue_privacy_requests,
         send_single_consent_email,
         db,
+        privacy_notice,
         privacy_request_awaiting_consent_email_send,
         second_privacy_request_awaiting_consent_email_send,
         generic_consent_email_connection_config,
@@ -670,19 +667,17 @@ class TestConsentEmailBatchSend:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
                             notice_key="example_privacy_notice",
-                            description="user&#x27;s description &lt;script /&gt;",
-                            regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,
-                            displayed_in_privacy_center=True,
-                            displayed_in_api=False,
-                            displayed_in_overlay=True,
                             id=privacy_preference_history.privacy_notice_history.id,
                             version=1.0,
-                            privacy_notice_id=privacy_preference_history.privacy_notice_history.privacy_notice_id,
+                            origin=privacy_notice.translations[
+                                0
+                            ].privacy_notice_history.origin,
+                            translation_id=privacy_preference_history.privacy_notice_history.translation_id,
                         ),
                     )
                 ],

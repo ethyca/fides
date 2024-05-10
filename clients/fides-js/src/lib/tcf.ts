@@ -70,7 +70,7 @@ export const generateFidesString = async ({
 
     tcModel.cmpId = ETHYCA_CMP_ID;
     tcModel.cmpVersion = CMP_VERSION;
-    tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
+    tcModel.consentScreen = 1; // On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
     tcModel.isServiceSpecific = true;
     tcModel.supportOOB = false;
 
@@ -132,8 +132,8 @@ export const generateFidesString = async ({
       // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
       // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
       encodedString = TCString.encode(tcModel, {
-        // We choose just CORE and VENDORS_DISCLOSED for now (PROD#1312)
-        segments: [Segment.CORE, Segment.VENDORS_DISCLOSED],
+        // We do not want to include vendors disclosed or publisher tc at the moment
+        segments: [Segment.CORE],
       });
 
       // Attach the AC string
@@ -153,7 +153,7 @@ export const generateFidesString = async ({
  * the CMP API accordingly.
  */
 export const initializeTcfCmpApi = () => {
-  const isServiceSpecific = true; // TODO: determine this from the backend?
+  const isServiceSpecific = true;
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION, isServiceSpecific, {
     // Add custom command to support adding `addtlConsent` per AC spec
     getTCData: (next, tcData: TCData, status) => {

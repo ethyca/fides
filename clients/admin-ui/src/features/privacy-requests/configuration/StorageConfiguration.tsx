@@ -1,20 +1,11 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-  Radio,
-  RadioGroup,
-  Stack,
-  Text,
-} from "@fidesui/react";
-import NextLink from "next/link";
+import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "@fidesui/components";
+import { Box, Heading, Radio, RadioGroup, Stack, Text } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
@@ -72,30 +63,7 @@ const StorageConfiguration = () => {
 
   return (
     <Layout title="Configure Privacy Requests - Storage">
-      <Box mb={8}>
-        <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
-          <BreadcrumbItem>
-            <BreadcrumbLink as={NextLink} href="/privacy-requests">
-              Privacy requests
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <BreadcrumbLink as={NextLink} href="/privacy-requests/configure">
-              Configuration
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem color="complimentary.500">
-            <BreadcrumbLink
-              as={NextLink}
-              href="/privacy-requests/configure/storage"
-              isCurrentPage
-            >
-              Configure storage
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
-
+      <BackButton backPath={PRIVACY_REQUESTS_CONFIGURATION_ROUTE} />
       <Heading mb={5} fontSize="2xl" fontWeight="semibold">
         Configure storage
       </Heading>

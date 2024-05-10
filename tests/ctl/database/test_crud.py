@@ -278,6 +278,7 @@ async def test_get_custom_fields_filtered(
                         field.resource_id == f["resource_id"]
                         and field.value == f["value"]
                         and cfd.name == f["name"]
+                        and cfd.field_type == f["field_type"]
                     )
                     for f in filtered_fields
                 ]
@@ -289,6 +290,7 @@ async def test_get_custom_fields_filtered(
                         field.resource_id == f["resource_id"]
                         and field.value == f["value"]
                         and cfd.name == f["name"]
+                        and cfd.field_type == f["field_type"]
                     )
                     for f in filtered_fields
                 ]
@@ -304,6 +306,7 @@ async def test_get_custom_fields_filtered(
                     field.resource_id == f["resource_id"]
                     and field.value == f["value"]
                     and cfd.name == f["name"]
+                    and cfd.field_type == f["field_type"]
                 )
                 for f in filtered_fields
             ]
@@ -336,6 +339,7 @@ async def test_get_custom_fields_filtered(
                     field.resource_id == f["resource_id"]
                     and field.value == f["value"]
                     and cfd.name == f["name"]
+                    and cfd.field_type == f["field_type"]
                 )
                 for f in filtered_fields
             ]
@@ -360,6 +364,7 @@ async def test_get_custom_fields_filtered(
         (
             custom_fields_system[3].resource_id == f["resource_id"]
             and custom_fields_system[3].value == f["value"]
+            and cfd.field_type == f["field_type"]
         )
         for f in filtered_fields
     )

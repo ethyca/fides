@@ -1,19 +1,13 @@
-import { PRIVACY_REQUESTS_ROUTE } from "@fidesui/components";
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  Center,
-  Heading,
-  Spinner,
-  Text,
-} from "@fidesui/react";
-import NextLink from "next/link";
+import { Box, Center, Heading, Spinner, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import { useGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
+import {
+  useGetAvailableNoticeTranslationsQuery,
+  useGetPrivacyNoticeByIdQuery,
+} from "~/features/privacy-notices/privacy-notices.slice";
 import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
 
 const PrivacyNoticeDetailPage = () => {
@@ -27,6 +21,8 @@ const PrivacyNoticeDetailPage = () => {
   }
 
   const { data, isLoading } = useGetPrivacyNoticeByIdQuery(noticeId);
+  const { data: availableTranslations } =
+    useGetAvailableNoticeTranslationsQuery(noticeId);
 
   if (isLoading) {
     return (
@@ -48,37 +44,11 @@ const PrivacyNoticeDetailPage = () => {
 
   return (
     <Layout title={`Privacy notice ${data.name}`}>
-      <Box mb={4}>
-        <Heading
-          fontSize="2xl"
-          fontWeight="semibold"
-          mb={2}
-          data-testid="header"
-        >
-          {data.name}
-        </Heading>
-        <Box>
-          <Breadcrumb
-            fontWeight="medium"
-            fontSize="sm"
-            color="gray.600"
-            data-testid="breadcrumbs"
-          >
-            <BreadcrumbItem>
-              <NextLink href={PRIVACY_REQUESTS_ROUTE}>
-                Privacy requests
-              </NextLink>
-            </BreadcrumbItem>
-            {/* TODO: Add Consent breadcrumb once the page exists */}
-            <BreadcrumbItem>
-              <NextLink href={PRIVACY_NOTICES_ROUTE}>Privacy notices</NextLink>
-            </BreadcrumbItem>
-            <BreadcrumbItem color="complimentary.500">
-              <NextLink href="#">{data.name}</NextLink>
-            </BreadcrumbItem>
-          </Breadcrumb>
-        </Box>
-      </Box>
+      <BackButton backPath={PRIVACY_NOTICES_ROUTE} />
+      <Heading fontSize="2xl" fontWeight="semibold" mb={4} data-testid="header">
+        {data.name}
+      </Heading>
+
       <Box width={{ base: "100%", lg: "70%" }}>
         <Text fontSize="sm" mb={8}>
           Configure your privacy notice including consent mechanism, associated
@@ -86,7 +56,10 @@ const PrivacyNoticeDetailPage = () => {
           users.
         </Text>
         <Box data-testid="privacy-notice-detail-page">
-          <PrivacyNoticeForm privacyNotice={data} />
+          <PrivacyNoticeForm
+            privacyNotice={data}
+            availableTranslations={availableTranslations}
+          />
         </Box>
       </Box>
     </Layout>

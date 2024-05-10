@@ -1,71 +1,7 @@
-[
-  {
-    "purpose_consent": null,
-    "purpose_legitimate_interests": null,
-    "special_purpose": null,
-    "vendor_consent": null,
-    "vendor_legitimate_interests": null,
-    "feature": null,
-    "special_feature": null,
-    "system_consent": null,
-    "system_legitimate_interests": null,
-    "id": "las_6fa6f80d-aa0d-469b-a576-2a698570431f",
-    "updated_at": "2023-10-06T16:40:50.252264+00:00",
-    "served_notice_history_id": "ser_65920a24-128f-4990-a7a8-f1a05a09093d",
-    "privacy_notice_history": {
-      "name": "Data Sales and Sharing",
-      "notice_key": "data_sales_and_sharing",
-      "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.",
-      "internal_description": "“Sale of personal“ data means the exchange of personal data for monetary or other valuable consideration. Data sharing refers to sharing of data with third parties for the purpose of cross contextual behavioral advertising. This is also closely analogous to “Targeted Advertising” as defined in other U.S. state laws and they have been combined here under one notice.",
-      "origin": "pri_309d287c-b208-4fd1-93b2-7b2ff13eddat",
-      "regions": ["us_ca", "us_co", "us_ct", "us_ia", "us_ut", "us_va"],
-      "consent_mechanism": "opt_out",
-      "data_uses": [
-        "marketing.advertising.first_party.targeted",
-        "marketing.advertising.third_party.targeted"
-      ],
-      "enforcement_level": "frontend",
-      "disabled": false,
-      "has_gpc_flag": true,
-      "displayed_in_privacy_center": true,
-      "displayed_in_overlay": true,
-      "displayed_in_api": false,
-      "id": "pri_mock_history_id_1",
-      "version": 2.0,
-      "privacy_notice_id": "pri_mock_id_1"
-    }
-  },
-  {
-    "purpose_consent": null,
-    "purpose_legitimate_interests": null,
-    "special_purpose": null,
-    "vendor_consent": null,
-    "vendor_legitimate_interests": null,
-    "feature": null,
-    "special_feature": null,
-    "system_consent": null,
-    "system_legitimate_interests": null,
-    "id": "las_1de82a35-1a6e-465f-8b5e-4ccb3ba1fad1",
-    "updated_at": "2023-10-06T16:40:50.257750+00:00",
-    "served_notice_history_id": "ser_37f14564-48f2-492f-9c95-a882f19cd9c6",
-    "privacy_notice_history": {
-      "name": "Essential",
-      "notice_key": "essential",
-      "description": "This website uses essential cookies and services to enable core website features and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website.",
-      "internal_description": "Essential cookies and services, also known as strictly necessary, are technologies that are crucial for the proper functioning of a website. These technologies are typically exempt from requiring user consent under privacy regulations because they are essential for the website to deliver its basic functionalities and services.",
-      "origin": "pri_51c85583-40ec-4257-95ef-db3eea860ess",
-      "regions": ["us_ca", "us_co", "us_ct", "us_ia", "us_ut", "us_va"],
-      "consent_mechanism": "notice_only",
-      "data_uses": ["essential"],
-      "enforcement_level": "not_applicable",
-      "disabled": false,
-      "has_gpc_flag": false,
-      "displayed_in_privacy_center": true,
-      "displayed_in_overlay": true,
-      "displayed_in_api": false,
-      "id": "pri_mock_history_id_2",
-      "version": 4.0,
-      "privacy_notice_id": "pri_mock_id_2"
-    }
-  }
-]
+{
+  "privacy_notice_history_ids": [
+    "pri_mock_history_id_1",
+    "pri_mock_history_id_2"
+  ],
+  "served_notice_history_id": "ser_notice-history-000"
+}

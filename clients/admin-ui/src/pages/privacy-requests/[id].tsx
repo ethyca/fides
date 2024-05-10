@@ -1,19 +1,10 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Center,
-  Heading,
-  Spinner,
-  Text,
-} from "@fidesui/react";
+import { Center, Heading, Spinner, Text } from "@fidesui/react";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
@@ -49,26 +40,9 @@ const PrivacyRequests: NextPage = () => {
 
   return (
     <Layout title={`Privacy Requests - ${id}`}>
+      <BackButton backPath={PRIVACY_REQUESTS_ROUTE} />
       <Heading fontSize="2xl" fontWeight="semibold">
         Privacy Request
-        <Box mt={2} mb={9}>
-          <Breadcrumb fontWeight="medium" fontSize="sm">
-            <BreadcrumbItem>
-              <BreadcrumbLink as={NextLink} href={PRIVACY_REQUESTS_ROUTE}>
-                Privacy Requests
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                isCurrentPage
-                color="complimentary.500"
-                _hover={{ textDecoration: "none" }}
-              >
-                View Details
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </Breadcrumb>
-        </Box>
       </Heading>
       {content}
     </Layout>

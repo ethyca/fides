@@ -1,16 +1,23 @@
 import { VNode, h } from "preact";
 
-import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
+import {
+  ConsentMethod,
+  FidesInitOptions,
+  PrivacyExperience,
+} from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
 import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
+import { I18n } from "../../lib/i18n";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;
+  i18n: I18n;
+  options: FidesInitOptions;
   onManagePreferencesClick?: () => void;
   onSave: (consentMethod: ConsentMethod, keys: EnabledIds) => void;
   firstButton?: VNode;
   isMobile: boolean;
-  includePrivacyPolicy?: boolean;
+  isInModal?: boolean;
 }
 
 const getAllIds = (modelList: TcfModels) => {
@@ -22,11 +29,13 @@ const getAllIds = (modelList: TcfModels) => {
 
 export const TcfConsentButtons = ({
   experience,
+  i18n,
   onManagePreferencesClick,
   onSave,
   firstButton,
   isMobile,
-  includePrivacyPolicy,
+  isInModal,
+  options,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
@@ -48,7 +57,7 @@ export const TcfConsentButtons = ({
         ...(experience.tcf_system_legitimate_interests || []),
       ]),
     };
-    onSave(ConsentMethod.accept, allIds);
+    onSave(ConsentMethod.ACCEPT, allIds);
   };
   const handleRejectAll = () => {
     const emptyIds: EnabledIds = {
@@ -60,18 +69,19 @@ export const TcfConsentButtons = ({
       vendorsConsent: [],
       vendorsLegint: [],
     };
-    onSave(ConsentMethod.reject, emptyIds);
+    onSave(ConsentMethod.REJECT, emptyIds);
   };
 
   return (
     <ConsentButtons
-      experienceConfig={experience.experience_config}
+      i18n={i18n}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
       isMobile={isMobile}
-      includePrivacyPolicy={includePrivacyPolicy}
+      isInModal={isInModal}
+      options={options}
     />
   );
 };

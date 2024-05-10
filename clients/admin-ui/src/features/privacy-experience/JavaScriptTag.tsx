@@ -50,7 +50,7 @@ const JavaScriptTag = () => {
       <Button
         onClick={modal.onOpen}
         variant="outline"
-        size="sm"
+        size="xs"
         rightIcon={<CopyIcon />}
         data-testid="js-tag-btn"
       >
@@ -66,8 +66,8 @@ const JavaScriptTag = () => {
         <ModalOverlay />
         <ModalContent data-testid="copy-js-tag-modal">
           {/* Setting tabIndex and a ref makes this the initial modal focus.
-              This is helpful because otherwise the copy button receives the focus 
-              which triggers unexpected tooltip behavior */}
+                This is helpful because otherwise the copy button receives the focus 
+                which triggers unexpected tooltip behavior */}
           <ModalHeader tabIndex={-1} ref={initialRef} pb={0}>
             Copy JavaScript tag
           </ModalHeader>

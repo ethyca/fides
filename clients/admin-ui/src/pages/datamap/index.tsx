@@ -1,8 +1,8 @@
 import type { NextPage } from "next";
 import React, { useMemo } from "react";
 
-import FixedLayout from "~/features/common/FixedLayout";
 import { DirtyFormConfirmationModal } from "~/features/common/hooks/useIsAnyFormDirty";
+import Layout from "~/features/common/Layout";
 import Datamap from "~/features/datamap/Datamap";
 import DatamapGraphStore from "~/features/datamap/datamap-graph/DatamapGraphContext";
 import DatamapTableContext, {
@@ -16,11 +16,10 @@ const Home: NextPage = () => {
   );
 
   return (
-    <FixedLayout
+    <Layout
       title="View Map"
       mainProps={{
-        paddingTop: "40px",
-        paddingLeft: "40px",
+        padding: "40px 0 0 40px",
       }}
     >
       <DatamapTableContext.Provider value={datamapTableContextValue}>
@@ -29,7 +28,7 @@ const Home: NextPage = () => {
           <DirtyFormConfirmationModal />
         </DatamapGraphStore>
       </DatamapTableContext.Provider>
-    </FixedLayout>
+    </Layout>
   );
 };
 

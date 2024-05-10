@@ -16,6 +16,7 @@ const PIIToggle = ({ revealPII, onChange }: PIIToggleProps) => {
 
   return (
     <Switch
+      data-testid="pii-toggle"
       colorScheme="secondary"
       isChecked={revealPII}
       onChange={handleToggle}

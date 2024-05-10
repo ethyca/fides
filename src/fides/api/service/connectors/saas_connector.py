@@ -5,17 +5,19 @@ import pydash
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.common_exceptions import (
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConsentRequestMap,
@@ -40,6 +42,11 @@ from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
     should_opt_in_to_service,
 )
+from fides.api.util.logger_context_utils import (
+    Contextualizable,
+    LoggerContextKeys,
+    log_context,
+)
 from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     assign_placeholders,
@@ -47,8 +54,18 @@ from fides.api.util.saas_util import (
 )
 
 
-class SaaSConnector(BaseConnector[AuthenticatedClient]):
+class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     """A connector type to integrate with third-party SaaS APIs"""
+
+    def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+        return {
+            LoggerContextKeys.system_key: (
+                self.configuration.system.fides_key
+                if self.configuration.system
+                else None
+            ),
+            LoggerContextKeys.connection_key: self.configuration.key,
+        }
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
@@ -61,7 +78,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.current_privacy_request: Optional[PrivacyRequest] = None
         self.current_saas_request: Optional[SaaSRequest] = None
 
-    def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
+    def query_config(self, node: ExecutionNode) -> SaaSQueryConfig:
         """
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
@@ -101,7 +118,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
 
     def set_privacy_request_state(
-        self, privacy_request: PrivacyRequest, node: TraversalNode
+        self, privacy_request: PrivacyRequest, node: ExecutionNode
     ) -> None:
         """
         Sets the class state for the current privacy request
@@ -123,18 +140,27 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.current_privacy_request = None
         self.current_saas_request = None
 
+    @log_context
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         test_request: SaaSRequest = self.saas_config.test_request
         self.set_saas_request_state(test_request)
-        prepared_request = map_param_values(
-            "test",
-            f"{self.configuration.name}",
-            test_request,
-            self.secrets,
-        )
         client: AuthenticatedClient = self.create_client()
-        client.send(prepared_request, test_request.ignore_errors)
+
+        if test_request.request_override:
+            self._invoke_test_request_override(
+                test_request.request_override,
+                client,
+                self.secrets,
+            )
+        else:
+            prepared_request = map_param_values(
+                "test",
+                f"{self.configuration.name}",
+                test_request,
+                self.secrets,
+            )
+            client.send(prepared_request, test_request.ignore_errors)
         self.unset_connector_state()
         return ConnectionTestStatus.succeeded
 
@@ -150,16 +176,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         client_config = self.get_client_config()
         rate_limit_config = self.get_rate_limit_config()
 
-        logger.info("Creating client to {}", uri)
+        logger.debug("Creating client to {}", uri)
         return AuthenticatedClient(
             uri, self.configuration, client_config, rate_limit_config
         )
 
+    @log_context(action_type=ActionType.access.value)
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
@@ -175,9 +203,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
         #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
         read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
-        delete_request: Optional[
-            SaaSRequest
-        ] = query_config.get_erasure_request_by_action("delete")
+        delete_request: Optional[SaaSRequest] = (
+            query_config.get_erasure_request_by_action("delete")
+        )
 
         if not read_requests:
             # if a delete request is specified for this endpoint without a read request
@@ -370,13 +398,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         return rows
 
+    @log_context(action_type=ActionType.erasure.value)
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node)
@@ -426,7 +455,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 )
             except ValueError as exc:
                 if masking_request.skip_missing_param_values:
-                    logger.info(
+                    logger.debug(
                         "Skipping optional masking request on node {}: {}",
                         node.address.value,
                         exc,
@@ -456,11 +485,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     related_identities[identity_type] = identity_value
         return related_identities
 
+    @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:
@@ -489,9 +520,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
             )
 
-        matching_consent_requests: List[
-            SaaSRequest
-        ] = self._get_consent_requests_by_preference(should_opt_in)
+        matching_consent_requests: List[SaaSRequest] = (
+            self._get_consent_requests_by_preference(should_opt_in)
+        )
 
         query_config.action = (
             "opt_in" if should_opt_in else "opt_out"
@@ -574,6 +605,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         Unwrap given Response using data_path in the given SaasRequest
         """
+        if response.status_code == HTTP_204_NO_CONTENT:
+            return {}
+
         try:
             return (
                 pydash.get(response.json(), saas_request.data_path)
@@ -586,12 +620,41 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )
 
     @staticmethod
+    def _invoke_test_request_override(
+        override_function_name: str,
+        client: AuthenticatedClient,
+        secrets: Any,
+    ) -> List[Row]:
+        """
+        Invokes the appropriate user-defined SaaS request override for a test request.
+
+        Contains error handling for uncaught exceptions coming out of the override.
+        """
+        override_function: Callable[..., Union[List[Row], int, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.TEST
+            )
+        )
+        try:
+            return override_function(
+                client,
+                secrets,
+            )  # type: ignore
+        except Exception as exc:
+            logger.error(
+                "Encountered error executing override test function '{}'",
+                override_function_name,
+                exc_info=True,
+            )
+            raise FidesopsException(str(exc))
+
+    @staticmethod
     def _invoke_read_request_override(
         override_function_name: str,
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        node: TraversalNode,
+        node: ExecutionNode,
         input_data: Dict[str, List],
         secrets: Any,
     ) -> List[Row]:
@@ -600,10 +663,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType.READ
+        override_function: Callable[..., Union[List[Row], int, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.READ
+            )
         )
         try:
             return override_function(
@@ -640,10 +703,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType(query_config.action)
+        override_function: Callable[..., Union[List[Row], int, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType(query_config.action)
+            )
         )
         try:
             # if using a saas override, we still need to use the core framework
@@ -672,9 +735,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
-        consent_requests: Optional[
-            ConsentRequestMap
-        ] = self.saas_config.consent_requests
+        consent_requests: Optional[ConsentRequestMap] = (
+            self.saas_config.consent_requests
+        )
 
         if not consent_requests:
             return []

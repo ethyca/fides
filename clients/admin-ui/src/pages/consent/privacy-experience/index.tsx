@@ -1,36 +1,20 @@
-import { PRIVACY_REQUESTS_ROUTE } from "@fidesui/components";
-import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
-import NextLink from "next/link";
+import { Box, Heading, Text } from "@fidesui/react";
 import React from "react";
 
-import Layout from "~/features/common/Layout";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
-import PrivacyExperiencesTable from "~/features/privacy-experience/PrivacyExperiencesTable";
+import FixedLayout from "~/features/common/FixedLayout";
+import { PrivacyExperiencesTable } from "~/features/privacy-experience/PrivacyExperiencesTable";
 
 const PrivacyExperiencePage = () => (
-  <Layout title="Privacy experiences">
-    <Box mb={4}>
+  <FixedLayout
+    title="Privacy experiences"
+    mainProps={{
+      padding: "24px 40px",
+    }}
+  >
+    <Box mb={4} data-testid="privacy-experience-page">
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
         Privacy experience
       </Heading>
-      <Box>
-        <Breadcrumb
-          fontWeight="medium"
-          fontSize="sm"
-          color="gray.600"
-          data-testid="breadcrumbs"
-        >
-          <BreadcrumbItem>
-            <NextLink href={PRIVACY_REQUESTS_ROUTE}>Privacy requests</NextLink>
-          </BreadcrumbItem>
-          {/* TODO: Add Consent breadcrumb once the page exists */}
-          <BreadcrumbItem color="complimentary.500">
-            <NextLink href={PRIVACY_EXPERIENCE_ROUTE}>
-              Privacy experience
-            </NextLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
     </Box>
     <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "70%" }}>
       Based on your privacy notices, Fides has created the overlay and privacy
@@ -41,10 +25,10 @@ const PrivacyExperiencePage = () => (
       website, copy the javascript using the button on this page and place it on
       your website.
     </Text>
-    <Box data-testid="privacy-experience-page">
+    <Box>
       <PrivacyExperiencesTable />
     </Box>
-  </Layout>
+  </FixedLayout>
 );
 
 export default PrivacyExperiencePage;

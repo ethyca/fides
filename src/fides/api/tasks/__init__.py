@@ -5,6 +5,8 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.util.logger import create_handler_dicts
+from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
@@ -44,6 +46,11 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     """
     Returns a configured version of the Celery application
     """
+    setup_logging(config)
+    logger.bind(api_config=CONFIG.logging.json()).debug(
+        "Logger configuration options in use"
+    )
+
     app = Celery(__name__)
 
     celery_config: Dict[str, Any] = {

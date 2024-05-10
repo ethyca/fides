@@ -4,10 +4,11 @@
 from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
-from pydantic import AnyUrl, Field, validator
+from pydantic import Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.custom_types import URLOrigin
 from fides.api.oauth.roles import OWNER
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 
@@ -30,7 +31,7 @@ class SecuritySettings(FidesSettings):
     app_encryption_key: str = Field(
         default="", description="The key used to sign Fides API access tokens."
     )
-    cors_origins: List[AnyUrl] = Field(
+    cors_origins: List[URLOrigin] = Field(
         default_factory=list,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )

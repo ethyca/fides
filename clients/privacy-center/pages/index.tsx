@@ -40,6 +40,8 @@ const Home: NextPage = () => {
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
+  const [isConsentVerificationDisabled, setIsConsentVerificationDisabled] =
+    useState<boolean>(false);
   const toast = useToast();
   const {
     isOpen: isPrivacyModalOpen,
@@ -114,8 +116,16 @@ const Home: NextPage = () => {
       setIsVerificationRequired(
         getIdVerificationConfigQuery.data.identity_verification_required
       );
+      setIsConsentVerificationDisabled(
+        getIdVerificationConfigQuery.data.disable_consent_identity_verification
+      );
     }
-  }, [getIdVerificationConfigQuery, setIsVerificationRequired, toast]);
+  }, [
+    getIdVerificationConfigQuery,
+    setIsVerificationRequired,
+    setIsConsentVerificationDisabled,
+    toast,
+  ]);
 
   const content: any = [];
 
@@ -239,7 +249,9 @@ const Home: NextPage = () => {
         setCurrentView={setCurrentConsentModalView}
         consentRequestId={consentRequestId}
         setConsentRequestId={setConsentRequestId}
-        isVerificationRequired={isVerificationRequired}
+        isVerificationRequired={
+          isVerificationRequired && !isConsentVerificationDisabled
+        }
         successHandler={consentModalSuccessHandler}
       />
 

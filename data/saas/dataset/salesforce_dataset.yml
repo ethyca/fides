@@ -170,7 +170,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Title
-            data_categories: [system.operations]
+            data_categories: [user.job_title]
             fidesops_meta:
               data_type: string
           - name: Department
@@ -391,19 +391,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: ContactPhone
-            data_categories: [user.contact.phone_number]
+            data_categories: [system.operations]
+            description: Phone data derived from the Contact collection
             fidesops_meta:
               data_type: string
           - name: ContactMobile
-            data_categories: [user.contact.phone_number]
+            data_categories: [system.operations]
+            description: Phone data derived from the Contact collection
             fidesops_meta:
               data_type: string
           - name: ContactEmail
-            data_categories: [user.contact.email]
+            data_categories: [system.operations]
+            description: Email data derived from the Contact collection
             fidesops_meta:
               data_type: string
           - name: ContactFax
-            data_categories: [user.contact]
+            data_categories: [system.operations]
+            description: Fax data derived from the Contact collection
             fidesops_meta:
               data_type: string
           - name: Comments
@@ -842,7 +846,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Name
-            data_categories: [user.name]
+            data_categories: [user.contact.organization]
             fidesops_meta:
               data_type: string
           - name: Type
@@ -886,7 +890,8 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: BillingAddress
-            data_categories: [user.contact]
+            data_categories: [system.operations]
+            description: Derived field from other billing address components
             fidesops_meta:
               data_type: string
           - name: ShippingStreet
@@ -922,7 +927,8 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: ShippingAddress
-            data_categories: [user.contact]
+            data_categories: [system.operations]
+            description: Derived field from other shipping address components
             fidesops_meta:
               data_type: string
           - name: Phone
@@ -930,7 +936,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Fax
-            data_categories: [user.contact]
+            data_categories: [user.contact.fax_number]
             fidesops_meta:
               data_type: string
           - name: AccountNumber
@@ -938,7 +944,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Website
-            data_categories: [system.operations]
+            data_categories: [user.contact.url]
             fidesops_meta:
               data_type: string
           - name: PhotoUrl
@@ -978,7 +984,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Site
-            data_categories: [system.operations]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: OwnerId

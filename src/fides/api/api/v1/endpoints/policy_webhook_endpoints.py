@@ -432,14 +432,16 @@ def delete_webhook(
     )
     loaded_webhook.delete(db=db)
     return PolicyWebhookDeleteResponse(
-        new_order=[
-            webhook
-            for webhook in getattr(
-                policy, f"{webhook_cls.prefix}_execution_webhooks"
-            ).order_by(webhook_cls.order)
-        ]
-        if reordering
-        else []
+        new_order=(
+            [
+                webhook
+                for webhook in getattr(
+                    policy, f"{webhook_cls.prefix}_execution_webhooks"
+                ).order_by(webhook_cls.order)
+            ]
+            if reordering
+            else []
+        )
     )
 
 

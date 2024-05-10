@@ -129,12 +129,17 @@ const SystemInformationForm = ({
         name: Yup.string()
           .required()
           .label("System name")
-          .notOneOf(
-            systems
-              .filter((s) => s.name !== initialValues.name)
-              .map((s) => s.name),
-            "System must have a unique name"
-          ),
+          .test("is-unique", "", (value, context) => {
+            const takenSystemNames = systems
+              .map((s) => s.name)
+              .filter((name) => name !== initialValues.name);
+            if (takenSystemNames.some((name) => name === value)) {
+              return context.createError({
+                message: `You already have a system called "${value}". Please specify a unique name for this system.`,
+              });
+            }
+            return true;
+          }),
         privacy_policy: Yup.string().min(1).url().nullable(),
       }),
     [systems, initialValues.name]
@@ -300,10 +305,7 @@ const SystemInformationForm = ({
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
                 <VendorSelector
-                  fieldsSeparated={
-                    features.dictionaryService &&
-                    features.flags.separateVendorSelector
-                  }
+                  label="System name"
                   options={dictionaryOptions}
                   onVendorSelected={handleVendorSelected}
                   isCreate={!passedInSystem}
@@ -609,6 +611,15 @@ const SystemInformationForm = ({
                   name="legitimate_interest_disclosure_url"
                   id="legitimate_interest_disclosure_url"
                   disabled={lockedForGVL}
+                />
+                <DictSuggestionTextInput
+                  label="Vendor deleted date"
+                  name="vendor_deleted_date"
+                  id="vendor_deleted_date"
+                  tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
+                  // disable this field for editing:
+                  // deleted date is populated by the GVL and should not be editable by users
+                  disabled
                 />
               </SystemFormInputGroup>
               {values.fides_key ? (

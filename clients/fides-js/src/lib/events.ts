@@ -1,31 +1,18 @@
-import { FidesCookie } from "./cookie";
 import { debugLog } from "./consent-utils";
-
-/**
- * Defines the available event names:
- * - FidesInitialized: dispatched when initialization is complete, from Fides.init()
- * - FidesUpdated: dispatched when preferences are updated from updateConsentPreferences()
- * - FidesUIShown: dispatched when either the banner or modal is shown to the user
- * - FidesUIChanged: dispatched when preferences are changed but not saved, i.e. "dirty".
- * - FidesModalClosed: dispatched when the modal is closed
- */
-export type FidesEventType =
-  | "FidesInitialized"
-  | "FidesUpdated"
-  | "FidesUIShown"
-  | "FidesUIChanged"
-  | "FidesModalClosed";
+import { FidesCookie } from "./consent-types";
+import type { FidesEventType } from "../docs";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
-  interface WindowEventMap {
-    FidesInitialized: FidesEvent;
-    FidesUpdated: FidesEvent;
-    FidesUIShown: FidesEvent;
-    FidesUIChanged: FidesEvent;
-    FidesModalClosed: FidesEvent;
-  }
+  interface WindowEventMap extends Record<FidesEventType, FidesEvent> {}
 }
+
+/**
+ * Defines the type of "extra" details that can be optionally added to certain
+ * events. This is intentionally vague, but constrained to be basic (primitive)
+ * values for simplicity.
+ */
+export type FidesEventExtraDetails = Record<string, string | number | boolean>;
 
 /**
  * Defines the properties available on event.detail. Currently the FidesCookie
@@ -34,9 +21,14 @@ declare global {
  */
 export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
-  extraDetails?: Record<string, string | boolean>;
+  extraDetails?: FidesEventExtraDetails;
 };
 
+/**
+ * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
+ *
+ * However, this will require locking down some types and refactoring usage.
+ */
 export type FidesEvent = CustomEvent<FidesEventDetail>;
 
 /**
@@ -59,21 +51,26 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie,
   debug: boolean,
-  extraDetails?: Record<string, string | boolean>
+  extraDetails?: FidesEventExtraDetails
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
+    // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
+    const constructedExtraDetails: FidesEventExtraDetails = {
+      consentMethod: cookie.fides_meta.consentMethod,
+      ...extraDetails,
+    };
     const event = new CustomEvent(type, {
-      detail: { ...cookie, debug, extraDetails },
+      detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
     });
     debugLog(
       debug,
       `Dispatching event type ${type} ${
-        extraDetails?.servingComponent
-          ? `from ${extraDetails.servingComponent} `
+        constructedExtraDetails?.servingComponent
+          ? `from ${constructedExtraDetails.servingComponent} `
           : ""
       }with cookie ${JSON.stringify(cookie)} ${
-        extraDetails?.consentMethod
-          ? `using consent method ${extraDetails.consentMethod} `
+        constructedExtraDetails
+          ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
       }`
     );

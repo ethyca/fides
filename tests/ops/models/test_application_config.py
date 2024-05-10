@@ -1,5 +1,5 @@
 from json import dumps
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 
 import pytest
 from sqlalchemy.orm import Session
@@ -274,6 +274,12 @@ class TestApplicationConfigResolution:
                 "notification_service_type": "twilio_email",
                 "nested_setting_2": "nested_value_2",
             },
+            "security": {
+                "cors_origins": [
+                    "http://additionalorigin:8080",
+                    "http://localhost",  # this is a _repeated_ value from the config-set values
+                ]
+            },
         }
 
     @pytest.fixture(scope="function")
@@ -327,6 +333,86 @@ class TestApplicationConfigResolution:
         )
         assert notification_service_type is None
 
+    @pytest.mark.usefixtures("insert_app_config")
+    def test_get_resolved_config_property_merged_values(
+        self, db: Session, insert_example_config_record
+    ):
+        # ensure our config set has cors origins set as a populated list initially, for a valid test
+        cors_origins_config_set = ApplicationConfig.get_config_set(db)["security"][
+            "cors_origins"
+        ]
+        assert cors_origins_config_set
+        assert isinstance(cors_origins_config_set, Iterable)
+        # and ensure there are repeats between our API-set list and our config-set list, for a valid test
+        cors_origin_api_set = insert_example_config_record["security"]["cors_origins"]
+        repeat_values = set(cors_origin_api_set).intersection(
+            set(cors_origins_config_set)
+        )
+        assert repeat_values
+
+        # now ensure the merging works as expected on resolution
+        resolved_origins = ApplicationConfig.get_resolved_config_property(
+            db,
+            "security.cors_origins",
+            merge_values=True,
+        )
+        for config_set_value in cors_origins_config_set:
+            assert config_set_value in resolved_origins
+        for api_set_value in cors_origin_api_set:
+            assert api_set_value in resolved_origins
+        for resolve_origin in resolved_origins:
+            assert (
+                resolve_origin in cors_origins_config_set
+                or resolve_origin in cors_origin_api_set
+            )
+        assert isinstance(resolved_origins, set)
+
+        # ensure baseline (non-merging) functionality works as expected
+        assert sorted(
+            ApplicationConfig.get_resolved_config_property(db, "security.cors_origins")
+        ) == sorted(cors_origin_api_set)
+
+        # ensure that merging is not performed if either api-set or config-set values aren't present
+        insert_example_config_record["security"].pop("cors_origins")
+        # clear the api-set cors origin
+        ApplicationConfig.clear_api_set(db)
+        ApplicationConfig.create_or_update(
+            db,
+            data={
+                "api_set": insert_example_config_record,
+            },
+        )
+        # even if merge is set to true, we should just return config set
+        assert (
+            ApplicationConfig.get_resolved_config_property(
+                db,
+                "security.cors_origins",
+                merge_values=True,
+            )
+            == cors_origins_config_set
+        )
+        # now clear the config-set cors origin
+        insert_example_config_record["security"]["cors_origins"] = cors_origin_api_set
+        new_config_set = ApplicationConfig.get_config_set(db)
+        new_config_set["security"].pop("cors_origins")
+        ApplicationConfig.clear_config_set(db)
+        ApplicationConfig.create_or_update(
+            db,
+            data={
+                "api_set": insert_example_config_record,
+                "config_set": new_config_set,
+            },
+        )
+        # even if merge is set to true, we should just return api set
+        assert (
+            ApplicationConfig.get_resolved_config_property(
+                db,
+                "security.cors_origins",
+                merge_values=True,
+            )
+            == cors_origin_api_set
+        )
+
 
 class TestConfigProxy:
     @pytest.fixture(scope="function")
@@ -337,6 +423,12 @@ class TestConfigProxy:
             "notifications": {
                 "notification_service_type": "twilio_email",
                 "nested_setting_2": "nested_value_2",
+            },
+            "security": {
+                "cors_origins": [
+                    "http://additionalorigin:8080",
+                    "http://localhost",  # this is a _repeated_ value from the config-set values
+                ]
             },
         }
 
@@ -442,3 +534,35 @@ class TestConfigProxy:
         assert (
             notification_service_type == CONFIG.notifications.notification_service_type
         )
+
+    @pytest.mark.usefixtures("insert_app_config")
+    def test_config_proxy_merged_values(
+        self, db, config_proxy: ConfigProxy, insert_example_config_record
+    ):
+        """Ensure config proxy properly merges cors_origin api-set and config-set values"""
+
+        # ensure our config set has cors origins set as a populated list initially, for a valid test
+        cors_origins_config_set = ApplicationConfig.get_config_set(db)["security"][
+            "cors_origins"
+        ]
+        assert cors_origins_config_set
+        assert isinstance(cors_origins_config_set, Iterable)
+        # and ensure there are repeats between our API-set list and our config-set list, for a valid test
+        cors_origin_api_set = insert_example_config_record["security"]["cors_origins"]
+        repeat_values = set(cors_origin_api_set).intersection(
+            set(cors_origins_config_set)
+        )
+        assert repeat_values
+
+        proxy_resolved_cors_origins = config_proxy.security.cors_origins
+
+        for config_set_value in cors_origins_config_set:
+            assert config_set_value in proxy_resolved_cors_origins
+        for api_set_value in cors_origin_api_set:
+            assert api_set_value in proxy_resolved_cors_origins
+        for resolve_origin in proxy_resolved_cors_origins:
+            assert (
+                resolve_origin in cors_origins_config_set
+                or resolve_origin in cors_origin_api_set
+            )
+        assert isinstance(proxy_resolved_cors_origins, set)

@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Spacer, useDisclosure } from "@fidesui/react";
+import { Box, Button, Flex, Stack, useDisclosure } from "@fidesui/react";
 import Restrict from "common/Restrict";
 import ConnectionListDropdown, {
   useConnectionListDropDown,
@@ -63,33 +63,36 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   return (
     <Box id="con-wrapper" px={6}>
       <Flex py={5}>
-        <ConnectionListDropdown
-          list={dropDownOptions}
-          label="Integration type"
-          selectedValue={selectedConnectionOption}
-          onChange={setSelectedConnectionOption}
-          disabled={connectionConfig && connectionConfig !== null}
-        />
-        <Spacer />
-        {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
-          <OrphanedConnectionModal
-            connectionConfigs={orphanedConnectionConfigs}
-            systemFidesKey={systemFidesKey}
+        <Stack direction={{ base: "column", lg: "row" }}>
+          <ConnectionListDropdown
+            list={dropDownOptions}
+            label="Integration type"
+            selectedValue={selectedConnectionOption}
+            onChange={setSelectedConnectionOption}
+            disabled={connectionConfig && connectionConfig !== null}
           />
-        ) : null}
-        <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
-          <Button
-            variant="outline"
-            type="submit"
-            minWidth="auto"
-            data-testid="upload-btn"
-            size="sm"
-            onClick={uploadTemplateModal.onOpen}
-            marginLeft={2}
-          >
-            Upload integration
-          </Button>
-        </Restrict>
+          {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
+            <OrphanedConnectionModal
+              connectionConfigs={orphanedConnectionConfigs}
+              systemFidesKey={systemFidesKey}
+            />
+          ) : null}
+
+          <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
+            <Button
+              variant="outline"
+              type="submit"
+              minWidth="auto"
+              data-testid="upload-btn"
+              size="sm"
+              onClick={uploadTemplateModal.onOpen}
+              marginLeft={2}
+            >
+              Upload integration
+            </Button>
+          </Restrict>
+        </Stack>
+
         <ConnectorTemplateUploadModal
           isOpen={uploadTemplateModal.isOpen}
           onClose={uploadTemplateModal.onClose}

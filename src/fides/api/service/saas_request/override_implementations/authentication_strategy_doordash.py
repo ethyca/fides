@@ -48,9 +48,9 @@ class DoordashAuthenticationStrategy(AuthenticationStrategy):
         token = jwt.encode(
             {
                 "aud": "doordash",
-                "iss": assign_placeholders(self.developer_id, secrets)
-                if secrets
-                else None,
+                "iss": (
+                    assign_placeholders(self.developer_id, secrets) if secrets else None
+                ),
                 "kid": assign_placeholders(self.key_id, secrets) if secrets else None,
                 "exp": str(math.floor(time.time() + 60)),
                 "iat": str(math.floor(time.time())),

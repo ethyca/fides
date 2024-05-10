@@ -15,8 +15,7 @@ describe("Dataset", () => {
   describe("List of datasets view", () => {
     it("Can navigate to the datasets list view", () => {
       cy.visit("/");
-      cy.contains("nav a", "Data map").click();
-      cy.contains("nav a", "Manage datasets").click();
+      cy.getByTestId("Manage datasets-nav-link").click();
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
@@ -73,7 +72,7 @@ describe("Dataset", () => {
       });
 
       // check we can add a column back
-      cy.getByTestId(`checkbox-${columnNames[1]}`).click();
+      cy.getByTestId(`checkbox-${columnNames[1]}`).click({ force: true });
       cy.getByTestId(`column-${columnNames[1]}`);
 
       // clicking 'done' should close the modal
@@ -189,7 +188,7 @@ describe("Dataset", () => {
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-dataset")
-        .click()
+        .click({ force: true })
         .then(() => {
           cy.getByTestId("input-description").clear().type(newDescription);
           cy.getByTestId("save-btn").click({ force: true });

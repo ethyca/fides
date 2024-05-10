@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Global integritetskontroll",
+  "static.gpc.description": "Dina preferenser för global integritetskontroll har efterföljts. Du har automatiskt valt bort användningsfall för uppgifter som efterföljer global integritetskontroll.",
+  "static.gpc.status.applied": "Tillämpad",
+  "static.gpc.status.overridden": "Åsidosatt",
+  "static.gpc.title": "Global integritetskontroll upptäcktes"
+}

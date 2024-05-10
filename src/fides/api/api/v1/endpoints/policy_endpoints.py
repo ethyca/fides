@@ -121,7 +121,6 @@ def create_or_update_policies(
                 data={
                     "name": policy_data["name"],
                     "key": policy_data.get("key"),
-                    "client_id": client.id,
                     "drp_action": policy_data.get("drp_action"),
                     "execution_timeframe": policy_data.get("execution_timeframe"),
                 },
@@ -260,12 +259,12 @@ def create_or_update_rules(
             storage_destination_key = schema.storage_destination_key
             # storage key doesn't need to be specified, as there is a default to fallback to
             if storage_destination_key:
-                associated_storage_config: Optional[
-                    StorageConfig
-                ] = StorageConfig.get_by(
-                    db=db,
-                    field="key",
-                    value=storage_destination_key,
+                associated_storage_config: Optional[StorageConfig] = (
+                    StorageConfig.get_by(
+                        db=db,
+                        field="key",
+                        value=storage_destination_key,
+                    )
                 )
                 if not associated_storage_config:
                     logger.warning(
@@ -290,7 +289,6 @@ def create_or_update_rules(
                 db=db,
                 data={
                     "action_type": schema.action_type,
-                    "client_id": client.id,
                     "key": schema.key,
                     "name": schema.name,
                     "policy_id": policy.id,
@@ -523,7 +521,6 @@ def create_or_update_rule_targets(
                     "key": schema.key,
                     "data_category": schema.data_category,
                     "rule_id": rule.id,
-                    "client_id": client.id,
                 },
             )
         except KeyOrNameAlreadyExists as exc:

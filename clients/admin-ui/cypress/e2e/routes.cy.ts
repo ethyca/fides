@@ -3,6 +3,7 @@ import { stubPlus } from "cypress/support/stubs";
 import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
+  LOCATIONS_ROUTE,
   PRIVACY_NOTICES_ROUTE,
 } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
@@ -37,6 +38,8 @@ describe("Routes", () => {
       cy.getByTestId("connection-grid");
       cy.visit("/privacy-requests/configure");
       cy.getByTestId("privacy-requests-configure");
+      cy.visit(LOCATIONS_ROUTE);
+      cy.getByTestId("location-management");
     });
 
     // This doesn't work right now due needing a fix for `exact` in the `nav-config` helpers
@@ -65,6 +68,9 @@ describe("Routes", () => {
         // can access /privacy-requests
         cy.visit("/privacy-requests");
         cy.getByTestId("privacy-requests");
+        // cannot access locations route
+        cy.visit(LOCATIONS_ROUTE);
+        cy.getByTestId("home-content");
       });
     });
   });
@@ -76,6 +82,9 @@ describe("Routes", () => {
       cy.getByTestId("home-content");
       cy.getByTestId("cytoscape-graph").should("not.exist");
       cy.visit(PRIVACY_NOTICES_ROUTE);
+      cy.getByTestId("home-content");
+      // cannot access locations route
+      cy.visit(LOCATIONS_ROUTE);
       cy.getByTestId("home-content");
     });
 

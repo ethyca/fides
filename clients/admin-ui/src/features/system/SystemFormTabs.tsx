@@ -1,4 +1,4 @@
-import { Box, Button, Text, useToast } from "@fidesui/react";
+import { Box, Text, useToast } from "@fidesui/react";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -21,6 +21,7 @@ import {
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { SystemResponse } from "~/types/api";
 
+import ToastLink from "../common/ToastLink";
 import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
@@ -37,45 +38,20 @@ const ToastMessage = ({
 }: {
   onViewDatamap: () => void;
   onAddPrivacyDeclaration: () => void;
-}) => {
-  const linkButtonProps = {
-    variant: "link",
-    textDecor: "underline",
-    textColor: "gray.700",
-    fontWeight: "medium",
-    // allow lines to wrap
-    display: "initial",
-    cursor: "pointer",
-  };
-  return (
-    <Box>
-      <Text fontWeight="700">System has been saved successfully</Text>
-      <Text textColor="gray.700" whiteSpace="inherit">
-        Your system has been added to your data map. You can{" "}
-        <Button
-          as="a"
-          onClick={onViewDatamap}
-          {...linkButtonProps}
-          // typescript doesn't like passing whiteSpace via linkButtonProps
-          whiteSpace="inherit"
-        >
-          view it now
-        </Button>{" "}
-        and come back to finish this setup when you’re ready. Or you can
-        progress to{" "}
-        <Button
-          as="a"
-          onClick={onAddPrivacyDeclaration}
-          {...linkButtonProps}
-          whiteSpace="inherit"
-        >
-          adding your privacy declarations in the next tab
-        </Button>
-        .
-      </Text>
-    </Box>
-  );
-};
+}) => (
+  <Box>
+    <Text fontWeight="700">System has been saved successfully</Text>
+    <Text textColor="gray.700" whiteSpace="inherit">
+      Your system has been added to your data map. You can{" "}
+      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> and come back
+      to finish this setup when you’re ready. Or you can progress to{" "}
+      <ToastLink onClick={onAddPrivacyDeclaration}>
+        adding your privacy declarations in the next tab
+      </ToastLink>
+      .
+    </Text>
+  </Box>
+);
 
 const SystemFormTabs = ({
   initialTabIndex = 0,

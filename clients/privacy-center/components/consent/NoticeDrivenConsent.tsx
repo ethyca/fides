@@ -1,8 +1,7 @@
 import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  ConsentContext,
-  CookieKeyConsent,
+  NoticeConsent,
   getConsentContext,
   getOrMakeFidesCookie,
   removeCookiesFromBrowser,
@@ -10,10 +9,14 @@ import {
   transformUserPreferenceToBoolean,
   getGpcStatusFromNotice,
   PrivacyNotice,
+  ConsentContext,
+  FidesCookie,
+  PrivacyNoticeWithPreference,
+  noticeHasConsentInCookie,
+  transformConsentToFidesUserPreference,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
-  selectCurrentConsentPreferences,
   selectUserRegion,
   selectPrivacyExperience,
   useUpdatePrivacyPreferencesMutation,
@@ -33,37 +36,60 @@ import { useRouter } from "next/router";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import useI18n from "~/common/hooks/useI18n";
 import { useLocalStorage } from "~/common/hooks";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 // DEFER(fides#3505): Use the fides-js version of this function
-const resolveConsentValue = (
+export const resolveConsentValue = (
   notice: PrivacyNoticeResponseWithUserPreferences,
-  context: ConsentContext
-) => {
+  context: ConsentContext,
+  cookie: FidesCookie
+): UserConsentPreference | undefined => {
+  if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+    return UserConsentPreference.ACKNOWLEDGE;
+  }
   const gpcEnabled =
-    !!notice.has_gpc_flag && context.globalPrivacyControl === true;
+    !!notice.has_gpc_flag &&
+    context.globalPrivacyControl === true &&
+    !noticeHasConsentInCookie(
+      notice as PrivacyNoticeWithPreference,
+      cookie.consent
+    );
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
+  const preferenceExistsInCookie = noticeHasConsentInCookie(
+    notice as PrivacyNoticeWithPreference,
+    cookie.consent
+  );
+  if (preferenceExistsInCookie) {
+    return transformConsentToFidesUserPreference(
+      // @ts-ignore
+      cookie.consent[notice.notice_key],
+      notice.consent_mechanism
+    );
+  }
+
   return notice.default_preference;
 };
 
-const NoticeDrivenConsent = () => {
+const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const router = useRouter();
   const toast = useToast();
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
-  const serverPreferences = useAppSelector(selectCurrentConsentPreferences);
-  const cookie = getOrMakeFidesCookie();
+  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
   const region = useAppSelector(selectUserRegion);
+  const { i18n, selectNoticeTranslation, selectExperienceConfigTranslation } =
+    useI18n();
 
   const browserIdentities = useMemo(() => {
     const identities = inspectForBrowserIdentities();
@@ -71,22 +97,30 @@ const NoticeDrivenConsent = () => {
     return identities ? { ...deviceIdentity, ...identities } : deviceIdentity;
   }, [fidesUserDeviceId]);
 
-  const initialDraftPreferences = useMemo(() => {
-    const newPreferences = { ...serverPreferences };
-    Object.entries(serverPreferences).forEach(([key, value]) => {
-      if (!value) {
-        const notices = experience?.privacy_notices ?? [];
-        const notice = notices.filter(
-          (n) => n.privacy_notice_history_id === key
-        )[0];
-        const defaultValue = notice
-          ? resolveConsentValue(notice, consentContext)
-          : UserConsentPreference.OPT_OUT;
-        newPreferences[key] = defaultValue;
-      }
-    });
+  const initialDraftPreferences: NoticeHistoryIdToPreference = useMemo(() => {
+    const newPreferences: NoticeHistoryIdToPreference = {};
+    if (experience?.privacy_notices) {
+      experience.privacy_notices.forEach((notice) => {
+        const pref: UserConsentPreference | undefined = resolveConsentValue(
+          notice,
+          consentContext,
+          cookie
+        );
+
+        const noticeTranslation = selectNoticeTranslation(
+          notice as PrivacyNotice
+        );
+
+        if (pref) {
+          newPreferences[noticeTranslation.privacy_notice_history_id] = pref;
+        } else {
+          newPreferences[noticeTranslation.privacy_notice_history_id] =
+            UserConsentPreference.OPT_OUT;
+        }
+      });
+    }
     return newPreferences;
-  }, [serverPreferences, experience, consentContext]);
+  }, [experience, consentContext, cookie, selectNoticeTranslation]);
 
   const [draftPreferences, setDraftPreferences] =
     useState<NoticeHistoryIdToPreference>(initialDraftPreferences);
@@ -95,20 +129,28 @@ const NoticeDrivenConsent = () => {
     setDraftPreferences(initialDraftPreferences);
   }, [initialDraftPreferences]);
 
-  const [updateNoticesServedMutationTrigger, { data: servedNotices }] =
+  const [updateNoticesServedMutationTrigger, { data: servedNotice }] =
     useUpdateNoticesServedMutation();
 
   useEffect(() => {
     if (experience && experience.privacy_notices) {
+      const experienceConfigTranslation = selectExperienceConfigTranslation(
+        experience.experience_config
+      );
+
       updateNoticesServedMutationTrigger({
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
-          privacy_experience_id: experience?.id,
+          privacy_experience_config_history_id:
+            experienceConfigTranslation.privacy_experience_config_history_id,
           privacy_notice_history_ids: experience.privacy_notices.map(
-            (p) => p.privacy_notice_history_id
+            (p) =>
+              selectNoticeTranslation(p as PrivacyNotice)
+                .privacy_notice_history_id
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
+          user_geography: region,
         },
       });
     }
@@ -117,6 +159,10 @@ const NoticeDrivenConsent = () => {
     updateNoticesServedMutationTrigger,
     experience,
     browserIdentities,
+    region,
+    i18n,
+    selectExperienceConfigTranslation,
+    selectNoticeTranslation,
   ]);
 
   const items = useMemo(() => {
@@ -129,7 +175,12 @@ const NoticeDrivenConsent = () => {
     }
 
     return notices.map((notice) => {
-      const preference = draftPreferences[notice.privacy_notice_history_id];
+      const noticeTranslation = selectNoticeTranslation(
+        notice as PrivacyNotice
+      );
+
+      const preference =
+        draftPreferences[noticeTranslation.privacy_notice_history_id];
       const value = transformUserPreferenceToBoolean(preference);
       const gpcStatus = getGpcStatusFromNotice({
         value,
@@ -139,17 +190,18 @@ const NoticeDrivenConsent = () => {
 
       return {
         name: notice.name || "",
-        description: notice.description || "",
+        description: noticeTranslation.description || "",
         id: notice.id,
-        historyId: notice.privacy_notice_history_id,
+        historyId: noticeTranslation.privacy_notice_history_id,
         highlight: false,
         url: undefined,
         value,
         gpcStatus,
         disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+        bestTranslation: noticeTranslation,
       };
     });
-  }, [consentContext, experience, draftPreferences]);
+  }, [consentContext, experience, draftPreferences, selectNoticeTranslation]);
 
   const handleCancel = () => {
     router.push("/");
@@ -167,40 +219,41 @@ const NoticeDrivenConsent = () => {
     // Reconnect preferences to notices
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
-        const notice = notices.find(
-          (n) => n.privacy_notice_history_id === historyKey
+        const notice = notices.find((n) =>
+          n.translations.some((t) => t.privacy_notice_history_id === historyKey)
         );
-        const servedNotice = servedNotices?.find(
-          (sn) => sn.privacy_notice_history?.id === historyKey
-        );
-        return { historyKey, preference, notice, servedNotice };
+        return { historyKey, preference, notice };
       }
     );
 
     const preferences: ConsentOptionCreate[] = noticePreferences.map(
-      ({ historyKey, preference, notice, servedNotice }) => {
+      ({ historyKey, preference, notice }) => {
         if (notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
           return {
             privacy_notice_history_id: historyKey,
             preference: UserConsentPreference.ACKNOWLEDGE,
-            served_notice_history_id: servedNotice?.served_notice_history_id,
           };
         }
         return {
           privacy_notice_history_id: historyKey,
           preference: preference ?? UserConsentPreference.OPT_OUT,
-          served_notice_history_id: servedNotice?.served_notice_history_id,
         };
       }
+    );
+
+    const experienceConfigTranslation = selectExperienceConfigTranslation(
+      experience?.experience_config
     );
 
     const payload: PrivacyPreferencesRequest = {
       browser_identity: browserIdentities,
       preferences,
       user_geography: region,
-      privacy_experience_id: experience?.id,
-      method: ConsentMethod.BUTTON,
+      privacy_experience_config_history_id:
+        experienceConfigTranslation.privacy_experience_config_history_id,
+      method: ConsentMethod.SAVE,
       code: verificationCode,
+      served_notice_history_id: servedNotice?.served_notice_history_id,
     };
 
     // 1. Send PATCH to Fides backend
@@ -224,15 +277,16 @@ const NoticeDrivenConsent = () => {
 
     // 2. Save the cookie and window obj on success
     const noticeKeyMap = new Map<string, boolean>(
-      result.data.preferences.map((preference) => [
-        preference.privacy_notice_history?.notice_key || "",
+      noticePreferences.map((preference) => [
+        preference.notice?.notice_key || "",
         transformUserPreferenceToBoolean(preference.preference),
       ])
     );
-    const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeKeyMap);
-    window.Fides.consent = consentCookieKey;
-    const updatedCookie = { ...cookie, consent: consentCookieKey };
-    saveFidesCookie(updatedCookie);
+    const noticeConsent: NoticeConsent = Object.fromEntries(noticeKeyMap);
+    window.Fides.consent = noticeConsent;
+    const updatedCookie = { ...cookie, consent: noticeConsent };
+    updatedCookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
+    saveFidesCookie(updatedCookie, base64Cookie);
     toast({
       title: "Your consent preferences have been saved",
       ...SuccessToastOptions,
@@ -255,6 +309,7 @@ const NoticeDrivenConsent = () => {
       {items.map((item, index) => {
         const { id, highlight, url, name, description, historyId, disabled } =
           item;
+
         const handleChange = (value: boolean) => {
           const pref = value
             ? UserConsentPreference.OPT_IN
@@ -264,13 +319,14 @@ const NoticeDrivenConsent = () => {
             ...{ [historyId]: pref },
           });
         };
+
         return (
           <React.Fragment key={id}>
             {index > 0 ? <Divider /> : null}
             <ConsentItem
               id={id}
-              name={name}
-              description={description}
+              name={item.bestTranslation?.title || name}
+              description={item.bestTranslation?.description || description}
               highlight={highlight}
               url={url}
               value={item.value}
@@ -284,7 +340,6 @@ const NoticeDrivenConsent = () => {
       <SaveCancel
         onSave={handleSave}
         onCancel={handleCancel}
-        saveLabel={experience?.experience_config?.save_button_label}
         justifyContent="center"
       />
       <PrivacyPolicyLink alignSelf="center" experience={experience} />

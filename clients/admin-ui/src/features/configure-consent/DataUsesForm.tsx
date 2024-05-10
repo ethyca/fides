@@ -8,7 +8,10 @@ import {
   CustomSelect,
 } from "~/features/common/form/inputs";
 import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
-import { selectDataUseOptions } from "~/features/data-use/data-use.slice";
+import {
+  selectDataUseOptions,
+  useGetAllDataUsesQuery,
+} from "~/features/data-use/data-use.slice";
 import {
   selectDictDataUses,
   useGetDictionaryDataUsesQuery,
@@ -25,10 +28,13 @@ import {
 const DataUseBlock = ({
   index,
   isSuggestion,
+  disabled,
 }: {
   index: number;
   isSuggestion: boolean;
+  disabled?: boolean;
 }) => {
+  useGetAllDataUsesQuery();
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
   const textColor = isSuggestion ? "complimentary.500" : "gray.800";
 
@@ -49,7 +55,7 @@ const DataUseBlock = ({
       p={4}
     >
       <CustomSelect
-        label="Data use"
+        label="Consent category"
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
         name={`privacy_declarations.${index}.consent_use`}
         options={CONSENT_USE_OPTIONS}
@@ -58,17 +64,18 @@ const DataUseBlock = ({
         isCustomOption
         singleValueBlock
         textColor={textColor}
+        isDisabled={disabled}
       />
       <CustomSelect
-        label="Detailed data use (optional)"
-        tooltip="Select a more specific data use"
+        label="Detailed consent category (optional)"
+        tooltip="Select a more specific consent category"
         name={`privacy_declarations.${index}.data_use`}
         options={detailedDataUseOptions}
         variant="stacked"
         isCustomOption
         singleValueBlock
         textColor={textColor}
-        isDisabled={!values.privacy_declarations[index].consent_use}
+        isDisabled={!values.privacy_declarations[index].consent_use || disabled}
       />
       <CustomCreatableSelect
         label="Cookie names"
@@ -77,12 +84,21 @@ const DataUseBlock = ({
         variant="stacked"
         isMulti
         textColor={textColor}
+        isDisabled={disabled}
       />
     </VStack>
   );
 };
 
-const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
+const DataUsesForm = ({
+  showSuggestions,
+  isCreate,
+  disabled,
+}: {
+  showSuggestions: boolean;
+  isCreate: boolean;
+  disabled?: boolean;
+}) => {
   const { values, setFieldValue } = useFormikContext<FormValues>();
   const { vendor_id: vendorId } = values;
   const { isLoading } = useGetDictionaryDataUsesQuery(
@@ -105,8 +121,22 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
           cookies: d.cookies ?? [],
         }));
       setFieldValue("privacy_declarations", declarations);
+    } else if (isCreate) {
+      setFieldValue("privacy_declarations", [EMPTY_DECLARATION]);
     }
-  }, [showSuggestions, values.vendor_id, dictDataUses, setFieldValue]);
+  }, [
+    showSuggestions,
+    isCreate,
+    values.vendor_id,
+    dictDataUses,
+    setFieldValue,
+  ]);
+
+  const lastDataUseIsEmpty =
+    values.privacy_declarations[values.privacy_declarations.length - 1]
+      ?.data_use === EMPTY_DECLARATION.data_use &&
+    values.privacy_declarations[values.privacy_declarations.length - 1]
+      ?.consent_use === EMPTY_DECLARATION.consent_use;
 
   if (isLoading) {
     return <Spinner size="sm" alignSelf="center" />;
@@ -121,6 +151,7 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
             <DataUseBlock
               key={declaration.data_use || idx}
               index={idx}
+              disabled={disabled}
               isSuggestion={showSuggestions}
             />
           ))}
@@ -131,14 +162,7 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
             onClick={() => {
               arrayHelpers.push(EMPTY_DECLARATION);
             }}
-            disabled={
-              values.privacy_declarations[
-                values.privacy_declarations.length - 1
-              ]?.data_use === EMPTY_DECLARATION.data_use &&
-              values.privacy_declarations[
-                values.privacy_declarations.length - 1
-              ]?.consent_use === EMPTY_DECLARATION.consent_use
-            }
+            disabled={lastDataUseIsEmpty || disabled}
             data-testid="add-data-use-btn"
           >
             Add data use +

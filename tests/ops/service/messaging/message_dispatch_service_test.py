@@ -557,14 +557,12 @@ class TestMessageDispatchService:
                                 privacy_notice_history=PrivacyNoticeHistorySchema(
                                     name="Analytics",
                                     notice_key="analytics",
-                                    regions=["fr"],
                                     id="test_3",
-                                    privacy_notice_id="39391",
+                                    translation_id="39391",
                                     consent_mechanism=ConsentMechanism.opt_in,
                                     data_uses=["functional.service.improve"],
                                     enforcement_level=EnforcementLevel.system_wide,
                                     version=1.0,
-                                    displayed_in_overlay=True,
                                 ),
                             )
                         ],

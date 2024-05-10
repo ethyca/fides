@@ -2,6 +2,7 @@
 Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
+
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
@@ -84,6 +85,7 @@ async def get_custom_fields_filtered(
                     CustomField.value,
                     CustomFieldDefinition.resource_type,
                     CustomFieldDefinition.name,
+                    CustomFieldDefinition.field_type,
                 ).join(
                     CustomFieldDefinition,
                     CustomFieldDefinition.id == CustomField.custom_field_definition_id,
@@ -186,9 +188,9 @@ async def get_resource_with_custom_fields(
 
     for field in custom_fields:
         if field["name"] in resource_dict:
-            resource_dict[
-                field["name"]
-            ] = f"{resource_dict[field['name']]}, {', '.join(field['value'])}"
+            resource_dict[field["name"]] = (
+                f"{resource_dict[field['name']]}, {', '.join(field['value'])}"
+            )
         else:
             resource_dict[field["name"]] = ", ".join(field["value"])
 

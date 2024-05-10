@@ -1,13 +1,17 @@
 import { Stack, useToast } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   FidesCookie,
   getConsentContext,
   saveFidesCookie,
   getOrMakeFidesCookie,
+  loadMessagesFromFiles,
+  initializeI18n,
+  setupI18n,
+  PrivacyExperience,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
@@ -19,21 +23,27 @@ import {
 } from "~/features/common/config.slice";
 import {
   selectPersistedFidesKeyToConsent,
+  selectPrivacyExperience,
   updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
 } from "~/features/consent/consent.slice";
-import { makeCookieKeyConsent } from "~/features/consent/helpers";
-import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import ConsentToggles from "~/components/consent/ConsentToggles";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import ConsentHeading from "~/components/consent/ConsentHeading";
 import ConsentDescription from "~/components/consent/ConsentDescription";
-import { selectIsNoticeDriven } from "~/features/common/settings.slice";
+import {
+  selectIsNoticeDriven,
+  useSettings,
+} from "~/features/common/settings.slice";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import useI18n from "~/common/hooks/useI18n";
 
 const Consent: NextPage = () => {
+  const settings = useSettings();
+  const { BASE_64_COOKIE } = settings;
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const router = useRouter();
@@ -47,6 +57,7 @@ const Consent: NextPage = () => {
     () => config.consent?.page.consentOptions ?? [],
     [config]
   );
+  const { setI18nInstance } = useI18n();
   useSubscribeToPrivacyExperienceQuery();
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
@@ -104,20 +115,14 @@ const Consent: NextPage = () => {
   useEffect(() => {
     const cookie: FidesCookie = getOrMakeFidesCookie();
     if (isNoticeDriven) {
-      saveFidesCookie(cookie);
-    } else {
-      const newConsent = makeCookieKeyConsent({
-        consentOptions,
-        fidesKeyToConsent: persistedFidesKeyToConsent,
-        consentContext,
-      });
-      saveFidesCookie({ ...cookie, consent: newConsent });
+      saveFidesCookie(cookie, BASE_64_COOKIE);
     }
   }, [
     consentOptions,
     persistedFidesKeyToConsent,
     consentContext,
     isNoticeDriven,
+    BASE_64_COOKIE,
   ]);
 
   /**
@@ -142,7 +147,7 @@ const Consent: NextPage = () => {
 
     const privacyCenterConfig = getIdVerificationConfigQueryResult.data;
     if (
-      privacyCenterConfig.identity_verification_required &&
+      !privacyCenterConfig.disable_consent_identity_verification &&
       !verificationCode
     ) {
       toastError({ title: "Identity verification is required." });
@@ -150,7 +155,7 @@ const Consent: NextPage = () => {
       return;
     }
 
-    if (privacyCenterConfig.identity_verification_required) {
+    if (!privacyCenterConfig.disable_consent_identity_verification) {
       postConsentRequestVerificationMutationTrigger({
         id: consentRequestId,
         code: verificationCode,
@@ -216,16 +221,61 @@ const Consent: NextPage = () => {
     redirectToIndex,
   ]);
 
+  /**
+   * Initialize internalization library.
+   */
+  const experience = useAppSelector(selectPrivacyExperience);
+  const { IS_OVERLAY_ENABLED } = settings;
+  const isConfigDrivenConsent = !IS_OVERLAY_ENABLED;
+  const [isI18nInitialized, setIsI18nInitialized] = useState(false);
+
+  useEffect(() => {
+    const i18n = setupI18n();
+
+    // 1. Config driven consent
+    if (isConfigDrivenConsent) {
+      // If we're in config driven consent then
+      // still load the static messages in order to have default english
+      // messages available
+      loadMessagesFromFiles(i18n);
+      setI18nInstance(i18n);
+      setIsI18nInitialized(true);
+      return;
+    }
+
+    // 2. Notice driven consent
+    if (!experience) {
+      return;
+    }
+
+    initializeI18n(
+      i18n,
+      window?.navigator,
+      experience as PrivacyExperience,
+      {
+        debug: process.env.NODE_ENV === "development",
+      },
+      {}
+    );
+
+    setI18nInstance(i18n);
+    setIsI18nInitialized(true);
+  }, [experience, setI18nInstance, isConfigDrivenConsent]);
+
   return (
     <Stack as="main" align="center" data-testid="consent">
-      <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
-        <Stack align="center" spacing={3}>
-          <ConsentHeading />
-          <ConsentDescription />
+      {/* Wait until i18n is initalized so we can diplay the correct language and
+       also we can use the correct history ids */}
+      {isI18nInitialized && (
+        <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
+          <Stack align="center" spacing={3}>
+            <ConsentHeading />
+            <ConsentDescription />
+          </Stack>
+          {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
+          <ConsentToggles storePreferences={storeConsentPreferences} />
         </Stack>
-        {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
-        <ConsentToggles storePreferences={storeConsentPreferences} />
-      </Stack>
+      )}
     </Stack>
   );
 };

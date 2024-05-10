@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * An enumeration.
+ * Enum is not formalized in the DB because it may be subject to frequent change
  */
 export enum ConsentMechanism {
   OPT_IN = "opt_in",

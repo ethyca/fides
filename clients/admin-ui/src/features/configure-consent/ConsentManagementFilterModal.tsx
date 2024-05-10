@@ -1,23 +1,12 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Button,
-  Checkbox,
-  Heading,
-  SimpleGrid,
-  Text,
-  useDisclosure,
-} from "@fidesui/react";
+import { Accordion, useDisclosure } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
+  AccordionMultifieldFilter,
   FilterModal,
   FilterSection,
+  Option,
 } from "~/features/common/modals/FilterModal";
 import {
   selectPurposes,
@@ -27,131 +16,6 @@ import {
   selectDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
-
-export type FieldValueToIsSelected = {
-  [fieldValue: string]: boolean;
-};
-
-export type Option = {
-  value: string;
-  displayText: string;
-  isChecked: boolean;
-};
-type AccordionMultiFieldCheckBoxProps = {
-  value: string;
-  displayText: string;
-  isChecked: boolean;
-  onCheckboxChange: (fidesKey: string, checked: boolean) => void;
-};
-
-const AccordionMultiFieldCheckBox = ({
-  value,
-  displayText,
-  isChecked,
-  onCheckboxChange,
-}: AccordionMultiFieldCheckBoxProps) => (
-  <Checkbox
-    value={value}
-    key={value}
-    height="20px"
-    mb="25px"
-    isChecked={isChecked}
-    onChange={({ target }) => {
-      onCheckboxChange(value, (target as HTMLInputElement).checked);
-    }}
-    _focusWithin={{
-      bg: "gray.100",
-    }}
-    colorScheme="complimentary"
-  >
-    <Text
-      fontSize="sm"
-      lineHeight={5}
-      textOverflow="ellipsis"
-      overflow="hidden"
-    >
-      {displayText}
-    </Text>
-  </Checkbox>
-);
-
-type AccordionMultiFieldProps = {
-  options: Option[];
-  header: string;
-  onCheckboxChange: (newValue: string, checked: boolean) => void;
-  columns?: number;
-  numDefaultOptions?: number;
-};
-
-const AccordionMultifieldFilter = ({
-  options,
-  header,
-  onCheckboxChange,
-  columns = 3,
-  numDefaultOptions = 15,
-}: AccordionMultiFieldProps) => {
-  const [isViewingMore, setIsViewingMore] = useState(false);
-  const viewableOptions = isViewingMore
-    ? options
-    : options.slice(0, numDefaultOptions);
-  const areExtraOptionsAvailable = options.length > numDefaultOptions;
-
-  return (
-    <Accordion width="100%" allowToggle>
-      <AccordionItem border="0px">
-        <Heading height="56px">
-          <AccordionButton height="100%">
-            <Box
-              flex="1"
-              alignItems="center"
-              justifyContent="center"
-              textAlign="left"
-              fontWeight={600}
-            >
-              {header}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </Heading>
-        <AccordionPanel>
-          <SimpleGrid columns={columns}>
-            {viewableOptions.map((option) => (
-              <AccordionMultiFieldCheckBox
-                key={option.value}
-                {...option}
-                onCheckboxChange={onCheckboxChange}
-              />
-            ))}
-          </SimpleGrid>
-          {!isViewingMore && areExtraOptionsAvailable ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setIsViewingMore(true);
-              }}
-            >
-              View more
-            </Button>
-          ) : null}
-          {isViewingMore && areExtraOptionsAvailable ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setIsViewingMore(false);
-              }}
-            >
-              View less
-            </Button>
-          ) : null}
-        </AccordionPanel>
-      </AccordionItem>
-    </Accordion>
-  );
-};
-
-export default AccordionMultifieldFilter;
 
 export const useConsentManagementFilters = () => {
   const { isOpen, onClose, onOpen } = useDisclosure();
@@ -330,36 +194,38 @@ export const ConsentManagementFilterModal = ({
   onConsentCategoryChange,
 }: Props) => (
   <FilterModal isOpen={isOpen} onClose={onClose} resetFilters={resetFilters}>
-    <FilterSection>
-      {isTcfEnabled ? (
+    <Accordion>
+      <FilterSection>
+        {isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={purposeOptions}
+            onCheckboxChange={onPurposeChange}
+            header="TCF purposes"
+            columns={1}
+            numDefaultOptions={5}
+          />
+        ) : null}
         <AccordionMultifieldFilter
-          options={purposeOptions}
-          onCheckboxChange={onPurposeChange}
-          header="TCF purposes"
-          columns={1}
-          numDefaultOptions={5}
+          options={dataUseOptions}
+          onCheckboxChange={onDataUseChange}
+          header="Data uses"
         />
-      ) : null}
-      <AccordionMultifieldFilter
-        options={dataUseOptions}
-        onCheckboxChange={onDataUseChange}
-        header="Data uses"
-      />
 
-      {isTcfEnabled ? (
-        <AccordionMultifieldFilter
-          options={legalBasisOptions}
-          onCheckboxChange={onLegalBasisChange}
-          header="Legal basis"
-        />
-      ) : null}
-      {!isTcfEnabled ? (
-        <AccordionMultifieldFilter
-          options={consentCategoryOptions}
-          onCheckboxChange={onConsentCategoryChange}
-          header="Consent categories"
-        />
-      ) : null}
-    </FilterSection>
+        {isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={legalBasisOptions}
+            onCheckboxChange={onLegalBasisChange}
+            header="Legal basis"
+          />
+        ) : null}
+        {!isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={consentCategoryOptions}
+            onCheckboxChange={onConsentCategoryChange}
+            header="Consent categories"
+          />
+        ) : null}
+      </FilterSection>
+    </Accordion>
   </FilterModal>
 );

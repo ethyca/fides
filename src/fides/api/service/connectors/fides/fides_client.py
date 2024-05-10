@@ -220,9 +220,9 @@ class FidesClient:
         request: Request = self.authenticated_request(
             method="GET",
             path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUESTS,
-            query_params={"request_id": privacy_request_id}
-            if privacy_request_id
-            else None,
+            query_params=(
+                {"request_id": privacy_request_id} if privacy_request_id else None
+            ),
         )
         response = self.session.send(request)
 

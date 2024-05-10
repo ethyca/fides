@@ -9,9 +9,20 @@ class TestSparkPostConnector:
     def test_connection(self, sparkpost_runner: ConnectorRunner):
         sparkpost_runner.test_connection()
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_access_request(
-        self, sparkpost_runner: ConnectorRunner, policy, sparkpost_identity_email: str
+        self,
+        sparkpost_runner: ConnectorRunner,
+        policy,
+        dsr_version,
+        request,
+        sparkpost_identity_email: str,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         access_results = await sparkpost_runner.access_request(
             access_policy=policy, identities={"email": sparkpost_identity_email}
         )
@@ -20,14 +31,22 @@ class TestSparkPostConnector:
             == sparkpost_identity_email
         )
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_non_strict_erasure_request(
         self,
+        dsr_version,
+        request,
         sparkpost_runner: ConnectorRunner,
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         sparkpost_erasure_identity_email: str,
         sparkpost_erasure_data,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         (
             access_results,
             erasure_results,

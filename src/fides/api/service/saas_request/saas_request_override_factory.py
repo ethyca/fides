@@ -17,6 +17,7 @@ class SaaSRequestType(Enum):
     An `Enum` containing the different possible types of SaaS requests
     """
 
+    TEST = "test"
     READ = "read"
     UPDATE = "update"
     DATA_PROTECTION_REQUEST = "data_protection_request"
@@ -30,7 +31,7 @@ class SaaSRequestOverrideFactory:
     """
 
     registry: Dict[
-        SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int]]]
+        SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int, None]]]
     ] = {}
     valid_overrides: Dict[SaaSRequestType, str] = {}
 
@@ -40,10 +41,9 @@ class SaaSRequestOverrideFactory:
         valid_overrides[request_type] = ""
 
     @classmethod
-    def register(
-        cls, name: str, request_types: List[SaaSRequestType]
-    ) -> Callable[
-        [Callable[..., Union[List[Row], int]]], Callable[..., Union[List[Row], int]]
+    def register(cls, name: str, request_types: List[SaaSRequestType]) -> Callable[
+        [Callable[..., Union[List[Row], int, None]]],
+        Callable[..., Union[List[Row], int, None]],
     ]:
         """
         Decorator to register the custom-implemented SaaS request override
@@ -58,8 +58,8 @@ class SaaSRequestOverrideFactory:
             )
 
         def wrapper(
-            override_function: Callable[..., Union[List[Row], int]],
-        ) -> Callable[..., Union[List[Row], int]]:
+            override_function: Callable[..., Union[List[Row], int, None]],
+        ) -> Callable[..., Union[List[Row], int, None]]:
             for request_type in request_types:
                 logger.debug(
                     "Registering new SaaS request override function '{}' under name '{}' for SaaSRequestType {}",
@@ -69,7 +69,9 @@ class SaaSRequestOverrideFactory:
                 )
 
                 # perform some basic validation on the function that's been provided
-                if request_type is SaaSRequestType.READ:
+                if request_type is SaaSRequestType.TEST:
+                    validate_test_override_function(override_function)
+                elif request_type is SaaSRequestType.READ:
                     validate_read_override_function(override_function)
                 elif request_type in (
                     SaaSRequestType.UPDATE,
@@ -103,21 +105,39 @@ class SaaSRequestOverrideFactory:
     @classmethod
     def get_override(
         cls, override_function_name: str, request_type: SaaSRequestType
-    ) -> Callable[..., Union[List[Row], int]]:
+    ) -> Callable[..., Union[List[Row], int, None]]:
         """
         Returns the request override function given the name.
         Raises NoSuchSaaSRequestOverrideException if the named override
         does not exist.
         """
         try:
-            override_function: Callable[..., Union[List[Row], int]] = cls.registry[
-                request_type
-            ][override_function_name]
+            override_function: Callable[..., Union[List[Row], int, None]] = (
+                cls.registry[request_type][override_function_name]
+            )
         except KeyError:
             raise NoSuchSaaSRequestOverrideException(
                 f"Custom SaaS override '{override_function_name}' does not exist. Valid custom SaaS override classes for SaaSRequestType {request_type} are [{cls.valid_overrides[request_type]}]"
             )
         return override_function
+
+
+def validate_test_override_function(f: Callable) -> None:
+    """
+    Perform some basic checks on the user-provided SaaS request override function
+    that will be used with `test` actions.
+
+    The validation is not overly strict to allow for some flexibility in
+    the functions that are used for overrides, but we check to ensure that
+    the function meets the framework's basic expectations.
+
+    Specifically, the validation checks that function declares at least 2 parameters.
+    """
+    sig: Signature = signature(f)
+    if len(sig.parameters) < 2:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS request override function must declare at least 2 parameters"
+        )
 
 
 def validate_read_override_function(f: Callable) -> None:
@@ -130,7 +150,7 @@ def validate_read_override_function(f: Callable) -> None:
     the function meets the framework's basic expectations.
 
     Specifically, the validation checks that function's return type is `List[Row]`
-    and that it declares at least 5 parameters.
+    and that it declares at least 6 parameters.
     """
     sig: Signature = signature(f)
     if sig.return_annotation != List[Row]:

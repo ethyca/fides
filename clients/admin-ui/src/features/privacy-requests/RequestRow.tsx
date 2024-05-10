@@ -162,7 +162,9 @@ const RequestRow = ({
           <PII
             data={
               request.identity
-                ? request.identity.email || request.identity.phone_number || ""
+                ? request.identity.email.value ||
+                  request.identity.phone_number.value ||
+                  ""
                 : ""
             }
             revealPII={revealPII}

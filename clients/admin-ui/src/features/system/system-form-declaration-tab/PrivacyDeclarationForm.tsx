@@ -116,6 +116,8 @@ export const PrivacyDeclarationFormComponents = ({
   privacyDeclarationId?: string;
   lockedForGVL?: boolean;
 }) => {
+  const isEditing = !!privacyDeclarationId;
+
   const legalBasisForProcessingOptions = useMemo(
     () =>
       (
@@ -161,7 +163,7 @@ export const PrivacyDeclarationFormComponents = ({
           label="Declaration name (optional)"
           name="name"
           tooltip="Would you like to append anything to the system name?"
-          disabled={lockedForGVL}
+          disabled={isEditing || lockedForGVL}
           variant="stacked"
         />
         <CustomSelect
@@ -175,7 +177,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="For which business purposes is this data processed?"
           variant="stacked"
           isRequired
-          isDisabled={!!privacyDeclarationId || lockedForGVL}
+          isDisabled={isEditing || lockedForGVL}
         />
         <CustomSelect
           name="data_categories"
@@ -453,12 +455,14 @@ export const PrivacyDeclarationForm = ({
   initialValues: passedInInitialValues,
   ...dataProps
 }: Props & DataProps) => {
+  const privacyDeclarationId = passedInInitialValues?.id;
+
   const { handleSubmit, initialValues } = usePrivacyDeclarationForm({
     onSubmit,
     onCancel,
     initialValues: passedInInitialValues,
     allDataUses: dataProps.allDataUses,
-    privacyDeclarationId: passedInInitialValues?.id,
+    privacyDeclarationId,
   });
 
   const lockedForGVL = useAppSelector(selectLockedForGVL);
@@ -477,6 +481,7 @@ export const PrivacyDeclarationForm = ({
             <PrivacyDeclarationFormComponents
               values={values}
               lockedForGVL={lockedForGVL}
+              privacyDeclarationId={privacyDeclarationId}
               {...dataProps}
             />
             <Flex w="100%">

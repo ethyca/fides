@@ -104,14 +104,19 @@ def generate_integration_records():
 
 
 @pytest.fixture(scope="function")
-def integration_postgres_config(postgres_inserts) -> ConnectionConfig:
-    return ConnectionConfig(
-        name="postgres_test",
-        key="postgres_example",
-        connection_type=ConnectionType.postgres,
-        access=AccessLevel.write,
-        secrets=integration_secrets["postgres_example"],
+def integration_postgres_config(postgres_inserts, db) -> ConnectionConfig:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": "postgres_example",
+            "name": "postgres_test",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["postgres_example"],
+        },
     )
+    yield connection_config
+    connection_config.delete(db)
 
 
 def sql_insert(engine: Engine, table_name: str, record: Dict[str, Any]) -> None:

@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "name": "Property A",
+      "type": "Website",
+      "id": "FDS-CEA9EV",
+      "experiences": []
+    },
+    {
+      "name": "Property B",
+      "type": "Website",
+      "id": "FDS-Z21I5X",
+      "experiences": [{ "id": 1, "name": "US Privacy Center" }]
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 50
+}

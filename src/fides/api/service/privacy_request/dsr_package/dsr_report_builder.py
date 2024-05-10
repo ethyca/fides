@@ -11,7 +11,6 @@ from jinja2 import Environment, FileSystemLoader
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.redis_cache import Identity
 from fides.api.util.storage_util import storage_json_encoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
@@ -99,7 +98,7 @@ class DsrReportBuilder:
 
         # generate dataset index page
         self._add_file(
-            f"/data/{dataset_name}/index.html",
+            f"data/{dataset_name}/index.html",
             self._populate_template(
                 "templates/dataset_index.html",
                 dataset_name,
@@ -116,7 +115,7 @@ class DsrReportBuilder:
         for index, item in enumerate(rows, 1):
             detail_url = f"{index}.html"
             self._add_file(
-                f"/data/{dataset_name}/{collection_name}/{index}.html",
+                f"data/{dataset_name}/{collection_name}/{index}.html",
                 self._populate_template(
                     "templates/item.html",
                     f"{collection_name} (item #{index})",
@@ -128,7 +127,7 @@ class DsrReportBuilder:
 
         # generate detail index page
         self._add_file(
-            f"/data/{dataset_name}/{collection_name}/index.html",
+            f"data/{dataset_name}/{collection_name}/index.html",
             self._populate_template(
                 "templates/collection_index.html",
                 collection_name,
@@ -145,11 +144,11 @@ class DsrReportBuilder:
         try:
             # all the css for the pages is in main.css
             self._add_file(
-                "/data/main.css",
+                "data/main.css",
                 self._populate_template("templates/main.css"),
             )
             self._add_file(
-                "/data/back.svg",
+                "data/back.svg",
                 Path(os.path.join(DSR_DIRECTORY, "assets/back.svg")).read_text(
                     encoding="utf-8"
                 ),
@@ -170,7 +169,7 @@ class DsrReportBuilder:
 
             # create the main index once all the datasets have been added
             self._add_file(
-                "/welcome.html",
+                "welcome.html",
                 self._populate_template(
                     "templates/welcome.html", "DSR Report", None, self.main_links
                 ),
@@ -186,14 +185,21 @@ class DsrReportBuilder:
 
 def _map_privacy_request(privacy_request: PrivacyRequest) -> Dict[str, Any]:
     """Creates a map with a subset of values from the privacy request"""
-    request_data = {}
+    request_data: Dict[str, Any] = {}
     request_data["id"] = privacy_request.id
+
     action_type: Optional[ActionType] = privacy_request.policy.get_action_type()
     if action_type:
         request_data["type"] = action_type.value
-    identity: Identity = privacy_request.get_persisted_identity()
-    if identity.email:
-        request_data["email"] = identity.email
+
+    request_data["identity"] = {
+        key: value
+        for key, value in privacy_request.get_persisted_identity()
+        .labeled_dict(include_default_labels=True)
+        .items()
+        if value["value"] is not None
+    }
+
     if privacy_request.requested_at:
         request_data["requested_at"] = privacy_request.requested_at.strftime(
             "%m/%d/%Y %H:%M %Z"

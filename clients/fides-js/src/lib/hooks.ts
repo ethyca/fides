@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback } from "preact/hooks";
 import { FidesEvent } from "./events";
 import {
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
-  LastServedConsentSchema,
   RecordConsentServedRequest,
-  PrivacyNotice,
   ServingComponent,
+  RecordsServedResponse,
 } from "./consent-types";
 import { patchNoticesServed } from "../services/api";
 
@@ -79,41 +78,50 @@ const extractIds = <T extends { id: string | number }[]>(
 };
 
 export const useConsentServed = ({
-  notices,
   options,
-  userGeography,
   privacyExperience,
+  privacyExperienceConfigHistoryId,
+  privacyNoticeHistoryIds,
+  userGeography,
   acknowledgeMode,
 }: {
-  notices: PrivacyNotice[];
-  options: FidesOptions;
-  userGeography?: string;
+  options: FidesInitOptions;
   privacyExperience: PrivacyExperience;
+  privacyExperienceConfigHistoryId?: string;
+  privacyNoticeHistoryIds?: string[];
+  userGeography?: string;
   acknowledgeMode?: boolean;
 }) => {
-  const [servedNotices, setServedNotices] = useState<LastServedConsentSchema[]>(
-    []
-  );
+  const [servedNotice, setServedNotice] =
+    useState<RecordsServedResponse | null>(null);
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
-      // The only time a notices served API call isn't triggered is when
-      // the BANNER is shown. Calls can be triggered for
-      // TCF_BANNER, TCF_OVERLAY, and OVERLAY
+      // Disable the notices-served API if the fides_disable_save_api option is set
+      if (options.fidesDisableSaveApi) {
+        return;
+      }
+
+      // Disable the notices-served API if the serving component is a regular
+      // banner (or unknown!). This means we trigger the API for:
+      // 1) MODAL
+      // 2) TCF_OVERLAY
+      // 3) TCF_BANNER
       if (
         !event.detail.extraDetails ||
         event.detail.extraDetails.servingComponent === ServingComponent.BANNER
       ) {
         return;
       }
+
+      // Construct the notices-served API request and send!
       const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_id: privacyExperience.id,
+        privacy_experience_config_history_id:
+          privacyExperienceConfigHistoryId || "",
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
-        privacy_notice_history_ids: notices.map(
-          (n) => n.privacy_notice_history_id
-        ),
+        privacy_notice_history_ids: privacyNoticeHistoryIds || [],
         tcf_purpose_consents: extractIds(
           privacyExperience?.tcf_purpose_consents
         ),
@@ -135,17 +143,24 @@ export const useConsentServed = ({
         tcf_system_legitimate_interests: extractIds(
           privacyExperience?.tcf_system_legitimate_interests
         ),
-        serving_component: event.detail.extraDetails.servingComponent,
+        serving_component: String(event.detail.extraDetails.servingComponent),
       };
       const result = await patchNoticesServed({
         request,
         options,
       });
       if (result) {
-        setServedNotices(result);
+        setServedNotice(result);
       }
     },
-    [notices, options, acknowledgeMode, privacyExperience, userGeography]
+    [
+      privacyExperienceConfigHistoryId,
+      privacyNoticeHistoryIds,
+      options,
+      acknowledgeMode,
+      privacyExperience,
+      userGeography,
+    ]
   );
 
   useEffect(() => {
@@ -155,5 +170,5 @@ export const useConsentServed = ({
     };
   }, [handleUIEvent]);
 
-  return { servedNotices };
+  return { servedNotice };
 };

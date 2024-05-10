@@ -5,38 +5,48 @@
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { UserConsentPreference } from "./UserConsentPreference";
+import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
+
+export enum PrivacyNoticeFramework {
+  GPP_US_NATIONAL = "gpp_us_national",
+  GPP_US_STATE = "gpp_us_state",
+}
+
+export type GPPMechanismMapping = {
+  field: string;
+  not_available: string;
+  opt_out: string;
+  not_opt_out: string;
+};
+
+export type GPPFieldMapping = {
+  region: string;
+  notice?: Array<string>;
+  mechanism?: Array<GPPMechanismMapping>;
+};
 
 /**
  * If retrieving notices for a given user, also return the default preferences for that notice
  * and any saved preferences.
  */
 export type PrivacyNoticeResponseWithUserPreferences = {
-  default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
+  translations: Array<NoticeTranslationResponse>;
   name?: string;
   notice_key?: string;
-  description?: string;
   internal_description?: string;
   origin?: string;
-  regions?: Array<PrivacyNoticeRegion>;
   consent_mechanism?: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
   has_gpc_flag?: boolean;
-  displayed_in_privacy_center?: boolean;
-  displayed_in_overlay?: boolean;
-  displayed_in_api?: boolean;
+  framework?: PrivacyNoticeFramework;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
   id: string;
   created_at: string;
   updated_at: string;
-  version: number;
-  privacy_notice_history_id: string;
   cookies: Array<Cookies>;
+  default_preference?: UserConsentPreference;
   systems_applicable?: boolean;
 };

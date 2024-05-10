@@ -1,4 +1,5 @@
 """Module that adds interactions with okta"""
+
 import ast
 from functools import update_wrapper
 from typing import Any, Callable, List, Optional

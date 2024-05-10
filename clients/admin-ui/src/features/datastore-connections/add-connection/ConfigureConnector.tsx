@@ -17,7 +17,6 @@ import { useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { SystemType } from "~/types/api";
 
-import Breadcrumb from "./Breadcrumb";
 import { ConnectorParameters } from "./ConnectorParameters";
 import {
   ConfigurationSettings,
@@ -30,7 +29,6 @@ import DSRCustomization from "./manual/DSRCustomization";
 const ConfigureConnector: React.FC = () => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
-  const [steps, setSteps] = useState([STEPS[0], STEPS[1], STEPS[2]]);
   const [canRedirect, setCanRedirect] = useState(false);
   const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
@@ -96,7 +94,6 @@ const ConfigureConnector: React.FC = () => {
         case ConfigurationSettings.DATASET_CONFIGURATION:
         case ConfigurationSettings.DSR_CUSTOMIZATION:
           dispatch(setStep(STEPS[3]));
-          setSteps([STEPS[0], STEPS[1], STEPS[3]]);
           break;
         case ConfigurationSettings.CONNECTOR_PARAMETERS:
         default:
@@ -138,19 +135,16 @@ const ConfigureConnector: React.FC = () => {
   ]);
 
   return (
-    <>
-      <Breadcrumb steps={steps} />
-      <VStack alignItems="stretch" gap="18px">
-        <DataTabs
-          data={getTabs()}
-          flexGrow={1}
-          index={connector?.options.findIndex(
-            (option) => option === selectedItem
-          )}
-          isLazy
-        />
-      </VStack>
-    </>
+    <VStack alignItems="stretch" gap="18px">
+      <DataTabs
+        data={getTabs()}
+        flexGrow={1}
+        index={connector?.options.findIndex(
+          (option) => option === selectedItem
+        )}
+        isLazy
+      />
+    </VStack>
   );
 };
 

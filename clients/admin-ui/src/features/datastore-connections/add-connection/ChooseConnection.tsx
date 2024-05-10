@@ -30,10 +30,8 @@ import Restrict from "~/features/common/Restrict";
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import Breadcrumb from "./Breadcrumb";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
 import ConnectionTypeList from "./ConnectionTypeList";
-import { STEPS } from "./constants";
 
 const ChooseConnection: React.FC = () => {
   const dispatch = useDispatch();
@@ -81,7 +79,6 @@ const ChooseConnection: React.FC = () => {
 
   return (
     <>
-      <Breadcrumb steps={[STEPS[0], STEPS[1]]} />
       <Flex minWidth="fit-content">
         <Box
           color="gray.700"

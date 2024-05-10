@@ -108,24 +108,27 @@ const SystemHistoryTable = ({ system }: Props) => {
         <Tbody>
           {systemHistories.map((history, index) => {
             const description = describeSystemChange(history);
-            return (
-              <Tr
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                onClick={() => openModal(history)}
-                style={{ cursor: "pointer" }}
-              >
-                <Td
-                  pt="10px"
-                  pb="10px"
-                  pl="16px"
-                  fontSize="12px"
-                  border="1px solid #E2E8F0"
+            if (description) {
+              return (
+                <Tr
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={index}
+                  onClick={() => openModal(history)}
+                  style={{ cursor: "pointer" }}
                 >
-                  {description}
-                </Td>
-              </Tr>
-            );
+                  <Td
+                    pt="10px"
+                    pb="10px"
+                    pl="16px"
+                    fontSize="12px"
+                    border="1px solid #E2E8F0"
+                  >
+                    {description}
+                  </Td>
+                </Tr>
+              );
+            }
+            return null;
           })}
         </Tbody>
       </Table>

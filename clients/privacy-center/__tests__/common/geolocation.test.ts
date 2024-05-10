@@ -34,6 +34,20 @@ describe("getGeolocation", () => {
       });
     });
 
+    it("supports the special 'EEA' code in country header", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "EEA",
+        },
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toEqual({
+        country: "EEA",
+        location: "EEA",
+      });
+    });
+
     it("ignores only region headers", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
@@ -45,7 +59,7 @@ describe("getGeolocation", () => {
       expect(geolocation).toBeNull();
     });
 
-    it("handles invalid geolocation headers", async () => {
+    it("ignores invalid geolocation headers", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
         headers: {
@@ -54,6 +68,85 @@ describe("getGeolocation", () => {
       });
       const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid three-character country geolocation headers", async () => {
+      let req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "USA",
+        },
+      });
+      let geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+
+      // Test again including a (seemingly valid!) region
+      req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "USA-NY",
+        },
+      });
+      geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid, numeric country geolocation headers", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "00",
+        },
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("discards invalid region geolocation headers", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "US",
+          "CloudFront-Viewer-Country-Region": "NewYork",
+        },
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toEqual({
+        country: "US",
+        location: "US",
+      });
+    });
+
+    it("handles various ISO-3166 edge cases (numeric regions, single-character codes, etc.)", async () => {
+      const tests = [
+        { input: { country: "US", region: undefined }, expected: "US" },
+        { input: { country: "us", region: undefined }, expected: "us" },
+        { input: { country: "SE", region: "O" }, expected: "SE-O" },
+        { input: { country: "gb", region: "eng" }, expected: "gb-eng" },
+        { input: { country: "RU", region: "PRI" }, expected: "RU-PRI" },
+        { input: { country: "TR", region: "09" }, expected: "TR-09" },
+        { input: { country: "BF", region: "03" }, expected: "BF-03" },
+        { input: { country: "CZ", region: "321" }, expected: "CZ-321" },
+        { input: { country: "EEA", region: undefined }, expected: "EEA" },
+      ];
+      return Promise.all(
+        tests.map(async (value) => {
+          const { input, expected } = value;
+          const req = createRequest({
+            url: "https://privacy.example.com/fides.js",
+            headers: {
+              "CloudFront-Viewer-Country": input.country,
+              "CloudFront-Viewer-Country-Region": input.region,
+            },
+          });
+          const geolocation = await lookupGeolocation(req);
+          expect(geolocation).toEqual({
+            country: input.country,
+            region: input.region,
+            location: expected,
+          });
+        })
+      );
     });
   });
 
@@ -70,12 +163,117 @@ describe("getGeolocation", () => {
       });
     });
 
-    it("handles invalid geolocation query param", async () => {
+    it("supports the special 'EEA' code in geolocation query param", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=EEA",
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toEqual({
+        country: "EEA",
+        location: "EEA",
+      });
+    });
+
+    it("ignores invalid geolocation query param", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=America",
       });
       const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid three-character country codes in geolocation query param", async () => {
+      let req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=USA",
+      });
+      let geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+
+      // Test again including a (seemingly valid!) region
+      req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=USA-NY",
+      });
+      geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid, numeric geolocation query param", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=12",
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid, partial locations from geolocation query param (e.g. 'US-')", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=US-",
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("ignores invalid regions from geolocation query param (e.g. 'US-NewYork')", async () => {
+      const req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=US-NewYork",
+      });
+      const geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+    });
+
+    it("handles various ISO-3166 edge cases (numeric regions, single-character codes, etc.)", async () => {
+      const tests = [
+        {
+          input: "US",
+          expected: { location: "US", country: "US", region: undefined },
+        },
+        {
+          input: "us",
+          expected: { location: "us", country: "us", region: undefined },
+        },
+        {
+          input: "SE-O",
+          expected: { location: "SE-O", country: "SE", region: "O" },
+        },
+        {
+          input: "gb-eng",
+          expected: { location: "gb-eng", country: "gb", region: "eng" },
+        },
+        {
+          input: "RU-PRI",
+          expected: { location: "RU-PRI", country: "RU", region: "PRI" },
+        },
+        {
+          input: "TR-09",
+          expected: { location: "TR-09", country: "TR", region: "09" },
+        },
+        {
+          input: "BF-03",
+          expected: { location: "BF-03", country: "BF", region: "03" },
+        },
+        {
+          input: "CZ-321",
+          expected: { location: "CZ-321", country: "CZ", region: "321" },
+        },
+        {
+          input: "EEA",
+          expected: { location: "EEA", country: "EEA", region: undefined },
+        },
+      ];
+      return Promise.all(
+        tests.map(async (value) => {
+          const { input, expected } = value;
+          const req = createRequest({
+            url: `https://privacy.example.com/fides.js?geolocation=${input}`,
+          });
+          const geolocation = await lookupGeolocation(req);
+          expect(geolocation).toEqual({
+            country: expected.country,
+            region: expected.region,
+            location: expected.location,
+          });
+        })
+      );
     });
   });
 

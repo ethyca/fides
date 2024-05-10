@@ -1,4 +1,5 @@
 """Contains the nox sessions used during CI checks."""
+
 from functools import partial
 from typing import Callable, Dict
 
@@ -312,7 +313,7 @@ def collect_tests(session: nox.Session) -> None:
     errors within the test code.
     """
     session.install(".")
-    install_requirements(session)
+    install_requirements(session, True)
     command = ("pytest", "tests/", "--collect-only")
     session.run(*command)
 

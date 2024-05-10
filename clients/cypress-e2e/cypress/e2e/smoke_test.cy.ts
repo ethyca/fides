@@ -30,16 +30,11 @@ describe("Smoke test", () => {
         {
           identity: {
             email: "jenny@example.com",
-            phone_number: "",
           },
           custom_privacy_request_fields: {
             first_name: {
               label: "First name",
               value: "Jenny",
-            },
-            last_name: {
-              label: "Last name",
-              value: "",
             },
             color: {
               label: "Color",
@@ -99,13 +94,13 @@ describe("Smoke test", () => {
     cy.login();
 
     // Postgres
-    cy.get("a").contains("Data map").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_postgresql_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
 
     // Mongo
-    cy.get("a").contains("Data map").click();
+    cy.getByTestId("Systems & vendors-nav-link").click();
     cy.getByTestId("system-cookie_house_customer_database").click();
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
@@ -117,6 +112,8 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
 
@@ -126,25 +123,22 @@ describe("Smoke test", () => {
     //  - Product Analytics => true
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
       cy.contains("Data Sales or Sharing");
-      cy.getRadio("true").should("be.checked");
-      cy.getRadio("false").should("not.be.checked");
+      cy.getToggle().should("be.checked");
     });
     cy.getByTestId(`consent-item-marketing.advertising.first_party`).within(
       () => {
         cy.contains("Email Marketing");
-        cy.getRadio("true").should("be.checked");
-        cy.getRadio("false").should("not.be.checked");
+        cy.getToggle().should("be.checked");
       }
     );
     cy.getByTestId(`consent-item-functional`).within(() => {
       cy.contains("Product Analytics");
-      cy.getRadio("true").should("be.checked");
-      cy.getRadio("false").should("not.be.checked");
+      cy.getToggle().should("be.checked");
     });
 
     // Opt-out of data sales / sharing
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
-      cy.getRadio("false").check({ force: true });
+      cy.getToggle().uncheck({ force: true });
     });
     cy.contains("Save").click();
     cy.contains("Your consent preferences have been saved");
@@ -155,11 +149,12 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
-      cy.getRadio("true").should("not.be.checked");
-      cy.getRadio("false").should("be.checked");
+      cy.getToggle().should("not.be.checked");
     });
     cy.getCookie("fides_consent").should("exist");
 

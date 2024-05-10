@@ -309,6 +309,7 @@ def handle_aws_credentials_options(
     fides_config: FidesConfig,
     access_key_id: str,
     secret_access_key: str,
+    session_token: str,
     region: str,
     credentials_id: str,
 ) -> Optional[AWSConfig]:
@@ -330,6 +331,7 @@ def handle_aws_credentials_options(
         aws_config = AWSConfig(
             aws_access_key_id=access_key_id,
             aws_secret_access_key=secret_access_key,
+            aws_session_token=session_token,
             region_name=region,
         )
     if credentials_id:

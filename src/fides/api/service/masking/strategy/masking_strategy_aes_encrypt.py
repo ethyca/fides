@@ -37,9 +37,9 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             return None
 
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
-            masking_meta: Dict[
-                SecretType, MaskingSecretMeta
-            ] = self._build_masking_secret_meta()
+            masking_meta: Dict[SecretType, MaskingSecretMeta] = (
+                self._build_masking_secret_meta()
+            )
             key: bytes | None = SecretsUtil.get_or_generate_secret(
                 request_id, SecretType.key, masking_meta[SecretType.key]
             )
@@ -75,9 +75,9 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         return True
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
-        masking_meta: Dict[
-            SecretType, MaskingSecretMeta
-        ] = self._build_masking_secret_meta()
+        masking_meta: Dict[SecretType, MaskingSecretMeta] = (
+            self._build_masking_secret_meta()
+        )
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @classmethod

@@ -1,4 +1,5 @@
 from typing import Any, Dict, Generator
+from urllib.parse import quote
 
 import pydash
 import pytest
@@ -129,7 +130,7 @@ def auth0_access_data(
 
     headers = {"Authorization": f"Bearer {auth0_token}"}
     user_response = requests.get(
-        url=f"{base_url}/api/v2/users-by-email?email={auth0_identity_email}",
+        url=f"{base_url}/api/v2/users-by-email?email={quote(auth0_identity_email)}",
         headers=headers,
     )
     assert user_response.ok
