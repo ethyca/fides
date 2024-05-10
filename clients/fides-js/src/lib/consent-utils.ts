@@ -101,8 +101,6 @@ export const constructFidesRegionString = (
   if (geoLocation.country && geoLocation.region) {
     return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
   }
-  // DEFER: return geoLocation.country when BE supports filtering by just country
-  // see https://github.com/ethyca/fides/issues/3300
   debugLog(
     debug,
     "cannot construct user location from provided geoLocation params..."

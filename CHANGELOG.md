@@ -33,6 +33,7 @@ The types of changes are:
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
 - Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
+- Ignore invalid three-character country codes for FidesJS geolocation (e.g. "USA") [#4877](https://github.com/ethyca/fides/pull/4877)
 
 ### Developer Experience
 - Update typedoc-plugin-markdown to 4.0.0 [#4870](https://github.com/ethyca/fides/pull/4870)
