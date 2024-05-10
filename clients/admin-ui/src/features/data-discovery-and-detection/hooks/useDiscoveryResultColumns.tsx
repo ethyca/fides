@@ -6,11 +6,14 @@ import {
   RelativeTimestampCell,
 } from "~/features/common/table/v2/cells";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
 
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import ResultStatusCell from "../tables/ResultStatusCell";
 import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
+import findActivityType from "../utils/getResourceActivityLabel";
 
 const useDiscoveryResultColumns = ({
   resourceType,
@@ -21,8 +24,47 @@ const useDiscoveryResultColumns = ({
 
   const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
 
-  if (!resourceType) {
-    return { columns: defaultColumns };
+  if (resourceType === StagedResourceType.SCHEMA) {
+    const columns = [
+      columnHelper.accessor((row) => row.name, {
+        id: "name",
+        cell: (props) => (
+          <ResultStatusCell
+            result={props.row.original}
+            changeTypeOverride={ResourceChangeType.CLASSIFICATION}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.urn, {
+        id: "project",
+        cell: (props) => (
+          <DefaultCell value={findProjectFromUrn(props.getValue())} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Project" {...props} />,
+      }),
+      columnHelper.accessor((resource) => findActivityType(resource), {
+        id: "type",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.monitor_config_id, {
+        id: "monitor",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.source_modified, {
+        id: "time",
+        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="When" {...props} />,
+      }),
+      columnHelper.display({
+        id: "action",
+        cell: (props) => <DiscoveryItemActions resource={props.row.original} />,
+        header: "Actions",
+      }),
+    ];
+    return { columns };
   }
 
   if (resourceType === StagedResourceType.TABLE) {

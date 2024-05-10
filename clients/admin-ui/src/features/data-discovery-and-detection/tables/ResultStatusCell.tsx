@@ -59,19 +59,28 @@ const getResourceChangeIcon = (changeType: ResourceChangeType) => {
   }
 };
 
-const ResultStatusCell = ({ result }: { result: StagedResource }) => (
-  <Flex alignItems="center" height="100%">
-    {getResourceChangeIcon(findResourceChangeType(result))}
-    <Text
-      fontSize="xs"
-      lineHeight={4}
-      fontWeight="normal"
-      overflow="hidden"
-      textOverflow="ellipsis"
-    >
-      {result.name}
-    </Text>
-  </Flex>
-);
+const ResultStatusCell = ({
+  result,
+  changeTypeOverride,
+}: {
+  result: StagedResource;
+  changeTypeOverride?: ResourceChangeType;
+}) => {
+  const changeType = changeTypeOverride ?? findResourceChangeType(result);
+  return (
+    <Flex alignItems="center" height="100%">
+      {getResourceChangeIcon(changeType)}
+      <Text
+        fontSize="xs"
+        lineHeight={4}
+        fontWeight="normal"
+        overflow="hidden"
+        textOverflow="ellipsis"
+      >
+        {result.name}
+      </Text>
+    </Flex>
+  );
+};
 
 export default ResultStatusCell;

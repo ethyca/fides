@@ -252,14 +252,15 @@ describe("discovery and detection", () => {
       });
 
       it("should show columns for classifications", () => {
-        cy.getByTestId("row-test_dataset_1-col-type").should(
-          "contain",
-          "Classification"
-        );
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1-col-type"
+        ).should("contain", "Classification");
       });
 
       it("should navigate to table view on row click", () => {
-        cy.getByTestId("row-test_dataset_1").click();
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1"
+        ).click();
         cy.url().should("contain", "test_dataset_1");
         cy.getByTestId("results-breadcrumb").should(
           "contain",

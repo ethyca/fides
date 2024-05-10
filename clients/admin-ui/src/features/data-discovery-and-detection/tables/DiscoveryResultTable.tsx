@@ -59,7 +59,7 @@ const EmptyTableNotice = () => (
 );
 
 interface MonitorResultTableProps {
-  resourceUrn: string;
+  resourceUrn?: string;
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
@@ -168,7 +168,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
             </Flex>
           )}
           {resourceType === StagedResourceType.FIELD && (
-            <DiscoveryFieldBulkActions resourceUrn={resourceUrn} />
+            <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
           )}
         </Flex>
       </TableActionBar>
