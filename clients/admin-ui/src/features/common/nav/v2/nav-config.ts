@@ -35,6 +35,32 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Detection & Discovery",
+    routes: [
+      {
+        title: "Activity",
+        path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+      {
+        title: "Data detection",
+        path: routes.DATA_DETECTION_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+      {
+        title: "Data discovery",
+        path: routes.DATA_DISCOVERY_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+    ],
+  },
+  {
     title: "Data inventory",
     routes: [
       {
@@ -387,7 +413,6 @@ export const configureNavGroups = ({
       title: group.title,
       children: [],
     };
-    navGroups.push(navGroup);
 
     group.routes.forEach((route) => {
       const routeConfig = configureNavRoute({
@@ -402,6 +427,11 @@ export const configureNavGroups = ({
         navGroup.children.push(routeConfig);
       }
     });
+
+    // Add navgroup if it has routes available
+    if (navGroup.children.length) {
+      navGroups.push(navGroup);
+    }
   });
 
   return navGroups;

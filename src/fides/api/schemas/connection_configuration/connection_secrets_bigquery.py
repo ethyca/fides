@@ -39,7 +39,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         description="The dataset within your BigQuery project that contains the tables you want to access.",
     )
 
-    _required_components: List[str] = ["keyfile_creds", "dataset"]
+    _required_components: List[str] = ["keyfile_creds"]
 
     @validator("keyfile_creds", pre=True)
     def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:

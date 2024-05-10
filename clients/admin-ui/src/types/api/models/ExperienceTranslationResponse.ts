@@ -30,6 +30,10 @@ export type ExperienceTranslationResponse = {
    */
   privacy_policy_link_label?: string;
   /**
+   * Modal link label
+   */
+  modal_link_label?: string;
+  /**
    * Privacy policy URL
    */
   privacy_policy_url?: string;
