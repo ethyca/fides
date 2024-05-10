@@ -21,7 +21,8 @@ The types of changes are:
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 
 ### Fixed
-- Fixed an issue with the Iterate connector returning At least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
+- Fixed an issue with the Iterate connector returning at least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
+- Enhanced classification of the dataset used with Twilio [#4872](https://github.com/ethyca/fides/pull/4872)
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
