@@ -183,11 +183,10 @@ describe("getGeolocation", () => {
     });
 
     it("ignores invalid three-character country codes in geolocation query param", async () => {
-      let req, geolocation;
-      req = createRequest({
+      let req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=USA",
       });
-      geolocation = await lookupGeolocation(req);
+      let geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
 
       // Test again including a (seemingly valid!) region
