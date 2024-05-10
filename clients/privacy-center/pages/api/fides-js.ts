@@ -52,13 +52,13 @@ let autoRefresh: boolean = true;
  *         description: Optional identifier used to filter for experiences associated with the given property. If omitted, returns all experiences not associated with any properties.
  *         schema:
  *           type: string
+ *         example: FDS-A0B1C2
  *       - in: query
  *         name: refresh
  *         required: false
  *         description: Signals fides.js to use the latest custom-fides.css (if available)
  *         schema:
  *           type: boolean
- *         example: FDS-A0B1C2
  *       - in: query
  *         name: gpp
  *         required: false

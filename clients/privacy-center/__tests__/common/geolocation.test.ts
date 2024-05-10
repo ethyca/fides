@@ -71,13 +71,23 @@ describe("getGeolocation", () => {
     });
 
     it("ignores invalid three-character country geolocation headers", async () => {
-      const req = createRequest({
+      let req = createRequest({
         url: "https://privacy.example.com/fides.js",
         headers: {
           "CloudFront-Viewer-Country": "USA",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      let geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+
+      // Test again including a (seemingly valid!) region
+      req = createRequest({
+        url: "https://privacy.example.com/fides.js",
+        headers: {
+          "CloudFront-Viewer-Country": "USA-NY",
+        },
+      });
+      geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
     });
 
@@ -173,10 +183,18 @@ describe("getGeolocation", () => {
     });
 
     it("ignores invalid three-character country codes in geolocation query param", async () => {
-      const req = createRequest({
+      let req, geolocation;
+      req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=USA",
       });
-      const geolocation = await lookupGeolocation(req);
+      geolocation = await lookupGeolocation(req);
+      expect(geolocation).toBeNull();
+
+      // Test again including a (seemingly valid!) region
+      req = createRequest({
+        url: "https://privacy.example.com/fides.js?geolocation=USA-NY",
+      });
+      geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
     });
 
