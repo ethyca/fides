@@ -35,5 +35,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "dataDiscoveryAndDetection": {
+    "description": "Data discovery and detection",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

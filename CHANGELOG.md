@@ -17,6 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
 
+### Changed
+- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
+
+### Fixed
+- Fixed an issue with the Iterate connector returning at least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
+- Enhanced classification of the dataset used with Twilio [#4872](https://github.com/ethyca/fides/pull/4872)
+
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
 ### Added
@@ -26,6 +33,7 @@ The types of changes are:
 - Added custom JSON (de)serialization to shared DB engines to handle non-standard data types in JSONB columns [#4818](https://github.com/ethyca/fides/pull/4818)
 - Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
 - Removed currentprivacypreference and lastservednotice tables [#4846](https://github.com/ethyca/fides/pull/4846)
+- Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
 
 ### Changed
 - Changed filters on the data map report table to use checkbox collapsible tree view [#4864](https://github.com/ethyca/fides/pull/4864)

@@ -111,6 +111,7 @@ const useTaxonomies = () => {
     getDataSubjects,
     getDataSubjectByKey,
     getDataSubjectDisplayName,
+    getPrimaryKey,
     isLoading,
   };
 };
