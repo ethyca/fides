@@ -10,6 +10,7 @@ const withTM = require("next-transpile-modules")([
   "react-syntax-highlighter",
   "swagger-client",
   "swagger-ui-react",
+  "fidesui",
 ]);
 
 /** @type {import('next').NextConfig} */
