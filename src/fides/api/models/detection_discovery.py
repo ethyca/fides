@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Iterable
+from typing import Iterable, Optional
 
 from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
