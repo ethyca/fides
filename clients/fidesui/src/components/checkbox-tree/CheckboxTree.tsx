@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 import React, { Fragment, useEffect, useState } from "react";
 
 import { CheckboxItem } from "./CheckboxItem";

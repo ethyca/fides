@@ -11,7 +11,7 @@ import {
   MenuList,
   MenuOptionGroup,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useMemo } from "react";
 
 import { CheckboxTree } from "../checkbox-tree";

@@ -1,4 +1,4 @@
-import { forwardRef, Link } from "@fidesui/react";
+import { forwardRef, Link } from "fidesui";
 import React from "react";
 
 import { LinkProps } from "./types";

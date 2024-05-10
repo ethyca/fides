@@ -1,4 +1,4 @@
-import { ListItem, UnorderedList } from "@fidesui/react";
+import { ListItem, UnorderedList } from "fidesui";
 import React, { ReactNode } from "react";
 
 interface Props {

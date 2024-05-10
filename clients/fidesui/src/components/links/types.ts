@@ -1,4 +1,4 @@
-import { LinkProps as ChakraLinkProps } from "@fidesui/react";
+import { LinkProps as ChakraLinkProps } from "fidesui";
 
 export type LinkProps = ChakraLinkProps & {
   isDisabled?: boolean;

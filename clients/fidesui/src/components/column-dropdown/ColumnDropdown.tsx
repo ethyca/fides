@@ -8,7 +8,7 @@ import {
   MenuButton,
   MenuList,
   Stack,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useMemo } from "react";
 
 export interface ColumnMetadata<T = Record<string, unknown>> {

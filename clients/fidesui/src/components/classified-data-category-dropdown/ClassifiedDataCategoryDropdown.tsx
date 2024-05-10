@@ -1,4 +1,4 @@
-import { Box, ButtonProps } from "@fidesui/react";
+import { Box, ButtonProps } from "fidesui";
 import { MultiValue, Select } from "chakra-react-select";
 import React, { useMemo } from "react";
 

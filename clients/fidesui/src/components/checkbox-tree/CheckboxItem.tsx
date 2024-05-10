@@ -4,7 +4,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   IconButton,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { ReactNode } from "react";
 
 import { TreeNode } from "./types";
