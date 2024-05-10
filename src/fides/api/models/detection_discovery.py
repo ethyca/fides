@@ -132,7 +132,8 @@ class StagedResource(Base):
         """
         self.diff_status = DiffStatus.ADDITION.value
         for parent_resource_urn in parent_resource_urns:
-            parent_resource: StagedResource = StagedResource.get_urn(
+            parent_resource: Optional[StagedResource] = StagedResource.get_urn(
                 db, parent_resource_urn
             )
-            parent_resource.add_child_diff_status(DiffStatus.ADDITION)
+            if parent_resource:
+                parent_resource.add_child_diff_status(DiffStatus.ADDITION)
