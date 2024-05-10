@@ -35,8 +35,8 @@ class Property(FidesSchema):
     experiences: List[MinimalPrivacyExperience]
     privacy_center_config: Optional[PrivacyCenterConfig]
     stylesheet: Optional[CssStr]
-    paths: Optional[List[str]] = None
+    paths: List[str]
 
     @validator("paths", pre=True)
-    def convert_to_list(cls, value):
+    def convert_to_list(cls, value: Iterable) -> List[str]:
         return list(value)
