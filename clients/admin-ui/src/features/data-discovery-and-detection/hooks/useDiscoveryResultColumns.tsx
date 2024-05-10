@@ -9,6 +9,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
+import { DiffStatus } from "~/types/api";
 
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import ResultStatusCell from "../tables/ResultStatusCell";
@@ -60,7 +61,12 @@ const useDiscoveryResultColumns = ({
       }),
       columnHelper.display({
         id: "action",
-        cell: (props) => <DiscoveryItemActions resource={props.row.original} />,
+        cell: (props) =>
+          props.row.original.diff_status === DiffStatus.MONITORED ? (
+            <DiscoveryItemActions resource={props.row.original} />
+          ) : (
+            <DefaultCell value="--" />
+          ),
         header: "Actions",
       }),
     ];
