@@ -1,4 +1,3 @@
-import { Box, Center, Spinner, VStack } from "@fidesui/react";
 import { useAlert, useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
@@ -10,6 +9,7 @@ import {
   CreateAccessManualWebhookRequest,
   PatchAccessManualWebhookRequest,
 } from "datastore-connections/types";
+import { Box, Center, Spinner, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 

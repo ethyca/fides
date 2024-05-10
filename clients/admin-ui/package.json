@@ -31,8 +31,6 @@
     "@chakra-ui/icons": "1.1.7",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@fidesui/components": "^0.7.1",
-    "@fidesui/react": "^0.0.23",
     "@fontsource/inter": "^4.5.15",
     "@monaco-editor/react": "^4.4.6",
     "@reduxjs/toolkit": "^1.9.3",

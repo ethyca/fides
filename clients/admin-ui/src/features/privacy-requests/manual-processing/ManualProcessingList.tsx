@@ -1,3 +1,5 @@
+import { useAlert, useAPIHelper } from "common/hooks";
+import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
   Box,
   Button,
@@ -15,9 +17,7 @@ import {
   Thead,
   Tr,
   VStack,
-} from "@fidesui/react";
-import { useAlert, useAPIHelper } from "common/hooks";
-import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
+} from "fidesui";
 import {
   privacyRequestApi,
   useResumePrivacyRequestFromRequiresInputMutation,

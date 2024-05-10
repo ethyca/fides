@@ -1,13 +1,13 @@
-import { SecondaryLink } from "@fidesui/components";
 import {
   Box,
   Button,
   ExternalLinkIcon,
   Flex,
+  SecondaryLink,
   Spacer,
   Text,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React from "react";
 import * as Yup from "yup";

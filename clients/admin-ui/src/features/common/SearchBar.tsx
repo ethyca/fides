@@ -6,7 +6,7 @@ import {
   InputProps,
   InputRightElement,
   SearchLineIcon,
-} from "@fidesui/react";
+} from "fidesui";
 
 interface Props extends Omit<InputProps, "onChange"> {
   search?: string;

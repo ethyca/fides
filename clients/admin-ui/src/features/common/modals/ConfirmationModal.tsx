@@ -10,7 +10,7 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode } from "react";
 
 interface Props {

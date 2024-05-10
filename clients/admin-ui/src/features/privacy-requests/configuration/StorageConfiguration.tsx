@@ -1,5 +1,12 @@
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "@fidesui/components";
-import { Box, Heading, Radio, RadioGroup, Stack, Text } from "@fidesui/react";
+import {
+  Box,
+  Heading,
+  PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+  Radio,
+  RadioGroup,
+  Stack,
+  Text,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";

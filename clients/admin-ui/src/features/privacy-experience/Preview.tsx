@@ -1,5 +1,5 @@
-import { Flex, Text, useToast } from "@fidesui/react";
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
+import { Flex, Text, useToast } from "fidesui";
 import { useFormikContext } from "formik";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";

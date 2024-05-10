@@ -1,12 +1,3 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Spinner,
-  Text,
-  useDisclosure,
-  useToast,
-} from "@fidesui/react";
 import Restrict, { useHasPermission } from "common/Restrict";
 import {
   FidesTable,
@@ -15,6 +6,15 @@ import {
   WrappedCell,
 } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
+import {
+  Box,
+  Button,
+  Flex,
+  Spinner,
+  Text,
+  useDisclosure,
+  useToast,
+} from "fidesui";
 import React, { useMemo, useState } from "react";
 import { Column, Hooks } from "react-table";
 

@@ -5,7 +5,7 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 
 import WarningModal from "~/features/common/modals/WarningModal";
 

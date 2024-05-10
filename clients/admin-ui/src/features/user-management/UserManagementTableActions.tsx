@@ -1,4 +1,4 @@
-import { Button, Stack } from "@fidesui/react";
+import { Button, Stack } from "fidesui";
 import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";

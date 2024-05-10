@@ -9,7 +9,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Spacer,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { SystemHistoryResponse } from "~/types/api";
 

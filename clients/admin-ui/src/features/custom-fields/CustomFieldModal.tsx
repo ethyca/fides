@@ -1,13 +1,13 @@
+import { FieldTypes } from "common/custom-fields";
+import { getErrorMessage } from "common/helpers";
+import { useAlert } from "common/hooks";
 import {
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-} from "@fidesui/react";
-import { FieldTypes } from "common/custom-fields";
-import { getErrorMessage } from "common/helpers";
-import { useAlert } from "common/hooks";
+} from "fidesui";
 import { Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";

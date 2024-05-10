@@ -2,8 +2,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 
-import { Flex } from "@fidesui/react";
-import { FidesUIProvider } from "fidesui";
+import { FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
 import React from "react";
 import { DndProvider } from "react-dnd";

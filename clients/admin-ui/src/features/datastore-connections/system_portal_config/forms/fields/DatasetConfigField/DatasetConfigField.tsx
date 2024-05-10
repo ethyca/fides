@@ -1,5 +1,4 @@
 import { EditIcon } from "@chakra-ui/icons";
-import { Flex, FormControl, IconButton, useDisclosure } from "@fidesui/react";
 import {
   ErrorMessage,
   Label,
@@ -16,6 +15,7 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
+import { Flex, FormControl, IconButton, useDisclosure } from "fidesui";
 import { useField, useFormikContext } from "formik";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 

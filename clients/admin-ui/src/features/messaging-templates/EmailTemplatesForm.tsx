@@ -1,6 +1,6 @@
-import { Box, Button, Flex, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { Box, Button, Flex, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";

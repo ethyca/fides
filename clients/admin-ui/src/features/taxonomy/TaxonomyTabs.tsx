@@ -1,4 +1,4 @@
-import { Box, Button } from "@fidesui/react";
+import { Box, Button } from "fidesui";
 
 import { useAppDispatch } from "~/app/hooks";
 

@@ -1,5 +1,5 @@
 import { AddIcon, WarningTwoIcon } from "@chakra-ui/icons";
-import { Box, Button, HStack, Stack, Text } from "@fidesui/react";
+import { Box, Button, HStack, Stack, Text } from "fidesui";
 import { ReactNode } from "react";
 
 type Props = {

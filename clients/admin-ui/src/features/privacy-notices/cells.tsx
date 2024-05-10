@@ -1,5 +1,5 @@
-import { Badge, TagProps, Tooltip } from "@fidesui/react";
 import { CellContext } from "@tanstack/react-table";
+import { Badge, TagProps, Tooltip } from "fidesui";
 import React from "react";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";

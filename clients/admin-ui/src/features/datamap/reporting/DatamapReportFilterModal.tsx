@@ -7,7 +7,7 @@ import {
   AccordionPanel,
   Box,
   Heading,
-} from "@fidesui/react";
+} from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
