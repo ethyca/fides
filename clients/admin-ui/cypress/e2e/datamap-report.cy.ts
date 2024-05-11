@@ -165,6 +165,34 @@ describe("Minimal datamap report table", () => {
     });
   });
 
+  describe("Filtering", () => {
+    it("should filter the table by making a selection", () => {
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal").should("be.visible");
+      cy.getByTestId("filter-modal-accordion-button").eq(1).click();
+      cy.getByTestId("filter-modal-checkbox-tree-categories").should(
+        "be.visible"
+      );
+      cy.getByTestId("filter-modal-checkbox-tree-categories")
+        .find("input")
+        .first()
+        .click({ force: true });
+      cy.getByTestId("datamap-report-filter-modal-continue-btn").click();
+      cy.get("@getDatamapMinimal")
+        .its("request.url")
+        .should("include", "data_categories=custom");
+      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
+
+      // should clear the filters
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal-cancel-btn").click();
+      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
+      cy.wait("@getDatamapMinimal")
+        .its("request.url")
+        .should("not.include", "data_categories=custom");
+    });
+  });
+
   describe("Exporting", () => {
     it("should open the export modal", () => {
       cy.getByTestId("export-btn").click();

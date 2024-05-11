@@ -11,6 +11,16 @@ export const SYSTEM_ROUTE = "/systems";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 export const DATASET_ROUTE = "/dataset";
 
+// Detection and discovery
+export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";
+export const DATA_DETECTION_ROUTE = "/data-discovery/detection";
+export const DATA_DETECTION_ROUTE_DETAIL =
+  "/data-discovery/detection/[resourceUrn]";
+
+export const DATA_DISCOVERY_ROUTE = "/data-discovery/discovery";
+export const DATA_DISCOVERY_ROUTE_DETAIL =
+  "/data-discovery/discovery/[resourceUrn]";
+
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";

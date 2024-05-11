@@ -1,3 +1,5 @@
+import { stubPlus } from "cypress/support/stubs";
+
 describe("Nav Bar", () => {
   beforeEach(() => {
     cy.login();
@@ -24,6 +26,18 @@ describe("Nav Bar", () => {
       cy.getByTestId("Organization-nav-link");
       cy.getByTestId("Taxonomy-nav-link");
       cy.getByTestId("About Fides-nav-link");
+    });
+  });
+
+  it("renders the Consent and Detection & Discovery navs with Plus", () => {
+    stubPlus(true);
+    cy.visit("/");
+
+    cy.get("nav button").should("have.length", 9);
+    cy.getByTestId("Detection & Discovery-nav-group").within(() => {
+      cy.getByTestId("Activity-nav-link").should("exist");
+      cy.getByTestId("Data detection-nav-link").should("exist");
+      cy.getByTestId("Data discovery-nav-link").should("exist");
     });
   });
 

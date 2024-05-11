@@ -38,7 +38,7 @@ import { useAppSelector } from "~/app/hooks";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
-import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
+import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
   DATAMAP_LOCAL_STORAGE_KEYS,
   ExportFormat,
@@ -50,7 +50,7 @@ import {
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import {
   DatamapReportFilterModal,
-  useDatamapReportFilters,
+  DatamapReportFilterSelections,
 } from "~/features/datamap/reporting/DatamapReportFilterModal";
 import {
   selectAllCustomFieldDefinitions,
@@ -223,17 +223,10 @@ export const DatamapReportTable = () => {
   } = useServerSidePagination();
 
   const {
-    isOpen,
-    onClose,
-    onOpen,
-    resetFilters,
-    dataUseOptions,
-    onDataUseChange,
-    dataCategoriesOptions,
-    onDataCategoriesChange,
-    dataSubjectOptions,
-    onDataSubjectChange,
-  } = useDatamapReportFilters();
+    isOpen: isFilterModalOpen,
+    onClose: onFilterModalClose,
+    onOpen: onFilterModalOpen,
+  } = useDisclosure();
 
   const {
     getDataUseDisplayName,
@@ -242,20 +235,12 @@ export const DatamapReportTable = () => {
     isLoading: isLoadingFidesLang,
   } = useTaxonomies();
 
-  const selectedDataUseFilters = useMemo(
-    () => getQueryParamsFromList(dataUseOptions, "data_uses"),
-    [dataUseOptions]
-  );
-
-  const selectedDataCategoriesFilters = useMemo(
-    () => getQueryParamsFromList(dataCategoriesOptions, "data_categories"),
-    [dataCategoriesOptions]
-  );
-
-  const selectedDataSubjectFilters = useMemo(
-    () => getQueryParamsFromList(dataSubjectOptions, "data_subjects"),
-    [dataSubjectOptions]
-  );
+  const [selectedDataUseFilters, setSelectedDataUseFilters] =
+    useState<string>();
+  const [selectedDataCategoriesFilters, setSelectedDataCategoriesFilters] =
+    useState<string>();
+  const [selectedDataSubjectFilters, setSelectedDataSubjectFilters] =
+    useState<string>();
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = useState<string>("");
@@ -1076,6 +1061,18 @@ export const DatamapReportTable = () => {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
+  const handleFilterChange = (newFilters: DatamapReportFilterSelections) => {
+    setSelectedDataUseFilters(
+      getQueryParamsFromArray(newFilters.dataUses, "data_uses")
+    );
+    setSelectedDataCategoriesFilters(
+      getQueryParamsFromArray(newFilters.dataCategories, "data_categories")
+    );
+    setSelectedDataSubjectFilters(
+      getQueryParamsFromArray(newFilters.dataSubjects, "data_subjects")
+    );
+  };
+
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <Heading
@@ -1087,15 +1084,9 @@ export const DatamapReportTable = () => {
         Data map report
       </Heading>
       <DatamapReportFilterModal
-        isOpen={isOpen}
-        onClose={onClose}
-        resetFilters={resetFilters}
-        dataUseOptions={dataUseOptions}
-        onDataUseChange={onDataUseChange}
-        dataCategoriesOptions={dataCategoriesOptions}
-        onDataCategoriesChange={onDataCategoriesChange}
-        dataSubjectOptions={dataSubjectOptions}
-        onDataSubjectChange={onDataSubjectChange}
+        isOpen={isFilterModalOpen}
+        onClose={onFilterModalClose}
+        onFilterChange={handleFilterChange}
       />
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
@@ -1168,7 +1159,7 @@ export const DatamapReportTable = () => {
             data-testid="filter-multiple-systems-btn"
             size="xs"
             variant="outline"
-            onClick={onOpen}
+            onClick={onFilterModalOpen}
           >
             Filter
           </Button>

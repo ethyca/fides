@@ -30,6 +30,10 @@ export type ExperienceTranslation = {
    */
   privacy_policy_link_label?: string;
   /**
+   * Modal link label
+   */
+  modal_link_label?: string;
+  /**
    * Privacy policy URL
    */
   privacy_policy_url?: string;
@@ -57,8 +61,4 @@ export type ExperienceTranslation = {
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string;
-  /**
-   * Custom link/button trigger label
-   */
-  modal_link_label?: string;
 };

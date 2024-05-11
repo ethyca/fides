@@ -15,17 +15,37 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.35.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
+
+### Added
+- Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
+### Changed
+- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
+
+### Fixed
+- Fixed an issue with the Iterate connector returning at least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
+- Enhanced classification of the dataset used with Twilio [#4872](https://github.com/ethyca/fides/pull/4872)
+
+## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
 ### Added
 - Added multiple language translations support for privacy center consent page [#4785](https://github.com/ethyca/fides/pull/4785)
 - Added ability to export the contents of datamap report [#1545](https://ethyca.atlassian.net/browse/PROD-1545)
+- Added `System` model support for new `vendor_deleted_date` field on Compass vendor records [#4818](https://github.com/ethyca/fides/pull/4818)
+- Added custom JSON (de)serialization to shared DB engines to handle non-standard data types in JSONB columns [#4818](https://github.com/ethyca/fides/pull/4818)
 - Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
 - Removed currentprivacypreference and lastservednotice tables [#4846](https://github.com/ethyca/fides/pull/4846)
+
+### Changed
+- Changed filters on the data map report table to use checkbox collapsible tree view [#4864](https://github.com/ethyca/fides/pull/4864)
 
 ### Fixed
 - Remove the extra 'white-space: normal' CSS for FidesJS HTML descriptions [#4850](https://github.com/ethyca/fides/pull/4850)
 - Fixed data map report to display second level names from the taxonomy as primary (bold) label [#4856](https://github.com/ethyca/fides/pull/4856)
+- Ignore invalid three-character country codes for FidesJS geolocation (e.g. "USA") [#4877](https://github.com/ethyca/fides/pull/4877)
+
+### Developer Experience
+- Update typedoc-plugin-markdown to 4.0.0 [#4870](https://github.com/ethyca/fides/pull/4870)
 
 ## [2.35.1](https://github.com/ethyca/fides/compare/2.35.0...2.35.1)
 
@@ -181,6 +201,7 @@ The types of changes are:
 - Update privacy experiences page to use the new table component [#4652](https://github.com/ethyca/fides/pull/4652)
 - Update privacy notices page to use the new table component [#4641](https://github.com/ethyca/fides/pull/4641)
 - Bumped supported Python versions to `3.10.13`, `3.9.18`, and `3.8.18`. Bumped Debian base image from `-bullseye` to `-bookworm`. [#4630](https://github.com/ethyca/fides/pull/4630)
+- Bumped Node.js base image from `16` to `20`. [#4684](https://github.com/ethyca/fides/pull/4684)
 
 ### Fixed
 
@@ -342,7 +363,6 @@ The types of changes are:
 - Fix an error where a connector response value of None causes a DSR failure due to a missing value [#4483](https://github.com/ethyca/fides/pull/4483)
 - Fixed system name being non-editable when locked for GVL [#4475](https://github.com/ethyca/fides/pull/4475)
 - Fixed a bug with "null" values for retention period field on data uses [#4487](https://github.com/ethyca/fides/pull/4487)
-- Fixed an issue with the Iterate connector returning At least one param_value references an invalid field for the 'update' request of user [#4514]
 
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 

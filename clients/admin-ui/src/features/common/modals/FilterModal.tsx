@@ -15,6 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  ModalProps,
   SimpleGrid,
   Text,
 } from "@fidesui/react";
@@ -167,19 +168,17 @@ export const FilterSection = ({ heading, children }: FilterSectionProps) => (
   </Box>
 );
 
-interface FilterModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+export interface FilterModalProps extends ModalProps {
   resetFilters: () => void;
 }
-
-export const FilterModal: React.FC<FilterModalProps> = ({
+export const FilterModal = ({
+  resetFilters,
   isOpen,
   onClose,
   children,
-  resetFilters,
-}) => (
-  <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
+  ...props
+}: FilterModalProps): JSX.Element => (
+  <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl" {...props}>
     <ModalOverlay />
     <ModalContent>
       <ModalHeader>Filters</ModalHeader>

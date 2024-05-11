@@ -701,6 +701,9 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+    - name: vendor_deleted_date
+      data_categories:
+      - system.operations
   - name: messagingconfig
     description: 'Fides Generated Description for Table: messagingconfig'
     data_categories: []
@@ -1944,29 +1947,29 @@ dataset:
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
-      data_categories: [system.operations]  
+      data_categories: [system.operations]
   - name: plus_privacy_experience_config_property
     fields:
     - name: id
       data_categories: [system.operations]
     - name: privacy_experience_config_id
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
     - name: property_id
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
   - name: plus_privacy_center_config
     fields:
     - name: id
       data_categories: [system.operations]
     - name: config
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
     - name: single_row
       data_categories: [system.operations]
   - name: preapprovalwebhook
@@ -2040,4 +2043,54 @@ dataset:
     - name: updated_at
       data_categories: [system]
     - name: upstream_tasks
+      data_categories: [system]
+  - name: monitorconfig
+    fields:
+    - name: classify_params
+      data_categories: [system]
+    - name: connection_config_id
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: key
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+  - name: stagedresource
+    fields:
+    - name: child_diff_statuses
+      data_categories: [system]
+    - name: children
+      data_categories: [system]
+    - name: classifications
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: description
+      data_categories: [system]
+    - name: diff_status
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: meta
+      data_categories: [system]
+    - name: monitor_config_id
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: parent
+      data_categories: [system]
+    - name: resource_type
+      data_categories: [system]
+    - name: source_modified
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: urn
+      data_categories: [system]
+    - name: user_assigned_data_categories
       data_categories: [system]

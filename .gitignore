@@ -87,10 +87,6 @@ project/metals.sbt
 # paulp script
 /.lib/
 
-# Editors
-.vscode/
-.idea/
-
 # Vagrant
 .vagrant/
 
@@ -234,13 +230,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-.idea
+.idea/
 
 # VSCode
 .vscode/*
-
-# Congigure and save debugging details in VS Code launch.json file
 !.vscode/launch.json
+!.vscode/settings.json
 
 *.code-workspace
 .mypy_cache
@@ -258,3 +253,7 @@ saas_config.toml
 # Frontend files
 **/node_modules
 **/.next
+
+
+# multilang migration backup files produced by db init
+multilang_migration_backup_*

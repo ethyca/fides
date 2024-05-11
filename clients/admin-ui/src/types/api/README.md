@@ -20,6 +20,12 @@ turbo run openapi:generate
 
 **The Fides server must be running on `localhost:8080`**. This will read the schema hosted at <http://localhost:8080/docs> and generate all TS files under `clients/admin-ui/src/types/api/`.
 
+You will also likely need to follow this by running `format`, in order to ensure the generated files are formatted correctly:
+
+```
+turbo run format
+```
+
 ## Resources
 
 - [FastAPI Client Generation](https://fastapi.tiangolo.com/advanced/generate-clients/?h=typescript#install-openapi-typescript-codegen)
