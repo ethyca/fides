@@ -15,14 +15,14 @@ revision = "5a8cee9c014c"
 down_revision = "f9b28f36b53e"
 branch_labels = None
 depends_on = None
-
+import time
 
 def upgrade():
     """Data migration for overhaul around how Privacy Preferences are saved.
     Historical preferences saved and notices served are migrated in place.
     Does not migrate last served notice and current privacy preference!
     """
-
+    start = time.time()
     bind = op.get_bind()
 
     logger.info("Migrating PrivacyPreferenceHistory.")
@@ -44,6 +44,9 @@ def upgrade():
     bind.execute(
         text(SERVED_NOTICE_HISTORY_UPDATE_QUERY),
     )
+    end = time.time()
+    print(f"Data migration time to complete: {end - start} (s)")
+
 
 
 def downgrade():
