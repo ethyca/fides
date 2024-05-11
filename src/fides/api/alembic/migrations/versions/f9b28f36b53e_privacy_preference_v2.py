@@ -19,8 +19,9 @@ depends_on = None
 import time
 from loguru import logger
 
+
 def upgrade():
-    logger.info("Starting schema migration.")
+    logger.info("Starting Privacy Preference V2 schema migration.")
 
     start = time.time()
     op.create_table(
@@ -67,7 +68,7 @@ def upgrade():
         ),
         sa.UniqueConstraint("phone_number", name="last_saved_for_phone_number"),
     )
-    logger.info("Created table current privacy preference.")
+    logger.info("Created table 'currentprivacypreferencev2'.")
 
     op.create_index(
         op.f("ix_currentprivacypreferencev2_created_at"),
@@ -105,7 +106,7 @@ def upgrade():
         ["updated_at"],
         unique=False,
     )
-    logger.info("Added indices to current privacy preference.")
+    logger.info("Added indices to new currentprivacypreferencev2.")
 
     op.create_table(
         "lastservednoticev2",
@@ -148,7 +149,7 @@ def upgrade():
         ),
         sa.UniqueConstraint("phone_number", name="last_served_for_phone_number"),
     )
-    logger.info("Created last served notice v2.")
+    logger.info("Created new table lastservednoticev2.")
 
     op.create_index(
         op.f("ix_lastservednoticev2_created_at"),
@@ -183,7 +184,7 @@ def upgrade():
         ["updated_at"],
         unique=False,
     )
-    logger.info("Added indices to last served notice v2.")
+    logger.info("Added indices to lastservednoticev2.")
 
     op.drop_index(
         "ix_currentprivacypreference_privacy_preference_history_id",
@@ -204,7 +205,9 @@ def upgrade():
         "lastservednotice",
         type_="foreignkey",
     )
-    logger.info("Dropped some indices and constraints.")
+    logger.info(
+        "Dropped existing indices and constraints from original lastservednotice and currentprivacypreference."
+    )
 
     # Getting rid of this link - lastservednotice is deprecated and we need to drop this existing connection
     op.drop_column("lastservednotice", "served_notice_history_id")
@@ -230,14 +233,14 @@ def upgrade():
             "tcf_preferences", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
     )
-    logger.info("added cols to privacy preference history.")
+    logger.info("Added new columns to privacypreferencehistory.")
 
     op.drop_index(
         op.f("ix_privacypreferencehistory_preference"),
         table_name="privacypreferencehistory",
     )
     op.create_index(
-        op.f("ix_privacypreferencehistory_preference_saved"),
+        op.f("ix_privacypreferencehistory_preference_old_column"),
         "privacypreferencehistory",
         ["preference"],
         unique=False,
@@ -245,13 +248,17 @@ def upgrade():
 
     op.add_column(
         "privacypreferencehistory",
-        sa.Column(
-            "preference_new", sa.String(), nullable=True
-        ),
+        sa.Column("preference_new", sa.String(), nullable=True),
     )
 
-    op.alter_column("privacypreferencehistory", "preference", new_column_name="preference_saved")
-    op.alter_column("privacypreferencehistory", "preference_new", new_column_name="preference")
+    op.alter_column(
+        "privacypreferencehistory",
+        "preference",
+        new_column_name="preference_old_column",
+    )
+    op.alter_column(
+        "privacypreferencehistory", "preference_new", new_column_name="preference"
+    )
 
     op.create_index(
         op.f("ix_privacypreferencehistory_preference"),
@@ -260,14 +267,9 @@ def upgrade():
         unique=False,
     )
 
-    # op.alter_column(
-    #     "privacypreferencehistory",
-    #     "preference",
-    #     type_=sa.String(),
-    #     existing_type=sa.Enum(ConsentMechanism),
-    # )
-
-    logger.info("altered privacy preference history type.")
+    logger.info(
+        "Added new empty preference column of new varchar type. Existing preferences stored under 'preference_old_column'."
+    )
 
     op.drop_index(
         "ix_privacypreferencehistory_feature", table_name="privacypreferencehistory"
@@ -312,7 +314,7 @@ def upgrade():
         "ix_privacypreferencehistory_vendor_legitimate_interests",
         table_name="privacypreferencehistory",
     )
-    logger.info("dropped numerous indices from privacypreferencehistory.")
+    logger.info("Dropped numerous indices from privacypreferencehistory.")
 
     op.create_index(
         op.f("ix_privacypreferencehistory_notice_key"),
@@ -332,7 +334,7 @@ def upgrade():
         ["notice_name"],
         unique=False,
     )
-    logger.info("created more indices on  privacypreferencehistory.")
+    logger.info("Created more indices on privacypreferencehistory.")
 
     op.drop_constraint(
         "privacypreferencehistory_provided_identity_id_fkey",
@@ -349,7 +351,7 @@ def upgrade():
         "privacypreferencehistory",
         type_="foreignkey",
     )
-    logger.info("dropped privacypreferencehistory constraints.")
+    logger.info("Dropped privacypreferencehistory constraints.")
 
     op.drop_column("privacypreferencehistory", "vendor_consent")
     op.drop_column("privacypreferencehistory", "purpose_consent")
@@ -364,7 +366,7 @@ def upgrade():
     op.drop_column("privacypreferencehistory", "vendor_legitimate_interests")
     op.drop_column("privacypreferencehistory", "feature")
     op.drop_column("privacypreferencehistory", "provided_identity_id")
-    logger.info("dropped privacypreferencehistory columns.")
+    logger.info("Dropped privacypreferencehistory columns.")
 
     op.add_column(
         "servednoticehistory", sa.Column("notice_key", sa.String(), nullable=True)
@@ -383,7 +385,7 @@ def upgrade():
         "servednoticehistory",
         sa.Column("tcf_served", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     )
-    logger.info("added servednoticehistory columns.")
+    logger.info("Added new servednoticehistory columns.")
 
     op.drop_index("ix_servednoticehistory_feature", table_name="servednoticehistory")
     op.drop_index(
@@ -420,7 +422,7 @@ def upgrade():
         "ix_servednoticehistory_vendor_legitimate_interests",
         table_name="servednoticehistory",
     )
-    logger.info("dropped servednoticehistory indices.")
+    logger.info("Dropped some existing servednoticehistory indices.")
 
     op.create_index(
         op.f("ix_servednoticehistory_notice_key"),
@@ -446,7 +448,7 @@ def upgrade():
         ["served_notice_history_id"],
         unique=False,
     )
-    logger.info("created servednoticehistory indices.")
+    logger.info("Created new servednoticehistory indices.")
 
     op.drop_constraint(
         "servednoticehistory_provided_identity_id_fkey",
@@ -458,7 +460,7 @@ def upgrade():
         "servednoticehistory",
         type_="foreignkey",
     )
-    logger.info("dropped served notice history constraint.")
+    logger.info("Dropped some existing servednoticehistory constraint.")
 
     op.drop_column("servednoticehistory", "vendor_consent")
     op.drop_column("servednoticehistory", "purpose_consent")
@@ -472,10 +474,11 @@ def upgrade():
     op.drop_column("servednoticehistory", "vendor_legitimate_interests")
     op.drop_column("servednoticehistory", "feature")
     op.drop_column("servednoticehistory", "provided_identity_id")
-    logger.info("dropped served notice history columns.")
+    logger.info("Dropped some existing servednoticehistory columns.")
 
     end = time.time()
-    print(f"Schema migration time to complete: {end - start} (s)")
+    print(f"Privacy Preference V2 Schema migration time to complete: {end - start} (s)")
+
 
 def downgrade():
     op.alter_column(
