@@ -232,13 +232,40 @@ def upgrade():
     )
     logger.info("added cols to privacy preference history.")
 
-
-    op.alter_column(
-        "privacypreferencehistory",
-        "preference",
-        type_=sa.String(),
-        existing_type=sa.Enum(ConsentMechanism),
+    op.drop_index(
+        op.f("ix_privacypreferencehistory_preference"),
+        table_name="privacypreferencehistory",
     )
+    op.create_index(
+        op.f("ix_privacypreferencehistory_preference_saved"),
+        "privacypreferencehistory",
+        ["preference"],
+        unique=False,
+    )
+
+    op.add_column(
+        "privacypreferencehistory",
+        sa.Column(
+            "preference_new", sa.String(), nullable=True
+        ),
+    )
+
+    op.alter_column("privacypreferencehistory", "preference", new_column_name="preference_saved")
+    op.alter_column("privacypreferencehistory", "preference_new", new_column_name="preference")
+
+    op.create_index(
+        op.f("ix_privacypreferencehistory_preference"),
+        "privacypreferencehistory",
+        ["preference"],
+        unique=False,
+    )
+
+    # op.alter_column(
+    #     "privacypreferencehistory",
+    #     "preference",
+    #     type_=sa.String(),
+    #     existing_type=sa.Enum(ConsentMechanism),
+    # )
 
     logger.info("altered privacy preference history type.")
 
