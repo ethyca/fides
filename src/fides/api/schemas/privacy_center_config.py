@@ -130,3 +130,6 @@ class PrivacyCenterConfig(FidesSchema):
     consent: ConsentConfig
     privacy_policy_url: Optional[str]
     privacy_policy_url_text: Optional[str]
+
+    class Config:
+        exclude_none = True
