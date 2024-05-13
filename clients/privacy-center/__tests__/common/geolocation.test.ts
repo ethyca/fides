@@ -181,7 +181,13 @@ describe("getGeolocation", () => {
       try {
         await lookupGeolocation(req);
       } catch (error) {
-        expect(error.message).toMatch("Provided location (America) query parameter is not in ISO 3166 format.");
+        if (error instanceof Error) {
+          expect(error.message).toMatch(
+            "Provided location (America) query parameter is not in ISO 3166 format."
+          );
+        } else {
+          expect(typeof error).toBe(Error);
+        }
       }
     });
 
@@ -192,7 +198,13 @@ describe("getGeolocation", () => {
       try {
         await lookupGeolocation(req);
       } catch (error) {
-        expect(error.message).toMatch("Provided location (USA) query parameter is not in ISO 3166 format.");
+        if (error instanceof Error) {
+          expect(error.message).toMatch(
+            "Provided location (USA) query parameter is not in ISO 3166 format."
+          );
+        } else {
+          expect(typeof error).toBe(Error);
+        }
       }
 
       // Test again including a (seemingly valid!) region
@@ -202,7 +214,13 @@ describe("getGeolocation", () => {
       try {
         await lookupGeolocation(req);
       } catch (error) {
-        expect(error.message).toMatch("Provided location (USA-NY) query parameter is not in ISO 3166 format.");
+        if (error instanceof Error) {
+          expect(error.message).toMatch(
+            "Provided location (USA-NY) query parameter is not in ISO 3166 format."
+          );
+        } else {
+          expect(typeof error).toBe(Error);
+        }
       }
     });
 
@@ -213,7 +231,13 @@ describe("getGeolocation", () => {
       try {
         await lookupGeolocation(req);
       } catch (error) {
-        expect(error.message).toMatch("Provided location (12) query parameter is not in ISO 3166 format.");
+        if (error instanceof Error) {
+          expect(error.message).toMatch(
+            "Provided location (12) query parameter is not in ISO 3166 format."
+          );
+        } else {
+          expect(typeof error).toBe(Error);
+        }
       }
     });
 
@@ -224,7 +248,13 @@ describe("getGeolocation", () => {
       try {
         await lookupGeolocation(req);
       } catch (error) {
-        expect(error.message).toMatch("Provided location (US-) query parameter is not in ISO 3166 format.");
+        if (error instanceof Error) {
+          expect(error.message).toMatch(
+            "Provided location (US-) query parameter is not in ISO 3166 format."
+          );
+        } else {
+          expect(typeof error).toBe(Error);
+        }
       }
     });
 
@@ -235,7 +265,13 @@ describe("getGeolocation", () => {
       try {
         await lookupGeolocation(req);
       } catch (error) {
-        expect(error.message).toMatch("Provided location (US-NewYork) query parameter is not in ISO 3166 format.");
+        if (error instanceof Error) {
+          expect(error.message).toMatch(
+            "Provided location (US-NewYork) query parameter is not in ISO 3166 format."
+          );
+        } else {
+          expect(typeof error).toBe(Error);
+        }
       }
     });
 
