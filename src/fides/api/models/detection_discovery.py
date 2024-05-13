@@ -47,14 +47,28 @@ class MonitorConfig(Base):
         nullable=False,
         index=True,
     )
+    databases = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )  # the databases to which the monitor is scoped
+    monitor_frequency = Column(String, index=False, unique=False, nullable=True)
+    monitor_start_date = Column(DateTime, index=False, unique=False, nullable=True)
+
     classify_params = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )  # parameters that the monitor will use for classification execution
 
-    # TODO: establish column(s) for parameterization of filters/scoping within the monitors, i.e. for particular databases
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
     connection_config = relationship(ConnectionConfig)
+
+    @property
+    def connection_config_key(self) -> str:
+        return self.connection_config.key
 
 
 class StagedResource(Base):
