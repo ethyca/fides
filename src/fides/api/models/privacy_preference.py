@@ -388,6 +388,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
         MutableDict.as_mutable(JSONB)
     )  # Dict of TCF attributes saved, for a TCF notice
 
+    property_id = Column(String, index=True, nullable=True)
+
     privacy_request = relationship(PrivacyRequest, backref="privacy_preferences")
 
     def cache_system_status(
