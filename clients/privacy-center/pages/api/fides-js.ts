@@ -109,15 +109,28 @@ export default async function handler(
 
   const fidesString = environment.settings.FIDES_STRING;
 
-  // Check if a geolocation was provided via headers or query param
-  const geolocation = await lookupGeolocation(req);
+  let geolocation;
+  let propertyId;
 
-  const propertyId = safeLookupPropertyId(
-    req,
-    geolocation,
-    environment,
-    fidesString
-  );
+  try {
+    // Check if a geolocation was provided via headers or query param
+    geolocation = await lookupGeolocation(req);
+
+    propertyId = safeLookupPropertyId(
+      req,
+      geolocation,
+      environment,
+      fidesString
+    );
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error);
+      res
+      .status(400) // 400 Bad Request. Malformed request.
+      .send(error.message);
+    }
+    return;
+  }
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!

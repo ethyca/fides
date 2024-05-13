@@ -41,10 +41,13 @@ export const lookupGeolocation = async (
 ): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
-  if (
-    typeof geolocationQuery === "string" &&
-    VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)
-  ) {
+  if (typeof geolocationQuery === "string") {
+    if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
+      throw new Error(
+        "Provided location query parameter is not in ISO 3166 format."
+      );
+    }
+
     const [country, region] = geolocationQuery.split("-");
     return {
       location: geolocationQuery,
