@@ -44,7 +44,7 @@ export const lookupGeolocation = async (
   if (typeof geolocationQuery === "string") {
     if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
       throw new Error(
-        "Provided location query parameter is not in ISO 3166 format."
+        `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`
       );
     }
 
