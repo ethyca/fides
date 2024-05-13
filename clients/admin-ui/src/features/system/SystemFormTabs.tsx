@@ -149,7 +149,7 @@ const SystemFormTabs = ({
 
   const tabData: TabData[] = [
     {
-      label: "System information",
+      label: "Information",
       content: (
         <>
           <Box px={6} mb={9}>
