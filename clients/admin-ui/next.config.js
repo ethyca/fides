@@ -4,6 +4,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
+// DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
 const withTM = require("next-transpile-modules")(["fidesui"]);
 
 /** @type {import("next").NextConfig} */
