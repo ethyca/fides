@@ -1,14 +1,16 @@
-import { Heading, Spinner, Text, useToast } from "@fidesui/react";
+import { Spinner, Text, useToast, VStack } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import DataTabsContent from "~/features/common/DataTabsContent";
+import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { useFeatures } from "~/features/common/features";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
@@ -19,8 +21,8 @@ import {
   selectLockedForGVL,
   setLockedForGVL,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
-import EditSystemFlow from "~/features/system/EditSystemFlow";
 import GVLNotice from "~/features/system/GVLNotice";
+import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
 
 const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
 
@@ -29,6 +31,7 @@ const ConfigureSystem: NextPage = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [initialTabIndex, setInitialTabIndex] = useState(0);
+
   let systemId = "";
   if (router.query.id) {
     systemId = Array.isArray(router.query.id)
@@ -81,7 +84,12 @@ const ConfigureSystem: NextPage = () => {
     }
   }, [router, toast]);
 
-  if (isLoading && isDictionaryLoading) {
+  const { tabData, tabIndex, onTabChange } = useSystemFormTabs({
+    isCreate: false,
+    initialTabIndex,
+  });
+
+  if (isLoading || isDictionaryLoading) {
     return (
       <Layout title="Systems">
         <Spinner />
@@ -90,18 +98,40 @@ const ConfigureSystem: NextPage = () => {
   }
 
   return (
-    <Layout title="Systems">
-      <BackButton backPath={SYSTEM_ROUTE} />
-      <Heading mb={2} fontSize="2xl" fontWeight="semibold">
-        Configure your system
-      </Heading>
+    <Layout title="Systems" mainProps={{ paddingTop: 0 }}>
+      <PageHeader
+        breadcrumbs={[
+          { title: "Systems & vendors", link: SYSTEM_ROUTE },
+          { title: system?.name || "" },
+        ]}
+        isSticky
+        extra={
+          <DataTabsHeader
+            data={tabData}
+            data-testid="system-tabs"
+            index={tabIndex}
+            isLazy
+            isManual
+            onChange={onTabChange}
+          />
+        }
+      />
       {lockedForGVL ? <GVLNotice /> : null}
       {!system && !isLoading && !isDictionaryLoading ? (
         <Text data-testid="system-not-found">
           Could not find a system with id {systemId}
         </Text>
       ) : (
-        <EditSystemFlow initialTabIndex={initialTabIndex} />
+        <VStack alignItems="stretch" flex="1" gap="18px" maxWidth="70vw">
+          <DataTabsContent
+            data={tabData}
+            data-testid="system-tabs"
+            index={tabIndex}
+            isLazy
+            isManual
+            onChange={onTabChange}
+          />
+        </VStack>
       )}
     </Layout>
   );
