@@ -126,8 +126,8 @@ export default async function handler(
     if (error instanceof Error) {
       console.error(error);
       res
-      .status(400) // 400 Bad Request. Malformed request.
-      .send(error.message);
+        .status(400) // 400 Bad Request. Malformed request.
+        .send(error.message);
     }
     return;
   }
