@@ -1,4 +1,12 @@
-import { Spinner, Text, useToast, VStack } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  GearIcon,
+  Spinner,
+  Text,
+  useToast,
+  VStack,
+} from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -8,6 +16,7 @@ import DataTabsContent from "~/features/common/DataTabsContent";
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { useFeatures } from "~/features/common/features";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
+import { GearLightIcon } from "~/features/common/Icon";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -106,14 +115,30 @@ const ConfigureSystem: NextPage = () => {
         ]}
         isSticky
         extra={
-          <DataTabsHeader
-            data={tabData}
-            data-testid="system-tabs"
-            index={tabIndex}
-            isLazy
-            isManual
-            onChange={onTabChange}
-          />
+          <Box position="relative">
+            <DataTabsHeader
+              data={tabData}
+              data-testid="system-tabs"
+              index={tabIndex}
+              isLazy
+              isManual
+              onChange={onTabChange}
+              width="full"
+              border="full-width"
+            />
+            <Button
+              size="xs"
+              variant="outline"
+              position="absolute"
+              right={0}
+              top="50%"
+              transform="auto"
+              translateY="-50%"
+            >
+              <Text>Integrations</Text>
+              <GearLightIcon marginLeft={2} />
+            </Button>
+          </Box>
         }
       />
       {lockedForGVL ? <GVLNotice /> : null}
