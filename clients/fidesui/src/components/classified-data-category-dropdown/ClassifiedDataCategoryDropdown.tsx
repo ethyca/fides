@@ -1,5 +1,5 @@
-import { Box, ButtonProps } from "fidesui";
 import { MultiValue, Select } from "chakra-react-select";
+import { Box, ButtonProps } from "fidesui";
 import React, { useMemo } from "react";
 
 import { DataCategoryDropdown } from "../data-category-dropdown";

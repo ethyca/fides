@@ -2,6 +2,7 @@ import {
   ChakraProvider as BaseChakraProvider,
   ChakraProviderProps,
 } from "@chakra-ui/react";
+
 import { theme as defaultTheme } from "./FidesUITheme";
 
 export const FidesUIProvider = ({

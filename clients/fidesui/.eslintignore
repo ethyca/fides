@@ -1,0 +1,2 @@
+# Don't run eslint on build artifacts
+dist
