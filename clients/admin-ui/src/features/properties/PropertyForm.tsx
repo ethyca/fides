@@ -19,7 +19,11 @@ import {
   selectPageSize,
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { MinimalPrivacyExperience, Property, PropertyType } from "~/types/api";
+import {
+  MinimalPrivacyExperienceConfig,
+  Property,
+  PropertyType,
+} from "~/types/api";
 
 import DeletePropertyModal from "./DeletePropertyModal";
 
@@ -32,7 +36,7 @@ export interface FormValues {
   id?: string;
   name: string;
   type: PropertyType;
-  experiences: Array<MinimalPrivacyExperience>;
+  experiences: Array<MinimalPrivacyExperienceConfig>;
 }
 
 const ExperiencesFormSection = () => {
