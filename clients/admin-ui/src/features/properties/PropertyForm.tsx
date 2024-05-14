@@ -19,7 +19,11 @@ import {
   selectPageSize,
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { MinimalPrivacyExperienceConfig, Property, PropertyType } from "~/types/api";
+import {
+  MinimalPrivacyExperienceConfig,
+  Property,
+  PropertyType,
+} from "~/types/api";
 
 import DeletePropertyModal from "./DeletePropertyModal";
 
