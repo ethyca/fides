@@ -8,7 +8,7 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 

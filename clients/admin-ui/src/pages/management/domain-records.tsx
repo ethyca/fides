@@ -1,4 +1,4 @@
-import { Box, Heading, Link, Text } from "@fidesui/react";
+import { Box, Heading, Link, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 import { Column } from "react-table";

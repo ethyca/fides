@@ -1,8 +1,8 @@
-import { Box, Center, Flex, SlideFade, Spinner, VStack } from "@fidesui/react";
 import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
+import { Box, Center, Flex, SlideFade, Spinner, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 

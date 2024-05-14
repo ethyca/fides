@@ -8,7 +8,7 @@ import {
   Stack,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import InfoBox from "~/features/common/InfoBox";

@@ -1,4 +1,4 @@
-import { extendTheme } from "@fidesui/react";
+import { extendTheme } from "fidesui";
 
 import Button from "~/theme/components/button";
 

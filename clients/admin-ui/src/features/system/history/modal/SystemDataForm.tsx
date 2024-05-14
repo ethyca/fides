@@ -1,4 +1,4 @@
-import { Stack } from "@fidesui/react";
+import { Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import React from "react";
 

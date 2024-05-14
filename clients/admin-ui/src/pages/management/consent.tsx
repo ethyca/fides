@@ -1,4 +1,6 @@
 /* eslint-disable react/no-array-index-key */
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Box,
   Button,
@@ -9,9 +11,7 @@ import {
   Switch,
   Text,
   useToast,
-} from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import { ChangeEvent, useMemo } from "react";

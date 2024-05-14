@@ -1,4 +1,10 @@
 import {
+  CreatableSelect,
+  MultiValue,
+  Select,
+  SingleValue,
+} from "chakra-react-select";
+import {
   Box,
   Flex,
   FormControl,
@@ -11,13 +17,7 @@ import {
   Switch,
   Textarea,
   VStack,
-} from "@fidesui/react";
-import {
-  CreatableSelect,
-  MultiValue,
-  Select,
-  SingleValue,
-} from "chakra-react-select";
+} from "fidesui";
 import { useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 

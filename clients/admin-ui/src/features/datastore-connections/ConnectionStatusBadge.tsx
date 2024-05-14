@@ -1,4 +1,4 @@
-import { Badge } from "@fidesui/react";
+import { Badge } from "fidesui";
 
 interface ConnectionBadgeProps {
   disabled: boolean;

@@ -1,3 +1,4 @@
+import { Select } from "chakra-react-select";
 import {
   Box,
   Button,
@@ -7,8 +8,7 @@ import {
   Stack,
   useToast,
   VStack,
-} from "@fidesui/react";
-import { Select } from "chakra-react-select";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";

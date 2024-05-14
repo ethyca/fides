@@ -9,7 +9,7 @@ import {
   Text,
   useDisclosure,
   WarningIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import React from "react";
 import { CellProps } from "react-table";
 

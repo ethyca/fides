@@ -1,3 +1,4 @@
+import { CustomTextArea } from "common/form/inputs";
 import {
   Button,
   Modal,
@@ -6,8 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-} from "@fidesui/react";
-import { CustomTextArea } from "common/form/inputs";
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback } from "react";
 import * as Yup from "yup";

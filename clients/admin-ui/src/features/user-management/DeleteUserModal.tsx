@@ -15,7 +15,7 @@ import {
   Text,
   UseDisclosureReturn,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React from "react";

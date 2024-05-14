@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 import { useState } from "react";
 import { useAsyncDebounce } from "react-table";
 

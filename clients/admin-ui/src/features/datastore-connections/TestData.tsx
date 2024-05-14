@@ -1,4 +1,4 @@
-import { Text } from "@fidesui/react";
+import { Text } from "fidesui";
 
 import ConnectedCircle from "../common/ConnectedCircle";
 import { formatDate } from "../common/utils";

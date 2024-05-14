@@ -1,3 +1,4 @@
+import { stringify } from "csv-stringify/sync";
 import {
   Button,
   Divider,
@@ -10,8 +11,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-} from "@fidesui/react";
-import { stringify } from "csv-stringify/sync";
+} from "fidesui";
 import { saveAs } from "file-saver";
 import React, { useContext, useRef } from "react";
 import { utils, WorkBook, writeFileXLSX } from "xlsx";

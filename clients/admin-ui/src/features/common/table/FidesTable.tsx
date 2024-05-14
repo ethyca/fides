@@ -10,7 +10,7 @@ import {
   Th,
   Thead,
   Tr,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { ReactNode, useMemo } from "react";
 import {
   Column,

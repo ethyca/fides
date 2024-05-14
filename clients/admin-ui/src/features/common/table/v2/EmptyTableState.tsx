@@ -1,4 +1,4 @@
-import { Box, HStack, Text, WarningTwoIcon } from "@fidesui/react";
+import { Box, HStack, Text, WarningTwoIcon } from "fidesui";
 import { ReactNode } from "react";
 
 type Props = {
