@@ -1,18 +1,11 @@
-import {
-  Box,
-  Heading,
-  PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
-  Radio,
-  RadioGroup,
-  Stack,
-  Text,
-} from "fidesui";
+import { Box, Heading, Radio, RadioGroup, Stack, Text } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
+import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
