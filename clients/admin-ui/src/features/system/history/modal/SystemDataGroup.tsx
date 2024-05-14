@@ -1,4 +1,4 @@
-import { Box, Heading, Stack } from "@fidesui/react";
+import { Box, Heading, Stack } from "fidesui";
 import _ from "lodash";
 import React from "react";
 

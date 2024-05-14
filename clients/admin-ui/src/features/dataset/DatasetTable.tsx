@@ -1,4 +1,4 @@
-import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import { Table, Tbody, Td, Th, Thead, Tr } from "fidesui";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 

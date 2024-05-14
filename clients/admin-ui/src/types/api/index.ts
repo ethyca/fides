@@ -214,7 +214,7 @@ export type { MessagingServiceSecretsMailchimpTransactionalDocs } from "./models
 export { MessagingServiceType } from "./models/MessagingServiceType";
 export type { MessagingTemplateRequest } from "./models/MessagingTemplateRequest";
 export type { MessagingTemplateResponse } from "./models/MessagingTemplateResponse";
-export type { MinimalPrivacyExperience } from "./models/MinimalPrivacyExperience";
+export type { MinimalPrivacyExperienceConfig } from "./models/MinimalPrivacyExperienceConfig";
 export type { MinimalProperty } from "./models/MinimalProperty";
 export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
 export type { MonitorExecution } from "./models/MonitorExecution";

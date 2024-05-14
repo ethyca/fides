@@ -1,4 +1,4 @@
-import { VStack } from "@fidesui/react";
+import { VStack } from "fidesui";
 
 import SystemFormTabs from "./SystemFormTabs";
 

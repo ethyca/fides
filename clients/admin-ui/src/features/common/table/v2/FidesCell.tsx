@@ -1,5 +1,5 @@
-import { Td } from "@fidesui/react";
 import { Cell, flexRender } from "@tanstack/react-table";
+import { Td } from "fidesui";
 
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 

@@ -3,7 +3,7 @@ import {
   FormErrorMessage as ChakraFormErrorMessage,
   forwardRef,
   useFormControlContext,
-} from "@fidesui/react";
+} from "fidesui";
 
 /**
  * This is a thin wrapper around Chakra's FormErrorMessage that leaves room for the error message

@@ -1,4 +1,4 @@
-import { Box, FormControl, FormLabel, Switch, Text } from "@fidesui/react";
+import { Box, FormControl, FormLabel, Switch, Text } from "fidesui";
 
 import { camelToSentenceCase } from "~/features/common/utils";
 

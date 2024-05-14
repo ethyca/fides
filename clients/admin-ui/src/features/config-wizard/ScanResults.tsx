@@ -6,7 +6,7 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 

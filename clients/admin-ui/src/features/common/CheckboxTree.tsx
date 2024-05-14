@@ -7,13 +7,7 @@
  *   * "Selected" children render expanded up until the child
  */
 
-import {
-  Box,
-  BoxProps,
-  Checkbox,
-  ChevronDownIcon,
-  IconButton,
-} from "@fidesui/react";
+import { Box, BoxProps, Checkbox, ChevronDownIcon, IconButton } from "fidesui";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
 import { TreeNode } from "./types";

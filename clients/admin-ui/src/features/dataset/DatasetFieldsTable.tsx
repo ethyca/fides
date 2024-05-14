@@ -1,4 +1,4 @@
-import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import { Box, Table, Tbody, Td, Th, Thead, Tr } from "fidesui";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ColumnMetadata } from "~/features/common/ColumnDropdown";

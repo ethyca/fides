@@ -1,4 +1,4 @@
-import { Button, Code } from "@fidesui/react";
+import { Button, Code } from "fidesui";
 import { FallbackProps } from "react-error-boundary";
 
 import ErrorLayout from "~/components/ErrorLayout";

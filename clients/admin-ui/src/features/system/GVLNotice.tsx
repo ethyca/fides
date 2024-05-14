@@ -1,4 +1,4 @@
-import { Box, Link } from "@fidesui/react";
+import { Box, Link } from "fidesui";
 
 import EmptyTableState from "~/features/common/table/EmptyTableState";
 

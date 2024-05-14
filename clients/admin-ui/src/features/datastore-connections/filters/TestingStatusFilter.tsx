@@ -1,7 +1,7 @@
-import { Box } from "@fidesui/react";
 import SelectDropdown from "common/dropdown/SelectDropdown";
 import { ItemOption } from "common/dropdown/types";
 import { capitalize } from "common/utils";
+import { Box } from "fidesui";
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 

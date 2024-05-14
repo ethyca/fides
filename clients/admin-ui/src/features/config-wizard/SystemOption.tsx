@@ -1,4 +1,4 @@
-import { Box, Button, ButtonProps, Text } from "@fidesui/react";
+import { Box, Button, ButtonProps, Text } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";

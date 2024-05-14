@@ -1,13 +1,13 @@
-import { ClassifiedDataCategoryDropdown } from "@fidesui/components";
 import {
   AccordionButton,
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
   Box,
+  ClassifiedDataCategoryDropdown,
   Heading,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 

@@ -1,4 +1,4 @@
-import { Flex, Heading, HStack, Text, WarningTwoIcon } from "@fidesui/react";
+import { Flex, Heading, HStack, Text, WarningTwoIcon } from "fidesui";
 
 const InfoBox = ({ title, text }: { title?: string; text: string }) => (
   <HStack

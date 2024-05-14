@@ -8,10 +8,10 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 
 
-class MinimalPrivacyExperience(FidesSchema):
+class MinimalPrivacyExperienceConfig(FidesSchema):
     """
-    Minimal representation of a privacy experience, contains enough information
-    to select experiences by name in the UI and an ID to link the selections in the database.
+    Minimal representation of a privacy experience config, contains enough information
+    to select experience configs by name in the UI and an ID to link the selections in the database.
     """
 
     id: str
@@ -32,7 +32,7 @@ class Property(FidesSchema):
     name: str
     type: PropertyType
     id: Optional[str] = None
-    experiences: List[MinimalPrivacyExperience]
+    experiences: List[MinimalPrivacyExperienceConfig]
     privacy_center_config: Optional[PrivacyCenterConfig]
     stylesheet: Optional[CssStr]
     paths: List[str]

@@ -1,4 +1,4 @@
-import { Box, Center, Flex, Spinner } from "@fidesui/react";
+import { Box, Center, Flex, Spinner } from "fidesui";
 import dynamic from "next/dynamic";
 import { useCallback, useContext, useState } from "react";
 

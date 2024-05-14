@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Heading, Stack } from "@fidesui/react";
+import { Box, Button, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 

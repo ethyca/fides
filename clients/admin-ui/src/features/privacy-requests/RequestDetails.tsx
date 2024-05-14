@@ -7,7 +7,7 @@ import {
   HStack,
   Tag,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";

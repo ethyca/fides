@@ -8,7 +8,7 @@ import {
   ModalFooter,
   ModalHeader,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode } from "react";
 
 export const Header = ({ title }: { title: string }) => (

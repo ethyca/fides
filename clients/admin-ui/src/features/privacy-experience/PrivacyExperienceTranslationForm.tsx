@@ -1,10 +1,4 @@
-import {
-  Button,
-  ButtonGroup,
-  Heading,
-  Text,
-  useDisclosure,
-} from "@fidesui/react";
+import { Button, ButtonGroup, Heading, Text, useDisclosure } from "fidesui";
 import { useFormikContext } from "formik";
 import { isEqual } from "lodash";
 import { useMemo } from "react";
