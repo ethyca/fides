@@ -71,5 +71,4 @@ export { ConfirmationModal } from "./components/confirmation-modal";
 export { DataCategoryDropdown } from "./components/data-category-dropdown";
 export { ExampleComponent } from "./components/example-component";
 export { PrimaryLink, SecondaryLink } from "./components/links";
-export * from "./components/nav";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
