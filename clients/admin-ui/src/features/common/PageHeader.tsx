@@ -31,12 +31,16 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     {...(isSticky ? { position: "sticky", top: 0, left: 0, zIndex: 10 } : {})}
     {...otherProps}
   >
+    {/* If breadcrumbs is an array, render the Breadcrumbs component. */}
     {isArray(breadcrumbs) && (
       <Box marginBottom={isValidElement(extra) ? 4 : 0}>
         <Breadcrumbs breadcrumbs={breadcrumbs} />
       </Box>
     )}
+    {/* If breadcrumbs is a React element, render it. */}
     {isValidElement(breadcrumbs) && breadcrumbs}
+
+    {/* If there is an extra prop, render it. */}
     {isValidElement(extra) && extra}
   </Box>
 );
