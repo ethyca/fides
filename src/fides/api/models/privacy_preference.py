@@ -388,7 +388,12 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
         MutableDict.as_mutable(JSONB)
     )  # Dict of TCF attributes saved, for a TCF notice
 
-    property_id = Column(String, index=True, nullable=True)
+    property_id = Column(
+        String,
+        ForeignKey("plus_property.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
 
     privacy_request = relationship(PrivacyRequest, backref="privacy_preferences")
 
