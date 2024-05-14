@@ -9,7 +9,7 @@ import {
   MenuList,
   Text,
   Tooltip,
-} from "@fidesui/react";
+} from "fidesui";
 import { useState } from "react";
 
 import { ItemOption } from "./types";

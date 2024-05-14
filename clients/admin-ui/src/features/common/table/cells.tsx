@@ -8,7 +8,7 @@ import {
   useDisclosure,
   useToast,
   WarningIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 

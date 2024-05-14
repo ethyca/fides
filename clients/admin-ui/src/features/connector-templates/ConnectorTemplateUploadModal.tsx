@@ -1,3 +1,4 @@
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import {
   Box,
   Button,
@@ -10,8 +11,7 @@ import {
   ModalOverlay,
   Text,
   useToast,
-} from "@fidesui/react";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+} from "fidesui";
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useDispatch } from "react-redux";

@@ -1,3 +1,13 @@
+import { useAlert, useAPIHelper } from "common/hooks";
+import {
+  useCreateAccessManualWebhookMutation,
+  useGetAccessManualHookQuery,
+  usePatchAccessManualWebhookMutation,
+} from "datastore-connections/datastore-connection.slice";
+import {
+  CreateAccessManualWebhookRequest,
+  PatchAccessManualWebhookRequest,
+} from "datastore-connections/types";
 import {
   Box,
   Button,
@@ -12,17 +22,7 @@ import {
   Tooltip,
   useDisclosure,
   VStack,
-} from "@fidesui/react";
-import { useAlert, useAPIHelper } from "common/hooks";
-import {
-  useCreateAccessManualWebhookMutation,
-  useGetAccessManualHookQuery,
-  usePatchAccessManualWebhookMutation,
-} from "datastore-connections/datastore-connection.slice";
-import {
-  CreateAccessManualWebhookRequest,
-  PatchAccessManualWebhookRequest,
-} from "datastore-connections/types";
+} from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 
 import { ConnectionConfigurationResponse } from "~/types/api";

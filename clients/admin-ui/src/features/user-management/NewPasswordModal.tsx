@@ -12,7 +12,7 @@ import {
   Text,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 

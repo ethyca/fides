@@ -18,7 +18,7 @@ import {
   Text,
   useDisclosure,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useRef } from "react";

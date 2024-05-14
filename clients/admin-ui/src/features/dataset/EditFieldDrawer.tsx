@@ -1,5 +1,4 @@
-import { ConfirmationModal } from "@fidesui/components";
-import { Text, useDisclosure } from "@fidesui/react";
+import { ConfirmationModal, Text, useDisclosure } from "fidesui";
 import { useSelector } from "react-redux";
 
 import EditDrawer, {

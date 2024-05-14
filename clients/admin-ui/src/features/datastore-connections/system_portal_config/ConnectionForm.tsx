@@ -1,9 +1,9 @@
-import { Box, Button, Flex, Stack, useDisclosure } from "@fidesui/react";
 import Restrict from "common/Restrict";
 import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
 import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
+import { Box, Button, Flex, Stack, useDisclosure } from "fidesui";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";

@@ -1,19 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  HStack,
-  Spinner,
-  Tag,
-  Text,
-  Tooltip,
-  useDisclosure,
-  useToast,
-  VStack,
-} from "@fidesui/react";
-import {
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
@@ -43,6 +29,20 @@ import {
   useClientSidePagination,
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
+import {
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  Spinner,
+  Tag,
+  Text,
+  Tooltip,
+  useDisclosure,
+  useToast,
+  VStack,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 

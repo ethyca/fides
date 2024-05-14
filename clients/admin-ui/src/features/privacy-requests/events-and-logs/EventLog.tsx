@@ -1,3 +1,4 @@
+import { formatDate } from "common/utils";
 import {
   Box,
   Table,
@@ -8,8 +9,7 @@ import {
   Th,
   Thead,
   Tr,
-} from "@fidesui/react";
-import { formatDate } from "common/utils";
+} from "fidesui";
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
 
 type EventDetailsProps = {

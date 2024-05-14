@@ -1,11 +1,4 @@
-import {
-  Box,
-  Heading,
-  SimpleGrid,
-  Stack,
-  Text,
-  useDisclosure,
-} from "@fidesui/react";
+import { Box, Heading, SimpleGrid, Stack, Text, useDisclosure } from "fidesui";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";

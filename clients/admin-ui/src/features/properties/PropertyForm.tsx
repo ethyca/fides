@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from "@fidesui/react";
+import { Box, Button, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";

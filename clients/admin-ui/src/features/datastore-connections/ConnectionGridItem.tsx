@@ -1,5 +1,5 @@
-import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
 import { formatDate } from "common/utils";
+import { Box, Button, Flex, Spacer, Text } from "fidesui";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";

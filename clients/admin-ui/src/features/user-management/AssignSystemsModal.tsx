@@ -16,7 +16,7 @@ import {
   Stack,
   Switch,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { ChangeEvent, useMemo, useState } from "react";
 
 import SearchBar from "~/features/common/SearchBar";

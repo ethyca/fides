@@ -35,8 +35,6 @@
     "a11y-dialog": "^7.5.2",
     "base-64": "^1.0.0",
     "preact": "^10.13.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "typescript-cookie": "^1.0.6",
     "uuid": "^9.0.0"
   },
