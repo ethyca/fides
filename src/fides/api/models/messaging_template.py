@@ -61,6 +61,7 @@ class MessagingTemplate(Base):
     def __tablename__(self) -> str:
         return "messaging_template"
 
+    # add column for property
     key = Column(String, index=True, unique=True, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
 

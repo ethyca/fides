@@ -341,6 +341,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=_render(messaging_template.content["body"]),  # type: ignore
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION:
+        # get email template doesn't use defualt templates in messaging_template.py
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Privacy Request Error Alert",
@@ -359,6 +360,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
             template_variables=variables,
         )
     if action_type == MessagingActionType.TEST_MESSAGE:
+        # get email template doesn't use defualt templates in messaging_template.py
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Test message from fides", body=base_template.render()

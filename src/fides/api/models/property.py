@@ -45,6 +45,7 @@ class Property(Base):
         primary_key=True,
         default=generate_id,
     )
+    # add isDefault column- constraint only 1 can be true
     name = Column(String, nullable=False, unique=True)
     type = Column(EnumColumn(PropertyType), nullable=False)
     privacy_center_config = Column(MutableDict.as_mutable(JSONB), nullable=True)
