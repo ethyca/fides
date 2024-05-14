@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MinimalPrivacyExperience } from "./MinimalPrivacyExperience";
+import type { MinimalPrivacyExperienceConfig } from "./MinimalPrivacyExperienceConfig";
 import type { PropertyType } from "./PropertyType";
 
 /**
@@ -12,5 +12,5 @@ export type Property = {
   name: string;
   type: PropertyType;
   id?: string;
-  experiences: Array<MinimalPrivacyExperience>;
+  experiences: Array<MinimalPrivacyExperienceConfig>;
 };
