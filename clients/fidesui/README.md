@@ -1,6 +1,6 @@
 # Fides UI
 
-This package is a result of migrating the [ethyca/fidesui](https://github.com/ethyca/fidesui) standalone repo into this monorepo. It includes components that are custom built for FidesUI. They may be built from scratch, or use a variety of Chakra components to create something new.
+This package is a result of migrating the [ethyca/fidesui](https://github.com/ethyca/fidesui) standalone repo into this monorepo. It includes components that are custom built for FidesUI. They may be built from scratch, or use a variety of Chakra components to create something new. Anything you would normally import from the Chakra library should be imported from `fidesui` instead, since this is all built on top of Chakra.
 
 ## Migration notes
 
@@ -19,3 +19,7 @@ Some things that may not belong in this repo ([original discussion](https://gith
 
 - Routing/pages. (Maybe helpers, but not the definitions of specific routes.)
 - Mutation types. These usually involve a sequence calls that require UI-specific handling. (Maybe basic CRUD could be shared, at most).
+
+## How to use
+
+This package is included in both the `admin-ui` and `privacy-center` NextJS applications as a turbo Internal Package called `fidesui` and will automatically get bundled in those projects by NextJS using `transpileModules`. This means that you can import components from this package directly in your NextJS application and there is no reason to prebuild these components. When making changes or creating new components here it's important to test them in the consuming applications to ensure that they work as expected.
