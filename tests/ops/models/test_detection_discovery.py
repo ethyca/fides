@@ -176,6 +176,8 @@ class TestMonitorConfigModel:
                     "num_samples": 25,
                     "num_threads": 2,
                 },
+                "execution_frequency": None,
+                "execution_start_date": None,
             },
         )
         yield mc

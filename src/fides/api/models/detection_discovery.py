@@ -152,9 +152,9 @@ class MonitorConfig(Base):
         See https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html
         for more information about the cron trigger parameters.
         """
-        if "execution_frequency" in data and "execution_start_date" in data:
-            execution_frequency = data.pop("execution_frequency")
-            execution_start_date = data.pop("execution_start_date")
+        execution_frequency = data.pop("execution_frequency", None)
+        execution_start_date = data.pop("execution_start_date", None)
+        if execution_frequency and execution_start_date:
             cron_trigger_dict = {}
             cron_trigger_dict["start_date"] = execution_start_date
             cron_trigger_dict["timezone"] = execution_start_date.tzinfo
