@@ -55,8 +55,13 @@ class MonitorConfig(Base):
         server_default="{}",
         default=dict,
     )  # the databases to which the monitor is scoped
-    monitor_frequency = Column(String, index=False, unique=False, nullable=True)
-    monitor_start_date = Column(DateTime, index=False, unique=False, nullable=True)
+    monitor_execution_trigger = Column(
+        MutableDict.as_mutable(JSONB),
+        index=False,
+        unique=False,
+        nullable=True,
+    )  # stores the cron-based kwargs for scheduling the monitor execution.
+    # see https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html
 
     classify_params = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
