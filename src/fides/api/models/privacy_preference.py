@@ -327,6 +327,12 @@ class ServedNoticeHistory(ConsentReportingMixinV2, Base):
         MutableDict.as_mutable(JSONB)
     )  # Dict of all the TCF attributes served if applicable
 
+    property_id = Column(
+        String,
+        index=True,
+        nullable=True,
+    )
+
     @staticmethod
     def get_by_served_id(db: Session, served_id: str) -> Query:
         """Retrieves all ServedNoticeHistory records with a common served_notice_history_id - generated
@@ -390,7 +396,6 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
 
     property_id = Column(
         String,
-        ForeignKey("plus_property.id", ondelete="SET NULL"),
         index=True,
         nullable=True,
     )
