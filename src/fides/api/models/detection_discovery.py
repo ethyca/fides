@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import Enum
-from typing import Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, Type
 
 from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
 
 # class MonitorExecution(BaseModel):
@@ -29,6 +30,16 @@ class DiffStatus(Enum):
     CLASSIFICATION_UPDATE = "classification_update"
     MONITORED = "monitored"
     MUTED = "muted"
+
+
+class MonitorFrequency(Enum):
+    """
+    Enum representing monitor frequency. Not used in DB but needed for translating to API schema
+    """
+
+    DAILY = "Daily"
+    WEEKLY = "Weekly"
+    MONTHLY = "Monthly"
 
 
 class MonitorConfig(Base):
@@ -74,6 +85,87 @@ class MonitorConfig(Base):
     @property
     def connection_config_key(self) -> str:
         return self.connection_config.key
+
+    @property
+    def execution_start_date(self) -> Optional[datetime]:
+        if (
+            not self.monitor_execution_trigger
+            or not self.monitor_execution_trigger.get("start_date")
+        ):
+            return None
+        return self.monitor_execution_trigger.get("start_date")
+
+    @property
+    def execution_frequency(self) -> Optional[MonitorFrequency]:
+        """Derives the execution_frequency"""
+        if (
+            not self.monitor_execution_trigger
+            or not self.monitor_execution_trigger.get("hour")
+        ):
+            return None
+        if self.monitor_execution_trigger.get("day"):
+            return MonitorFrequency.MONTHLY
+        if self.monitor_execution_trigger.get("day_of_week"):
+            return MonitorFrequency.WEEKLY
+        return MonitorFrequency.DAILY
+
+    def update(self, db: Session, *, data: dict[str, Any]) -> FidesBase:
+        """Override the base class `update` to derive the `execution_trigger` dict field"""
+        MonitorConfig.derive_execution_trigger_dict(data)
+        return super().update(db=db, data=data)
+
+    @classmethod
+    def create(
+        cls: Type[MonitorConfig],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> FidesBase:
+        """Override the base class `create` to derive the `execution_trigger` dict field"""
+        MonitorConfig.derive_execution_trigger_dict(data)
+        return super().create(db=db, data=data, check_name=check_name)
+
+    @staticmethod
+    def derive_execution_trigger_dict(data: Dict[str, Any]) -> Optional[Dict]:
+        """
+        Determines the execution trigger (cron) dict based on the
+        corresponding schema properties provided in the `data` dict.
+
+        The `data` dict is updated in place with the execution trigger dict
+        placed in the `monitor_execution_trigger` key, if applicable, and with the
+        `execution_frequency` and `execution_start_date` keys removed.
+
+        The `execution_start_date` is inferred as the basis for the day and time
+        for repeated monitor execution, and the frequency of execution is based
+        on the `execution_frequency` field.
+
+        For example, an `execution_start_date` of "2024-05-14 12:00:00+00:00":
+        - with an `execution_frequency` of "daily", it will result in daily
+        execution at 12:00:00+00:00;
+        - with an `execution_frequency` of "weekly", it will result in weekly
+        execution at 12:00:00+00:00 on every Tuesday, since 2024-05-14 is
+        a Tuesday.
+        - with an `execution_frequency` of "monthly", it will result in monthly
+        execution at 12:00:00+00:00 on the 14th day of every month.
+
+        See https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html
+        for more information about the cron trigger parameters.
+        """
+        if "execution_frequency" in data and "execution_start_date" in data:
+            execution_frequency = data.pop("execution_frequency")
+            execution_start_date = data.pop("execution_start_date")
+            cron_trigger_dict = {}
+            cron_trigger_dict["start_date"] = execution_start_date
+            cron_trigger_dict["timezone"] = execution_start_date.tzinfo
+            cron_trigger_dict["hour"] = execution_start_date.hour
+            cron_trigger_dict["minute"] = execution_start_date.minute
+            cron_trigger_dict["second"] = execution_start_date.second
+            if execution_frequency == MonitorFrequency.WEEKLY:
+                cron_trigger_dict["day_of_week"] = execution_start_date.weekday()
+            if execution_frequency == MonitorFrequency.MONTHLY:
+                cron_trigger_dict["day"] = execution_start_date.day
+            data["monitor_execution_trigger"] = cron_trigger_dict
 
 
 class StagedResource(Base):

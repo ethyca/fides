@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -6,6 +8,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery import (
     DiffStatus,
     MonitorConfig,
+    MonitorFrequency,
     StagedResource,
 )
 
@@ -157,6 +160,9 @@ class TestStagedResourceModel:
         }
 
 
+SAMPLE_START_DATE = datetime(2024, 5, 14, 12, 42, 5, 17137, tzinfo=timezone.utc)
+
+
 class TestMonitorConfigModel:
     @pytest.fixture
     def create_monitor_config(self, db: Session, connection_config: ConnectionConfig):
@@ -180,7 +186,7 @@ class TestMonitorConfigModel:
     ) -> None:
         """
         Creation fixture creates the config, this tests that it was created successfully
-        and that we can access its attributes as expected
+        and that we can access its attributes as expected.
         """
         mc: MonitorConfig = MonitorConfig.get(db=db, object_id=create_monitor_config.id)
         assert mc.name == "test monitor config 1"
@@ -189,8 +195,150 @@ class TestMonitorConfigModel:
             "num_samples": 25,
             "num_threads": 2,
         }
+        assert mc.monitor_execution_trigger is None  # not set in our fixture
 
         mc_connection_config = mc.connection_config
         assert mc_connection_config.id == connection_config.id
         assert mc_connection_config.key == connection_config.key
         assert mc_connection_config.connection_type == connection_config.connection_type
+
+    @pytest.mark.parametrize(
+        "monitor_frequency,expected_dict",
+        [
+            (
+                MonitorFrequency.DAILY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "hour": 12,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
+            (
+                MonitorFrequency.WEEKLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day_of_week": 1,  # sample start day is a Tuesday (day 1 in cron)
+                    "hour": 12,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
+            (
+                MonitorFrequency.MONTHLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day": 14,
+                    "hour": 12,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
+        ],
+    )
+    def test_create_monitor_config_execution_trigger_logic(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        monitor_frequency,
+        expected_dict,
+    ):
+        """Tests that execution_trigger logic works as expected during within `create`"""
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "test monitor config 1",
+                "key": "test_monitor_config_1",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "num_samples": 25,
+                    "num_threads": 2,
+                },
+                "execution_start_date": SAMPLE_START_DATE,
+                "execution_frequency": monitor_frequency,
+            },
+        )
+        # this dict should have been derived from input fields in the data dict
+        assert mc.monitor_execution_trigger == expected_dict
+        # these fields on the object should be re-calculated based on the `monitor_execution_trigger` value
+        assert mc.execution_frequency == monitor_frequency
+        assert mc.execution_start_date == SAMPLE_START_DATE
+
+        db.delete(mc)
+
+    @pytest.mark.parametrize(
+        "monitor_frequency,expected_dict",
+        [
+            (
+                MonitorFrequency.DAILY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "hour": 12,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
+            (
+                MonitorFrequency.WEEKLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day_of_week": 1,  # sample start day is a Tuesday (day 1 in cron)
+                    "hour": 12,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
+            (
+                MonitorFrequency.MONTHLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day": 14,
+                    "hour": 12,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
+        ],
+    )
+    def test_update_monitor_config_execution_trigger_logic(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        create_monitor_config: MonitorConfig,
+        monitor_frequency,
+        expected_dict,
+    ):
+        """Tests that execution_trigger logic works as expected during within `update`"""
+        create_monitor_config.update(
+            db=db,
+            data={
+                "name": "updated test monitor config 1",
+                "key": "test_monitor_config_1",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "num_samples": 25,
+                    "num_threads": 2,
+                },
+                "execution_start_date": SAMPLE_START_DATE,
+                "execution_frequency": monitor_frequency,
+            },
+        )
+        mc: MonitorConfig = MonitorConfig.get(db=db, object_id=create_monitor_config.id)
+
+        # first ensure update works as expected on a "normal" field
+        assert mc.name == "updated test monitor config 1"
+
+        # then ensure update applies execution trigger logic as expected on the update
+
+        # this dict should have been derived from input fields in the data dict
+        assert mc.monitor_execution_trigger == expected_dict
+        # these fields on the object should be re-calculated based on the `monitor_execution_trigger` value
+        assert mc.execution_frequency == monitor_frequency
+        assert mc.execution_start_date == SAMPLE_START_DATE
+        db.delete(mc)

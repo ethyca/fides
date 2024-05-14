@@ -32,9 +32,6 @@ def upgrade():
             nullable=True,
         ),
     )
-    op.add_column(
-        "monitorconfig", sa.Column("monitor_start_date", sa.DateTime(), nullable=True)
-    )
 
 
 def downgrade():

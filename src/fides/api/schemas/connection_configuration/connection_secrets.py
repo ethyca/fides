@@ -12,6 +12,7 @@ from fides.api.schemas import Msg
 class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
     """Abstract Base Schema for updating Connection Configuration Secrets"""
 
+    # also ensure that the type annotations for required fields are Optional
     _required_components: List[str]
 
     def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore
