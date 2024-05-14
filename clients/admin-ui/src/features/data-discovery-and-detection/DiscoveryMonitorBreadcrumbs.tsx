@@ -17,7 +17,7 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
     <Breadcrumb
       separator="->"
       fontSize="2xl"
-      fontWeight="medium"
+      fontWeight="semibold"
       mb={5}
       data-testid="results-breadcrumb"
     >

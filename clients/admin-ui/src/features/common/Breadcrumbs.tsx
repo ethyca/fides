@@ -6,6 +6,7 @@ export interface BreadcrumbsProps {
     title: string;
     link?: string;
     onClick?: () => void;
+    isOpaque?: boolean;
   }[];
 }
 
@@ -21,7 +22,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs }) => (
       const hasLink = !!breadcumbItem.link || !!breadcumbItem.onClick;
       return (
         <BreadcrumbItem
-          color={isLast ? "black" : "gray.500"}
+          color={isLast || breadcumbItem.isOpaque ? "black" : "gray.500"}
           key={breadcumbItem.title}
         >
           {hasLink ? (
