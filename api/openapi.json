@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.35.1"
+    "version": "2.36.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -12318,6 +12318,12 @@
             "type": "string",
             "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
           },
+          "vendor_deleted_date": {
+            "title": "Vendor Deleted Date",
+            "type": "string",
+            "description": "The deleted date of the vendor that's associated with this system.",
+            "format": "date-time"
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -18906,6 +18912,12 @@
             "type": "string",
             "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
           },
+          "vendor_deleted_date": {
+            "title": "Vendor Deleted Date",
+            "type": "string",
+            "description": "The deleted date of the vendor that's associated with this system.",
+            "format": "date-time"
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -19177,6 +19189,12 @@
             "title": "Previous Vendor Id",
             "type": "string",
             "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
+          },
+          "vendor_deleted_date": {
+            "title": "Vendor Deleted Date",
+            "type": "string",
+            "description": "The deleted date of the vendor that's associated with this system.",
+            "format": "date-time"
           },
           "dataset_references": {
             "title": "Dataset References",
