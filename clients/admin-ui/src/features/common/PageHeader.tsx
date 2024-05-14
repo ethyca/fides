@@ -14,11 +14,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   breadcrumbs,
   isSticky = true,
   extra,
+  ...otherProps
 }) => (
   <Box
     bgColor="white"
     paddingY={5}
     {...(isSticky ? { position: "sticky", top: 0, left: 0, zIndex: 10 } : {})}
+    {...otherProps}
   >
     {isArray(breadcrumbs) && (
       <Box marginBottom={isValidElement(extra) ? 4 : 0}>

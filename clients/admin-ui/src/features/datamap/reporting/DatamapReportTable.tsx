@@ -1075,14 +1075,6 @@ export const DatamapReportTable = () => {
 
   return (
     <Flex flex={1} direction="column" overflow="auto">
-      <Heading
-        mb={8}
-        fontSize="2xl"
-        fontWeight="semibold"
-        data-testid="datamap-report-heading"
-      >
-        Data map report
-      </Heading>
       <DatamapReportFilterModal
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}

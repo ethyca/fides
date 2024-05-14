@@ -9,8 +9,7 @@ const DataDiscoveryActivityPage = () => (
   <FixedLayout
     title="Data discovery"
     mainProps={{
-      padding: "40px",
-      paddingRight: "48px",
+      padding: "20px 40px 48px",
     }}
   >
     <DiscoveryMonitorBreadcrumbs

@@ -13,7 +13,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs }) => (
   <Breadcrumb
     separator="->"
     fontSize="2xl"
-    fontWeight="medium"
+    fontWeight="semibold"
     data-testid="breadcrumbs"
   >
     {breadcrumbs.map((breadcumbItem, index) => {

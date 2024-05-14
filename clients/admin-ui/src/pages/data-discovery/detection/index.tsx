@@ -9,8 +9,7 @@ const DataDetectionActivityPage = () => (
   <FixedLayout
     title="Data detection"
     mainProps={{
-      padding: "40px",
-      paddingRight: "48px",
+      padding: "20px 40px 48px",
     }}
   >
     <DiscoveryMonitorBreadcrumbs
