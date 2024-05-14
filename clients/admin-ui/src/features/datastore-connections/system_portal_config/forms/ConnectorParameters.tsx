@@ -1,4 +1,3 @@
-import { Box, Flex, Spacer, useToast, UseToastOptions } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
@@ -14,6 +13,7 @@ import {
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
+import { Box, Flex, Spacer, useToast, UseToastOptions } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

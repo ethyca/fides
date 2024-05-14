@@ -1,4 +1,4 @@
-import { Box, Button, Text, useToast, VStack } from "@fidesui/react";
+import { Box, Button, Text, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";

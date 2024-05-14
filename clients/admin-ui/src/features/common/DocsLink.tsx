@@ -1,4 +1,4 @@
-import { Link } from "@fidesui/react";
+import { Link } from "fidesui";
 
 /**
  * An external link to documentation.

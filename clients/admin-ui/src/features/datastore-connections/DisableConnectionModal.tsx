@@ -13,7 +13,7 @@ import {
   Switch,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import React from "react";
 
 import { ConnectionType } from "~/types/api";

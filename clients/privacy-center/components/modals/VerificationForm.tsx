@@ -12,7 +12,7 @@ import {
   Text,
   VStack,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { Headers } from "headers-polyfill";
 import { useFormik } from "formik";
 

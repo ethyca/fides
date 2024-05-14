@@ -9,7 +9,7 @@ import {
   ModalOverlay,
   ModalProps,
   ThemingProps,
-} from "@fidesui/react";
+} from "fidesui";
 
 export interface StandardDialogProps extends ModalProps {
   heading?: string;

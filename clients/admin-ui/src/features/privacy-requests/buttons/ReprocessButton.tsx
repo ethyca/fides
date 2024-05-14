@@ -1,4 +1,4 @@
-import { Box, Button, ButtonProps, forwardRef, Text } from "@fidesui/react";
+import { Box, Button, ButtonProps, forwardRef, Text } from "fidesui";
 import { ForwardedRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

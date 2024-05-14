@@ -1,10 +1,4 @@
-import {
-  ArrowBackIcon,
-  Flex,
-  FlexProps,
-  IconButton,
-  Text,
-} from "@fidesui/react";
+import { ArrowBackIcon, Flex, FlexProps, IconButton, Text } from "fidesui";
 import NextLink from "next/link";
 
 /**

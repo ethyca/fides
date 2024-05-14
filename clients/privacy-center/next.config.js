@@ -5,18 +5,18 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
+// DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
 // Transpile the modules needed for Swagger UI
 const withTM = require("next-transpile-modules")([
   "react-syntax-highlighter",
   "swagger-client",
   "swagger-ui-react",
+  "fidesui",
 ]);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // DEFER: This would be preferable, but requires Next 13 (see https://github.com/ethyca/fides/issues/3173)
-  // transpilePackages: ["fides-js"],
   poweredByHeader: false,
   env: {
     version: "1.2.3",

@@ -1,4 +1,4 @@
-import { Button, Input, InputGroup, InputRightAddon } from "@fidesui/react";
+import { Button, Input, InputGroup, InputRightAddon } from "fidesui";
 import { debounce } from "lodash";
 import { ChangeEventHandler, useCallback, useState } from "react";
 

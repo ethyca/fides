@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@fidesui/react";
+import { Button, useDisclosure } from "fidesui";
 import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";

@@ -1,4 +1,4 @@
-import { Heading, Spinner, Text, useToast } from "@fidesui/react";
+import { Heading, Spinner, Text, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";

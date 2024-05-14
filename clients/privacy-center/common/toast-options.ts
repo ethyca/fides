@@ -1,4 +1,4 @@
-import { UseToastOptions } from "@chakra-ui/react";
+import { UseToastOptions } from "fidesui";
 
 const BaseToastOptions: UseToastOptions = {
   position: "top",

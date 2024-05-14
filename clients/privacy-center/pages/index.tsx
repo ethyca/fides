@@ -6,7 +6,7 @@ import {
   Stack,
   useToast,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
