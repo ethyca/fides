@@ -8,5 +8,4 @@ export default function middleware(request: NextRequest) {
 
   /* eslint-disable no-console */
   console.info(JSON.stringify(logDict));
-  /* eslint-enable no-console */
 }
