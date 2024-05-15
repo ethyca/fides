@@ -98,7 +98,9 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
         {...menuButtonProps}
         data-testid="select-dropdown-btn"
       >
-        <Text isTruncated>{selectedText ?? label}</Text>
+        <Text noOfLines={1} wordBreak="break-all">
+          {selectedText ?? label}
+        </Text>
       </MenuButton>
       {isOpen ? (
         <MenuList lineHeight="1rem" p="0" data-testid="select-dropdown-list">

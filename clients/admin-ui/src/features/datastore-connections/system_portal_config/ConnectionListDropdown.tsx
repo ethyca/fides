@@ -289,7 +289,12 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
                   }}
                 >
                   <ConnectionTypeLogo data={option.value} />
-                  <Text ml={2} fontSize="0.75rem" isTruncated>
+                  <Text
+                    ml={2}
+                    fontSize="0.75rem"
+                    noOfLines={1}
+                    wordBreak="break-all"
+                  >
                     {key}
                   </Text>
                 </MenuItem>

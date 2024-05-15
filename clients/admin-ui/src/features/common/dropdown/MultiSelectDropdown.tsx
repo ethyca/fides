@@ -120,7 +120,12 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdwonProps> = ({
                 }}
               >
                 {!tooltipDisabled && (
-                  <Text display="inline-block" isTruncated width={width}>
+                  <Text
+                    display="inline-block"
+                    noOfLines={1}
+                    wordBreak="break-all"
+                    width={width}
+                  >
                     {getMenuButtonText()}
                   </Text>
                 )}
