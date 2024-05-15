@@ -102,7 +102,7 @@ class ConfigConsentOption(FidesSchema):
 
 
 class ConsentConfigPage(FidesSchema):
-    consent_options: List[ConfigConsentOption] = Field(alias="consentOptions")
+    consent_options: List[ConfigConsentOption] = Field([], alias="consentOptions")
     description: str
     description_subtext: Optional[List[str]]
     policy_key: Optional[str]
