@@ -27,7 +27,7 @@ class TestProperty:
         prop_a = Property.create(
             db=db,
             data=PropertySchema(
-                name="New Property", type=PropertyType.website, experiences=[]
+                name="New Property", type=PropertyType.website, experiences=[], paths=[]
             ).dict(),
         )
         yield prop_a
@@ -102,7 +102,10 @@ class TestProperty:
         prop = Property.create(
             db=db,
             data=PropertySchema(
-                name="New Property (Prod)", type=PropertyType.website, experiences=[]
+                name="New Property (Prod)",
+                type=PropertyType.website,
+                experiences=[],
+                paths=[],
             ).dict(),
         )
         assert prop.name == "New Property (Prod)"
@@ -119,6 +122,7 @@ class TestProperty:
                 "name": "Property B",
                 "type": PropertyType.other,
                 "experiences": [minimal_experience],
+                "paths": [],
             },
         )
 
@@ -149,6 +153,7 @@ class TestProperty:
                 name="Second Property",
                 type=PropertyType.website,
                 experiences=[],
+                paths=[],
             ).dict(),
         )
 

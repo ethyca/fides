@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Extra, root_validator
+from pydantic import Extra, Field, root_validator
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -55,46 +55,61 @@ class PrivacyRequestOption(FidesSchema):
     title: str
     description: str
     description_subtext: Optional[List[str]]
-    confirmButtonText: Optional[str]
-    cancelButtonText: Optional[str]
+    confirm_button_text: Optional[str] = Field(alias="confirmButtonText")
+    cancel_button_text: Optional[str] = Field(alias="cancelButtonText")
     identity_inputs: Optional[IdentityInputs] = None
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+
+    class Config:
+        by_alias = True
 
 
 class ConsentConfigButton(FidesSchema):
     description: str
     description_subtext: Optional[List[str]]
-    confirmButtonText: Optional[str]
-    cancelButtonText: Optional[str]
+    confirm_button_text: Optional[str] = Field(alias="confirmButtonText")
+    cancel_button_text: Optional[str] = Field(alias="cancelButtonText")
     icon_path: str
     identity_inputs: IdentityInputs
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     title: str
-    modalTitle: Optional[str]
+    modal_title: Optional[str] = Field(alias="modalTitle")
+
+    class Config:
+        by_alias = True
 
 
 class ConditionalValue(FidesSchema):
     value: bool
-    globalPrivacyControl: bool
+    global_privacy_control: bool = Field(alias="globalPrivacyControl")
+
+    class Config:
+        by_alias = True
 
 
 class ConfigConsentOption(FidesSchema):
-    cookieKeys: List[str] = []
+    cookie_keys: List[str] = Field([], alias="cookieKeys")
     default: Optional[Union[bool, ConditionalValue]]
     description: str
-    fidesDataUseKey: str
+    fides_data_use_key: str = Field(alias="fidesDataUseKey")
     highlight: Optional[bool]
     name: str
     url: str
     executable: Optional[bool]
 
+    class Config:
+        by_alias = True
+
 
 class ConsentConfigPage(FidesSchema):
-    consentOptions: List[ConfigConsentOption]
+    consent_options: List[ConfigConsentOption] = Field(alias="consentOptions")
     description: str
     description_subtext: Optional[List[str]]
     policy_key: Optional[str]
     title: str
+
+    class Config:
+        by_alias = True
 
     @root_validator(pre=True)
     def validate_consent_options(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -126,10 +141,11 @@ class PrivacyCenterConfig(FidesSchema):
     logo_url: Optional[str]
     favicon_path: Optional[str]
     actions: List[PrivacyRequestOption]
-    includeConsent: Optional[bool]
+    include_consent: Optional[bool] = Field(alias="includeConsent")
     consent: ConsentConfig
     privacy_policy_url: Optional[str]
     privacy_policy_url_text: Optional[str]
 
     class Config:
         exclude_none = True
+        by_alias = True

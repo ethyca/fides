@@ -126,7 +126,7 @@ class PropertyPath(Base):
         primary_key=True,
         unique=False,
     )
-    path = Column(String, nullable=False, unique=True)
+    path = Column(String, index=True, nullable=False, unique=True)
 
 
 class PrivacyExperienceConfigProperty(Base):

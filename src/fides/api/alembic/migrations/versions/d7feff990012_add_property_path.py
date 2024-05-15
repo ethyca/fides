@@ -1,8 +1,8 @@
 """add property path
 
-Revision ID: cb35eb4fe2d7
+Revision ID: d7feff990012
 Revises: 0debabbb9c6a
-Create Date: 2024-05-06 20:32:24.625073
+Create Date: 2024-05-15 00:20:47.115547
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "cb35eb4fe2d7"
+revision = "d7feff990012"
 down_revision = "0debabbb9c6a"
 branch_labels = None
 depends_on = None
@@ -40,10 +40,12 @@ def upgrade():
             ["plus_property.id"],
         ),
         sa.PrimaryKeyConstraint("id", "property_id"),
-        sa.UniqueConstraint("path"),
     )
     op.create_index(
         op.f("ix_plus_property_path_id"), "plus_property_path", ["id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_plus_property_path_path"), "plus_property_path", ["path"], unique=True
     )
     op.create_index(
         op.f("ix_plus_property_path_property_id"),
@@ -68,5 +70,6 @@ def downgrade():
     op.drop_index(
         op.f("ix_plus_property_path_property_id"), table_name="plus_property_path"
     )
+    op.drop_index(op.f("ix_plus_property_path_path"), table_name="plus_property_path")
     op.drop_index(op.f("ix_plus_property_path_id"), table_name="plus_property_path")
     op.drop_table("plus_property_path")
