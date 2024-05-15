@@ -2,7 +2,6 @@ import json
 from typing import Any, Dict, Generator
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists

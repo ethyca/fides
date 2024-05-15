@@ -48,7 +48,6 @@ class CustomPrivacyRequestField(FidesSchema):
             raise ValueError("default_value is required when hidden is True")
         return values
 
-
 class PrivacyRequestOption(FidesSchema):
     policy_key: str
     icon_path: str
@@ -59,10 +58,6 @@ class PrivacyRequestOption(FidesSchema):
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText")
     identity_inputs: Optional[IdentityInputs] = None
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
-
-    class Config:
-        by_alias = True
-
 
 class ConsentConfigButton(FidesSchema):
     description: str
@@ -75,17 +70,9 @@ class ConsentConfigButton(FidesSchema):
     title: str
     modal_title: Optional[str] = Field(alias="modalTitle")
 
-    class Config:
-        by_alias = True
-
-
 class ConditionalValue(FidesSchema):
     value: bool
     global_privacy_control: bool = Field(alias="globalPrivacyControl")
-
-    class Config:
-        by_alias = True
-
 
 class ConfigConsentOption(FidesSchema):
     cookie_keys: List[str] = Field([], alias="cookieKeys")
@@ -97,19 +84,12 @@ class ConfigConsentOption(FidesSchema):
     url: str
     executable: Optional[bool]
 
-    class Config:
-        by_alias = True
-
-
 class ConsentConfigPage(FidesSchema):
     consent_options: List[ConfigConsentOption] = Field([], alias="consentOptions")
     description: str
     description_subtext: Optional[List[str]]
     policy_key: Optional[str]
     title: str
-
-    class Config:
-        by_alias = True
 
     @validator("consent_options")
     def validate_consent_options(
@@ -141,7 +121,3 @@ class PrivacyCenterConfig(FidesSchema):
     consent: ConsentConfig
     privacy_policy_url: Optional[str]
     privacy_policy_url_text: Optional[str]
-
-    class Config:
-        exclude_none = True
-        by_alias = True
