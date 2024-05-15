@@ -1,4 +1,4 @@
-import { Button } from "@fidesui/react";
+import { Button } from "fidesui";
 import { ReactNode } from "react";
 
 // It's difficult to pass a NextLink directly into a toast, so we can use a styled button instead,

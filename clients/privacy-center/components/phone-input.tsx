@@ -1,4 +1,4 @@
-import { Input, InputProps } from "@fidesui/react";
+import { Input, InputProps } from "fidesui";
 import dynamic from "next/dynamic";
 // Importing the flag icons causes them to be bundled into the app instead of loaded from an outside
 // domain. See: https://gitlab.com/catamphetamine/react-phone-number-input#including-all-flags

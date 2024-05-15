@@ -1,4 +1,4 @@
-import { Box, Heading, Text, VStack } from "@fidesui/react";
+import { Box, Heading, Text, VStack } from "fidesui";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

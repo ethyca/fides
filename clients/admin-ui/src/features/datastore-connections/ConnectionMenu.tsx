@@ -6,7 +6,7 @@ import {
   MenuList,
   MoreIcon,
   Portal,
-} from "@fidesui/react";
+} from "fidesui";
 import NextLink from "next/link";
 import React from "react";
 

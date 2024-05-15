@@ -1,4 +1,4 @@
-import { Box, Stack } from "@fidesui/react";
+import { Box, Stack } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 

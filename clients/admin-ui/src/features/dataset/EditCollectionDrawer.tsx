@@ -1,6 +1,5 @@
-import { ConfirmationModal } from "@fidesui/components";
-import { Text, useDisclosure, useToast } from "@fidesui/react";
 import { errorToastParams, successToastParams } from "common/toast";
+import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
 import { useSelector } from "react-redux";
 
 import EditDrawer, {

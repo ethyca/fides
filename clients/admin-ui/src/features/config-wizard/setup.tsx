@@ -1,4 +1,4 @@
-import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
+import { Button, Container, Heading, Image, Stack } from "fidesui";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";

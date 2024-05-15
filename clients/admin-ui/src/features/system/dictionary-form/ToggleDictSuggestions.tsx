@@ -5,7 +5,7 @@ import {
   MenuItem,
   MenuList,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { useFormikContext } from "formik";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

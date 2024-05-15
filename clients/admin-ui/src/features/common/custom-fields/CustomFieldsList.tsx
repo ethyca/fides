@@ -1,4 +1,4 @@
-import { Center, Flex, Spinner } from "@fidesui/react";
+import { Center, Flex, Spinner } from "fidesui";
 import { Field, FieldInputProps } from "formik";
 
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";

@@ -8,7 +8,7 @@ import {
   MenuList,
   Spacer,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useState } from "react";
 
 type MultiSelectDropdownListProps = {

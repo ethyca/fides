@@ -8,7 +8,7 @@ import {
   PlacementWithLogical,
   Text,
   Tooltip,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useState } from "react";
 
 import MultiSelectDropdownList from "./MultiSelectDropdownList";

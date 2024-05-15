@@ -1,4 +1,4 @@
-import { Divider, Stack, Text } from "@fidesui/react";
+import { Divider, Stack, Text } from "fidesui";
 import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 

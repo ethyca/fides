@@ -1,15 +1,5 @@
-import {
-  Flex,
-  Stack,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
 import ClassifyResultsToggle from "common/ClassifyResultsToggle";
+import { Flex, Stack, Table, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

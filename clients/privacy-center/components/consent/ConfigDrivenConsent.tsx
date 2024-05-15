@@ -1,4 +1,4 @@
-import { Divider, Stack, useToast } from "@fidesui/react";
+import { Divider, Stack, useToast } from "fidesui";
 import React, { useCallback, useEffect, useMemo } from "react";
 import {
   getConsentContext,
