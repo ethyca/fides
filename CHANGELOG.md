@@ -31,7 +31,6 @@ The types of changes are:
 - Enhanced classification of the dataset used with Twilio [#4872](https://github.com/ethyca/fides/pull/4872)
 - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB [#4878](https://github.com/ethyca/fides/pull/4878)
 - Fixed an issue where sourcemaps references were unintentionally included in the FidesJS bundle [#4887](https://github.com/ethyca/fides/pull/4887)
-- Fixed bug in nested sensitive field masking for connection configuration secrets [#4888](https://github.com/ethyca/fides/pull/4888)
 
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
