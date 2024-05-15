@@ -35,3 +35,20 @@ class TestRecurlyConnector:
 
         for shipping_address in access_results["recurly_instance:shipping_address"]:
             assert shipping_address["account_id"] == account["id"]
+
+    async def test_non_strict_erasure_request(
+        self,
+        testing_runner: ConnectorRunner,
+        policy: Policy,
+        erasure_policy_string_rewrite: Policy,
+        testing_erasure_identity_email: str,
+        testing_erasure_data,
+    ):
+        (
+            access_results,
+            erasure_results,
+        ) = await testing_runner.non_strict_erasure_request(
+            access_policy=policy,
+            erasure_policy=erasure_policy_string_rewrite,
+            identities={"email": testing_erasure_identity_email},
+        )

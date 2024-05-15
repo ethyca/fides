@@ -2,9 +2,9 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Recurly
   type: recurly
-  description: A sample schema representing the Recurly connector for Fides
+  description: A sample schema representing the Recurly integration for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/recurly
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
@@ -46,6 +46,23 @@ saas_config:
           param_values:
             - name: email
               identity: email
+        update:
+          method: PUT
+          path: /accounts/<user_id>
+          headers:
+            - name: Accept
+              value: application/vnd.recurly.v2021-02-25
+            body: |
+              {
+                <masked_object_fields>
+              }
+            param_values:
+              - name: user_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: user.id
+                    direction: from
+
     - name: billing_info
       requests:
         read:
@@ -60,6 +77,21 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: accounts.id
                   direction: from
+        update:
+          method: PUT
+          path: /accounts/<user_id>/billing_info
+          headers:
+            - name: accept
+              value: application/vnd.recurly.v2021-02-25
+          body: |
+            <masked_object_fields>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+
     - name: shipping_address
       requests:
         read:
@@ -80,3 +112,24 @@ saas_config:
             configuration:
               source: body
               path: next
+        update:
+          method: PUT
+          path: /accounts/<user_id>/shipping_addresses/<shipping_address_id>
+          headers:
+            - name: accept
+              value: application/vnd.recurly.v2021-02-25
+          body: |
+            {
+             <masked_object_fields>
+            }
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+            - name: shipping_address_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: shipping_address.id
+                  direction: from
