@@ -127,7 +127,9 @@ export default async function handler(
     console.error(error);
     res
       .status(400) // 400 Bad Request. Malformed request.
-      .send(error instanceof Error ? error.message : "An unknown error occurred.");
+      .send(
+        error instanceof Error ? error.message : "An unknown error occurred."
+      );
     return;
   }
 
