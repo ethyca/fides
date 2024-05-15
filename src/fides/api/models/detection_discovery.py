@@ -84,10 +84,12 @@ class MonitorConfig(Base):
 
     @property
     def connection_config_key(self) -> str:
+        """Derives the `connection_config_key`"""
         return self.connection_config.key
 
     @property
     def execution_start_date(self) -> Optional[datetime]:
+        """Derives the `execution_start_date`"""
         if (
             not self.monitor_execution_trigger
             or not self.monitor_execution_trigger.get("start_date")
@@ -97,7 +99,7 @@ class MonitorConfig(Base):
 
     @property
     def execution_frequency(self) -> Optional[MonitorFrequency]:
-        """Derives the execution_frequency"""
+        """Derives the `execution_frequency`"""
         if (
             not self.monitor_execution_trigger
             or not self.monitor_execution_trigger.get("hour")
