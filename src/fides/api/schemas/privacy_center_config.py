@@ -123,7 +123,14 @@ class PrivacyCenterConfig(FidesSchema):
     privacy_policy_url_text: Optional[str]
 
 
+class PartialPrivacyRequestOption(FidesSchema):
+    policy_key: str
+    title: str
+    identity_inputs: Optional[IdentityInputs] = None
+    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+
+
 class PartialPrivacyCenterConfig(FidesSchema):
     """Partial schema for the Admin UI privacy request submission."""
 
-    actions: List[PrivacyRequestOption]
+    actions: List[PartialPrivacyRequestOption]
