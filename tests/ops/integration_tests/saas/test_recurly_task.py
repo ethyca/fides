@@ -37,6 +37,7 @@ class TestRecurlyConnector:
         for shipping_address in access_results["recurly_instance:shipping_address"]:
             assert shipping_address["account_id"] == account["id"]
 
+    @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
     async def test_non_strict_erasure_request(
         self,
         testing_runner: ConnectorRunner,
