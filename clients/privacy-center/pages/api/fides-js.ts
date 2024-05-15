@@ -123,12 +123,11 @@ export default async function handler(
       fidesString
     );
   } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      res
-        .status(400) // 400 Bad Request. Malformed request.
-        .send(error.message);
-    }
+    // eslint-disable-next-line no-console
+    console.error(error);
+    res
+      .status(400) // 400 Bad Request. Malformed request.
+      .send(error instanceof Error ? error.message : "An unknown error occurred.");
     return;
   }
 

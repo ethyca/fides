@@ -178,101 +178,53 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=America",
       });
-      try {
-        await lookupGeolocation(req);
-      } catch (error) {
-        if (error instanceof Error) {
-          expect(error.message).toMatch(
-            "Provided location (America) query parameter is not in ISO 3166 format."
-          );
-        } else {
-          expect(typeof error).toBe(Error);
-        }
-      }
+      await expect(lookupGeolocation(req)).rejects.toThrow(
+        "Provided location (America) query parameter is not in ISO 3166 format."
+      );
     });
 
     it("ignores invalid three-character country codes in geolocation query param", async () => {
       let req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=USA",
       });
-      try {
-        await lookupGeolocation(req);
-      } catch (error) {
-        if (error instanceof Error) {
-          expect(error.message).toMatch(
-            "Provided location (USA) query parameter is not in ISO 3166 format."
-          );
-        } else {
-          expect(typeof error).toBe(Error);
-        }
-      }
+      await expect(lookupGeolocation(req)).rejects.toThrow(
+        "Provided location (USA) query parameter is not in ISO 3166 format."
+      );
 
       // Test again including a (seemingly valid!) region
       req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=USA-NY",
       });
-      try {
-        await lookupGeolocation(req);
-      } catch (error) {
-        if (error instanceof Error) {
-          expect(error.message).toMatch(
-            "Provided location (USA-NY) query parameter is not in ISO 3166 format."
-          );
-        } else {
-          expect(typeof error).toBe(Error);
-        }
-      }
+      await expect(lookupGeolocation(req)).rejects.toThrow(
+        "Provided location (USA-NY) query parameter is not in ISO 3166 format."
+      );
     });
 
     it("ignores invalid, numeric geolocation query param", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=12",
       });
-      try {
-        await lookupGeolocation(req);
-      } catch (error) {
-        if (error instanceof Error) {
-          expect(error.message).toMatch(
-            "Provided location (12) query parameter is not in ISO 3166 format."
-          );
-        } else {
-          expect(typeof error).toBe(Error);
-        }
-      }
+      await expect(lookupGeolocation(req)).rejects.toThrow(
+        "Provided location (12) query parameter is not in ISO 3166 format."
+      );
     });
 
     it("ignores invalid, partial locations from geolocation query param (e.g. 'US-')", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=US-",
       });
-      try {
-        await lookupGeolocation(req);
-      } catch (error) {
-        if (error instanceof Error) {
-          expect(error.message).toMatch(
-            "Provided location (US-) query parameter is not in ISO 3166 format."
-          );
-        } else {
-          expect(typeof error).toBe(Error);
-        }
-      }
+      await expect(lookupGeolocation(req)).rejects.toThrow(
+        "Provided location (US-) query parameter is not in ISO 3166 format."
+      );
     });
 
     it("ignores invalid regions from geolocation query param (e.g. 'US-NewYork')", async () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=US-NewYork",
       });
-      try {
-        await lookupGeolocation(req);
-      } catch (error) {
-        if (error instanceof Error) {
-          expect(error.message).toMatch(
-            "Provided location (US-NewYork) query parameter is not in ISO 3166 format."
-          );
-        } else {
-          expect(typeof error).toBe(Error);
-        }
-      }
+      await expect(lookupGeolocation(req)).rejects.toThrow(
+        "Provided location (US-NewYork) query parameter is not in ISO 3166 format."
+      );
     });
 
     it("handles various ISO-3166 edge cases (numeric regions, single-character codes, etc.)", async () => {
