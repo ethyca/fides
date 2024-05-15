@@ -42,7 +42,6 @@ export * from "@chakra-ui/textarea";
 export * from "@chakra-ui/toast";
 export * from "@chakra-ui/tooltip";
 export * from "@chakra-ui/transition";
-export * from "@chakra-ui/utils";
 export * from "@chakra-ui/visually-hidden";
 
 /**
