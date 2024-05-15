@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Extra, Field, root_validator
+from pydantic import Extra, Field, root_validator, validator
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -111,18 +111,14 @@ class ConsentConfigPage(FidesSchema):
     class Config:
         by_alias = True
 
-    @root_validator(pre=True)
-    def validate_consent_options(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        consent_options = values.get("consentOptions")
-        if consent_options:
-            executable_count = sum(
-                option.get("executable", False) for option in consent_options
-            )
-            if executable_count > 1:
-                raise ValueError(
-                    "Cannot have more than one consent option be executable."
-                )
-        return values
+    @validator("consent_options")
+    def validate_consent_options(
+        cls, consent_options: List[ConfigConsentOption]
+    ) -> List[ConfigConsentOption]:
+        executable_count = sum(option.executable is True for option in consent_options)
+        if executable_count > 1:
+            raise ValueError("Cannot have more than one consent option be executable.")
+        return consent_options
 
 
 class ConsentConfig(FidesSchema):

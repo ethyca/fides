@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.models.property import Property, PropertyPath
 from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 from fides.api.schemas.property import Property as PropertySchema
@@ -27,7 +28,10 @@ class TestProperty:
         prop_a = Property.create(
             db=db,
             data=PropertySchema(
-                name="New Property", type=PropertyType.website, experiences=[], paths=[]
+                name="New Property",
+                type=PropertyType.website,
+                experiences=[],
+                paths=["test"],
             ).dict(),
         )
         yield prop_a
@@ -83,7 +87,7 @@ class TestProperty:
             ).dict(),
         )
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises(KeyOrNameAlreadyExists):
             Property.create(
                 db=db,
                 data=PropertySchema(
@@ -95,6 +99,11 @@ class TestProperty:
                     paths=["test"],
                 ).dict(),
             )
+
+        second_prop = Property.filter(
+            db=db, conditions=(Property.name == "Second Property")
+        ).first()
+        assert second_prop is None
 
         first_prop.delete(db)
 
@@ -157,14 +166,14 @@ class TestProperty:
             ).dict(),
         )
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises(KeyOrNameAlreadyExists):
             second_prop.update(db=db, data={"paths": ["test"]})
 
         first_prop.delete(db)
         second_prop.delete(db)
 
-    def test_property_paths_are_deleted(
-        self, db: Session, property_a, minimal_experience, privacy_center_config
+    def test_property_paths_are_deleted_on_property_update(
+        self, db: Session, minimal_experience, privacy_center_config
     ):
         prop = Property.create(
             db=db,
@@ -201,3 +210,7 @@ class TestProperty:
     def test_delete_property(self, db: Session, property_a):
         property_a.delete(db=db)
         assert Property.get_by(db=db, field="id", value=property_a.id) is None
+        # verify associated paths are automatically deleted
+        assert (
+            PropertyPath.get_by(db=db, field="property_id", value=property_a.id) is None
+        )

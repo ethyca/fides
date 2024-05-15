@@ -6,13 +6,14 @@ import string
 from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String, Text
+from sqlalchemy import Column, ForeignKey, String, Text, and_
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
+from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
 from fides.api.schemas.property import PropertyType
@@ -75,6 +76,14 @@ class Property(Base):
         experiences = data.pop("experiences", [])
         paths = data.pop("paths", None) or []
 
+        matching_paths = PropertyPath.filter(
+            db=db, conditions=(PropertyPath.path.in_(paths))
+        ).all()
+        if matching_paths:
+            raise KeyOrNameAlreadyExists(
+                f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
+            )
+
         prop: Property = super().create(db=db, data=data, check_name=check_name)
         link_experience_configs_to_property(
             db, experience_configs=experiences, prop=prop
@@ -90,6 +99,18 @@ class Property(Base):
     def update(self, db: Session, *, data: Dict[str, Any]) -> Property:
         experiences = data.pop("experiences", [])
         paths = data.pop("paths", None) or []
+
+        matching_paths = (
+            db.query(PropertyPath)
+            .filter(
+                and_(PropertyPath.path.in_(paths), PropertyPath.property_id != self.id)
+            )
+            .all()
+        )
+        if matching_paths:
+            raise KeyOrNameAlreadyExists(
+                f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
+            )
 
         super().update(db=db, data=data)
         link_experience_configs_to_property(
