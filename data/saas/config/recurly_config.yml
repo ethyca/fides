@@ -46,22 +46,22 @@ saas_config:
           param_values:
             - name: email
               identity: email
-        # update:
-        #   method: PUT
-        #   path: /accounts/<user_id>
-        #   headers:
-        #     - name: Accept
-        #       value: application/vnd.recurly.v2021-02-25
-        #     body: |
-        #       {
-        #         <masked_object_fields>
-        #       }
-        #     param_values:
-        #       - name: user_id
-        #         references:
-        #           - dataset: <instance_fides_key>
-        #             field: user.id
-        #             direction: from
+        update:
+          method: PUT
+          path: /accounts/<user_id>
+          headers:
+            - name: Accept
+              value: application/vnd.recurly.v2021-02-25
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
 
     - name: billing_info
       requests:
@@ -77,20 +77,20 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: accounts.id
                   direction: from
-        # update:
-        #   method: PUT
-        #   path: /accounts/<user_id>/billing_info
-        #   headers:
-        #     - name: accept
-        #       value: application/vnd.recurly.v2021-02-25
-        #   body: |
-        #     <masked_object_fields>
-        #   param_values:
-        #     - name: user_id
-        #       references:
-        #         - dataset: <instance_fides_key>
-        #           field: user.id
-        #           direction: from
+        update:
+          method: PUT
+          path: /accounts/<user_id>/billing_info
+          headers:
+            - name: accept
+              value: application/vnd.recurly.v2021-02-25
+          body: |
+            <masked_object_fields>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
 
     - name: shipping_address
       requests:

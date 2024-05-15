@@ -2,6 +2,8 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
+import base64
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -27,15 +29,32 @@ def recurly_identity_email(saas_config) -> str:
     )
 
 @pytest.fixture
-def testing_erasure_identity_email() -> str:
+def recurly_erasure_identity_email() -> str:
     return generate_random_email()
 
 @pytest.fixture
-def testing_erasure_data(
-    testing_erasure_identity_email: str,
+def recurly_erasure_data(
+    recurly_erasure_identity_email: str,
+    recurly_secrets,
 ) -> Generator:
+    api_key = recurly_secrets['username']
+    api_key_string = api_key
+    api_key_bytes = api_key_string.encode("ascii")
+    base64_bytes = base64.b64encode(api_key_bytes)
+    auth_username = base64_bytes.decode("ascii")
+    print(auth_username)
+
+    base_url = f"https://{recurly_secrets['domain']}"
+    headers = {
+
+    }
     # create the data needed for erasure tests here
-    yield {}
+    # can do anything here =) e.g. write python directly
+    # I'll need 3 here, one for account, shipping addresses and billing info
+
+    import pdb; pdb.set_trace()
+
+    # yield {}
 
 @pytest.fixture
 def recurly_runner(db, cache, recurly_secrets) -> ConnectorRunner:
