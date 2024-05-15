@@ -121,13 +121,13 @@ class MonitorConfig(Base):
         *,
         data: dict[str, Any],
         check_name: bool = True,
-    ) -> FidesBase:
+    ) -> MonitorConfig:
         """Override the base class `create` to derive the `execution_trigger` dict field"""
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().create(db=db, data=data, check_name=check_name)
 
     @staticmethod
-    def derive_execution_trigger_dict(data: Dict[str, Any]) -> Optional[Dict]:
+    def derive_execution_trigger_dict(data: Dict[str, Any]) -> None:
         """
         Determines the execution trigger (cron) dict based on the
         corresponding schema properties provided in the `data` dict.
