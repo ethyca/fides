@@ -214,7 +214,8 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
-      {(values.component === ComponentType.BANNER_AND_MODAL || values.component === ComponentType.TCF_OVERLAY) && (
+      {(values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.TCF_OVERLAY) && (
         <>
           <CustomTextInput
             name={`translations.${translationIndex}.banner_title`}
