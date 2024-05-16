@@ -112,24 +112,24 @@ saas_config:
             configuration:
               source: body
               path: next
-        # update:
-        #   method: PUT
-        #   path: /accounts/<user_id>/shipping_addresses/<shipping_address_id>
-        #   headers:
-        #     - name: accept
-        #       value: application/vnd.recurly.v2021-02-25
-        #   body: |
-        #     {
-        #      <masked_object_fields>
-        #     }
-        #   param_values:
-        #     - name: user_id
-        #       references:
-        #         - dataset: <instance_fides_key>
-        #           field: user.id
-        #           direction: from
-        #     - name: shipping_address_id
-        #       references:
-        #         - dataset: <instance_fides_key>
-        #           field: shipping_address.id
-        #           direction: from
+        update:
+          method: PUT
+          path: /accounts/<user_id>/shipping_addresses/<shipping_address_id>
+          headers:
+            - name: accept
+              value: application/vnd.recurly.v2021-02-25
+          body: |
+            {
+             <masked_object_fields>
+            }
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+            - name: shipping_address_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: shipping_address.id
+                  direction: from
