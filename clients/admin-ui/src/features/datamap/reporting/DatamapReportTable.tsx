@@ -1,17 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  Button,
-  ChevronDownIcon,
-  Flex,
-  Heading,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItemOption,
-  MenuList,
-  useDisclosure,
-} from "@fidesui/react";
-import {
   createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
@@ -31,6 +19,18 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import {
+  Button,
+  ChevronDownIcon,
+  Flex,
+  Heading,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItemOption,
+  MenuList,
+  useDisclosure,
+} from "fidesui";
 import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 

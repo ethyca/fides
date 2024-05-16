@@ -6,7 +6,7 @@ import {
   SlideFade,
   Tag,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import yaml from "js-yaml";
 import * as React from "react";
 

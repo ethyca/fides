@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 import { isArray } from "lodash";
 import { isValidElement, ReactElement } from "react";
 

@@ -1,4 +1,11 @@
 import {
+  flexRender,
+  Header,
+  Row,
+  RowData,
+  Table as TableInstance,
+} from "@tanstack/react-table";
+import {
   Box,
   Button,
   ChevronDownIcon,
@@ -14,14 +21,7 @@ import {
   Th,
   Thead,
   Tr,
-} from "@fidesui/react";
-import {
-  flexRender,
-  Header,
-  Row,
-  RowData,
-  Table as TableInstance,
-} from "@tanstack/react-table";
+} from "fidesui";
 import React, { ReactNode, useMemo } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";

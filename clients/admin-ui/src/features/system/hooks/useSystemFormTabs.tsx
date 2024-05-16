@@ -1,4 +1,6 @@
-import { Box, Text, useToast } from "@fidesui/react";
+
+import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
+import { Box, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -11,7 +13,6 @@ import {
   useIsAnyFormDirty,
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";

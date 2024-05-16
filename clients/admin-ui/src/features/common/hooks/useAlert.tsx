@@ -7,7 +7,7 @@ import {
   CloseButton,
   useToast,
   UseToastOptions,
-} from "@fidesui/react";
+} from "fidesui";
 import { MouseEventHandler } from "react";
 
 /**

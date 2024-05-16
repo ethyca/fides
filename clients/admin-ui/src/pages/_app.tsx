@@ -3,7 +3,7 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 
-import { FidesProvider, Flex } from "@fidesui/react";
+import { FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
 import React from "react";
 import { DndProvider } from "react-dnd";
@@ -34,7 +34,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
   <SafeHydrate>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <FidesProvider theme={theme}>
+        <FidesUIProvider theme={theme}>
           <DndProvider backend={HTML5Backend}>
             {Component === Login ? (
               // Only the login page is accessible while logged out. If there is
@@ -54,7 +54,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
               </ProtectedRoute>
             )}
           </DndProvider>
-        </FidesProvider>
+        </FidesUIProvider>
       </PersistGate>
     </Provider>
   </SafeHydrate>

@@ -1,4 +1,4 @@
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@fidesui/react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "fidesui";
 import Link from "next/link";
 
 export interface BreadcrumbsProps {

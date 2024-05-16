@@ -1,4 +1,4 @@
-import { Box, Heading, Text } from "@fidesui/react";
+import { Box, Heading, Text } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";

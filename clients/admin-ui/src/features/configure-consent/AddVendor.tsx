@@ -6,7 +6,7 @@ import {
   useDisclosure,
   useToast,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useRef } from "react";
 import * as Yup from "yup";

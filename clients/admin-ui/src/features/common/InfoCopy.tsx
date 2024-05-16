@@ -1,4 +1,4 @@
-import { Heading, Text } from "@fidesui/react";
+import { Heading, Text } from "fidesui";
 
 import { InfoBlock } from "~/features/integrations/BigqueryCopy";
 

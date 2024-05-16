@@ -1,4 +1,4 @@
-import { Box, HStack, Select, Spinner } from "@fidesui/react";
+import { Box, HStack, Select, Spinner } from "fidesui";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 

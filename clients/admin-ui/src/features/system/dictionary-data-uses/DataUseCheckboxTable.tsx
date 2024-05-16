@@ -1,14 +1,4 @@
-import {
-  Checkbox,
-  Table,
-  Tag,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
+import { Checkbox, Table, Tag, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
 
 import { DataUse } from "~/types/api";
 import { DataUseDeclaration } from "~/types/dictionary-api";

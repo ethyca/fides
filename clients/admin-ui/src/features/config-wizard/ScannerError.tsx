@@ -6,7 +6,7 @@ import {
   HStack,
   Stack,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 
 import DocsLink from "~/features/common/DocsLink";
 import { ParsedError } from "~/features/common/helpers";

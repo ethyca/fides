@@ -2,6 +2,7 @@
   "workspaces": [
     "admin-ui",
     "fides-js",
+    "fidesui",
     "privacy-center"
   ],
   "scripts": {

@@ -1,4 +1,4 @@
-import { TabPanel, TabPanels, Tabs, TabsProps } from "@fidesui/react";
+import { TabPanel, TabPanels, Tabs, TabsProps } from "fidesui";
 
 import { TabData } from "~/features/common/DataTabs";
 

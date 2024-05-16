@@ -1,4 +1,4 @@
-import { Box, BoxProps } from "@fidesui/react";
+import { Box, BoxProps } from "fidesui";
 
 const ConnectedCircle = ({
   connected,

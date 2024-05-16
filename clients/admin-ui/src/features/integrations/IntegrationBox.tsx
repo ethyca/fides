@@ -1,5 +1,5 @@
 import { WarningIcon } from '@chakra-ui/icons'
-import { Box, Button, CheckCircleIcon, Flex, Image, InfoIcon, Text } from "@fidesui/react";
+import { Box, Button, CheckCircleIcon, Flex, Image, InfoIcon, Text } from "fidesui";
 import NextLink from "next/link";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";

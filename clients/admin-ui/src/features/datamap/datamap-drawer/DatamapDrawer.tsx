@@ -1,13 +1,5 @@
-import {
-  Box,
-  CloseIcon,
-  Flex,
-  IconButton,
-  Slide,
-  Spacer,
-  Text,
-} from "@fidesui/react";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
+import { Box, CloseIcon, Flex, IconButton, Slide, Spacer, Text } from "fidesui";
 import React, { useMemo } from "react";
 
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";

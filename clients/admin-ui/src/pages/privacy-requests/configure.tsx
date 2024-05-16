@@ -1,4 +1,4 @@
-import { Box, Heading, LinkBox } from "@fidesui/react";
+import { Box, Heading, LinkBox } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 

@@ -1,4 +1,4 @@
-import { Spinner } from "@fidesui/react";
+import { Spinner } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 import Layout from "~/features/common/Layout";

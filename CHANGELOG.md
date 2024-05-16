@@ -19,12 +19,19 @@ The types of changes are:
 
 ### Added
 - Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
+
 ### Changed
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
+- Rename MinimalPrivacyExperience class and usages [#4889](https://github.com/ethyca/fides/pull/4889)
+- Included fidesui as part of the monorepo [#4880](https://github.com/ethyca/fides/pull/4880)
+- Improve `geolocation` and `property_id` error response to return 400 status instead of 500 server error on /fides.js endpoint [#4884](https://github.com/ethyca/fides/pull/4884)
+- Fixing middleware logging in Fides.js to remove incorrect status codes and durations [#4885](https://github.com/ethyca/fides/pull/4885)
 
 ### Fixed
 - Fixed an issue with the Iterate connector returning at least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
 - Enhanced classification of the dataset used with Twilio [#4872](https://github.com/ethyca/fides/pull/4872)
+- Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB [#4878](https://github.com/ethyca/fides/pull/4878)
+- Fixed an issue where sourcemaps references were unintentionally included in the FidesJS bundle [#4887](https://github.com/ethyca/fides/pull/4887)
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 

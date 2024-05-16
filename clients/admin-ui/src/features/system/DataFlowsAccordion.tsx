@@ -1,4 +1,4 @@
-import { Accordion, Stack, Text } from "@fidesui/react";
+import { Accordion, Stack, Text } from "fidesui";
 
 import { ClassifySystem, DataFlow, System } from "~/types/api";
 

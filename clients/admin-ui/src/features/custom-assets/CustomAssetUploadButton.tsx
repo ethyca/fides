@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@fidesui/react";
+import { Button, useDisclosure } from "fidesui";
 import React from "react";
 
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";

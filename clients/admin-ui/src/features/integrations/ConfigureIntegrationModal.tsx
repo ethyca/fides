@@ -5,7 +5,7 @@ import {
   ModalOverlay,
   Text,
   UseDisclosureReturn,
-} from "@fidesui/react";
+} from "fidesui";
 
 const ConfigureIntegrationModal = ({
   isOpen,

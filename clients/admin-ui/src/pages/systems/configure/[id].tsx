@@ -1,4 +1,4 @@
-import { Box, Button, Spinner, Text, useToast, VStack } from "@fidesui/react";
+import { Box, Button, Spinner, Text, useToast, VStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";

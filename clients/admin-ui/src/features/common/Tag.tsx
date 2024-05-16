@@ -1,4 +1,4 @@
-import { Tag as BaseTag } from "@fidesui/react";
+import { Tag as BaseTag } from "fidesui";
 
 const Tag = ({children}) =>
     <BaseTag

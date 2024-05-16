@@ -1,11 +1,4 @@
-import {
-  ButtonGroup,
-  Flex,
-  IconButton,
-  Spacer,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { ButtonGroup, Flex, IconButton, Spacer, Text, useToast } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";

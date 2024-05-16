@@ -6,7 +6,7 @@ import {
   TabProps,
   Tabs,
   TabsProps,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode } from "react";
 
 export type TabListBorder = "full-width" | "partial";

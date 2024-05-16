@@ -1,4 +1,4 @@
-import { Flex, Image, Text } from "@fidesui/react";
+import { Flex, Image, Text } from "fidesui";
 import React from "react";
 
 type CardProps = {

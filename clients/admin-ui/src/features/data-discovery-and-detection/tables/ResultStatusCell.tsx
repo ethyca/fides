@@ -1,4 +1,4 @@
-import { Flex, Text, Tooltip } from "@fidesui/react";
+import { Flex, Text, Tooltip } from "fidesui";
 
 import { CircleIcon } from "~/features/common/Icon/CircleIcon";
 import { RightDownArrowIcon } from "~/features/common/Icon/RightDownArrowIcon";

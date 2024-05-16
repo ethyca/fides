@@ -1,4 +1,4 @@
-import { TabList, Tabs, TabsProps } from "@fidesui/react";
+import { TabList, Tabs, TabsProps } from "fidesui";
 
 import { FidesTab, TabData, TabListBorder } from "~/features/common/DataTabs";
 

@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 
 import IntegrationBox  from "~/features/integrations/IntegrationBox";
 import NoIntegrations  from "~/features/integrations/NoIntegrations";

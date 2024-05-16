@@ -1,3 +1,10 @@
+import { Option, SelectInput } from "common/form/inputs";
+import {
+  ConnectionTypeSecretSchemaProperty,
+  ConnectionTypeSecretSchemaReponse,
+} from "connection-type/types";
+import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
+import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
   Box,
   Button,
@@ -16,14 +23,7 @@ import {
   Spacer,
   Tooltip,
   VStack,
-} from "@fidesui/react";
-import { Option, SelectInput } from "common/form/inputs";
-import {
-  ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaReponse,
-} from "connection-type/types";
-import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
-import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
+} from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
 import React from "react";

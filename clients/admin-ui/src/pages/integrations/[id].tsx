@@ -8,7 +8,7 @@ import {
   Spinner,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 

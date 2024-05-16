@@ -1,4 +1,4 @@
-import { ArrowDownLineIcon, ArrowUpLineIcon, Box, Text } from "@fidesui/react";
+import { ArrowDownLineIcon, ArrowUpLineIcon, Box, Text } from "fidesui";
 import React from "react";
 import { ColumnInstance, Row } from "react-table";
 

@@ -1,4 +1,4 @@
-import { Heading } from "@fidesui/react";
+import { Heading } from "fidesui";
 import React from "react";
 
 import Layout from "~/features/common/Layout";

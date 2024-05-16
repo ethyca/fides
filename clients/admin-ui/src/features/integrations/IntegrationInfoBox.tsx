@@ -1,4 +1,4 @@
-import { Flex } from "@fidesui/react";
+import { Flex } from "fidesui";
 
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { ConnectionSystemTypeMap } from "~/types/api";
