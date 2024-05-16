@@ -58,3 +58,4 @@ def downgrade():
             postgresql_concurrently=True,
         )
     op.drop_column("privacypreferencehistory", "property_id")
+
