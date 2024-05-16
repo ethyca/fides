@@ -6,7 +6,7 @@ import {
   MenuButton,
   MenuList,
   MenuProps,
-} from "@fidesui/react";
+} from "fidesui";
 
 import ConfigureAlerts from "../drawers/ConfigureAlerts";
 

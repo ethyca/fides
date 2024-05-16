@@ -1,5 +1,5 @@
-import { Box } from "@fidesui/react";
 import SelectDropdown from "common/dropdown/SelectDropdown";
+import { Box } from "fidesui";
 import React from "react";
 import { useSelector } from "react-redux";
 

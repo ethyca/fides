@@ -1,4 +1,4 @@
-import { Box, Text, Th, Thead, Tr } from "@fidesui/react";
+import { Box, Text, Th, Thead, Tr } from "fidesui";
 import { HeaderGroup } from "react-table";
 
 import { GRAY_BACKGROUND } from "./constants";

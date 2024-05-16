@@ -1,7 +1,7 @@
-import { CheckboxTree } from "@fidesui/components";
 import {
   Box,
   Button,
+  CheckboxTree,
   FilterIcon,
   IconButton,
   Menu,
@@ -9,7 +9,7 @@ import {
   MenuDivider,
   MenuList,
   Portal,
-} from "@fidesui/react";
+} from "fidesui";
 import { ColumnInstance } from "react-table";
 
 import { DatamapRow } from "../../../datamap.slice";

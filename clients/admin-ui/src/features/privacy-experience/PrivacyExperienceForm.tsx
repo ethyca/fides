@@ -8,7 +8,7 @@ import {
   Flex,
   Heading,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useState } from "react";

@@ -1,4 +1,4 @@
-import { createIcon } from "@chakra-ui/icons";
+import { createIcon } from "fidesui";
 
 export const TagIcon = createIcon({
   displayName: "TagIcon",

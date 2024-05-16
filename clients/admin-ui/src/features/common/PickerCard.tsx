@@ -6,7 +6,7 @@ import {
   CheckboxGroup,
   Flex,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode } from "react";
 
 export const NUM_TO_SHOW = 5;

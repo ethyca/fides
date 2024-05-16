@@ -1,4 +1,4 @@
-import { Checkbox, Flex, Table, Tbody, Th, Thead, Tr } from "@fidesui/react";
+import { Checkbox, Flex, Table, Tbody, Th, Thead, Tr } from "fidesui";
 import React, { useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

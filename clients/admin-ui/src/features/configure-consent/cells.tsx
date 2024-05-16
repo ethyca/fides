@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 import { CellProps } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";

@@ -1,4 +1,4 @@
-import { createIcon } from "@fidesui/react";
+import { createIcon } from "fidesui";
 
 export const MonitorOnIcon = createIcon({
   displayName: "MonitorOnIcon",

@@ -1,4 +1,4 @@
-import { Box, Tooltip } from "@fidesui/react";
+import { Box, Tooltip } from "fidesui";
 
 import { getTopClassification } from "~/features/dataset/helpers";
 import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";

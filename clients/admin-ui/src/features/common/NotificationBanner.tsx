@@ -5,7 +5,7 @@ import {
   Box,
   CloseButton,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { selectThisUsersRoles } from "~/features/user-management";

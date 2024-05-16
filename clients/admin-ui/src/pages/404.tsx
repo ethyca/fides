@@ -1,6 +1,6 @@
-import { Box, Button, Heading, Stack, Text } from "@fidesui/react";
 import Head from "common/Head";
 import Image from "common/Image";
+import { Box, Button, Heading, Stack, Text } from "fidesui";
 import NextLink from "next/link";
 
 import { INDEX_ROUTE } from "../constants";

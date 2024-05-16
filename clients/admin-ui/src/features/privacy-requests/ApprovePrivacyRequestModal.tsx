@@ -11,7 +11,7 @@ import {
   SimpleGrid,
   Text,
   UnorderedList,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useCallback } from "react";
 
 import { PrivacyRequestEntity } from "./types";

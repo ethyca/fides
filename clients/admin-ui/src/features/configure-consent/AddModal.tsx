@@ -7,7 +7,7 @@ import {
   ModalHeader,
   ModalOverlay,
   UseDisclosureReturn,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode } from "react";
 
 const AddModal = ({

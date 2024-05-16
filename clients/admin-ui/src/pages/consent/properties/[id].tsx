@@ -1,4 +1,4 @@
-import { Box, Heading, Text, useToast } from "@fidesui/react";
+import { Box, Heading, Text, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 

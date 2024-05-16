@@ -18,7 +18,7 @@ import {
   ModalProps,
   SimpleGrid,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { ReactNode, useState } from "react";
 
 export const getQueryParamsFromList = (

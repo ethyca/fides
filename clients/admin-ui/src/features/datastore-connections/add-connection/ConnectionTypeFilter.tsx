@@ -1,9 +1,9 @@
-import { Box } from "@fidesui/react";
 import SelectDropdown from "common/dropdown/SelectDropdown";
 import {
   selectConnectionTypeFilters,
   setSystemType,
 } from "connection-type/connection-type.slice";
+import { Box } from "fidesui";
 import React, { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 

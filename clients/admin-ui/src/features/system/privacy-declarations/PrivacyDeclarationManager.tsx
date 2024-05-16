@@ -1,6 +1,6 @@
-import { Box, ButtonProps, Stack, Text, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { Box, ButtonProps, Stack, Text, useToast } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";

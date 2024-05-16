@@ -13,7 +13,7 @@ import {
   ModalOverlay,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import * as React from "react";
 import { useRef, useState } from "react";
 
