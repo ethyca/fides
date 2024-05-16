@@ -18,10 +18,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
 
 ### Added
-- Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
+- Ability to `downgrade` the application DB through the `/admin/db` endpoint [#4893](https://github.com/ethyca/fides/pull/4893)
 
 ### Changed
-- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 - Rename MinimalPrivacyExperience class and usages [#4889](https://github.com/ethyca/fides/pull/4889)
 - Included fidesui as part of the monorepo [#4880](https://github.com/ethyca/fides/pull/4880)
 - Improve `geolocation` and `property_id` error response to return 400 status instead of 500 server error on /fides.js endpoint [#4884](https://github.com/ethyca/fides/pull/4884)
@@ -42,6 +41,8 @@ The types of changes are:
 - Added custom JSON (de)serialization to shared DB engines to handle non-standard data types in JSONB columns [#4818](https://github.com/ethyca/fides/pull/4818)
 - Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
 - Removed currentprivacypreference and lastservednotice tables [#4846](https://github.com/ethyca/fides/pull/4846)
+- Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
+- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 
 ### Changed
 - Changed filters on the data map report table to use checkbox collapsible tree view [#4864](https://github.com/ethyca/fides/pull/4864)
