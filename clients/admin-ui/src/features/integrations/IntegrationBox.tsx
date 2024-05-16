@@ -3,7 +3,15 @@ import Tag from "~/features/common/Tag";
 import { formatDate } from "~/features/common/utils";
 const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
 const FALLBACK_CONNECTOR_LOGOS_PATH = `${CONNECTOR_LOGOS_PATH}ethyca.svg`;
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import NextLink from "next/link";
 
+const BIGQUERY_TAGS = [
+  "Cloud",
+  "GCP",
+  "BigQuery",
+  "Discovery",
+];
 
 const IntegrationBox = (props: any) => {
   const {integration} = props;
@@ -28,6 +36,7 @@ const IntegrationBox = (props: any) => {
         </Text>
       );
     }
+
     if (lastTestSucceded === false) {
       return (
         <Text color="red.700">
@@ -36,7 +45,7 @@ const IntegrationBox = (props: any) => {
         </Text>
       );
     }
-    // lastTestSucceded === null
+
     return (
       <Text color="gray.700">
         <InfoIcon boxSize="13px"/>
@@ -52,25 +61,21 @@ const IntegrationBox = (props: any) => {
     </Flex>
 
   const renderManageButton = () =>
-    <Button
-      justifySelf="self-end"
-      size="xs"
-      variant="outline"
-      onClick={() => {
-
-      }}
-      loadingText="Manage"
-      spinnerPlacement="end"
-    >
-      Manage
-    </Button>
+    <NextLink href={`${INTEGRATION_MANAGEMENT_ROUTE}/bigquery_connection_${integration.key}`}>
+      <Button
+        justifySelf="self-end"
+        size="xs"
+        variant="outline"
+        loadingText="Manage"
+        spinnerPlacement="end"
+      >
+        Manage
+      </Button>
+    </NextLink>
 
   const renderTags = () =>
     <>
-      <Tag>Cloud</Tag>
-      <Tag>GCP</Tag>
-      <Tag>BigQuery</Tag>
-      <Tag>Discovery</Tag>
+      {BIGQUERY_TAGS.map((item) => <Tag key={item}>{item}</Tag>)}
     </>
 
   return (
