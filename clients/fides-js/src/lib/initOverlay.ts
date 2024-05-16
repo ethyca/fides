@@ -137,12 +137,13 @@ export const initOverlay = async ({
     }
   }
 
-  // Ensure we only render the overlay to the DOM once it's loaded
-  if (document?.readyState !== "complete") {
-    debugLog(options.debug, "DOM not loaded, adding event listener");
+  // Ensure we only render the overlay to the document once it's interactive
+  // NOTE: do not wait for "complete" state, as this can delay rendering on sites with heavy assets
+  if (document?.readyState !== "interactive") {
+    debugLog(options.debug, "document is still loading, adding event listener");
     document.addEventListener("readystatechange", async () => {
-      if (document.readyState === "complete") {
-        debugLog(options.debug, "DOM fully loaded and parsed");
+      if (document.readyState === "interactive") {
+        debugLog(options.debug, "document fully loaded and parsed");
         await renderFidesOverlay();
       }
     });
