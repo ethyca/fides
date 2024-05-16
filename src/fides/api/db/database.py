@@ -41,7 +41,16 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-async def migrate_db(database_url: str, samples: bool = False) -> None:
+def downgrade_db(database_url: str, revision: str = "head") -> None:
+    "Downgrade the database to the specified migration revision."
+    log.info("Running database migrations")
+    alembic_config = get_alembic_config(database_url)
+    command.downgrade(alembic_config, revision)
+
+
+async def migrate_db(
+    database_url: str, samples: bool = False, revision: str = "head"
+) -> None:
     """
     Runs migrations and creates database objects if needed.
 
@@ -49,7 +58,7 @@ async def migrate_db(database_url: str, samples: bool = False) -> None:
     """
     log.info("Initializing database")
     alembic_config = get_alembic_config(database_url)
-    upgrade_db(alembic_config)
+    upgrade_db(alembic_config, revision)
 
     async with async_session() as session:
         await load_default_resources(session)
@@ -102,11 +111,13 @@ def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
         return "unhealthy"
 
 
-async def configure_db(database_url: str, samples: bool = False) -> None:
+async def configure_db(
+    database_url: str, samples: bool = False, revision: str = "head"
+) -> None:
     """Set up the db to be used by the app."""
     try:
         create_db_if_not_exists(database_url)
-        await migrate_db(database_url, samples=samples)
+        await migrate_db(database_url, samples=samples, revision=revision)
     except InvalidCiphertextError as cipher_error:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."
