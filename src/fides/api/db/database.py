@@ -3,7 +3,7 @@ Contains all of the logic related to the database including connections, setup, 
 """
 
 from os import path
-from typing import Literal, Optional
+from typing import Literal, Optional, Tuple
 
 from alembic import command, script
 from alembic.config import Config
@@ -92,23 +92,27 @@ def reset_db(database_url: str) -> None:
     log.info("Reset complete.")
 
 
-def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
+def get_db_health(
+    database_url: str, db: Session
+) -> Tuple[DatabaseHealth, Optional[str]]:
     """Checks if the db is reachable and up-to-date with Alembic migrations."""
     try:
         alembic_config = get_alembic_config(database_url)
         alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)
         context = migration.MigrationContext.configure(db.connection())
-
+        current_revision = context.get_current_revision()
         if (
             context.get_current_revision()
             != alembic_script_directory.get_current_head()
         ):
-            return "needs migration"
-        return "healthy"
+            db_health = "needs migration"
+        else:
+            db_health = "healthy"
+        return db_health, current_revision
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
         log.error("Unable to reach the database: {}: {}", error_type, error)
-        return "unhealthy"
+        return ("unhealthy", None)
 
 
 async def configure_db(
