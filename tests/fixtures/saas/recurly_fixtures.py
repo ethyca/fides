@@ -155,7 +155,6 @@ def recurly_erasure_data(
     assert response.json()['address']['city'] == 'MASKED', "Expected 'MASKED' for city, got {}".format(response.json()['address']['city'])
     assert response.json()['address']['region'] == 'MASKED', "Expected 'MASKED' for region, got {}".format()(response.json()['address']['region'])
     assert response.json()['address']['phone'] == 'MASKED', "Expected 'MASKED' for phone, got {}".format()(response.json()['address']['phone'])
-    ## repeat for shipping and billing
     # billing
     body = {
         "first_name": "MASKED",
@@ -183,8 +182,6 @@ def recurly_erasure_data(
     assert response.json()['address']['street1'] == 'MASKED', "Expected 'MASKED' for street1, got {}".format(response.json()['address']['street1'])
     assert response.json()['address']['street2'] == 'MASKED', "Expected 'MASKED' for street2, got {}".format(response.json()['address']['street2'])
     assert response.json()['address']['city'] == 'MASKED', "Expected 'MASKED' for city, got {}".format(response.json()['address']['city'])
-## good to here
-
     # shipping
     body = {
         "first_name": "MASKED",
@@ -204,8 +201,6 @@ def recurly_erasure_data(
     assert response.json()['street1'] == 'MASKED', "Expected 'MASKED' for street1, got {}".format(response.json()['street1'])
     assert response.json()['street2'] == 'MASKED', "Expected 'MASKED' for street2, got {}".format(response.json()['street2'])
     assert response.json()['email'] == 'MASKED@Ethyca.com', "Expected 'MASKED' for email, got {}".format(response.json()['email'])
-
-
     # import pdb; pdb.set_trace()
 
     yield accounts
