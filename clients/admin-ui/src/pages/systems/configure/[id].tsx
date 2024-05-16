@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  GearIcon,
-  Spinner,
-  Text,
-  useToast,
-  VStack,
-} from "@fidesui/react";
+import { Box, Button, Spinner, Text, useToast, VStack } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -51,6 +43,7 @@ const ConfigureSystem: NextPage = () => {
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId, {
     skip: !systemId,
   });
+
   const { isLoading: isDictionaryLoading } = useGetAllDictionaryEntriesQuery();
   const { tcf: isTCFEnabled } = useFeatures();
 
@@ -114,33 +107,32 @@ const ConfigureSystem: NextPage = () => {
           { title: system?.name || "" },
         ]}
         isSticky
-        extra={
-          <Box position="relative">
-            <DataTabsHeader
-              data={tabData}
-              data-testid="system-tabs"
-              index={tabIndex}
-              isLazy
-              isManual
-              onChange={onTabChange}
-              width="full"
-              border="full-width"
-            />
-            <Button
-              size="xs"
-              variant="outline"
-              position="absolute"
-              right={0}
-              top="50%"
-              transform="auto"
-              translateY="-50%"
-            >
-              <Text>Integrations</Text>
-              <GearLightIcon marginLeft={2} />
-            </Button>
-          </Box>
-        }
-      />
+      >
+        <Box position="relative">
+          <DataTabsHeader
+            data={tabData}
+            data-testid="system-tabs"
+            index={tabIndex}
+            isLazy
+            isManual
+            onChange={onTabChange}
+            width="full"
+            border="full-width"
+          />
+          <Button
+            size="xs"
+            variant="outline"
+            position="absolute"
+            right={0}
+            top="50%"
+            transform="auto"
+            translateY="-50%"
+          >
+            <Text>Integrations</Text>
+            <GearLightIcon marginLeft={2} />
+          </Button>
+        </Box>
+      </PageHeader>
       {lockedForGVL ? <GVLNotice /> : null}
       {!system && !isLoading && !isDictionaryLoading ? (
         <Text data-testid="system-not-found">

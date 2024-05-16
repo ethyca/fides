@@ -7,7 +7,6 @@ import Breadcrumbs, { BreadcrumbsProps } from "~/features/common/Breadcrumbs";
 interface PageHeaderProps {
   breadcrumbs: BreadcrumbsProps["breadcrumbs"] | ReactElement | false;
   isSticky?: boolean;
-  extra?: ReactElement;
 }
 
 /**
@@ -22,7 +21,7 @@ interface PageHeaderProps {
 const PageHeader: React.FC<PageHeaderProps> = ({
   breadcrumbs,
   isSticky = true,
-  extra,
+  children,
   ...otherProps
 }) => (
   <Box
@@ -33,15 +32,14 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   >
     {/* If breadcrumbs is an array, render the Breadcrumbs component. */}
     {isArray(breadcrumbs) && (
-      <Box marginBottom={isValidElement(extra) ? 4 : 0}>
+      <Box marginBottom={children ? 4 : 0}>
         <Breadcrumbs breadcrumbs={breadcrumbs} />
       </Box>
     )}
     {/* If breadcrumbs is a React element, render it. */}
     {isValidElement(breadcrumbs) && breadcrumbs}
 
-    {/* If there is an extra prop, render it. */}
-    {isValidElement(extra) && extra}
+    {children}
   </Box>
 );
 
