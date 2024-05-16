@@ -136,6 +136,10 @@ export interface Fides {
    * programmatically at any time from your own custom JavaScript logic as
    * desired.
    *
+   * NOTE: If using custom JavaScript to show the modal, you may also want to set
+   * the `modalLinkId` global option to an empty string to prevent the automated
+   * searching for, and binding the click event to, the modal link.
+   *
    *
    * @example
    * Showing the FidesJS modal via an `onclick` handler on a custom button element:
@@ -211,11 +215,11 @@ export interface Fides {
   /**
    * Reinitialize FidesJS with the initial configuration, but taking into account
    * any new overrides such as the `fides_overrides` global or the query params.
-   * 
+   *
    * This is useful when you're working on a single page application (SPA) and you
    * want to modify any FidesJS options after initialization - for example,
    * switching between regular/embedded mode with `fides_embed`, overriding the
-   * user's language with `fides_locale`, etc. 
+   * user's language with `fides_locale`, etc.
    */
   reinitialize: () => Promise<void>;
 
@@ -238,7 +242,7 @@ export interface Fides {
 
   /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
-   * 
+   *
    * @internal
    */
   fides_meta: Record<any, any>;
