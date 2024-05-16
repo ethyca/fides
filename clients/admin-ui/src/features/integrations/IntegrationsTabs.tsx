@@ -1,4 +1,5 @@
 import { Box } from "@fidesui/react";
+
 import IntegrationBox  from "~/features/integrations/IntegrationBox";
 import NoIntegrations  from "~/features/integrations/NoIntegrations";
 

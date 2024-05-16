@@ -1,10 +1,13 @@
-import { Box, Image, Flex, Button, Text, WarningTwoIcon, CheckCircleIcon, InfoIcon } from "@fidesui/react";
+import { WarningIcon } from '@chakra-ui/icons'
+import { Box, Button, CheckCircleIcon, Flex, Image, InfoIcon, Text } from "@fidesui/react";
+import NextLink from "next/link";
+
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import Tag from "~/features/common/Tag";
 import { formatDate } from "~/features/common/utils";
+
 const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
 const FALLBACK_CONNECTOR_LOGOS_PATH = `${CONNECTOR_LOGOS_PATH}ethyca.svg`;
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
-import NextLink from "next/link";
 
 const BIGQUERY_TAGS = [
   "Cloud",
@@ -26,9 +29,10 @@ const IntegrationBox = (props: any) => {
     />
 
   const renderLastTest = () => {
-    const {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
-    // lastTestSucceded = null;
-    // lastTestTimestamp = "2024-05-16T17:59:21+0000";
+    // const {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
+    let {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
+    lastTestSucceded = false;
+    lastTestTimestamp = "2024-05-16T17:59:21+0000";
 
     if (lastTestSucceded) {
       return (
@@ -42,7 +46,7 @@ const IntegrationBox = (props: any) => {
     if (lastTestSucceded === false) {
       return (
         <Flex alignItems="center" color="red.600" >
-          <WarningTwoIcon boxSize="13px" marginRight="4px"/>
+          <WarningIcon boxSize="13px" marginRight="4px"/>
           Error on {formatDate(lastTestTimestamp)}
         </Flex>
       );
