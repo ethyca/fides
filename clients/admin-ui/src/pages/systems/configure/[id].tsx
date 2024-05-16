@@ -10,7 +10,10 @@ import { useFeatures } from "~/features/common/features";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import { GearLightIcon } from "~/features/common/Icon";
 import Layout from "~/features/common/Layout";
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  INTEGRATION_MANAGEMENT_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
@@ -127,6 +130,7 @@ const ConfigureSystem: NextPage = () => {
             top="50%"
             transform="auto"
             translateY="-50%"
+            onClick={() => router.push(INTEGRATION_MANAGEMENT_ROUTE)}
           >
             <Text>Integrations</Text>
             <GearLightIcon marginLeft={2} />
