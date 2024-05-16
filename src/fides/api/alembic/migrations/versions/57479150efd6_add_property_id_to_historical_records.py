@@ -1,4 +1,4 @@
-"""adding property id to historical records
+"""add property id to historical records
 
 Revision ID: 57479150efd6
 Revises: fc2b2c06e595
