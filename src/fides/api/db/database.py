@@ -105,7 +105,7 @@ def get_db_health(
             context.get_current_revision()
             != alembic_script_directory.get_current_head()
         ):
-            db_health = "needs migration"
+            db_health: DatabaseHealth = "needs migration"
         else:
             db_health = "healthy"
         return db_health, current_revision
