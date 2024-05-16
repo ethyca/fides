@@ -1,10 +1,12 @@
-import { Box, Image, Flex, Button, Text, WarningIcon, CheckCircleIcon } from "@fidesui/react";
+import { Box, Image, Flex, Button, Text, WarningIcon, CheckCircleIcon, InfoIcon } from "@fidesui/react";
 import Tag from "~/features/common/Tag";
+import { formatDate } from "~/features/common/utils";
 const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
 const FALLBACK_CONNECTOR_LOGOS_PATH = `${CONNECTOR_LOGOS_PATH}ethyca.svg`;
 
 
-const IntegrationBox = (props) => {
+const IntegrationBox = (props: any) => {
+  const {integration} = props;
   const renderLogo = () =>
     <Image
       boxSize="50px"
@@ -15,17 +17,38 @@ const IntegrationBox = (props) => {
       {...props}
     />
 
+  const renderLastTest = () => {
+    const {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
+
+    if (lastTestSucceded) {
+      return (
+        <Text color="green.700">
+          <CheckCircleIcon boxSize="13px"/>
+          Last connected {formatDate(lastTestTimestamp)}
+        </Text>
+      );
+    }
+    if (lastTestSucceded === false) {
+      return (
+        <Text color="red.700">
+          <WarningIcon boxSize="13px"/>
+          Error on {formatDate(lastTestTimestamp)}
+        </Text>
+      );
+    }
+    // lastTestSucceded === null
+    return (
+      <Text color="gray.700">
+        <InfoIcon boxSize="13px"/>
+        Never ran
+      </Text>
+    );
+  }
+
   const renderIntegrationNameContainer = () =>
     <Flex direction="column" flexGrow={1} marginLeft="16px">
-      <Text color="gray.700" fontWeight="semibold">BigQuery</Text>
-      <Text color="green.700">
-        <CheckCircleIcon boxSize="13px"/>
-        Error on August 4, 2021, 09:35:46 PST {/* last_test_timestamp and last_test_succeeded */}
-      </Text>
-      <Text color="red.700">
-        <WarningIcon boxSize="13px"/>
-        Error on August 4, 2021, 09:35:46 PST {/* last_test_timestamp and last_test_succeeded */}
-      </Text>
+      <Text color="gray.700" fontWeight="semibold">{integration.name}</Text>
+      {renderLastTest()}
     </Flex>
 
   const renderManageButton = () =>
