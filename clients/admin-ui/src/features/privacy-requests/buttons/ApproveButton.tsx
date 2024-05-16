@@ -1,4 +1,4 @@
-import { ButtonProps, forwardRef, useDisclosure } from "@fidesui/react";
+import { ButtonProps, forwardRef, useDisclosure } from "fidesui";
 import { ReactNode } from "react";
 
 import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";

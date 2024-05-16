@@ -1,6 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Box, Flex, Switch, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -8,6 +7,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { Box, Flex, Switch, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 

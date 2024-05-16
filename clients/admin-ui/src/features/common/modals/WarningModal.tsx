@@ -7,7 +7,7 @@ import {
   AlertDialogOverlay,
   Button,
   WarningIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode, useRef } from "react";
 
 interface Props {

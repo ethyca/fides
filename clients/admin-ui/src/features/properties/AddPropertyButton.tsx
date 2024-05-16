@@ -1,4 +1,4 @@
-import { Button, ButtonProps } from "@fidesui/react";
+import { Button, ButtonProps } from "fidesui";
 import { useRouter } from "next/router";
 
 import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";

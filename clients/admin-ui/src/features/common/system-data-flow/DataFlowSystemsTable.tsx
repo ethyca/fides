@@ -1,14 +1,4 @@
-import {
-  Box,
-  Switch,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
+import { Box, Switch, Table, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 

@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  HStack,
-  Stack,
-  TableContainer,
-  Text,
-} from "@fidesui/react";
+import { Box, Button, HStack, Stack, TableContainer, Text } from "fidesui";
 import { useEffect, useState } from "react";
 
 import {

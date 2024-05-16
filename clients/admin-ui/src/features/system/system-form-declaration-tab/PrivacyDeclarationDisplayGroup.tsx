@@ -1,7 +1,8 @@
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
+  AddIcon,
   Box,
   Button,
+  DeleteIcon,
   Divider,
   Heading,
   HStack,
@@ -12,7 +13,7 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";

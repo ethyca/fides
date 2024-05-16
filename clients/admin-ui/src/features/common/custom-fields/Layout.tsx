@@ -1,4 +1,4 @@
-import { VStack } from "@fidesui/react";
+import { VStack } from "fidesui";
 import * as React from "react";
 import { ReactNode } from "react";
 

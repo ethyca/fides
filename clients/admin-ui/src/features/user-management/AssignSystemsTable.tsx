@@ -8,7 +8,7 @@ import {
   Th,
   Thead,
   Tr,
-} from "@fidesui/react";
+} from "fidesui";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";

@@ -11,7 +11,7 @@ import {
   MenuItem,
   MenuList,
   Portal,
-} from "@fidesui/react";
+} from "fidesui";
 import { useMemo } from "react";
 
 export interface FieldValueToIsSelected {

@@ -1,4 +1,4 @@
-import { createIcon } from "@fidesui/react";
+import { createIcon } from "fidesui";
 
 export const MonitorOffIcon = createIcon({
   displayName: "MonitorOffIcon",

@@ -1,14 +1,5 @@
-import {
-  IconButton,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
+import { IconButton, Table, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 

@@ -9,7 +9,7 @@ import {
   Stack,
   Tooltip,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 
@@ -187,7 +187,7 @@ const OrganizationInfoForm = () => {
               />
               <Tooltip
                 fontSize="md"
-                label="An explanation of the type of organization and primary activity. 
+                label="An explanation of the type of organization and primary activity.
                   For example “Acme Inc. is an e-commerce company that sells scarves.”"
                 placement="right"
               >

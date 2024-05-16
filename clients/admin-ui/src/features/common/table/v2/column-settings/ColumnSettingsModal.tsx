@@ -1,3 +1,4 @@
+import { Table as TableInstance } from "@tanstack/react-table";
 import {
   Box,
   Button,
@@ -14,8 +15,7 @@ import {
   TabPanels,
   Tabs,
   Text,
-} from "@fidesui/react";
-import { Table as TableInstance } from "@tanstack/react-table";
+} from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import {

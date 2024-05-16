@@ -1,4 +1,4 @@
-import { Flex, forwardRef, IconButton, Text } from "@fidesui/react";
+import { Flex, forwardRef, IconButton, Text } from "fidesui";
 import { FieldArray, Form, Formik, FormikHelpers, FormikProps } from "formik";
 import { useEffect, useImperativeHandle, useRef, useState } from "react";
 import * as Yup from "yup";

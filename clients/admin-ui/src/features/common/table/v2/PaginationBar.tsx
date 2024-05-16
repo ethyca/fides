@@ -1,3 +1,4 @@
+import { Table as TableInstance, Updater } from "@tanstack/react-table";
 import {
   Button,
   ChevronLeftIcon,
@@ -9,8 +10,7 @@ import {
   MenuItem,
   MenuList,
   Text,
-} from "@fidesui/react";
-import { Table as TableInstance, Updater } from "@tanstack/react-table";
+} from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
 export const PAGE_SIZES = [25, 50, 100];

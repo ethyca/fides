@@ -1,4 +1,4 @@
-import { useDisclosure } from "@fidesui/react";
+import { useDisclosure } from "fidesui";
 
 import PickerCard, {
   NUM_TO_SHOW,

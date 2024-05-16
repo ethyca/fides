@@ -4,7 +4,7 @@ import {
   Flex,
   GreenCheckCircleIcon,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { ExecutionLog, PrivacyRequestEntity } from "privacy-requests/types";
 import React from "react";
 

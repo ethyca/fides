@@ -1,4 +1,4 @@
-import { Box, Text } from "@fidesui/react";
+import { Box, Text } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAlert } from "~/features/common/hooks";
