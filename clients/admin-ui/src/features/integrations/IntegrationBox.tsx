@@ -1,4 +1,4 @@
-import { Box, Image, Flex, Button, Text, WarningIcon, CheckCircleIcon, InfoIcon } from "@fidesui/react";
+import { Box, Image, Flex, Button, Text, WarningTwoIcon, CheckCircleIcon, InfoIcon } from "@fidesui/react";
 import Tag from "~/features/common/Tag";
 import { formatDate } from "~/features/common/utils";
 const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
@@ -27,30 +27,32 @@ const IntegrationBox = (props: any) => {
 
   const renderLastTest = () => {
     const {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
+    // lastTestSucceded = null;
+    // lastTestTimestamp = "2024-05-16T17:59:21+0000";
 
     if (lastTestSucceded) {
       return (
-        <Text color="green.700">
-          <CheckCircleIcon boxSize="13px"/>
+        <Flex alignItems="center" color="green.500" >
+          <CheckCircleIcon boxSize="13px" marginRight="4px"/>
           Last connected {formatDate(lastTestTimestamp)}
-        </Text>
+        </Flex>
       );
     }
 
     if (lastTestSucceded === false) {
       return (
-        <Text color="red.700">
-          <WarningIcon boxSize="13px"/>
+        <Flex alignItems="center" color="red.600" >
+          <WarningTwoIcon boxSize="13px" marginRight="4px"/>
           Error on {formatDate(lastTestTimestamp)}
-        </Text>
+        </Flex>
       );
     }
 
     return (
-      <Text color="gray.700">
-        <InfoIcon boxSize="13px"/>
+      <Flex alignItems="center" color="gray.600" >
+        <InfoIcon boxSize="13px" marginRight="4px"/>
         Never ran
-      </Text>
+      </Flex>
     );
   }
 
