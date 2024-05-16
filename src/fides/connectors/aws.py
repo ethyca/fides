@@ -98,6 +98,7 @@ def describe_dynamo_tables(client: Any, table_names: List[str]) -> List[Dict]:  
     describe_tables = []
     for table in table_names:
         described_table = client.describe_table(TableName=table)
+        described_table["Table"]["Fields"] = scan_dynamo_table(client, table)
         describe_tables.append(described_table["Table"])
     return describe_tables
 
@@ -109,6 +110,20 @@ def get_dynamo_tables(client: Any) -> List[str]:  # type: ignore
     """
     list_tables = client.list_tables()
     return list_tables["TableNames"]
+
+@handle_common_aws_errors
+def scan_dynamo_table(client: Any, table_name: str) -> List[str]:  # type: ignore
+    """
+    Returns describe_table response given a 'dynamodb' boto3 client.
+    """
+    table_scan = client.scan(TableName=table_name, Limit=30)
+    fields = set()
+    for item in table_scan["Items"]:
+        for field, _ in item.items():
+            fields.add(field)
+
+    return fields
+
 
 
 @handle_common_aws_errors
@@ -144,12 +159,12 @@ def create_dynamodb_dataset(
                 name=collection["TableName"],
                 fields=[
                     DatasetField(
-                        name=field["AttributeName"],
-                        description=f"Fides Generated Description for Column: {field['AttributeName']}",
+                        name=field,
+                        description=f"Fides Generated Description for Column: {field}",
                         data_categories=[],
                         # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
                     )
-                    for field in collection["AttributeDefinitions"]
+                    for field in collection["Fields"]
                 ],
             )
             for collection in described_dynamo_tables
