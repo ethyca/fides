@@ -1,17 +1,8 @@
-import { Box, Image, Flex, Button, Text, Tag, WarningIcon } from "@fidesui/react";
+import { Box, Image, Flex, Button, Text, WarningIcon, CheckCircleIcon } from "@fidesui/react";
+import Tag from "~/features/common/Tag";
 const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
 const FALLBACK_CONNECTOR_LOGOS_PATH = `${CONNECTOR_LOGOS_PATH}ethyca.svg`;
 
-
-const FidesTag = (props) =>
-  <Tag
-    borderRadius="2px"
-    padding="4px 8px"
-    bg="#EDF2F7"
-    color="#4A5568"
-    marginRight="4px">
-      {props.children}
-  </Tag>
 
 const IntegrationBox = (props) => {
   const renderLogo = () =>
@@ -26,12 +17,14 @@ const IntegrationBox = (props) => {
 
   const renderIntegrationNameContainer = () =>
     <Flex direction="column" flexGrow={1} marginLeft="16px">
-      <Text>
-        System detection -> BigQuery
+      <Text color="gray.700" fontWeight="semibold">BigQuery</Text>
+      <Text color="green.700">
+        <CheckCircleIcon boxSize="13px"/>
+        Error on August 4, 2021, 09:35:46 PST {/* last_test_timestamp and last_test_succeeded */}
       </Text>
-      <Text color="#9B2C2C">
-        <WarningIcon boxSize="13px" color="#C53030"/>
-        Error on August 4, 2021, 09:35:46 PST
+      <Text color="red.700">
+        <WarningIcon boxSize="13px"/>
+        Error on August 4, 2021, 09:35:46 PST {/* last_test_timestamp and last_test_succeeded */}
       </Text>
     </Flex>
 
@@ -51,10 +44,10 @@ const IntegrationBox = (props) => {
 
   const renderTags = () =>
     <>
-      <FidesTag>Cloud</FidesTag>
-      <FidesTag>GCP</FidesTag>
-      <FidesTag>BigQuery</FidesTag>
-      <FidesTag>Discovery</FidesTag>
+      <Tag>Cloud</Tag>
+      <Tag>GCP</Tag>
+      <Tag>BigQuery</Tag>
+      <Tag>Discovery</Tag>
     </>
 
   return (
