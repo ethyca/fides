@@ -184,6 +184,7 @@ async function init(this: FidesGlobal, config: FidesConfig) {
     renderOverlay,
     updateExperience,
     overrides,
+    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
 

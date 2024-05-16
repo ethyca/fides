@@ -52,6 +52,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
   savedConsent,
+  propertyId,
 }) => {
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
   const initialEnabledNoticeKeys = () => {
@@ -161,6 +162,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
     privacyExperience: experience,
+    propertyId,
   });
 
   const createConsentPreferencesToSave = (
@@ -198,6 +200,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         userLocationString: fidesRegionString,
         cookie,
         servedNoticeHistoryId: servedNotice?.served_notice_history_id,
+        propertyId,
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
             oldCookie,

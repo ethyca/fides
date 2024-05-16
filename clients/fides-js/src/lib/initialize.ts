@@ -323,6 +323,7 @@ export const initialize = async ({
   renderOverlay,
   updateExperience,
   overrides,
+  propertyId,
 }: {
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
@@ -451,6 +452,7 @@ export const initialize = async ({
           cookie,
           savedConsent,
           renderOverlay,
+          propertyId,
         }).catch(() => {});
 
         /**
