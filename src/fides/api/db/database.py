@@ -3,7 +3,7 @@ Contains all of the logic related to the database including connections, setup, 
 """
 
 from os import path
-from typing import Literal
+from typing import Literal, Optional
 
 from alembic import command, script
 from alembic.config import Config
@@ -112,12 +112,12 @@ def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
 
 
 async def configure_db(
-    database_url: str, samples: bool = False, revision: str = "head"
+    database_url: str, samples: bool = False, revision: Optional[str] = "head"
 ) -> None:
     """Set up the db to be used by the app."""
     try:
         create_db_if_not_exists(database_url)
-        await migrate_db(database_url, samples=samples, revision=revision)
+        await migrate_db(database_url, samples=samples, revision=revision)  # type: ignore[arg-type]
     except InvalidCiphertextError as cipher_error:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."

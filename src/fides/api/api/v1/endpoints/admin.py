@@ -34,7 +34,7 @@ async def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict
     """
 
     if action == DBActions.downgrade:
-        downgrade_db(CONFIG.database.sync_database_uri, revision=revision)
+        downgrade_db(CONFIG.database.sync_database_uri, revision=revision)  # type: ignore[arg-type]
         action_text = "downgrade"
     else:
         action_text = "upgrade"
