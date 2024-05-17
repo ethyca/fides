@@ -1,8 +1,10 @@
+import { CONSENT_COOKIE_NAME } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
 describe("Fides.showModal", () => {
   describe("Overlay enabled", () => {
     beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubConfig({
         options: {
           isOverlayEnabled: true,
@@ -22,7 +24,25 @@ describe("Fides.showModal", () => {
       cy.wait(100);
       cy.window().its("Fides").invoke("showModal");
       cy.get("@FidesUIShown").should("have.been.calledOnce");
-      cy.get(".fides-modal-content").should("be.visible");
+      cy.getByTestId("consent-modal").should("be.visible");
+    });
+
+    describe("Default modal link is disabled", () => {
+      beforeEach(() => {
+        stubConfig({
+          options: {
+            modalLinkId: "",
+          },
+        });
+      });
+
+      it("Should not show modal link in favor of showModal", () => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(100);
+        cy.window().its("Fides").invoke("showModal");
+        cy.get("@FidesUIShown").should("have.been.called");
+      });
     });
   });
 
@@ -47,7 +67,7 @@ describe("Fides.showModal", () => {
       cy.wait(100);
       cy.window().its("Fides").invoke("showModal");
       cy.get("@FidesUIShown").should("not.have.been.called");
-      cy.get(".fides-modal-content").should("not.exist");
+      cy.getByTestId("consent-modal").should("not.exist");
     });
   });
 });
