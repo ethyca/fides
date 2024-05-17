@@ -20,30 +20,11 @@ def upgrade():
     op.add_column(
         "privacypreferencehistory", sa.Column("property_id", sa.String(), nullable=True)
     )
-    op.create_index(
-        op.f("ix_privacypreferencehistory_property_id"),
-        "privacypreferencehistory",
-        ["property_id"],
-        unique=False,
-    )
     op.add_column(
         "servednoticehistory", sa.Column("property_id", sa.String(), nullable=True)
-    )
-    op.create_index(
-        op.f("ix_servednoticehistory_property_id"),
-        "servednoticehistory",
-        ["property_id"],
-        unique=False,
     )
 
 
 def downgrade():
-    op.drop_index(
-        op.f("ix_servednoticehistory_property_id"), table_name="servednoticehistory"
-    )
     op.drop_column("servednoticehistory", "property_id")
-    op.drop_index(
-        op.f("ix_privacypreferencehistory_property_id"),
-        table_name="privacypreferencehistory",
-    )
     op.drop_column("privacypreferencehistory", "property_id")
