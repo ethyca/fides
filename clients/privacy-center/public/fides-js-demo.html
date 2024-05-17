@@ -60,6 +60,11 @@
       <div id="render-embed-here"></div>
       <script>
         if (window.fides_overrides && window.fides_overrides.fides_embed) {
+          /** NOTE: normally you would add <div id="fides-embed-container"></div> directly to
+           * your page instead of doing this dynamically as we're doing here. For the purposes
+           * of this demo, we're adding it dynamically after a delay to allow for simulating
+           * a dynamic or slow page.
+           */
           setTimeout(() => {
             const app = document.getElementById("render-embed-here");
             const container = document.createElement("div");
@@ -69,7 +74,8 @@
         }
       </script>
 
-      <!-- <h2>Huge Image</h2>
+      <!-- you can uncomment this to test the behavior of huge images which slows down the DOM ready state
+      <h2>Huge Image</h2>
       <img
         src="https://upload.wikimedia.org/wikipedia/commons/6/6d/The_Garden_of_Earthly_Delights_by_Bosch_High_Resolution.jpg"
         alt="The Garden of Earthly Delights by Bosch (5.2GB)"
@@ -87,6 +93,11 @@
       <div id="render-link-here"></div>
       <script>
         setTimeout(() => {
+          /** NOTE: normally you would add the `<button>` with "fides-modal-link" id directly to
+           * your page instead of doing this dynamically as we're doing here. For the purposes
+           * of this demo, we're adding it dynamically after a delay to allow for simulating
+           * a dynamic or slow page.
+           */
           const app = document.getElementById("render-link-here");
           const button = document.createElement("button");
           // Display the fides configured modal link label (if any).
