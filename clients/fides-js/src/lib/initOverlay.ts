@@ -65,6 +65,23 @@ export const initOverlay = async ({
         renderedParentElem = undefined;
       }
 
+      // update CSS variables based on configured primary color
+      if (options.fidesPrimaryColor) {
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-color",
+          options.fidesPrimaryColor
+        );
+        const lighterPrimaryColor: string = generateLighterColor(
+          options.fidesPrimaryColor,
+          ColorFormat.HEX,
+          1
+        );
+        document.documentElement.style.setProperty(
+          "--fides-overlay-primary-button-background-hover-color",
+          lighterPrimaryColor
+        );
+      }
+
       // Determine which parent element to use as the container for rendering
       let parentElem;
       if (options.fidesEmbed) {
@@ -118,22 +135,6 @@ export const initOverlay = async ({
           document.body.prepend(parentElem);
         }
       }
-      // update CSS variables based on configured primary color
-      if (options.fidesPrimaryColor) {
-        document.documentElement.style.setProperty(
-          "--fides-overlay-primary-color",
-          options.fidesPrimaryColor
-        );
-        const lighterPrimaryColor: string = generateLighterColor(
-          options.fidesPrimaryColor,
-          ColorFormat.HEX,
-          1
-        );
-        document.documentElement.style.setProperty(
-          "--fides-overlay-primary-button-background-hover-color",
-          lighterPrimaryColor
-        );
-      }
 
       if (!parentElem) {
         return await Promise.reject(
@@ -176,12 +177,11 @@ export const initOverlay = async ({
     document.addEventListener("readystatechange", async () => {
       if (document.readyState === "interactive") {
         debugLog(options.debug, "document fully loaded and parsed");
-        await renderFidesOverlay();
+        renderFidesOverlay();
       }
     });
   } else {
-    await renderFidesOverlay();
+    renderFidesOverlay();
   }
-
   return Promise.resolve();
 };
