@@ -315,17 +315,14 @@ export const getInitialFides = ({
  * 6. Apply GPC if necessary
  */
 export const initialize = async ({
-  cookie,
-  savedConsent,
+  fides,
   options,
-  experience,
   geolocation,
   renderOverlay,
   updateExperience,
   overrides,
 }: {
-  cookie: FidesCookie;
-  savedConsent: NoticeConsent;
+  fides: FidesGlobal;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
   /**
    * Once we for sure have a valid experience, this is another chance to update values
@@ -335,10 +332,13 @@ export const initialize = async ({
   overrides?: Partial<FidesOverrides>;
 } & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
-  let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
   let getModalLinkLabel: FidesGlobal["getModalLinkLabel"] = () =>
     DEFAULT_MODAL_LINK_LABEL;
+
+  if (!fides.cookie) {
+    throw new Error("Fides cookie should be initialized");
+  }
 
   if (shouldInitOverlay) {
     if (!validateOptions(options)) {
@@ -363,10 +363,10 @@ export const initialize = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-    } else if (!isPrivacyExperience(effectiveExperience)) {
+    } else if (!isPrivacyExperience(fides.experience)) {
       fetchedClientSideExperience = true;
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
-      effectiveExperience = await fetchExperience(
+      fides.experience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
         options.debug,
@@ -375,8 +375,8 @@ export const initialize = async ({
     }
 
     if (
-      isPrivacyExperience(effectiveExperience) &&
-      experienceIsValid(effectiveExperience, options)
+      isPrivacyExperience(fides.experience) &&
+      experienceIsValid(fides.experience, options)
     ) {
       /**
        * Now that we've determined the effective PrivacyExperience, update it
@@ -384,8 +384,8 @@ export const initialize = async ({
        * the user's current consent preferences, etc. and ready to display!
        */
       const updatedExperience = updateExperience({
-        cookie,
-        experience: effectiveExperience,
+        cookie: fides.cookie!,
+        experience: fides.experience,
         debug: options.debug,
         isExperienceClientSideFetched: fetchedClientSideExperience,
       });
@@ -394,7 +394,7 @@ export const initialize = async ({
         "Updated experience from saved preferences",
         updatedExperience
       );
-      Object.assign(effectiveExperience, updatedExperience);
+      fides.experience = { ...fides.experience, ...updatedExperience };
 
       /**
        * Finally, update the "cookie" state to track the user's *current*
@@ -413,15 +413,15 @@ export const initialize = async ({
        * tricky to do without accidentally breaking something, so be careful!
        */
       const updatedCookie = updateCookieFromExperience({
-        cookie,
-        experience: effectiveExperience,
+        cookie: fides.cookie,
+        experience: fides.experience,
       });
       debugLog(
         options.debug,
         "Updated current cookie state from experience",
         updatedCookie
       );
-      Object.assign(cookie, updatedCookie);
+      fides.cookie = updatedCookie;
 
       if (shouldInitOverlay) {
         // Initialize the i18n singleton before we render the overlay
@@ -429,7 +429,7 @@ export const initialize = async ({
         initializeI18n(
           i18n,
           window?.navigator,
-          effectiveExperience,
+          fides.experience,
           options,
           overrides?.experienceTranslationOverrides
         );
@@ -439,17 +439,17 @@ export const initialize = async ({
           localizeModalLinkText(
             !!props?.disableLocalization,
             i18n,
-            effectiveExperience
+            fides.experience
           );
 
         // OK, we're (finally) ready to initialize & render the overlay!
         await initOverlay({
           options,
-          experience: effectiveExperience,
+          experience: fides.experience,
           i18n,
           fidesRegionString: fidesRegionString as string,
-          cookie,
-          savedConsent,
+          cookie: fides.cookie,
+          savedConsent: fides.saved_consent,
           renderOverlay,
         }).catch(() => {});
 
@@ -463,29 +463,31 @@ export const initialize = async ({
          * don't block the rest of the code from executing, we use setTimeout with
          * no delay which simply moves it to the end of the JavaScript event queue.
          */
-        setTimeout(() => {
-          automaticallyApplyGPCPreferences({
-            savedConsent,
-            effectiveExperience: effectiveExperience as PrivacyExperience,
-            cookie,
+        setTimeout(
+          automaticallyApplyGPCPreferences.bind(null, {
+            savedConsent: fides.saved_consent,
+            effectiveExperience: fides.experience as PrivacyExperience,
+            cookie: fides.cookie,
             fidesRegionString,
             fidesOptions: options,
             i18n,
-          });
-        });
+          })
+        );
       }
     }
   }
 
+  const { consent, fides_meta, identity, fides_string, tcf_consent } =
+    fides.cookie;
+
   // return an object with the updated Fides values
   return {
-    consent: cookie.consent,
-    fides_meta: cookie.fides_meta,
-    identity: cookie.identity,
-    fides_string: cookie.fides_string,
-    tcf_consent: cookie.tcf_consent,
-    experience: effectiveExperience,
-    saved_consent: savedConsent,
+    consent,
+    fides_meta,
+    identity,
+    fides_string,
+    tcf_consent,
+    experience: fides.experience,
     geolocation,
     options,
     initialized: true,
