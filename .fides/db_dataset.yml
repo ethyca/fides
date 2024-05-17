@@ -2064,6 +2064,10 @@ dataset:
       data_categories: [system]
     - name: updated_at
       data_categories: [system]
+    - name: databases
+      data_categories: [system]
+    - name: monitor_execution_trigger
+      data_categories: [system]
   - name: stagedresource
     fields:
     - name: child_diff_statuses

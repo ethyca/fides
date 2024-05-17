@@ -93,6 +93,62 @@ class TestMaskSenstiveValues:
         }
 
     @pytest.fixture(scope="function")
+    def secret_schema_with_nested_sensitive_field(self):
+        return {
+            "title": "BigQuerySchema",
+            "description": "Schema to validate the secrets needed to connect to BigQuery",
+            "type": "object",
+            "properties": {
+                "keyfile_creds": {
+                    "title": "Keyfile Creds",
+                    "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
+                    "sensitive": True,
+                    "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
+                },
+                "dataset": {
+                    "title": "BigQuery Dataset",
+                    "description": "The dataset within your BigQuery project that contains the tables you want to access.",
+                    "type": "string",
+                },
+            },
+            "required": ["keyfile_creds", "dataset"],
+            "definitions": {
+                "KeyfileCreds": {
+                    "title": "KeyfileCreds",
+                    "description": "Schema that holds BigQuery keyfile key/vals",
+                    "type": "object",
+                    "properties": {
+                        "type": {"title": "Type", "type": "string"},
+                        "project_id": {"title": "Project ID", "type": "string"},
+                        "private_key_id": {"title": "Private Key ID", "type": "string"},
+                        "private_key": {
+                            "title": "Private Key",
+                            "sensitive": True,
+                            "type": "string",
+                        },
+                        "client_email": {
+                            "title": "Client Email",
+                            "type": "string",
+                            "format": "email",
+                        },
+                        "client_id": {"title": "Client ID", "type": "string"},
+                        "auth_uri": {"title": "Auth URI", "type": "string"},
+                        "token_uri": {"title": "Token URI", "type": "string"},
+                        "auth_provider_x509_cert_url": {
+                            "title": "Auth Provider X509 Cert URL",
+                            "type": "string",
+                        },
+                        "client_x509_cert_url": {
+                            "title": "Client X509 Cert URL",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["project_id"],
+                }
+            },
+        }
+
+    @pytest.fixture(scope="function")
     def connection_secrets(self):
         return {
             "api_id": "secret-test",
@@ -133,6 +189,33 @@ class TestMaskSenstiveValues:
                 "field": "customer.id",
                 "direction": "from",
             },
+        }
+
+    def test_mask_nested_sensitive_field(
+        self, secret_schema_with_nested_sensitive_field
+    ):
+        masked_secrets = mask_sensitive_fields(
+            {
+                "keyfile_creds": {
+                    "type": "service_account",
+                    "project_id": "discovery-project",
+                    "private_key_id": "KEY_ID",
+                    "private_key": "SOME_PRIVATE_KEY",
+                    "client_email": "EMAIL",
+                    "client_id": "CLIENT_ID",
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_x509_cert_url": "cert_url",
+                    "universe_domain": "googleapis.com",
+                },
+                "dataset": "my_dataset",
+            },
+            secret_schema_with_nested_sensitive_field,
+        )
+        assert masked_secrets == {
+            "keyfile_creds": "**********",
+            "dataset": "my_dataset",
         }
 
     def test_mask_sensitive_fields_remove_non_schema_values(
