@@ -171,7 +171,7 @@ export const initOverlay = async ({
 
   // Ensure we only render the overlay to the document once it's interactive
   // NOTE: do not wait for "complete" state, as this can delay rendering on sites with heavy assets
-  if (document?.readyState !== "interactive") {
+  if (document?.readyState === "loading") {
     debugLog(options.debug, "document is still loading, adding event listener");
     document.addEventListener("readystatechange", async () => {
       if (document.readyState === "interactive") {
