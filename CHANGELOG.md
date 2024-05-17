@@ -27,6 +27,7 @@ The types of changes are:
 - Included fidesui as part of the monorepo [#4880](https://github.com/ethyca/fides/pull/4880)
 - Improve `geolocation` and `property_id` error response to return 400 status instead of 500 server error on /fides.js endpoint [#4884](https://github.com/ethyca/fides/pull/4884)
 - Fixing middleware logging in Fides.js to remove incorrect status codes and durations [#4885](https://github.com/ethyca/fides/pull/4885)
+- Improve load performance and DOM monitoring for FidesJS [#4896](https://github.com/ethyca/fides/pull/4896)
 
 ### Fixed
 - Fixed an issue with the Iterate connector returning at least one param_value references an invalid field for the 'update' request of user [#4528](https://github.com/ethyca/fides/pull/4528)
