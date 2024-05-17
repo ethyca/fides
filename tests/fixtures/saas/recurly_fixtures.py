@@ -16,14 +16,12 @@ from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("recurly")
 
-
 @pytest.fixture(scope="session")
 def recurly_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "recurly.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "recurly.username") or secrets["username"],
     }
-
 
 @pytest.fixture(scope="session")
 def recurly_identity_email(saas_config) -> str:
@@ -56,7 +54,7 @@ def recurly_erasure_data(
         "Authorization": "Basic " + auth_username,
         "Content-Type": "application/json",
     }
-    accounts_url = base_url + "/accounts"
+    accounts_url = f"{base_url}/accounts"
     body = {
         "code": code,
         "shipping_addresses": [
@@ -96,7 +94,6 @@ def recurly_erasure_data(
     # part of the response to the request to create a new account is the account_id
     account_id = response.json()["shipping_addresses"][0]["account_id"]
     shipping_id = response.json()["shipping_addresses"][0]["id"]
-    accounts = response.json()['username']
     # now we can form up a request to add billing details
     body = {
         "first_name": "first bill",
@@ -115,15 +112,11 @@ def recurly_erasure_data(
     billing_url = f"{accounts_url}/{account_id}/billing_info"
     response = requests.put(billing_url, headers=headers, json=body)
     assert response.ok
-    # if we get this far we've got our new account with billing and shipping info
     billing_info = response.json()['first_name']
-    # I'll need 3 here, one for account, shipping addresses and billing info
 
     check_url = f"{accounts_url}/{account_id}"
     response = requests.get(check_url, headers=headers)
     assert response.ok
-
-
     # check that the newly created account responds
 
     ### set up done, we now have a valid account, that has shipping and billing details that we can mask
@@ -202,8 +195,9 @@ def recurly_erasure_data(
     assert response.json()['street2'] == 'MASKED', "Expected 'MASKED' for street2, got {}".format(response.json()['street2'])
     assert response.json()['email'] == 'MASKED@Ethyca.com', "Expected 'MASKED' for email, got {}".format(response.json()['email'])
     # import pdb; pdb.set_trace()
+    # rows_masked =+ 1
+    yield account_id
 
-    yield accounts
 
 @pytest.fixture
 def recurly_runner(db, cache, recurly_secrets) -> ConnectorRunner:

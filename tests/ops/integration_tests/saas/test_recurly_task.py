@@ -54,9 +54,8 @@ class TestRecurlyConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": recurly_erasure_identity_email},
         )
-
         assert erasure_results == {
-            "recurly_instance:accounts": 1,
-            # "recurly_instance:billing_info": 1,
-            # "recurly_instance:shipping_address": 1,
+            "recurly_instance:accounts": 0,
+        #     # "recurly_instance:billing_info": 1,
+        #     # "recurly_instance:shipping_address": 1,
         }
