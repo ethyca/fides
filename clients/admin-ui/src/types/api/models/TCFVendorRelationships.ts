@@ -13,6 +13,7 @@ export type TCFVendorRelationships = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
+  vendor_deleted_date?: string;
   special_purposes?: Array<EmbeddedPurpose>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;

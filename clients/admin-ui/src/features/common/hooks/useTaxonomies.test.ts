@@ -30,19 +30,24 @@ describe("Fides Language Helper Hook", () => {
   });
 
   describe("getDataCategoryDisplayName ", () => {
-    it("returns just the data use name in bold if it's a top-level name", () => {
+    it("returns just the data use name in bold if it's a top-level or secondary-level name", () => {
       expect(
         ReactDomServer.renderToStaticMarkup(
           getDataCategoryDisplayName("system")
         )
       ).toBe("<strong>System Data</strong>");
-    });
-    it("returns the top-level parent name in bold and the name if it's a child data category", () => {
       expect(
         ReactDomServer.renderToStaticMarkup(
           getDataCategoryDisplayName("system.authentication")
         )
-      ).toBe("<span><strong>System Data:</strong> Authentication Data</span>");
+      ).toBe("<strong>Authentication Data</strong>");
+    });
+    it("returns the top-level parent name in bold and the name if it's a child data category", () => {
+      expect(
+        ReactDomServer.renderToStaticMarkup(
+          getDataCategoryDisplayName("system.authentication.user")
+        )
+      ).toBe("<span><strong>Authentication Data:</strong> User</span>");
     });
     it("returns the key if it can't find the data category", () => {
       expect(getDataCategoryDisplayName("invalidkey")).toBe("invalidkey");
@@ -92,6 +97,11 @@ jest.mock("~/features/taxonomy", () => ({
       fides_key: "system.authentication",
       name: "Authentication Data",
       parent_key: "system",
+    },
+    {
+      fides_key: "system.authentication.user",
+      name: "User",
+      parent_key: "system.authentication",
     },
   ]),
 }));

@@ -5,7 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Stack,
-} from "@fidesui/react";
+} from "fidesui";
 import { Form, Formik } from "formik";
 
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";

@@ -1,4 +1,4 @@
-import { Image, ImageProps } from "@fidesui/react";
+import { Image, ImageProps } from "fidesui";
 import React from "react";
 
 import {

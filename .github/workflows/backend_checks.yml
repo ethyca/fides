@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - "**.md"
       - "clients/**"
+      - ".vscode/**"
   push:
     branches:
       - "main"

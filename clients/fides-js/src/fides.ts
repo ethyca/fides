@@ -51,6 +51,12 @@ declare global {
   }
 }
 
+const updateWindowFides = (fidesGlobal: FidesGlobal) => {
+  if (typeof window !== "undefined") {
+    window.Fides = fidesGlobal;
+  }
+};
+
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
@@ -121,6 +127,7 @@ async function init(this: FidesGlobal, config: FidesConfig) {
   });
   if (initialFides) {
     Object.assign(this, initialFides);
+    updateWindowFides(this);
     dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
       shouldShowExperience: this.shouldShowExperience(),
     });
@@ -134,7 +141,7 @@ async function init(this: FidesGlobal, config: FidesConfig) {
     overrides,
   });
   Object.assign(this, updatedFides);
-
+  updateWindowFides(this);
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
@@ -203,9 +210,7 @@ const _Fides: FidesGlobal = {
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
 };
 
-if (typeof window !== "undefined") {
-  window.Fides = _Fides;
-}
+updateWindowFides(_Fides);
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
 export * from "./services/api";

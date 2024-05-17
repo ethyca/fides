@@ -1,5 +1,5 @@
 import { ComponentChildren, VNode, h, Fragment } from "preact";
-import type { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "preact/compat";
 
 import { getConsentContext } from "../lib/consent-context";
 import type { I18n } from "../lib/i18n";

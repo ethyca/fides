@@ -1,14 +1,6 @@
-import {
-  Box,
-  Button,
-  Collapse,
-  Heading,
-  Stack,
-  Text,
-  useToast,
-} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { Box, Button, Collapse, Heading, Stack, Text, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -611,6 +603,15 @@ const SystemInformationForm = ({
                   name="legitimate_interest_disclosure_url"
                   id="legitimate_interest_disclosure_url"
                   disabled={lockedForGVL}
+                />
+                <DictSuggestionTextInput
+                  label="Vendor deleted date"
+                  name="vendor_deleted_date"
+                  id="vendor_deleted_date"
+                  tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
+                  // disable this field for editing:
+                  // deleted date is populated by the GVL and should not be editable by users
+                  disabled
                 />
               </SystemFormInputGroup>
               {values.fides_key ? (

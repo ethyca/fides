@@ -1,15 +1,16 @@
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { Select } from "chakra-react-select";
 import {
+  AddIcon,
   Box,
   Button,
   ChakraProps,
+  DeleteIcon,
   DragHandleIcon,
   Flex,
   IconButton,
   List,
   Text,
-} from "@fidesui/react";
-import { Select } from "chakra-react-select";
+} from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 

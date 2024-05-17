@@ -54,18 +54,23 @@ export const dispatchFidesEvent = (
   extraDetails?: FidesEventExtraDetails
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
+    // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
+    const constructedExtraDetails: FidesEventExtraDetails = {
+      consentMethod: cookie.fides_meta.consentMethod,
+      ...extraDetails,
+    };
     const event = new CustomEvent(type, {
-      detail: { ...cookie, debug, extraDetails },
+      detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
     });
     debugLog(
       debug,
       `Dispatching event type ${type} ${
-        extraDetails?.servingComponent
-          ? `from ${extraDetails.servingComponent} `
+        constructedExtraDetails?.servingComponent
+          ? `from ${constructedExtraDetails.servingComponent} `
           : ""
       }with cookie ${JSON.stringify(cookie)} ${
-        extraDetails?.consentMethod
-          ? `using consent method ${extraDetails.consentMethod} `
+        constructedExtraDetails
+          ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
       }`
     );

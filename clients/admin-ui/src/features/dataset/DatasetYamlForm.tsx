@@ -6,7 +6,7 @@ import {
   Flex,
   useToast,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";

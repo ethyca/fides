@@ -1,4 +1,4 @@
-import { Image, Link } from "@fidesui/react";
+import { Image, Link } from "fidesui";
 import React from "react";
 
 type LogoProps = {

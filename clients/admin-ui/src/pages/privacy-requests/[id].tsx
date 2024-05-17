@@ -1,4 +1,4 @@
-import { Center, Heading, Spinner, Text } from "@fidesui/react";
+import { Center, Heading, Spinner, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";

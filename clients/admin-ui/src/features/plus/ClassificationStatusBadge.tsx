@@ -1,4 +1,4 @@
-import { Badge, BadgeProps, Tooltip } from "@fidesui/react";
+import { Badge, BadgeProps, Tooltip } from "fidesui";
 
 import { ClassificationStatus, GenerateTypes } from "~/types/api";
 

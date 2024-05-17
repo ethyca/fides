@@ -1,10 +1,4 @@
-import {
-  Text,
-  Tooltip,
-  useDisclosure,
-  useToast,
-  WarningIcon,
-} from "@fidesui/react";
+import { Text, Tooltip, useDisclosure, useToast, WarningIcon } from "fidesui";
 import router from "next/router";
 import React from "react";
 

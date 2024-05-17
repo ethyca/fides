@@ -1,5 +1,5 @@
-import { Td } from "@fidesui/react";
 import { Cell, flexRender } from "@tanstack/react-table";
+import { Td } from "fidesui";
 
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
@@ -45,7 +45,11 @@ export const FidesCell = <T,>({
           ? cell.column.columnDef.meta.width
           : "unset"
       }
-      overflowX="auto"
+      overflowX={
+        cell.column.columnDef.meta?.overflow
+          ? cell.column.columnDef.meta?.overflow
+          : "auto"
+      }
       borderBottomWidth={isLastRowOfPage || isGroupedColumn ? "0px" : "1px"}
       borderBottomColor="gray.200"
       borderRightWidth="1px"

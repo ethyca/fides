@@ -3,6 +3,19 @@
  */
 
 import {
+  chakraComponents,
+  ChakraStylesConfig,
+  CreatableSelect,
+  GroupBase,
+  MenuPosition,
+  MultiValue,
+  OptionProps,
+  Select,
+  SelectComponentsConfig,
+  SingleValue,
+  Size,
+} from "chakra-react-select";
+import {
   Box,
   Checkbox,
   Code,
@@ -32,20 +45,7 @@ import {
   Textarea,
   TextareaProps,
   VStack,
-} from "@fidesui/react";
-import {
-  chakraComponents,
-  ChakraStylesConfig,
-  CreatableSelect,
-  GroupBase,
-  MenuPosition,
-  MultiValue,
-  OptionProps,
-  Select,
-  SelectComponentsConfig,
-  SingleValue,
-  Size,
-} from "chakra-react-select";
+} from "fidesui";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 import React, {
   forwardRef,

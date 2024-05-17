@@ -195,10 +195,6 @@ div#fides-banner-inner-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-column-gap: 60px;
-
-  .fides-acknowledge-button-container {
-    margin-bottom: 0px;
-  }
 }
 
 div#fides-banner-inner-description {
@@ -236,10 +232,6 @@ div#fides-banner-description {
   margin-bottom: 24px;
   font-size: var(--fides-overlay-font-size-body);
   flex: 1;
-}
-
-div.fides-html-description {
-  white-space: normal;
 }
 
 div#fides-button-group {

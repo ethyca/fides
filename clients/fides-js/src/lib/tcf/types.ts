@@ -124,6 +124,7 @@ export type TCFVendorConsentRecord = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
+  vendor_deleted_date?: string;
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference; // NOTE: added on the client-side
   purpose_consents?: Array<EmbeddedPurpose>;
@@ -144,6 +145,7 @@ export type TCFVendorRelationships = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
+  vendor_deleted_date?: string;
   special_purposes?: Array<EmbeddedPurpose>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;

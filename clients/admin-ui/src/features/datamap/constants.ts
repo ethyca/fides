@@ -10,6 +10,11 @@ export const ItemTypes = {
   DraggableColumnListItem: "DraggableColumnListItem",
 };
 
+export enum ExportFormat {
+  csv = "csv",
+  xlsx = "xlsx",
+}
+
 export const SYSTEM_FIDES_KEY_COLUMN_ID = "system.fides_key";
 export const SYSTEM_NAME = "system.name";
 export const SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME =
@@ -68,3 +73,12 @@ COLUMN_NAME_MAP[SYSTEM_EGRESS] = "Destination Systems";
 // COLUMN_NAME_MAP[] = 'Legal Name & Address'; #new;
 // COLUMN_NAME_MAP[] = 'Privacy Policy'; #new;
 // COLUMN_NAME_MAP[] = 'Data Protection Officer (DPO)'; #new;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export enum DATAMAP_LOCAL_STORAGE_KEYS {
+  GROUP_BY = "datamap-group-by",
+  COLUMN_ORDER = "datamap-column-order",
+  TABLE_GROUPING = "datamap-table-grouping",
+  TABLE_STATE = "datamap-report-table-state",
+  DISPLAY_ALL_COLUMNS = "datamap-display-all-columns",
+}

@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import { ValidTargets } from "~/types/api";

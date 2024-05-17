@@ -299,6 +299,12 @@ describe("Consent settings", () => {
         cy.getToggle().uncheck();
       });
       cy.getByTestId("save-btn").click();
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+        const cookie = JSON.parse(
+          decodeURIComponent(cookieJson!.value)
+        ) as FidesCookie;
+        expect(cookie.fides_meta.consentMethod).to.eql("save");
+      });
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
@@ -325,9 +331,12 @@ describe("Consent settings", () => {
                   analytics: true,
                   gpc_test: true,
                 },
+                extraDetails: {
+                  consentMethod: "save",
+                },
+                fides_string: undefined,
               },
             });
-
           // Meta Pixel configuration
           expect(win)
             .to.have.nested.property("fbq.queue")
@@ -405,8 +414,10 @@ describe("Consent settings", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(2000);
       cy.waitUntilFidesInitialized().then(() => {
-        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+        cy.window({ timeout: 500 }).should("have.property", "dataLayer");
         cy.window().then((win) => {
           // Before visiting the privacy center the consent object only has the default choices.
           expect(win).to.have.nested.property("Fides.consent").that.eql({
@@ -426,6 +437,10 @@ describe("Consent settings", () => {
                   tracking: true,
                   analytics: true,
                 },
+                extraDetails: {
+                  consentMethod: undefined,
+                },
+                fides_string: undefined,
               },
             });
 
@@ -451,8 +466,10 @@ describe("Consent settings", () => {
       it("uses the globalPrivacyControl default", () => {
         cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
         cy.get("#consent-json");
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(2000);
         cy.waitUntilFidesInitialized().then(() => {
-          cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+          cy.window({ timeout: 500 }).should("have.property", "dataLayer");
           cy.window().then((win) => {
             expect(win).to.have.nested.property("Fides.consent").that.eql({
               data_sales: false,

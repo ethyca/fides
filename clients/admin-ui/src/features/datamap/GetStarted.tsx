@@ -1,4 +1,4 @@
-import { Box, Button, Center, Stack, Text } from "@fidesui/react";
+import { Box, Button, Center, Stack, Text } from "fidesui";
 
 import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
 

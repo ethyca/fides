@@ -1,4 +1,4 @@
-import { IconButton, Tooltip, useClipboard } from "@fidesui/react";
+import { IconButton, Tooltip, useClipboard } from "fidesui";
 import React, { useState } from "react";
 
 import { CopyIcon } from "./Icon";

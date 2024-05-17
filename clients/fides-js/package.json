@@ -35,8 +35,6 @@
     "a11y-dialog": "^7.5.2",
     "base-64": "^1.0.0",
     "preact": "^10.13.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "typescript-cookie": "^1.0.6",
     "uuid": "^9.0.0"
   },
@@ -70,8 +68,9 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-visualizer": "^5.12.0",
     "ts-jest": "^29.1.0",
+    "typedoc": "^0.25.13",
+    "typedoc-plugin-markdown": "^4.0.0",
     "typescript": "^4.9.5",
-    "typedoc-plugin-markdown": "^3.17.1",
     "typescript-plugin-css-modules": "^5.0.1"
   },
   "typedocOptions": {
@@ -81,13 +80,15 @@
     "excludePrivate": true,
     "githubPages": false,
     "hideBreadcrumbs": true,
-    "hideInPageTOC": false,
+    "hidePageHeader": true,
     "name": "FidesJS: JavaScript SDK for Fides",
+    "parametersFormat": "table",
     "plugin": "typedoc-plugin-markdown",
     "readme": "none",
     "sort": [
       "visibility",
       "source-order"
-    ]
+    ],
+    "typeDeclarationFormat": "table"
   }
 }

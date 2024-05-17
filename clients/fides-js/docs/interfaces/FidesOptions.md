@@ -20,7 +20,7 @@ order of precedence:
 2. Window Object (second priority)
 3. Cookie Values (last priority)
 
-**`Example`**
+## Example
 
 ```html
 <head>
@@ -36,23 +36,11 @@ order of precedence:
 </head>
 ```
 
-## Table of contents
-
-### Properties
-
-- [fides\_clear\_cookie](FidesOptions.md#fides_clear_cookie)
-- [fides\_disable\_banner](FidesOptions.md#fides_disable_banner)
-- [fides\_disable\_save\_api](FidesOptions.md#fides_disable_save_api)
-- [fides\_embed](FidesOptions.md#fides_embed)
-- [fides\_locale](FidesOptions.md#fides_locale)
-- [fides\_string](FidesOptions.md#fides_string)
-- [fides\_tcf\_gdpr\_applies](FidesOptions.md#fides_tcf_gdpr_applies)
-
 ## Properties
 
 ### fides\_clear\_cookie
 
-• **fides\_clear\_cookie**: `boolean`
+> **fides\_clear\_cookie**: `boolean`
 
 When `true`, deletes the `fides_consent` cookie when FidesJS is
 initialized, to clear any previously saved consent preferences from the
@@ -60,31 +48,31 @@ user's device.
 
 Defaults to `false`.
 
-___
+***
 
 ### fides\_disable\_banner
 
-• **fides\_disable\_banner**: `boolean`
+> **fides\_disable\_banner**: `boolean`
 
 When `true`, disable the FidesJS banner from being shown.
 
 Defaults to `false`.
 
-___
+***
 
 ### fides\_disable\_save\_api
 
-• **fides\_disable\_save\_api**: `boolean`
+> **fides\_disable\_save\_api**: `boolean`
 
 When `true`, disable FidesJS from saving user consent preferences to the Fides API
 
 Defaults to `false`.
 
-___
+***
 
 ### fides\_embed
 
-• **fides\_embed**: `boolean`
+> **fides\_embed**: `boolean`
 
 When `true`, require FidesJS to "embed" it's UI into a specific `<div>` on
 the page, instead of as an overlay over the `<body>` itself. This is useful
@@ -102,7 +90,7 @@ FidesJS UI fully from the page!
 
 Defaults to `false`.
 
-**`Example`**
+#### Example
 
 ```html
 <head>
@@ -121,11 +109,11 @@ Defaults to `false`.
 </body>
 ```
 
-___
+***
 
 ### fides\_locale
 
-• **fides\_locale**: `string`
+> **fides\_locale**: `string`
 
 Override the browser's preferred locale (`navigator.language`) when
 selecting the best translations for the FidesJS UI. 
@@ -135,11 +123,11 @@ Must be set to a `string` that is a valid language code (e.g. `"en-US"`,
 
 Defaults to `undefined`.
 
-___
+***
 
 ### fides\_string
 
-• **fides\_string**: `string`
+> **fides\_string**: `string`
 
 Override the current user's `fides_string` consent preferences (see [Fides.fides_string](Fides.md#fides_string)). Can be used to synchronize consent preferences for a
 registered user from a custom backend, where the `fides_string` could be
@@ -148,11 +136,11 @@ selecting the best translations for the FidesJS UI.
 
 Defaults to `undefined`.
 
-___
+***
 
 ### fides\_tcf\_gdpr\_applies
 
-• **fides\_tcf\_gdpr\_applies**: `boolean`
+> **fides\_tcf\_gdpr\_applies**: `boolean`
 
 Override the value for `gdprApplies` set in the IAB TCF CMP API.  FidesJS
 will always default this value to `true` (since the TCF experience will

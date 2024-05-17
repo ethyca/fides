@@ -1,3 +1,5 @@
+import { HeaderContext } from "@tanstack/react-table";
+import { formatDistance } from "date-fns";
 import {
   Badge,
   Box,
@@ -9,8 +11,7 @@ import {
   useDisclosure,
   useToast,
   WarningIcon,
-} from "@fidesui/react";
-import { HeaderContext } from "@tanstack/react-table";
+} from "fidesui";
 import { ChangeEvent, FC, ReactNode } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -50,6 +51,29 @@ const FidesBadge: FC = ({ children }) => (
   </Badge>
 );
 
+export const RelativeTimestampCell = ({
+  time,
+}: {
+  time?: string | number | Date;
+}) => {
+  if (!time) {
+    return <DefaultCell value="N/A" />;
+  }
+  return (
+    <DefaultCell
+      value={formatDistance(new Date(time), new Date(), {
+        addSuffix: true,
+      })}
+    />
+  );
+};
+
+export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
+  <Flex alignItems="center" height="100%" mr={2}>
+    {children}
+  </Flex>
+);
+
 export const BadgeCell = ({
   value,
   suffix,
@@ -57,12 +81,12 @@ export const BadgeCell = ({
   value: string | number;
   suffix?: string;
 }) => (
-  <Flex alignItems="center" height="100%" mr="2">
+  <BadgeCellContainer>
     <FidesBadge>
       {value}
       {suffix ? ` ${suffix}` : null}
     </FidesBadge>
-  </Flex>
+  </BadgeCellContainer>
 );
 
 export const GroupCountBadgeCell = ({
@@ -115,7 +139,11 @@ export const IndeterminateCheckboxCell = ({
   dataTestId,
   ...rest
 }: CheckboxProps & { dataTestId?: string }) => (
-  <Flex alignItems="center" justifyContent="center">
+  <Flex
+    alignItems="center"
+    justifyContent="center"
+    onClick={(e) => e.stopPropagation()}
+  >
     <Checkbox
       data-testid={dataTestId || undefined}
       {...rest}

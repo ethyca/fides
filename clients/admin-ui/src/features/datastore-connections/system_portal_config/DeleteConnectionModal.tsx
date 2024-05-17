@@ -13,7 +13,7 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import React from "react";
 
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";

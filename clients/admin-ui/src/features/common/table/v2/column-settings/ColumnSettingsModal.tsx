@@ -1,3 +1,4 @@
+import { Table as TableInstance } from "@tanstack/react-table";
 import {
   Box,
   Button,
@@ -14,8 +15,7 @@ import {
   TabPanels,
   Tabs,
   Text,
-} from "@fidesui/react";
-import { Table as TableInstance } from "@tanstack/react-table";
+} from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import {
@@ -30,6 +30,7 @@ type ColumnSettingsModalProps<T> = {
   headerText: string;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
+  onColumnOrderChange: (columns: string[]) => void;
 };
 
 export const ColumnSettingsModal = <T,>({
@@ -38,6 +39,7 @@ export const ColumnSettingsModal = <T,>({
   headerText,
   tableInstance,
   prefixColumns,
+  onColumnOrderChange,
 }: ColumnSettingsModalProps<T>) => {
   const initialColumns = useMemo(
     () =>
@@ -49,7 +51,23 @@ export const ColumnSettingsModal = <T,>({
           displayText: c.columnDef?.meta?.displayText || c.id,
           isVisible:
             tableInstance.getState().columnVisibility[c.id] ?? c.getIsVisible(),
-        })),
+        }))
+        .sort((a, b) => {
+          // columnOrder is not always a complete list. Sorts by columnOrder but leaves the rest alone
+          const { columnOrder } = tableInstance.getState();
+          const aIndex = columnOrder.indexOf(a.id);
+          const bIndex = columnOrder.indexOf(b.id);
+          if (aIndex === -1 && bIndex === -1) {
+            return 0;
+          }
+          if (aIndex === -1) {
+            return 1;
+          }
+          if (bIndex === -1) {
+            return -1;
+          }
+          return aIndex - bIndex;
+        }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
@@ -58,10 +76,11 @@ export const ColumnSettingsModal = <T,>({
   });
 
   const handleSave = useCallback(() => {
-    tableInstance.setColumnOrder([
+    const newColumnOrder: string[] = [
       ...prefixColumns,
       ...columnEditor.columns.map((c) => c.id),
-    ]);
+    ];
+    onColumnOrderChange(newColumnOrder);
     tableInstance.setColumnVisibility(
       columnEditor.columns.reduce(
         (acc: Record<string, boolean>, current: DraggableColumn) => {
@@ -73,7 +92,13 @@ export const ColumnSettingsModal = <T,>({
       )
     );
     onClose();
-  }, [onClose, prefixColumns, tableInstance, columnEditor.columns]);
+  }, [
+    onClose,
+    prefixColumns,
+    tableInstance,
+    columnEditor.columns,
+    onColumnOrderChange,
+  ]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
