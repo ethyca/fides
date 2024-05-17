@@ -2,7 +2,7 @@ from scripts.verify_index_creation import get_index_info
 from sqlalchemy.orm import Session
 
 
-class TestVerifyConcurrentIndexCreation:
+class TestVerifyIndexCreation:
     def test_both_indexes_exist(self, db: Session):
         table_index_map = {
             "privacypreferencehistory": ["ix_privacypreferencehistory_property_id"],
