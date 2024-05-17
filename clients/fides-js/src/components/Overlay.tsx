@@ -162,11 +162,11 @@ const Overlay: FunctionComponent<Props> = ({
     }
     window.Fides.showModal = handleOpenModal;
     document.body.classList.add("fides-overlay-modal-link-shown");
-    // use a delay to ensure that link exists in the DOM
+    // use a short delay to give basic page a chance to render the modal link element
     const delayModalLinkBinding = setTimeout(() => {
       const modalLinkId = options.modalLinkId || "fides-modal-link";
-      const modalLinkEl = document.getElementById(modalLinkId);
-      if (modalLinkEl) {
+      debugLog(options.debug, "Searching for modal link element...");
+      const bindModalLink = (modalLinkEl: HTMLElement) => {
         debugLog(
           options.debug,
           "Modal link element found, updating it to show and trigger modal on click."
@@ -175,9 +175,31 @@ const Overlay: FunctionComponent<Props> = ({
         modalLinkRef.current.addEventListener("click", window.Fides.showModal);
         // Update to show the pre-existing modal link in the DOM
         modalLinkRef.current.classList.add("fides-modal-link-shown");
-      } else {
-        debugLog(options.debug, "Modal link element not found.");
-      }
+      };
+      const checkModalLink = () => {
+        let modalLinkEl = document.getElementById(modalLinkId);
+        if (!modalLinkEl) {
+          // Wait until the hosting page's link element is available before attempting to bind to the click handler. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.addedNodes.length) {
+                modalLinkEl = document.getElementById(modalLinkId);
+                if (modalLinkEl) {
+                  bindModalLink(modalLinkEl);
+                  observer.disconnect();
+                }
+              }
+            });
+          });
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+          });
+        } else {
+          bindModalLink(modalLinkEl);
+        }
+      };
+      checkModalLink();
     }, delayModalLinkMilliseconds);
     return () => {
       clearTimeout(delayModalLinkBinding);

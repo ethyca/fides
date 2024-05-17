@@ -68,12 +68,38 @@ export const initOverlay = async ({
       // Determine which parent element to use as the container for rendering
       let parentElem;
       if (options.fidesEmbed) {
-        // Embed mode requires an existing element by which to embed the consent overlay
         parentElem = document.getElementById(FIDES_EMBED_CONTAINER_ID);
         if (!parentElem) {
-          throw new Error(
-            "Element with id fides-embed-container could not be found."
+          // wait until the hosting page's container element is available before proceeding in this script and attempting to render the embedded overlay. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
+          debugLog(
+            options.debug,
+            `Embed container not found (#${FIDES_EMBED_CONTAINER_ID}), waiting for it to be added to the DOM...`
           );
+          const checkEmbedContainer = async () =>
+            new Promise<void>((resolve) => {
+              const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                  if (mutation.addedNodes.length) {
+                    parentElem = document.getElementById(
+                      FIDES_EMBED_CONTAINER_ID
+                    );
+                    if (parentElem) {
+                      debugLog(
+                        options.debug,
+                        `Embed container found (#${FIDES_EMBED_CONTAINER_ID}), continuing...`
+                      );
+                      observer.disconnect();
+                      resolve();
+                    }
+                  }
+                });
+              });
+              observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+              });
+            });
+          await checkEmbedContainer();
         }
       } else {
         // Find or create the parent element where we should insert the overlay
@@ -106,6 +132,12 @@ export const initOverlay = async ({
         document.documentElement.style.setProperty(
           "--fides-overlay-primary-button-background-hover-color",
           lighterPrimaryColor
+        );
+      }
+
+      if (!parentElem) {
+        return await Promise.reject(
+          new Error("There was a problem rendering the Fides overlay.")
         );
       }
 

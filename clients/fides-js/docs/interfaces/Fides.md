@@ -169,6 +169,10 @@ When not used as a click handler, `Fides.showModal()` can be called
 programmatically at any time from your own custom JavaScript logic as
 desired.
 
+NOTE: If using custom JavaScript to show the modal, you may also want to set
+the `modalLinkId` global option to an empty string to prevent the automated
+searching for, and binding the click event to, the modal link.
+
 #### Example
 
 Showing the FidesJS modal via an `onclick` handler on a custom button element:
