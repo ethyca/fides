@@ -96,7 +96,10 @@ export const initOverlay = async ({
             new Promise<void>((resolve) => {
               const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
-                  if (mutation.addedNodes.length) {
+                  if (
+                    mutation.addedNodes.length ||
+                    mutation.type === "attributes"
+                  ) {
                     parentElem = document.getElementById(
                       FIDES_EMBED_CONTAINER_ID
                     );
@@ -112,6 +115,7 @@ export const initOverlay = async ({
                 });
               });
               observer.observe(document.body, {
+                attributes: true,
                 childList: true,
                 subtree: true,
               });
