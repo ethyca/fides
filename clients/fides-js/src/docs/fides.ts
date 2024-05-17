@@ -137,8 +137,9 @@ export interface Fides {
    * desired.
    *
    * NOTE: If using custom JavaScript to show the modal, you may also want to set
-   * the `modalLinkId` global option to an empty string to prevent the automated
-   * searching for, and binding the click event to, the modal link.
+   * the `modalLinkId` global setting on the Fides Privacy Center to prevent the
+   * automated searching for, and binding the click event to, the modal link. If using
+   * Fides Cloud, contact Ethyca Support for details on adjusting global settings.
    *
    *
    * @example
