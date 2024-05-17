@@ -20,42 +20,11 @@ def upgrade():
     op.add_column(
         "privacypreferencehistory", sa.Column("property_id", sa.String(), nullable=True)
     )
-    with op.get_context().autocommit_block():
-        op.create_index(
-            op.f("ix_privacypreferencehistory_property_id"),
-            "privacypreferencehistory",
-            ["property_id"],
-            unique=False,
-            postgresql_concurrently=True,
-        )
-
     op.add_column(
         "servednoticehistory", sa.Column("property_id", sa.String(), nullable=True)
     )
-    with op.get_context().autocommit_block():
-        op.create_index(
-            op.f("ix_servednoticehistory_property_id"),
-            "servednoticehistory",
-            ["property_id"],
-            unique=False,
-            postgresql_concurrently=True,
-        )
 
 
 def downgrade():
-    with op.get_context().autocommit_block():
-        op.drop_index(
-            op.f("ix_servednoticehistory_property_id"),
-            table_name="servednoticehistory",
-            postgresql_concurrently=True,
-        )
     op.drop_column("servednoticehistory", "property_id")
-
-    with op.get_context().autocommit_block():
-        op.drop_index(
-            op.f("ix_privacypreferencehistory_property_id"),
-            table_name="privacypreferencehistory",
-            postgresql_concurrently=True,
-        )
     op.drop_column("privacypreferencehistory", "property_id")
-

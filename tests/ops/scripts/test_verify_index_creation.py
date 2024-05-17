@@ -1,4 +1,4 @@
-from scripts.verify_concurrent_index_creation import get_index_info
+from scripts.verify_index_creation import get_index_info
 from sqlalchemy.orm import Session
 
 
