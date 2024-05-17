@@ -11,6 +11,10 @@
     -->
     <script>
       (function () {
+        // window.fides_overrides = {
+        //   fides_embed: true,
+        // };
+        window.render_delay = 0; // increment the delay to test/mimic a slow loading or dynamic page
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
         const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
@@ -53,7 +57,25 @@
         </button>
       </div>
 
-      <div id="fides-embed-container"></div>
+      <div id="render-embed-here"></div>
+      <script>
+        if (window.fides_overrides && window.fides_overrides.fides_embed) {
+          setTimeout(() => {
+            const app = document.getElementById("render-embed-here");
+            const container = document.createElement("div");
+            container.id = "fides-embed-container";
+            app.appendChild(container);
+          }, window.render_delay);
+        }
+      </script>
+
+      <!-- <h2>Huge Image</h2>
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/6/6d/The_Garden_of_Earthly_Delights_by_Bosch_High_Resolution.jpg"
+        alt="The Garden of Earthly Delights by Bosch (5.2GB)"
+        width="50px"
+        height="50px"
+      /> -->
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>
@@ -62,7 +84,17 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <button id="fides-modal-link"></button>
+      <div id="render-link-here"></div>
+      <script>
+        setTimeout(() => {
+          const app = document.getElementById("render-link-here");
+          const button = document.createElement("button");
+          // Display the fides configured modal link label (if any).
+          button.innerText = Fides.getModalLinkLabel();
+          button.id = "fides-modal-link";
+          app.appendChild(button);
+        }, window.render_delay);
+      </script>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>
@@ -93,10 +125,6 @@
           null,
           2
         );
-
-        // Display the fides configured modal link label (if any).
-        document.getElementById("fides-modal-link").textContent =
-          Fides.getModalLinkLabel();
 
         // Pretty-print the fides experience config object and add it to the page.
         document.getElementById("consent-experience").textContent =
