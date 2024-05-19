@@ -416,7 +416,7 @@ class MessagingConfigStatusMessage(BaseModel):
 
 
 class MessagingTemplateBase(BaseModel):
-    key: str
+    type: str
     content: Dict[str, Any]
 
 

@@ -508,9 +508,9 @@ def get_messaging_templates(
     """Returns the available messaging templates, augments the models with labels to be used in the UI."""
     return [
         MessagingTemplateResponse(
-            key=template.key,
+            key=template.type,
             content=template.content,
-            label=DEFAULT_MESSAGING_TEMPLATES.get(template.key, {}).get("label", None),
+            label=DEFAULT_MESSAGING_TEMPLATES.get(template.type, {}).get("label", None),
         )
         for template in get_all_messaging_templates(db=db)
     ]
@@ -529,11 +529,11 @@ def update_messaging_templates(
     failed = []
 
     for template in templates:
-        key = template.key
+        template_type = template.type
         content = template.content
 
         try:
-            default_template = DEFAULT_MESSAGING_TEMPLATES.get(key)
+            default_template = DEFAULT_MESSAGING_TEMPLATES.get(template_type)
             if not default_template:
                 raise ValueError("Invalid template key.")
 
@@ -543,12 +543,12 @@ def update_messaging_templates(
             content["body"] = content["body"] or default_template["content"]["body"]
 
             MessagingTemplate.create_or_update(
-                db, data={"key": key, "content": content}
+                db, data={"type": template_type, "content": content}
             )
 
             succeeded.append(
                 MessagingTemplateResponse(
-                    key=key,
+                    type=template_type,
                     content=content,
                     label=default_template.get("label"),
                 )

@@ -1,9 +1,11 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from sqlalchemy import Column, String
+from fides.api.models.property import Property
+from sqlalchemy import Column, String, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.schemas.messaging.messaging import MessagingActionType
@@ -61,9 +63,19 @@ class MessagingTemplate(Base):
     def __tablename__(self) -> str:
         return "messaging_template"
 
-    # add column for property
-    key = Column(String, index=True, unique=True, nullable=False)
+    # todo- manually adjust migration to rename key to type, remove unique constraint
+    # todo- adjust code that refers to "key", update to use "type"
+    type = Column(String, index=True, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
+    is_enabled = Column(Boolean, default=False, nullable=False)
+    properties: RelationshipProperty[List[Property]] = relationship(
+        "Property",
+        secondary="messaging_template_to_property",
+        back_populates="messaging_template",
+        lazy="selectin",
+    )
 
     class Config:
         orm_mode = True
+
+

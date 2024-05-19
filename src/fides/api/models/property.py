@@ -6,7 +6,7 @@ import string
 from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String, Text, and_
+from sqlalchemy import Column, ForeignKey, String, Boolean, Text, Index, UniqueConstraint, and_
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
@@ -15,6 +15,7 @@ from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.schemas.property import PropertyType
 from fides.config import get_config
 
@@ -45,7 +46,10 @@ class Property(Base):
         primary_key=True,
         default=generate_id,
     )
-    # add isDefault column- constraint only 1 can be true
+    # Right now, we use server default to write this val.
+    # In the future we may allow ability to configure which property is the default
+    # todo- ?? on app startup, create 1 default property if none detected and link to messaging configs
+    is_default = Column(Boolean, server_default="f", default=False)
     name = Column(String, nullable=False, unique=True)
     type = Column(EnumColumn(PropertyType), nullable=False)
     privacy_center_config = Column(MutableDict.as_mutable(JSONB), nullable=True)
@@ -63,6 +67,23 @@ class Property(Base):
         secondary="plus_privacy_experience_config_property",
         back_populates="properties",
         lazy="selectin",
+    )
+
+    messaging_templates = RelationshipProperty[List[MessagingTemplate]] = relationship(
+        "MessagingTemplate",
+        secondary="messaging_template_to_property",
+        back_populates="properties",
+        lazy="selectin",
+    )
+
+    # Only 1 property can be the default
+    __table_args__ = (
+        Index(
+            "only_one_default",
+            is_default,
+            unique=True,
+            postgresql_where=is_default,
+        ),
     )
 
     @classmethod
@@ -215,3 +236,32 @@ def link_experience_configs_to_property(
 
     prop.save(db)
     return prop.experiences
+
+
+class MessagingTemplateToProperty(Base):
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "messaging_template_to_property"
+
+    messaging_template_id = Column(
+        String,
+        ForeignKey(MessagingTemplate.id_field_path),
+        unique=False,
+        index=True,
+        nullable=False,
+        primary_key=True,
+        )
+    property_id = Column(
+        String,
+        ForeignKey("plus_property.id"),
+        unique=False,
+        index=True,
+        nullable=False,
+        primary_key=True,
+        )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "template_id", "property_id", name="template_id_property_id"
+        ),
+    )

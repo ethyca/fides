@@ -42,7 +42,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.messaging_crud_service import (
-    get_messaging_template_by_key,
+    get_messaging_template_by_type,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.logger import Pii
@@ -153,7 +153,7 @@ def dispatch_message(
     message: Optional[Union[EmailForActionType, str]] = None
 
     logger.info("Getting custom messaging template for action type: {}", action_type)
-    messaging_template = get_messaging_template_by_key(db=db, key=action_type.value)
+    messaging_template = get_messaging_template_by_type(db=db, template_type=action_type.value)
 
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
