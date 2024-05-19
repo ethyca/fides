@@ -1,13 +1,15 @@
-from typing import Any, Dict, List
+from __future__ import annotations
 
-from fides.api.models.property import Property
+from typing import Any, Dict, List, Type
+
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import RelationshipProperty, relationship, Session
 
 from fides.api.db.base_class import Base
+from fides.api.models.property import Property
 from fides.api.schemas.messaging.messaging import MessagingActionType
 
 # Provides default values for initializing the database or replacing deleted values for messaging templates.
@@ -63,19 +65,64 @@ class MessagingTemplate(Base):
     def __tablename__(self) -> str:
         return "messaging_template"
 
-    # todo- manually adjust migration to rename key to type, remove unique constraint
-    # todo- adjust code that refers to "key", update to use "type"
     type = Column(String, index=True, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
     is_enabled = Column(Boolean, default=False, nullable=False)
     properties: RelationshipProperty[List[Property]] = relationship(
         "Property",
         secondary="messaging_template_to_property",
-        back_populates="messaging_template",
+        back_populates="messaging_templates",
         lazy="selectin",
     )
 
     class Config:
         orm_mode = True
 
+    @classmethod
+    def create(
+            cls: Type[MessagingTemplate],
+            db: Session,
+            *,
+            data: dict[str, Any],
+            check_name: bool = False,
+    ) -> MessagingTemplate:
+        """
+        Creates a Messaging Template, allows linking properties
+        """
+        messaging_template: MessagingTemplate = super().create(
+            db=db, data=data, check_name=check_name
+        )
+        properties = data.pop("properties", [])
+        # Link Properties to this Messaging Template via the MessagingTemplateToProperty table
+        link_properties_to_messaging_template(db, properties, messaging_template)
+        return messaging_template
+
+    def update(self, db: Session, *, data: dict[str, Any]) -> MessagingTemplate:
+        """
+        Updates a Messaging Template, allows linking properties
+        """
+        self.update(db=db, data=data)
+
+        properties = data.pop("properties", [])
+        # Link Properties to this Messaging Template via the MessagingTemplateToProperty table
+        link_properties_to_messaging_template(db, properties, self)
+        return self
+
+
+def link_properties_to_messaging_template(
+        db: Session,
+        properties: List[Dict[str, Any]],
+        messaging_template: MessagingTemplate,
+) -> List[Property]:
+    """
+    Link supplied properties to MessagingTemplate and unlink any properties not supplied.
+    """
+    new_properties = (
+        db.query(Property)
+            .filter(Property.id.in_([prop["id"] for prop in properties]))
+            .all()
+    )
+    messaging_template.properties = new_properties
+    messaging_template.save(db)
+    return messaging_template.properties
 

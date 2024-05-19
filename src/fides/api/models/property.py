@@ -15,12 +15,13 @@ from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
-from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.schemas.property import PropertyType
 from fides.config import get_config
 
+# Hack to avoid circular dependency errors
 if TYPE_CHECKING:
     from fides.api.models.privacy_experience import PrivacyExperienceConfig
+    from fides.api.models.messaging_template import MessagingTemplate
 
 CONFIG = get_config()
 
@@ -48,7 +49,6 @@ class Property(Base):
     )
     # Right now, we use server default to write this val.
     # In the future we may allow ability to configure which property is the default
-    # todo- ?? on app startup, create 1 default property if none detected and link to messaging configs
     is_default = Column(Boolean, server_default="f", default=False)
     name = Column(String, nullable=False, unique=True)
     type = Column(EnumColumn(PropertyType), nullable=False)
@@ -69,7 +69,8 @@ class Property(Base):
         lazy="selectin",
     )
 
-    messaging_templates = RelationshipProperty[List[MessagingTemplate]] = relationship(
+    # todo- do I need to manually insert messaging_templates here or will DB handle it?
+    messaging_templates: RelationshipProperty[List[MessagingTemplate]] = relationship(
         "MessagingTemplate",
         secondary="messaging_template_to_property",
         back_populates="properties",
@@ -245,12 +246,12 @@ class MessagingTemplateToProperty(Base):
 
     messaging_template_id = Column(
         String,
-        ForeignKey(MessagingTemplate.id_field_path),
+        ForeignKey("messaging_template.id"),
         unique=False,
         index=True,
         nullable=False,
         primary_key=True,
-        )
+    )
     property_id = Column(
         String,
         ForeignKey("plus_property.id"),
@@ -258,10 +259,10 @@ class MessagingTemplateToProperty(Base):
         index=True,
         nullable=False,
         primary_key=True,
-        )
+    )
 
     __table_args__ = (
         UniqueConstraint(
-            "template_id", "property_id", name="template_id_property_id"
+            "messaging_template_id", "property_id", name="messaging_template_id_property_id"
         ),
     )
