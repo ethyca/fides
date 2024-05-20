@@ -75,14 +75,22 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
     router.push(PROPERTIES_ROUTE);
   };
 
+  const isEditing = !!property;
+
   const initialValues = useMemo(
     () =>
-      property || {
-        name: "",
-        type: PropertyType.WEBSITE,
-        experiences: [],
-      },
-    [property]
+      isEditing
+        ? {
+            ...property,
+            paths: property.paths ?? [],
+          }
+        : {
+            name: "",
+            type: PropertyType.WEBSITE,
+            experiences: [],
+            paths: [],
+          },
+    [property, isEditing]
   );
 
   return (
