@@ -12,7 +12,7 @@ const IntegrationsTabs: NextPage = ({data}) => {
       !data.total && (<NoIntegrations/>)
 
     return (
-      <Box data-testid="integrations">
+      <Box marginTop="24px">
         {data.items.map(renderIntegration)}
         {renderNoIntegrations()}
       </Box>
