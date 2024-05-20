@@ -78,8 +78,18 @@ const updateExperience: UpdateExperienceFn = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-async function init(this: FidesGlobal, config: FidesConfig) {
-  this.config = config;
+async function init(this: FidesGlobal, config?: FidesConfig) {
+  // confused by the "this"? see https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function
+
+  if (!config && !this.config) {
+    throw new Error("Fides must be initialized with a configuration object");
+  }
+  if (!config) {
+    // eslint-disable-next-line no-param-reassign
+    config = this.config as FidesConfig;
+  } else if (!this.config) {
+    this.config = config;
+  }
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -185,7 +195,7 @@ const _Fides: FidesGlobal = {
     if (!this.config || !this.initialized) {
       throw new Error("Fides must be initialized before reinitializing");
     }
-    return this.init(this.config);
+    return this.init();
   },
   initialized: false,
   meta,

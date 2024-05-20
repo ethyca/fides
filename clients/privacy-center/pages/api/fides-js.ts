@@ -257,6 +257,8 @@ export default async function handler(
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
+  const { initialize: initializeQuery } = req.query;
+
   const script = `
   (function () {
     // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request
@@ -277,12 +279,22 @@ export default async function handler(
     `
       : ""
   }${
-    e2eQuery === "true"
+    e2eQuery === "true" // let Cypress set the config and initialize fides.js
       ? ""
       : `
-        // Initialize fides.js with custom config
     var fidesConfig = ${fidesConfigJSON};
-    window.Fides.init(fidesConfig);`
+    ${
+      initializeQuery === "false"
+        ? `// Capture the base config for later initialization
+        window.Fides.config = fidesConfig;`
+        : `// Initialize fides.js with custom config
+        window.Fides.init(fidesConfig);`
+    }
+    ${
+      environment.settings.DEBUG && initializeQuery === "false"
+        ? `console.log("fides.js initialization skipped. Call window.Fides.init() when ready.");`
+        : ""
+    }`
   }
   })();
   `;
