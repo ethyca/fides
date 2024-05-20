@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import pytest
 from sqlalchemy.orm import Session
@@ -9,17 +9,6 @@ from fides.api.schemas.property import PropertyType
 
 
 class TestProperty:
-    @pytest.fixture(scope="function")
-    def property_a(self, db) -> Generator:
-        prop_a = Property.create(
-            db=db,
-            data=PropertySchema(
-                name="New Property", type=PropertyType.website, experiences=[]
-            ).dict(),
-        )
-        yield prop_a
-        prop_a.delete(db=db)
-
     @pytest.fixture(scope="function")
     def minimal_experience(
         self, db, privacy_experience_privacy_center

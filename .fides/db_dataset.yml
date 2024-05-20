@@ -1718,6 +1718,8 @@ dataset:
       data_categories: [user]
     - name: user_geography
       data_categories: [user]
+    - name: property_id
+      data_categories: [system.operations]
   - name: servednoticehistory
     description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
@@ -1772,6 +1774,8 @@ dataset:
       data_categories: [user]
     - name: user_geography
       data_categories: [user]
+    - name: property_id
+      data_categories: [system.operations]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
