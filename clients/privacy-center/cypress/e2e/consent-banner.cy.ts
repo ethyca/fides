@@ -2510,4 +2510,35 @@ describe("Consent overlay", () => {
       });
     });
   });
+
+  describe("when initialization has been disabled by the developer", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { initialize: "false" },
+      });
+      cy.window().then((win) => {
+        win.addEventListener(
+          "FidesInitialized",
+          cy.stub().as("FidesInitialized")
+        );
+      });
+    });
+    it("does not trigger any side-effects (like banners displaying, events firing, etc.)", () => {
+      cy.window().then((win) => {
+        assert.isTrue(!!win.Fides.config);
+        assert.isFalse(win.Fides.initialized);
+      });
+      cy.get("@FidesInitialized").should("not.have.been.called");
+      cy.get("#fides-overlay .fides-banner").should("not.exist");
+    });
+    it("can still be initialized manually by the developer after adjusting settings", () => {
+      cy.window().then((win) => {
+        win.Fides.init().then(() => {
+          assert.isTrue(win.Fides.initialized);
+        });
+      });
+    });
+  });
 });

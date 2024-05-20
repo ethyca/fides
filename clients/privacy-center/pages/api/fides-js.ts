@@ -65,6 +65,12 @@ let autoRefresh: boolean = true;
  *         description: Forces the GPP extension to be included in the bundle, even if the experience does not have GPP enabled
  *         schema:
  *           type: boolean
+ *       - in: query
+ *         name: initialize
+ *         required: false
+ *         description: When set to "false" fides.js will not be initialized automatically; use `window.Fides.init()` to initialize manually
+ *         schema:
+ *           type: boolean
  *       - in: header
  *         name: CloudFront-Viewer-Country
  *         required: false
