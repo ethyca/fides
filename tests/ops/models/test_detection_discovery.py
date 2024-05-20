@@ -160,7 +160,7 @@ class TestStagedResourceModel:
         }
 
 
-SAMPLE_START_DATE = datetime(2024, 5, 14, 12, 42, 5, 17137, tzinfo=timezone.utc)
+SAMPLE_START_DATE = datetime(2024, 5, 20, 12, 42, 5, 17137, tzinfo=timezone.utc)
 
 
 class TestMonitorConfigModel:
@@ -222,7 +222,7 @@ class TestMonitorConfigModel:
                 {
                     "start_date": SAMPLE_START_DATE,
                     "timezone": str(timezone.utc),
-                    "day_of_week": 1,  # sample start day is a Tuesday (day 1 in cron)
+                    "day_of_week": 0,  # sample start day is a Monday (day 0 in cron)
                     "hour": 12,
                     "minute": 42,
                     "second": 5,
@@ -233,7 +233,7 @@ class TestMonitorConfigModel:
                 {
                     "start_date": SAMPLE_START_DATE,
                     "timezone": str(timezone.utc),
-                    "day": 14,
+                    "day": 20,
                     "hour": 12,
                     "minute": 42,
                     "second": 5,
@@ -289,7 +289,7 @@ class TestMonitorConfigModel:
                 {
                     "start_date": SAMPLE_START_DATE,
                     "timezone": str(timezone.utc),
-                    "day_of_week": 1,  # sample start day is a Tuesday (day 1 in cron)
+                    "day_of_week": 0,  # sample start day is a Tuesday (day 0 in cron)
                     "hour": 12,
                     "minute": 42,
                     "second": 5,
@@ -300,7 +300,7 @@ class TestMonitorConfigModel:
                 {
                     "start_date": SAMPLE_START_DATE,
                     "timezone": str(timezone.utc),
-                    "day": 14,
+                    "day": 20,
                     "hour": 12,
                     "minute": 42,
                     "second": 5,
