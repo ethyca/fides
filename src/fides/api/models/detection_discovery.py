@@ -105,9 +105,9 @@ class MonitorConfig(Base):
             or not self.monitor_execution_trigger.get("hour")
         ):
             return None
-        if self.monitor_execution_trigger.get("day"):
+        if self.monitor_execution_trigger.get("day", None) is not None:
             return MonitorFrequency.MONTHLY
-        if self.monitor_execution_trigger.get("day_of_week"):
+        if self.monitor_execution_trigger.get("day_of_week", None) is not None:
             return MonitorFrequency.WEEKLY
         return MonitorFrequency.DAILY
 
