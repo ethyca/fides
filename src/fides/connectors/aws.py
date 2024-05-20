@@ -122,7 +122,7 @@ def scan_dynamo_table(client: Any, table_name: str) -> List[str]:  # type: ignor
         for field, _ in item.items():
             fields.add(field)
 
-    return fields
+    return list(fields)
 
 
 
@@ -141,36 +141,61 @@ def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
 
 
 def create_dynamodb_dataset(
-    described_dynamo_tables: List[Dict], organization_key: str = "default_organization"
-) -> Dataset:
+    described_dynamo_tables: List[Dict], organization_key: str = "default_organization", single_dataset: bool = False
+) -> List[Dataset]:
     """
     Given "describe_table" response(s), build a dataset object to represent
     each dynamodb table, returning a fides dataset.
     """
     # TODO: add something for improved dataset uniqueness, i.e. region/account
-    dataset_name = "DynamoDB"
-    unique_dataset_name = generate_unique_fides_key(dataset_name, "", "")
-    dataset = Dataset(
-        name=dataset_name,
-        fides_key=unique_dataset_name,
-        organization_fides_key=organization_key,
-        collections=[
-            DatasetCollection(
-                name=collection["TableName"],
-                fields=[
-                    DatasetField(
-                        name=field,
-                        description=f"Fides Generated Description for Column: {field}",
-                        data_categories=[],
-                        # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
-                    )
-                    for field in collection["Fields"]
+    if single_dataset:
+        dataset_name = "DynamoDB"
+        unique_dataset_name = generate_unique_fides_key(dataset_name, "", "")
+        datasets = [Dataset(
+            name=dataset_name,
+            fides_key=unique_dataset_name,
+            organization_fides_key=organization_key,
+            collections=[
+                DatasetCollection(
+                    name=collection["TableName"],
+                    # description=collection["TableArn"],
+                    fields=[
+                        DatasetField(
+                            name=field,
+                            description=f"Fides Generated Description for Column: {field}",
+                            data_categories=[],
+                            # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
+                        )
+                        for field in collection["Fields"]
+                    ],
+                )
+                for collection in described_dynamo_tables
+            ],
+        )]
+    else:
+        datasets = [
+            Dataset(
+            name=collection["TableName"],
+            fides_key=generate_unique_fides_key(collection["TableName"], "", ""),
+            organization_fides_key=organization_key,
+            collections=[
+                DatasetCollection(
+                    name=collection["TableName"],
+                    # description=collection["TableArn"],
+                    fields=[
+                        DatasetField(
+                            name=field,
+                            description=f"Fides Generated Description for Column: {field}",
+                            data_categories=[],
+                            # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
+                        )
+                        for field in collection["Fields"]
+                    ],
+                )
                 ],
-            )
-            for collection in described_dynamo_tables
-        ],
-    )
-    return dataset
+        ) for collection in described_dynamo_tables
+        ]
+    return datasets
 
 
 def create_redshift_systems(

@@ -129,6 +129,7 @@ def generate_dataset_aws(ctx: click.Context) -> None:
 @aws_secret_access_key_option
 @aws_session_token_option
 @aws_region_option
+@click.option("--single-dataset", type=bool)
 @include_null_flag
 @with_analytics
 def generate_dataset_dynamodb(
@@ -140,9 +141,10 @@ def generate_dataset_dynamodb(
     secret_access_key: str,
     session_token: str,
     region: str,
+    single_dataset: bool = False
 ) -> None:
     """
-    Generate a dataset object from BigQuery using a SQLAlchemy connection string.
+    Generates a dataset object from DynamoDB using the AWS boto3 connection config.
     """
 
     config = ctx.obj["CONFIG"]
@@ -155,12 +157,12 @@ def generate_dataset_dynamodb(
         credentials_id=credentials_id,
     )
 
-    bigquery_dataset = _dataset.generate_dynamo_db_datasets(aws_config)
+    datasets = _dataset.generate_dynamo_db_datasets(aws_config, single_dataset)
 
     _dataset.write_dataset_manifest(
         file_name=output_filename,
         include_null=include_null,
-        datasets=[bigquery_dataset],
+        datasets=datasets,
     )
 
 
