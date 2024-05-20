@@ -7,6 +7,7 @@ import base64
 import string
 import random
 import json
+import time
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -92,6 +93,7 @@ def recurly_erasure_data(
     response = requests.post(accounts_url, headers=headers, json=body)
     assert response.ok
     # part of the response to the request to create a new account is the account_id
+    time.sleep(5)
     account_id = response.json()["shipping_addresses"][0]["account_id"]
     shipping_id = response.json()["shipping_addresses"][0]["id"]
     # now we can form up a request to add billing details
@@ -113,12 +115,12 @@ def recurly_erasure_data(
     response = requests.put(billing_url, headers=headers, json=body)
     assert response.ok
     billing_info = response.json()['first_name']
-
+    time.sleep(5)
     check_url = f"{accounts_url}/{account_id}"
     response = requests.get(check_url, headers=headers)
     assert response.ok
     # check that the newly created account responds
-
+    time.sleep(5)
     ### set up done, we now have a valid account, that has shipping and billing details that we can mask
 
     body = {
@@ -139,7 +141,7 @@ def recurly_erasure_data(
     mask_account_url = f"{accounts_url}/{account_id}"
     response = requests.put(mask_account_url, headers=headers, json=body)
     assert response.ok
-
+    time.sleep(5)
     assert response.json()['first_name'] == 'MASKED', "Expected 'MASKED' for first_name, got {}".format(response.json()['first_name'])
     assert response.json()['last_name'] == 'MASKED', "Expected 'MASKED' for last_name, got {}".format(response.json()['last_name'])
     assert response.json()['email'] == 'MASKED@Ethyca.com', "Expected 'MASKED@Ethyca.com' for email, got {}".format(response.json()['email'])
@@ -166,7 +168,7 @@ def recurly_erasure_data(
     mask_billing_url = f"{accounts_url}/{account_id}/billing_info"
     response = requests.put(mask_billing_url, headers=headers, json=body)
     assert response.ok
-
+    time.sleep(5)
     assert response.json()['first_name'] == 'MASKED', "Expected 'MASKED' for first_name, got {}".format(response.json()['first_name'])
     assert response.json()['last_name'] == 'MASKED', "Expected 'MASKED' for last_name, got {}".format(response.json()['last_name'])
     assert response.json()['payment_method']['first_six'] == '411111', "Expected '411111' for first_six, got {}".format(response.json()['first_six'])
@@ -187,6 +189,7 @@ def recurly_erasure_data(
     mask_shipping_url = f"{accounts_url}/{account_id}/shipping_addresses/{shipping_id}"
     response = requests.put(mask_shipping_url, headers=headers, json=body)
     shipping_address = response.json()['first_name']
+    time.sleep(5)
     # verification that the values we expected to be masked were masked.
     assert response.json()['first_name'] == 'MASKED', "Expected 'MASKED' for first_name, got {}".format(response.json()['first_name'])
     assert response.json()['last_name'] == 'MASKED', "Expected 'MASKED' for last_name, got {}".format(response.json()['last_name'])
