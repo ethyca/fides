@@ -81,6 +81,7 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
         name: "",
         type: PropertyType.WEBSITE,
         experiences: [],
+        paths: [],
       },
     [property]
   );
