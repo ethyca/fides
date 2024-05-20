@@ -258,6 +258,12 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
     notice_name = Column(String, index=True)  # Privacy Notice name or "TCF"
 
+    property_id = Column(
+        String,
+        index=True,
+        nullable=True,
+    )
+
     # The specific version of the experience config the user was shown to present the relevant notice
     # Contains the version, language, button labels, description, etc.
     @declared_attr
@@ -327,12 +333,6 @@ class ServedNoticeHistory(ConsentReportingMixinV2, Base):
         MutableDict.as_mutable(JSONB)
     )  # Dict of all the TCF attributes served if applicable
 
-    property_id = Column(
-        String,
-        index=True,
-        nullable=True,
-    )
-
     @staticmethod
     def get_by_served_id(db: Session, served_id: str) -> Query:
         """Retrieves all ServedNoticeHistory records with a common served_notice_history_id - generated
@@ -393,12 +393,6 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
     tcf_preferences = Column(
         MutableDict.as_mutable(JSONB)
     )  # Dict of TCF attributes saved, for a TCF notice
-
-    property_id = Column(
-        String,
-        index=True,
-        nullable=True,
-    )
 
     privacy_request = relationship(PrivacyRequest, backref="privacy_preferences")
 

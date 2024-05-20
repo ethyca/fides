@@ -16,6 +16,7 @@ down_revision = "57479150efd6"
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
     connection = op.get_bind()
 
@@ -55,6 +56,7 @@ def upgrade():
             "'CREATE INDEX CONCURRENTLY ix_servednoticehistory_property_id "
             "ON servednoticehistory (property_id)'"
         )
+
 
 def downgrade():
     op.drop_index(
