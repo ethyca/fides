@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
+from fides.api.schemas.property import Property
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
@@ -431,3 +432,27 @@ class MessagingTemplateResponse(MessagingTemplateBase):
 class BulkPutMessagingTemplateResponse(BulkResponse):
     succeeded: List[MessagingTemplateResponse]
     failed: List[BulkUpdateFailed]
+
+
+class MessagingTemplateWithPropertiesBase(BaseModel):
+    id: Optional[str]  # Since summary returns db or defaults, this can be null
+    type: str
+    label: str
+    is_enabled: bool
+    properties: Optional[List[Property]]
+
+
+class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase):
+    pass
+
+
+class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
+    content: Dict[str, Any]
+
+
+class MessagingTemplateWithPropertiesBodyParams(BaseModel):
+
+    content: Dict[str, Any]
+    property_ids: Optional[List[str]]
+    is_enabled: bool
+

@@ -27,6 +27,7 @@ class TestMessagingTemplates:
             data={
                 "type": template_type,
                 "content": content,
+                "is_enabled": False,
             },
         )
 

@@ -543,7 +543,7 @@ def update_messaging_templates(
             content["body"] = content["body"] or default_template["content"]["body"]
 
             MessagingTemplate.create_or_update(
-                db, data={"type": template_type, "content": content}
+                db, data={"type": template_type, "content": content, "is_enabled": False}
             )
 
             succeeded.append(
