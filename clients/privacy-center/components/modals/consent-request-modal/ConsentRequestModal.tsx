@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { useLocalStorage } from "~/common/hooks";
+import getPathFromRawUrl from "~/common/getPathFromRawUrl";
 import RequestModal from "../RequestModal";
 
 import { ModalViews, VerificationType } from "../types";
@@ -19,7 +20,7 @@ export const useConsentRequestModal = () => {
   );
 
   const successHandler = useCallback(() => {
-    router.push("consent");
+    router.push(`${getPathFromRawUrl(router.asPath)}/consent`);
   }, [router]);
 
   const onOpen = () => {

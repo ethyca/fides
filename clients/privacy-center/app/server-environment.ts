@@ -298,30 +298,23 @@ const getPropertyFromUrl = async ({
   const headers = new Headers();
   addCommonHeaders(headers);
 
-  // const result = await fetch(
-  //   `${fidesApiUrl}/plus/property?${new URLSearchParams({ path: pathname })}`,
-  //   {
-  //     method: "GET",
-  //     headers,
-  //   }
-  // );
   let result: Property | null = null;
   try {
-    result = {
-      name: "Purple Property",
-      type: PropertyType.WEBSITE,
-      id: "FDS-W1SRVS",
-      experiences: [],
-      paths: ["/purple"],
-    };
+    const response = await fetch(
+      `${fidesApiUrl}/plus/property?${new URLSearchParams({ path: pathname })}`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
+    if (response.ok) {
+      result = await response.json();
+    }
   } catch (e) {
     console.log("Request to find property failed", e);
   }
 
-  // console.log("result", await result.text());
-
-  // console.log("fidesApiUrl", fidesApiUrl);
-  // console.log("pathname", pathname);
+  return result;
 };
 
 const loadEnvironmentVariables = () => {
@@ -438,10 +431,13 @@ export const loadPrivacyCenterEnvironment = async ({
   }
 
   // Load configuration file (if it exists)
-  const config = await loadConfigFromFile(settings.CONFIG_JSON_URL);
+  const config =
+    property?.privacy_center_config ||
+    (await loadConfigFromFile(settings.CONFIG_JSON_URL));
 
   // Load styling file (if it exists)
-  const styles = await loadStylesFromFile(settings.CONFIG_CSS_URL);
+  const styles =
+    property?.stylesheet || (await loadStylesFromFile(settings.CONFIG_CSS_URL));
 
   // Load client settings (ensuring we only pass-along settings that are safe for the client)
   const clientSettings: PrivacyCenterClientSettings = {
