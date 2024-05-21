@@ -1,14 +1,18 @@
-import { Spinner, Button, Box } from "fidesui";
+import {
+  Box,
+  Button,
+  Spinner,
+  LinkIcon,
+  useDisclosure,
+  Heading,
+} from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 import Layout from "~/features/common/Layout";
 import IntegrationsTabs  from "~/features/integrations/IntegrationsTabs";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import DataTabsHeader from "~/features/common/DataTabsHeader";
-import { Heading } from "fidesui";
-import {
-  LinkIcon,
-} from "fidesui";
+import AddIntegrationModal from "~/features/integrations/AddIntegrationModal";
 
 const TABS = [
   {
@@ -38,6 +42,7 @@ const IntegrationListView: NextPage = () => {
     isLoading,
   } = useGetAllDatastoreConnectionsQuery({"connection_type": ["bigquery"]});
 
+  const { onOpen, isOpen, onClose } = useDisclosure();
 
   const onTabChange = () =>
     console.log(arguments)
@@ -53,7 +58,7 @@ const IntegrationListView: NextPage = () => {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => {}}
+          onClick={onOpen}
         >
           Add Integration
           <LinkIcon marginLeft="8px"/>
@@ -75,6 +80,7 @@ const IntegrationListView: NextPage = () => {
         {renderAddIntegrationButton()}
       </Box>
       {isLoading ? <Spinner /> : <IntegrationsTabs data={data}/>}
+      <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>
   );
 };
