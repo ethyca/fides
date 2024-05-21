@@ -10,6 +10,11 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from fides.api.models.property import Property
+from fides.api.schemas.property import Property as PropertySchema
+from fides.api.schemas.property import PropertyType
+
+from fides.api.models.messaging_template import MessagingTemplate
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
@@ -80,7 +85,7 @@ from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
-    MessagingServiceType,
+    MessagingServiceType, MessagingActionType,
 )
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
@@ -318,6 +323,88 @@ def set_active_storage_s3(db) -> None:
         },
     )
 
+@pytest.fixture(scope="function")
+def property_a(db: Session) -> Generator:
+    prop_a = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property", type=PropertyType.website, experiences=[]
+        ).dict(),
+    )
+    yield prop_a
+    prop_a.delete(db=db)
+
+@pytest.fixture(scope="function")
+def property_b(db: Session) -> Generator:
+    prop_b = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property b", type=PropertyType.website, experiences=[]
+        ).dict(),
+    )
+    yield prop_b
+    prop_b.delete(db=db)
+
+@pytest.fixture(scope="function")
+def messaging_template_no_property(db: Session) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [],
+        "is_enabled": True,
+        "type": template_type
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+@pytest.fixture(scope="function")
+def messaging_template_subject_identity_verification(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [property_a.id],
+        "is_enabled": True,
+        "type": template_type
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_privacy_request_receipt(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.PRIVACY_REQUEST_RECEIPT
+    content = {
+        "subject": "Your request has been received.",
+        "body": "Stay tuned!",
+    }
+    data = {
+        "content": content,
+        "properties": [property_a.id],
+        "is_enabled": True,
+        "type": template_type
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
 
 @pytest.fixture(scope="function")
 def messaging_config(db: Session) -> Generator:

@@ -508,7 +508,7 @@ def get_messaging_templates(
     """Returns the available messaging templates, augments the models with labels to be used in the UI."""
     return [
         MessagingTemplateResponse(
-            key=template.type,
+            type=template.type,
             content=template.content,
             label=DEFAULT_MESSAGING_TEMPLATES.get(template.type, {}).get("label", None),
         )
@@ -543,7 +543,8 @@ def update_messaging_templates(
             content["body"] = content["body"] or default_template["content"]["body"]
 
             MessagingTemplate.create_or_update(
-                db, data={"type": template_type, "content": content, "is_enabled": False}
+                db,
+                data={"type": template_type, "content": content, "is_enabled": False},
             )
 
             succeeded.append(

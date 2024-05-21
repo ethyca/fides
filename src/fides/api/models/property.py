@@ -263,6 +263,8 @@ class MessagingTemplateToProperty(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "messaging_template_id", "property_id", name="messaging_template_id_property_id"
+            "messaging_template_id",
+            "property_id",
+            name="messaging_template_id_property_id",
         ),
     )

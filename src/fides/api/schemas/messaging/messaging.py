@@ -3,7 +3,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fides.api.schemas.property import Property
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
@@ -13,6 +12,7 @@ from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.property import Property
 
 
 class MessagingMethod(Enum):
@@ -437,7 +437,6 @@ class BulkPutMessagingTemplateResponse(BulkResponse):
 class MessagingTemplateWithPropertiesBase(BaseModel):
     id: Optional[str]  # Since summary returns db or defaults, this can be null
     type: str
-    label: str
     is_enabled: bool
     properties: Optional[List[Property]]
 
@@ -453,6 +452,5 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
     content: Dict[str, Any]
-    property_ids: Optional[List[str]]
+    properties: Optional[List[str]]
     is_enabled: bool
-

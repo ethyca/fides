@@ -4,7 +4,10 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import MessagingConfigNotFoundException, MessagingConfigValidationException
+from fides.api.common_exceptions import (
+    MessagingConfigNotFoundException,
+    MessagingConfigValidationException,
+)
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
@@ -12,7 +15,10 @@ from fides.api.models.messaging_template import (
 )
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
-    MessagingConfigResponse, MessagingTemplateWithPropertiesSummary, MessagingTemplateWithPropertiesDetail,
+    MessagingConfigResponse,
+    MessagingTemplateWithPropertiesSummary,
+    MessagingTemplateWithPropertiesDetail,
+    MessagingTemplateWithPropertiesBodyParams,
 )
 
 
@@ -42,7 +48,6 @@ def create_or_update_messaging_config(
     messaging_config: MessagingConfig = MessagingConfig.create_or_update(
         db=db,
         data=data,
-        is_enabled=False,
     )
     return MessagingConfigResponse(
         name=messaging_config.name,
@@ -101,7 +106,9 @@ def get_all_messaging_templates(db: Session) -> List[MessagingTemplate]:
     return templates
 
 
-def get_messaging_template_by_type(db: Session, template_type: str) -> Optional[MessagingTemplate]:
+def get_messaging_template_by_type(
+    db: Session, template_type: str
+) -> Optional[MessagingTemplate]:
     template = MessagingTemplate.get_by(db, field="type", value=template_type)
 
     # If no template is found in the database, use the default
@@ -112,7 +119,12 @@ def get_messaging_template_by_type(db: Session, template_type: str) -> Optional[
     return template
 
 
-def update_messaging_template(db: Session, template_id: str) -> Optional[MessagingTemplateWithPropertiesDetail]:
+def update_messaging_template(
+    db: Session,
+    template_id: str,
+    template_update_body: MessagingTemplateWithPropertiesBodyParams,
+) -> Optional[MessagingTemplate]:
+    # Updating template type is not allowed once it is created, so we don't intake it here
     logger.info("Finding messaging config with id '{}'", template_id)
     messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
         db, object_id=template_id
@@ -121,18 +133,25 @@ def update_messaging_template(db: Session, template_id: str) -> Optional[Messagi
         raise MessagingConfigNotFoundException(
             f"No messaging template found with id {template_id}"
         )
-    templates_with_same_type_and_property: Optional[MessagingTemplate] = MessagingTemplate.get()
-    # Validate- we already have the same type / property combo in the db
-
-    # validate- any / all property ids are invalid
+    return messaging_template.update(db=db, data=template_update_body.dict())
 
 
-    # validate type is invalid
-
-
-
-def create_messaging_template(db: Session, template_type: str) -> Optional[MessagingTemplateWithPropertiesDetail]:
-
+def create_messaging_template(
+    db: Session,
+    template_type: str,
+    template_create_body: MessagingTemplateWithPropertiesBodyParams,
+) -> Optional[MessagingTemplate]:
+    if template_type not in DEFAULT_MESSAGING_TEMPLATES:
+        raise MessagingConfigValidationException(
+            f"Messaging template type {template_type} is not supported."
+        )
+    data = {
+        "content": template_create_body.content,
+        "properties": template_create_body.properties,
+        "is_enabled": template_create_body.is_enabled,
+        "type": template_type,
+    }
+    return MessagingTemplate.create(db=db, data=data)
 
 
 def delete_template_by_id(db: Session, template_id: str) -> None:
@@ -144,8 +163,11 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
         raise MessagingConfigNotFoundException(
             f"No messaging template found with id {template_id}"
         )
-    other_templates_with_type = MessagingTemplate.get_by(db, field="type", value=messaging_template.type).all()
-    if len(other_templates_with_type) <= 1:
+    other_template_with_type = MessagingTemplate.get_by(
+        db, field="type", value=messaging_template.type
+    )
+    if other_template_with_type:
+        # todo- can this be a DB-level constraint?
         raise MessagingConfigValidationException(
             f"Messaging template with id {template_id} cannot be deleted because it is the only template with type {messaging_template.type}"
         )
@@ -153,16 +175,28 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
     messaging_template.delete(db)
 
 
-def get_template_by_id(db: Session, template_id: str) -> MessagingTemplateWithPropertiesDetail:
-    return MessagingTemplate.get(db, object_id=template_id)
+def get_template_by_id(db: Session, template_id: str) -> MessagingTemplate:
+    messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+        db, object_id=template_id
+    )
+    if not messaging_template:
+        raise MessagingConfigNotFoundException(
+            f"No messaging template found with id {template_id}"
+        )
+    return messaging_template
 
 
-def get_default_template_by_type(template_type: str) -> MessagingTemplateWithPropertiesDetail:
+def get_default_template_by_type(
+    template_type: str,
+) -> MessagingTemplateWithPropertiesDetail:
     default_template = DEFAULT_MESSAGING_TEMPLATES[template_type]
+    if not default_template:
+        raise MessagingConfigValidationException(
+            f"Messaging template type {template_type} is not supported."
+        )
     template = MessagingTemplateWithPropertiesDetail(
         id=None,
         type=template_type,
-        label=default_template["label"],
         content=default_template["content"],
         is_enabled=False,
         properties=[],
@@ -171,18 +205,32 @@ def get_default_template_by_type(template_type: str) -> MessagingTemplateWithPro
 
 
 # TODO: (PROD-2058) if id is None, we know on FE that this does not exist yet in DB
-def get_all_messaging_templates_summary(db: Session) -> Optional[List[MessagingTemplateWithPropertiesSummary]]:
+def get_all_messaging_templates_summary(
+    db: Session,
+) -> Optional[List[MessagingTemplateWithPropertiesSummary]]:
     # Retrieve all templates from the database
     templates_from_db: Dict[str, Any] = {}
     for template in MessagingTemplate.all(db):
         if templates_from_db[template.type]:
-            templates_from_db[template.type].append({"type": template.type, "is_enabled": template.is_enabled, "label": template.label, "properties": template.properties})
+            templates_from_db[template.type].append(
+                {
+                    "type": template.type,
+                    "is_enabled": template.is_enabled,
+                    "properties": template.properties,
+                }
+            )
         else:
-            templates_from_db[template.type] = [{"type": template.type, "is_enabled": template.is_enabled, "label": template.label, "properties": template.properties}]
+            templates_from_db[template.type] = [
+                {
+                    "type": template.type,
+                    "is_enabled": template.is_enabled,
+                    "properties": template.properties,
+                }
+            ]
 
     # Create a list of MessagingTemplate models, using defaults if a key is not found in the database
     templates = []
-    for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
+    for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():  # pylint: disable=W0612
         # insert type key, see if there are any matches with DB, else use defaults
         db_template = templates_from_db[template_type]
         if db_template:
@@ -191,8 +239,7 @@ def get_all_messaging_templates_summary(db: Session) -> Optional[List[MessagingT
                     id=db_template["id"],
                     type=template_type,
                     is_enabled=db_template["is_enabled"],
-                    label=db_template["label"],
-                    properties=db_template["properties"]
+                    properties=db_template["properties"],
                 )
             )
         else:
@@ -201,7 +248,6 @@ def get_all_messaging_templates_summary(db: Session) -> Optional[List[MessagingT
                     id=None,
                     type=template_type,
                     is_enabled=False,
-                    label=default_template["label"],
                     properties=[],
                 )
             )

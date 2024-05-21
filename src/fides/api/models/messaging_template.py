@@ -80,11 +80,11 @@ class MessagingTemplate(Base):
 
     @classmethod
     def create(
-            cls: Type[MessagingTemplate],
-            db: Session,
-            *,
-            data: dict[str, Any],
-            check_name: bool = False,
+        cls: Type[MessagingTemplate],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,
     ) -> MessagingTemplate:
         """
         Creates a Messaging Template, allows linking properties
@@ -110,19 +110,18 @@ class MessagingTemplate(Base):
 
 
 def link_properties_to_messaging_template(
-        db: Session,
-        properties: List[Dict[str, Any]],
-        messaging_template: MessagingTemplate,
+    db: Session,
+    properties: List[Dict[str, Any]],
+    messaging_template: MessagingTemplate,
 ) -> List[Property]:
     """
     Link supplied properties to MessagingTemplate and unlink any properties not supplied.
     """
     new_properties = (
         db.query(Property)
-            .filter(Property.id.in_([prop["id"] for prop in properties]))
-            .all()
+        .filter(Property.id.in_([prop["id"] for prop in properties]))
+        .all()
     )
     messaging_template.properties = new_properties
     messaging_template.save(db)
     return messaging_template.properties
-

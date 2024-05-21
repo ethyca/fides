@@ -153,7 +153,9 @@ def dispatch_message(
     message: Optional[Union[EmailForActionType, str]] = None
 
     logger.info("Getting custom messaging template for action type: {}", action_type)
-    messaging_template = get_messaging_template_by_type(db=db, template_type=action_type.value)
+    messaging_template = get_messaging_template_by_type(
+        db=db, template_type=action_type.value
+    )
 
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
