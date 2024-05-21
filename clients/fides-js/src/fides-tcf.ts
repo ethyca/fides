@@ -45,6 +45,7 @@ import {
   updateExperienceFromCookieConsentTcf,
 } from "./lib/tcf/utils";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { raise } from "./lib/common-utils";
 
 declare global {
   interface Window {
@@ -100,18 +101,13 @@ const updateExperience = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-async function init(this: FidesGlobal, config?: FidesConfig) {
+async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // confused by the "this"? see https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function
 
-  if (!config && !this.config) {
-    throw new Error("Fides must be initialized with a configuration object");
-  }
-  if (!config) {
-    // eslint-disable-next-line no-param-reassign
-    config = this.config as FidesConfig;
-  } else if (!this.config) {
-    this.config = config;
-  }
+  // Initialize Fides with the global configuration object if it exists, or the provided one. If neither exists, raise an error.
+  let config =
+    (this.config ??= providedConfig) ??
+    raise("Fides must be initialized with a configuration object");
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
