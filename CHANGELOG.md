@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
 - Added shouldShowExperience to the Fides global and FidesInitialized events [#4895](https://github.com/ethyca/fides/pull/4895)
+- Enhancements to `MonitorConfig` DB model to support new functionality [#4888](https://github.com/ethyca/fides/pull/4888)
+- Adding property ID to served notice history and privacy preference history [#4886](https://github.com/ethyca/fides/pull/4886)
+- Adding privacy_center_config and stylesheet fields to the Property model [#4879](https://github.com/ethyca/fides/pull/4879)
 
 ### Changed
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
@@ -33,6 +36,7 @@ The types of changes are:
 - Enhanced classification of the dataset used with Twilio [#4872](https://github.com/ethyca/fides/pull/4872)
 - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB [#4878](https://github.com/ethyca/fides/pull/4878)
 - Fixed an issue where sourcemaps references were unintentionally included in the FidesJS bundle [#4887](https://github.com/ethyca/fides/pull/4887)
+
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 

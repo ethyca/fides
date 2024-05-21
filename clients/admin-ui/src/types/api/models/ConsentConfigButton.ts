@@ -8,17 +8,17 @@ import type { IdentityInputs } from "./IdentityInputs";
 /**
  * A base template for all other Fides Schemas to inherit from.
  */
-export type PrivacyRequestOption = {
-  policy_key: string;
-  icon_path: string;
-  title: string;
+export type ConsentConfigButton = {
   description: string;
   description_subtext?: Array<string>;
   confirmButtonText?: string;
   cancelButtonText?: string;
-  identity_inputs?: IdentityInputs;
+  icon_path: string;
+  identity_inputs: IdentityInputs;
   custom_privacy_request_fields?: Record<
     string,
     fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
   >;
+  title: string;
+  modalTitle?: string;
 };
