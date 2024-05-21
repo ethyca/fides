@@ -291,8 +291,9 @@ export default async function handler(
     isTestMode // let end-to-end tests set the config and initialize as needed
       ? ""
       : `
+    var fidesConfig = ${fidesConfigJSON};
     window.Fides.config = ${fidesConfigJSON};
-    ${skipInitialization ? "" : `window.Fides.init(window.Fides.config);`}
+    ${skipInitialization ? "" : `window.Fides.init(fidesConfig);`}
     ${
       environment.settings.DEBUG && skipInitialization
         ? `console.log("fides.js initialization skipped. Call window.Fides.init() manually.");`
