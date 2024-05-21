@@ -1,7 +1,7 @@
 """add property config and css
 
 Revision ID: 0debabbb9c6a
-Revises: fc2b2c06e595
+Revises: 4fba24045fec
 Create Date: 2024-05-06 16:45:45.958888
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "0debabbb9c6a"
-down_revision = "ad0109b041b3"
+down_revision = "4fba24045fec"
 branch_labels = None
 depends_on = None
 
