@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import pytest
 from sqlalchemy.orm import Session
@@ -21,20 +21,6 @@ class TestProperty:
                 load_as_string("tests/ops/resources/privacy_center_config.json")
             )
         )
-
-    @pytest.fixture(scope="function")
-    def property_a(self, db) -> Generator:
-        prop_a = Property.create(
-            db=db,
-            data=PropertySchema(
-                name="New Property",
-                type=PropertyType.website,
-                experiences=[],
-                paths=["test"],
-            ).dict(),
-        )
-        yield prop_a
-        prop_a.delete(db=db)
 
     @pytest.fixture(scope="function")
     def minimal_experience(

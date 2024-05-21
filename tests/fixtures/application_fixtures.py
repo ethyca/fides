@@ -64,6 +64,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     RequestTask,
 )
+from fides.api.models.property import Property
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
@@ -81,6 +82,8 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
 )
+from fides.api.schemas.property import Property as PropertySchema
+from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.storage.storage import (
     FileNaming,
@@ -3245,3 +3248,15 @@ def postgres_and_mongo_dataset_graph(
     dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_connection_config.key)
     return DatasetGraph(*[graph, mongo_graph])
+
+
+@pytest.fixture(scope="function")
+def property_a(db) -> Generator:
+    prop_a = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property", type=PropertyType.website, experiences=[], paths=["test"]
+        ).dict(),
+    )
+    yield prop_a
+    prop_a.delete(db=db)
