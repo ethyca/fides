@@ -1497,15 +1497,44 @@ describe("Consent overlay", () => {
         });
       });
 
-      it("shows the modal link", () => {
-        cy.get("#fides-modal-link").should("be.visible");
-      });
+      describe("modal link", () => {
+        it("is visible", () => {
+          cy.get("#fides-modal-link").should("be.visible");
+        });
 
-      describe("modal link click", () => {
-        it("should open modal", () => {
+        it("opens modal when clicked", () => {
           cy.get("#fides-modal-link").should("be.visible").click();
           cy.getByTestId("consent-modal").should("be.visible");
         });
+
+        it(
+          "gets binded to the click handler even after a delay in appearing in the DOM",
+          { defaultCommandTimeout: 200 },
+          () => {
+            const delay = 1000;
+            cy.on("window:before:load", (win: { render_delay: number }) => {
+              // eslint-disable-next-line no-param-reassign
+              win.render_delay = delay;
+            });
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+              (config) => {
+                stubConfig({
+                  experience: {
+                    experience_config: {
+                      ...config.experience.experience_config,
+                      ...{ component: ComponentType.MODAL },
+                    },
+                  },
+                });
+              }
+            );
+            cy.get("#fides-modal-link").should("not.exist");
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(delay); // wait until delay is over
+            cy.get("#fides-modal-link").should("be.visible").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+          }
+        );
       });
     });
 
