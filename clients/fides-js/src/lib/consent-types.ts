@@ -143,7 +143,7 @@ export interface FidesGlobal extends Fides {
   saved_consent: NoticeConsent;
   tcf_consent: TcfOtherConsent;
   gtm: typeof gtm;
-  init: (config: FidesConfig) => Promise<void>;
+  init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;

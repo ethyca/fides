@@ -250,20 +250,35 @@ Enabling the GTM integration in your site's `<head>`:
 
 ### init()
 
-> **init**: (`config`) => `Promise`\<`void`\>
+> **init**: (`config`?) => `Promise`\<`void`\>
 
 Initializes FidesJS with an initial configuration object.
 
-NOTE: In most cases, you should never have to call this directly, since
+In most cases, you should never have to call this directly, since
 Fides Cloud will automatically bundle a `Fides.init(...)` call server-side
 with the appropriate configuration options for the user's session based on
 their location, property ID, and the matching experience config from Fides.
+
+However, initialization can be called manually if needed - for example to delay
+initialization until after your own custom JavaScript has run to set up some
+config options. In this case, you can disable the automatic initialization
+by including the query param `initialize=false` in the Fides script URL
+(see /docs/dev-docs/js/privacy-center-fidesjs-hosting for details).
+You will then need to call `Fides.init()` manually at the appropriate time.
+
+This function can also be used to reinitialize FidesJS. This is useful when
+you're working on a single page application (SPA) and you want to modify any
+FidesJS options after initialization - for example, switching between
+regular/embedded mode with `fides_embed`, overriding the user's language with
+`fides_locale`, etc. Doing so without passing a config will reinitialize
+FidesJS with the initial configuration, but taking into account any new overrides
+such as the `fides_overrides` global or the query params.
 
 #### Parameters
 
 | Parameter | Type |
 | :------ | :------ |
-| `config` | `any` |
+| `config`? | `any` |
 
 #### Returns
 
@@ -271,17 +286,13 @@ their location, property ID, and the matching experience config from Fides.
 
 ***
 
-### reinitialize()
+### ~~reinitialize()~~
 
 > **reinitialize**: () => `Promise`\<`void`\>
 
-Reinitialize FidesJS with the initial configuration, but taking into account
-any new overrides such as the `fides_overrides` global or the query params.
+#### Deprecated
 
-This is useful when you're working on a single page application (SPA) and you
-want to modify any FidesJS options after initialization - for example,
-switching between regular/embedded mode with `fides_embed`, overriding the
-user's language with `fides_locale`, etc.
+`Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
 
 #### Returns
 

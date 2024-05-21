@@ -2479,7 +2479,7 @@ describe("Consent overlay", () => {
 
       // Call reinitialize() without making any changes
       cy.window().then((win) => {
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should re-initialize and re-show the banner
@@ -2508,7 +2508,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: false,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize again, in embedded mode this time
@@ -2527,7 +2527,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: true,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize once again, without any banners
@@ -2536,6 +2536,37 @@ describe("Consent overlay", () => {
         cy.get("#fides-overlay .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("exist");
+      });
+    });
+  });
+
+  describe("when initialization has been disabled by the developer", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { initialize: "false" },
+      });
+      cy.window().then((win) => {
+        win.addEventListener(
+          "FidesInitialized",
+          cy.stub().as("FidesInitialized")
+        );
+      });
+    });
+    it("does not trigger any side-effects (like banners displaying, events firing, etc.)", () => {
+      cy.window().then((win) => {
+        assert.isTrue(!!win.Fides.config);
+        assert.isFalse(win.Fides.initialized);
+      });
+      cy.get("@FidesInitialized").should("not.have.been.called");
+      cy.get("#fides-overlay .fides-banner").should("not.exist");
+    });
+    it("can still be initialized manually by the developer after adjusting settings", () => {
+      cy.window().then((win) => {
+        win.Fides.init().then(() => {
+          assert.isTrue(win.Fides.initialized);
+        });
       });
     });
   });
