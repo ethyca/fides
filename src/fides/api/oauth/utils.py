@@ -218,7 +218,9 @@ async def verify_oauth_client(
     if not has_permissions(
         token_data=token_data, client=client, endpoint_scopes=security_scopes
     ):
-        raise AuthorizationError(detail="Not Authorized for this action")
+        raise AuthorizationError(
+            detail=f"Not Authorized for this action. Missing required scope(s): {security_scopes}"
+        )
 
     return client
 
