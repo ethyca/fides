@@ -883,16 +883,13 @@ class TestAsyncConnectors:
         )
 
         # Raw access data returned if this was supplied to callback endpoint
-        request_task.access_data = json.dumps(
-            [
-                {
-                    "id": "71",
-                    "system_id": "58f338f0-6d75-4803-bbcd-01b94de7f0d6",
-                    "state": "TX",
-                }
-            ],
-            cls=CustomJSONEncoder,
-        )
+        request_task.access_data = [
+            {
+                "id": "71",
+                "system_id": "58f338f0-6d75-4803-bbcd-01b94de7f0d6",
+                "state": "TX",
+            }
+        ]
         request_task.save(db)
         assert connector.retrieve_data(
             execution_node, privacy_request.policy, privacy_request, request_task, {}

@@ -2121,9 +2121,7 @@ def request_task_async_callback(
         # If access data should be added to results package, it should be
         # supplied in request body as a list of rows.  This data will be further filtered
         # by the policy before uploading to the end user
-        request_task.access_data = json.dumps(
-            data.access_results or [], cls=CustomJSONEncoder
-        )
+        request_task.access_data = data.access_results or []
     if data.rows_masked and request_task.action_type == ActionType.erasure:
         # For erasure requests, rows masked can be supplied here.
         request_task.rows_masked = data.rows_masked
