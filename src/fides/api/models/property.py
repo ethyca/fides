@@ -106,6 +106,11 @@ class Property(Base):
                 f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
             )
 
+        # Ensure that there is at least 1 default. Relevant for new Fides users who have no properties at all.
+        has_default_property = Property.get_by(db=db, field="is_default", value=True)
+        if not has_default_property:
+            data["is_default"] = True
+
         prop: Property = super().create(db=db, data=data, check_name=check_name)
         link_experience_configs_to_property(
             db, experience_configs=experiences, prop=prop
@@ -133,6 +138,11 @@ class Property(Base):
             raise ValueError(
                 f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
             )
+
+        # Ensure that there is at least 1 default. Relevent if we somehow reach a state where there is no defualt property
+        has_default_property = Property.get_by(db=db, field="is_default", value=True)
+        if not has_default_property:
+            data["is_default"] = True
 
         super().update(db=db, data=data)
         link_experience_configs_to_property(

@@ -49,11 +49,35 @@ class TestProperty:
         assert prop.privacy_center_config == privacy_center_config
         assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
         assert prop.paths == ["test"]
+        assert prop.is_default is True
         assert len(prop.experiences) == 1
 
         experience = prop.experiences[0]
         assert experience.id == minimal_experience["id"]
         assert experience.name == minimal_experience["name"]
+
+        prop.delete(db)
+
+    def test_create_second_property(self, db, privacy_center_config, property_a):
+        prop = Property.create(
+            db=db,
+            data=PropertySchema(
+                name="New Property",
+                type=PropertyType.website,
+                experiences=[],
+                privacy_center_config=privacy_center_config,
+                stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
+                paths=["testing"],
+            ).dict(),
+        )
+        assert prop.name == "New Property"
+        assert prop.type == PropertyType.website
+        assert prop.id.startswith("FDS")
+        assert prop.privacy_center_config == privacy_center_config
+        assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
+        assert prop.paths == ["test"]
+        assert prop.is_default is False
+        assert len(prop.experiences) == 1
 
         prop.delete(db)
 
