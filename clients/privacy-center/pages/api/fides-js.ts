@@ -171,6 +171,7 @@ export default async function handler(
   // in production. They allow for the config to be injected by the test framework
   // and delay the initialization of fides.js until the test framework is ready.
   const { e2e: e2eQuery, tcf: tcfQuery } = req.query;
+  const isTestMode = e2eQuery === "true";
 
   // We determine server-side whether or not to send the TCF bundle, which is based
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
@@ -263,7 +264,9 @@ export default async function handler(
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
+  // Check if the client wants to skip initialization of fides.js to allow for manual initialization
   const { initialize: initializeQuery } = req.query;
+  const skipInitialization = initializeQuery === "false";
 
   const script = `
   (function () {
@@ -285,20 +288,14 @@ export default async function handler(
     `
       : ""
   }${
-    e2eQuery === "true" // let Cypress set the config and initialize fides.js
+    isTestMode // let end-to-end tests set the config and initialize as needed
       ? ""
       : `
-    var fidesConfig = ${fidesConfigJSON};
+    window.Fides.config = ${fidesConfigJSON};
+    ${skipInitialization ? "" : `window.Fides.init(window.Fides.config);`}
     ${
-      initializeQuery === "false"
-        ? `// Capture the base config for later initialization
-        window.Fides.config = fidesConfig;`
-        : `// Initialize fides.js with custom config
-        window.Fides.init(fidesConfig);`
-    }
-    ${
-      environment.settings.DEBUG && initializeQuery === "false"
-        ? `console.log("fides.js initialization skipped. Call window.Fides.init() when ready.");`
+      environment.settings.DEBUG && skipInitialization
+        ? `console.log("fides.js initialization skipped. Call window.Fides.init() manually.");`
         : ""
     }`
   }
