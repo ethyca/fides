@@ -22,6 +22,8 @@ The types of changes are:
 - Enhancements to `MonitorConfig` DB model to support new functionality [#4888](https://github.com/ethyca/fides/pull/4888)
 - Adding property ID to served notice history and privacy preference history [#4886](https://github.com/ethyca/fides/pull/4886)
 - Adding privacy_center_config and stylesheet fields to the Property model [#4879](https://github.com/ethyca/fides/pull/4879)
+- Adds generic async callback integration support [#4865](https://github.com/ethyca/fides/pull/4865) 
+
 
 ### Changed
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
@@ -47,7 +49,6 @@ The types of changes are:
 - Added custom JSON (de)serialization to shared DB engines to handle non-standard data types in JSONB columns [#4818](https://github.com/ethyca/fides/pull/4818)
 - Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
 - Removed currentprivacypreference and lastservednotice tables [#4846](https://github.com/ethyca/fides/pull/4846)
-- Adds generic async callback integration support [#4865](https://github.com/ethyca/fides/pull/4865) 
 
 ### Changed
 - Changed filters on the data map report table to use checkbox collapsible tree view [#4864](https://github.com/ethyca/fides/pull/4864)
