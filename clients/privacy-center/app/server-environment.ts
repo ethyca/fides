@@ -107,6 +107,7 @@ export interface PrivacyCenterEnvironment {
   settings: PrivacyCenterClientSettings;
   config?: Config;
   styles?: Styles;
+  property?: Property;
 }
 
 /**
@@ -419,7 +420,7 @@ export const loadPrivacyCenterEnvironment = async ({
   // Load environment variables
   const settings = loadEnvironmentVariables();
 
-  let property = null;
+  let property;
   if (settings.CUSTOM_PROPERTIES && pathname) {
     const result = await getPropertyFromUrl({
       pathname,
@@ -494,5 +495,6 @@ export const loadPrivacyCenterEnvironment = async ({
     settings: clientSettings,
     config,
     styles,
+    property,
   };
 };

@@ -23,6 +23,7 @@ import theme from "~/theme";
 import { I18nProvider } from "~/common/i18nContext";
 import { FidesUIProvider } from "fidesui";
 import getPathFromRawUrl from "~/common/getPathFromRawUrl";
+import { loadProperty } from "~/features/common/property.slice";
 
 interface PrivacyCenterProps {
   serverEnvironment?: PrivacyCenterEnvironment;
@@ -87,6 +88,7 @@ const PrivacyCenterApp = ({
       store.dispatch(loadSettings(serverEnvironment.settings));
       store.dispatch(loadConfig(serverEnvironment.config));
       store.dispatch(loadStyles(serverEnvironment.styles));
+      store.dispatch(loadProperty(serverEnvironment.property));
     }
   }, [serverEnvironment]);
   return (
