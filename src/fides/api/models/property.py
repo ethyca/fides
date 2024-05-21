@@ -13,7 +13,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
-from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
 from fides.api.schemas.property import PropertyType
@@ -80,7 +79,7 @@ class Property(Base):
             db=db, conditions=(PropertyPath.path.in_(paths))
         ).all()
         if matching_paths:
-            raise KeyOrNameAlreadyExists(
+            raise ValueError(
                 f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
             )
 
@@ -108,7 +107,7 @@ class Property(Base):
             .all()
         )
         if matching_paths:
-            raise KeyOrNameAlreadyExists(
+            raise ValueError(
                 f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
             )
 

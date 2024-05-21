@@ -48,6 +48,7 @@ class CustomPrivacyRequestField(FidesSchema):
             raise ValueError("default_value is required when hidden is True")
         return values
 
+
 class PrivacyRequestOption(FidesSchema):
     policy_key: str
     icon_path: str
@@ -58,6 +59,7 @@ class PrivacyRequestOption(FidesSchema):
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText")
     identity_inputs: Optional[IdentityInputs] = None
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+
 
 class ConsentConfigButton(FidesSchema):
     description: str
@@ -70,9 +72,11 @@ class ConsentConfigButton(FidesSchema):
     title: str
     modal_title: Optional[str] = Field(alias="modalTitle")
 
+
 class ConditionalValue(FidesSchema):
     value: bool
     global_privacy_control: bool = Field(alias="globalPrivacyControl")
+
 
 class ConfigConsentOption(FidesSchema):
     cookie_keys: List[str] = Field([], alias="cookieKeys")
@@ -83,6 +87,7 @@ class ConfigConsentOption(FidesSchema):
     name: str
     url: str
     executable: Optional[bool]
+
 
 class ConsentConfigPage(FidesSchema):
     consent_options: List[ConfigConsentOption] = Field([], alias="consentOptions")

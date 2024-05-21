@@ -72,7 +72,7 @@ class TestProperty:
             ).dict(),
         )
 
-        with pytest.raises(KeyOrNameAlreadyExists):
+        with pytest.raises(ValueError):
             Property.create(
                 db=db,
                 data=PropertySchema(
@@ -151,7 +151,7 @@ class TestProperty:
             ).dict(),
         )
 
-        with pytest.raises(KeyOrNameAlreadyExists):
+        with pytest.raises(ValueError):
             second_prop.update(db=db, data={"paths": ["test"]})
 
         first_prop.delete(db)
