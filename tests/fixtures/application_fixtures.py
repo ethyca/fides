@@ -324,11 +324,14 @@ def set_active_storage_s3(db) -> None:
     )
 
 @pytest.fixture(scope="function")
-def property_a(db: Session) -> Generator:
+def property_a(db) -> Generator:
     prop_a = Property.create(
         db=db,
         data=PropertySchema(
-            name="New Property", type=PropertyType.website, experiences=[]
+            name="New Property",
+            type=PropertyType.website,
+            experiences=[],
+            paths=["test"],
         ).dict(),
     )
     yield prop_a
@@ -3360,17 +3363,3 @@ def postgres_and_mongo_dataset_graph(
     mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_connection_config.key)
     return DatasetGraph(*[graph, mongo_graph])
 
-
-@pytest.fixture(scope="function")
-def property_a(db) -> Generator:
-    prop_a = Property.create(
-        db=db,
-        data=PropertySchema(
-            name="New Property",
-            type=PropertyType.website,
-            experiences=[],
-            paths=["test"],
-        ).dict(),
-    )
-    yield prop_a
-    prop_a.delete(db=db)
