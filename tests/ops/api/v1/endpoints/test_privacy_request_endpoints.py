@@ -5687,8 +5687,10 @@ class TestPrivacyRequestTasksList:
 
         assert root_response["upstream_tasks"] == []
         assert root_response["downstream_tasks"] == ["test_dataset:test_collection"]
-        assert root_response["status"] == "awaiting_processing"
+        assert root_response["status"] == "complete"
         assert root_response["action_type"] == "access"
+
+        assert resp[1]["status"] == "awaiting_processing"
 
         # No DSR data is returned in the response
         assert set(root_response.keys()) == {
