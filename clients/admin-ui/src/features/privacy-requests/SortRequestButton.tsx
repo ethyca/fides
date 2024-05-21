@@ -1,4 +1,4 @@
-import { Flex, IconButton, SortArrowIcon } from "@fidesui/react";
+import { Flex, IconButton, SortArrowIcon } from "fidesui";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 

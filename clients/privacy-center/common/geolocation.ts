@@ -1,11 +1,18 @@
 import type { NextApiRequest } from "next";
 import { UserGeolocation } from "fides-js";
 
-// Regex to validate an ISO-3166 location string, which must:
-// 1) Start with a 2-3 letter country code (e.g. "US", "USA", "EEA")
-// 2) Optionally end with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X")
-// 3) Separated by a dash (e.g. "US-CA")
-const VALID_ISO_3166_LOCATION_REGEX = /^[a-z]{2,3}(-[a-z0-9]{1,3})?$/i;
+/**
+ * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:
+ * 1. Starts with a 2 letter country code (e.g. "US", "GB") (see [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
+ * 2. (Optional) Ends with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X") (see [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2))
+ * 3. Country & region codes must be separated by a hyphen (e.g. "US-CA")
+ *
+ * Fides also supports a special `EEA` geolocation code to denote the European
+ * Economic Area; this is not part of ISO 3166-2, but is supported for
+ * convenience.
+ */
+const VALID_ISO_3166_LOCATION_REGEX =
+  /^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$/i;
 
 // Regex to validate a standalone ISO-3166-2 region code, which must be a 1-3
 // alphanumeric character region code (e.g. "CA", "123", "X")
@@ -34,10 +41,13 @@ export const lookupGeolocation = async (
 ): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
-  if (
-    typeof geolocationQuery === "string" &&
-    VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)
-  ) {
+  if (typeof geolocationQuery === "string") {
+    if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
+      throw new Error(
+        `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`
+      );
+    }
+
     const [country, region] = geolocationQuery.split("-");
     return {
       location: geolocationQuery,

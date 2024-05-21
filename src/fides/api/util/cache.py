@@ -1,10 +1,7 @@
 import json
-from datetime import date, datetime
-from enum import Enum
 from typing import Any, Dict, List, Optional, Union
-from urllib.parse import quote, unquote_to_bytes
+from urllib.parse import unquote_to_bytes
 
-from bson.objectid import ObjectId
 from loguru import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
@@ -14,6 +11,7 @@ from redis.exceptions import DataError
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.tasks import celery_app
+from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
@@ -21,48 +19,6 @@ from fides.config import CONFIG
 RedisValue = Union[bytes, float, int, str]
 
 _connection = None
-
-ENCODED_BYTES_PREFIX = "quote_encoded_"
-ENCODED_DATE_PREFIX = "date_encoded_"
-ENCODED_MONGO_OBJECT_ID_PREFIX = "encoded_object_id_"
-
-
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:  # pylint: disable=too-many-return-statements
-        if isinstance(o, Enum):
-            return o.value
-        if isinstance(o, bytes):
-            return f"{ENCODED_BYTES_PREFIX}{quote(o)}"
-        if isinstance(o, (datetime, date)):
-            return f"{ENCODED_DATE_PREFIX}{o.isoformat()}"
-        if isinstance(o, ObjectId):
-            return f"{ENCODED_MONGO_OBJECT_ID_PREFIX}{str(o)}"
-        if isinstance(o, object):
-            if hasattr(o, "__dict__"):
-                return o.__dict__
-            if not isinstance(o, int) and not isinstance(o, float):
-                return str(o)
-
-        # It doesn't seem possible to make it here, but I'm leaving in as a fail safe
-        # just in case.
-        return super().default(o)  # pragma: no cover
-
-
-def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
-    for k, v in json_dict.items():
-        if isinstance(v, str):
-            # The mongodb objectids couldn't be directly json encoded so they are converted
-            # to strings and prefixed with encoded_object_id in order to find during decodeint.
-            if v.startswith(ENCODED_MONGO_OBJECT_ID_PREFIX):
-                json_dict[k] = ObjectId(v[18:])
-            if v.startswith(ENCODED_DATE_PREFIX):
-                json_dict[k] = datetime.fromisoformat(v[13:])
-            # The bytes from secrets couldn't be directly json encoded so it is url
-            # encode and prefixed with quite_encoded in order to find during decodeint.
-            elif v.startswith(ENCODED_BYTES_PREFIX):
-                json_dict[k] = unquote_to_bytes(v)[14:]
-
-    return json_dict
 
 
 class FidesopsRedis(Redis):

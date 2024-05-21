@@ -1,4 +1,4 @@
-import { Box, Button, Heading, Stack, Text } from "@fidesui/react";
+import { Box, Button, Heading, Stack, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 

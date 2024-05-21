@@ -8,7 +8,7 @@ import {
   Stack,
   Text,
   ExternalLinkIcon,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { GpcStatus } from "fides-js";
 import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";

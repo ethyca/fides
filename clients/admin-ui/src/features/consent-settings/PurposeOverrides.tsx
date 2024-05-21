@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from "@fidesui/react";
+import { Box, Flex, Text } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { ChangeEvent, FC } from "react";
 

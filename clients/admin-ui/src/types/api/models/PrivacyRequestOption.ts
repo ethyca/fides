@@ -10,7 +10,12 @@ import type { IdentityInputs } from "./IdentityInputs";
  */
 export type PrivacyRequestOption = {
   policy_key: string;
+  icon_path: string;
   title: string;
+  description: string;
+  description_subtext?: Array<string>;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
   custom_privacy_request_fields?: Record<
     string,

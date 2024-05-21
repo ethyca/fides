@@ -6,7 +6,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-} from "@fidesui/react";
+} from "fidesui";
 
 type DataUseFormModalProps = {
   isOpen: boolean;

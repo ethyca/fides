@@ -1,3 +1,5 @@
+import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
+import PIIToggle from "common/PIIToggle";
 import {
   Button,
   CloseSolidIcon,
@@ -11,9 +13,7 @@ import {
   Stack,
   Text,
   useToast,
-} from "@fidesui/react";
-import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
-import PIIToggle from "common/PIIToggle";
+} from "fidesui";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 

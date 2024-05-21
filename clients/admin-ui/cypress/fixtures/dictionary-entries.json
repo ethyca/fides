@@ -176,7 +176,8 @@
       "domains": null,
       "logo": null,
       "gvl_version": "3",
-      "cookies": []
+      "cookies": [],
+      "vendor_deleted_date": "2022-06-08T00:00:00+00:00"
     },
     {
       "fides_key": null,

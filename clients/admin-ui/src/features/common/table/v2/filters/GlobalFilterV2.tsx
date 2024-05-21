@@ -1,6 +1,6 @@
-import { Box } from "@fidesui/react";
 import SearchBar from "common/SearchBar";
 import { debounce } from "common/utils";
+import { Box } from "fidesui";
 import { useMemo, useState } from "react";
 
 type GlobalFilterProps = {
@@ -36,6 +36,7 @@ export const GlobalFilterV2 = ({
         onClear={onClear}
         search={value || ""}
         placeholder={placeholder}
+        data-testid="global-text-filter"
       />
     </Box>
   );

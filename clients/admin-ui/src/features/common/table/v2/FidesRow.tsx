@@ -1,5 +1,5 @@
-import { Tooltip, Tr } from "@fidesui/react";
 import { Row } from "@tanstack/react-table";
+import { Tooltip, Tr } from "fidesui";
 
 import { FidesCell } from "~/features/common/table/v2/FidesCell";
 

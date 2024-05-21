@@ -1,4 +1,4 @@
-import { Flex, IconButton, Text } from "@fidesui/react";
+import { Flex, IconButton, Text } from "fidesui";
 import * as React from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";

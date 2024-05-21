@@ -1,4 +1,4 @@
-import { Center, Spinner } from "@fidesui/react";
+import { Center, Spinner } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 

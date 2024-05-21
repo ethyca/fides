@@ -1,13 +1,13 @@
-import { ConfirmationModal } from "@fidesui/components";
+import { useAlert } from "common/hooks/useAlert";
 import {
   Button,
   ButtonGroup,
+  ConfirmationModal,
   Flex,
   Text,
   useDisclosure,
   VStack,
-} from "@fidesui/react";
-import { useAlert } from "common/hooks/useAlert";
+} from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import React, { useRef, useState } from "react";
 

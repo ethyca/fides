@@ -1,4 +1,4 @@
-import { Flex } from "@fidesui/react";
+import { Flex } from "fidesui";
 import * as React from "react";
 
 import Layout from "~/features/common/Layout";

@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
 import copy
-import json
 import traceback
 from abc import ABC
 from functools import wraps
@@ -50,7 +49,7 @@ from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.cache import CustomJSONEncoder, get_cache
+from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
     NodeInput,
     Row,
@@ -520,9 +519,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # on the Request Task.
         # Results saved with matching array elements preserved
         if self.request_task.id:
-            self.request_task.data_for_erasures = json.dumps(
-                placeholder_output, cls=CustomJSONEncoder
-            )
+            self.request_task.data_for_erasures = placeholder_output
 
         # TODO Remove when we stop support for DSR 2.0
         # Save data to build masking requests for DSR 2.0 in Redis.
@@ -541,7 +538,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         if self.request_task.id:
             # Saves intermediate access results for DSR 3.0 directly on the Request Task
-            self.request_task.access_data = json.dumps(output, cls=CustomJSONEncoder)
+            self.request_task.access_data = output
 
         # TODO Remove when we stop support for DSR 2.0
         # Saves intermediate access results for DSR 2.0 in Redis

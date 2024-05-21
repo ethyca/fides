@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 from __future__ import annotations
 
 import random
@@ -5,8 +6,11 @@ import string
 from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String, Text, and_
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
@@ -43,6 +47,15 @@ class Property(Base):
     )
     name = Column(String, nullable=False, unique=True)
     type = Column(EnumColumn(PropertyType), nullable=False)
+    privacy_center_config = Column(MutableDict.as_mutable(JSONB), nullable=True)
+    stylesheet = Column(Text, nullable=True)
+
+    _property_paths: RelationshipProperty[List[PropertyPath]] = relationship(
+        "PropertyPath",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    paths: List[str] = association_proxy("_property_paths", "path")
 
     experiences: RelationshipProperty[List[PrivacyExperienceConfig]] = relationship(
         "PrivacyExperienceConfig",
@@ -60,19 +73,80 @@ class Property(Base):
         check_name: bool = True,
     ) -> Property:
         experiences = data.pop("experiences", [])
+        paths = data.pop("paths", None) or []
+
+        matching_paths = PropertyPath.filter(
+            db=db, conditions=(PropertyPath.path.in_(paths))
+        ).all()
+        if matching_paths:
+            raise ValueError(
+                f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
+            )
+
         prop: Property = super().create(db=db, data=data, check_name=check_name)
         link_experience_configs_to_property(
             db, experience_configs=experiences, prop=prop
         )
-        return prop
+
+        property_paths = [
+            PropertyPath(property_id=prop.id, path=path) for path in set(paths)  # type: ignore
+        ]
+        prop._property_paths = property_paths
+
+        return cls.persist_obj(db, prop)
 
     def update(self, db: Session, *, data: Dict[str, Any]) -> Property:
         experiences = data.pop("experiences", [])
+        paths = data.pop("paths", None) or []
+
+        matching_paths = (
+            db.query(PropertyPath)
+            .filter(
+                and_(PropertyPath.path.in_(paths), PropertyPath.property_id != self.id)
+            )
+            .all()
+        )
+        if matching_paths:
+            raise ValueError(
+                f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
+            )
+
         super().update(db=db, data=data)
         link_experience_configs_to_property(
             db, experience_configs=experiences, prop=self
         )
+
+        existing_paths = {path.path: path for path in self._property_paths}
+        updated_paths = set(paths)
+
+        # delete PropertyPath instances that are not in the updated paths
+        for path in set(existing_paths.keys()) - updated_paths:
+            db.delete(existing_paths[path])
+
+        # create new PropertyPath instances for paths that don't exist
+        for path in updated_paths - set(existing_paths.keys()):
+            self._property_paths.append(PropertyPath(property_id=self.id, path=path))
+
+        self.save(db)
         return self
+
+
+class PropertyPath(Base):
+    """Table mapping url paths to properties"""
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "plus_property_path"
+
+    property_id = Column(
+        String,
+        ForeignKey("plus_property.id"),
+        index=True,
+        nullable=False,
+        primary_key=True,
+        unique=False,
+    )
+    path = Column(String, index=True, nullable=False, unique=True)
 
 
 class PrivacyExperienceConfigProperty(Base):

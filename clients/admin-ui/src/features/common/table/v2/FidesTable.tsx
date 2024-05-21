@@ -1,4 +1,11 @@
 import {
+  flexRender,
+  Header,
+  Row,
+  RowData,
+  Table as TableInstance,
+} from "@tanstack/react-table";
+import {
   Box,
   Button,
   ChevronDownIcon,
@@ -14,14 +21,7 @@ import {
   Th,
   Thead,
   Tr,
-} from "@fidesui/react";
-import {
-  flexRender,
-  Header,
-  Row,
-  RowData,
-  Table as TableInstance,
-} from "@tanstack/react-table";
+} from "fidesui";
 import React, { ReactNode, useMemo } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
@@ -43,6 +43,7 @@ declare module "@tanstack/table-core" {
     maxWidth?: string;
     displayText?: string;
     showHeaderMenu?: boolean;
+    overflow?: "auto" | "visible" | "hidden";
   }
 }
 /* eslint-enable */
@@ -126,6 +127,7 @@ type Props<T> = {
   onRowClick?: (row: T) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   emptyTableNotice?: ReactNode;
+  overflow?: "auto" | "visible" | "hidden";
 };
 
 const TableBody = <T,>({
@@ -177,6 +179,7 @@ export const FidesTableV2 = <T,>({
   onRowClick,
   renderRowTooltipLabel,
   emptyTableNotice,
+  overflow = "auto",
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
@@ -209,7 +212,8 @@ export const FidesTableV2 = <T,>({
   return (
     <TableContainer
       data-testid="fidesTable"
-      overflowY="auto"
+      overflowY={overflow}
+      overflowX={overflow}
       borderColor="gray.200"
       borderBottomWidth="1px"
       borderRightWidth="1px"

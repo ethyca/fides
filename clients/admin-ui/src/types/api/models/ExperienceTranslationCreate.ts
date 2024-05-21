@@ -30,6 +30,10 @@ export type ExperienceTranslationCreate = {
    */
   privacy_policy_link_label?: string;
   /**
+   * Modal link label
+   */
+  modal_link_label?: string;
+  /**
    * Privacy policy URL
    */
   privacy_policy_url?: string;
@@ -51,8 +55,4 @@ export type ExperienceTranslationCreate = {
    */
   banner_description?: string;
   description: string;
-  /**
-   * Custom link/button trigger label
-   */
-  modal_link_label?: string;
 };

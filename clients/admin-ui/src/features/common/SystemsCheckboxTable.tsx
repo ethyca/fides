@@ -9,7 +9,7 @@ import {
   Th,
   Thead,
   Tr,
-} from "@fidesui/react";
+} from "fidesui";
 
 import type { ColumnMetadata } from "~/features/common/ColumnDropdown";
 import { System } from "~/types/api";
