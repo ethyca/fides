@@ -48,7 +48,7 @@ saas_config:
               identity: email
         update:
           method: PUT
-          path: /accounts/<user_id>
+          path: /accounts/<account_id>
           headers:
             - name: Accept
               value: application/vnd.recurly.v2021-02-25
@@ -57,10 +57,10 @@ saas_config:
               <masked_object_fields>
             }
           param_values:
-            - name: user_id
+            - name: account_id
               references:
                 - dataset: <instance_fides_key>
-                  field: user.id
+                  field: accounts.id
                   direction: from
 
     - name: billing_info
@@ -79,17 +79,19 @@ saas_config:
                   direction: from
         update:
           method: PUT
-          path: /accounts/<user_id>/billing_info
+          path: /accounts/<account_id>/billing_info
           headers:
             - name: accept
               value: application/vnd.recurly.v2021-02-25
           body: |
-            <masked_object_fields>
+            {
+              <masked_object_fields>
+            }
           param_values:
-            - name: user_id
+            - name: account_id
               references:
                 - dataset: <instance_fides_key>
-                  field: user.id
+                  field: billing_info.account_id
                   direction: from
 
     - name: shipping_address
@@ -114,7 +116,7 @@ saas_config:
               path: next
         update:
           method: PUT
-          path: /accounts/<user_id>/shipping_addresses/<shipping_address_id>
+          path: /accounts/<account_id>/shipping_addresses/<shipping_address_id>
           headers:
             - name: accept
               value: application/vnd.recurly.v2021-02-25
@@ -123,10 +125,10 @@ saas_config:
              <masked_object_fields>
             }
           param_values:
-            - name: user_id
+            - name: account_id
               references:
                 - dataset: <instance_fides_key>
-                  field: user.id
+                  field: shipping_address.account_id
                   direction: from
             - name: shipping_address_id
               references:

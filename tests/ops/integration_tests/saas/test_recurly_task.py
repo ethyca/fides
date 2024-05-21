@@ -1,4 +1,5 @@
 import pytest
+import time
 
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
@@ -37,6 +38,8 @@ class TestRecurlyConnector:
         for shipping_address in access_results["recurly_instance:shipping_address"]:
             assert shipping_address["account_id"] == account["id"]
 
+        time.sleep(30)
+
     # @pytest.mark.skip(reason="Currently skipping for testing purposes")
     async def test_non_strict_erasure_request(
         self,
@@ -55,7 +58,7 @@ class TestRecurlyConnector:
             identities={"email": recurly_erasure_identity_email},
         )
         assert erasure_results == {
-            "recurly_instance:accounts": 0,
-        #     # "recurly_instance:billing_info": 1,
-        #     # "recurly_instance:shipping_address": 1,
+            "recurly_instance:accounts": 1,
+            "recurly_instance:billing_info": 1,
+            "recurly_instance:shipping_address": 1,
         }
