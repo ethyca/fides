@@ -62,7 +62,8 @@ export interface FidesInitOptions {
   // ID of the parent DOM element where the overlay should be inserted (default: "fides-overlay")
   overlayParentId: string | null;
 
-  // ID of the DOM element that should trigger the consent modal (default: "fides-modal-link"
+  // ID of the DOM element that should trigger the consent modal (default: "fides-modal-link")
+  // If set to empty string "", fides.js will not attempt to bind the modal link to the click handler
   modalLinkId: string | null;
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
