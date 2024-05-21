@@ -56,7 +56,10 @@ export async function getInitialProps(
   }
 
   // Load the server-side environment for the session and pass it to the client as props
-  const serverEnvironment = await loadPrivacyCenterEnvironment();
+  const serverEnvironment = await loadPrivacyCenterEnvironment({
+    pathname: context.ctx?.req?.url,
+  });
+
   return {
     ...ctx,
     ...{ serverEnvironment },
