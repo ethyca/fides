@@ -115,7 +115,7 @@ def recurly_erasure_data(
     billing_url = f"{accounts_url}/{account_id}/billing_info"
     response = requests.put(billing_url, headers=headers, json=body)
     assert response.ok
-    billing_info = response.json()['first_name']
+    # billing_info = response.json()['first_name']
     # time.sleep(1)
     # check_url = f"{accounts_url}/{account_id}"
     # response = requests.get(check_url, headers=headers)
