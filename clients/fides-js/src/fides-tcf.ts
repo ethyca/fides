@@ -110,6 +110,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
 
+  this.config = config; // no matter how the config is set, we want to store it on the global object
+
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,

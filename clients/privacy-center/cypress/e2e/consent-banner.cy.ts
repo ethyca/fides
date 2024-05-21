@@ -2479,7 +2479,7 @@ describe("Consent overlay", () => {
 
       // Call reinitialize() without making any changes
       cy.window().then((win) => {
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should re-initialize and re-show the banner
@@ -2508,7 +2508,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: false,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize again, in embedded mode this time
@@ -2527,7 +2527,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: true,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize once again, without any banners
