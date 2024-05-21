@@ -106,7 +106,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
   // Initialize Fides with the global configuration object if it exists, or the provided one. If neither exists, raise an error.
   let config =
-    (this.config ??= providedConfig) ??
+    providedConfig ??
+    (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
