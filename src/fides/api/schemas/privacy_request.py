@@ -120,7 +120,29 @@ class FieldsAffectedResponse(FidesSchema):
         use_enum_values = True
 
 
-class ExecutionLogResponse(FidesSchema):
+class ExecutionLogStatusSerializeOverride(FidesSchema):
+    """Override to serialize "paused" Execution Logs as awaiting_processing instead"""
+
+    class Config:
+        """Set orm_mode and use_enum_values"""
+
+        orm_mode = True
+        use_enum_values = False  # Used in conjunction with the "dict" override below
+
+    def dict(self, *args: Any, **kwargs: Any) -> Dict:
+        """
+        When serializing, use the Execution Log Status name instead of the value
+
+        This is because our "awaiting_processing" status is "paused" in the db,
+        but we want to use "awaiting_processing" everywhere in the app.
+        """
+        data = super().dict(*args, **kwargs)
+        if isinstance(data.get("status"), ExecutionLogStatus):
+            data["status"] = data["status"].name
+        return data
+
+
+class ExecutionLogResponse(ExecutionLogStatusSerializeOverride):
     """Schema for the embedded ExecutionLogs associated with a PrivacyRequest"""
 
     collection_name: Optional[str]
@@ -130,14 +152,8 @@ class ExecutionLogResponse(FidesSchema):
     status: ExecutionLogStatus
     updated_at: Optional[datetime]
 
-    class Config:
-        """Set orm_mode and use_enum_values"""
 
-        orm_mode = True
-        use_enum_values = True
-
-
-class PrivacyRequestTaskSchema(FidesSchema):
+class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
     """Schema for Privacy Request Tasks, which are individual nodes that are queued"""
 
     id: str
@@ -157,7 +173,7 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     dataset_name: Optional[str]
 
 
-class ExecutionAndAuditLogResponse(FidesSchema):
+class ExecutionAndAuditLogResponse(ExecutionLogStatusSerializeOverride):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
@@ -173,7 +189,6 @@ class ExecutionAndAuditLogResponse(FidesSchema):
     class Config:
         """Set orm_mode and allow population by field name"""
 
-        use_enum_values = True
         allow_population_by_field_name = True
 
 

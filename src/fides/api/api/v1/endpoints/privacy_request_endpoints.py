@@ -2,7 +2,6 @@
 
 import csv
 import io
-import json
 from collections import defaultdict
 from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
@@ -122,7 +121,7 @@ from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
-from fides.api.util.cache import CustomJSONEncoder, FidesopsRedis
+from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
@@ -2103,7 +2102,7 @@ def request_task_async_callback(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
         )
-    if request_task.status != ExecutionLogStatus.paused:
+    if request_task.status != ExecutionLogStatus.awaiting_processing:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with request task status '{request_task.status.value}'",

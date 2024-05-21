@@ -1634,7 +1634,7 @@ class ExecutionLogStatus(EnumType):
     pending = "pending"
     complete = "complete"
     error = "error"
-    paused = "paused"
+    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
     retrying = "retrying"
     skipped = "skipped"
 
@@ -1673,7 +1673,11 @@ class ExecutionLog(Base):
         nullable=False,
     )
     status = Column(
-        EnumColumn(ExecutionLogStatus),
+        EnumColumn(
+            ExecutionLogStatus,
+            native_enum=False,
+            values_callable=lambda x: [i.value for i in x],
+        ),
         index=True,
         nullable=False,
     )
@@ -1757,7 +1761,11 @@ class RequestTask(Base):
     action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
 
     status = Column(
-        EnumColumn(ExecutionLogStatus),  # character varying in database
+        EnumColumn(
+            ExecutionLogStatus,
+            native_enum=False,
+            values_callable=lambda x: [i.value for i in x],
+        ),  # character varying in database
         index=True,
         nullable=False,
     )

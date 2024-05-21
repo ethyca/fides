@@ -3121,7 +3121,7 @@ def test_async_callback_access_request(
 
         # SaaS Request was marked as needing async results, so the Request
         # Task was put in a paused state
-        assert request_tasks[1].status == ExecutionLogStatus.paused
+        assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
         assert request_tasks[1].collection_address == "saas_async_config:user"
 
         # Terminator task is downstream so it is still in a pending state
@@ -3184,7 +3184,7 @@ def test_async_callback_erasure_request(
 
     if dsr_version == "use_dsr_3_0":
         # Access async task fired first
-        assert pr.access_tasks[1].status == ExecutionLogStatus.paused
+        assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
         jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
         auth_header = {"Authorization": "Bearer " + jwe_token}
         # Post to callback URL to supply access results async
@@ -3197,7 +3197,7 @@ def test_async_callback_erasure_request(
         assert response.status_code == 200
 
         # Erasure task is also expected async results and is now paused
-        assert pr.erasure_tasks[1].status == ExecutionLogStatus.paused
+        assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
         jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
         auth_header = {"Authorization": "Bearer " + jwe_token}
         # Post to callback URL to supply erasure results async

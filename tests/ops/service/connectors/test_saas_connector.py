@@ -866,7 +866,7 @@ class TestAsyncConnectors:
         request_task = privacy_request.access_tasks.filter(
             RequestTask.collection_name == "user"
         ).first()
-        request_task.status = ExecutionLogStatus.paused
+        request_task.status = ExecutionLogStatus.awaiting_processing
         request_task.callback_succeeded = True
         execution_node = ExecutionNode(request_task)
 
@@ -957,7 +957,7 @@ class TestAsyncConnectors:
         request_task = privacy_request.erasure_tasks.filter(
             RequestTask.collection_name == "user"
         ).first()
-        request_task.status = ExecutionLogStatus.paused
+        request_task.status = ExecutionLogStatus.awaiting_processing
         request_task.callback_succeeded = True
         request_task.save(db)
         execution_node = ExecutionNode(request_task)

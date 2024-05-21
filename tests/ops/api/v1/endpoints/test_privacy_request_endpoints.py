@@ -1382,6 +1382,7 @@ class TestGetPrivacyRequests:
         postgres_execution_log,
         second_postgres_execution_log,
         mongo_execution_log,
+        async_execution_log,
         url,
         db,
     ):
@@ -1511,6 +1512,35 @@ class TestGetPrivacyRequests:
                                 ),
                                 "user_id": None,
                             },
+                        ],
+                        "my-async-connector": [
+                            {
+                                "connection_key": None,
+                                "collection_name": "my_async_collection",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-async-connector:my_async_collection:street",
+                                        "field_name": "street",
+                                        "data_categories": [
+                                            "user.contact.address.street"
+                                        ],
+                                    },
+                                    {
+                                        "path": "my-async-connector:my_async_collection:city",
+                                        "field_name": "city",
+                                        "data_categories": [
+                                            "user.contact.address.city"
+                                        ],
+                                    },
+                                ],
+                                "message": None,
+                                "action_type": "access",
+                                "status": "awaiting_processing",
+                                "updated_at": stringify_date(
+                                    async_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            }
                         ],
                     },
                 },
@@ -1817,6 +1847,7 @@ class TestGetExecutionLogs:
         postgres_execution_log,
         mongo_execution_log,
         second_postgres_execution_log,
+        async_execution_log,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
@@ -1883,8 +1914,29 @@ class TestGetExecutionLogs:
                     "connection_key": None,
                     "dataset_name": "my-postgres-db",
                 },
+                {
+                    "collection_name": "my_async_collection",
+                    "fields_affected": [
+                        {
+                            "path": "my-async-connector:my_async_collection:street",
+                            "field_name": "street",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                        {
+                            "path": "my-async-connector:my_async_collection:city",
+                            "field_name": "city",
+                            "data_categories": ["user.contact.address.city"],
+                        },
+                    ],
+                    "message": None,
+                    "action_type": "access",
+                    "status": "awaiting_processing",
+                    "updated_at": stringify_date(async_execution_log.updated_at),
+                    "connection_key": None,
+                    "dataset_name": "my-async-connector",
+                },
             ],
-            "total": 3,
+            "total": 4,
             "page": 1,
             "pages": 1,
             "size": page_size,
@@ -5617,6 +5669,39 @@ class TestPrivacyRequestTasksList:
             "action_type",
         }
 
+    def test_get_async_tasks(
+        self, db, api_client: TestClient, generate_auth_header, url, request_task
+    ):
+        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert len(response.json()) == 3
+        resp = response.json()
+        root_response = resp[0]
+        assert root_response["collection_address"] == "__ROOT__:__ROOT__"
+        assert resp[1]["collection_address"] == "test_dataset:test_collection"
+        assert resp[2]["collection_address"] == "__TERMINATE__:__TERMINATE__"
+
+        assert root_response["upstream_tasks"] == []
+        assert root_response["downstream_tasks"] == ["test_dataset:test_collection"]
+        assert root_response["status"] == "awaiting_processing"
+        assert root_response["action_type"] == "access"
+
+        # No DSR data is returned in the response
+        assert set(root_response.keys()) == {
+            "id",
+            "collection_address",
+            "status",
+            "created_at",
+            "updated_at",
+            "upstream_tasks",
+            "downstream_tasks",
+            "action_type",
+        }
+
 
 class TestRequeuePrivacyRequest:
     @pytest.fixture(scope="function")
@@ -5926,7 +6011,7 @@ class TestRequestTaskAsyncCallback:
         """Hitting this endpoint with an empty json result will still resume privacy request processing.
         Hitting this endpoint is assumed to mean the async action was completed"""
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        request_task.status = ExecutionLogStatus.paused
+        request_task.status = ExecutionLogStatus.awaiting_processing
         request_task.save(db)
 
         auth_header = {
@@ -5943,7 +6028,7 @@ class TestRequestTaskAsyncCallback:
         assert request_task.callback_succeeded
         assert request_task.access_data is None
         assert request_task.rows_masked is None
-        assert request_task.get_decoded_access_data() == []
+        assert request_task.get_access_data() == []
 
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
@@ -5952,7 +6037,7 @@ class TestRequestTaskAsyncCallback:
         self, _, db, api_client: TestClient, url, request_task, privacy_request
     ):
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        request_task.status = ExecutionLogStatus.paused
+        request_task.status = ExecutionLogStatus.awaiting_processing
         request_task.save(db)
 
         auth_header = {
@@ -5970,7 +6055,7 @@ class TestRequestTaskAsyncCallback:
 
         db.refresh(request_task)
         assert request_task.callback_succeeded
-        assert request_task.get_decoded_access_data() == [
+        assert request_task.get_access_data() == [
             {"id": 1, "user_id": "abcde", "state": "VA"}
         ]
 
@@ -5978,7 +6063,7 @@ class TestRequestTaskAsyncCallback:
         self, db, api_client: TestClient, url, request_task, privacy_request
     ):
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        request_task.status = ExecutionLogStatus.paused
+        request_task.status = ExecutionLogStatus.awaiting_processing
         request_task.save(db)
 
         auth_header = {
@@ -6006,7 +6091,7 @@ class TestRequestTaskAsyncCallback:
         privacy_request,
     ):
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        erasure_request_task.status = ExecutionLogStatus.paused
+        erasure_request_task.status = ExecutionLogStatus.awaiting_processing
         erasure_request_task.save(db)
 
         auth_header = {
