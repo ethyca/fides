@@ -12,6 +12,11 @@ class MinimalPrivacyExperienceConfig(FidesSchema):
     """
     Minimal representation of a privacy experience config, contains enough information
     to select experience configs by name in the UI and an ID to link the selections in the database.
+
+    NOTE: Add to this schema with care. Any fields added to
+    this response schema will be exposed in public-facing
+    (i.e. unauthenticated) API responses. If a field has
+    sensitive information, it should NOT be added to this schema!
     """
 
     id: str
@@ -28,7 +33,20 @@ class MinimalProperty(FidesSchema):
     name: str
 
 
-class Property(FidesSchema):
+class PublicPropertyResponse(FidesSchema):
+    """
+    Schema that represents a `Property` as returned in the
+    public-facing Property APIs.
+
+    NOTE: Add to this schema with care. Any fields added to
+    this response schema will be exposed in public-facing
+    (i.e. unauthenticated) API responses. If a field has
+    sensitive information, it should NOT be added to this schema!
+
+    Any `Property` fields that are sensitive should be added to the
+    appropriate non-public schemas that extend this schema.
+    """
+
     name: str
     type: PropertyType
     id: Optional[str] = None
@@ -38,10 +56,9 @@ class Property(FidesSchema):
     paths: List[str]
 
     @validator("paths", pre=True)
-    def convert_to_list(cls, value: Any) -> Any:
+    def convert_to_list(cls, value: Any) -> Any:  # type: ignore[misc]
         """
         Convert the 'paths' value to a list if it is an iterable of strings.
-
         This validator is necessary because SQLAlchemy returns the 'paths' value
         as an iterable (association proxy) instead of a list. The validator checks
         if the 'paths' value is an iterable (excluding strings) and if all its
@@ -55,3 +72,16 @@ class Property(FidesSchema):
         ):
             return list(value)
         return value
+
+
+class Property(PublicPropertyResponse):
+    """
+    A schema representing the complete `Property` model.
+
+    This schema extends the base `PublicPropertyResponse` schema,
+    which only includes fields that are appropriate to be exposed
+    in public endpoints.
+
+    Any `Property` fields that are sensitive but need to be included in private
+    API responses should be added to this schema.
+    """
