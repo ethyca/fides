@@ -180,25 +180,25 @@ const Overlay: FunctionComponent<Props> = ({
         let modalLinkEl = document.getElementById(modalLinkId);
         if (!modalLinkEl) {
           // Wait until the hosting page's link element is available before attempting to bind to the click handler. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
-          const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              if (
-                mutation.addedNodes.length ||
-                mutation.type === "attributes"
-              ) {
-                modalLinkEl = document.getElementById(modalLinkId);
-                if (modalLinkEl) {
-                  bindModalLink(modalLinkEl);
-                  observer.disconnect();
-                }
+          debugLog(
+            options.debug,
+            `Modal link element not found (#${modalLinkId}), waiting for it to be added to the DOM...`
+          );
+          let attempts = 0;
+          let interval = 200;
+          const checkInterval = setInterval(() => {
+            modalLinkEl = document.getElementById(modalLinkId);
+            if (modalLinkEl) {
+              clearInterval(checkInterval);
+              bindModalLink(modalLinkEl);
+            } else {
+              attempts += 1;
+              // if the container is not found after 5 attempts, increase the interval to reduce the polling frequency
+              if (attempts >= 5 && interval < 1000) {
+                interval += 200;
               }
-            });
-          });
-          observer.observe(document.body, {
-            attributes: true,
-            childList: true,
-            subtree: true,
-          });
+            }
+          }, interval);
         } else {
           bindModalLink(modalLinkEl);
         }

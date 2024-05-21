@@ -94,31 +94,21 @@ export const initOverlay = async ({
           );
           const checkEmbedContainer = async () =>
             new Promise<void>((resolve) => {
-              const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                  if (
-                    mutation.addedNodes.length ||
-                    mutation.type === "attributes"
-                  ) {
-                    parentElem = document.getElementById(
-                      FIDES_EMBED_CONTAINER_ID
-                    );
-                    if (parentElem) {
-                      debugLog(
-                        options.debug,
-                        `Embed container found (#${FIDES_EMBED_CONTAINER_ID}), continuing...`
-                      );
-                      observer.disconnect();
-                      resolve();
-                    }
+              let attempts = 0;
+              let interval = 200;
+              const checkInterval = setInterval(() => {
+                parentElem = document.getElementById(FIDES_EMBED_CONTAINER_ID);
+                if (parentElem) {
+                  clearInterval(checkInterval);
+                  resolve();
+                } else {
+                  attempts += 1;
+                  // if the container is not found after 5 attempts, increase the interval to reduce the polling frequency
+                  if (attempts >= 5 && interval < 1000) {
+                    interval += 200;
                   }
-                });
-              });
-              observer.observe(document.body, {
-                attributes: true,
-                childList: true,
-                subtree: true,
-              });
+                }
+              }, interval);
             });
           await checkEmbedContainer();
         }
