@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
+- Added shouldShowExperience to the Fides global and FidesInitialized events [#4895](https://github.com/ethyca/fides/pull/4895)
 
 ### Changed
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)

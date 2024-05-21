@@ -366,6 +366,7 @@ export const initialize = async ({
     } else if (!isPrivacyExperience(fides.experience)) {
       fetchedClientSideExperience = true;
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
+      // eslint-disable-next-line no-param-reassign
       fides.experience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
@@ -394,6 +395,7 @@ export const initialize = async ({
         "Updated experience from saved preferences",
         updatedExperience
       );
+      // eslint-disable-next-line no-param-reassign
       fides.experience = { ...fides.experience, ...updatedExperience };
 
       /**
@@ -421,6 +423,7 @@ export const initialize = async ({
         "Updated current cookie state from experience",
         updatedCookie
       );
+      // eslint-disable-next-line no-param-reassign
       fides.cookie = updatedCookie;
 
       if (shouldInitOverlay) {
@@ -477,6 +480,7 @@ export const initialize = async ({
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { consent, fides_meta, identity, fides_string, tcf_consent } =
     fides.cookie;
 

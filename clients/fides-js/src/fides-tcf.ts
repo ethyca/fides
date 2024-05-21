@@ -21,7 +21,6 @@ import {
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  NoticeConsent,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";

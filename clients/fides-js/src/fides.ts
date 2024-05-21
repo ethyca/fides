@@ -15,7 +15,6 @@ import {
 } from "./lib/cookie";
 import {
   FidesConfig,
-  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
