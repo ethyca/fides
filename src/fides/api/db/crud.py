@@ -36,11 +36,12 @@ async def create_resource(
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
     ):
-        try:
-            await get_resource(sql_model, resource_dict["fides_key"], async_session)
-        except errors.NotFoundError:
-            pass
-        else:
+
+        existing_resource = await get_resource(
+            sql_model, resource_dict["fides_key"], async_session, raise_not_found=False
+        )
+
+        if existing_resource is not None:
             already_exists_error = errors.AlreadyExistsError(
                 sql_model.__name__, resource_dict["fides_key"]
             )
