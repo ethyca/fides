@@ -3142,7 +3142,7 @@ def test_async_callback_access_request(
             "saas_async_config:user": [{"id": 1, "user_id": "abcde", "state": "VA"}]
         }
         # User data supplied async was filtered before being returned to the end user
-        assert pr.get_filtered_access_results() == {
+        assert pr.get_filtered_final_upload() == {
             "access_request_rule": {
                 "saas_async_config:user": [{"state": "VA", "id": 1}]
             }
