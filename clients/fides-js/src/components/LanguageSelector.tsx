@@ -43,7 +43,7 @@ const LanguageSelector = ({ i18n, options }: LanguageSelectorProps) => {
       <div className="fides-i18n-pseudo-button">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          height="inherit"
+          height="100%"
           viewBox="0 0 36 36"
           fill="currentColor"
         >
@@ -56,7 +56,7 @@ const LanguageSelector = ({ i18n, options }: LanguageSelectorProps) => {
         <svg
           className="fides-i18n-caret"
           xmlns="http://www.w3.org/2000/svg"
-          height="inherit"
+          height="100%"
           fill="currentColor"
           viewBox="0 0 24 24"
         >

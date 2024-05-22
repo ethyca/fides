@@ -8,14 +8,9 @@ import type { IdentityInputs } from "./IdentityInputs";
 /**
  * A base template for all other Fides Schemas to inherit from.
  */
-export type PrivacyRequestOption = {
+export type PartialPrivacyRequestOption = {
   policy_key: string;
-  icon_path: string;
   title: string;
-  description: string;
-  description_subtext?: Array<string>;
-  confirmButtonText?: string;
-  cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
   custom_privacy_request_fields?: Record<
     string,

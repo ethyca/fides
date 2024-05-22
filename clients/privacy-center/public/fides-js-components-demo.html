@@ -3,7 +3,7 @@
   <head>
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- TODO: (#1953) use the NextJS router version of `/fides.js` insetad of direct files for more accurate testing -->
+
     <!--
       Pass along any params to the fides.js script. For example, visiting
       http://localhost:3000/fides-js-demo.html?geolocation=fr-id
@@ -242,7 +242,15 @@
         </button>
       </div>
 
-      <div id="fides-embed-container"></div>
+      <div id="render-embed-here"></div>
+      <script>
+        setTimeout(() => {
+          const app = document.getElementById("render-embed-here");
+          const container = document.createElement("div");
+          container.id = "fides-embed-container";
+          app.appendChild(container);
+        }, window.render_delay || 0);
+      </script>
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>
@@ -251,7 +259,17 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <button id="fides-modal-link"></button>
+      <div id="render-link-here"></div>
+      <script>
+        setTimeout(() => {
+          const app = document.getElementById("render-link-here");
+          const button = document.createElement("button");
+          // Display the fides configured modal link label (if any).
+          button.textContent = Fides.getModalLinkLabel();
+          button.id = "fides-modal-link";
+          app.appendChild(button);
+        }, window.render_delay || 0);
+      </script>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>
@@ -282,10 +300,6 @@
           null,
           2
         );
-
-        // Display the fides configured modal link label (if any).
-        document.getElementById("fides-modal-link").textContent =
-          Fides.getModalLinkLabel();
 
         // Pretty-print the fides experience config object and add it to the page.
         document.getElementById("consent-experience").textContent =
