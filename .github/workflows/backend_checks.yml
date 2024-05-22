@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -129,7 +129,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -167,7 +167,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -205,7 +205,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -247,7 +247,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
