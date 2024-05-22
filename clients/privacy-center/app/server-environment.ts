@@ -39,7 +39,7 @@ export interface PrivacyCenterSettings {
   SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
-  CUSTOM_PROPERTIES: boolean; // (optional) enables the use of a single privacy center instance to serve different properties on different paths with custom configs
+  CUSTOM_PROPERTIES: boolean; // (optional) (default: true) enables the use of a single privacy center instance to serve different properties on different paths with custom configs
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
@@ -332,7 +332,7 @@ const loadEnvironmentVariables = () => {
     CONFIG_CSS_URL:
       process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL ||
       "file:///app/config/config.css",
-    CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES === "true" || false,
+    CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES === "true" || true,
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
