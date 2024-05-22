@@ -9,17 +9,33 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
-from fides.api.common_exceptions import SkippingConsentPropagation
+from fides.api.common_exceptions import (
+    AwaitingAsyncTaskCallback,
+    SkippingConsentPropagation,
+)
 from fides.api.graph.execution import ExecutionNode
-from fides.api.graph.graph import Node
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.graph import DatasetGraph, Node
+from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+    RequestTask,
+)
+from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
+from fides.api.task.create_request_tasks import (
+    collect_tasks_fn,
+    persist_initial_erasure_request_tasks,
+    persist_new_access_request_tasks,
+)
+from fides.api.util.cache import CustomJSONEncoder
+from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 
 
@@ -772,3 +788,203 @@ class TestRelevantConsentIdentities:
         assert connector.relevant_consent_identities(
             [request], {"email": "customer-1@example.com", "ljt_readerID": "12345"}
         ) == {"email": "customer-1@example.com"}
+
+
+class TestAsyncConnectors:
+    @pytest.fixture(scope="function")
+    def async_graph(self, saas_example_async_dataset_config, db, privacy_request):
+        # Build proper async graph with persisted request tasks
+        async_graph = saas_example_async_dataset_config.get_graph()
+        graph = DatasetGraph(async_graph)
+        traversal = Traversal(graph, {"email": "customer-1@example.com"})
+        traversal_nodes = {}
+        end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
+        persist_new_access_request_tasks(
+            db, privacy_request, traversal, traversal_nodes, end_nodes, graph
+        )
+        persist_initial_erasure_request_tasks(
+            db, privacy_request, traversal_nodes, end_nodes, graph
+        )
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_read_request_expects_async_results(
+        self,
+        mock_send,
+        privacy_request,
+        saas_async_example_connection_config,
+        async_graph,
+    ):
+        """
+        If a read request is marked with needing an async callback response, the initial response is ignored and
+        we raise an AwaitingAsyncTaskCallback exception
+        """
+        # Build graph to get legitimate access Request Task
+        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+        mock_send().json.return_value = {"results_pending": True}
+
+        # Mock this request task with expected attributes if the callback endpoint was hit
+        request_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        execution_node = ExecutionNode(request_task)
+
+        with pytest.raises(AwaitingAsyncTaskCallback):
+            assert (
+                connector.retrieve_data(
+                    execution_node,
+                    privacy_request.policy,
+                    privacy_request,
+                    request_task,
+                    {},
+                )
+                == []
+            )
+
+        call_args = mock_send.call_args[0][0]
+        assert call_args.path == "/api/v1/user"
+        assert call_args.headers["reply-to"] == "/api/v1/request-task/callback"
+        jwe_token = call_args.headers["reply-to-token"]
+
+        token_data = json.loads(
+            extract_payload(jwe_token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["request_task_id"] == request_task.id
+        assert token_data["scopes"] == ["privacy-request:resume"]
+        assert token_data["iat"] is not None
+
+    def test_callback_succeeded_retrieve_data(
+        self, db, privacy_request, saas_async_example_connection_config, async_graph
+    ):
+        """
+        Verifies that if callback_succeeded is True, we return the access data passed into the callback endpoint
+        instead of running the "retrieve_data" body.
+        """
+        # Build graph to get legitimate access Request Task
+        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+
+        # Mock this request task with expected attributes if the callback endpoint was hit
+        request_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.callback_succeeded = True
+        execution_node = ExecutionNode(request_task)
+
+        # Empty list returned if no access data was passed into callback endpoint
+        assert (
+            connector.retrieve_data(
+                execution_node,
+                privacy_request.policy,
+                privacy_request,
+                request_task,
+                {},
+            )
+            == []
+        )
+
+        # Raw access data returned if this was supplied to callback endpoint
+        request_task.access_data = [
+            {
+                "id": "71",
+                "system_id": "58f338f0-6d75-4803-bbcd-01b94de7f0d6",
+                "state": "TX",
+            }
+        ]
+        request_task.save(db)
+        assert connector.retrieve_data(
+            execution_node, privacy_request.policy, privacy_request, request_task, {}
+        ) == [
+            {
+                "id": "71",
+                "system_id": "58f338f0-6d75-4803-bbcd-01b94de7f0d6",
+                "state": "TX",
+            }
+        ]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_masking_request_expects_async_results(
+        self,
+        mock_send,
+        privacy_request,
+        saas_async_example_connection_config,
+        async_graph,
+    ):
+        """
+        If an update/delete request is marked as expecting an async callback, we fire the initial requests
+        then raise an AwaitingAsyncCallback
+        """
+        # Build proper erasure tasks
+        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+
+        # Mock this request task with expected attributes if the callback endpoint was hit
+        request_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        execution_node = ExecutionNode(request_task)
+
+        with pytest.raises(AwaitingAsyncTaskCallback):
+            connector.mask_data(
+                execution_node,
+                privacy_request.policy,
+                privacy_request,
+                request_task,
+                [{"id": 1}],
+            )
+
+        call_args = mock_send.call_args[0][0]
+        assert call_args.path == "/api/v1/user/1"
+        assert call_args.headers["reply-to"] == "/api/v1/request-task/callback"
+        jwe_token = call_args.headers["reply-to-token"]
+
+        token_data = json.loads(
+            extract_payload(jwe_token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["request_task_id"] == request_task.id
+        assert token_data["scopes"] == ["privacy-request:resume"]
+        assert token_data["iat"] is not None
+
+    def test_callback_succeeded_mask_data(
+        self, db, privacy_request, saas_async_example_connection_config, async_graph
+    ):
+        """
+        If callback_succeeded for a request task, we just return rows_masked passed back in the callback endpoint
+        instead of running the bulk of "mask_data".
+        """
+        # Build proper erasure tasks
+        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+
+        # Mock this request task with expected attributes if the callback endpoint was hit
+        request_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.callback_succeeded = True
+        request_task.save(db)
+        execution_node = ExecutionNode(request_task)
+
+        # No rows masked supplied to callback endpoint
+        assert (
+            connector.mask_data(
+                execution_node,
+                privacy_request.policy,
+                privacy_request,
+                request_task,
+                [{"id": 1}],
+            )
+            == 0
+        )
+
+        request_task.rows_masked = 5
+        request_task.save(db)
+
+        # Returns rows masked supplied to callback endpoint
+        assert (
+            connector.mask_data(
+                execution_node,
+                privacy_request.policy,
+                privacy_request,
+                request_task,
+                [{"id": 1}],
+            )
+            == 5
+        )
