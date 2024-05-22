@@ -48,16 +48,14 @@ const InitialLayerAccordion = ({
       }
     >
       <div key={title} className="fides-notice-toggle-title">
+        {title}
         <span
           role="button"
           tabIndex={0}
           onKeyDown={handleKeyDown}
           {...getButtonProps()}
           className="fides-notice-toggle-trigger"
-        >
-          {title}
-          <ArrowDown />
-        </span>
+        />
       </div>
       <div {...getDisclosureProps()}>
         <div>{description}</div>

@@ -669,9 +669,8 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 }
 
 .fides-notice-toggle .fides-notice-toggle-trigger {
-  width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   min-height: 40px;
   align-items: center;
 }
