@@ -14,7 +14,8 @@ import {
   isV1ConsentConfig,
   translateV1ConfigToV2,
 } from "~/features/consent/helpers";
-import { Property, PropertyType } from "~/types/api";
+import { Property } from "~/types/api";
+import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
 import {
   LegacyConfig,
   LegacyConsentConfig,
@@ -95,7 +96,6 @@ export type PrivacyCenterClientSettings = Pick<
   | "BASE_64_COOKIE"
   | "FIDES_PRIMARY_COLOR"
   | "FIDES_CLEAR_COOKIE"
-  | "CUSTOM_PROPERTIES"
 >;
 
 export type Styles = string;
@@ -105,7 +105,7 @@ export type Styles = string;
  */
 export interface PrivacyCenterEnvironment {
   settings: PrivacyCenterClientSettings;
-  config?: Config;
+  config?: Config | PrivacyCenterConfig;
   styles?: Styles;
   property?: Property;
 }

@@ -38,10 +38,10 @@ import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import useI18n from "~/common/hooks/useI18n";
 import { useLocalStorage } from "~/common/hooks";
+import { useProperty } from "~/features/common/property.slice";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import { useProperty } from "~/features/common/property.slice";
 
 // DEFER(fides#3505): Use the fides-js version of this function
 export const resolveConsentValue = (

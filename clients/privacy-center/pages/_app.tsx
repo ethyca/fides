@@ -57,7 +57,8 @@ export async function getInitialProps(
   }
 
   // Load the server-side environment for the session and pass it to the client as props
-  const { customPropertyPath } = context.router.query;
+  const customPropertyPath =
+    context.router.query.customPropertyPath?.toString();
   const serverEnvironment = await loadPrivacyCenterEnvironment({
     customPropertyPath,
   });
