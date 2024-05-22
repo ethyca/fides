@@ -406,7 +406,9 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
         """
         if not self.affected_system_status:
             self.affected_system_status = {}
-        self.affected_system_status[system] = status.value
+        self.affected_system_status[system] = (
+            status.name
+        )  # To avoid using "ExecutionLogStatus.paused" in the logs
         self.save(db)
 
     def update_secondary_user_ids(

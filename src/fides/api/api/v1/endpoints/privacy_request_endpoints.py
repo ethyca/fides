@@ -75,6 +75,7 @@ from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
     verify_oauth_client,
+    verify_request_task_callback,
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
@@ -96,6 +97,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestResponse,
     PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
+    RequestTaskCallbackRequest,
     ReviewPrivacyRequestIds,
     VerificationCode,
 )
@@ -113,6 +115,7 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
 from fides.api.task.task_resources import TaskResources
@@ -153,6 +156,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     REQUEST_STATUS_LOGS,
+    REQUEST_TASK_CALLBACK,
     REQUEST_TASKS,
     V1_URL_PREFIX,
 )
@@ -2065,3 +2069,66 @@ def requeue_privacy_request(
         resume_step,
         db,
     )
+
+
+@router.post(
+    REQUEST_TASK_CALLBACK,
+    response_model=Dict,
+)
+def request_task_async_callback(
+    *,
+    data: RequestTaskCallbackRequest,
+    request_task: RequestTask = Security(
+        verify_request_task_callback, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME]
+    ),
+) -> Dict:
+    """
+    For DSR 3.0: Async Callback Endpoint for Request Tasks
+
+    Re-queues Request Task with asynchronously-retrieved results.  If you don't want to supply results, hitting
+    this endpoint with an empty json request body will be taken as verification the async or erasure request
+    for this request task is complete.
+    """
+    db = Session.object_session(
+        request_task
+    )  # Use the session created in the jwe verification
+
+    privacy_request: PrivacyRequest = request_task.privacy_request
+    if privacy_request.status not in [
+        PrivacyRequestStatus.in_processing,
+        PrivacyRequestStatus.approved,
+    ]:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
+        )
+    if request_task.status != ExecutionLogStatus.awaiting_processing:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with request task status '{request_task.status.value}'",
+        )
+    logger.info(
+        "Callback received for {} task {} {}",
+        request_task.action_type.value,
+        request_task.collection_address,
+        request_task.id,
+    )
+    # Mark that the callback was received on the task itself.
+    request_task.callback_succeeded = True
+
+    if data.access_results and request_task.action_type == ActionType.access:
+        # If access data should be added to results package, it should be
+        # supplied in request body as a list of rows.  This data will be further filtered
+        # by the policy before uploading to the end user
+        request_task.access_data = data.access_results or []
+    if data.rows_masked and request_task.action_type == ActionType.erasure:
+        # For erasure requests, rows masked can be supplied here.
+        request_task.rows_masked = data.rows_masked
+
+    request_task.update_status(db, ExecutionLogStatus.pending)
+    request_task.save(db)
+
+    log_task_queued(request_task, "callback")
+    queue_request_task(request_task, privacy_request_proceed=True)
+
+    return {"task_queued": True}
