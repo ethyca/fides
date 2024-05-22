@@ -86,7 +86,7 @@ jobs:
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-videos-${{ matrix.clients }}

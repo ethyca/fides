@@ -65,7 +65,7 @@ jobs:
           tags: ${{ env.IMAGE }}
 
       - name: Upload container
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/python-${{ matrix.python_version }}.tar
