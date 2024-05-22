@@ -219,7 +219,7 @@ async def verify_oauth_client(
         token_data=token_data, client=client, endpoint_scopes=security_scopes
     ):
         raise AuthorizationError(
-            detail=f"Not Authorized for this action. Required scope(s): {security_scopes}"
+            detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
         )
 
     return client
