@@ -36,34 +36,39 @@ def get_alembic_config(database_url: str) -> Config:
 
 
 def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
-    "Upgrade the database to the specified migration revision."
-    log.info("Running database migrations")
+    """Upgrade the database to the specified migration revision."""
+    log.info(f"Running database upgrade to revision {revision}")
     command.upgrade(alembic_config, revision)
 
 
-def downgrade_db(database_url: str, revision: str = "head") -> None:
-    "Downgrade the database to the specified migration revision."
-    log.info("Running database migrations")
-    alembic_config = get_alembic_config(database_url)
+def downgrade_db(alembic_config: Config, revision: str = "head") -> None:
+    """Downgrade the database to the specified migration revision."""
+    log.info(f"Running database downgrade to revision {revision}")
     command.downgrade(alembic_config, revision)
 
 
 async def migrate_db(
-    database_url: str, samples: bool = False, revision: str = "head"
+    database_url: str,
+    samples: bool = False,
+    revision: str = "head",
+    downgrade: bool = False,
 ) -> None:
     """
     Runs migrations and creates database objects if needed.
 
     Safe to run on an existing database when upgrading Fides version.
     """
-    log.info("Initializing database")
+    log.info("Migrating database")
     alembic_config = get_alembic_config(database_url)
-    upgrade_db(alembic_config, revision)
+    if downgrade:
+        downgrade_db(alembic_config, revision)
+    else:
+        upgrade_db(alembic_config, revision)
 
-    async with async_session() as session:
-        await load_default_resources(session)
-        if samples:
-            await load_samples(session)
+        async with async_session() as session:
+            await load_default_resources(session)
+            if samples:
+                await load_samples(session)
 
 
 def create_db_if_not_exists(database_url: str) -> None:

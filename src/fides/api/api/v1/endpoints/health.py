@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, status
 from loguru import logger
@@ -32,7 +32,7 @@ class DatabaseHealthCheck(BaseModel):
     """Database Healthcheck Schema"""
 
     database: str
-    database_revision: str
+    database_revision: Optional[str]
 
 
 class WorkerHealthCheck(BaseModel):
