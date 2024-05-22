@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, status
 from loguru import logger
@@ -32,6 +32,7 @@ class DatabaseHealthCheck(BaseModel):
     """Database Healthcheck Schema"""
 
     database: str
+    database_revision: Optional[str]
 
 
 class WorkerHealthCheck(BaseModel):
@@ -82,9 +83,10 @@ def get_cache_health() -> str:
 )
 async def database_health(db: Session = Depends(get_db)) -> Dict:
     """Confirm that the API is running and healthy."""
-    db_health = get_db_health(CONFIG.database.sync_database_uri, db=db)
+    db_health, revision = get_db_health(CONFIG.database.sync_database_uri, db=db)
+
     response = DatabaseHealthCheck(
-        database=db_health,
+        database=db_health, database_revision=revision if revision else "unknown"
     ).dict()
 
     if db_health != "healthy":
