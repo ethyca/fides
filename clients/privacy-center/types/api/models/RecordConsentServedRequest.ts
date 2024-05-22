@@ -26,4 +26,5 @@ export type RecordConsentServedRequest = {
   user_geography?: string;
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
+  property_id?: string;
 };

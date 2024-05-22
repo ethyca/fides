@@ -225,6 +225,7 @@ export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
 export type { MonitorConfig } from "./models/MonitorConfig";
 export type { MonitorExecution } from "./models/MonitorExecution";
 export { MonitorExecutionStatus } from "./models/MonitorExecutionStatus";
+export { MonitorFrequency } from "./models/MonitorFrequency";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";
 export type { NoticeTranslation } from "./models/NoticeTranslation";
@@ -246,6 +247,7 @@ export type { Page_ExperienceConfigListViewResponse_ } from "./models/Page_Exper
 export type { Page_Language_ } from "./models/Page_Language_";
 export type { Page_LimitedPrivacyNoticeResponseSchema_ } from "./models/Page_LimitedPrivacyNoticeResponseSchema_";
 export type { Page_MessagingConfigResponse_ } from "./models/Page_MessagingConfigResponse_";
+export type { Page_MonitorConfig_ } from "./models/Page_MonitorConfig_";
 export type { Page_MonitorExecution_ } from "./models/Page_MonitorExecution_";
 export type { Page_PolicyResponse_ } from "./models/Page_PolicyResponse_";
 export type { Page_PolicyWebhookResponse_ } from "./models/Page_PolicyWebhookResponse_";
@@ -308,6 +310,7 @@ export type { PrivacyRequestVerboseResponse } from "./models/PrivacyRequestVerbo
 export type { PrivacyRule } from "./models/PrivacyRule";
 export type { Property } from "./models/Property";
 export { PropertyType } from "./models/PropertyType";
+export type { PublicPropertyResponse } from "./models/PublicPropertyResponse";
 export type { PurposesResponse } from "./models/PurposesResponse";
 export type { QueryParam } from "./models/QueryParam";
 export type { RateLimit } from "./models/RateLimit";
