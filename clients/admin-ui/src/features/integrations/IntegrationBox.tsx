@@ -1,38 +1,33 @@
-import { WarningIcon } from '@chakra-ui/icons'
-import { Box, Button, CheckCircleIcon, Flex, Image, InfoIcon, Text } from "fidesui";
+import {
+  Box,
+  Button,
+  CheckCircleIcon,
+  ErrorWarningIcon,
+  Flex,
+  InfoIcon,
+  Text,
+} from "fidesui";
 import NextLink from "next/link";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import Tag from "~/features/common/Tag";
 import { formatDate } from "~/features/common/utils";
-
-const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
-const FALLBACK_CONNECTOR_LOGOS_PATH = `${CONNECTOR_LOGOS_PATH}ethyca.svg`;
+import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 
 const BIGQUERY_TAGS = [
-  "Cloud",
-  "GCP",
+  "Data Warehouse",
   "BigQuery",
   "Discovery",
+  "Inventory",
 ];
 
 const IntegrationBox = (props: any) => {
   const {integration} = props;
   const renderLogo = () =>
-    <Image
-      boxSize="50px"
-      objectFit="cover"
-      src={FALLBACK_CONNECTOR_LOGOS_PATH}
-      fallbackSrc={FALLBACK_CONNECTOR_LOGOS_PATH}
-      alt={FALLBACK_CONNECTOR_LOGOS_PATH}
-      {...props}
-    />
+    <ConnectionTypeLogo data={integration} boxSize="50px"/>
 
   const renderLastTest = () => {
-    // const {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
-    let {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
-    lastTestSucceded = false;
-    lastTestTimestamp = "2024-05-16T17:59:21+0000";
+    const {last_test_succeeded: lastTestSucceded, last_test_timestamp: lastTestTimestamp} = integration;
 
     if (lastTestSucceded) {
       return (
@@ -46,7 +41,7 @@ const IntegrationBox = (props: any) => {
     if (lastTestSucceded === false) {
       return (
         <Flex alignItems="center" color="red.600" >
-          <WarningIcon boxSize="13px" marginRight="4px"/>
+          <ErrorWarningIcon boxSize="13px" marginRight="4px"/>
           Error on {formatDate(lastTestTimestamp)}
         </Flex>
       );
@@ -62,18 +57,15 @@ const IntegrationBox = (props: any) => {
 
   const renderIntegrationNameContainer = () =>
     <Flex direction="column" flexGrow={1} marginLeft="16px">
-      <Text color="gray.700" fontWeight="semibold">{integration.name}</Text>
+      <Text color="gray.700" fontWeight="semibold">{integration.name || "(No name)"}</Text>
       {renderLastTest()}
     </Flex>
 
   const renderManageButton = () =>
     <NextLink href={`${INTEGRATION_MANAGEMENT_ROUTE}/bigquery_connection_${integration.key}`}>
       <Button
-        justifySelf="self-end"
-        size="xs"
+        size="sm"
         variant="outline"
-        loadingText="Manage"
-        spinnerPlacement="end"
       >
         Manage
       </Button>
@@ -85,7 +77,7 @@ const IntegrationBox = (props: any) => {
     </>
 
   return (
-    <Box maxW='760px' borderWidth={1} borderRadius='lg' overflow='hidden' height="114px" padding="12px">
+    <Box maxW='760px' borderWidth={1} borderRadius='lg' overflow='hidden' height="114px" padding="12px" marginBottom="24px">
       <Flex>
         {renderLogo()}
         {renderIntegrationNameContainer()}

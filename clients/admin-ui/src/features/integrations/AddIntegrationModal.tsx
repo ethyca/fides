@@ -1,11 +1,11 @@
 import {
+  Button,
   Modal,
   ModalBody,
-  ModalHeader,
-  ModalFooter,
-  Button,
-  ModalContent,
   ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   ModalOverlay,
   Text,
   UseDisclosureReturn,
@@ -18,15 +18,23 @@ const AddIntegrationModal = ({
   <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
     <ModalOverlay />
     <ModalContent>
-        <ModalHeader>Google BigQuery Integration</ModalHeader>
+        <ModalHeader borderBottom="1px" borderColor="gray.200">Google BigQuery Integration</ModalHeader>
         <ModalCloseButton />
       <ModalBody>
         <Text>Configure integration secret</Text>
         <Text>To connect Fides to BigQuery you must provide an appropriately scoped Secret key. For information on creating a role and secret in GCP read the guide.</Text>
       </ModalBody>
       <ModalFooter>
-        <Button colorScheme='blue' mr={3} onClick={onClose}>Cancel</Button>
-        <Button variant='ghost'>Connect</Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onClose}
+          mr={2}
+          >Cancel</Button>
+        <Button
+          size="sm"
+          variant="primary"
+          >Connect</Button>
         </ModalFooter>
     </ModalContent>
   </Modal>

@@ -1,37 +1,24 @@
 import {
   Box,
   Button,
-  Spinner,
-  LinkIcon,
-  useDisclosure,
   Heading,
+  LinkIcon,
+  Spinner,
+  useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
-import Layout from "~/features/common/Layout";
-import IntegrationsTabs  from "~/features/integrations/IntegrationsTabs";
-import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
+
 import DataTabsHeader from "~/features/common/DataTabsHeader";
+import Layout from "~/features/common/Layout";
+import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/AddIntegrationModal";
+import IntegrationsTabs  from "~/features/integrations/IntegrationsTabs";
+
 
 const TABS = [
   {
     label: "All"
-  },
-  {
-    label: "Cloud"
-  },
-  {
-    label: "IDP"
-  },
-  {
-    label: "CRM"
-  },
-  {
-    label: "Database"
-  },
-  {
-    label: "Data Warehouse"
   },
 ];
 
@@ -44,8 +31,7 @@ const IntegrationListView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const onTabChange = () =>
-    console.log(arguments)
+  const onTabChange = () => {}
 
   const renderAddIntegrationButton = () =>
     <Box
