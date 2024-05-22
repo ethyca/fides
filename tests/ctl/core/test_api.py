@@ -4,7 +4,7 @@ import json
 import typing
 from datetime import datetime
 from json import loads
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from uuid import uuid4
 
 import pytest
@@ -2512,8 +2512,11 @@ class TestHealthchecks:
     ) -> None:
         """Test the database health checks."""
 
-        def mock_get_db_health(url: str, db) -> str:
-            return database_health
+        def mock_get_db_health(url: str, db) -> Tuple[str, str]:
+            return (
+                database_health,
+                "9e83545ed9b6",
+            )  # just an arbitrary revision # for testing
 
         monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
         response = test_client.get(test_config.cli.server_url + "/health/database")
