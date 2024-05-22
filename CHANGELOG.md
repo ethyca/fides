@@ -23,6 +23,8 @@ The types of changes are:
 - Added developer option to disable auto-initialization on FidesJS bundles. [#4900](https://github.com/ethyca/fides/pull/4900)
 - Adding property ID to served notice history and privacy preference history [#4886](https://github.com/ethyca/fides/pull/4886)
 - Adding privacy_center_config and stylesheet fields to the Property model [#4879](https://github.com/ethyca/fides/pull/4879)
+- Added support for custom property paths, configs and stylesheets for privacy center [#4907](https://github.com/ethyca/fides/pull/4907)
+
 
 ### Changed
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
