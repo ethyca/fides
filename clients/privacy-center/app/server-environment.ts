@@ -290,19 +290,20 @@ export const loadStylesFromFile = async (
 
 const getPropertyFromUrl = async ({
   fidesApiUrl,
-  pathname,
+  customPropertyPath,
 }: {
   fidesApiUrl: string;
-  pathname: string;
+  customPropertyPath: string;
 }) => {
-  console.log("path", pathname);
   const headers = new Headers();
   addCommonHeaders(headers);
 
   let result: Property | null = null;
   try {
     const response = await fetch(
-      `${fidesApiUrl}/plus/property?${new URLSearchParams({ path: pathname })}`,
+      `${fidesApiUrl}/plus/property?${new URLSearchParams({
+        path: `/${customPropertyPath}`,
+      })}`,
       {
         method: "GET",
         headers,
@@ -403,9 +404,9 @@ const loadEnvironmentVariables = () => {
  */
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 export const loadPrivacyCenterEnvironment = async ({
-  pathname,
+  customPropertyPath,
 }: {
-  pathname?: string;
+  customPropertyPath?: string;
 }): Promise<PrivacyCenterEnvironment> => {
   if (typeof window !== "undefined") {
     throw new Error(
@@ -421,9 +422,9 @@ export const loadPrivacyCenterEnvironment = async ({
   const settings = loadEnvironmentVariables();
 
   let property;
-  if (settings.CUSTOM_PROPERTIES && pathname) {
+  if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
     const result = await getPropertyFromUrl({
-      pathname,
+      customPropertyPath,
       fidesApiUrl: settings.FIDES_API_URL,
     });
     if (result) {

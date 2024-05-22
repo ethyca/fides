@@ -22,7 +22,6 @@ import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
 import { I18nProvider } from "~/common/i18nContext";
 import { FidesUIProvider } from "fidesui";
-import getPathFromRawUrl from "~/common/getPathFromRawUrl";
 import { loadProperty } from "~/features/common/property.slice";
 
 interface PrivacyCenterProps {
@@ -58,11 +57,9 @@ export async function getInitialProps(
   }
 
   // Load the server-side environment for the session and pass it to the client as props
-
+  const { customPropertyPath } = context.router.query;
   const serverEnvironment = await loadPrivacyCenterEnvironment({
-    pathname: context.ctx?.req?.url
-      ? getPathFromRawUrl(context.ctx?.req?.url)
-      : undefined,
+    customPropertyPath,
   });
 
   return {
