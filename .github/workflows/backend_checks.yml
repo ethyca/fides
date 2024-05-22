@@ -117,7 +117,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -155,7 +155,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -193,7 +193,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -235,7 +235,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -281,7 +281,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -321,7 +321,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -372,7 +372,7 @@ jobs:
         python_version: ["3.8.18", "3.9.18", "3.10.13"]
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
