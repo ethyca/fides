@@ -1675,7 +1675,7 @@ class ExecutionLog(Base):
     status = Column(
         EnumColumn(
             ExecutionLogStatus,
-            native_enum=False,
+            native_enum=True,
             values_callable=lambda x: [i.value for i in x],
         ),
         index=True,
