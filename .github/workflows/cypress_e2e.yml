@@ -39,7 +39,7 @@ jobs:
           npm install
 
       - name: Cypress E2E tests
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: clients/cypress-e2e
           install: false
