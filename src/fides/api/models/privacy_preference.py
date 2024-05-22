@@ -178,8 +178,10 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
 
 class LastServedNotice(Base):
     """
-    DEPRECATED. This table consolidates every notice a user has been served, (analogous to CurrentPrivacyPreference
-    but it is being removed). Backend is not writing to this any longer.  "lastservednoticev2" will soon be removed
+    DEPRECATED. DO NOT UPDATE THIS TABLE.  This will soon be removed.
+
+    This table consolidates every notice a user has been served, (analogous to CurrentPrivacyPreference
+    but it is being removed). Backend is not writing to this any longer.
     """
 
     @declared_attr
@@ -253,20 +255,6 @@ class LastServedNotice(Base):
         String,
         index=True,
     )  # For exact match searches
-
-    @classmethod
-    def hash_value(
-        cls,
-        value: Optional[str],
-        encoding: str = "UTF-8",
-    ) -> Optional[str]:
-        """Utility function to hash the value with a generated salt
-        This returns None if there's no value, unlike ProvidedIdentity.hash_value
-        """
-        if not value:
-            return None
-
-        return ProvidedIdentity.hash_value(value, encoding)
 
     @classmethod
     def generate_served_notice_history_id(cls) -> str:
