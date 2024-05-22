@@ -8,12 +8,14 @@ from fides.api.models.privacy_preference import (
 
 
 class TestPrivacyPreference:
+
     def test_privacy_notice_preference(
         self,
         db,
         privacy_experience_privacy_center,
         privacy_notice_us_ca_provide,
         served_notice_history,
+        property_a,
     ):
         preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
@@ -33,6 +35,7 @@ class TestPrivacyPreference:
                 "user_geography": "us_ca",
                 "url_recorded": "https://example.com/privacy_center",
                 "served_notice_history_id": served_notice_history.served_notice_history_id,
+                "property_id": property_a.id,
             },
             check_name=False,
         )
@@ -46,14 +49,11 @@ class TestPrivacyPreference:
             preference_history_record.privacy_notice_history
             == privacy_notice_us_ca_provide.translations[0].histories[0]
         )
+        assert preference_history_record.property_id == property_a.id
 
         preference_history_record.delete(db)
 
-    def test_tcf_preference(
-        self,
-        db,
-        privacy_experience_france_overlay,
-    ):
+    def test_tcf_preference(self, db, privacy_experience_france_overlay, property_a):
         preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
@@ -83,6 +83,7 @@ class TestPrivacyPreference:
                     "feature_preferences": [],
                     "system_legitimate_interests_preferences": [],
                 },
+                "property_id": property_a.id,
             },
         )
         assert preference_history_record.preference == UserConsentPreference.tcf
@@ -100,6 +101,7 @@ class TestPrivacyPreference:
             "feature_preferences": [],
             "system_legitimate_interests_preferences": [],
         }
+        assert preference_history_record.property_id == property_a.id
 
         preference_history_record.delete(db)
 
