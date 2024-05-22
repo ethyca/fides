@@ -1952,6 +1952,22 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: privacy_center_config
+      data_categories: [system.operations]
+    - name: stylesheet
+      data_categories: [system.operations]
+  - name: plus_property_path
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: path
+      data_categories: [system.operations]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: plus_privacy_experience_config_property
     fields:
     - name: id

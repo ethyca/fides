@@ -3255,7 +3255,10 @@ def property_a(db) -> Generator:
     prop_a = Property.create(
         db=db,
         data=PropertySchema(
-            name="New Property", type=PropertyType.website, experiences=[]
+            name="New Property",
+            type=PropertyType.website,
+            experiences=[],
+            paths=["test"],
         ).dict(),
     )
     yield prop_a
