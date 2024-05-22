@@ -68,6 +68,7 @@ saas_config:
         read:
           method: GET
           path: /accounts/<accounts_id>/billing_info
+          ignore_errors: [404]
           headers:
             - name: Accept
               value: application/vnd.recurly.v2021-02-25

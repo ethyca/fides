@@ -1,13 +1,13 @@
+import base64
+import json
+import random
+import string
+import time
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 import requests
-import base64
-import string
-import random
-import json
-import time
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -71,7 +71,7 @@ def recurly_erasure_data(
                 "postal_code": "34567",
                 "country": "IN",
                 "nickname": "string",
-                "email": "shippingemail@ethyca.com"
+                "email": "shippingemail@ethyca.com",
             }
         ],
         "username": "Ethyca username",
@@ -79,14 +79,16 @@ def recurly_erasure_data(
         "preferred_locale": "en-US",
         "preferred_time_zone": "America/Los_Angeles",
         "address": {
-                "street1": "first cross street",
-                "street2": "account address two",
-                "city": "string",
-                "region": "string",
-                "postal_code": "3446",
-                "country": "IN",
-                "phone": "string"
-        }
+            "street1": "first cross street",
+            "street2": "account address two",
+            "city": "string",
+            "region": "string",
+            "postal_code": "3446",
+            "country": "IN",
+            "phone": "string",
+        },
+        "first_name": "Ethyca",
+        "last_name": "Test",
     }
 
     # create a new account with shipping info

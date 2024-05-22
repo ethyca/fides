@@ -94,6 +94,9 @@ from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMasking
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
+from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
+    RandomStringRewriteMaskingStrategy,
+)
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
@@ -1137,7 +1140,7 @@ def erasure_policy_string_rewrite_name_and_email(
         },
     )
 
-    erasure_rule = Rule.create(
+    string_erasure_rule = Rule.create(
         db=db,
         data={
             "action_type": ActionType.erasure.value,
@@ -1151,12 +1154,29 @@ def erasure_policy_string_rewrite_name_and_email(
         },
     )
 
+    email_erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "email rewrite erasure rule rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": RandomStringRewriteMaskingStrategy.name,
+                "configuration": {
+                    "length": 20,
+                    "format_preservation": {"suffix": "@email.com"},
+                },
+            },
+        },
+    )
+
     erasure_rule_target_name = RuleTarget.create(
         db=db,
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.name").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": string_erasure_rule.id,
         },
     )
 
@@ -1165,7 +1185,7 @@ def erasure_policy_string_rewrite_name_and_email(
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.contact.email").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": email_erasure_rule.id,
         },
     )
 
@@ -1179,7 +1199,11 @@ def erasure_policy_string_rewrite_name_and_email(
     except ObjectDeletedError:
         pass
     try:
-        erasure_rule.delete(db)
+        string_erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        email_erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:
