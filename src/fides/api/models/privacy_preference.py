@@ -258,6 +258,12 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
     notice_name = Column(String, index=True)  # Privacy Notice name or "TCF"
 
+    property_id = Column(
+        String,
+        index=True,
+        nullable=True,
+    )
+
     # The specific version of the experience config the user was shown to present the relevant notice
     # Contains the version, language, button labels, description, etc.
     @declared_attr

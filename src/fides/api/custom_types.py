@@ -8,6 +8,8 @@ from nh3 import clean
 from pydantic import AnyUrl, BaseConfig
 from pydantic.fields import ModelField
 
+from fides.api.util.unsafe_file_util import verify_css
+
 
 class SafeStr(str):
     """
@@ -146,4 +148,27 @@ class URLOrigin(AnyUrl):
         if value.path:
             raise ValueError("URL origin values cannot contain a path.")
 
+        return value
+
+
+class CssStr(str):
+    """
+    A custom string type that represents a valid CSS stylesheet.
+
+    The `CssStr` type automatically validates the input value using the `verify_css` function
+    to ensure that it is a valid CSS stylesheet. The validation checks for parsing errors,
+    import statements, and calls to the url() function.
+
+    If the input value is not a string or fails the CSS validation, a `ValidationError` is raised.
+    """
+
+    @classmethod
+    def __get_validators__(cls) -> Generator:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: Any) -> str:
+        if not isinstance(value, str):
+            raise TypeError("CssStr must be a string")
+        verify_css(value)
         return value
