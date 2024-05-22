@@ -202,7 +202,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """Retrieve data from SaaS APIs"""
         self.set_privacy_request_state(privacy_request, node, request_task)
         if request_task.callback_succeeded:
-            logger.info("Access callback succeeded for {}", request_task.id)
+            # If this is True, we assume we've received results from a third party
+            # asynchronously and we can proceed to the next node.
+            logger.info(
+                "Access callback succeeded for request task '{}'", request_task.id
+            )
             return request_task.get_access_data()
         query_config: SaaSQueryConfig = self.query_config(node)
 
@@ -249,6 +253,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 and read_request.async_config.strategy == AsyncStrategy.callback
                 and request_task.id  # Only supported in DSR 3.0
             ):
+                # Asynchronous read request detected. We will exit below and put the
+                # Request Task in an "awaiting_processing" status.
                 awaiting_async_callback = True
 
             # check all the values specified by param_values are provided in input_data
@@ -287,7 +293,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.unset_connector_state()
         if awaiting_async_callback:
             # If a read request was marked to expect async results, original response data here is ignored.
-            # We'll instead use the data received in the callback URL
+            # We'll instead use the data received in the callback URL later.
+            # Raising an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state
             raise AwaitingAsyncTaskCallback()
         return rows
 
@@ -434,7 +441,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node, request_task)
         if request_task.callback_succeeded:
-            logger.info("Masking callback succeeded for {}", request_task.id)
+            # If this is True, we assume the data was masked
+            # asynchronously and we can proceed to the next node.
+            logger.info(
+                "Masking callback succeeded for request task '{}'", request_task.id
+            )
             # If we've received the callback for this node, return rows_masked directly
             return request_task.rows_masked or 0
 
@@ -504,8 +515,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             request_task.id
         )  # Only supported in DSR 3.0
         if awaiting_async_callback:
+            # Asynchronous masking request detected in saas config.
             # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncTaskCallback to put this task in a paused state.
+            # and we raise an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state.
             raise AwaitingAsyncTaskCallback()
         return rows_updated
 

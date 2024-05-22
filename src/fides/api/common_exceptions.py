@@ -164,7 +164,7 @@ class RequestTaskNotFound(BaseException):
 
 
 class AwaitingAsyncTaskCallback(BaseException):
-    """Request Task Paused - Awaiting Async Task Callback"""
+    """Request Task is Awaiting Processing - Awaiting Async Task Callback"""
 
 
 class UpstreamTasksNotReady(BaseException):

@@ -1676,7 +1676,9 @@ class ExecutionLog(Base):
         EnumColumn(
             ExecutionLogStatus,
             native_enum=True,
-            values_callable=lambda x: [i.value for i in x],
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
         ),
         index=True,
         nullable=False,
@@ -1760,11 +1762,15 @@ class RequestTask(Base):
     collection_name = Column(String, nullable=False, index=True)
     action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
 
+    # Note that RequestTasks share statuses with ExecutionLogs.  When a RequestTask changes state, an ExecutionLog
+    # is also created with that state.  These are tied tightly together in GraphTask.
     status = Column(
         EnumColumn(
             ExecutionLogStatus,
             native_enum=False,
-            values_callable=lambda x: [i.value for i in x],
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
         ),  # character varying in database
         index=True,
         nullable=False,
