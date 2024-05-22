@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.36.2b5.post0.dev5"
+    "version": "2.36.2b5.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8850,6 +8850,56 @@
         ]
       }
     },
+    "/api/v1/request-task/callback": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Request Task Async Callback",
+        "description": "For DSR 3.0: Async Callback Endpoint for Request Tasks\n\nRe-queues Request Task with asynchronously-retrieved results.  If you don't want to supply results, hitting\nthis endpoint with an empty json request body will be taken as verification the async or erasure request\nfor this request task is complete.",
+        "operationId": "request_task_async_callback_api_v1_request_task_callback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTaskCallbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Request Task Async Callback Api V1 Request Task Callback Post",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:resume"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/id-verification/config": {
       "get": {
         "tags": [
@@ -12217,6 +12267,26 @@
         },
         "additionalProperties": false,
         "description": "Application config settings update body is an arbitrary dict (JSON object)\nWe describe it in a schema to enforce some restrictions on the keys passed.\n\nTODO: Eventually this should be driven by a more formal validation schema for this\nthe application config that is properly hooked up to the global pydantic config module."
+      },
+      "AsyncConfig": {
+        "title": "AsyncConfig",
+        "required": [
+          "strategy"
+        ],
+        "type": "object",
+        "properties": {
+          "strategy": {
+            "$ref": "#/components/schemas/AsyncStrategy"
+          }
+        },
+        "description": "Async config only has strategy for now, but could be\nextended with other configuration options when we add polling"
+      },
+      "AsyncStrategy": {
+        "title": "AsyncStrategy",
+        "enum": [
+          "callback"
+        ],
+        "description": "Async strategies: supports callback for now, but could be\nextended to polling as well in the future"
       },
       "AuditLogAction": {
         "title": "AuditLogAction",
@@ -17788,6 +17858,26 @@
         "additionalProperties": false,
         "description": "Describes a Fides registration."
       },
+      "RequestTaskCallbackRequest": {
+        "title": "RequestTaskCallbackRequest",
+        "type": "object",
+        "properties": {
+          "access_results": {
+            "title": "Access Results",
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Access results collected asynchronously, as a list of rows.  Use caution; this data may be used by dependent tasks downstream and/or uploaded to the end user."
+          },
+          "rows_masked": {
+            "title": "Rows Masked",
+            "type": "integer",
+            "description": "Number of records masked, as an integer"
+          }
+        },
+        "description": "Request body for Async Callback"
+      },
       "ResourceFilter": {
         "title": "ResourceFilter",
         "required": [
@@ -18179,6 +18269,9 @@
           },
           "rate_limit_config": {
             "$ref": "#/components/schemas/RateLimitConfig"
+          },
+          "async_config": {
+            "$ref": "#/components/schemas/AsyncConfig"
           },
           "skip_missing_param_values": {
             "title": "Skip Missing Param Values",
