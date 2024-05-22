@@ -36,7 +36,6 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
-    LastServedNotice,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
 )
