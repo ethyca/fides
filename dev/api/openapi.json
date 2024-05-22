@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.36.2b5.post0.dev4"
+    "version": "2.36.2b5.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -11775,7 +11775,7 @@
           "Admin"
         ],
         "summary": "Db Action",
-        "description": "Initiate one of the enumerated DBActions.",
+        "description": "Initiate one of the enumerated DBActions.\n\nNOTE: Database downgrades are _not_ guaranteed to succeed, and may put your application\ninto an unrecoverable state. They should be invoked with caution. Only downgrade with\nexplicit guidance from Ethyca support.",
         "operationId": "db_action_api_v1_admin_db__action__post",
         "parameters": [
           {
@@ -11785,6 +11785,16 @@
             },
             "name": "action",
             "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Revision",
+              "type": "string",
+              "default": "head"
+            },
+            "name": "revision",
+            "in": "query"
           }
         ],
         "responses": {
@@ -13596,7 +13606,8 @@
         "title": "DBActions",
         "enum": [
           "upgrade",
-          "reset"
+          "reset",
+          "downgrade"
         ],
         "type": "string",
         "description": "The available path parameters for the `/admin/db/{action}` endpoint."
@@ -13948,6 +13959,10 @@
         "properties": {
           "database": {
             "title": "Database",
+            "type": "string"
+          },
+          "database_revision": {
+            "title": "Database Revision",
             "type": "string"
           }
         },
