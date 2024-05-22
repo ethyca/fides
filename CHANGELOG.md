@@ -22,6 +22,7 @@ The types of changes are:
 - Enhancements to `MonitorConfig` DB model to support new functionality [#4888](https://github.com/ethyca/fides/pull/4888)
 - Adding property ID to served notice history and privacy preference history [#4886](https://github.com/ethyca/fides/pull/4886)
 - Adding privacy_center_config and stylesheet fields to the Property model [#4879](https://github.com/ethyca/fides/pull/4879)
+- Include required scopes in API authorization error (403) messages [#4905](https://github.com/ethyca/fides/pull/4905)
 
 ### Changed
 - Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
