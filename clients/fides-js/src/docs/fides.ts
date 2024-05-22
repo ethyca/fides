@@ -233,6 +233,15 @@ export interface Fides {
    * `Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
    */
   reinitialize: () => Promise<void>;
+  
+  /**
+   * Check if the FidesJS experience should be shown to the user. This function
+   * will return `true` if the user's session (location, property ID, etc.)
+   * matches an `experience` with a banner component, and the user has not yet
+   * interacted with the banner (e.g. by accepting or rejecting the consent
+   * preferences) or in the case when the previous consent is no longer valid.
+   */
+  shouldShowExperience: () => boolean;
 
   /**
    * NOTE: The properties below are all marked @internal, despite being exported
@@ -245,6 +254,11 @@ export interface Fides {
    * @internal
    */
   config?: any;
+
+  /**
+   * @internal
+   */ 
+    cookie?: any;
 
   /**
    * @internal
