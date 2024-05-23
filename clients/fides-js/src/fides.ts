@@ -202,8 +202,12 @@ const _Fides: FidesGlobal = {
   },
   initialized: false,
   shouldShowExperience() {
-    if (!isPrivacyExperience(this.experience) || !this.cookie) {
-      throw new Error("Should have an experience and a cookie");
+    if (!isPrivacyExperience(this.experience)) {
+      // Nothing to show if there's no experience
+      return false;
+    }
+    if (!this.cookie) {
+      throw new Error("Should have a cookie");
     }
     return shouldResurfaceConsent(
       this.experience,
