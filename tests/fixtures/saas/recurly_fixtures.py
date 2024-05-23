@@ -1,8 +1,6 @@
 import base64
-import json
 import random
 import string
-import time
 from typing import Any, Dict, Generator
 
 import pydash
@@ -39,13 +37,12 @@ def recurly_erasure_data(
     recurly_erasure_identity_email: str,
     recurly_secrets,
 ) -> Generator:
-    # setup
+    # setup for adding erasure info, a 'code' is required to add a new user
     api_key = recurly_secrets['username']
     api_key_string = api_key
     api_key_bytes = api_key_string.encode("ascii")
     base64_bytes = base64.b64encode(api_key_bytes)
     auth_username = base64_bytes.decode("ascii")
-    # print(auth_username) # for debugging
     gen_string = string.ascii_lowercase
     code = ''.join(random.choice(gen_string) for i in range(10))
 
@@ -94,12 +91,8 @@ def recurly_erasure_data(
     # create a new account with shipping info
     response = requests.post(accounts_url, headers=headers, json=body)
     assert response.ok
-    # import pdb; pdb.set_trace()
-    # part of the response to the request to create a new account is the account_id
-    time.sleep(1)
     account_id = response.json()["shipping_addresses"][0]["account_id"]
-    shipping_id = response.json()["shipping_addresses"][0]["id"]
-    # now we can form up a request to add billing details
+    # add billing details
     body = {
         "first_name": "first bill",
         "last_name": "testing",

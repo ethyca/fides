@@ -1,5 +1,3 @@
-import time
-
 import pytest
 
 from fides.api.models.policy import Policy
@@ -38,8 +36,6 @@ class TestRecurlyConnector:
 
         for shipping_address in access_results["recurly_instance:shipping_address"]:
             assert shipping_address["account_id"] == account["id"]
-
-        time.sleep(30)
 
     @pytest.mark.parametrize(
         "dsr_version",
