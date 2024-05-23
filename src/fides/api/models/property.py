@@ -264,6 +264,8 @@ class MessagingTemplateToProperty(Base):
     )
     property_id = Column(
         String,
+        # todo- add validation against deleting property if it is being used by a messaging template
+        # How to add constraint where if you try to delete a property that exists here, it throws a DB err
         ForeignKey("plus_property.id"),
         unique=False,
         index=True,

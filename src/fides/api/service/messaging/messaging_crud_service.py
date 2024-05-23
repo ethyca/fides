@@ -179,6 +179,8 @@ def get_template_by_id(db: Session, template_id: str) -> MessagingTemplate:
     messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
         db, object_id=template_id
     )
+    # todo- return less fields in pydantic schema
+    # todo- add minimalmessaging template, select specific fields off property
     if not messaging_template:
         raise MessagingConfigNotFoundException(
             f"No messaging template found with id {template_id}"
