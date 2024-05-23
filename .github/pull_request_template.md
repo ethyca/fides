@@ -27,3 +27,5 @@ _Write some things here about the changes and any potential caveats_
   * [ ] Ensure that your downrev is up to date with the latest revision on `main`
   * [ ] Ensure that your `downgrade()` migration is correct and works
     * [ ] If a downgrade migration is not possible for this change, please call this out in the PR description!
+* If there are any new client scopes created as part of the pull request:
+   * [ ] Please update public-facing documentation that references our scope registry
