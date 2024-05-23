@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.37.0...main)
 
+### Added
+- Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
+
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
 ### Added
