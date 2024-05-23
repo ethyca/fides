@@ -15,7 +15,15 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.36.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.37.0...main)
+
+### Changed
+- Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
+
+### Added
+- Added support for custom property paths, configs and stylesheets for privacy center [#4907](https://github.com/ethyca/fides/pull/4907)
+
+## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
 ### Added
 - Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
@@ -23,11 +31,10 @@ The types of changes are:
 - Added developer option to disable auto-initialization on FidesJS bundles. [#4900](https://github.com/ethyca/fides/pull/4900)
 - Adding property ID to served notice history and privacy preference history [#4886](https://github.com/ethyca/fides/pull/4886)
 - Adding privacy_center_config and stylesheet fields to the Property model [#4879](https://github.com/ethyca/fides/pull/4879)
-- Added support for custom property paths, configs and stylesheets for privacy center [#4907](https://github.com/ethyca/fides/pull/4907)
-
+- Adds generic async callback integration support [#4865](https://github.com/ethyca/fides/pull/4865)
+- Ability to `downgrade` the application DB through the `/admin/db` endpoint [#4893](https://github.com/ethyca/fides/pull/4893)
 
 ### Changed
-- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 - Rename MinimalPrivacyExperience class and usages [#4889](https://github.com/ethyca/fides/pull/4889)
 - Included fidesui as part of the monorepo [#4880](https://github.com/ethyca/fides/pull/4880)
 - Improve `geolocation` and `property_id` error response to return 400 status instead of 500 server error on /fides.js endpoint [#4884](https://github.com/ethyca/fides/pull/4884)
@@ -43,6 +50,10 @@ The types of changes are:
 - Fixed an issue where the Trigger Modal Link was not being populated correctly in the translation form [#4911](https://github.com/ethyca/fides/pull/4911)
 
 
+### Security
+
+- Escape SQLAlchemy passwords [CVE-2024-34715](https://github.com/ethyca/fides/security/advisories/GHSA-8cm5-jfj2-26q7)
+
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
 ### Added
@@ -52,6 +63,8 @@ The types of changes are:
 - Added custom JSON (de)serialization to shared DB engines to handle non-standard data types in JSONB columns [#4818](https://github.com/ethyca/fides/pull/4818)
 - Added state persistence across sessions to the datamap report table [#4853](https://github.com/ethyca/fides/pull/4853)
 - Removed currentprivacypreference and lastservednotice tables [#4846](https://github.com/ethyca/fides/pull/4846)
+- Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
+- Adds new var to track fides js overlay types [#4869](https://github.com/ethyca/fides/pull/4869)
 
 ### Changed
 - Changed filters on the data map report table to use checkbox collapsible tree view [#4864](https://github.com/ethyca/fides/pull/4864)
