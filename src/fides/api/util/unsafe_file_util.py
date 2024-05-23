@@ -2,6 +2,8 @@ from typing import Optional
 from zipfile import ZipFile
 
 from defusedxml.ElementTree import fromstring
+from tinycss2 import parse_stylesheet  # type: ignore
+from tinycss2.ast import FunctionBlock  # type: ignore
 
 from fides.api.common_exceptions import ValidationError
 
@@ -56,3 +58,27 @@ def verify_zip(zip_file: ZipFile, max_file_size: Optional[int] = None) -> None:
 
                 if file_size > max_file_size:
                     raise ValueError("File size exceeds maximum allowed size")
+
+
+def verify_css(contents: str) -> None:
+    """
+    Ensures that the contents are a valid CSS stylesheet. The validation checks for parsing errors,
+    import statements, and calls to the url() function.
+    """
+
+    nodes = parse_stylesheet(contents, skip_comments=True, skip_whitespace=True)
+    for node in nodes:
+        # check for parsing errors
+        if node.type == "error":
+            raise ValidationError("Unable to parse CSS")
+        # Check for @import rules
+        if node.type == "at-rule" and node.lower_at_keyword == "import":
+            raise ValidationError("@import statements are not allowed in the CSS")
+
+        # Check for url() functions
+        if node.type == "qualified-rule":
+            if any(
+                isinstance(token, FunctionBlock) and token.name == "url"
+                for token in node.content
+            ):
+                raise ValidationError("Calls to url() are not allowed in the CSS")

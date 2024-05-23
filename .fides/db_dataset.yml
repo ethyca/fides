@@ -1718,6 +1718,8 @@ dataset:
       data_categories: [user]
     - name: user_geography
       data_categories: [user]
+    - name: property_id
+      data_categories: [system.operations]
   - name: servednoticehistory
     description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
@@ -1772,6 +1774,8 @@ dataset:
       data_categories: [user]
     - name: user_geography
       data_categories: [user]
+    - name: property_id
+      data_categories: [system.operations]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
@@ -1948,6 +1952,22 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: privacy_center_config
+      data_categories: [system.operations]
+    - name: stylesheet
+      data_categories: [system.operations]
+  - name: plus_property_path
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: path
+      data_categories: [system.operations]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: plus_privacy_experience_config_property
     fields:
     - name: id
@@ -2004,8 +2024,6 @@ dataset:
       data_categories: [ system.operations ]
     - name: is_eligible
       data_categories: [ system.operations ]
-
-      data_categories: [system.operations]
   - name: requesttask
     fields:
     - name: access_data
@@ -2044,6 +2062,8 @@ dataset:
       data_categories: [system]
     - name: upstream_tasks
       data_categories: [system]
+    - name: callback_succeeded
+      data_categories: [system]
   - name: monitorconfig
     fields:
     - name: classify_params
@@ -2059,6 +2079,10 @@ dataset:
     - name: name
       data_categories: [system]
     - name: updated_at
+      data_categories: [system]
+    - name: databases
+      data_categories: [system]
+    - name: monitor_execution_trigger
       data_categories: [system]
   - name: stagedresource
     fields:

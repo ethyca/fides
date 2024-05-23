@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentConfig } from "./ConsentConfig";
 import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
+import type { fides__api__schemas__application_config__ConsentConfig } from "./fides__api__schemas__application_config__ConsentConfig";
 import type { GPPApplicationConfig } from "./GPPApplicationConfig";
 import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
 import type { SecurityApplicationConfig } from "./SecurityApplicationConfig";
@@ -21,6 +21,6 @@ export type PlusApplicationConfig = {
   notifications?: NotificationApplicationConfig;
   execution?: ExecutionApplicationConfig;
   security?: SecurityApplicationConfig;
-  consent?: ConsentConfig;
+  consent?: fides__api__schemas__application_config__ConsentConfig;
   gpp?: GPPApplicationConfig;
 };

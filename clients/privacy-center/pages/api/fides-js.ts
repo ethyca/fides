@@ -65,6 +65,12 @@ let autoRefresh: boolean = true;
  *         description: Forces the GPP extension to be included in the bundle, even if the experience does not have GPP enabled
  *         schema:
  *           type: boolean
+ *       - in: query
+ *         name: initialize
+ *         required: false
+ *         description: When set to "false" fides.js will not be initialized automatically; use `window.Fides.init()` to initialize manually
+ *         schema:
+ *           type: boolean
  *       - in: header
  *         name: CloudFront-Viewer-Country
  *         required: false
@@ -165,6 +171,7 @@ export default async function handler(
   // in production. They allow for the config to be injected by the test framework
   // and delay the initialization of fides.js until the test framework is ready.
   const { e2e: e2eQuery, tcf: tcfQuery } = req.query;
+  const isTestMode = e2eQuery === "true";
 
   // We determine server-side whether or not to send the TCF bundle, which is based
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
@@ -258,6 +265,10 @@ export default async function handler(
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
+  // Check if the client wants to skip initialization of fides.js to allow for manual initialization
+  const { initialize: initializeQuery } = req.query;
+  const skipInitialization = initializeQuery === "false";
+
   const script = `
   (function () {
     // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request
@@ -278,12 +289,17 @@ export default async function handler(
     `
       : ""
   }${
-    e2eQuery === "true"
+    isTestMode // let end-to-end tests set the config and initialize as needed
       ? ""
       : `
-        // Initialize fides.js with custom config
     var fidesConfig = ${fidesConfigJSON};
-    window.Fides.init(fidesConfig);`
+    window.Fides.config = ${fidesConfigJSON};
+    ${skipInitialization ? "" : `window.Fides.init(fidesConfig);`}
+    ${
+      environment.settings.DEBUG && skipInitialization
+        ? `console.log("fides.js initialization skipped. Call window.Fides.init() manually.");`
+        : ""
+    }`
   }
   })();
   `;

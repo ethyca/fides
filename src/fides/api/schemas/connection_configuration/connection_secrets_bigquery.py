@@ -34,7 +34,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         sensitive=True,
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
-    dataset: str = Field(
+    dataset: Optional[str] = Field(
         title="BigQuery Dataset",
         description="The dataset within your BigQuery project that contains the tables you want to access.",
     )
