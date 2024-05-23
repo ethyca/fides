@@ -139,8 +139,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       shouldShowExperience: this.shouldShowExperience(),
     });
   }
-  this.experience = initialFides?.experience ?? config.experience;
-  updateWindowFides(this);
 
   const updatedFides = await initialize({
     ...config,
