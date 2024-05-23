@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "555faca2aecf5a29fbf656b68938e185" # string
+analytics_id = "8eee6f19e6450f2d9131e3e28b265d67" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -99,7 +99,7 @@ task_engine_max_overflow = 50 # integer
 user = "defaultuser" # string
 
 # Additional connection parameters used when connecting to the
-# applicaiton database.
+# application database.
 params = {} # object
 
 #---------------#
