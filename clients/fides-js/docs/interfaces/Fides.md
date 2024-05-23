@@ -297,3 +297,19 @@ such as the `fides_overrides` global or the query params.
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### shouldShowExperience()
+
+> **shouldShowExperience**: () => `boolean`
+
+Check if the FidesJS experience should be shown to the user. This function
+will return `true` if the user's session (location, property ID, etc.)
+matches an `experience` with a banner component, and the user has not yet
+interacted with the banner (e.g. by accepting or rejecting the consent
+preferences) or in the case when the previous consent is no longer valid.
+
+#### Returns
+
+`boolean`

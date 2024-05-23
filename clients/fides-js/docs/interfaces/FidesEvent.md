@@ -82,6 +82,7 @@ window.addEventListener("FidesUpdated", (evt) => {
 | `fides_string` | `string` | User's current consent string; see [Fides.fides_string](Fides.md#fides_string) for detail. |
 | `extraDetails` | `object` | Extra event properties, for additional context. |
 | `extraDetails.servingComponent` | `"banner"` \| `"modal"` \| `"tcf_banner"` \| `"tcf_overlay"` | Which FidesJS UI component (if any) caused this event. |
+| `extraDetails.shouldShowExperience` | `boolean` | Whether the user should be shown the consent experience. Only available on FidesInitialized events. |
 | `extraDetails.consentMethod` | `"accept"` \| `"reject"` \| `"save"` \| `"dismiss"` \| `"gpc"` | What consent method (if any) caused this event. |
 
 #### Overrides
