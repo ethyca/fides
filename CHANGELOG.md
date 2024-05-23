@@ -21,6 +21,7 @@ The types of changes are:
 
 ### Added
 - Added initial version for Helios: Data Discovery and Detection [#4839](https://github.com/ethyca/fides/pull/4839)
+- Added shouldShowExperience to the Fides global and FidesInitialized events [#4895](https://github.com/ethyca/fides/pull/4895)
 - Enhancements to `MonitorConfig` DB model to support new functionality [#4888](https://github.com/ethyca/fides/pull/4888)
 - Added developer option to disable auto-initialization on FidesJS bundles. [#4900](https://github.com/ethyca/fides/pull/4900)
 - Adding property ID to served notice history and privacy preference history [#4886](https://github.com/ethyca/fides/pull/4886)
