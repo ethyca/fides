@@ -10,7 +10,7 @@ import {
   Text,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import Link from "next/link";
 import { useRouter } from "next/router";
 

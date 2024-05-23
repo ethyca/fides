@@ -1,4 +1,4 @@
-import { Switch } from "@fidesui/react";
+import { Switch } from "fidesui";
 import React, { ChangeEvent } from "react";
 
 type ClassifyResultsToggleProps = {

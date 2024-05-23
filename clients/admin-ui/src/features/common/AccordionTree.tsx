@@ -7,7 +7,7 @@ import {
   Box,
   BoxProps,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { Fragment, useState } from "react";
 
 import { TreeNode } from "./types";

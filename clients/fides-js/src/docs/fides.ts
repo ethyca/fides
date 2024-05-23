@@ -136,6 +136,11 @@ export interface Fides {
    * programmatically at any time from your own custom JavaScript logic as
    * desired.
    *
+   * NOTE: If using custom JavaScript to show the modal, you may also want to set
+   * the `modalLinkId` global setting on the Fides Privacy Center to prevent the
+   * automated searching for, and binding the click event to, the modal link. If using
+   * Fides Cloud, contact Ethyca Support for details on adjusting global settings.
+   *
    *
    * @example
    * Showing the FidesJS modal via an `onclick` handler on a custom button element:
@@ -201,21 +206,31 @@ export interface Fides {
   /**
    * Initializes FidesJS with an initial configuration object.
    *
-   * NOTE: In most cases, you should never have to call this directly, since
+   * In most cases, you should never have to call this directly, since
    * Fides Cloud will automatically bundle a `Fides.init(...)` call server-side
    * with the appropriate configuration options for the user's session based on
    * their location, property ID, and the matching experience config from Fides.
+   *
+   * However, initialization can be called manually if needed - for example to delay
+   * initialization until after your own custom JavaScript has run to set up some
+   * config options. In this case, you can disable the automatic initialization
+   * by including the query param `initialize=false` in the Fides script URL
+   * (see {@link /docs/dev-docs/js/privacy-center-fidesjs-hosting} for details).
+   * You will then need to call `Fides.init()` manually at the appropriate time.
+   *
+   * This function can also be used to reinitialize FidesJS. This is useful when
+   * you're working on a single page application (SPA) and you want to modify any
+   * FidesJS options after initialization - for example, switching between
+   * regular/embedded mode with `fides_embed`, overriding the user's language with
+   * `fides_locale`, etc. Doing so without passing a config will reinitialize
+   * FidesJS with the initial configuration, but taking into account any new overrides
+   * such as the `fides_overrides` global or the query params.
    */
-  init: (config: any) => Promise<void>;
+  init: (config?: any) => Promise<void>;
 
   /**
-   * Reinitialize FidesJS with the initial configuration, but taking into account
-   * any new overrides such as the `fides_overrides` global or the query params.
-   * 
-   * This is useful when you're working on a single page application (SPA) and you
-   * want to modify any FidesJS options after initialization - for example,
-   * switching between regular/embedded mode with `fides_embed`, overriding the
-   * user's language with `fides_locale`, etc. 
+   * @deprecated
+   * `Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
    */
   reinitialize: () => Promise<void>;
 
@@ -238,7 +253,7 @@ export interface Fides {
 
   /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
-   * 
+   *
    * @internal
    */
   fides_meta: Record<any, any>;

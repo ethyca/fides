@@ -1,5 +1,5 @@
-import { Box, Text, useToast } from "@fidesui/react";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
+import { Box, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";

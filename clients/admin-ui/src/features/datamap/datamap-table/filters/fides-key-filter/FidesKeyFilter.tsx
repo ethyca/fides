@@ -11,7 +11,7 @@ import {
   MenuItem,
   MenuList,
   Portal,
-} from "@fidesui/react";
+} from "fidesui";
 import { ColumnInstance } from "react-table";
 
 import { DatamapRow } from "../../../datamap.slice";

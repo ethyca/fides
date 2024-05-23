@@ -1,4 +1,4 @@
-import { theme } from "@fidesui/react";
+import { theme } from "fidesui";
 
 export const getTableTHandTDStyles = (cellId: string) =>
   cellId === "select"

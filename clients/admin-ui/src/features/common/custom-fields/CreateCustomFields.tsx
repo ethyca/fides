@@ -1,4 +1,4 @@
-import { Flex, forwardRef, Spacer, Switch, Text } from "@fidesui/react";
+import { Flex, forwardRef, Spacer, Switch, Text } from "fidesui";
 import {
   Field,
   FieldInputProps,

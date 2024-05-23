@@ -1,3 +1,10 @@
+import { useAlert, useAPIHelper } from "common/hooks";
+import { selectConnectionTypeState } from "connection-type/connection-type.slice";
+import {
+  useGetConnectionConfigDatasetConfigsQuery,
+  usePatchDatasetConfigsMutation,
+} from "datastore-connections/datastore-connection.slice";
+import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import {
   Box,
   Button,
@@ -8,14 +15,7 @@ import {
   Text,
   TextProps,
   VStack,
-} from "@fidesui/react";
-import { useAlert, useAPIHelper } from "common/hooks";
-import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import {
-  useGetConnectionConfigDatasetConfigsQuery,
-  usePatchDatasetConfigsMutation,
-} from "datastore-connections/datastore-connection.slice";
-import { PatchDatasetsConfigRequest } from "datastore-connections/types";
+} from "fidesui";
 import { useRouter } from "next/router";
 import React, { ChangeEvent, useEffect, useState } from "react";
 

@@ -9,7 +9,7 @@ import {
   TagLabel,
   VStack,
   Wrap,
-} from "@fidesui/react";
+} from "fidesui";
 import { FieldArrayRenderProps } from "formik";
 import React, { useState } from "react";
 

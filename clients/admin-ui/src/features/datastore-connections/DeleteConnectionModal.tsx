@@ -11,7 +11,7 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import React from "react";
 
 import { useDeleteDatastoreConnectionMutation } from "./datastore-connection.slice";

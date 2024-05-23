@@ -131,7 +131,7 @@ def downgrade():
 
     # Staged resource table
     op.drop_index(op.f("ix_stagedresource_resource_type"), table_name="stagedresource")
-    op.drop_index(op.f("ix_stagedresource_key"), table_name="stagedresource")
+    op.drop_index(op.f("ix_stagedresource_urn"), table_name="stagedresource")
     op.drop_index(op.f("ix_stagedresource_id"), table_name="stagedresource")
     op.drop_table("stagedresource")
 

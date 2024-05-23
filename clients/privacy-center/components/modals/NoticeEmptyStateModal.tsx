@@ -7,7 +7,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 
 const NoticeEmptyStateModal = ({
   isOpen,

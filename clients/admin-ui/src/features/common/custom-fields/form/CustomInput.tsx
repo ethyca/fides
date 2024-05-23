@@ -13,7 +13,7 @@ import {
   NumberInputStepper,
   Textarea,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import { FieldHookConfig, useField } from "formik";
 
 import { InputType } from "./types";

@@ -1,4 +1,4 @@
-import { Flex, FormControl, FormLabel, Select, Text } from "@fidesui/react";
+import { Flex, FormControl, FormLabel, Select, Text } from "fidesui";
 import { useState } from "react";
 
 import StandardDialog, {

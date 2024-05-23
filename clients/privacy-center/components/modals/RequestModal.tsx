@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, ModalContent, ModalOverlay } from "@fidesui/react";
+import { Modal, ModalContent, ModalOverlay } from "fidesui";
 
 type RequestModalProps = {
   isOpen: boolean;

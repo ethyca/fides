@@ -15,7 +15,7 @@ import {
   Tr,
   useClipboard,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 

@@ -1,9 +1,9 @@
-import { VStack } from "@fidesui/react";
 import {
   reset,
   selectConnectionTypeState,
   setStep,
 } from "connection-type/connection-type.slice";
+import { VStack } from "fidesui";
 import React, {
   useCallback,
   useEffect,
