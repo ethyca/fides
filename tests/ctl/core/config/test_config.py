@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
+from fides.api.db.database import get_alembic_config
 from fides.config import check_required_webserver_config_values, get_config
 from fides.config.database_settings import DatabaseSettings
 from fides.config.redis_settings import RedisSettings
@@ -189,6 +190,46 @@ def test_database_url_test_mode_disabled() -> None:
         database_settings.async_database_uri
         == "postgresql+asyncpg://postgres:fides@fides-db:5432/database"
     )
+
+
+@pytest.mark.unit
+def test_password_escaped_by_database_settings_validation() -> None:
+    database_settings = DatabaseSettings(
+        user="postgres",
+        password="fidesp@ssword",
+        server="fides-db",
+        port="5432",
+        db="database",
+        test_db="test_database",
+    )
+    assert (
+        database_settings.async_database_uri
+        == "postgresql+asyncpg://postgres:fidesp%40ssword@fides-db:5432/test_database"
+    )
+
+    assert (
+        database_settings.sync_database_uri
+        == "postgresql+psycopg2://postgres:fidesp%40ssword@fides-db:5432/test_database"
+    )
+
+    assert (
+        database_settings.sqlalchemy_database_uri
+        == "postgresql://postgres:fidesp%40ssword@fides-db:5432/database"
+    )
+
+    assert (
+        database_settings.sqlalchemy_test_database_uri
+        == "postgresql://postgres:fidesp%40ssword@fides-db:5432/test_database"
+    )
+
+
+def test_get_alembic_config_with_special_char_in_database_url():
+    database_url = (
+        "postgresql+psycopg2://postgres:fidesp%40ssword@fides-db:5432/test_database"
+    )
+    # this would fail with - ValueError: invalid interpolation syntax
+    # if not handled
+    get_alembic_config(database_url)
 
 
 @patch.dict(
