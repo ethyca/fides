@@ -23,3 +23,7 @@ _Write some things here about the changes and any potential caveats_
 * [ ] Relevant Follow-Up Issues Created
 * [ ] Update `CHANGELOG.md`
 * [ ] For API changes, the [Postman collection](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/postman/Fides.postman_collection.json) has been updated
+* If there are any database migrations:
+  * [ ] Ensure that your downrev is up to date with the latest revision on `main`
+  * [ ] Ensure that your `downgrade()` migration is correct and works
+    * [ ] If a downgrade migration is not possible for this change, please call this out in the PR description!

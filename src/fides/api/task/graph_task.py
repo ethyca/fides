@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,too-many-statements
 import copy
 import traceback
 from abc import ABC
@@ -12,10 +12,10 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     ActionDisabled,
+    AwaitingAsyncTaskCallback,
     CollectionDisabled,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
-    PrivacyRequestPaused,
     SkippingConsentPropagation,
 )
 from fides.api.graph.config import (
@@ -100,16 +100,17 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
-                except PrivacyRequestPaused as ex:
+                except AwaitingAsyncTaskCallback as ex:
                     traceback.print_exc()
                     logger.warning(
-                        "Privacy request {} paused {}",
+                        "Request Task {} {} {} awaiting async callback",
+                        self.request_task.id if self.request_task.id else None,
                         method_name,
                         self.execution_node.address,
                     )
-                    self.log_paused(action_type, ex)
-                    # Re-raise to stop privacy request execution on pause.
-                    raise
+                    self.log_awaiting_processing(action_type, ex)
+                    # Request Task put in "awaiting_processing" status and exited, awaiting Async Callback
+                    return None
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
                     self.request_task.rows_masked = 0
@@ -396,11 +397,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
-    def log_paused(self, action_type: ActionType, ex: Optional[BaseException]) -> None:
+    def log_awaiting_processing(
+        self, action_type: ActionType, ex: Optional[BaseException]
+    ) -> None:
         """On paused activities"""
         logger.info("Pausing {}, node {}", self.resources.request.id, self.key)
 
-        self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
+        self.update_status(
+            str(ex), [], action_type, ExecutionLogStatus.awaiting_processing
+        )
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""

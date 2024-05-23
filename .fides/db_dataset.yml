@@ -2024,8 +2024,6 @@ dataset:
       data_categories: [ system.operations ]
     - name: is_eligible
       data_categories: [ system.operations ]
-
-      data_categories: [system.operations]
   - name: requesttask
     fields:
     - name: access_data
@@ -2063,6 +2061,8 @@ dataset:
     - name: updated_at
       data_categories: [system]
     - name: upstream_tasks
+      data_categories: [system]
+    - name: callback_succeeded
       data_categories: [system]
   - name: monitorconfig
     fields:
