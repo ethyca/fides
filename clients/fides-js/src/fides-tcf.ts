@@ -68,6 +68,12 @@ declare global {
   }
 }
 
+const updateWindowFides = (fidesGlobal: FidesGlobal) => {
+  if (typeof window !== "undefined") {
+    window.Fides = fidesGlobal;
+  }
+};
+
 const updateExperience = ({
   cookie,
   experience,
@@ -116,6 +122,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     raise("Fides must be initialized with a configuration object");
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
+  updateWindowFides(this);
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -188,10 +195,13 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   initializeTcfCmpApi();
   if (initialFides) {
     Object.assign(this, initialFides);
+    updateWindowFides(this);
     dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
       shouldShowExperience: this.shouldShowExperience(),
     });
   }
+  this.experience = initialFides?.experience ?? config.experience;
+  updateWindowFides(this);
 
   const updatedFides = await initialize({
     ...config,
@@ -201,6 +211,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     overrides,
   });
   Object.assign(this, updatedFides);
+  updateWindowFides(this);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {

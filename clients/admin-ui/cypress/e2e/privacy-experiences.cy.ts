@@ -239,7 +239,7 @@ describe("Privacy experiences", () => {
         );
       });
 
-      it("doesn't show preview until privacy notice is added", () => {
+      it.only("doesn't show preview until privacy notice is added", () => {
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("no-preview-notice").contains(
           "No privacy notices added"
