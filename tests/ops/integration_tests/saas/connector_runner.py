@@ -261,7 +261,9 @@ class ConnectorRunner:
         identity = Identity(**identities)
         privacy_request.cache_identity(identity)
 
-        _privacy_preference_history(self.db, privacy_request, identities, opt_in=True)
+        create_privacy_preference_history(
+            self.db, privacy_request, identities, opt_in=True
+        )
         opt_in = consent_runner_tester(
             privacy_request,
             consent_policy,
@@ -271,7 +273,9 @@ class ConnectorRunner:
             self.db,
         )
 
-        _privacy_preference_history(self.db, privacy_request, identities, opt_in=False)
+        create_privacy_preference_history(
+            self.db, privacy_request, identities, opt_in=False
+        )
         opt_out = consent_runner_tester(
             privacy_request,
             consent_policy,
@@ -462,9 +466,10 @@ def dataset_config(
     return dataset
 
 
-def _privacy_preference_history(
+def create_privacy_preference_history(
     db, privacy_request: PrivacyRequest, identities: Dict[str, Any], opt_in: bool
 ):
+    """Creates a privacy preference history entry and associates it with the given privacy request and identities"""
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
@@ -484,7 +489,7 @@ def _privacy_preference_history(
     )
 
     email_identity = identities["email"]
-    provided_identity = ProvidedIdentity.create(
+    ProvidedIdentity.create(
         db,
         data={
             "privacy_request_id": None,
