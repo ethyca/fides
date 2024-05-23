@@ -1,4 +1,3 @@
-import base64
 import random
 import string
 from typing import Any, Dict, Generator
@@ -6,6 +5,7 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+from requests.auth import HTTPBasicAuth
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -19,7 +19,7 @@ secrets = get_secrets("recurly")
 def recurly_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "recurly.domain") or secrets["domain"],
-        "username": pydash.get(saas_config, "recurly.username") or secrets["username"],
+        "api_key": pydash.get(saas_config, "recurly.api_key") or secrets["api_key"],
     }
 
 @pytest.fixture(scope="session")
@@ -38,18 +38,13 @@ def recurly_erasure_data(
     recurly_secrets,
 ) -> Generator:
     # setup for adding erasure info, a 'code' is required to add a new user
-    api_key = recurly_secrets['username']
-    api_key_string = api_key
-    api_key_bytes = api_key_string.encode("ascii")
-    base64_bytes = base64.b64encode(api_key_bytes)
-    auth_username = base64_bytes.decode("ascii")
     gen_string = string.ascii_lowercase
     code = ''.join(random.choice(gen_string) for i in range(10))
 
     base_url = f"https://{recurly_secrets['domain']}"
+    auth = HTTPBasicAuth(recurly_secrets["api_key"], None)
     headers = {
         "Accept": "application/vnd.recurly.v2021-02-25",
-        "Authorization": "Basic " + auth_username,
         "Content-Type": "application/json",
     }
     accounts_url = f"{base_url}/accounts"
@@ -89,7 +84,7 @@ def recurly_erasure_data(
     }
 
     # create a new account with shipping info
-    response = requests.post(accounts_url, headers=headers, json=body)
+    response = requests.post(accounts_url, auth=auth, headers=headers, json=body)
     assert response.ok
     account_id = response.json()["shipping_addresses"][0]["account_id"]
     # add billing details
@@ -108,7 +103,12 @@ def recurly_erasure_data(
         "number": "4111 1111 1111 1111"
     }
     billing_url = f"{accounts_url}/{account_id}/billing_info"
-    response = requests.put(billing_url, headers=headers, json=body)
+    response = requests.put(
+        billing_url,
+        auth=auth,
+        headers=headers,
+        json=body,
+    )
     assert response.ok
 
 @pytest.fixture

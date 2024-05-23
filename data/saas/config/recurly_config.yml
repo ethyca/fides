@@ -11,7 +11,7 @@ saas_config:
       default_value: v3.recurly.com
       description: The URL for your Recurly instance
       label: Domain
-    - name: username
+    - name: api_key
       description: Your Recurly API key
       label: API key
 
@@ -21,7 +21,7 @@ saas_config:
     authentication:
       strategy: basic
       configuration:
-        username: <username>
+        username: <api_key>
 
   test_request:
     method: GET
