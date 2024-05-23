@@ -139,7 +139,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       shouldShowExperience: this.shouldShowExperience(),
     });
   }
-
+  this.experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
     fides: this,
