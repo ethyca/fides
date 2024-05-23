@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.37.0...main)
 
+### Changed
+- Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
+
+
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
 ### Added
@@ -44,6 +48,10 @@ The types of changes are:
 - Handle a 404 response from Segment when a user ID or email is not found [#4902](https://github.com/ethyca/fides/pull/4902)
 - Fixed an issue where the Trigger Modal Link was not being populated correctly in the translation form [#4911](https://github.com/ethyca/fides/pull/4911)
 
+
+### Security
+
+- Escape SQLAlchemy passwords [CVE-2024-34715](https://github.com/ethyca/fides/security/advisories/GHSA-8cm5-jfj2-26q7)
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
