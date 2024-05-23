@@ -23,7 +23,8 @@ import type { TCFVendorRelationships } from "./TCFVendorRelationships";
  * Notices are extracted from the shared Experience Config and placed at the top-level here
  * for backwards compatibility, and to reduce nesting due to notice translations.
  *
- * Additionally, the notices on the ExperienceConfig are further filtered.
+ * Additionally, the notices may be a subset of the notices attached to the ExperienceConfig
+ * due to filtering
  */
 export type PrivacyExperienceResponse = {
   id: string;
@@ -56,5 +57,6 @@ export type PrivacyExperienceResponse = {
    */
   experience_config?: ExperienceConfigResponseNoNotices;
   gvl?: any;
+  gvl_translations?: any;
   meta?: ExperienceMeta;
 };
