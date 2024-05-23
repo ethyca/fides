@@ -258,7 +258,7 @@ export interface Fides {
   /**
    * @internal
    */ 
-    cookie?: any;
+  cookie?: any;
 
   /**
    * @internal
