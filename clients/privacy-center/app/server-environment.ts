@@ -8,7 +8,9 @@
  * During server-side rendering, call loadPrivacyCenterEnvironment() to initialize the environment values for the App.
  */
 import { URL } from "url";
-import { addCommonHeaders } from "~/common/CommonHeaders";
+import getPropertyFromUrl from "~/app/server-utils/getPropertyFromUrl";
+import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
+import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
 
 import {
   isV1ConsentConfig,
@@ -26,45 +28,6 @@ import {
 /**
  * SERVER-SIDE functions
  */
-
-/**
- * Settings that can be controlled using ENV vars on the server.
- *
- * Any of these can be set by adding the prefix "FIDES_PRIVACY_CENTER__", e.g.
- *
- * FIDES_PRIVACY_CENTER__FIDES_API_URL=https://fides.example.com/api/v1
- */
-export interface PrivacyCenterSettings {
-  // Privacy center settings
-  FIDES_API_URL: string; // e.g. http://localhost:8080/api/v1
-  SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
-  CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
-  CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
-  CUSTOM_PROPERTIES: boolean; // (optional) (default: true) enables the use of a single privacy center instance to serve different properties on different paths with custom configs
-
-  // Fides.js options
-  DEBUG: boolean; // whether console logs are enabled for consent components
-  GEOLOCATION_API_URL: string; // e.g. http://location-cdn.com
-  IS_GEOLOCATION_ENABLED: boolean; // whether we should use geolocation to drive privacy experience
-  IS_OVERLAY_ENABLED: boolean; // whether we should render privacy-experience-driven components
-  IS_PREFETCH_ENABLED: boolean | false; // (optional) whether we should pre-fetch geolocation and experience server-side
-  OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
-  MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
-  PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
-  FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
-  FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
-  FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
-  FIDES_TCF_GDPR_APPLIES: boolean; // (optional) The default for the TCF GDPR applies value (default true)
-  FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
-  IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
-  FIDES_JS_BASE_URL: string; // A base URL to a directory of fides.js scripts
-  CUSTOM_OPTIONS_PATH: string | null; // (optional) A custom path to fetch FidesOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
-  PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
-  ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
-  BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
-  FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
-  FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
-}
 
 /**
  * Subset of PrivacyCenterSettings that are forwarded to the client.
@@ -286,117 +249,6 @@ export const loadStylesFromFile = async (
   ];
   const file = await loadConfigFile(urls);
   return file;
-};
-
-const getPropertyFromUrl = async ({
-  fidesApiUrl,
-  customPropertyPath,
-}: {
-  fidesApiUrl: string;
-  customPropertyPath: string;
-}) => {
-  const headers = new Headers();
-  addCommonHeaders(headers);
-
-  let result: Property | null = null;
-  try {
-    const response = await fetch(
-      `${fidesApiUrl}/plus/property?${new URLSearchParams({
-        path: `/${customPropertyPath}`,
-      })}`,
-      {
-        method: "GET",
-        headers,
-      }
-    );
-    if (response.ok) {
-      result = await response.json();
-    }
-  } catch (e) {
-    console.log("Request to find property failed", e);
-  }
-
-  return result;
-};
-
-const loadEnvironmentVariables = () => {
-  // Load environment variables
-  const settings: PrivacyCenterSettings = {
-    FIDES_API_URL:
-      process.env.FIDES_PRIVACY_CENTER__FIDES_API_URL ||
-      "http://localhost:8080/api/v1",
-    SERVER_SIDE_FIDES_API_URL:
-      process.env.FIDES_PRIVACY_CENTER__SERVER_SIDE_FIDES_API_URL || null,
-    CONFIG_JSON_URL:
-      process.env.FIDES_PRIVACY_CENTER__CONFIG_JSON_URL ||
-      "file:///app/config/config.json",
-    CONFIG_CSS_URL:
-      process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL ||
-      "file:///app/config/config.css",
-    CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES === "true" || true,
-
-    // Overlay options
-    DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
-      ? process.env.FIDES_PRIVACY_CENTER__DEBUG === "true"
-      : false,
-    IS_OVERLAY_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED
-      ? process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED === "true"
-      : false,
-    IS_PREFETCH_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_PREFETCH_ENABLED
-      ? process.env.FIDES_PRIVACY_CENTER__IS_PREFETCH_ENABLED === "true"
-      : false,
-    IS_GEOLOCATION_ENABLED: process.env
-      .FIDES_PRIVACY_CENTER__IS_GEOLOCATION_ENABLED
-      ? process.env.FIDES_PRIVACY_CENTER__IS_GEOLOCATION_ENABLED === "true"
-      : false,
-    GEOLOCATION_API_URL:
-      process.env.FIDES_PRIVACY_CENTER__GEOLOCATION_API_URL || "",
-    OVERLAY_PARENT_ID:
-      process.env.FIDES_PRIVACY_CENTER__OVERLAY_PARENT_ID || null,
-    MODAL_LINK_ID: process.env.FIDES_PRIVACY_CENTER__MODAL_LINK_ID || null,
-    PRIVACY_CENTER_URL:
-      process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
-      "http://localhost:3000",
-    FIDES_EMBED: process.env.FIDES_PRIVACY_CENTER__FIDES_EMBED
-      ? process.env.FIDES_PRIVACY_CENTER__FIDES_EMBED === "true"
-      : false,
-    FIDES_DISABLE_SAVE_API: process.env
-      .FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API
-      ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API === "true"
-      : false,
-    FIDES_DISABLE_BANNER: process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER
-      ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER === "true"
-      : false,
-    FIDES_TCF_GDPR_APPLIES: !(
-      process.env.FIDES_PRIVACY_CENTER__FIDES_TCF_GDPR_APPLIES === "false"
-    ),
-    FIDES_STRING: process.env.FIDES_PRIVACY_CENTER__FIDES_STRING || null,
-    IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
-      ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
-      : false,
-    FIDES_JS_BASE_URL:
-      process.env.FIDES_PRIVACY_CENTER__FIDES_JS_BASE_URL ||
-      "http://localhost:3000",
-    CUSTOM_OPTIONS_PATH:
-      process.env.FIDES_PRIVACY_CENTER__CUSTOM_OPTIONS_PATH || null,
-    PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
-      ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
-      : false,
-    ALLOW_HTML_DESCRIPTION: process.env
-      .FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION
-      ? process.env.FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION === "true"
-      : null,
-    BASE_64_COOKIE: process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE
-      ? process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE === "true"
-      : false,
-    FIDES_PRIMARY_COLOR: process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
-      ? process.env.FIDES_PRIVACY_CENTER__FIDES_PRIMARY_COLOR
-      : null,
-    FIDES_CLEAR_COOKIE: process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE
-      ? process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE === "true"
-      : false,
-  };
-  return settings;
 };
 
 /**
