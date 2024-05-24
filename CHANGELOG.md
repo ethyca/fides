@@ -38,7 +38,7 @@ The types of changes are:
 - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB [#4878](https://github.com/ethyca/fides/pull/4878)
 - Fixed an issue where sourcemaps references were unintentionally included in the FidesJS bundle [#4887](https://github.com/ethyca/fides/pull/4887)
 - Handle a 404 response from Segment when a user ID or email is not found [#4902](https://github.com/ethyca/fides/pull/4902)
-
+- Fixed TCF styling issues [#4904](https://github.com/ethyca/fides/pull/4904)
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 
