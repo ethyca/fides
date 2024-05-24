@@ -28,6 +28,7 @@ The types of changes are:
 - Adding privacy_center_config and stylesheet fields to the Property model [#4879](https://github.com/ethyca/fides/pull/4879)
 - Adds generic async callback integration support [#4865](https://github.com/ethyca/fides/pull/4865)
 - Ability to `downgrade` the application DB through the `/admin/db` endpoint [#4893](https://github.com/ethyca/fides/pull/4893)
+- Added support for custom property paths, configs and stylesheets for privacy center [#4907](https://github.com/ethyca/fides/pull/4907)
 - Include the scopes required for a given action in `403` response when client does not have sufficient permissions [#4905](https://github.com/ethyca/fides/pull/4905)
 
 ### Changed

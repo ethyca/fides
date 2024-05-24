@@ -45,3 +45,4 @@ export type { TCFVendorLegitimateInterestsRecord } from "./models/TCFVendorLegit
 export type { TCFVendorRelationships } from "./models/TCFVendorRelationships";
 export type { TCFVendorSave } from "./models/TCFVendorSave";
 export { UserConsentPreference } from "./models/UserConsentPreference";
+export type { Property } from "./models/Property";
