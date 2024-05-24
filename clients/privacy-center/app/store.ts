@@ -18,6 +18,7 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { baseApi } from "~/features/common/api.slice";
 import { configSlice } from "~/features/common/config.slice";
+import { propertySlice } from "~/features/common/property.slice";
 import { settingsSlice } from "~/features/common/settings.slice";
 import { stylesSlice } from "~/features/common/styles.slice";
 import { consentSlice } from "~/features/consent/consent.slice";
@@ -50,6 +51,7 @@ const reducer = {
   [consentSlice.name]: consentSlice.reducer,
   [settingsSlice.name]: settingsSlice.reducer,
   [stylesSlice.name]: stylesSlice.reducer,
+  [propertySlice.name]: propertySlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
