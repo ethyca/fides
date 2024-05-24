@@ -8,12 +8,7 @@ type CardProps = {
   onClick: () => void;
 };
 
-const Card: React.FC<CardProps> = ({
-  title,
-  iconPath,
-  description,
-  onClick,
-}) => (
+const Card = ({ title, iconPath, description, onClick }: CardProps) => (
   <Flex
     as="button"
     bg="white"

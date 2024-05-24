@@ -3,22 +3,23 @@
     "browser": true,
     "es2021": true
   },
-  "extends": ["airbnb", "airbnb-typescript", "prettier"],
+  "extends": [
+    "airbnb",
+    "airbnb-typescript",
+    "prettier",
+    "next/core-web-vitals"
+  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": ["react", "@typescript-eslint", "simple-import-sort"],
+  "plugins": ["simple-import-sort"],
   "rules": {
-    // This rule causes bug in re-exporting default exports, see:
+    "curly": ["error", "all"],
+    "nonblock-statement-body-position": ["error", "below"],
+    // causes bug in re-exporting default exports, see
     // https://github.com/eslint/eslint/issues/15617
     "no-restricted-exports": [0],
-
-    // React
-    // Since defaultProps are deprecated for function components
-    "react/require-default-props": "off",
-    // Next.js handles supplying React to scope
-    "react/react-in-jsx-scope": "off",
     "react/function-component-definition": [
       2,
       {
@@ -32,10 +33,21 @@
       }
     ],
     "react/jsx-props-no-spreading": [0],
-
-    // Imports
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
+    // since we are using static site export
+    "@next/next/no-img-element": "off",
+    "@next/next/no-html-link-for-pages": "off",
+    // since defaultProps are deprecated for function components
+    "react/require-default-props": "off",
+    // Redux Toolkit reducers pass writable drafts for state updates which are cleaner than object spreading.
+    "no-param-reassign": [
+      "error",
+      {
+        "props": true,
+        "ignorePropertyModificationsForRegex": ["^draft"]
+      }
+    ],
     // Default exports are slightly preferred for component files, but this rule has too many false positives.
     "import/prefer-default-export": "off",
     "import/no-extraneous-dependencies": "off"

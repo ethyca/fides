@@ -12,6 +12,7 @@ export const getServerSideProps = () => {
   return { props: {} };
 };
 
+// @ts-expect-error Server Component
 const Docs: NextPage = () => <SwaggerUI url="/api/openapi.json" />;
 
 export default Docs;
