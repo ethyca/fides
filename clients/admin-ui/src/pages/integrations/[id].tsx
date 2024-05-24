@@ -7,7 +7,9 @@ import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
-import BigQueryOverview from "~/features/integrations/bigqueryOverviewCopy";
+import BigQueryOverview, {
+  BigQueryInstructions,
+} from "~/features/integrations/bigqueryOverviewCopy";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
@@ -49,6 +51,7 @@ const IntegrationDetailView: NextPage = () => {
             connection={connection!}
           />
           <BigQueryOverview />
+          <BigQueryInstructions />
         </Box>
       ),
     },
