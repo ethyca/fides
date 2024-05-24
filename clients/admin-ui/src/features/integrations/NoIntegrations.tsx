@@ -1,4 +1,4 @@
-import { Flex, Text, Button } from "fidesui";
+import { Button,Flex, Text } from "fidesui";
 
 
 const NoIntegrations = () =>
