@@ -1,5 +1,5 @@
 import App, { AppContext, AppInitialProps, AppProps } from "next/app";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -69,7 +69,7 @@ export async function getInitialProps(
   };
 }
 
-const SafeHydrate: React.FC = ({ children }) => (
+const SafeHydrate = ({ children }: { children: ReactNode }) => (
   <div suppressHydrationWarning>
     {typeof window === "undefined" ? null : children}
   </div>
@@ -95,6 +95,7 @@ const PrivacyCenterApp = ({
         <I18nProvider>
           <PersistGate persistor={persistor}>
             <FidesUIProvider theme={theme}>
+              {/* @ts-expect-error Server Component */}
               <ErrorBoundary fallbackRender={Error}>
                 <Layout>
                   <Component {...pageProps} />

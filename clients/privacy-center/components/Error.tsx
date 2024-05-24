@@ -3,7 +3,7 @@ import { FallbackProps } from "react-error-boundary";
 
 import ErrorLayout from "~/components/ErrorLayout";
 
-const Error: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => (
+const Error = ({ error, resetErrorBoundary }: FallbackProps) => (
   <ErrorLayout
     title="Error"
     description="We're sorry, but an unexpected error occurred."

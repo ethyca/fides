@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { ReactNode, useEffect, useMemo } from "react";
 import {
   Button,
   chakra,
@@ -208,14 +208,14 @@ type ConsentRequestFormProps = {
   successHandler: () => void;
 };
 
-const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
+const ConsentRequestForm = ({
   isOpen,
   onClose,
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
   successHandler,
-}) => {
+}: ConsentRequestFormProps) => {
   const {
     errors,
     handleBlur,
@@ -330,7 +330,9 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                     onBlur={handleBlur}
                     value={values[key]}
                   />
-                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                  <FormErrorMessage>
+                    {errors[key] as ReactNode}
+                  </FormErrorMessage>
                 </FormControl>
               ))}
           </Stack>

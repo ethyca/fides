@@ -132,7 +132,7 @@ type VerificationFormProps = {
   successHandler: () => void;
 };
 
-const VerificationForm: React.FC<VerificationFormProps> = ({
+const VerificationForm = ({
   isOpen,
   onClose,
   requestId,
@@ -140,7 +140,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
   resetView,
   verificationType,
   successHandler,
-}) => {
+}: VerificationFormProps) => {
   const {
     errors,
     handleBlur,

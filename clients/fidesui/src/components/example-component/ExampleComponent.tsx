@@ -1,9 +1,9 @@
-import { Heading, Stack, Text } from "fidesui";
+import { Heading, HeadingProps, Stack, StackProps, Text } from "fidesui";
 import React from "react";
 
 interface Props {
-  stackProps: React.ComponentProps<typeof Stack>;
-  headingProps: React.ComponentProps<typeof Heading>;
+  stackProps: StackProps;
+  headingProps: HeadingProps;
 }
 
 export const ExampleComponent = ({ stackProps, headingProps }: Props) => (
