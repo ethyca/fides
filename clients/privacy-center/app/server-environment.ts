@@ -255,11 +255,10 @@ export const loadStylesFromFile = async (
  * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
  */
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+
 export const loadPrivacyCenterEnvironment = async ({
-  customPropertyPath,
-}: {
-  customPropertyPath?: string;
-}): Promise<PrivacyCenterEnvironment> => {
+  customPropertyPath = undefined,
+}: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
   if (typeof window !== "undefined") {
     throw new Error(
       "Unexpected error, cannot load server environment from client code!"

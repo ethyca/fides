@@ -102,7 +102,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
-  const environment = await loadPrivacyCenterEnvironment({});
+  const environment = await loadPrivacyCenterEnvironment();
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
     const configuredOptions = environment.config.consent.page.consentOptions;
@@ -335,7 +335,7 @@ async function fetchCustomFidesCss(
 
   if (shouldRefresh) {
     try {
-      const environment = await loadPrivacyCenterEnvironment({});
+      const environment = await loadPrivacyCenterEnvironment();
       const fidesUrl =
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL;
