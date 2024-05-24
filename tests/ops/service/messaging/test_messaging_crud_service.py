@@ -136,6 +136,22 @@ class TestMessagingTemplates:
         property_a_db = Property.get(db, object_id=property_a)
         assert len(property_a_db.messaging_templates) == 1
 
+    def test_create_messaging_template_no_properties(self, db: Session):
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        create_body = {
+            "content": {
+                "subject": "Here is your code {{code}}",
+                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            },
+            "is_enabled": True,
+        }
+
+        created_template = create_messaging_template(db, template_type, MessagingTemplateWithPropertiesBodyParams(create_body))
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=created_template.id
+        )
+        assert messaging_template.properties[0] == []
+
     def test_create_messaging_template_invalid_type(self, db: Session, property_a):
         template_type = "invalid"
         create_body = {
@@ -162,8 +178,30 @@ class TestMessagingTemplates:
         with pytest.raises(Exception) as exc:
             create_messaging_template(db, template_type, MessagingTemplateWithPropertiesBodyParams(create_body))
 
+    def test_create_messaging_template_conflicting_template_but_one_disabled(self, db: Session, messaging_template_subject_identity_verification, property_a):
+        # If same property and same template type, but one template is disabled, this is fine
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        create_body = {
+            "content": {
+                "subject": "Here is your code {{code}}",
+                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            },
+            "properties": [property_a.id],
+            "is_enabled": False,
+        }
+
+        created_template = create_messaging_template(db, template_type, MessagingTemplateWithPropertiesBodyParams(create_body))
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=created_template.id
+        )
+        assert messaging_template.properties[0] == property_a.id
+
+        # assert relationship to properties
+        property_a_db = Property.get(db, object_id=property_a)
+        assert len(property_a_db.messaging_templates) == 1
+
     def test_create_messaging_template_conflicting_template(self, db: Session, messaging_template_subject_identity_verification, property_a):
-        # template already exists with the following type and property id
+        # Enabled template already exists with the following type and property id
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
@@ -241,7 +279,7 @@ class TestMessagingTemplates:
         }
         data = {
             "content": content,
-            "properties": [property_a.id],
+            "properties": [{"id": property_a.id, "name": "New Property"}],
             "is_enabled": True,
         }
         for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():

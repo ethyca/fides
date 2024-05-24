@@ -264,7 +264,6 @@ class MessagingTemplateToProperty(Base):
     )
     property_id = Column(
         String,
-        # todo- add validation against deleting property if it is being used by a messaging template
         # How to add constraint where if you try to delete a property that exists here, it throws a DB err
         ForeignKey("plus_property.id"),
         unique=False,
@@ -272,11 +271,14 @@ class MessagingTemplateToProperty(Base):
         nullable=False,
         primary_key=True,
     )
+    # this inheritance allows us to enforce a unique constraint that depends on this column
+    enabled = Column(None, ForeignKey('messaging_template.id'), primary_key=True)
 
     __table_args__ = (
         UniqueConstraint(
             "messaging_template_id",
             "property_id",
             name="messaging_template_id_property_id",
+            postgresql_where=(~enabled)
         ),
     )

@@ -12,7 +12,7 @@ from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
-from fides.api.schemas.property import Property
+from fides.api.schemas.property import Property, MinimalProperty
 
 
 class MessagingMethod(Enum):
@@ -438,7 +438,7 @@ class MessagingTemplateWithPropertiesBase(BaseModel):
     id: Optional[str]  # Since summary returns db or defaults, this can be null
     type: str
     is_enabled: bool
-    properties: Optional[List[Property]]
+    properties: Optional[List[MinimalProperty]]
 
 
 class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase):
