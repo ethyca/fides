@@ -18,6 +18,7 @@ import IntegrationsTabs from "~/features/integrations/IntegrationsTabs";
 const TABS = [
   {
     label: "All",
+    content: <p />,
   },
 ];
 
@@ -57,7 +58,10 @@ const IntegrationListView: NextPage = () => {
       {isLoading ? (
         <Spinner />
       ) : (
-        <IntegrationsTabs data={data} onOpenAddModal={onOpen} />
+        <IntegrationsTabs
+          integrations={data?.items ?? []}
+          onOpenAddModal={onOpen}
+        />
       )}
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>

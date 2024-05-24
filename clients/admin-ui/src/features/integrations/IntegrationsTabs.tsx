@@ -1,10 +1,10 @@
 import { Box, Button } from "fidesui";
-import { NextPage } from "next";
 import NextLink from "next/link";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import NoIntegrations from "~/features/integrations/NoIntegrations";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 const ManageIntegrationButton = ({
   integrationKey,
@@ -18,13 +18,14 @@ const ManageIntegrationButton = ({
   </NextLink>
 );
 
-const IntegrationsTabs: NextPage = ({
-  data,
+const IntegrationsTabs = ({
+  integrations,
   onOpenAddModal,
 }: {
+  integrations: ConnectionConfigurationResponse[];
   onOpenAddModal: () => void;
 }) => {
-  const renderIntegration = (item) => (
+  const renderIntegration = (item: ConnectionConfigurationResponse) => (
     <IntegrationBox
       key={item.key}
       integration={item}
@@ -35,8 +36,11 @@ const IntegrationsTabs: NextPage = ({
 
   return (
     <Box marginTop="24px">
-      {data.items.map(renderIntegration)}
-      {!data.total && <NoIntegrations onOpenAddModal={onOpenAddModal} />}
+      {integrations.length ? (
+        integrations.map(renderIntegration)
+      ) : (
+        <NoIntegrations onOpenAddModal={onOpenAddModal} />
+      )}
     </Box>
   );
 };
