@@ -23,7 +23,6 @@ import {
   Button,
   ChevronDownIcon,
   Flex,
-  Heading,
   IconButton,
   Menu,
   MenuButton,

@@ -1,4 +1,4 @@
-import { Box, Heading, Spinner } from "fidesui";
+import { Spinner } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
