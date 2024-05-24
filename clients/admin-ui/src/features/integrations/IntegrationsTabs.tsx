@@ -18,7 +18,12 @@ const ManageIntegrationButton = ({
   </NextLink>
 );
 
-const IntegrationsTabs: NextPage = ({ data }) => {
+const IntegrationsTabs: NextPage = ({
+  data,
+  onOpenAddModal,
+}: {
+  onOpenAddModal: () => void;
+}) => {
   const renderIntegration = (item) => (
     <IntegrationBox
       key={item.key}
@@ -28,12 +33,10 @@ const IntegrationsTabs: NextPage = ({ data }) => {
     />
   );
 
-  const renderNoIntegrations = () => !data.total && <NoIntegrations />;
-
   return (
     <Box marginTop="24px">
       {data.items.map(renderIntegration)}
-      {renderNoIntegrations()}
+      {!data.total && <NoIntegrations onOpenAddModal={onOpenAddModal} />}
     </Box>
   );
 };

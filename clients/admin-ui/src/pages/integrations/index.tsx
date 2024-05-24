@@ -54,7 +54,11 @@ const IntegrationListView: NextPage = () => {
         <DataTabsHeader border="full-width" isManual data={TABS} flexGrow={1} />
         {renderAddIntegrationButton()}
       </Box>
-      {isLoading ? <Spinner /> : <IntegrationsTabs data={data} />}
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <IntegrationsTabs data={data} onOpenAddModal={onOpen} />
+      )}
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>
   );

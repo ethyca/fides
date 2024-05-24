@@ -20,6 +20,12 @@ const AddIntegrationModal = ({
   onClose,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => {
   const [step, setStep] = useState(0);
+
+  const onCancel = () => {
+    setStep(0);
+    onClose();
+  };
+
   return (
     <AddModal
       isOpen={isOpen}
@@ -45,7 +51,7 @@ const AddIntegrationModal = ({
           </Flex>
         </>
       )}
-      {step === 1 && <ConfigureIntegrationForm onCancel={() => setStep(0)} />}
+      {step === 1 && <ConfigureIntegrationForm onCancel={onCancel} />}
     </AddModal>
   );
 };
