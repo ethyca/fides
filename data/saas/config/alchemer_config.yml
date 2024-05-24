@@ -16,9 +16,9 @@ saas_config:
   client_config:
     protocol: https
     host: <domain>
-    authentication:
-      strategy: no_authentication
-      configuration: {}
+    # authentication:
+    #   strategy: no_authentication
+    # configuration: {}
 
   test_request:
     method: GET

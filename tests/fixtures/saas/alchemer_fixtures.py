@@ -2,6 +2,8 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import random
+import requests
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -16,8 +18,11 @@ secrets = get_secrets("alchemer")
 def alchemer_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "alchemer.domain")
-        or secrets["domain"]
-        # add the rest of your secrets here
+        or secrets["domain"],
+        "api_key": pydash.get(saas_config, "alchemer.api_key")
+        or secrets["api_key"],
+        "api_key_secret": pydash.get(saas_config, "alchemer.api_key_secret")
+        or secrets["api_key_secret"],
     }
 
 
@@ -47,7 +52,28 @@ def alchemer_erasure_external_references() -> Dict[str, Any]:
 def alchemer_erasure_data(
     alchemer_erasure_identity_email: str,
 ) -> Generator:
-    # create the data needed for erasure tests here
+    gen_string = string.ascii_lowercase
+    test_contactlist = ''.join(random.choice(gen_string) for i in range(10))
+    x_contactlist_name = f"Ethyca Test {test_contactlist}"
+
+    base_url = f"https://{alchemer_secrets['domain']}/v5"
+    params = {
+        "api_token": alchemer_secrets['api_key'],
+        "api_token_secret": alchemer_secrets['api_key_secret'],
+        "list_name": x_contactlist_name,
+    }
+    contactlist_url = f"{base_url}/contactlist"
+    response = requests.put(contactlist_url, params=params)
+    assert response.ok
+    contactlist_id = response.json()["data"][0]["id"]
+    contactlistcontact_url = f"{contactlist_url}{contactlist_id}/contactlistcontact"
+    params = {
+        "api_token": alchemer_secrets['api_key'],
+        "api_token_secret": alchemer_secrets['api_key_secret'],
+        "email_address": alchemer_erasure_identity_email,
+    }
+    response = requests.put(contactlistcontact_url, params=params)
+    assert response.ok
     yield {}
 
 
