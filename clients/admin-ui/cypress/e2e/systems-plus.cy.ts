@@ -234,7 +234,7 @@ describe("System management with Plus features", () => {
       }).as("bulkUpdateCustomField");
     });
 
-    it.only("can populate initial custom metadata", () => {
+    it("can populate initial custom metadata", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
       cy.wait("@getSystem");
 
