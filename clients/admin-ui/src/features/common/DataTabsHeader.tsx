@@ -18,6 +18,7 @@ const DataTabsHeader = ({
         <FidesTab
           key={tab.label}
           label={tab.label}
+          data-testid={tab.label}
           isDisabled={tab.isDisabled}
           fontSize={other.fontSize}
         />

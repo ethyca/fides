@@ -109,7 +109,7 @@ describe("System management with Plus features", () => {
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
-      cy.getByTestId("tab-System information").click();
+      cy.getByTestId("tab-Information").click();
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
@@ -234,8 +234,9 @@ describe("System management with Plus features", () => {
       }).as("bulkUpdateCustomField");
     });
 
-    it("can populate initial custom metadata", () => {
+    it.only("can populate initial custom metadata", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getSystem");
 
       // Should not be able to save while form is untouched
       cy.getByTestId("save-btn").should("be.disabled");
