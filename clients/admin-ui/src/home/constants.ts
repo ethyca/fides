@@ -71,7 +71,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
   {
     color: "green",
     description:
-      "Manage consent notices and experiences for all domains in your organization",
+      "Manage privacy notices and experiences for all domains in your organization",
     href: `${CONFIGURE_CONSENT_ROUTE}`,
     key: ModuleCardKeys.CONFIGURE_CONSENT,
     name: "Manage consent",
