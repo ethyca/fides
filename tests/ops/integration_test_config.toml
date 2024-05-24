@@ -20,6 +20,13 @@ password="mysql_pw"
 db="mysql_example"
 port=3306
 
+[google_cloud_mysql_example]
+server="34.132.168.106"
+user="root"
+password="ethyca"
+db="mysql"
+port=3306
+
 [redshift]
 host=""
 port=""

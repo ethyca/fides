@@ -577,3 +577,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
+
+
+class GoogleCloudMySQLConnector(MySQLConnector):
+    """Connector specific to Google Cloud MySQL"""

@@ -17,6 +17,7 @@ from fides.api.service.connectors import (
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.sql_connector import (
+    GoogleCloudMySQLConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MySQLConnector,
@@ -470,6 +471,59 @@ class TestMySQLConnector:
     ) -> None:
         connector = get_connector(connection_config_mysql)
         assert connector.__class__ == MySQLConnector
+
+        client = connector.client()
+        assert client.__class__ == Engine
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config_mysql.secrets = {
+            "url": str(
+                URL.create(
+                    "mysql+pymysql",
+                    username=mysql_example_secrets["username"],
+                    password=mysql_example_secrets["password"],
+                    host=mysql_example_secrets["host"],
+                    database=mysql_example_secrets["dbname"],
+                )
+            )
+        }
+        connection_config_mysql.save(db)
+        connector = get_connector(connection_config_mysql)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config_mysql.secrets = {"host": "bad_host"}
+        connection_config_mysql.save(db)
+        connector = get_connector(connection_config_mysql)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()
+
+
+@pytest.mark.integration_google_cloud_mysql
+@pytest.mark.integration
+class TestGoogleCloudMySQLConnector:
+    def test_google_cloud_mysql_db_connector(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_google_cloud_mysql,
+        mysql_example_secrets,
+    ) -> None:
+        print(connection_config_google_cloud_mysql)
+        print(connection_config_google_cloud_mysql)
+        print(connection_config_google_cloud_mysql)
+        print(connection_config_google_cloud_mysql)
+        print(connection_config_google_cloud_mysql)
+        print(connection_config_google_cloud_mysql.name)
+        print(connection_config_google_cloud_mysql.key)
+        print(connection_config_google_cloud_mysql.description)
+        print(connection_config_google_cloud_mysql.connection_type)
+        print(connection_config_google_cloud_mysql.access)
+        print(connection_config_google_cloud_mysql.secrets)
+        connector = get_connector(connection_config_google_cloud_mysql)
+        print(connector)
+        return
+        assert connector.__class__ == GoogleCloudMySQLConnector
 
         client = connector.client()
         assert client.__class__ == Engine

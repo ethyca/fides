@@ -37,6 +37,7 @@ class ConnectionType(enum.Enum):
     postgres = "postgres"
     mongodb = "mongodb"
     mysql = "mysql"
+    google_cloud_sql_mysql = "google_cloud_sql_mysql"
     https = "https"
     saas = "saas"
     redshift = "redshift"
@@ -66,9 +67,10 @@ class ConnectionType(enum.Enum):
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.generic_consent_email.value: "Generic Consent Email",
             ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
+            ConnectionType.google_cloud_sql_mysql.value: "Google Cloud for MySQL",
             ConnectionType.https.value: "Policy Webhook",
-            ConnectionType.manual.value: "Manual Connector",
             ConnectionType.manual_webhook.value: "Manual Process",
+            ConnectionType.manual.value: "Manual Connector",
             ConnectionType.mariadb.value: "MariaDB",
             ConnectionType.mongodb.value: "MongoDB",
             ConnectionType.mssql.value: "Microsoft SQL Server",
