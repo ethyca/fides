@@ -1,43 +1,53 @@
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
-  UseDisclosureReturn,
-} from "fidesui";
+import { Button, Flex, Spacer, UseDisclosureReturn } from "fidesui";
+import { useState } from "react";
+
+import AddModal from "~/features/configure-consent/AddModal";
+import BigQueryOverview from "~/features/integrations/bigqueryOverviewCopy";
+import ConfigureIntegrationForm from "~/features/integrations/ConfigureIntegrationForm";
+import IntegrationBox from "~/features/integrations/IntegrationBox";
+import { AccessLevel, ConnectionType } from "~/types/api";
+
+const BQ_PLACEHOLDER = {
+  name: "Google BigQuery",
+  key: "bq_placeholder",
+  connection_type: ConnectionType.BIGQUERY,
+  access: AccessLevel.READ,
+  created_at: "",
+};
 
 const AddIntegrationModal = ({
   isOpen,
   onClose,
-}: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => (
-  <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
-    <ModalOverlay />
-    <ModalContent>
-        <ModalHeader borderBottom="1px" borderColor="gray.200">Google BigQuery Integration</ModalHeader>
-        <ModalCloseButton />
-      <ModalBody>
-        <Text>Configure integration secret</Text>
-        <Text>To connect Fides to BigQuery you must provide an appropriately scoped Secret key. For information on creating a role and secret in GCP read the guide.</Text>
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onClose}
-          mr={2}
-          >Cancel</Button>
-        <Button
-          size="sm"
-          variant="primary"
-          >Connect</Button>
-        </ModalFooter>
-    </ModalContent>
-  </Modal>
-);
+}: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => {
+  const [step, setStep] = useState(0);
+  return (
+    <AddModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Google BigQuery integration"
+    >
+      {step === 0 && (
+        <>
+          <IntegrationBox
+            integration={BQ_PLACEHOLDER}
+            button={
+              <Button variant="outline" onClick={() => setStep(1)}>
+                Configure
+              </Button>
+            }
+          />
+          <BigQueryOverview />
+          <Flex>
+            <Spacer />
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          </Flex>
+        </>
+      )}
+      {step === 1 && <ConfigureIntegrationForm onCancel={() => setStep(0)} />}
+    </AddModal>
+  );
+};
 
 export default AddIntegrationModal;

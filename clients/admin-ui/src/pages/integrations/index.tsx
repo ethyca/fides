@@ -13,43 +13,37 @@ import DataTabsHeader from "~/features/common/DataTabsHeader";
 import Layout from "~/features/common/Layout";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/AddIntegrationModal";
-import IntegrationsTabs  from "~/features/integrations/IntegrationsTabs";
-
+import IntegrationsTabs from "~/features/integrations/IntegrationsTabs";
 
 const TABS = [
   {
-    label: "All"
+    label: "All",
   },
 ];
 
-
 const IntegrationListView: NextPage = () => {
-  const {
-    data,
-    isLoading,
-  } = useGetAllDatastoreConnectionsQuery({"connection_type": ["bigquery"]});
+  const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
+    connection_type: ["bigquery"],
+  });
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const onTabChange = () => {}
+  // const onTabChange = () => {};
 
-  const renderAddIntegrationButton = () =>
+  const renderAddIntegrationButton = () => (
     <Box
-        borderBottom="2px solid"
-        borderColor="gray.200"
-        height="fit-content"
-        pr="2"
-        pb="2"
-      >
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpen}
-        >
-          Add Integration
-          <LinkIcon marginLeft="8px"/>
-        </Button>
-      </Box>
+      borderBottom="2px solid"
+      borderColor="gray.200"
+      height="fit-content"
+      pr="2"
+      pb="2"
+    >
+      <Button size="sm" variant="outline" onClick={onOpen}>
+        Add Integration
+        <LinkIcon marginLeft="8px" />
+      </Button>
+    </Box>
+  );
 
   return (
     <Layout title="Integrations">
@@ -57,15 +51,10 @@ const IntegrationListView: NextPage = () => {
         Integrations
       </Heading>
       <Box data-testid="integation-tabs" display="flex">
-        <DataTabsHeader
-          border="full-width"
-          isManual
-          onChange={onTabChange}
-          data={TABS}
-          flexGrow={1}/>
+        <DataTabsHeader border="full-width" isManual data={TABS} flexGrow={1} />
         {renderAddIntegrationButton()}
       </Box>
-      {isLoading ? <Spinner /> : <IntegrationsTabs data={data}/>}
+      {isLoading ? <Spinner /> : <IntegrationsTabs data={data} />}
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>
   );

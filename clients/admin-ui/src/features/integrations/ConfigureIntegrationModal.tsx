@@ -1,24 +1,19 @@
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalOverlay,
-  Text,
-  UseDisclosureReturn,
-} from "fidesui";
+import { UseDisclosureReturn } from "fidesui";
+
+import AddModal from "~/features/configure-consent/AddModal";
+import ConfigureIntegrationForm from "~/features/integrations/ConfigureIntegrationForm";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 const ConfigureIntegrationModal = ({
   isOpen,
   onClose,
-}: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => (
-  <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
-    <ModalOverlay />
-    <ModalContent>
-      <ModalBody>
-        <Text>hello, modal!</Text>
-      </ModalBody>
-    </ModalContent>
-  </Modal>
+  connection,
+}: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
+  connection: ConnectionConfigurationResponse;
+}) => (
+  <AddModal title="Manage integration secret" isOpen={isOpen} onClose={onClose}>
+    <ConfigureIntegrationForm connection={connection} onCancel={onClose} />
+  </AddModal>
 );
 
 export default ConfigureIntegrationModal;
