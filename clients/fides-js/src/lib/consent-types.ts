@@ -131,6 +131,7 @@ export interface FidesInitOptions {
  * need to change.
  */
 export interface FidesGlobal extends Fides {
+  cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
@@ -147,6 +148,7 @@ export interface FidesGlobal extends Fides {
   meta: typeof meta;
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;
+  shouldShowExperience: () => boolean;
   showModal: () => void;
 }
 

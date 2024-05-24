@@ -3,7 +3,7 @@ Contains all of the logic related to the database including connections, setup, 
 """
 
 from os import path
-from typing import Literal
+from typing import Literal, Optional, Tuple
 
 from alembic import command, script
 from alembic.config import Config
@@ -31,30 +31,45 @@ def get_alembic_config(database_url: str) -> Config:
     directory = path.join(migrations_dir, "../alembic/migrations")
     config = Config(path.join(migrations_dir, "../alembic/alembic.ini"))
     config.set_main_option("script_location", directory.replace("%", "%%"))
-    config.set_main_option("sqlalchemy.url", database_url)
+    # Avoids invalid interpolation syntax errors if % in string
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
     return config
 
 
 def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
-    "Upgrade the database to the specified migration revision."
-    log.info("Running database migrations")
+    """Upgrade the database to the specified migration revision."""
+    log.info(f"Running database upgrade to revision {revision}")
     command.upgrade(alembic_config, revision)
 
 
-async def migrate_db(database_url: str, samples: bool = False) -> None:
+def downgrade_db(alembic_config: Config, revision: str = "head") -> None:
+    """Downgrade the database to the specified migration revision."""
+    log.info(f"Running database downgrade to revision {revision}")
+    command.downgrade(alembic_config, revision)
+
+
+async def migrate_db(
+    database_url: str,
+    samples: bool = False,
+    revision: str = "head",
+    downgrade: bool = False,
+) -> None:
     """
     Runs migrations and creates database objects if needed.
 
     Safe to run on an existing database when upgrading Fides version.
     """
-    log.info("Initializing database")
+    log.info("Migrating database")
     alembic_config = get_alembic_config(database_url)
-    upgrade_db(alembic_config)
+    if downgrade:
+        downgrade_db(alembic_config, revision)
+    else:
+        upgrade_db(alembic_config, revision)
 
-    async with async_session() as session:
-        await load_default_resources(session)
-        if samples:
-            await load_samples(session)
+        async with async_session() as session:
+            await load_default_resources(session)
+            if samples:
+                await load_samples(session)
 
 
 def create_db_if_not_exists(database_url: str) -> None:
@@ -83,30 +98,36 @@ def reset_db(database_url: str) -> None:
     log.info("Reset complete.")
 
 
-def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
+def get_db_health(
+    database_url: str, db: Session
+) -> Tuple[DatabaseHealth, Optional[str]]:
     """Checks if the db is reachable and up-to-date with Alembic migrations."""
     try:
         alembic_config = get_alembic_config(database_url)
         alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)
         context = migration.MigrationContext.configure(db.connection())
-
+        current_revision = context.get_current_revision()
         if (
             context.get_current_revision()
             != alembic_script_directory.get_current_head()
         ):
-            return "needs migration"
-        return "healthy"
+            db_health: DatabaseHealth = "needs migration"
+        else:
+            db_health = "healthy"
+        return db_health, current_revision
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
         log.error("Unable to reach the database: {}: {}", error_type, error)
-        return "unhealthy"
+        return ("unhealthy", None)
 
 
-async def configure_db(database_url: str, samples: bool = False) -> None:
+async def configure_db(
+    database_url: str, samples: bool = False, revision: Optional[str] = "head"
+) -> None:
     """Set up the db to be used by the app."""
     try:
         create_db_if_not_exists(database_url)
-        await migrate_db(database_url, samples=samples)
+        await migrate_db(database_url, samples=samples, revision=revision)  # type: ignore[arg-type]
     except InvalidCiphertextError as cipher_error:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."
