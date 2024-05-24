@@ -1,0 +1,95 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Alchemer
+  type: alchemer
+  description: A sample schema representing the Alchemer erasure only integration for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: api.alchemer.com
+    - name: api_token
+      default_value: <api_key>
+    - name: api_token_secret
+      default_value: <api_key_secret>
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: no_authentication
+      configuration: {}
+
+  test_request:
+    method: GET
+    path: /v5/account
+    query_params:
+      - name: api_token
+        value: <api_token>
+      - name: api_token_secret
+        value: <api_token_secret>
+    # param_values:
+    #   - name: api_token
+    #     connector_param: api_token
+    #   - name: api_token_secret
+    #     connector_param: api_token_secret
+
+  ## I think we need an override here to deal with the flow to get to an erasure
+  endpoints:
+    - name: contact_list
+      requests:
+        read:
+          method: GET
+          path: /v5/contactlist
+          query_params:
+            - name: api_token
+              value: <api_token>
+            - name: api_token_secret
+              value: <api_token_secret>
+          data_path: data
+          # param_values:
+          #   - name: api_token
+          #     connector_param: api_token
+          #   - name: api_token_secret
+          #     connector_param: api_token_secret
+    - name: contact
+      requests:
+        read:
+          method: GET
+          path: /v5/contactlist/<contact_list_id>/contactlistcontact
+          query_params:
+            - name: api_token
+              value: <api_token>
+            - name: api_token_secret
+              value: <api_token_secret>
+          data_path: data
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: email_address
+                value: <identity_email>
+                case_sensitive: false
+          param_values:
+            - name: contact_list_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: contact_list.id
+                  direction: from
+            # - name: api_token
+            #   connector_param: api_token
+            # - name: api_token_secret
+            #   connector_param: api_token_secret
+        delete:
+          method: DELETE
+          path: v5/contactlist/<contact_list_id>/contactlistcontact/<contact_id>
+          param_values:
+            - name: contact_list_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: contact_list.id
+                  direction: from
+            - name: contact_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: contact.id
+                  direction: from

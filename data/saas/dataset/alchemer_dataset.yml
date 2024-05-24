@@ -1,0 +1,103 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: alchemer_erasure_only
+    description: >-
+      A sample dataset representing the Alchemer erasure only connector for
+      Fides
+    collections:
+      - name: contact_list
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: list_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: date_modified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: date_created
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: user_id_created
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: user_id_modified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: contact
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: email_address
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: first_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: last_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: organization
+          - name: division
+          - name: department
+          - name: group
+          - name: role
+          - name: is_manager
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: team
+          - name: home_phone
+            data_categories: [user.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+          - name: fax_phone
+            data_categories: [user.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+          - name: business_phone
+            data_categories: [user.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+          - name: mailing_address
+            data_categories: [user.contact.address.street]
+            fidesops_meta:
+              data_type: string
+          - name: mailing_address2
+            data_categories: [user.contact.address.street]
+            fidesops_meta:
+              data_type: string
+          - name: mailing_address_city
+            data_categories: [user.contact.address.city]
+            fidesops_meta:
+              data_type: string
+          - name: mailing_address_state
+            data_categories: [user.contact.address.state]
+            fidesops_meta:
+              data_type: string
+          - name: mailing_address_postal
+            data_categories: [user.contact.address.postal_code]
+            fidesops_meta:
+              data_type: string
+          - name: mailing_address_country
+            data_categories: [user.contact.address.country]
+            fidesops_meta:
+              data_type: string
+          - name: title
+          - name: url
