@@ -1497,15 +1497,44 @@ describe("Consent overlay", () => {
         });
       });
 
-      it("shows the modal link", () => {
-        cy.get("#fides-modal-link").should("be.visible");
-      });
+      describe("modal link", () => {
+        it("is visible", () => {
+          cy.get("#fides-modal-link").should("be.visible");
+        });
 
-      describe("modal link click", () => {
-        it("should open modal", () => {
+        it("opens modal when clicked", () => {
           cy.get("#fides-modal-link").should("be.visible").click();
           cy.getByTestId("consent-modal").should("be.visible");
         });
+
+        it(
+          "gets binded to the click handler even after a delay in appearing in the DOM",
+          { defaultCommandTimeout: 200 },
+          () => {
+            const delay = 1000;
+            cy.on("window:before:load", (win: { render_delay: number }) => {
+              // eslint-disable-next-line no-param-reassign
+              win.render_delay = delay;
+            });
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+              (config) => {
+                stubConfig({
+                  experience: {
+                    experience_config: {
+                      ...config.experience.experience_config,
+                      ...{ component: ComponentType.MODAL },
+                    },
+                  },
+                });
+              }
+            );
+            cy.get("#fides-modal-link").should("not.exist");
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(delay); // wait until delay is over
+            cy.get("#fides-modal-link").should("be.visible").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+          }
+        );
       });
     });
 
@@ -1786,6 +1815,7 @@ describe("Consent overlay", () => {
             },
             extraDetails: {
               consentMethod: undefined,
+              shouldShowExperience: true,
             },
             fides_string: undefined,
           },
@@ -2450,7 +2480,7 @@ describe("Consent overlay", () => {
 
       // Call reinitialize() without making any changes
       cy.window().then((win) => {
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should re-initialize and re-show the banner
@@ -2479,7 +2509,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: false,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize again, in embedded mode this time
@@ -2498,7 +2528,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: true,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize once again, without any banners
@@ -2507,6 +2537,37 @@ describe("Consent overlay", () => {
         cy.get("#fides-overlay .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("exist");
+      });
+    });
+  });
+
+  describe("when initialization has been disabled by the developer", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { initialize: "false" },
+      });
+      cy.window().then((win) => {
+        win.addEventListener(
+          "FidesInitialized",
+          cy.stub().as("FidesInitialized")
+        );
+      });
+    });
+    it("does not trigger any side-effects (like banners displaying, events firing, etc.)", () => {
+      cy.window().then((win) => {
+        assert.isTrue(!!win.Fides.config);
+        assert.isFalse(win.Fides.initialized);
+      });
+      cy.get("@FidesInitialized").should("not.have.been.called");
+      cy.get("#fides-overlay .fides-banner").should("not.exist");
+    });
+    it("can still be initialized manually by the developer after adjusting settings", () => {
+      cy.window().then((win) => {
+        win.Fides.init().then(() => {
+          assert.isTrue(win.Fides.initialized);
+        });
       });
     });
   });

@@ -77,6 +77,7 @@ export const transformTranslationResponseToCreate = (
     privacy_preferences_link_label:
       response.privacy_preferences_link_label ?? undefined,
     save_button_label: response.save_button_label ?? undefined,
+    modal_link_label: response.modal_link_label ?? undefined,
   };
 };
 
