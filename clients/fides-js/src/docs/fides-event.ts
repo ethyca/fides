@@ -105,6 +105,11 @@ export interface FidesEvent extends CustomEvent {
       servingComponent?: "banner" | "modal" | "tcf_banner" | "tcf_overlay";
 
       /**
+       * Whether the user should be shown the consent experience. Only available on FidesInitialized events.
+       */
+     shouldShowExperience?: boolean;
+
+      /**
        * What consent method (if any) caused this event.
        */
       consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";

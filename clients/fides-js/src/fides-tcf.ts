@@ -21,7 +21,6 @@ import {
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  NoticeConsent,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -34,7 +33,13 @@ import {
   initialize,
 } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import { debugLog, FidesCookie, defaultShowModal } from "./fides";
+import {
+  debugLog,
+  FidesCookie,
+  defaultShowModal,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import type { GppFunction } from "./lib/gpp/types";
 import { makeStub } from "./lib/tcf/stub";
@@ -45,6 +50,7 @@ import {
   updateExperienceFromCookieConsentTcf,
 } from "./lib/tcf/utils";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { raise } from "./lib/common-utils";
 
 declare global {
   interface Window {
@@ -61,6 +67,12 @@ declare global {
     __gppLocator?: Window;
   }
 }
+
+const updateWindowFides = (fidesGlobal: FidesGlobal) => {
+  if (typeof window !== "undefined") {
+    window.Fides = fidesGlobal;
+  }
+};
 
 const updateExperience = ({
   cookie,
@@ -100,8 +112,18 @@ const updateExperience = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-async function init(this: FidesGlobal, config: FidesConfig) {
-  this.config = config;
+async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
+  // confused by the "this"? see https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function
+
+  // Initialize Fides with the global configuration object if it exists, or the provided one. If neither exists, raise an error.
+  let config =
+    providedConfig ??
+    (this.config as FidesConfig) ??
+    raise("Fides must be initialized with a configuration object");
+
+  this.config = config; // no matter how the config is set, we want to store it on the global object
+  updateWindowFides(this);
+
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
@@ -131,15 +153,15 @@ async function init(this: FidesGlobal, config: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  const cookie = {
+  this.cookie = {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
-  const savedConsent: NoticeConsent = {
-    ...cookie.consent,
+  this.saved_consent = {
+    ...this.cookie.consent,
   };
 
   // Update the fidesString if we have an override and the TC portion is valid
@@ -153,9 +175,9 @@ async function init(this: FidesGlobal, config: FidesConfig) {
         fides_string: fidesString,
         tcf_version_hash:
           overrides.consentPrefsOverrides?.version_hash ??
-          cookie.tcf_version_hash,
+          this.cookie.tcf_version_hash,
       };
-      Object.assign(cookie, updatedCookie);
+      this.cookie = { ...this.cookie, ...updatedCookie };
     } catch (error) {
       debugLog(
         config.options.debug,
@@ -165,30 +187,34 @@ async function init(this: FidesGlobal, config: FidesConfig) {
   }
   const initialFides = getInitialFides({
     ...config,
-    cookie,
-    savedConsent,
+    cookie: this.cookie,
+    savedConsent: this.saved_consent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
   });
   // Initialize the CMP API early so that listeners are established
   initializeTcfCmpApi();
   if (initialFides) {
     Object.assign(this, initialFides);
-    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+    updateWindowFides(this);
+    dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+      shouldShowExperience: this.shouldShowExperience(),
+    });
   }
-  const experience = initialFides?.experience ?? config.experience;
+  this.experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    cookie,
-    savedConsent,
-    experience,
+    fides: this,
     renderOverlay,
     updateExperience,
     overrides,
   });
   Object.assign(this, updatedFides);
+  updateWindowFides(this);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+  dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+    shouldShowExperience: this.shouldShowExperience(),
+  });
 }
 
 // The global Fides object; this is bound to window.Fides if available
@@ -234,7 +260,21 @@ const _Fides: FidesGlobal = {
     if (!this.config || !this.initialized) {
       throw new Error("Fides must be initialized before reinitializing");
     }
-    return this.init(this.config);
+    return this.init();
+  },
+  shouldShowExperience() {
+    if (!isPrivacyExperience(this.experience)) {
+      // Nothing to show if there's no experience
+      return false;
+    }
+    if (!this.cookie) {
+      throw new Error("Should have a cookie");
+    }
+    return shouldResurfaceConsent(
+      this.experience,
+      this.cookie,
+      this.saved_consent
+    );
   },
   initialized: false,
   meta,

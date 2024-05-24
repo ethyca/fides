@@ -675,6 +675,7 @@ describe("Fides-js TCF", () => {
               consent: {},
               extraDetails: {
                 consentMethod: undefined,
+                shouldShowExperience: true,
               },
               fides_string: undefined,
             },
@@ -1196,6 +1197,34 @@ describe("Fides-js TCF", () => {
           "[banner] Manage your consent"
         );
       });
+      it(
+        "waits until the embed tag is available",
+        { defaultCommandTimeout: 200 },
+        () => {
+          const delay = 1000;
+          cy.on("window:before:load", (win: { render_delay: number }) => {
+            // eslint-disable-next-line no-param-reassign
+            win.render_delay = delay;
+          });
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          cy.fixture("consent/experience_tcf.json").then((experience) => {
+            stubConfig({
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+                fidesEmbed: true,
+              },
+              experience: experience.items[0],
+            });
+          });
+          cy.get("@FidesUIShown").should("not.have.been.called");
+          cy.get("div#fides-banner").should("not.exist");
+          // eslint-disable-next-line cypress/no-unnecessary-waiting
+          cy.wait(delay); // wait until delay is over
+          cy.get("@FidesUIShown").should("have.been.calledOnce");
+          cy.get("div#fides-banner").should("be.visible");
+        }
+      );
     });
 
     describe("when fides_disable_banner is true (Layer 2 only)", () => {
