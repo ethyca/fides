@@ -34,7 +34,6 @@ from fides.api.task.create_request_tasks import (
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
-from fides.api.util.cache import CustomJSONEncoder
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 
@@ -450,13 +449,14 @@ class TestSaaSConnectorMethods:
         segment_user_endpoint = next(
             end for end in connector.saas_config.endpoints if end.name == "segment_user"
         )
-        saas_request: SaaSRequest = segment_user_endpoint.requests.read
-        connector.set_saas_request_state(saas_request)
+        saas_requests: List[SaaSRequest] = segment_user_endpoint.requests.read
+        for saas_request in saas_requests:
+            connector.set_saas_request_state(saas_request)
 
-        client = connector.create_client()
-        # ClientConfig on read segment user request uses basic auth, updating the state should result in the new strategy for client
-        assert client.client_config.authentication.strategy == "basic"
-        assert connector.get_client_config().authentication.strategy == "basic"
+            client = connector.create_client()
+            # ClientConfig on read segment user request uses basic auth, updating the state should result in the new strategy for client
+            assert client.client_config.authentication.strategy == "basic"
+            assert connector.get_client_config().authentication.strategy == "basic"
 
     def test_rate_limit_config_set_depending_on_state(
         self, db: Session, segment_connection_config, segment_dataset_config
