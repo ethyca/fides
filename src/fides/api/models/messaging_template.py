@@ -73,6 +73,8 @@ class MessagingTemplate(Base):
         secondary="messaging_template_to_property",
         back_populates="messaging_templates",
         lazy="selectin",
+        foreign_keys=[id, is_enabled],
+        primaryjoin="foreign(MessagingTemplateToPropertyId.messaging_template_id)==any_(MessagingTemplate.id)",
     )
 
     class Config:

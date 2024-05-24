@@ -75,6 +75,8 @@ class Property(Base):
         secondary="messaging_template_to_property",
         back_populates="properties",
         lazy="selectin",
+        foreign_keys=[id],
+        primaryjoin="foreign(MessagingTemplateToProperty.property_id)==any_(Property.id)",
     )
 
     # Only 1 property can be the default
@@ -272,13 +274,15 @@ class MessagingTemplateToProperty(Base):
         primary_key=True,
     )
     # this inheritance allows us to enforce a unique constraint that depends on this column
-    enabled = Column(None, ForeignKey('messaging_template.id'), primary_key=True)
+    is_enabled = Column(None, ForeignKey('messaging_template.is_enabled'), primary_key=False)
 
+    # Only 1 property can be the default
     __table_args__ = (
-        UniqueConstraint(
+        Index(
+            "only_one_overlapping_enabled_template_and_property",
             "messaging_template_id",
             "property_id",
-            name="messaging_template_id_property_id",
-            postgresql_where=(~enabled)
+            unique=True,
+            postgresql_where=(~is_enabled)
         ),
     )
