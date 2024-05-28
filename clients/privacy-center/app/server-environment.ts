@@ -273,11 +273,16 @@ export const loadPrivacyCenterEnvironment = async ({
   const settings = loadEnvironmentVariables();
 
   let property;
+  console.log("settings.CUSTOM_PROPERTIES", settings.CUSTOM_PROPERTIES);
+  console.log("customPropertyPath", customPropertyPath);
+
   if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
     const result = await getPropertyFromUrl({
       customPropertyPath,
       fidesApiUrl: settings.FIDES_API_URL,
     });
+    console.log("result", result);
+
     if (result) {
       property = result;
     }
@@ -333,12 +338,20 @@ export const loadPrivacyCenterEnvironment = async ({
       "Using deprecated 'server_url_production' or 'server_url_development' config. " +
         "Please update to using FIDES_PRIVACY_CENTER__FIDES_API_URL environment variable instead."
     );
+
+    console.log(
+      "deprecated server_url_production or server_url_development",
+      config
+    );
+
     const legacyApiUrl =
       process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
         ? config.server_url_development ||
           (config as any).fidesops_host_development
         : config.server_url_production ||
           (config as any).fidesops_host_production;
+
+    console.log("legacyApiUrl", legacyApiUrl);
 
     clientSettings.FIDES_API_URL = legacyApiUrl;
   }
