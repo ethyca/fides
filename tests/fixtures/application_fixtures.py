@@ -87,6 +87,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
     MessagingActionType,
+    MessagingTemplateWithPropertiesDetail,
 )
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
@@ -385,15 +386,14 @@ def messaging_template_subject_identity_verification(
         "subject": "Here is your code {{code}}",
         "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
     }
-    data = {
-        "content": content,
-        "properties": [property_a.id],
-        "is_enabled": True,
-        "type": template_type,
-    }
     messaging_template = MessagingTemplate.create(
         db=db,
-        data=data,
+        data=MessagingTemplateWithPropertiesDetail(
+            content=content,
+            properties=[{"id": property_a.id, "name": property_a.name}],
+            is_enabled=True,
+            type=template_type,
+        ).dict(),
     )
     yield messaging_template
     messaging_template.delete(db)
@@ -406,15 +406,14 @@ def messaging_template_privacy_request_receipt(db: Session, property_a) -> Gener
         "subject": "Your request has been received.",
         "body": "Stay tuned!",
     }
-    data = {
-        "content": content,
-        "properties": [property_a.id],
-        "is_enabled": True,
-        "type": template_type,
-    }
     messaging_template = MessagingTemplate.create(
         db=db,
-        data=data,
+        data=MessagingTemplateWithPropertiesDetail(
+            content=content,
+            properties=[{"id": property_a.id, "name": property_a.name}],
+            is_enabled=True,
+            type=template_type,
+        ).dict(),
     )
     yield messaging_template
     messaging_template.delete(db)

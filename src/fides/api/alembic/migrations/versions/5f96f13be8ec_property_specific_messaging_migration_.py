@@ -127,7 +127,6 @@ def upgrade():
         except IntegrityError as exc:
             raise Exception(
                 f"Fides attempted to create a new default property but got error: {exc}. "
-                f"Adjust keys in property table to not conflict."
             )
 
     # STEP 2: Ensure all default templates are saved to the DB
@@ -151,7 +150,9 @@ def upgrade():
             try:
                 bind.execute(
                     insert_into_messaging_template_query.bindparams(
-                        bindparam('content', type_=JSONB)), new_messaging_template
+                        bindparam("content", type_=JSONB)
+                    ),
+                    new_messaging_template,
                 )
             except IntegrityError as exc:
                 raise Exception(

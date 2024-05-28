@@ -128,8 +128,8 @@ def _validate_overlapping_templates(
         conditions=(
             (MessagingTemplate.type == template_type)
             & (MessagingTemplate.is_enabled is True)
-        ).all(),
-    )
+        ),
+    ).all()
     db_enabled_properties = [
         template.properties for template in db_enabled_templates_with_template
     ]
@@ -217,7 +217,7 @@ def get_template_by_id(db: Session, template_id: str) -> MessagingTemplate:
 def get_default_template_by_type(
     template_type: str,
 ) -> MessagingTemplateWithPropertiesDetail:
-    default_template = DEFAULT_MESSAGING_TEMPLATES[template_type]
+    default_template = DEFAULT_MESSAGING_TEMPLATES.get(template_type)
     if not default_template:
         raise MessagingConfigValidationException(
             f"Messaging template type {template_type} is not supported."
@@ -263,7 +263,7 @@ def get_all_messaging_templates_summary(
         default_template,  # pylint: disable=W0612
     ) in DEFAULT_MESSAGING_TEMPLATES.items():
         # insert type key, see if there are any matches with DB, else use defaults
-        db_template = templates_from_db[template_type]
+        db_template = templates_from_db.get(template_type)
         if db_template:
             templates.append(
                 MessagingTemplateWithPropertiesSummary(

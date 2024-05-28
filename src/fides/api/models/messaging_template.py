@@ -84,7 +84,7 @@ class MessagingTemplate(Base):
         db: Session,
         *,
         data: dict[str, Any],
-        check_name: bool = False,
+        check_name: bool = True,
     ) -> MessagingTemplate:
         """
         Creates a Messaging Template, allows linking properties

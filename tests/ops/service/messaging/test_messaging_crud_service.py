@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any, Dict
 
 import pytest
 from fides.api.common_exceptions import (
@@ -84,7 +84,7 @@ class TestMessagingTemplates:
         update_messaging_template(
             db,
             messaging_template_subject_identity_verification.id,
-            MessagingTemplateWithPropertiesBodyParams(update_body),
+            MessagingTemplateWithPropertiesBodyParams(**update_body),
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=messaging_template_subject_identity_verification.id
@@ -114,7 +114,7 @@ class TestMessagingTemplates:
         }
         with pytest.raises(MessagingConfigNotFoundException) as exc:
             update_messaging_template(
-                db, "invalid", MessagingTemplateWithPropertiesBodyParams(update_body)
+                db, "invalid", MessagingTemplateWithPropertiesBodyParams(**update_body)
             )
 
     def test_update_messaging_template_property_not_found(
@@ -132,7 +132,7 @@ class TestMessagingTemplates:
             update_messaging_template(
                 db,
                 messaging_template_subject_identity_verification.id,
-                MessagingTemplateWithPropertiesBodyParams(update_body),
+                MessagingTemplateWithPropertiesBodyParams(**update_body),
             )
 
     def test_update_messaging_template_conflicting_template(
@@ -155,7 +155,7 @@ class TestMessagingTemplates:
             update_messaging_template(
                 db,
                 messaging_template_no_property.id,
-                MessagingTemplateWithPropertiesBodyParams(update_body),
+                MessagingTemplateWithPropertiesBodyParams(**update_body),
             )
 
     def test_update_messaging_template_conflicting_template_but_one_disabled(
@@ -177,7 +177,7 @@ class TestMessagingTemplates:
         update_messaging_template(
             db,
             messaging_template_no_property.id,
-            MessagingTemplateWithPropertiesBodyParams(update_body),
+            MessagingTemplateWithPropertiesBodyParams(**update_body),
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=messaging_template_no_property.id
@@ -200,7 +200,7 @@ class TestMessagingTemplates:
         }
 
         created_template = create_messaging_template(
-            db, template_type, MessagingTemplateWithPropertiesBodyParams(create_body)
+            db, template_type, MessagingTemplateWithPropertiesBodyParams(**create_body)
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=created_template.id
@@ -222,12 +222,12 @@ class TestMessagingTemplates:
         }
 
         created_template = create_messaging_template(
-            db, template_type, MessagingTemplateWithPropertiesBodyParams(create_body)
+            db, template_type, MessagingTemplateWithPropertiesBodyParams(**create_body)
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=created_template.id
         )
-        assert messaging_template.properties[0] == []
+        assert messaging_template.properties is None
 
     def test_create_messaging_template_invalid_type(self, db: Session, property_a):
         template_type = "invalid"
@@ -243,7 +243,7 @@ class TestMessagingTemplates:
             create_messaging_template(
                 db,
                 template_type,
-                MessagingTemplateWithPropertiesBodyParams(create_body),
+                create_body,
             )
 
     def test_create_messaging_template_property_not_found(self, db: Session):
@@ -260,7 +260,7 @@ class TestMessagingTemplates:
             create_messaging_template(
                 db,
                 template_type,
-                MessagingTemplateWithPropertiesBodyParams(create_body),
+                MessagingTemplateWithPropertiesBodyParams(**create_body),
             )
 
     def test_create_messaging_template_conflicting_template_but_one_disabled(
@@ -278,7 +278,7 @@ class TestMessagingTemplates:
         }
 
         created_template = create_messaging_template(
-            db, template_type, MessagingTemplateWithPropertiesBodyParams(create_body)
+            db, template_type, MessagingTemplateWithPropertiesBodyParams(**create_body)
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=created_template.id
@@ -307,7 +307,7 @@ class TestMessagingTemplates:
             create_messaging_template(
                 db,
                 template_type,
-                MessagingTemplateWithPropertiesBodyParams(create_body),
+                MessagingTemplateWithPropertiesBodyParams(**create_body),
             )
 
     def test_delete_template_by_id(
@@ -407,15 +407,15 @@ class TestMessagingTemplates:
             "subject": "Some subject",
             "body": "Some body",
         }
-        data = {
-            "content": content,
-            "properties": [{"id": property_a.id, "name": "New Property"}],
-            "is_enabled": True,
-        }
         for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
             MessagingTemplate.create(
                 db=db,
-                data={**data, **{type: template_type}},
+                data=MessagingTemplateWithPropertiesDetail(
+                    content=content,
+                    properties=[{"id": property_a.id, "name": property_a.name}],
+                    is_enabled=True,
+                    type=template_type,
+                ).dict(),
             )
         summary = get_all_messaging_templates_summary(db)
         assert len(summary) == 6
