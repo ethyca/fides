@@ -18,7 +18,7 @@ class TestalchemerConnector:
         alchemer_erasure_data,
     ):
         (
-            # access_results,
+            access_results,
             erasure_results,
         ) = await alchemer_runner.non_strict_erasure_request(
             access_policy=policy,

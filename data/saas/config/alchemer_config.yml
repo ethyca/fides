@@ -39,6 +39,9 @@ saas_config:
           method: GET
           path: /v5/contactlist
           data_path: data
+          param_values:
+            - name: placeholder
+              identity: email
 
     - name: contact
       requests:
