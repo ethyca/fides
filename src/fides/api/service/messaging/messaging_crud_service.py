@@ -120,13 +120,15 @@ def get_messaging_template_by_type(
 
 
 def _validate_overlapping_templates(
-    db: Session, template_type: str, new_property_ids: List[str]
+    db: Session, template_type: str, new_property_ids: Optional[List[str]]
 ) -> None:
     # Only one enabled template allowed with same template type and property
-    db_enabled_templates_with_template = (
-        MessagingTemplate.get_by(db, field="type", value=template_type)
-        .filter(MessagingTemplate.is_enabled is True)
-        .all()
+    db_enabled_templates_with_template = MessagingTemplate.filter(
+        db=db,
+        conditions=(
+            (MessagingTemplate.type == template_type)
+            & (MessagingTemplate.is_enabled is True)
+        ).all(),
     )
     db_enabled_properties = [
         template.properties for template in db_enabled_templates_with_template
