@@ -127,7 +127,14 @@ def get_dynamo_tables(client: Any) -> List[str]:  # type: ignore
     Returns a list of table names response given a 'rds' boto3 client.
     """
     list_tables = client.list_tables()
-    return list_tables["TableNames"]
+    table_names = list_tables["TableNames"]
+    next_page_exists = "LastEvaluatedTableName" in list_tables
+    while next_page_exists:
+        last_evaluated_table_name = list_tables["LastEvaluatedTableName"]
+        list_tables = client.list_tables(ExclusiveStartTableName=last_evaluated_table_name)
+        table_names.extend(list_tables["TableNames"])
+        next_page_exists = "LastEvaluatedTableName" in list_tables
+    return table_names
 
 @handle_common_aws_errors
 def scan_dynamo_table(client: Any, table_name: str) -> List[str]:  # type: ignore
