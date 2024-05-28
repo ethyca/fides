@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -118,6 +118,19 @@ class ConsentIdentitiesMixin:
         index=True,
     )  # For exact match searches
 
+    external_id = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+    hashed_external_id = Column(
+        String,
+        index=True,
+    )  # For exact match searches
+
     @classmethod
     def hash_value(
         cls,
@@ -172,6 +185,15 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
         UniqueConstraint(
             "fides_user_device",
             name="last_saved_for_fides_user_device",
+        ),
+        UniqueConstraint(
+            "external_id",
+            name="last_saved_for_external_id",
+        ),
+        Index(
+            "idx_preferences_gin",
+            text("(preferences->'preferences') jsonb_path_ops"),
+            postgresql_using="gin",
         ),
     )
 
