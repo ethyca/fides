@@ -106,8 +106,8 @@ def upgrade():
     else:
         # Create new property, label as default
         insert_into_property_query: TextClause = text(
-            "INSERT INTO plus_property (id, name, key, is_default, type)"
-            "VALUES (:id, :name, :key, :is_default, :type)"
+            "INSERT INTO plus_property (id, name, is_default, type)"
+            "VALUES (:id, :name, :is_default, :type)"
         )
         characters = string.ascii_uppercase + string.digits
         # fixme- does this need the plu_ prefix?
@@ -117,7 +117,6 @@ def upgrade():
         new_property: Dict[str, Any] = {
             "id": new_property_id,
             "name": "Default Property",
-            "key": "default_property",
             "is_default": True,
             "type": "Website",
         }
