@@ -119,6 +119,7 @@ def upgrade():
             "name": "Default Property",
             "key": "default_property",
             "is_default": True,
+            "type": "Website",
         }
         try:
             bind.execute(insert_into_property_query, new_property)

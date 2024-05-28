@@ -133,11 +133,12 @@ def _validate_overlapping_templates(
     db_enabled_properties = [
         template.properties for template in db_enabled_templates_with_template
     ]
-    for property_id in new_property_ids:
-        if property_id in [db_property.id for db_property in db_enabled_properties]:
-            raise MessagingConfigValidationException(
-                f"There is already an enabled messaging template with template type {template_type} and property {property_id}"
-            )
+    if new_property_ids:
+        for property_id in new_property_ids:
+            if property_id in [db_property.id for db_property in db_enabled_properties]:
+                raise MessagingConfigValidationException(
+                    f"There is already an enabled messaging template with template type {template_type} and property {property_id}"
+                )
 
 
 def update_messaging_template(
