@@ -13,7 +13,6 @@ from sqlalchemy import (
     Boolean,
     Text,
     Index,
-    UniqueConstraint,
     and_,
 )
 from sqlalchemy.dialects.postgresql import JSONB

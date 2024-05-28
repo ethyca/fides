@@ -12,7 +12,7 @@ from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
-from fides.api.schemas.property import Property, MinimalProperty
+from fides.api.schemas.property import MinimalProperty
 
 
 class MessagingMethod(Enum):

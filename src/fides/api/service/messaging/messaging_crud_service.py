@@ -120,11 +120,11 @@ def get_messaging_template_by_type(
 
 
 def _validate_overlapping_templates(
-    db: Session, type: str, new_property_ids: List[str]
+    db: Session, template_type: str, new_property_ids: List[str]
 ) -> None:
     # Only one enabled template allowed with same template type and property
     db_enabled_templates_with_template = (
-        MessagingTemplate.get_by(db, field="type", value=type)
+        MessagingTemplate.get_by(db, field="type", value=template_type)
         .filter(MessagingTemplate.is_enabled is True)
         .all()
     )
@@ -134,7 +134,7 @@ def _validate_overlapping_templates(
     for property_id in new_property_ids:
         if property_id in [db_property.id for db_property in db_enabled_properties]:
             raise MessagingConfigValidationException(
-                f"There is already an enabled messaging template with template type {type} and property {property_id}"
+                f"There is already an enabled messaging template with template type {template_type} and property {property_id}"
             )
 
 
@@ -257,8 +257,8 @@ def get_all_messaging_templates_summary(
     templates = []
     for (
         template_type,
-        default_template,
-    ) in DEFAULT_MESSAGING_TEMPLATES.items():  # pylint: disable=W0612
+        default_template,  # pylint: disable=W0612
+    ) in DEFAULT_MESSAGING_TEMPLATES.items():
         # insert type key, see if there are any matches with DB, else use defaults
         db_template = templates_from_db[template_type]
         if db_template:
