@@ -349,7 +349,7 @@ class ConnectorRunner:
 
         erasure_results = erasure_runner_tester(
             privacy_request,
-            erasure_policy,
+            access_policy,  # use the access policy since we moved all of the rules from the erasure policy here
             dataset_graph,
             connection_config_list,
             identities,

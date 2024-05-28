@@ -1815,6 +1815,7 @@ describe("Consent overlay", () => {
             },
             extraDetails: {
               consentMethod: undefined,
+              shouldShowExperience: true,
             },
             fides_string: undefined,
           },

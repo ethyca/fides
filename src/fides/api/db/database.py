@@ -31,7 +31,8 @@ def get_alembic_config(database_url: str) -> Config:
     directory = path.join(migrations_dir, "../alembic/migrations")
     config = Config(path.join(migrations_dir, "../alembic/alembic.ini"))
     config.set_main_option("script_location", directory.replace("%", "%%"))
-    config.set_main_option("sqlalchemy.url", database_url)
+    # Avoids invalid interpolation syntax errors if % in string
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
     return config
 
 
