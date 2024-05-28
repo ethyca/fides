@@ -9,13 +9,6 @@ class TestalchemerConnector:
     def test_connection(self, alchemer_runner: ConnectorRunner):
         alchemer_runner.test_connection()
 
-    # async def test_access_request(
-    #     self, alchemer_runner: ConnectorRunner, policy, alchemer_identity_email: str
-    # ):
-    #     access_results = await alchemer_runner.access_request(
-    #         access_policy=policy, identities={"email": alchemer_identity_email}
-    #     )
-
     async def test_non_strict_erasure_request(
         self,
         alchemer_runner: ConnectorRunner,
