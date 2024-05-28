@@ -17,10 +17,12 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
+from sqlalchemy.dialects.postgresql import JSONB
+
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from sqlalchemy.exc import IntegrityError
 
-from sqlalchemy import text
+from sqlalchemy import text, bindparam
 from sqlalchemy.engine import Connection, ResultProxy
 from sqlalchemy.sql.elements import TextClause
 
@@ -148,7 +150,8 @@ def upgrade():
             }
             try:
                 bind.execute(
-                    insert_into_messaging_template_query, new_messaging_template
+                    insert_into_messaging_template_query.bindparams(
+                        bindparam('content', type_=JSONB)), new_messaging_template
                 )
             except IntegrityError as exc:
                 raise Exception(
