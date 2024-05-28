@@ -6,7 +6,16 @@ import string
 from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String, Boolean, Text, Index, UniqueConstraint, and_
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    String,
+    Boolean,
+    Text,
+    Index,
+    UniqueConstraint,
+    and_,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr

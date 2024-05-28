@@ -85,7 +85,8 @@ from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
-    MessagingServiceType, MessagingActionType,
+    MessagingServiceType,
+    MessagingActionType,
 )
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
@@ -323,6 +324,7 @@ def set_active_storage_s3(db) -> None:
         },
     )
 
+
 @pytest.fixture(scope="function")
 def property_a(db) -> Generator:
     prop_a = Property.create(
@@ -337,16 +339,21 @@ def property_a(db) -> Generator:
     yield prop_a
     prop_a.delete(db=db)
 
+
 @pytest.fixture(scope="function")
 def property_b(db: Session) -> Generator:
     prop_b = Property.create(
         db=db,
         data=PropertySchema(
-            name="New Property b", type=PropertyType.website, experiences=[], paths=[],
+            name="New Property b",
+            type=PropertyType.website,
+            experiences=[],
+            paths=[],
         ).dict(),
     )
     yield prop_b
     prop_b.delete(db=db)
+
 
 @pytest.fixture(scope="function")
 def messaging_template_no_property(db: Session) -> Generator:
@@ -359,7 +366,7 @@ def messaging_template_no_property(db: Session) -> Generator:
         "content": content,
         "properties": [],
         "is_enabled": True,
-        "type": template_type
+        "type": template_type,
     }
     messaging_template = MessagingTemplate.create(
         db=db,
@@ -368,8 +375,11 @@ def messaging_template_no_property(db: Session) -> Generator:
     yield messaging_template
     messaging_template.delete(db)
 
+
 @pytest.fixture(scope="function")
-def messaging_template_subject_identity_verification(db: Session, property_a) -> Generator:
+def messaging_template_subject_identity_verification(
+    db: Session, property_a
+) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
         "subject": "Here is your code {{code}}",
@@ -379,7 +389,7 @@ def messaging_template_subject_identity_verification(db: Session, property_a) ->
         "content": content,
         "properties": [property_a.id],
         "is_enabled": True,
-        "type": template_type
+        "type": template_type,
     }
     messaging_template = MessagingTemplate.create(
         db=db,
@@ -400,7 +410,7 @@ def messaging_template_privacy_request_receipt(db: Session, property_a) -> Gener
         "content": content,
         "properties": [property_a.id],
         "is_enabled": True,
-        "type": template_type
+        "type": template_type,
     }
     messaging_template = MessagingTemplate.create(
         db=db,
@@ -408,6 +418,7 @@ def messaging_template_privacy_request_receipt(db: Session, property_a) -> Gener
     )
     yield messaging_template
     messaging_template.delete(db)
+
 
 @pytest.fixture(scope="function")
 def messaging_config(db: Session) -> Generator:
@@ -3362,4 +3373,3 @@ def postgres_and_mongo_dataset_graph(
     dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_connection_config.key)
     return DatasetGraph(*[graph, mongo_graph])
-

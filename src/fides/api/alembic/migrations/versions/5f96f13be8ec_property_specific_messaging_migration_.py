@@ -6,6 +6,7 @@ Revises: 2736c942faa2
 Create Date: 2024-05-28 14:52:08.114674
 
 """
+
 import random
 import string
 import uuid
@@ -25,8 +26,8 @@ from sqlalchemy.sql.elements import TextClause
 
 
 # revision identifiers, used by Alembic.
-revision = '5f96f13be8ec'
-down_revision = '2736c942faa2'
+revision = "5f96f13be8ec"
+down_revision = "2736c942faa2"
 branch_labels = None
 depends_on = None
 

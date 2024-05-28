@@ -119,10 +119,18 @@ def get_messaging_template_by_type(
     return template
 
 
-def _validate_overlapping_templates(db: Session, type: str, new_property_ids: List[str]) -> None:
+def _validate_overlapping_templates(
+    db: Session, type: str, new_property_ids: List[str]
+) -> None:
     # Only one enabled template allowed with same template type and property
-    db_enabled_templates_with_template = MessagingTemplate.get_by(db, field="type", value=type).filter(MessagingTemplate.is_enabled is True).all()
-    db_enabled_properties = [template.properties for template in db_enabled_templates_with_template]
+    db_enabled_templates_with_template = (
+        MessagingTemplate.get_by(db, field="type", value=type)
+        .filter(MessagingTemplate.is_enabled is True)
+        .all()
+    )
+    db_enabled_properties = [
+        template.properties for template in db_enabled_templates_with_template
+    ]
     for property_id in new_property_ids:
         if property_id in [db_property.id for db_property in db_enabled_properties]:
             raise MessagingConfigValidationException(
@@ -144,7 +152,9 @@ def update_messaging_template(
         raise MessagingConfigNotFoundException(
             f"No messaging template found with id {template_id}"
         )
-    _validate_overlapping_templates(db, db_messaging_template.type, template_update_body.properties)
+    _validate_overlapping_templates(
+        db, db_messaging_template.type, template_update_body.properties
+    )
 
     return db_messaging_template.update(db=db, data=template_update_body.dict())
 
@@ -245,7 +255,10 @@ def get_all_messaging_templates_summary(
 
     # Create a list of MessagingTemplate models, using defaults if a key is not found in the database
     templates = []
-    for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():  # pylint: disable=W0612
+    for (
+        template_type,
+        default_template,
+    ) in DEFAULT_MESSAGING_TEMPLATES.items():  # pylint: disable=W0612
         # insert type key, see if there are any matches with DB, else use defaults
         db_template = templates_from_db[template_type]
         if db_template:
