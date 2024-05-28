@@ -279,7 +279,7 @@ export const loadPrivacyCenterEnvironment = async ({
   if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
     const result = await getPropertyFromUrl({
       customPropertyPath,
-      fidesApiUrl: settings.FIDES_API_URL,
+      fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     });
     console.log("result", result);
 
