@@ -8,7 +8,7 @@ from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
     MessagingTemplate,
 )
-from fides.api.models.property import Property
+from fides.api.models.property import Property, MessagingTemplateToProperty
 from fides.api.schemas.messaging.messaging import MessagingActionType, MessagingTemplateWithPropertiesBodyParams, \
     MessagingTemplateWithPropertiesDetail
 from fides.api.service.messaging.messaging_crud_service import (
@@ -102,18 +102,39 @@ class TestMessagingTemplates:
             update_messaging_template(db, messaging_template_subject_identity_verification.id, MessagingTemplateWithPropertiesBodyParams(update_body))
 
     def test_update_messaging_template_conflicting_template(self, db: Session,
-                                                            messaging_template_no_property, property_a):
+                                                            messaging_template_no_property, messaging_template_subject_identity_verification, property_a):
         update_body = {
             "content": {
                 "subject": "Here is your code {{code}}",
                 "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
             },
-            # this property is already being used by another template with same type
+            # this property is already being used by another messaging_template_subject_identity_verification template with same type
             "properties": [property_a.id],
             "is_enabled": True,
         }
         with pytest.raises(Exception) as exc:
             update_messaging_template(db, messaging_template_no_property.id, MessagingTemplateWithPropertiesBodyParams(update_body))
+
+    def test_update_messaging_template_conflicting_template_but_one_disabled(self, db: Session,
+                                                            messaging_template_no_property, messaging_template_subject_identity_verification, property_a):
+        update_body = {
+            "content": {
+                "subject": "Here is your code {{code}}",
+                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            },
+            # this property is already being used by another template with same type, but is not enabled, so this is fine
+            "properties": [property_a.id],
+            "is_enabled": False,
+        }
+        update_messaging_template(db, messaging_template_no_property.id, MessagingTemplateWithPropertiesBodyParams(update_body))
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=messaging_template_no_property.id
+        )
+        assert messaging_template.properties[0] == property_a.id
+
+        # assert relationship to properties
+        property_a_db = Property.get(db, object_id=property_a)
+        assert len(property_a_db.messaging_templates) == 1
 
     def test_create_messaging_template(self, db: Session, property_a):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
@@ -220,7 +241,11 @@ class TestMessagingTemplates:
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=messaging_template_subject_identity_verification.id
         )
+        messaging_template_to_property: Optional[MessagingTemplateToProperty] = MessagingTemplateToProperty.get(
+            db, object_id=messaging_template_subject_identity_verification.id
+        )
         assert messaging_template is None
+        assert messaging_template_to_property is None
 
     def test_delete_template_by_id_not_found(self, db: Session, messaging_template_no_property, messaging_template_subject_identity_verification):
         with pytest.raises(MessagingConfigNotFoundException) as exc:

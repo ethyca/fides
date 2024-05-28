@@ -69,14 +69,11 @@ class Property(Base):
         lazy="selectin",
     )
 
-    # todo- do I need to manually insert messaging_templates here or will DB handle it?
     messaging_templates: RelationshipProperty[List[MessagingTemplate]] = relationship(
         "MessagingTemplate",
         secondary="messaging_template_to_property",
         back_populates="properties",
         lazy="selectin",
-        foreign_keys=[id],
-        primaryjoin="foreign(MessagingTemplateToProperty.property_id)==any_(Property.id)",
     )
 
     # Only 1 property can be the default
@@ -266,28 +263,9 @@ class MessagingTemplateToProperty(Base):
     )
     property_id = Column(
         String,
-        # How to add constraint where if you try to delete a property that exists here, it throws a DB err
         ForeignKey("plus_property.id"),
         unique=False,
         index=True,
         nullable=False,
         primary_key=True,
-    )
-    # This inheritance allows us to enforce a unique constraint that depends on this column
-    is_enabled = Column(None, ForeignKey('messaging_template.is_enabled'), primary_key=False)
-
-    # Only 1 row allowed with the same template and property if template is enabled
-    # FIXME- This is not working. I added an is_enabled column because this is required to determine the unique
-    # constraint below. But because this column is a ForeignKey, SQLAlchemy is complaining
-    # about not being able to determine the relationship between tables. I've tried to define
-    # foreign_keys and primaryjoin args on Property / MessagingTemplate tables to set up this linkage, but
-    # may have to resort to using CRUD logic to validate uniqueness here.
-    __table_args__ = (
-        Index(
-            "only_one_overlapping_enabled_template_and_property",
-            "messaging_template_id",
-            "property_id",
-            unique=True,
-            postgresql_where=(~is_enabled)
-        ),
     )

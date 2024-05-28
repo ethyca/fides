@@ -119,6 +119,17 @@ def get_messaging_template_by_type(
     return template
 
 
+def _validate_overlapping_templates(db: Session, type: str, new_property_ids: List[str]) -> None:
+    # Only one enabled template allowed with same template type and property
+    db_enabled_templates_with_template = MessagingTemplate.get_by(db, field="type", value=type).filter(MessagingTemplate.is_enabled is True).all()
+    db_enabled_properties = [template.properties for template in db_enabled_templates_with_template]
+    for property_id in new_property_ids:
+        if property_id in [db_property.id for db_property in db_enabled_properties]:
+            raise MessagingConfigValidationException(
+                f"There is already an enabled messaging template with template type {type} and property {property_id}"
+            )
+
+
 def update_messaging_template(
     db: Session,
     template_id: str,
@@ -126,14 +137,16 @@ def update_messaging_template(
 ) -> Optional[MessagingTemplate]:
     # Updating template type is not allowed once it is created, so we don't intake it here
     logger.info("Finding messaging config with id '{}'", template_id)
-    messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+    db_messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
         db, object_id=template_id
     )
-    if not messaging_template:
+    if not db_messaging_template:
         raise MessagingConfigNotFoundException(
             f"No messaging template found with id {template_id}"
         )
-    return messaging_template.update(db=db, data=template_update_body.dict())
+    _validate_overlapping_templates(db, db_messaging_template.type, template_update_body.properties)
+
+    return db_messaging_template.update(db=db, data=template_update_body.dict())
 
 
 def create_messaging_template(
@@ -145,6 +158,8 @@ def create_messaging_template(
         raise MessagingConfigValidationException(
             f"Messaging template type {template_type} is not supported."
         )
+    _validate_overlapping_templates(db, template_type, template_create_body.properties)
+
     data = {
         "content": template_create_body.content,
         "properties": template_create_body.properties,

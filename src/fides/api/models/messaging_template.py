@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Type
 
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -67,15 +67,13 @@ class MessagingTemplate(Base):
 
     type = Column(String, index=True, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
-    is_enabled = Column(Boolean, default=False, nullable=False)
     properties: RelationshipProperty[List[Property]] = relationship(
         "Property",
         secondary="messaging_template_to_property",
         back_populates="messaging_templates",
         lazy="selectin",
-        foreign_keys=[id, is_enabled],
-        primaryjoin="foreign(MessagingTemplateToPropertyId.messaging_template_id)==any_(MessagingTemplate.id)",
     )
+    is_enabled = Column(Boolean, default=False, nullable=False)
 
     class Config:
         orm_mode = True
