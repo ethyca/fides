@@ -89,10 +89,10 @@ class MessagingTemplate(Base):
         """
         Creates a Messaging Template, allows linking properties
         """
+        properties = data.pop("properties", [])
         messaging_template: MessagingTemplate = super().create(
             db=db, data=data, check_name=check_name
         )
-        properties = data.pop("properties", [])
         # Link Properties to this Messaging Template via the MessagingTemplateToProperty table
         link_properties_to_messaging_template(db, properties, messaging_template)
         return messaging_template
@@ -101,9 +101,9 @@ class MessagingTemplate(Base):
         """
         Updates a Messaging Template, allows linking properties
         """
+        properties = data.pop("properties", [])
         self.update(db=db, data=data)
 
-        properties = data.pop("properties", [])
         # Link Properties to this Messaging Template via the MessagingTemplateToProperty table
         link_properties_to_messaging_template(db, properties, self)
         return self
