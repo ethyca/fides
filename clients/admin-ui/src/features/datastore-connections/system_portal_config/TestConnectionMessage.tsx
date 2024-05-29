@@ -1,4 +1,4 @@
-import { Text } from "@fidesui/react";
+import { Text } from "fidesui";
 import React from "react";
 
 type TestConnectionMessageProps = {

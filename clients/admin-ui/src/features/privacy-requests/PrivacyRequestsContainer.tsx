@@ -1,4 +1,4 @@
-import { Flex, Heading, Spacer } from "@fidesui/react";
+import { Flex, Heading, Spacer } from "fidesui";
 import dynamic from "next/dynamic";
 import * as React from "react";
 import { useEffect, useState } from "react";

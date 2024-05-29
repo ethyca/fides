@@ -11,7 +11,7 @@ import {
   ModalContent,
   ModalOverlay,
   SimpleGrid,
-} from "@fidesui/react";
+} from "fidesui";
 import { useMemo, useState } from "react";
 
 import { usePicker } from "~/features/common/PickerCard";

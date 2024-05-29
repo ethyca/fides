@@ -3,7 +3,7 @@
   "version": "2.13.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "dev:windows": "next dev",
     "build": "next build",
     "start": "next start",
@@ -23,15 +23,14 @@
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2"
   },
   "dependencies": {
-    "@chakra-ui/react": "^1.8.9",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@fidesui/react": "^0.0.23",
     "@fontsource/inter": "^4.5.15",
     "@iabtechlabtcf/core": "^1.5.10",
     "@reduxjs/toolkit": "^1.9.3",
     "cache-control-parser": "^2.0.4",
     "fides-js": "*",
+    "fidesui": "*",
     "formik": "^2.2.9",
     "framer-motion": "^5",
     "headers-polyfill": "^3.1.2",

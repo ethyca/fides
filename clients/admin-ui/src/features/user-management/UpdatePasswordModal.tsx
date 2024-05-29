@@ -12,7 +12,7 @@ import {
   Stack,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useState } from "react";
 
 import { successToastParams } from "../common/toast";

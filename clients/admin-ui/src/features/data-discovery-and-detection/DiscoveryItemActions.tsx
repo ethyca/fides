@@ -1,4 +1,4 @@
-import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "@fidesui/react";
+import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "fidesui";
 import { useState } from "react";
 
 import { DiffStatus, StagedResource } from "~/types/api";

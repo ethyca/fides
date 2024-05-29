@@ -1,5 +1,5 @@
-import { Box, Heading, List, ListItem } from "@fidesui/react";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
+import { Box, Heading, List, ListItem } from "fidesui";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";

@@ -1,4 +1,4 @@
-import { Tag } from "@fidesui/react";
+import { Tag } from "fidesui";
 import React from "react";
 
 import { PrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";

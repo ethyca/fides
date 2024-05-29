@@ -4,7 +4,7 @@ import {
   HStack,
   ViewIcon,
   ViewOffIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import { useState } from "react";
 
 import { DiffStatus, StagedResource } from "~/types/api";

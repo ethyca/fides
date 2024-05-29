@@ -1,5 +1,5 @@
-import { Center, Spinner } from "@fidesui/react";
 import { debounce } from "common/utils";
+import { Center, Spinner } from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";

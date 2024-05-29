@@ -1,3 +1,4 @@
+import { Select } from "chakra-react-select";
 import {
   Box,
   Button,
@@ -13,8 +14,7 @@ import {
   TabPanels,
   Tabs,
   VStack,
-} from "@fidesui/react";
-import { Select } from "chakra-react-select";
+} from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useState } from "react";
 
@@ -45,7 +45,7 @@ const NoticeFormFields = ({ index }: { index: number }) => (
     <CustomTextInput
       autoFocus={index !== 0}
       name={`translations.${index}.title`}
-      label="Title of consent notice as displayed to user"
+      label="Title of privacy notice as displayed to user"
       variant="stacked"
     />
     <CustomTextArea

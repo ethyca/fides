@@ -1,6 +1,6 @@
-import { Box } from "@fidesui/react";
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
+import { Box } from "fidesui";
 import dynamic from "next/dynamic";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 

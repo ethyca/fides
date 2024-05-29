@@ -1,11 +1,4 @@
-import {
-  Badge,
-  Box,
-  Stack,
-  Text,
-  HStack,
-  WarningTwoIcon,
-} from "@fidesui/react";
+import { Badge, Box, Stack, Text, HStack, WarningTwoIcon } from "fidesui";
 import { GpcStatus } from "fides-js";
 import useI18n from "~/common/hooks/useI18n";
 

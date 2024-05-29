@@ -1,4 +1,4 @@
-import { Stack, Tbody, Td, Text, Tr } from "@fidesui/react";
+import { Stack, Tbody, Td, Text, Tr } from "fidesui";
 import { Row, UseTableInstanceProps } from "react-table";
 
 import { GRAY_BACKGROUND } from "./constants";

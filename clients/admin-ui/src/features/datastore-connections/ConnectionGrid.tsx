@@ -1,5 +1,5 @@
-import { Box, chunk, SimpleGrid } from "@fidesui/react";
 import PaginationFooter from "common/PaginationFooter";
+import { Box, chunk, SimpleGrid } from "fidesui";
 import React from "react";
 import { useDispatch } from "react-redux";
 

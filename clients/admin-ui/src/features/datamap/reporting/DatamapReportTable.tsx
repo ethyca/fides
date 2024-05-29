@@ -1,17 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  Button,
-  ChevronDownIcon,
-  Flex,
-  Heading,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItemOption,
-  MenuList,
-  useDisclosure,
-} from "@fidesui/react";
-import {
   createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
@@ -31,6 +19,18 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import {
+  Button,
+  ChevronDownIcon,
+  Flex,
+  Heading,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItemOption,
+  MenuList,
+  useDisclosure,
+} from "fidesui";
 import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
@@ -142,10 +142,6 @@ const getGrouping = (groupBy: DATAMAP_GROUPING) => {
       grouping = [COLUMN_IDS.DATA_USE];
       break;
     }
-    case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
-      grouping = [COLUMN_IDS.DATA_CATEGORY];
-      break;
-    }
     default:
       grouping = [COLUMN_IDS.SYSTEM_NAME];
   }
@@ -169,14 +165,6 @@ const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
       COLUMN_IDS.DATA_SUBJECT,
     ];
   }
-  if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
-    columnOrder = [
-      COLUMN_IDS.DATA_CATEGORY,
-      COLUMN_IDS.SYSTEM_NAME,
-      COLUMN_IDS.DATA_USE,
-      COLUMN_IDS.DATA_SUBJECT,
-    ];
-  }
   return columnOrder;
 };
 
@@ -187,9 +175,6 @@ const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
   }
   if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
     columnOrder = [COLUMN_IDS.DATA_USE, COLUMN_IDS.SYSTEM_NAME];
-  }
-  if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
-    columnOrder = [COLUMN_IDS.DATA_CATEGORY, COLUMN_IDS.SYSTEM_NAME];
   }
   return columnOrder;
 };
@@ -1047,9 +1032,6 @@ export const DatamapReportTable = () => {
       }
       case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
         return "data use";
-      }
-      case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
-        return "data category";
       }
       default: {
         return "system";
