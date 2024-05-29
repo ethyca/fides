@@ -45,7 +45,7 @@ const NoticeFormFields = ({ index }: { index: number }) => (
     <CustomTextInput
       autoFocus={index !== 0}
       name={`translations.${index}.title`}
-      label="Title of consent notice as displayed to user"
+      label="Title of privacy notice as displayed to user"
       variant="stacked"
     />
     <CustomTextArea
