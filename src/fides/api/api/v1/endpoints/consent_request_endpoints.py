@@ -194,10 +194,11 @@ def create_consent_request(
         not identity.email
         and not identity.phone_number
         and not identity.fides_user_device_id
+        and not identity.external_id
     ):
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
-            detail="An email address, phone number, or fides_user_device_id is required",
+            detail="An email address, phone number, fides_user_device_id, or external_id is required",
         )
 
     provided_identity = _get_or_create_provided_identity(
@@ -557,6 +558,33 @@ def _get_or_create_provided_identity(
         identity = get_or_create_fides_user_device_id_provided_identity(
             db, identity_data
         )
+    elif (
+        target_identity_type == ProvidedIdentityType.external_id.value
+        and identity_data.external_id
+    ):
+        identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                (ProvidedIdentity.field_name == ProvidedIdentityType.external_id.value)
+                & (
+                    ProvidedIdentity.hashed_value
+                    == ProvidedIdentity.hash_value(identity_data.external_id)
+                )
+                & (ProvidedIdentity.privacy_request_id.is_(None))
+            ),
+        ).first()
+        if not identity:
+            identity = ProvidedIdentity.create(
+                db,
+                data={
+                    "privacy_request_id": None,
+                    "field_name": ProvidedIdentityType.external_id.value,
+                    "hashed_value": ProvidedIdentity.hash_value(
+                        identity_data.external_id
+                    ),
+                    "encrypted_value": {"value": identity_data.external_id},
+                },
+            )
 
     else:
         raise HTTPException(
