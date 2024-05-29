@@ -8,7 +8,7 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
-from fides.api.util.storage_authenticator import get_s3_session
+from fides.api.util.s3_util import get_s3_session
 
 
 class TestGetS3Session:
