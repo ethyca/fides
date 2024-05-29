@@ -618,6 +618,8 @@ def infer_target_identity_type(
         target_identity_type = ProvidedIdentityType.email.value
     elif identity_data.phone_number:
         target_identity_type = ProvidedIdentityType.phone_number.value
+    elif identity_data.external_id:
+        target_identity_type = ProvidedIdentityType.external_id.value
     elif identity_data.fides_user_device_id:
         # If no other identity is provided, use the Fides User Device ID
         target_identity_type = ProvidedIdentityType.fides_user_device_id.value

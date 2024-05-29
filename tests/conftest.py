@@ -807,6 +807,17 @@ def subject_identity_verification_not_required(db):
     db.commit()
 
 
+@pytest.fixture(scope="function")
+def disable_consent_identity_verification(db):
+    """Fixture to set disable_consent_identity_verification for tests"""
+    original_value = CONFIG.execution.disable_consent_identity_verification
+    CONFIG.execution.disable_consent_identity_verification = True
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.execution.disable_consent_identity_verification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
 @pytest.fixture(autouse=True, scope="function")
 def privacy_request_complete_email_notification_disabled(db):
     """Disable request completion email for most tests unless overridden"""

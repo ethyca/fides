@@ -400,6 +400,24 @@ class TestConsentRequest:
         ).first()
         assert custom_privacy_request_field
 
+    @pytest.mark.usefixtures("disable_consent_identity_verification")
+    def test_consent_request_with_external_id(
+        self, db, api_client, url
+    ):
+        external_id = "ext-123"
+        data = {"identity": {"external_id": external_id}}
+        response = api_client.post(url, json=data)
+        assert response.status_code == 200
+
+        provided_identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                ProvidedIdentity.hashed_value
+                == ProvidedIdentity.hash_value(external_id)
+            ),
+        ).first()
+        assert provided_identity
+
 
 class TestConsentVerify:
     @pytest.fixture(scope="function")
