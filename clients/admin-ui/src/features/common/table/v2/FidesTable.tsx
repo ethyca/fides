@@ -150,13 +150,13 @@ const TableBody = <T,>({
         displayAllColumns={displayAllColumns}
       />
     ))}
-    {tableInstance.getRowModel().rows.length === 0 && emptyTableNotice && (
-      <Tr>
-        <Td colSpan={100} borderRightWidth="1px">
-          {emptyTableNotice}
-        </Td>
-      </Tr>
-    )}
+    {tableInstance.getRowModel().rows.length === 0 &&
+      !tableInstance.getState()?.globalFilter &&
+      emptyTableNotice && (
+        <Tr>
+          <Td colSpan={100}>{emptyTableNotice}</Td>
+        </Tr>
+      )}
   </Tbody>
 );
 
