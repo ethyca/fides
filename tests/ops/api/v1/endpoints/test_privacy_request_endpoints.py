@@ -1628,6 +1628,7 @@ class TestGetPrivacyRequests:
             "ga_client_id": None,
             "ljt_readerID": None,
             "fides_user_device_id": None,
+            "external_id": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
