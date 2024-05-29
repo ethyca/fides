@@ -1,7 +1,8 @@
 import json
-from typing import Any, Dict, List
-
 import pydash
+
+from typing import Any, Dict, List
+from requests import Response
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.execution import ExecutionNode
@@ -28,19 +29,6 @@ def oracle_responsys_profile_list_recipients_read(
 ) -> List[Row]:
     """
     Retrieve data from each profile list.
-
-    The members endpoint returns data in two separate arrays: one for the keys and one for the values for each result.
-    {
-    "recordData": {
-        "fieldNames": [
-        <list of field names>
-        ],
-        "records": [
-            [
-                <list of field values, corresponding to the fieldNames>
-            ]
-        ]
-    }
     """
     list_ids = input_data.get("profile_list_id", [])
     results = []
@@ -72,16 +60,8 @@ def oracle_responsys_profile_list_recipients_read(
             ),
             [404],  # Returns a 404 if no list member is found
         )
-        response_data = pydash.get(members_response.json(), "recordData")
-        if response_data:
-            normalized_field_names = [
-                field.lower().rstrip("_") for field in response_data["fieldNames"]
-            ]
-            serialized_data = [
-                dict(zip(normalized_field_names, records))
-                for records in response_data["records"]
-            ]
-
+        serialized_data = oracle_responsys_serialize_record_data(members_response)
+        if serialized_data:
             for record in serialized_data:
                 # Filter out the keys with falsy values and append it
                 filtered_records = {
@@ -89,7 +69,103 @@ def oracle_responsys_profile_list_recipients_read(
                 }
                 filtered_records["profile_list_id"] = list_id
                 results.append(filtered_records)
+    return results
 
+
+def oracle_responsys_serialize_record_data(response: Response) -> list[dict[Any, Any]]:
+    """
+    Serializes response data from two separate arrays: one for the keys and one for the values for each result, returning a list of dicts.
+    {
+    "recordData": {
+        "fieldNames": [
+        <list of field names>
+        ],
+        "records": [
+            [
+                <list of field values, corresponding to the fieldNames>
+            ]
+        ]
+    }
+    """
+    response_data = pydash.get(response.json(), "recordData")
+    serialized_data = []
+    if response_data:
+        normalized_field_names = [
+            field.lower().rstrip("_") for field in response_data["fieldNames"]
+        ]
+        serialized_data = [
+            dict(zip(normalized_field_names, records))
+            for records in response_data["records"]
+        ]
+    return serialized_data
+
+
+def oracle_responsys_get_profile_extensions(
+    client: AuthenticatedClient, list_ids: List[str]
+) -> Dict[str, List[str]]:
+    """
+    Retrieves a list of profile_extensions for each profile_list, returned as a dict.
+    """
+    results = {}
+
+    for list_id in list_ids:
+        list_extensions_response = client.send(
+            SaaSRequestParams(
+                method=HTTPMethod.GET,
+                path=f"/rest/api/v1.3/lists/{list_id}/listExtensions",
+            )
+        )
+        profile_extension_names = pydash.map_(
+            list_extensions_response.json(), "profileExtension.objectName"
+        )
+        results[list_id] = profile_extension_names
+    return results
+
+
+@register("oracle_responsys_profile_extension_recipients_read", [SaaSRequestType.READ])
+def oracle_responsys_profile_extension_recipients_read(
+    client: AuthenticatedClient,
+    node: ExecutionNode,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
+    input_data: Dict[str, List[Any]],
+    secrets: Dict[str, Any],
+) -> List[Row]:
+    """
+    Retrieve a list of profile extension tables and returns the data from each profile extension table for the RIIDs.
+    """
+    list_ids = input_data.get("profile_list_id", [])
+    riids = input_data.get("responsys_id", [])
+
+    results = []
+
+    extensions = oracle_responsys_get_profile_extensions(client, list_ids)
+
+    body = {"fieldList": ["all"], "ids": riids, "queryAttribute": "r"}
+
+    for key, value in extensions.items():
+        for profile_extension in value:
+            list_extensions_response = client.send(
+                SaaSRequestParams(
+                    method=HTTPMethod.POST,
+                    path=f"/rest/api/v1.3/lists/{key}/listExtensions/{profile_extension}/members",
+                    query_params={"action": "get"},
+                    body=json.dumps(body),
+                    headers={"Content-Type": "application/json"},
+                ),
+                [404],
+            )
+
+            serialized_data = oracle_responsys_serialize_record_data(
+                list_extensions_response
+            )
+            for record in serialized_data:
+                # Filter out the keys with falsy values and append it
+                filtered_records = {
+                    key: value for key, value in record.items() if value
+                }
+                filtered_records["profile_extension_id"] = profile_extension
+                results.append({"user_data": filtered_records})
     return results
 
 

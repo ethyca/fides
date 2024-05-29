@@ -110,3 +110,9 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+      - name: profile_extension_recipient
+        fields:
+          - name: user_data
+            data_categories: [user.content]
+            fidesops_meta:
+              data_type: string
