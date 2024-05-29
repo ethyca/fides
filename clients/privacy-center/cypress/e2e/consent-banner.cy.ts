@@ -546,6 +546,7 @@ describe("Consent overlay", () => {
             served_notice_history_id: "ser_notice-history-000",
           };
           expect(body).to.eql(expected);
+          expect(body.served_notice_history_id).to.be.a("string");
         });
 
         // check that the cookie updated
@@ -2254,18 +2255,19 @@ describe("Consent overlay", () => {
           tcf_system_consents: [],
           tcf_system_legitimate_interests: [],
         });
+        expect(body.served_notice_history_id).to.be.a("string");
+        const servedNoticeHistoryId = body.served_notice_history_id;
+
         // Now opt out of the notices
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
         });
-        // The patch should include the served notice ID (response from patchNoticesServed)
+        // The patch should include the served notice ID (generated in the client and used in the notices-served request already)
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
-          expect(served_notice_history_id).to.eql(
-            noticesServedInterception.response?.body.served_notice_history_id
-          );
+          expect(served_notice_history_id).to.eql(servedNoticeHistoryId);
           expect(preferenceInterception.request.body.method).to.eql(
             ConsentMethod.REJECT
           );
