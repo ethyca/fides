@@ -233,7 +233,7 @@ describe("Consent overlay", () => {
                 "pri_exp-history-banner-modal-en-000",
               user_geography: "us_ca",
               method: ConsentMethod.SAVE,
-              served_notice_history_id: "ser_notice-history-000",
+              served_notice_history_id: body.served_notice_history_id,
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -543,7 +543,7 @@ describe("Consent overlay", () => {
             user_geography: "us_ca",
 
             method: ConsentMethod.SAVE,
-            served_notice_history_id: "ser_notice-history-000",
+            served_notice_history_id: body.served_notice_history_id,
           };
           expect(body).to.eql(expected);
           expect(body.served_notice_history_id).to.be.a("string");
@@ -644,7 +644,7 @@ describe("Consent overlay", () => {
               "pri_exp-history-banner-modal-en-000",
             user_geography: "us_ca",
             method: ConsentMethod.SAVE,
-            served_notice_history_id: "ser_notice-history-000",
+            served_notice_history_id: body.served_notice_history_id,
           };
           expect(body).to.eql(expected);
         });
@@ -918,7 +918,7 @@ describe("Consent overlay", () => {
             user_geography: "us_ca",
 
             method: ConsentMethod.GPC,
-            served_notice_history_id: undefined,
+            served_notice_history_id: body.served_notice_history_id,
           };
           // uuid is generated automatically if the user has no saved consent cookie
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -2254,6 +2254,7 @@ describe("Consent overlay", () => {
           tcf_special_features: [],
           tcf_system_consents: [],
           tcf_system_legitimate_interests: [],
+          served_notice_history_id: body.served_notice_history_id,
         });
         expect(body.served_notice_history_id).to.be.a("string");
         const servedNoticeHistoryId = body.served_notice_history_id;
