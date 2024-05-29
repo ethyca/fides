@@ -37,7 +37,11 @@ const AddIntegrationModal = ({
           <IntegrationBox
             integration={BQ_PLACEHOLDER}
             button={
-              <Button variant="outline" onClick={() => setStep(1)}>
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                data-testid="configure-btn"
+              >
                 Configure
               </Button>
             }

@@ -31,29 +31,30 @@ const IntegrationListView: NextPage = () => {
 
   // const onTabChange = () => {};
 
-  const renderAddIntegrationButton = () => (
-    <Box
-      borderBottom="2px solid"
-      borderColor="gray.200"
-      height="fit-content"
-      pr="2"
-      pb="2"
-    >
-      <Button size="sm" variant="outline" onClick={onOpen}>
-        Add Integration
-        <LinkIcon marginLeft="8px" />
-      </Button>
-    </Box>
-  );
-
   return (
     <Layout title="Integrations">
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">
         Integrations
       </Heading>
-      <Box data-testid="integation-tabs" display="flex">
+      <Box data-testid="integration-tabs" display="flex">
         <DataTabsHeader border="full-width" isManual data={TABS} flexGrow={1} />
-        {renderAddIntegrationButton()}
+        <Box
+          borderBottom="2px solid"
+          borderColor="gray.200"
+          height="fit-content"
+          pr="2"
+          pb="2"
+        >
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onOpen}
+            data-testid="add-integration-btn"
+          >
+            Add Integration
+            <LinkIcon marginLeft="8px" />
+          </Button>
+        </Box>
       </Box>
       {isLoading ? (
         <Spinner />

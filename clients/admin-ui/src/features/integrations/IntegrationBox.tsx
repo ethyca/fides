@@ -56,6 +56,7 @@ const IntegrationBox = ({
       height="114px"
       padding="12px"
       marginBottom="24px"
+      data-testid={`integration-info-${integration?.key}`}
     >
       <Flex>
         {renderLogo()}

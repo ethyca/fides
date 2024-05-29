@@ -173,6 +173,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Integrations",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
         requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
         scopes: [
           ScopeRegistryEnum.CONNECTION_AUTHORIZE,
           ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,

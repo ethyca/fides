@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabsContent from "~/features/common/DataTabsContent";
 import DataTabsHeader from "~/features/common/DataTabsHeader";
-import { useFeatures } from "~/features/common/features";
+import { useFeatures, useFlags } from "~/features/common/features";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import { GearLightIcon } from "~/features/common/Icon";
 import Layout from "~/features/common/Layout";
@@ -49,6 +49,8 @@ const ConfigureSystem: NextPage = () => {
 
   const { isLoading: isDictionaryLoading } = useGetAllDictionaryEntriesQuery();
   const { tcf: isTCFEnabled } = useFeatures();
+  const { flags } = useFlags();
+  const discoveryDetectionEnabled = flags.dataDiscoveryAndDetection;
 
   const lockedForGVL = useAppSelector(selectLockedForGVL);
 
@@ -122,19 +124,22 @@ const ConfigureSystem: NextPage = () => {
             width="full"
             border="full-width"
           />
-          <Button
-            size="xs"
-            variant="outline"
-            position="absolute"
-            right={0}
-            top="50%"
-            transform="auto"
-            translateY="-50%"
-            onClick={() => router.push(INTEGRATION_MANAGEMENT_ROUTE)}
-          >
-            <Text>Integrations</Text>
-            <GearLightIcon marginLeft={2} />
-          </Button>
+          {discoveryDetectionEnabled && (
+            <Button
+              size="xs"
+              variant="outline"
+              position="absolute"
+              right={0}
+              top="50%"
+              transform="auto"
+              translateY="-50%"
+              data-testid="integration-page-btn"
+              onClick={() => router.push(INTEGRATION_MANAGEMENT_ROUTE)}
+            >
+              <Text>Integrations</Text>
+              <GearLightIcon marginLeft={2} />
+            </Button>
+          )}
         </Box>
       </PageHeader>
       {lockedForGVL ? <GVLNotice /> : null}

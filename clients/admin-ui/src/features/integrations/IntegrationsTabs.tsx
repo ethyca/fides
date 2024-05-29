@@ -12,7 +12,7 @@ const ManageIntegrationButton = ({
   integrationKey: string;
 }) => (
   <NextLink href={`${INTEGRATION_MANAGEMENT_ROUTE}/${integrationKey}`}>
-    <Button size="sm" variant="outline">
+    <Button size="sm" variant="outline" data-testid="manage-integration">
       Manage
     </Button>
   </NextLink>

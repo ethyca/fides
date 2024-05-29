@@ -1,7 +1,7 @@
 import { Button, Flex, Text } from "fidesui";
 
 const NoIntegrations = ({ onOpenAddModal }: { onOpenAddModal: () => void }) => (
-  <Flex direction="column" alignItems="center">
+  <Flex direction="column" alignItems="center" data-testid="empty-state">
     <Text color="gray.700" fontWeight="semibold" fontSize="xl">
       No integrations
     </Text>

@@ -41,7 +41,7 @@ const IntegrationDetailView: NextPage = () => {
               />
             </Flex>
             <Spacer />
-            <Button variant="outline" onClick={onOpen}>
+            <Button variant="outline" onClick={onOpen} data-testid="manage-btn">
               Manage connection
             </Button>
           </Flex>

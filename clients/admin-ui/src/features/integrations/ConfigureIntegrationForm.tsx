@@ -32,7 +32,7 @@ type FormValues = {
 };
 
 const validationSchema = Yup.object().shape({
-  name: Yup.string().nullable().label("Name"),
+  name: Yup.string().required().label("Name"),
   keyfile_creds: Yup.string().nullable().label("Keyfile credentials"),
   description: Yup.string().nullable().label("Description"),
 });
@@ -155,6 +155,7 @@ const ConfigureIntegrationForm = ({
               name="name"
               label="Name"
               variant="stacked"
+              isRequired
             />
             <CustomTextArea
               id="keyfile_creds"
