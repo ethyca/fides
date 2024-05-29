@@ -5,11 +5,11 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_engine, get_db_session
-from fides.api.util.logger import create_handler_dicts
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
+PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"
 
 
 class DatabaseTask(Task):  # pylint: disable=W0223
