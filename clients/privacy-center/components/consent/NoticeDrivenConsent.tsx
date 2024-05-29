@@ -38,6 +38,7 @@ import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import useI18n from "~/common/hooks/useI18n";
 import { useLocalStorage } from "~/common/hooks";
+import { useProperty } from "~/features/common/property.slice";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -90,6 +91,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const region = useAppSelector(selectUserRegion);
   const { i18n, selectNoticeTranslation, selectExperienceConfigTranslation } =
     useI18n();
+  const property = useProperty();
 
   const browserIdentities = useMemo(() => {
     const identities = inspectForBrowserIdentities();
@@ -255,6 +257,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       code: verificationCode,
       served_notice_history_id: servedNotice?.served_notice_history_id,
     };
+
+    if (property) {
+      payload.property_id = property.id;
+    }
 
     // 1. Send PATCH to Fides backend
     const result = await updatePrivacyPreferencesMutationTrigger({
