@@ -122,7 +122,7 @@ export const EnablePrivacyNoticeCell = ({
 }: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>) => {
   const [patchNoticeMutationTrigger] = useLimitedPatchPrivacyNoticesMutation();
 
-  const value = getValue();
+  const disabled = getValue();
   const onToggle = async (toggle: boolean) =>
     patchNoticeMutationTrigger({
       id: row.original.id,
@@ -140,7 +140,7 @@ export const EnablePrivacyNoticeCell = ({
 
   return (
     <EnableCell
-      value={value}
+      enabled={!disabled}
       isDisabled={toggleIsDisabled}
       onToggle={onToggle}
       title="Disable privacy notice"

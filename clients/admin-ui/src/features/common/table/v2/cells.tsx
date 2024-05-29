@@ -7,6 +7,7 @@ import {
   CheckboxProps,
   Flex,
   Switch,
+  SwitchProps,
   Text,
   useDisclosure,
   useToast,
@@ -167,20 +168,21 @@ export const DefaultHeaderCell = <T,>({
   </Text>
 );
 
-type EnableCellProps = {
-  value: boolean;
+interface EnableCellProps extends Omit<SwitchProps, "value"> {
+  enabled: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
   message: string;
   isDisabled?: boolean;
-};
+}
 
 export const EnableCell = ({
-  value,
+  enabled,
   onToggle,
   title,
   message,
   isDisabled,
+  ...switchProps
 }: EnableCellProps) => {
   const modal = useDisclosure();
   const toast = useToast();
@@ -204,10 +206,11 @@ export const EnableCell = ({
     <>
       <Switch
         colorScheme="complimentary"
-        isChecked={!value}
+        isChecked={enabled}
         data-testid="toggle-switch"
         disabled={isDisabled}
         onChange={handleToggle}
+        {...switchProps}
       />
       <ConfirmationModal
         isOpen={modal.isOpen}
