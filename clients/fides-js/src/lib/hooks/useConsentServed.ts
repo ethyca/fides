@@ -1,81 +1,13 @@
-import { useEffect, useState, useCallback } from "preact/hooks";
-import { FidesEvent } from "./events";
+import { useEffect, useCallback } from "preact/hooks";
+import { FidesEvent } from "../events";
 import {
   FidesInitOptions,
   PrivacyExperience,
   RecordConsentServedRequest,
   ServingComponent,
-  RecordsServedResponse,
-} from "./consent-types";
-import { patchNoticesServed } from "../services/api";
-
-/**
- * Hook which tracks if the app has mounted yet.
- *
- * Used to make sure the server and client UIs match for hydration
- * Adapted from https://www.joshwcomeau.com/react/the-perils-of-rehydration/
- */
-export const useHasMounted = () => {
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  return hasMounted;
-};
-
-/**
- * Hook to facilitate showing/hiding while adhering to WAI
- * based on chakra-ui's `useDisclosure`
- */
-export const useDisclosure = ({ id }: { id: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const onClose = useCallback(() => setIsOpen(false), []);
-  const onOpen = useCallback(() => setIsOpen(true), []);
-
-  const onToggle = useCallback(() => {
-    if (isOpen) {
-      onClose();
-    } else {
-      onOpen();
-    }
-  }, [isOpen, onOpen, onClose]);
-
-  const getButtonProps = () => ({
-    "aria-expanded": isOpen,
-    "aria-controls": id,
-    onClick: onToggle,
-  });
-
-  const getDisclosureProps = () => ({
-    id,
-    className: isOpen ? "fides-disclosure-visible" : "fides-disclosure-hidden",
-  });
-
-  return {
-    isOpen,
-    onOpen,
-    onClose,
-    onToggle,
-    getButtonProps,
-    getDisclosureProps,
-  };
-};
-
-/**
- * Extracts the id value of each object in the list and returns a list
- * of IDs, either strings or numbers based on the IDs' type.
- */
-const extractIds = <T extends { id: string | number }[]>(
-  modelList?: T
-): any[] => {
-  if (!modelList) {
-    return [];
-  }
-  return modelList.map((model) => model.id);
-};
+} from "../consent-types";
+import { patchNoticesServed } from "../../services/api";
+import { extractIds } from "~/lib/common-utils";
 
 export const useConsentServed = ({
   options,
@@ -84,6 +16,7 @@ export const useConsentServed = ({
   privacyNoticeHistoryIds,
   userGeography,
   acknowledgeMode,
+  servedNoticeHistoryId,
 }: {
   options: FidesInitOptions;
   privacyExperience: PrivacyExperience;
@@ -91,10 +24,8 @@ export const useConsentServed = ({
   privacyNoticeHistoryIds?: string[];
   userGeography?: string;
   acknowledgeMode?: boolean;
+  servedNoticeHistoryId: string;
 }) => {
-  const [servedNotice, setServedNotice] =
-    useState<RecordsServedResponse | null>(null);
-
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
       // Disable the notices-served API if the fides_disable_save_api option is set
@@ -116,6 +47,7 @@ export const useConsentServed = ({
 
       // Construct the notices-served API request and send!
       const request: RecordConsentServedRequest = {
+        served_notice_history_id: servedNoticeHistoryId,
         browser_identity: event.detail.identity,
         privacy_experience_config_history_id:
           privacyExperienceConfigHistoryId || "",
@@ -145,13 +77,12 @@ export const useConsentServed = ({
         ),
         serving_component: String(event.detail.extraDetails.servingComponent),
       };
-      const result = await patchNoticesServed({
+
+      // Send the request to the notices-served API
+      patchNoticesServed({
         request,
         options,
       });
-      if (result) {
-        setServedNotice(result);
-      }
     },
     [
       privacyExperienceConfigHistoryId,
@@ -160,6 +91,7 @@ export const useConsentServed = ({
       acknowledgeMode,
       privacyExperience,
       userGeography,
+      servedNoticeHistoryId,
     ]
   );
 
@@ -169,6 +101,5 @@ export const useConsentServed = ({
       window.removeEventListener("FidesUIShown", handleUIEvent);
     };
   }, [handleUIEvent]);
-
-  return { servedNotice };
 };
+export default useConsentServed;

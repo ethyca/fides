@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useDisclosure } from "../../lib/hooks";
+import { useDisclosure } from "~/lib/hooks";
 import type { I18n } from "../../lib/i18n";
 import {
   TCFPurposeConsentRecord,

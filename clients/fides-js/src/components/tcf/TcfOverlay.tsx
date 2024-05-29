@@ -38,7 +38,6 @@ import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
-import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
 import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
@@ -47,6 +46,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "../../lib/shared-consent-utils";
 import { useI18n } from "../../lib/i18n/i18n-context";
+import { useConsentServed, useUUID4 } from "~/lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -255,7 +255,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     return undefined;
   }, [experience, i18n]);
 
-  const { servedNotice } = useConsentServed({
+  const servedNoticeHistoryId = useUUID4();
+
+  useConsentServed({
+    servedNoticeHistoryId,
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: [],
     options,
@@ -280,7 +283,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         cookie,
         debug: options.debug,
         tcf,
-        servedNoticeHistoryId: servedNotice?.served_notice_history_id,
+        servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
           updateCookie(oldCookie, tcf, enabledIds, experience),
       });
@@ -292,7 +295,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,
-      servedNotice,
+      servedNoticeHistoryId,
     ]
   );
 
