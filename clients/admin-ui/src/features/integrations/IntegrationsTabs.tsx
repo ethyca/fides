@@ -24,25 +24,21 @@ const IntegrationsTabs = ({
 }: {
   integrations: ConnectionConfigurationResponse[];
   onOpenAddModal: () => void;
-}) => {
-  const renderIntegration = (item: ConnectionConfigurationResponse) => (
-    <IntegrationBox
-      key={item.key}
-      integration={item}
-      renderTestNotice
-      button={<ManageIntegrationButton integrationKey={item.key} />}
-    />
-  );
-
-  return (
-    <Box marginTop="24px">
-      {integrations.length ? (
-        integrations.map(renderIntegration)
-      ) : (
-        <NoIntegrations onOpenAddModal={onOpenAddModal} />
-      )}
-    </Box>
-  );
-};
+}) => (
+  <Box marginTop="24px">
+    {integrations.length ? (
+      integrations.map((item) => (
+        <IntegrationBox
+          key={item.key}
+          integration={item}
+          showTestNotice
+          button={<ManageIntegrationButton integrationKey={item.key} />}
+        />
+      ))
+    ) : (
+      <NoIntegrations onOpenAddModal={onOpenAddModal} />
+    )}
+  </Box>
+);
 
 export default IntegrationsTabs;
