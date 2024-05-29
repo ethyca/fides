@@ -44,6 +44,7 @@ declare module "@tanstack/table-core" {
     displayText?: string;
     showHeaderMenu?: boolean;
     overflow?: "auto" | "visible" | "hidden";
+    disableRowClick?: boolean;
   }
 }
 /* eslint-enable */
@@ -124,7 +125,7 @@ type Props<T> = {
   tableInstance: TableInstance<T>;
   rowActionBar?: ReactNode;
   footer?: ReactNode;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   emptyTableNotice?: ReactNode;
   overflow?: "auto" | "visible" | "hidden";

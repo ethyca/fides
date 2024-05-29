@@ -5,7 +5,7 @@ import { FidesCell } from "~/features/common/table/v2/FidesCell";
 
 type Props<T> = {
   row: Row<T>;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   displayAllColumns: string[];
 };

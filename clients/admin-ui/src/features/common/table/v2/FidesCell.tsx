@@ -5,7 +5,7 @@ import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 type FidesCellProps<T> = {
   cell: Cell<T, unknown>;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   isDisplayAll: boolean;
 };
 
@@ -63,6 +63,9 @@ export const FidesCell = <T,>({
         // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
         maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
+        cursor: cell.column.columnDef.meta?.disableRowClick
+          ? "default"
+          : "pointer",
       }}
       _first={{
         borderBottomWidth:
@@ -77,9 +80,9 @@ export const FidesCell = <T,>({
       }}
       height="inherit"
       onClick={
-        cell.column.columnDef.id !== "enable" && onRowClick
-          ? () => {
-              onRowClick(cell.row.original);
+        !cell.column.columnDef.meta?.disableRowClick && onRowClick
+          ? (e) => {
+              onRowClick(cell.row.original, e);
             }
           : undefined
       }
