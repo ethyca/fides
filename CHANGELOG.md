@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.37.0...main)
 
 ### Added
+- Deprecate LastServedNotice (lastservednoticev2) table [#4910](https://github.com/ethyca/fides/pull/4910)
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
 
 ### Changed
