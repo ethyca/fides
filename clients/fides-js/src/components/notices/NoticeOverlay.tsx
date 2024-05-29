@@ -34,7 +34,7 @@ import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { useConsentServed, useUUID4 } from "~/lib/hooks";
+import { useConsentServed, useUUID4 } from "../../lib/hooks";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of

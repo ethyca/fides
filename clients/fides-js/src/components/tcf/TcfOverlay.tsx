@@ -46,7 +46,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "../../lib/shared-consent-utils";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { useConsentServed, useUUID4 } from "~/lib/hooks";
+import { useConsentServed, useUUID4 } from "../../lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model:

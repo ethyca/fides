@@ -7,7 +7,7 @@ import {
   ServingComponent,
 } from "../consent-types";
 import { patchNoticesServed } from "../../services/api";
-import { extractIds } from "~/lib/common-utils";
+import { extractIds } from "../common-utils";
 
 export const useConsentServed = ({
   options,

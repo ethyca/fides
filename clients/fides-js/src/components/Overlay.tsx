@@ -29,7 +29,7 @@ import ConsentContent from "./ConsentContent";
 import "./fides.css";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
-import { useHasMounted } from "~/lib/hooks";
+import { useHasMounted } from "../lib/hooks";
 
 interface RenderBannerProps {
   isOpen: boolean;

@@ -1,5 +1,5 @@
 import { ComponentChildren, VNode, h } from "preact";
-import { useDisclosure } from "~/lib/hooks";
+import { useDisclosure } from "../lib/hooks";
 import Toggle from "./Toggle";
 
 const DataUseToggle = ({
