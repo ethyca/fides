@@ -191,7 +191,7 @@ export const getOrMakeFidesCookie = (
 /**
  * Save the given Fides cookie to the browser using the current root domain.
  *
- * This calculates the root domain by using the last two parts of the hostname:
+ * This calculates the root domain by using the last parts of the hostname:
  *   privacy.example.co.uk -> example.co.uk
  *   privacy.example.com -> example.com
  *   example.com -> example.com
@@ -218,7 +218,7 @@ export const saveFidesCookie = (
 
   const hostname = window.location.hostname.split(".");
   let topViableDomain = "";
-  for (let i = 1; i < hostname.length + 1; i += 1) {
+  for (let i = 1; i <= hostname.length; i += 1) {
     // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
     topViableDomain = hostname.slice(-i).join(".");
     const c = setCookie(
