@@ -18,6 +18,56 @@ from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import get_identity
 
 
+def oracle_responsys_serialize_record_data(response: Response) -> list[dict[Any, Any]]:
+    """
+    Serializes response data from two separate arrays: one for the keys and one for the values for each result, returning a list of dicts.
+    {
+    "recordData": {
+        "fieldNames": [
+        <list of field names>
+        ],
+        "records": [
+            [
+                <list of field values, corresponding to the fieldNames>
+            ]
+        ]
+    }
+    """
+    response_data = pydash.get(response.json(), "recordData")
+    serialized_data = []
+    if response_data:
+        normalized_field_names = [
+            field.lower().rstrip("_") for field in response_data["fieldNames"]
+        ]
+        serialized_data = [
+            dict(zip(normalized_field_names, records))
+            for records in response_data["records"]
+        ]
+    return serialized_data
+
+
+def oracle_responsys_get_profile_extensions(
+    client: AuthenticatedClient, list_ids: List[str]
+) -> Dict[str, List[str]]:
+    """
+    Retrieves a list of profile_extensions for each profile_list, returned as a dict.
+    """
+    results = {}
+
+    for list_id in list_ids:
+        list_extensions_response = client.send(
+            SaaSRequestParams(
+                method=HTTPMethod.GET,
+                path=f"/rest/api/v1.3/lists/{list_id}/listExtensions",
+            )
+        )
+        profile_extension_names = pydash.map_(
+            list_extensions_response.json(), "profileExtension.objectName"
+        )
+        results[list_id] = profile_extension_names
+    return results
+
+
 @register("oracle_responsys_profile_list_recipients_read", [SaaSRequestType.READ])
 def oracle_responsys_profile_list_recipients_read(
     client: AuthenticatedClient,
@@ -72,56 +122,6 @@ def oracle_responsys_profile_list_recipients_read(
     return results
 
 
-def oracle_responsys_serialize_record_data(response: Response) -> list[dict[Any, Any]]:
-    """
-    Serializes response data from two separate arrays: one for the keys and one for the values for each result, returning a list of dicts.
-    {
-    "recordData": {
-        "fieldNames": [
-        <list of field names>
-        ],
-        "records": [
-            [
-                <list of field values, corresponding to the fieldNames>
-            ]
-        ]
-    }
-    """
-    response_data = pydash.get(response.json(), "recordData")
-    serialized_data = []
-    if response_data:
-        normalized_field_names = [
-            field.lower().rstrip("_") for field in response_data["fieldNames"]
-        ]
-        serialized_data = [
-            dict(zip(normalized_field_names, records))
-            for records in response_data["records"]
-        ]
-    return serialized_data
-
-
-def oracle_responsys_get_profile_extensions(
-    client: AuthenticatedClient, list_ids: List[str]
-) -> Dict[str, List[str]]:
-    """
-    Retrieves a list of profile_extensions for each profile_list, returned as a dict.
-    """
-    results = {}
-
-    for list_id in list_ids:
-        list_extensions_response = client.send(
-            SaaSRequestParams(
-                method=HTTPMethod.GET,
-                path=f"/rest/api/v1.3/lists/{list_id}/listExtensions",
-            )
-        )
-        profile_extension_names = pydash.map_(
-            list_extensions_response.json(), "profileExtension.objectName"
-        )
-        results[list_id] = profile_extension_names
-    return results
-
-
 @register("oracle_responsys_profile_extension_recipients_read", [SaaSRequestType.READ])
 def oracle_responsys_profile_extension_recipients_read(
     client: AuthenticatedClient,
@@ -141,7 +141,11 @@ def oracle_responsys_profile_extension_recipients_read(
 
     extensions = oracle_responsys_get_profile_extensions(client, list_ids)
 
-    body = {"fieldList": ["all"], "ids": riids, "queryAttribute": "r"}
+    body = {
+        "fieldList": ["all"],
+        "ids": riids,
+        "queryAttribute": "r",
+    }  # queryAttribute 'r' represents RIID
 
     for key, value in extensions.items():
         for profile_extension in value:
@@ -159,13 +163,15 @@ def oracle_responsys_profile_extension_recipients_read(
             serialized_data = oracle_responsys_serialize_record_data(
                 list_extensions_response
             )
+
             for record in serialized_data:
-                # Filter out the keys with falsy values and append it
-                filtered_records = {
-                    key: value for key, value in record.items() if value
-                }
-                filtered_records["profile_extension_id"] = profile_extension
-                results.append({"user_data": filtered_records})
+                results.append(
+                    {
+                        "profile_extension_id": profile_extension,
+                        # PETs schemas are fully dynamic, o we need to treat the record as a JSON string in order to treat it as user data.
+                        "user_data": json.dumps(record),
+                    }
+                )
     return results
 
 

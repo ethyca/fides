@@ -41,29 +41,6 @@ saas_config:
             param_values:
               - name: placeholder_phone
                 identity: phone_number
-    - name: profile_extension
-      requests:
-        read:
-          - method: GET
-            path: /rest/api/v1.3/lists/<profile_list_id>/listExtensions
-            param_values:
-              - name: profile_list_id
-                references:
-                  - dataset: <instance_fides_key>
-                    field: profile_list.name
-                    direction: from
-              - name: placeholder_email
-                identity: email
-          - method: GET
-            path: /rest/api/v1.3/lists/<profile_list_id>/listExtensions
-            param_values:
-              - name: profile_list_id
-                references:
-                  - dataset: <instance_fides_key>
-                    field: profile_list.name
-                    direction: from
-              - name: placeholder_phone
-                identity: phone_number
     - name: profile_list_recipient
       requests:
         read:
@@ -103,15 +80,12 @@ saas_config:
         read:
           - request_override: oracle_responsys_profile_extension_recipients_read
             param_values:
+              - name: placeholder_email
+                identity: email
               - name: profile_list_id
                 references:
                   - dataset: <instance_fides_key>
                     field: profile_list_recipient.profile_list_id
-                    direction: from
-              - name: profile_extension_id
-                references:
-                  - dataset: <instance_fides_key>
-                    field: profile_extension.profileExtension.objectName
                     direction: from
               - name: responsys_id
                 references:
