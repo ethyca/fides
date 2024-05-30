@@ -166,7 +166,6 @@ def _validate_overlapping_templates(
             return
 
     # Otherwise, we need to check whether properties will overlap
-    # Todo- write tests for update where we have more than 1 possible_overlapping_templates
     for db_template in possible_overlapping_templates:
         for db_property in db_template.properties:
             if db_property.id in new_property_ids:
@@ -316,21 +315,23 @@ def get_all_messaging_templates_summary(
             ]
 
     # Create a list of MessagingTemplate models, using defaults if a key is not found in the database
-    templates = []
+    templates: List[MessagingTemplateWithPropertiesSummary] = []
     for (
         template_type,
         default_template,  # pylint: disable=W0612
     ) in DEFAULT_MESSAGING_TEMPLATES.items():
         # insert type key, see if there are any matches with DB, else use defaults
-        db_templates_with_type = db_templates.get(template_type)
+        db_templates_with_type: Optional[List[Dict[str, Any]]] = db_templates.get(
+            template_type
+        )
         if db_templates_with_type:
-            for template in db_templates_with_type:
+            for db_template in db_templates_with_type:
                 templates.append(
                     MessagingTemplateWithPropertiesSummary(
-                        id=template["id"],
+                        id=db_template["id"],
                         type=template_type,
-                        is_enabled=template["is_enabled"],
-                        properties=template["properties"],
+                        is_enabled=db_template["is_enabled"],
+                        properties=db_template["properties"],
                     )
                 )
         else:
