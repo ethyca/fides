@@ -1,4 +1,5 @@
-import { useEffect, useCallback } from "preact/hooks";
+import { useEffect, useCallback, useState } from "preact/hooks";
+import { v4 as uuidv4 } from "uuid";
 import { FidesEvent } from "../events";
 import {
   FidesInitOptions,
@@ -16,7 +17,6 @@ export const useConsentServed = ({
   privacyNoticeHistoryIds,
   userGeography,
   acknowledgeMode,
-  servedNoticeHistoryId,
 }: {
   options: FidesInitOptions;
   privacyExperience: PrivacyExperience;
@@ -24,8 +24,11 @@ export const useConsentServed = ({
   privacyNoticeHistoryIds?: string[];
   userGeography?: string;
   acknowledgeMode?: boolean;
-  servedNoticeHistoryId: string;
 }) => {
+  const [servedNoticeHistoryId, setServedNoticeHistoryId] = useState<string>(
+    uuidv4()
+  );
+
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
       // Disable the notices-served API if the fides_disable_save_api option is set
@@ -45,9 +48,13 @@ export const useConsentServed = ({
         return;
       }
 
+      // Create new uuid for each served notice
+      const newUUID = uuidv4();
+      setServedNoticeHistoryId(newUUID);
+
       // Construct the notices-served API request and send!
       const request: RecordConsentServedRequest = {
-        served_notice_history_id: servedNoticeHistoryId,
+        served_notice_history_id: newUUID,
         browser_identity: event.detail.identity,
         privacy_experience_config_history_id:
           privacyExperienceConfigHistoryId || "",
@@ -91,7 +98,6 @@ export const useConsentServed = ({
       acknowledgeMode,
       privacyExperience,
       userGeography,
-      servedNoticeHistoryId,
     ]
   );
 
@@ -101,5 +107,7 @@ export const useConsentServed = ({
       window.removeEventListener("FidesUIShown", handleUIEvent);
     };
   }, [handleUIEvent]);
+
+  return { servedNoticeHistoryId };
 };
 export default useConsentServed;

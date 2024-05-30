@@ -34,7 +34,7 @@ import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { useConsentServed, useUUID4 } from "../../lib/hooks";
+import { useConsentServed } from "../../lib/hooks";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of
@@ -149,9 +149,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     };
   });
 
-  const servedNoticeHistoryId = useUUID4();
-  useConsentServed({
-    servedNoticeHistoryId,
+  const { servedNoticeHistoryId } = useConsentServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
       const id = e.bestTranslation?.privacy_notice_history_id;

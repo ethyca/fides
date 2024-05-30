@@ -46,7 +46,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "../../lib/shared-consent-utils";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { useConsentServed, useUUID4 } from "../../lib/hooks";
+import { useConsentServed } from "../../lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -255,10 +255,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     return undefined;
   }, [experience, i18n]);
 
-  const servedNoticeHistoryId = useUUID4();
-
-  useConsentServed({
-    servedNoticeHistoryId,
+  const { servedNoticeHistoryId } = useConsentServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: [],
     options,
