@@ -168,6 +168,7 @@ def oracle_responsys_profile_extension_recipients_read(
                 results.append(
                     {
                         "profile_extension_id": profile_extension,
+                        "riid": record.pop("riid", None),
                         # PETs schemas are fully dynamic, o we need to treat the record as a JSON string in order to treat it as user data.
                         "user_data": json.dumps(record),
                     }
