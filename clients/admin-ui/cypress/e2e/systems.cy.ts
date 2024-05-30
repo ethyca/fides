@@ -8,6 +8,7 @@ import {
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
 
@@ -289,6 +290,13 @@ describe("System management page", () => {
         cy.getByTestId("system-box").click();
       });
       cy.url().should("contain", "/systems/configure/fidesctl_system");
+    });
+
+    it("Can access integration management page from system edit page", () => {
+      cy.visit("/systems/configure/fidesctl_system");
+      cy.wait("@getFidesctlSystem");
+      cy.getByTestId("integration-page-btn").click();
+      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
     });
 
     it("Can persist fields not directly in the form", () => {

@@ -44,4 +44,5 @@ export type PrivacyPreferencesRequest = {
   user_geography?: string;
   method?: ConsentMethod;
   served_notice_history_id?: string;
+  property_id?: string;
 };

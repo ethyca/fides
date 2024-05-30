@@ -53,7 +53,7 @@ export * from "@chakra-ui/visually-hidden";
  */
 /* eslint-disable import/export */
 export * from "./icons";
-export { AddIcon, QuestionIcon, WarningIcon } from "./icons";
+export { AddIcon, QuestionIcon, WarningIcon, LinkIcon } from "./icons";
 /* eslint-enable import/export */
 
 export * from "./FidesUIProvider";
