@@ -44,8 +44,16 @@ mockUuid.v4.mockReturnValue(MOCK_UUID);
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
 const mockSetCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  (name: string, value: string, attributes: object, encoding: object) =>
-    `mock setCookie return (value=${value})`
+  (name: string, value: string, attributes: object, encoding: object) => {
+    if (
+      ["com", "ca", "org", "uk", "co.uk"].indexOf(
+        (attributes as { domain: string }).domain
+      ) > -1
+    ) {
+      return undefined;
+    }
+    return `mock setCookie return (value=${value})`;
+  }
 );
 const mockRemoveCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -249,6 +257,10 @@ describe("saveFidesCookie", () => {
     { url: "https://www.another.com", expected: "another.com" },
     { url: "https://privacy.bigco.ca", expected: "bigco.ca" },
     { url: "https://privacy.subdomain.example.org", expected: "example.org" },
+    {
+      url: "https://privacy.subdomain.example.co.uk",
+      expected: "example.co.uk",
+    },
   ])(
     "calculates the root domain from the hostname ($url)",
     ({ url, expected }) => {
@@ -259,8 +271,12 @@ describe("saveFidesCookie", () => {
       });
       const cookie: FidesCookie = getOrMakeFidesCookie();
       saveFidesCookie(cookie);
-      expect(mockSetCookie.mock.calls).toHaveLength(1);
-      expect(mockSetCookie.mock.calls[0][2]).toHaveProperty("domain", expected);
+      const numCalls = expected.split(".").length;
+      expect(mockSetCookie.mock.calls).toHaveLength(numCalls);
+      expect(mockSetCookie.mock.calls[numCalls - 1][2]).toHaveProperty(
+        "domain",
+        expected
+      );
     }
   );
 

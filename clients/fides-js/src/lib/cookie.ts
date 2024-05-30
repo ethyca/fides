@@ -221,7 +221,7 @@ export const saveFidesCookie = (
   for (let i = 1; i < hostname.length + 1; i += 1) {
     // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
     topViableDomain = hostname.slice(-i).join(".");
-    setCookie(
+    const c = setCookie(
       CONSENT_COOKIE_NAME,
       encodedCookie,
       {
@@ -233,9 +233,11 @@ export const saveFidesCookie = (
       },
       CODEC
     );
-    const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
-    if (cookieString) {
-      break;
+    if (c) {
+      const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
+      if (cookieString) {
+        break;
+      }
     }
   }
 };
