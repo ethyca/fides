@@ -51,7 +51,7 @@ describe("Integration management for data detection & discovery", () => {
 
       it("should navigate to management page when 'manage' button is clicked", () => {
         cy.getByTestId("integration-info-bq_integration").within(() => {
-          cy.getByTestId("manage-integration").click();
+          cy.getByTestId("configure-btn").click();
           cy.url().should("contain", "/bq_integration");
         });
       });
@@ -78,7 +78,9 @@ describe("Integration management for data detection & discovery", () => {
       it("should be able to add a new BigQuery integration", () => {
         cy.intercept("PATCH", "/api/v1/connection").as("patchConnection");
         cy.getByTestId("add-integration-btn").click();
-        cy.getByTestId("configure-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("configure-btn").click();
+        });
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-description").type("test description");
         cy.getByTestId("save-btn").click();
@@ -91,7 +93,9 @@ describe("Integration management for data detection & discovery", () => {
           "putConnectionSecrets"
         );
         cy.getByTestId("add-integration-btn").click();
-        cy.getByTestId("configure-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("configure-btn").click();
+        });
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-keyfile_creds").type(`{"credentials": "test"}`, {
           parseSpecialCharSequences: false,
@@ -110,7 +114,9 @@ describe("Integration management for data detection & discovery", () => {
           fixture: "systems/systems.json",
         }).as("getSystems");
         cy.getByTestId("add-integration-btn").click();
-        cy.getByTestId("configure-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("configure-btn").click();
+        });
         cy.getByTestId("input-name").type("test name");
         cy.selectOption("input-system_fides_key", "Fidesctl System");
         cy.getByTestId("save-btn").click();

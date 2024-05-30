@@ -29,8 +29,6 @@ const IntegrationListView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  // const onTabChange = () => {};
-
   return (
     <Layout title="Integrations">
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">

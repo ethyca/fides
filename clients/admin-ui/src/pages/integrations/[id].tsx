@@ -55,10 +55,6 @@ const IntegrationDetailView: NextPage = () => {
         </Box>
       ),
     },
-    // {
-    //   label: "Data discovery",
-    //   content: <Text>[insert discovery tab here]</Text>,
-    // },
   ];
 
   return (

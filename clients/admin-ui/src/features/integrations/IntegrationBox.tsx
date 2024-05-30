@@ -1,5 +1,4 @@
-import { Box, Flex, Text } from "fidesui";
-import { ReactNode } from "react";
+import { Box, Button, Flex, Text } from "fidesui";
 
 import Tag from "~/features/common/Tag";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -11,11 +10,13 @@ const BIGQUERY_TAGS = ["Data Warehouse", "BigQuery", "Discovery", "Inventory"];
 const IntegrationBox = ({
   integration,
   showTestNotice,
-  button,
+  buttonLabel = "Configure",
+  onConfigureClick,
 }: {
   integration?: ConnectionConfigurationResponse;
   showTestNotice?: boolean;
-  button?: ReactNode;
+  buttonLabel?: string;
+  onConfigureClick?: () => void;
 }) => (
   <Box
     maxW="760px"
@@ -44,7 +45,16 @@ const IntegrationBox = ({
           </Text>
         )}
       </Flex>
-      {button}
+      {onConfigureClick && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onConfigureClick}
+          data-testid="configure-btn"
+        >
+          {buttonLabel}
+        </Button>
+      )}
     </Flex>
     <Flex marginTop="16px">
       {BIGQUERY_TAGS.map((item) => (
