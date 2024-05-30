@@ -24,6 +24,8 @@ The types of changes are:
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
 - Update privacy center port to :3001 for nox [#4918](https://github.com/ethyca/fides/pull/4918)
+- Optimize speed by generating the uuids in the client side for consent requests [#4933](https://github.com/ethyca/fides/pull/4933)
+
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
