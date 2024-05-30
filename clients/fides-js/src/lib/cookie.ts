@@ -192,14 +192,10 @@ export const getOrMakeFidesCookie = (
  * Save the given Fides cookie to the browser using the current root domain.
  *
  * This calculates the root domain by using the last two parts of the hostname:
+ *   privacy.example.co.uk -> example.co.uk
  *   privacy.example.com -> example.com
  *   example.com -> example.com
  *   localhost -> localhost
- *
- * NOTE: This won't handle second-level domains like co.uk:
- *   privacy.example.co.uk -> co.uk # ERROR
- *
- * (see https://github.com/ethyca/fides/issues/2072)
  */
 export const saveFidesCookie = (
   cookie: FidesCookie,
@@ -215,26 +211,33 @@ export const saveFidesCookie = (
   // eslint-disable-next-line no-param-reassign
   cookie.fides_meta.updatedAt = updatedAt;
 
-  // Write the cookie to the root domain
-  const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
-
   let encodedCookie: string = JSON.stringify(cookie);
   if (base64Cookie) {
     encodedCookie = base64_encode(encodedCookie);
   }
 
-  setCookie(
-    CONSENT_COOKIE_NAME,
-    encodedCookie,
-    {
-      // An explicit path ensures this is always set to the entire domain.
-      path: "/",
-      // An explicit domain allows subdomains to access the cookie.
-      domain: rootDomain,
-      expires: CONSENT_COOKIE_MAX_AGE_DAYS,
-    },
-    CODEC
-  );
+  const hostname = window.location.hostname.split(".");
+  let topViableDomain = "";
+  for (let i = 1; i < hostname.length; i += 1) {
+    // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
+    topViableDomain = hostname.slice(-i).join(".");
+    setCookie(
+      CONSENT_COOKIE_NAME,
+      encodedCookie,
+      {
+        // An explicit path ensures this is always set to the entire domain.
+        path: "/",
+        // An explicit domain allows subdomains to access the cookie.
+        domain: topViableDomain,
+        expires: CONSENT_COOKIE_MAX_AGE_DAYS,
+      },
+      CODEC
+    );
+    const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
+    if (cookieString) {
+      break;
+    }
+  }
 };
 
 /**
