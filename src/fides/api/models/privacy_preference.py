@@ -176,10 +176,12 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
     )
 
 
-class LastServedNotice(ConsentIdentitiesMixin, Base):
-    """Stores the latest served notices for a given user
+class LastServedNotice(Base):
+    """
+    DEPRECATED. DO NOT UPDATE THIS TABLE.  This will soon be removed.
 
-    Email/device id/phone must be unique in this table.
+    This table consolidates every notice a user has been served, (analogous to CurrentPrivacyPreference
+    but it is being removed). Backend is not writing to this any longer.
     """
 
     @declared_attr
@@ -214,6 +216,45 @@ class LastServedNotice(ConsentIdentitiesMixin, Base):
             name="last_served_for_fides_user_device",
         ),
     )
+
+    email = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )  # Encrypted email
+
+    fides_user_device = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )  # Encrypted fides user device
+
+    phone_number = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )  # Encrypted phone number
+
+    hashed_email = Column(
+        String,
+        index=True,
+    )  # For exact match searches
+
+    hashed_fides_user_device = Column(String, index=True)  # For exact match searches
+
+    hashed_phone_number = Column(
+        String,
+        index=True,
+    )  # For exact match searches
 
     @classmethod
     def generate_served_notice_history_id(cls) -> str:
@@ -328,9 +369,8 @@ class ServedNoticeHistory(ConsentReportingMixinV2, Base):
 
     serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
 
-    # Identifier generated when a LastServedNotice is created and returned in the response.
-    # This is saved on all corresponding ServedNoticeHistory records and can be used to link
-    # PrivacyPreferenceHistory records.
+    # Generated identifier for the ServedNoticeHistory, used to link a ServedNoticeHistory and PrivacyPreferenceHistory
+    # record together
     served_notice_history_id = Column(String, index=True)
 
     tcf_served = Column(
