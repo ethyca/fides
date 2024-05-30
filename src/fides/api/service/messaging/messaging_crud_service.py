@@ -121,34 +121,6 @@ def get_messaging_template_by_type(
     return template
 
 
-# def _validate_overlapping_templates(
-#     db: Session, template_type: str, new_property_ids: Optional[List[str]], is_enabled: bool
-# ) -> None:
-#     """
-#     Validates that only one enabled template with same template type and property can co-exist.
-#     """
-#     if is_enabled is False:
-#         # Always allow any number of disabled templates to be configured
-#         return
-#     existing_enabled_template_with_same_type = db.query(MessagingTemplate).filter_by(
-#         is_enabled=True,
-#         type=template_type,
-#     ).all()
-#     # fixme- if update, we can have up to 2
-#     if not existing_enabled_template_with_same_type:
-#         return
-#     from loguru import logger
-#     logger.debug(f"db enabled templates: {existing_enabled_template_with_same_type}")
-#     logger.debug(f"db enabled template type: {existing_enabled_template_with_same_type[0].type}")
-#     logger.debug(f"db enabled template enabled: {existing_enabled_template_with_same_type[0].is_enabled}")
-#     for db_template in existing_enabled_template_with_same_type:
-#         for db_property in db_template.properties:
-#             if db_property.id in new_property_ids:
-#                 raise MessagingConfigValidationException(
-#                     f"There is already an enabled messaging template with template type {template_type} and property {db_property.id}"
-#                 )
-
-
 def _validate_overlapping_templates(
     db: Session,
     template_type: str,
@@ -173,8 +145,8 @@ def _validate_overlapping_templates(
     template_1: {"is_enabled": True, "type": "subject_identity_verification", properties: ["FDS-13454"]}
     template_2: {"is_enabled": True, "type": "subject_identity_verification", properties: ["FDS-13454", "FDS-00000"]}
     """
-    # Always allow any number of disabled templates to be configured
-    if is_enabled is False:
+    # We don't care about templates that are disabled or have no properties
+    if is_enabled is False or new_property_ids is None:
         return
     possible_overlapping_templates = (
         db.query(MessagingTemplate)
@@ -322,7 +294,7 @@ def get_all_messaging_templates_summary(
     db: Session,
 ) -> Optional[List[MessagingTemplateWithPropertiesSummary]]:
     # Retrieve all templates from the database
-    db_templates: Dict[str, Any] = {}
+    db_templates: Dict[str, List[Dict[str, Any]]] = {}
     for template in MessagingTemplate.all(db):
         if db_templates.get(template.type):
             db_templates[template.type].append(
