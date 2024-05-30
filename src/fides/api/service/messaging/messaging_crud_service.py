@@ -150,7 +150,11 @@ def get_messaging_template_by_type(
 
 
 def _validate_overlapping_templates(
-        db: Session, template_type: str, new_property_ids: Optional[List[str]], is_enabled: bool, update_id: Optional[str],
+    db: Session,
+    template_type: str,
+    new_property_ids: Optional[List[str]],
+    is_enabled: bool,
+    update_id: Optional[str],
 ) -> None:
     """
     Validates that only one enabled templates are unique by template type and property.
@@ -172,10 +176,14 @@ def _validate_overlapping_templates(
     # Always allow any number of disabled templates to be configured
     if is_enabled is False:
         return
-    possible_overlapping_templates = db.query(MessagingTemplate).filter_by(
-        is_enabled=True,
-        type=template_type,
-    ).all()
+    possible_overlapping_templates = (
+        db.query(MessagingTemplate)
+        .filter_by(
+            is_enabled=True,
+            type=template_type,
+        )
+        .all()
+    )
 
     if not possible_overlapping_templates:
         return
@@ -210,7 +218,11 @@ def update_messaging_template(
             f"No messaging template found with id {template_id}"
         )
     _validate_overlapping_templates(
-        db, db_messaging_template.type, template_update_body.properties, template_update_body.is_enabled, template_id
+        db,
+        db_messaging_template.type,
+        template_update_body.properties,
+        template_update_body.is_enabled,
+        template_id,
     )
 
     data = {
@@ -218,7 +230,9 @@ def update_messaging_template(
         "is_enabled": template_update_body.is_enabled,
     }
     if template_update_body.properties:
-        data["properties"] = [{"id": property_id} for property_id in template_update_body.properties]
+        data["properties"] = [
+            {"id": property_id} for property_id in template_update_body.properties
+        ]
 
     return db_messaging_template.update(db=db, data=data)
 
@@ -232,7 +246,13 @@ def create_messaging_template(
         raise MessagingConfigValidationException(
             f"Messaging template type {template_type} is not supported."
         )
-    _validate_overlapping_templates(db, template_type, template_create_body.properties, template_create_body.is_enabled, None)
+    _validate_overlapping_templates(
+        db,
+        template_type,
+        template_create_body.properties,
+        template_create_body.is_enabled,
+        None,
+    )
 
     data = {
         "content": template_create_body.content,
@@ -240,7 +260,9 @@ def create_messaging_template(
         "type": template_type,
     }
     if template_create_body.properties:
-        data["properties"] = [{"id": property_id} for property_id in template_create_body.properties]
+        data["properties"] = [
+            {"id": property_id} for property_id in template_create_body.properties
+        ]
     return MessagingTemplate.create(db=db, data=data)
 
 
@@ -253,7 +275,11 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
         raise MessagingConfigNotFoundException(
             f"No messaging template found with id {template_id}"
         )
-    templates_with_type = MessagingTemplate.query(db=db).filter(MessagingTemplate.type == messaging_template.type).all()
+    templates_with_type = (
+        MessagingTemplate.query(db=db)
+        .filter(MessagingTemplate.type == messaging_template.type)
+        .all()
+    )
     if len(templates_with_type) <= 1:
         raise MessagingConfigValidationException(
             f"Messaging template with id {template_id} cannot be deleted because it is the only template with type {messaging_template.type}"

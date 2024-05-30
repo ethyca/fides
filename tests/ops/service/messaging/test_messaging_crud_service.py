@@ -260,7 +260,9 @@ class TestMessagingTemplates:
                 create_body,
             )
 
-    def test_create_messaging_template_property_not_found(self, db: Session, property_a):
+    def test_create_messaging_template_property_not_found(
+        self, db: Session, property_a
+    ):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
@@ -357,16 +359,14 @@ class TestMessagingTemplates:
         )
 
         # Delete message template
-        delete_template_by_id(
-            db, template_id=messaging_template_to_delete.id
-        )
+        delete_template_by_id(db, template_id=messaging_template_to_delete.id)
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=messaging_template_to_delete.id
         )
-        messaging_template_to_property_items: Optional[List[MessagingTemplateToProperty]] = (
-            MessagingTemplateToProperty.get_by(
-                db, field="messaging_template_id", value=messaging_template_to_delete.id
-            )
+        messaging_template_to_property_items: Optional[
+            List[MessagingTemplateToProperty]
+        ] = MessagingTemplateToProperty.get_by(
+            db, field="messaging_template_id", value=messaging_template_to_delete.id
         )
         assert messaging_template is None
         assert messaging_template_to_property_items is None

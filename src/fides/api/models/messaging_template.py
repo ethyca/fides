@@ -61,9 +61,9 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
 
 
 def _link_properties_to_messaging_template(
-        db: Session,
-        properties: List[Dict[str, Any]],
-        messaging_template: MessagingTemplate,
+    db: Session,
+    properties: List[Dict[str, Any]],
+    messaging_template: MessagingTemplate,
 ) -> Optional[List[Property]]:
     """
     Link supplied properties to MessagingTemplate and unlink any properties not supplied.
@@ -72,8 +72,8 @@ def _link_properties_to_messaging_template(
         return []
     new_properties = (
         db.query(Property)
-            .filter(Property.id.in_([prop["id"] for prop in properties]))
-            .all()
+        .filter(Property.id.in_([prop["id"] for prop in properties]))
+        .all()
     )
     messaging_template.properties = new_properties
     messaging_template.save(db)
@@ -128,4 +128,3 @@ class MessagingTemplate(Base):
         # Link Properties to this Messaging Template via the MessagingTemplateToProperty table
         _link_properties_to_messaging_template(db, properties, self)
         return self
-
