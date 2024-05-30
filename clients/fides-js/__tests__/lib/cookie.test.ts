@@ -264,7 +264,7 @@ describe("saveFidesCookie", () => {
     },
     {
       url: "https://example.co.in",
-      expected: "example.com.in",
+      expected: "example.co.in",
     },
     {
       url: "https://example.co.jp",
