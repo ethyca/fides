@@ -3,7 +3,11 @@ import queryString from "query-string";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { DiffStatus, Page_StagedResource_ } from "~/types/api";
+import {
+  DiffStatus,
+  Page_MonitorConfig_,
+  Page_StagedResource_,
+} from "~/types/api";
 
 interface State {
   page?: number;
@@ -39,6 +43,13 @@ interface ChangeResourceCategoryQueryParam {
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getMonitorsByIntegration: build.query<Page_MonitorConfig_, any>({
+      query: (params) => ({
+        method: "GET",
+        url: `/plus/discovery-monitor`,
+        params,
+      }),
+    }),
     getMonitorResults: build.query<
       Page_StagedResource_,
       MonitorResultQueryParams
@@ -136,6 +147,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetMonitorsByIntegrationQuery,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   usePromoteResourcesMutation,

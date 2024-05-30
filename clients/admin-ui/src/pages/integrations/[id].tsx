@@ -13,6 +13,7 @@ import BigQueryOverview, {
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import MonitorConfigTab from "~/features/integrations/MonitorConfigTab";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -55,6 +56,10 @@ const IntegrationDetailView: NextPage = () => {
         </Box>
       ),
     },
+    {
+      label: "Data discovery",
+      content: <MonitorConfigTab integration={connection!} />,
+    },
   ];
 
   return (
@@ -71,7 +76,7 @@ const IntegrationDetailView: NextPage = () => {
         ]}
       >
         <IntegrationBox integration={connection} />
-        {isLoading ? <Spinner /> : <DataTabs data={tabs} />}
+        {isLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
       </PageHeader>
     </Layout>
   );
