@@ -27,6 +27,9 @@ The types of changes are:
 - Update privacy center port to :3001 for nox [#4918](https://github.com/ethyca/fides/pull/4918)
 - Update Privacy Center toast text for consistent capitalization [#4936](https://github.com/ethyca/fides/pull/4936)
 
+### Fixed
+- Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
+
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
 ### Added
@@ -58,7 +61,6 @@ The types of changes are:
 - Fixed an issue where the Trigger Modal Link was not being populated correctly in the translation form [#4911](https://github.com/ethyca/fides/pull/4911)
 
 ### Security
-
 - Escape SQLAlchemy passwords [CVE-2024-34715](https://github.com/ethyca/fides/security/advisories/GHSA-8cm5-jfj2-26q7)
 - Properly mask nested BigQuery secrets in connection configuration endpoints [CVE-2024-35189](https://github.com/ethyca/fides/security/advisories/GHSA-rcvg-jj3g-rj7c)
 
