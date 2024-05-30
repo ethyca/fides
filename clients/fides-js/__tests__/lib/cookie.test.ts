@@ -45,8 +45,9 @@ const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
 const mockSetCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, value: string, attributes: object, encoding: object) => {
+    // Simulate that browsers will not write cookies to known top-level public domains like "com" or "co.uk"
     if (
-      ["com", "ca", "org", "uk", "co.uk"].indexOf(
+      ["com", "ca", "org", "uk", "co.uk", "in", "co.in", "jp", "co.jp"].indexOf(
         (attributes as { domain: string }).domain
       ) > -1
     ) {
@@ -260,6 +261,14 @@ describe("saveFidesCookie", () => {
     {
       url: "https://privacy.subdomain.example.co.uk",
       expected: "example.co.uk",
+    },
+    {
+      url: "https://example.co.in",
+      expected: "example.com.in",
+    },
+    {
+      url: "https://example.co.jp",
+      expected: "example.co.jp",
     },
   ])(
     "calculates the root domain from the hostname ($url)",
