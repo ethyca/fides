@@ -230,6 +230,34 @@ def second_postgres_execution_log(
 
 
 @pytest.fixture(scope="function")
+def async_execution_log(db: Session, privacy_request: PrivacyRequest) -> ExecutionLog:
+    el = ExecutionLog.create(
+        db=db,
+        data={
+            "dataset_name": "my-async-connector",
+            "collection_name": "my_async_collection",
+            "fields_affected": [
+                {
+                    "path": "my-async-connector:my_async_collection:street",
+                    "field_name": "street",
+                    "data_categories": ["user.contact.address.street"],
+                },
+                {
+                    "path": "my-async-connector:my_async_collection:city",
+                    "field_name": "city",
+                    "data_categories": ["user.contact.address.city"],
+                },
+            ],
+            "action_type": ActionType.access,
+            "status": ExecutionLogStatus.awaiting_processing,
+            "privacy_request_id": privacy_request.id,
+        },
+    )
+    yield el
+    el.delete(db)
+
+
+@pytest.fixture(scope="function")
 def connection_config(
     db: Session,
 ) -> Generator:

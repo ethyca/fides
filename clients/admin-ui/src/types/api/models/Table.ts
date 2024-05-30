@@ -17,8 +17,16 @@ export type Table = {
   updated_at?: string;
   source_modified?: string;
   classifications?: Array<Classification>;
+  /**
+   * The diff status of the staged resource
+   */
   diff_status?: DiffStatus;
+  /**
+   * Stores the aggregate counts of diff statuses of the staged resource's children
+   */
   child_diff_statuses?: Record<string, number>;
+  database_name: string;
+  schema_name: string;
   parent_schema: string;
   fields?: Array<string>;
   num_rows?: number;

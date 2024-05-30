@@ -4,7 +4,7 @@
 
 from copy import deepcopy
 from typing import Dict, Optional, Union, cast
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, quote_plus, urlencode
 
 from pydantic import Field, PostgresDsn, validator
 
@@ -71,7 +71,7 @@ class DatabaseSettings(FidesSettings):
     )
     params: Dict = Field(
         default={},  # Can't use the default_factory since it breaks docs generation
-        description="Additional connection parameters used when connecting to the applicaiton database.",
+        description="Additional connection parameters used when connecting to the application database.",
     )
 
     # These must be at the end because they require other values to construct
@@ -95,6 +95,13 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created synchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
+
+    @validator("password", pre=True)
+    def escape_password(cls, value: Optional[str]) -> Optional[str]:
+        """Escape password"""
+        if value and isinstance(value, str):
+            return quote_plus(value)
+        return value
 
     @validator("sync_database_uri", pre=True)
     @classmethod

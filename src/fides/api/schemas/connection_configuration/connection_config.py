@@ -65,28 +65,15 @@ def mask_sensitive_fields(
     if connection_secrets is None:
         return connection_secrets
 
-    # The function `mask_sensitive_fields` is called recursively. The recursion can be stopped
-    # if no properties are found at the current level, indicating that the current value is a dictionary.
-    # Since individual fields within the dictionary do not need to be masked,
-    # the function can return early in this case.
-    if not secret_schema.get("properties"):
-        return connection_secrets
-
-    connection_secret_keys = connection_secrets.keys()
-    secret_schema_keys = secret_schema["properties"].keys()
+    secret_schema_properties = secret_schema["properties"]
     new_connection_secrets = {}
 
-    for key in connection_secret_keys:
-        if key in secret_schema_keys:
-            new_connection_secrets[key] = connection_secrets[key]
-
-    for key, val in new_connection_secrets.items():
-        prop = secret_schema["properties"].get(key, {})
-
-        if isinstance(val, dict):
-            mask_sensitive_fields(val, prop)
-        elif prop.get("sensitive", False):
-            new_connection_secrets[key] = "**********"
+    for key, value in connection_secrets.items():
+        if key in secret_schema_properties:
+            if secret_schema_properties.get(key, {}).get("sensitive", False):
+                new_connection_secrets[key] = "**********"
+            else:
+                new_connection_secrets[key] = value
 
     return new_connection_secrets
 

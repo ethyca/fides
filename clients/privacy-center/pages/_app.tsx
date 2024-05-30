@@ -22,6 +22,7 @@ import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
 import { I18nProvider } from "~/common/i18nContext";
 import { FidesUIProvider } from "fidesui";
+import { loadProperty } from "~/features/common/property.slice";
 
 interface PrivacyCenterProps {
   serverEnvironment?: PrivacyCenterEnvironment;
@@ -56,7 +57,12 @@ export async function getInitialProps(
   }
 
   // Load the server-side environment for the session and pass it to the client as props
-  const serverEnvironment = await loadPrivacyCenterEnvironment();
+  const customPropertyPath =
+    context.router.query.customPropertyPath?.toString();
+  const serverEnvironment = await loadPrivacyCenterEnvironment({
+    customPropertyPath,
+  });
+
   return {
     ...ctx,
     ...{ serverEnvironment },
@@ -80,6 +86,7 @@ const PrivacyCenterApp = ({
       store.dispatch(loadSettings(serverEnvironment.settings));
       store.dispatch(loadConfig(serverEnvironment.config));
       store.dispatch(loadStyles(serverEnvironment.styles));
+      store.dispatch(loadProperty(serverEnvironment.property));
     }
   }, [serverEnvironment]);
   return (
