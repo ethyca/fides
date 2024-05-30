@@ -19,7 +19,10 @@ The types of changes are:
 
 ### Added
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
-
+- New queue for saving privacy preferences/notices served [#4931](https://github.com/ethyca/fides/pull/4931)
+- Expose number of tasks in queue in worker health check [#4931](https://github.com/ethyca/fides/pull/4931)
+- Track when preferences/notices served received [#4931](https://github.com/ethyca/fides/pull/4931)
+- 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
 - Update privacy center port to :3001 for nox [#4918](https://github.com/ethyca/fides/pull/4918)
