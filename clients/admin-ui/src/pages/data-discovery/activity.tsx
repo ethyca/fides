@@ -1,8 +1,7 @@
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
-import { DETECTION_DISCOVERY_ACTIVITY_ROUTE } from "~/features/common/nav/v2/routes";
-import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
+import PageHeader from "~/features/common/PageHeader";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import ActivityTable from "~/features/data-discovery-and-detection/tables/ActivityTable";
 import { ResourceActivityTypeEnum } from "~/features/data-discovery-and-detection/types/ResourceActivityTypeEnum";
@@ -28,13 +27,14 @@ const DataDiscoveryAndDetectionActivityPage = () => {
     <FixedLayout
       title="Data discovery"
       mainProps={{
-        padding: "40px",
-        paddingRight: "48px",
+        padding: "0 40px 48px",
       }}
     >
-      <DiscoveryMonitorBreadcrumbs
-        parentTitle="Detection & discovery"
-        parentLink={DETECTION_DISCOVERY_ACTIVITY_ROUTE}
+      <PageHeader
+        breadcrumbs={[
+          { title: "Detection & discovery", isOpaque: true },
+          { title: "All activity" },
+        ]}
       />
       <ActivityTable
         onRowClick={navigateToResourceResults}
