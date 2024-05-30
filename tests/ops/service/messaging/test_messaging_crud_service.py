@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, List
 
 import pytest
 from fides.api.common_exceptions import (
@@ -89,12 +89,14 @@ class TestMessagingTemplates:
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=messaging_template_subject_identity_verification.id
         )
-        assert messaging_template.properties[0] == property_a.id
+        assert len(messaging_template.properties) == 2
+        assert messaging_template.properties[0].id == property_a.id
+        assert messaging_template.properties[1].id == property_b.id
 
         # assert relationship to properties
-        property_a_db = Property.get(db, object_id=property_a)
+        property_a_db = Property.get(db, object_id=property_a.id)
         assert len(property_a_db.messaging_templates) == 1
-        property_b_db = Property.get(db, object_id=property_b)
+        property_b_db = Property.get(db, object_id=property_b.id)
         assert len(property_b_db.messaging_templates) == 1
 
     def test_update_messaging_template_id_not_found(
@@ -118,22 +120,32 @@ class TestMessagingTemplates:
             )
 
     def test_update_messaging_template_property_not_found(
-        self, db: Session, messaging_template_subject_identity_verification
+        self, db: Session, messaging_template_subject_identity_verification, property_a
     ):
         update_body = {
             "content": {
                 "subject": "Here is your code {{code}}",
                 "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
             },
-            "properties": ["invalid_property"],
+            "properties": [property_a.id, "invalid_property_id"],
             "is_enabled": True,
         }
-        with pytest.raises(Exception) as exc:
-            update_messaging_template(
-                db,
-                messaging_template_subject_identity_verification.id,
-                MessagingTemplateWithPropertiesBodyParams(**update_body),
-            )
+
+        update_messaging_template(
+            db,
+            messaging_template_subject_identity_verification.id,
+            MessagingTemplateWithPropertiesBodyParams(**update_body),
+        )
+
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=messaging_template_subject_identity_verification.id
+        )
+        assert len(messaging_template.properties) == 1
+        assert messaging_template.properties[0].id == property_a.id
+
+        # assert relationship to properties
+        property_a_db = Property.get(db, object_id=property_a.id)
+        assert len(property_a_db.messaging_templates) == 1
 
     def test_update_messaging_template_conflicting_template(
         self,
@@ -182,11 +194,12 @@ class TestMessagingTemplates:
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=messaging_template_no_property.id
         )
-        assert messaging_template.properties[0] == property_a.id
+        assert len(messaging_template.properties) == 1
+        assert messaging_template.properties[0].id == property_a.id
 
         # assert relationship to properties
-        property_a_db = Property.get(db, object_id=property_a)
-        assert len(property_a_db.messaging_templates) == 1
+        property_a_db = Property.get(db, object_id=property_a.id)
+        assert len(property_a_db.messaging_templates) == 2
 
     def test_create_messaging_template(self, db: Session, property_a):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
@@ -205,10 +218,11 @@ class TestMessagingTemplates:
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=created_template.id
         )
-        assert messaging_template.properties[0] == property_a.id
+        assert len(messaging_template.properties) == 1
+        assert messaging_template.properties[0].id == property_a.id
 
         # assert relationship to properties
-        property_a_db = Property.get(db, object_id=property_a)
+        property_a_db = Property.get(db, object_id=property_a.id)
         assert len(property_a_db.messaging_templates) == 1
 
     def test_create_messaging_template_no_properties(self, db: Session):
@@ -227,7 +241,7 @@ class TestMessagingTemplates:
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=created_template.id
         )
-        assert messaging_template.properties is None
+        assert len(messaging_template.properties) == 0
 
     def test_create_messaging_template_invalid_type(self, db: Session, property_a):
         template_type = "invalid"
@@ -246,22 +260,31 @@ class TestMessagingTemplates:
                 create_body,
             )
 
-    def test_create_messaging_template_property_not_found(self, db: Session):
+    def test_create_messaging_template_property_not_found(self, db: Session, property_a):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
                 "subject": "Here is your code {{code}}",
                 "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
             },
-            "properties": ["invalid"],
+            "properties": [property_a.id, "invalid_id"],
             "is_enabled": True,
         }
-        with pytest.raises(Exception) as exc:
-            create_messaging_template(
-                db,
-                template_type,
-                MessagingTemplateWithPropertiesBodyParams(**create_body),
-            )
+        template = create_messaging_template(
+            db,
+            template_type,
+            MessagingTemplateWithPropertiesBodyParams(**create_body),
+        )
+
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=template.id
+        )
+        assert len(messaging_template.properties) == 1
+        assert messaging_template.properties[0].id == property_a.id
+
+        # assert relationship to properties
+        property_a_db = Property.get(db, object_id=property_a.id)
+        assert len(property_a_db.messaging_templates) == 1
 
     def test_create_messaging_template_conflicting_template_but_one_disabled(
         self, db: Session, messaging_template_subject_identity_verification, property_a
@@ -283,11 +306,12 @@ class TestMessagingTemplates:
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=created_template.id
         )
-        assert messaging_template.properties[0] == property_a.id
+        assert len(messaging_template.properties) == 1
+        assert messaging_template.properties[0].id == property_a.id
 
         # assert relationship to properties
-        property_a_db = Property.get(db, object_id=property_a)
-        assert len(property_a_db.messaging_templates) == 1
+        property_a_db = Property.get(db, object_id=property_a.id)
+        assert len(property_a_db.messaging_templates) == 2
 
     def test_create_messaging_template_conflicting_template(
         self, db: Session, messaging_template_subject_identity_verification, property_a
@@ -303,7 +327,7 @@ class TestMessagingTemplates:
             "properties": [property_a.id],
             "is_enabled": True,
         }
-        with pytest.raises(Exception) as exc:
+        with pytest.raises(MessagingConfigValidationException) as exc:
             create_messaging_template(
                 db,
                 template_type,
@@ -314,21 +338,42 @@ class TestMessagingTemplates:
         self,
         db: Session,
         messaging_template_no_property,
-        messaging_template_subject_identity_verification,
+        property_a,
     ):
+        # Create message template
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        content = {
+            "subject": "Here is your code {{code}}",
+            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        }
+        messaging_template_to_delete = MessagingTemplate.create(
+            db=db,
+            data=MessagingTemplateWithPropertiesDetail(
+                content=content,
+                properties=[{"id": property_a.id, "name": property_a.name}],
+                is_enabled=True,
+                type=template_type,
+            ).dict(),
+        )
+
+        # Delete message template
         delete_template_by_id(
-            db, template_id=messaging_template_subject_identity_verification.id
+            db, template_id=messaging_template_to_delete.id
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
-            db, object_id=messaging_template_subject_identity_verification.id
+            db, object_id=messaging_template_to_delete.id
         )
-        messaging_template_to_property: Optional[MessagingTemplateToProperty] = (
-            MessagingTemplateToProperty.get(
-                db, object_id=messaging_template_subject_identity_verification.id
+        messaging_template_to_property_items: Optional[List[MessagingTemplateToProperty]] = (
+            MessagingTemplateToProperty.get_by(
+                db, field="messaging_template_id", value=messaging_template_to_delete.id
             )
         )
         assert messaging_template is None
-        assert messaging_template_to_property is None
+        assert messaging_template_to_property_items is None
+
+        # assert relationship to properties is deleted
+        property_a_db = Property.get(db, object_id=property_a.id)
+        assert len(property_a_db.messaging_templates) == 0
 
     def test_delete_template_by_id_not_found(
         self,

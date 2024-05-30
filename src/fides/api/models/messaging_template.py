@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Optional
 
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
@@ -60,6 +60,26 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
 }
 
 
+def _link_properties_to_messaging_template(
+        db: Session,
+        properties: List[Dict[str, Any]],
+        messaging_template: MessagingTemplate,
+) -> Optional[List[Property]]:
+    """
+    Link supplied properties to MessagingTemplate and unlink any properties not supplied.
+    """
+    if len(properties) == 0:
+        return []
+    new_properties = (
+        db.query(Property)
+            .filter(Property.id.in_([prop["id"] for prop in properties]))
+            .all()
+    )
+    messaging_template.properties = new_properties
+    messaging_template.save(db)
+    return messaging_template.properties
+
+
 class MessagingTemplate(Base):
     @declared_attr
     def __tablename__(self) -> str:
@@ -94,7 +114,8 @@ class MessagingTemplate(Base):
             db=db, data=data, check_name=check_name
         )
         # Link Properties to this Messaging Template via the MessagingTemplateToProperty table
-        link_properties_to_messaging_template(db, properties, messaging_template)
+        _link_properties_to_messaging_template(db, properties, messaging_template)
+
         return messaging_template
 
     def update(self, db: Session, *, data: dict[str, Any]) -> MessagingTemplate:
@@ -102,26 +123,9 @@ class MessagingTemplate(Base):
         Updates a Messaging Template, allows linking properties
         """
         properties = data.pop("properties", [])
-        self.update(db=db, data=data)
+        super().update(db=db, data=data)
 
         # Link Properties to this Messaging Template via the MessagingTemplateToProperty table
-        link_properties_to_messaging_template(db, properties, self)
+        _link_properties_to_messaging_template(db, properties, self)
         return self
 
-
-def link_properties_to_messaging_template(
-    db: Session,
-    properties: List[Dict[str, Any]],
-    messaging_template: MessagingTemplate,
-) -> List[Property]:
-    """
-    Link supplied properties to MessagingTemplate and unlink any properties not supplied.
-    """
-    new_properties = (
-        db.query(Property)
-        .filter(Property.id.in_([prop["id"] for prop in properties]))
-        .all()
-    )
-    messaging_template.properties = new_properties
-    messaging_template.save(db)
-    return messaging_template.properties

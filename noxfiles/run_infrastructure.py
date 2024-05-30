@@ -46,7 +46,7 @@ EXTERNAL_DATASTORE_CONFIG = {
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
-OPS_TEST_DIR = "tests/ops/service/messaging/test_messaging_crud_service.py"
+OPS_TEST_DIR = "tests/ops/"
 
 
 def run_infrastructure(
