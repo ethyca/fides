@@ -22,6 +22,7 @@ The types of changes are:
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
 - Added UI for configuring integrations for detection/discovery [#4922](https://github.com/ethyca/fides/pull/4922)
 - Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
+- Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
