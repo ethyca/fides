@@ -1,8 +1,8 @@
 """add external id to privacy preference
 
-Revision ID: d03cb217ac86
+Revision ID: 5fe01e730171
 Revises: 4b2eade4353c
-Create Date: 2024-05-28 17:29:07.303821
+Create Date: 2024-05-31 17:11:50.566937
 
 """
 
@@ -12,7 +12,7 @@ from alembic import op
 from loguru import logger
 
 # revision identifiers, used by Alembic.
-revision = "d03cb217ac86"
+revision = "5fe01e730171"
 down_revision = "4b2eade4353c"
 branch_labels = None
 depends_on = None
@@ -31,20 +31,38 @@ def upgrade():
         "currentprivacypreferencev2",
         sa.Column("hashed_external_id", sa.String(), nullable=True),
     )
+    op.add_column(
+        "currentprivacypreferencev2",
+        sa.Column("property_id", sa.String(), nullable=True),
+    )
+    op.drop_constraint(
+        "last_saved_for_email", "currentprivacypreferencev2", type_="unique"
+    )
+    op.drop_constraint(
+        "last_saved_for_fides_user_device", "currentprivacypreferencev2", type_="unique"
+    )
+    op.drop_constraint(
+        "last_saved_for_phone_number", "currentprivacypreferencev2", type_="unique"
+    )
     op.create_unique_constraint(
-        "last_saved_for_external_id", "currentprivacypreferencev2", ["external_id"]
+        "last_saved_for_email_per_property_id",
+        "currentprivacypreferencev2",
+        ["email", "property_id"],
     )
-    op.add_column(
-        "lastservednoticev2",
-        sa.Column(
-            "external_id",
-            sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
-            nullable=True,
-        ),
+    op.create_unique_constraint(
+        "last_saved_for_external_id_per_property_id",
+        "currentprivacypreferencev2",
+        ["external_id", "property_id"],
     )
-    op.add_column(
-        "lastservednoticev2",
-        sa.Column("hashed_external_id", sa.String(), nullable=True),
+    op.create_unique_constraint(
+        "last_saved_for_fides_user_device_per_property_id",
+        "currentprivacypreferencev2",
+        ["fides_user_device", "property_id"],
+    )
+    op.create_unique_constraint(
+        "last_saved_for_phone_number_per_property_id",
+        "currentprivacypreferencev2",
+        ["phone_number", "property_id"],
     )
     op.add_column(
         "privacypreferencehistory",
@@ -84,6 +102,12 @@ def upgrade():
             unique=False,
         )
         op.create_index(
+            op.f("ix_currentprivacypreferencev2_property_id"),
+            "currentprivacypreferencev2",
+            ["property_id"],
+            unique=False,
+        )
+        op.create_index(
             "idx_preferences_gin",
             "currentprivacypreferencev2",
             [sa.text("(preferences -> 'preferences'::text) jsonb_path_ops")],
@@ -98,25 +122,6 @@ def upgrade():
             "ON currentprivacypreferencev2 (hashed_external_id)'\n"
             "- 'CREATE INDEX CONCURRENTLY idx_preferences_gin "
             "ON currentprivacypreferencev2 USING gin ((preferences->'preferences') jsonb_path_ops)'"
-        )
-
-    lastservednoticev2_count = connection.execute(
-        sa.text("SELECT COUNT(*) FROM lastservednoticev2")
-    ).scalar()
-
-    if lastservednoticev2_count < 1000000:
-        op.create_index(
-            op.f("ix_lastservednoticev2_hashed_external_id"),
-            "lastservednoticev2",
-            ["hashed_external_id"],
-            unique=False,
-        )
-    else:
-        logger.warning(
-            "The lastservednoticev2 table has more than 1 million rows, "
-            "skipping index creation. Be sure to manually run "
-            "'CREATE INDEX CONCURRENTLY ix_lastservednoticev2_hashed_external_id "
-            "ON lastservednoticev2 (hashed_external_id)'"
         )
 
     privacypreferencehistory_count = connection.execute(
@@ -170,19 +175,45 @@ def downgrade():
     )
     op.drop_column("privacypreferencehistory", "hashed_external_id")
     op.drop_column("privacypreferencehistory", "external_id")
-    op.drop_index(
-        op.f("ix_lastservednoticev2_hashed_external_id"),
-        table_name="lastservednoticev2",
-    )
-    op.drop_column("lastservednoticev2", "hashed_external_id")
-    op.drop_column("lastservednoticev2", "external_id")
     op.drop_constraint(
-        "last_saved_for_external_id", "currentprivacypreferencev2", type_="unique"
+        "last_saved_for_phone_number_per_property_id",
+        "currentprivacypreferencev2",
+        type_="unique",
     )
-    op.drop_index(op.f("idx_preferences_gin"), table_name="currentprivacypreferencev2"),
+    op.drop_constraint(
+        "last_saved_for_fides_user_device_per_property_id",
+        "currentprivacypreferencev2",
+        type_="unique",
+    )
+    op.drop_constraint(
+        "last_saved_for_external_id_per_property_id",
+        "currentprivacypreferencev2",
+        type_="unique",
+    )
+    op.drop_constraint(
+        "last_saved_for_email_per_property_id",
+        "currentprivacypreferencev2",
+        type_="unique",
+    )
+    op.drop_index(
+        op.f("ix_currentprivacypreferencev2_property_id"),
+        table_name="currentprivacypreferencev2",
+    )
     op.drop_index(
         op.f("ix_currentprivacypreferencev2_hashed_external_id"),
         table_name="currentprivacypreferencev2",
     )
+    op.create_unique_constraint(
+        "last_saved_for_phone_number", "currentprivacypreferencev2", ["phone_number"]
+    )
+    op.create_unique_constraint(
+        "last_saved_for_fides_user_device",
+        "currentprivacypreferencev2",
+        ["fides_user_device"],
+    )
+    op.create_unique_constraint(
+        "last_saved_for_email", "currentprivacypreferencev2", ["email"]
+    )
+    op.drop_column("currentprivacypreferencev2", "property_id")
     op.drop_column("currentprivacypreferencev2", "hashed_external_id")
     op.drop_column("currentprivacypreferencev2", "external_id")

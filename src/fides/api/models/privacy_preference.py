@@ -166,6 +166,12 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
 
     fides_string = Column(String)
 
+    property_id = Column(
+        String,
+        index=True,
+        nullable=True,
+    )
+
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -176,19 +182,23 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
     __table_args__ = (
         UniqueConstraint(
             "email",
-            name="last_saved_for_email",
+            "property_id",
+            name="last_saved_for_email_per_property_id",
         ),
         UniqueConstraint(
             "phone_number",
-            name="last_saved_for_phone_number",
+            "property_id",
+            name="last_saved_for_phone_number_per_property_id",
         ),
         UniqueConstraint(
             "fides_user_device",
-            name="last_saved_for_fides_user_device",
+            "property_id",
+            name="last_saved_for_fides_user_device_per_property_id",
         ),
         UniqueConstraint(
             "external_id",
-            name="last_saved_for_external_id",
+            "property_id",
+            name="last_saved_for_external_id_per_property_id",
         ),
         Index(
             "idx_preferences_gin",
