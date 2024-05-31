@@ -535,7 +535,7 @@ def update_messaging_templates(
         try:
             default_template = DEFAULT_MESSAGING_TEMPLATES.get(template_type)
             if not default_template:
-                raise ValueError("Invalid template key.")
+                raise ValueError("Invalid template type.")
 
             content["subject"] = (
                 content["subject"] or default_template["content"]["subject"]

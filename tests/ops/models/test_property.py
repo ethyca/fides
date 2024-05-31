@@ -62,7 +62,7 @@ class TestProperty:
         prop = Property.create(
             db=db,
             data=PropertySchema(
-                name="New Property",
+                name="New Property 2",
                 type=PropertyType.website,
                 experiences=[],
                 privacy_center_config=privacy_center_config,
@@ -70,7 +70,7 @@ class TestProperty:
                 paths=["testing"],
             ).dict(),
         )
-        assert prop.name == "New Property"
+        assert prop.name == "New Property 2"
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
         assert prop.privacy_center_config == privacy_center_config

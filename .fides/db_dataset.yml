@@ -1552,8 +1552,6 @@ dataset:
     fields:
     - name: id
       data_categories: [system.operations]
-    - name: type
-      data_categories: [system.operations]
     - name: is_enabled
       data_categories: [system.operations]
     - name: type
