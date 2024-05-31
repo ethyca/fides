@@ -21,7 +21,6 @@ import {
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  NoticeConsent,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -37,8 +36,13 @@ import {
 } from "./lib/initialize";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
-import { defaultShowModal } from "./lib/consent-utils";
+import {
+  defaultShowModal,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./lib/consent-utils";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { raise } from "./lib/common-utils";
 
 declare global {
   interface Window {
@@ -78,8 +82,16 @@ const updateExperience: UpdateExperienceFn = ({
 /**
  * Initialize the global Fides object with the given configuration values
  */
-async function init(this: FidesGlobal, config: FidesConfig) {
-  this.config = config;
+async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
+  // confused by the "this"? see https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function
+
+  // Initialize Fides with the global configuration object if it exists, or the provided one. If neither exists, raise an error.
+  let config =
+    providedConfig ??
+    (this.config as FidesConfig) ??
+    raise("Fides must be initialized with a configuration object");
+
+  this.config = config; // no matter how the config is set, we want to store it on the global object
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -99,39 +111,38 @@ async function init(this: FidesGlobal, config: FidesConfig) {
     consentPrefsOverrides,
     experienceTranslationOverrides,
   };
-  // eslint-disable-next-line no-param-reassign
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  const cookie = {
+  this.cookie = {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
-  const savedConsent: NoticeConsent = {
-    ...cookie.consent,
+  this.saved_consent = {
+    ...this.cookie.consent,
   };
 
   const initialFides = getInitialFides({
     ...config,
-    cookie,
-    savedConsent,
+    cookie: this.cookie,
+    savedConsent: this.saved_consent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
     Object.assign(this, initialFides);
     updateWindowFides(this);
-    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+    dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+      shouldShowExperience: this.shouldShowExperience(),
+    });
   }
-  const experience = initialFides?.experience ?? config.experience;
+  this.experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    cookie,
-    savedConsent,
-    experience,
+    fides: this,
     renderOverlay,
     updateExperience,
     overrides,
@@ -139,7 +150,9 @@ async function init(this: FidesGlobal, config: FidesConfig) {
   Object.assign(this, updatedFides);
   updateWindowFides(this);
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+  dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+    shouldShowExperience: this.shouldShowExperience(),
+  });
 }
 
 // The global Fides object; this is bound to window.Fides if available
@@ -185,9 +198,23 @@ const _Fides: FidesGlobal = {
     if (!this.config || !this.initialized) {
       throw new Error("Fides must be initialized before reinitializing");
     }
-    return this.init(this.config);
+    return this.init();
   },
   initialized: false,
+  shouldShowExperience() {
+    if (!isPrivacyExperience(this.experience)) {
+      // Nothing to show if there's no experience
+      return false;
+    }
+    if (!this.cookie) {
+      throw new Error("Should have a cookie");
+    }
+    return shouldResurfaceConsent(
+      this.experience,
+      this.cookie,
+      this.saved_consent
+    );
+  },
   meta,
   shopify,
   showModal: defaultShowModal,

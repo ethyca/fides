@@ -14,7 +14,7 @@ import {
   Th,
   Thead,
   Tr,
-} from "@fidesui/react";
+} from "fidesui";
 import { useRouter } from "next/router";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

@@ -1,4 +1,4 @@
-import { Spinner } from "@fidesui/react";
+import { Spinner } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";

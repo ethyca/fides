@@ -1,4 +1,4 @@
-import { Td, Tfoot, Tr } from "@fidesui/react";
+import { Td, Tfoot, Tr } from "fidesui";
 import React, { ReactNode } from "react";
 
 type Props = {

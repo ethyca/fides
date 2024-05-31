@@ -1,4 +1,4 @@
-import { Badge, Stack, Text } from "@fidesui/react";
+import { Badge, Stack, Text } from "fidesui";
 
 import DocsLink from "~/features/common/DocsLink";
 

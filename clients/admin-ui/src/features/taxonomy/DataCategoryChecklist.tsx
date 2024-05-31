@@ -1,5 +1,5 @@
-import { Box, Heading, SimpleGrid, Text } from "@fidesui/react";
 import CheckboxTree from "common/CheckboxTree";
+import { Box, Heading, SimpleGrid, Text } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { DataCategory } from "~/types/api";

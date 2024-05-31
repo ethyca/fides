@@ -10,7 +10,7 @@ import {
   Heading,
   SimpleGrid,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { useState } from "react";
 import { ColumnInstance } from "react-table";
 

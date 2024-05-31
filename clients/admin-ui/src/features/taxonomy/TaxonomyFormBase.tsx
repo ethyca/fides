@@ -9,7 +9,7 @@ import {
   Stack,
   Text,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { ReactNode, useState } from "react";
 import * as Yup from "yup";

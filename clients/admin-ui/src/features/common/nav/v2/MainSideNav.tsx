@@ -19,7 +19,7 @@ import {
   UnorderedList,
   UserIcon,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 

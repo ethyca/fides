@@ -1,10 +1,10 @@
-import { Box, Heading, Text } from "@fidesui/react";
 import {
   selectConnectionTypeState,
   setConnectionOption,
   setStep,
 } from "connection-type/connection-type.slice";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import { Box, Heading, Text } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";

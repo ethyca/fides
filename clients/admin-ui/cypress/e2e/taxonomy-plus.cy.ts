@@ -222,7 +222,17 @@ describe("Taxonomy management with Plus features", () => {
 
       cy.removeMultiValue(testIdMulti, "Eevee");
       cy.removeMultiValue(testIdMulti, "Snorlax");
-      cy.selectOption(testIdMulti, "Eevee");
+
+      // clicking directly on the select element as we usually do hits the
+      // "remove" on the Charmander tag, so force it to find the dropdown
+      // indicator instead
+      cy.getByTestId(testIdMulti)
+        .find(".custom-select__dropdown-indicator")
+        .click();
+      cy.getByTestId(testIdMulti)
+        .find(".custom-select__menu-list")
+        .contains("Eevee")
+        .click();
 
       ["Charmander", "Eevee"].forEach((value) => {
         cy.getSelectValueContainer(testIdMulti).contains(value);

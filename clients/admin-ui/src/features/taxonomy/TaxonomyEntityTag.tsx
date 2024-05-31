@@ -1,4 +1,4 @@
-import { Tag, TagCloseButton, TagLabel, TagProps } from "@fidesui/react";
+import { Tag, TagCloseButton, TagLabel, TagProps } from "fidesui";
 
 interface Props {
   name: string;

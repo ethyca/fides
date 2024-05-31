@@ -826,7 +826,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
             },
-            "required": ["keyfile_creds", "dataset"],
+            "required": ["keyfile_creds"],
             "definitions": {
                 "KeyfileCreds": {
                     "title": "KeyfileCreds",

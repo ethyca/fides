@@ -1,4 +1,4 @@
-import { Button, Stack, StackProps } from "@fidesui/react";
+import { Button, Stack, StackProps } from "fidesui";
 import useI18n from "~/common/hooks/useI18n";
 
 const SaveCancel = ({

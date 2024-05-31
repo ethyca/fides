@@ -1,5 +1,5 @@
-import { Box, Divider, Flex, Tag, Text } from "@fidesui/react";
 import ClipboardButton from "common/ClipboardButton";
+import { Box, Divider, Flex, Tag, Text } from "fidesui";
 import React from "react";
 
 type EventErrorProps = {

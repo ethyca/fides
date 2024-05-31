@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { VStack } from "@fidesui/react";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
+import { VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";

@@ -17,7 +17,7 @@ import {
   Spacer,
   Spinner,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 
 import {

@@ -1,4 +1,4 @@
-import { Box, Heading, Spacer, Stack } from "@fidesui/react";
+import { Box, Heading, Spacer, Stack } from "fidesui";
 
 const SystemFormInputGroup = ({
   heading,

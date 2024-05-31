@@ -1,10 +1,4 @@
-import {
-  ButtonGroup,
-  CheckIcon,
-  Flex,
-  Text,
-  ViewOffIcon,
-} from "@fidesui/react";
+import { ButtonGroup, CheckIcon, Flex, Text, ViewOffIcon } from "fidesui";
 
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {

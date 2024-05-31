@@ -201,6 +201,14 @@ describe("fides.js API route", () => {
         });
     });
   });
+
+  describe("when disabling initialization", () => {
+    it("does not call widnow.Fides.init", () => {
+      cy.request("/fides.js?initialize=false").then((response) => {
+        expect(response.body).not.to.match(/window.Fides.init(fidesConfig)/);
+      });
+    });
+  });
 });
 
 // Convert this to a module instead of script (allows import/export)

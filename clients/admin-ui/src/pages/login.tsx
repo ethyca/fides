@@ -1,3 +1,5 @@
+import Head from "common/Head";
+import Image from "common/Image";
 import {
   Box,
   Button,
@@ -10,9 +12,7 @@ import {
   Input,
   Stack,
   useToast,
-} from "@fidesui/react";
-import Head from "common/Head";
-import Image from "common/Image";
+} from "fidesui";
 import { Formik } from "formik";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";

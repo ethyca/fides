@@ -1,4 +1,4 @@
-import { Button, ButtonProps, Text } from "@fidesui/react";
+import { Button, ButtonProps, Text } from "fidesui";
 import { ReactElement } from "react";
 
 const ActionButton = ({

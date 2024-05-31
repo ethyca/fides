@@ -1,12 +1,5 @@
-import {
-  Button,
-  Flex,
-  ModalFooter,
-  SimpleGrid,
-  Text,
-  VStack,
-} from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
+import { Button, Flex, ModalFooter, SimpleGrid, Text, VStack } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import React, { useRef, useState } from "react";
 

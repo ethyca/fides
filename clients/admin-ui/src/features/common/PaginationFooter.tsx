@@ -1,4 +1,4 @@
-import { Button, Flex, Text } from "@fidesui/react";
+import { Button, Flex, Text } from "fidesui";
 
 type PaginationFooterProps = {
   page: number;
