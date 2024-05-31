@@ -1,4 +1,5 @@
 import { ContainerNode } from "preact";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   DEFAULT_MODAL_LINK_LABEL,
@@ -168,6 +169,7 @@ const automaticallyApplyGPCPreferences = async ({
 
   if (gpcApplied) {
     await updateConsentPreferences({
+      servedNoticeHistoryId: uuidv4(),
       consentPreferencesToSave,
       privacyExperienceConfigHistoryId,
       experience: effectiveExperience,
