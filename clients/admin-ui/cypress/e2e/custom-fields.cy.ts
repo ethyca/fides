@@ -124,6 +124,8 @@ describe("Custom Fields", () => {
           }
         ).as("patchCustomFields");
       });
+
+      // DEFER: (PROD-2139) Add sorting to the V2 table
       it.skip("should be able to sort", () => {
         cy.getByTestId("row-0").should("contain", "Taxonomy - Single select");
         // sort alphabetical
@@ -135,6 +137,7 @@ describe("Custom Fields", () => {
         cy.getByTestId("row-0").should("contain", "Taxonomy - Single select");
       });
 
+      // DEFER: (PROD-2139) Add sorting to the V2 table
       it.skip("should maintain sort after custom field is enabled/disabled", () => {
         cy.getByTestId("row-0").should("contain", "Taxonomy - Single select");
         // sort alphabetical
