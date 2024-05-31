@@ -20,10 +20,15 @@ The types of changes are:
 ### Added
 - Deprecate LastServedNotice (lastservednoticev2) table [#4910](https://github.com/ethyca/fides/pull/4910)
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
+- Added UI for configuring integrations for detection/discovery [#4922](https://github.com/ethyca/fides/pull/4922)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
 - Update privacy center port to :3001 for nox [#4918](https://github.com/ethyca/fides/pull/4918)
+- Update Privacy Center toast text for consistent capitalization [#4936](https://github.com/ethyca/fides/pull/4936)
+
+### Fixed
+- Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
@@ -56,7 +61,6 @@ The types of changes are:
 - Fixed an issue where the Trigger Modal Link was not being populated correctly in the translation form [#4911](https://github.com/ethyca/fides/pull/4911)
 
 ### Security
-
 - Escape SQLAlchemy passwords [CVE-2024-34715](https://github.com/ethyca/fides/security/advisories/GHSA-8cm5-jfj2-26q7)
 - Properly mask nested BigQuery secrets in connection configuration endpoints [CVE-2024-35189](https://github.com/ethyca/fides/security/advisories/GHSA-rcvg-jj3g-rj7c)
 

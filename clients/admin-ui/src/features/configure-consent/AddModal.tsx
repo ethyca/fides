@@ -27,7 +27,7 @@ const AddModal = ({
     size="xl"
   >
     <ModalOverlay />
-    <ModalContent textAlign="left" p={0}>
+    <ModalContent textAlign="left" p={0} data-testid="add-modal-content">
       <ModalHeader p={0}>
         <Box
           backgroundColor="gray.50"
