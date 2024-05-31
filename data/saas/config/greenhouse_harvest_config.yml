@@ -1,0 +1,65 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Greenhouse Harvest
+  type: greenhouse_harvest
+  description: A sample schema representing the Greenhouse Harvest API integration for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/greenhouse_harvest
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      label: The Harvest domain. Default harvest.greenhouse.io
+      default_value: harvest.greenhouse.io
+    - name: api_key
+      label: The Harvest API key. This can be found by navigating from the Greenhouse main page to Configure >> Dev Center >> API Credential Management
+      sensitive: True
+    - name: Greenhouse USER id to use for On Behalf Of header.
+      label: Your Greenhouse USER id. This value can be seen by any Greenhouse user from the main page by examining the URL when viewing this user. From the Greenhouse main page, navigate to Configure >> Users >> Select the desired user. The URL when viewing the account will look like this https://app8.greenhouse.io/account/users/4054939008/edit where the numeric value is the Greenhouse user ID.
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: <api_key>
+
+  # In this case this endpoint would return all candidates, but the per page will limit this to 1 to cut down on the response size
+  test_request:
+    method: GET
+    path: /v1/candidates
+    query_params:
+      - name: per_page
+        value: "1"
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /v1/candidates
+          query_params:
+            - name: email
+              value: <email>
+        update:
+          method: PUT
+          path: /v1/candidates/<user_id>/anonymize
+          headers:
+            - name: On-Behalf-Of
+              value: <greenhouse_user_id>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+    - name: id
+      requests:
+        read:
+          method: GET
+          path: /v1/candidates
+          query_params:
+            - name: email
+              value: <email>
