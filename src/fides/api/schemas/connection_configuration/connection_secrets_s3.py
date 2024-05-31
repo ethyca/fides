@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -22,10 +22,6 @@ class S3Schema(ConnectionConfigSecretsSchema):
         description="Determines which type of authentication method to use for connecting to Amazon S3",
     )
 
-    region_name: Optional[str] = Field(
-        title="Region",
-        description="The AWS region where your S3 table is located (ex. us-west-2). This is required if using secret key authentication.",
-    )
     aws_access_key_id: Optional[str] = Field(
         title="Access Key ID",
         description="Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
@@ -35,6 +31,8 @@ class S3Schema(ConnectionConfigSecretsSchema):
         description="Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
         sensitive=True,
     )
+
+    _required_components: List[str] = ["auth_method"]
 
     # TODO: validator that ensures `region_name`, `aws_access_key_id` and `aws_secret_access_key` are provided if `auth_method`= `secret_keys`
 
