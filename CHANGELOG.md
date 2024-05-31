@@ -21,6 +21,7 @@ The types of changes are:
 - Deprecate LastServedNotice (lastservednoticev2) table [#4910](https://github.com/ethyca/fides/pull/4910)
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
 - Added UI for configuring integrations for detection/discovery [#4922](https://github.com/ethyca/fides/pull/4922)
+- Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
@@ -30,6 +31,9 @@ The types of changes are:
 
 ### Fixed
 - Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
+
+### Fixed
+- Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 

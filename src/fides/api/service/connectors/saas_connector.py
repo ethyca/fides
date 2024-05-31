@@ -604,24 +604,35 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         fired: bool = False
         for consent_request in matching_consent_requests:
             self.set_saas_request_state(consent_request)
-            try:
-                prepared_request: SaaSRequestParams = (
-                    query_config.generate_consent_stmt(
-                        policy, privacy_request, consent_request
-                    )
+            # hook for user-provided request override functions
+            if consent_request.request_override:
+                fired = self._invoke_consent_request_override(
+                    consent_request.request_override,
+                    self.create_client(),
+                    policy,
+                    privacy_request,
+                    query_config,
+                    self.secrets,
                 )
-            except ValueError as exc:
-                if consent_request.skip_missing_param_values:
-                    logger.info(
-                        "Skipping optional consent request on node {}: {}",
-                        node.address.value,
-                        exc,
+            else:
+                try:
+                    prepared_request: SaaSRequestParams = (
+                        query_config.generate_consent_stmt(
+                            policy, privacy_request, consent_request
+                        )
                     )
-                    continue
-                raise exc
-            client: AuthenticatedClient = self.create_client()
-            client.send(prepared_request)
-            fired = True
+                except ValueError as exc:
+                    if consent_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional consent request on node {}: {}",
+                            node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
+                client: AuthenticatedClient = self.create_client()
+                client.send(prepared_request)
+                fired = True
         self.unset_connector_state()
         if not fired:
             raise SkippingConsentPropagation(
@@ -683,7 +694,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int, None]] = (
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType.TEST
             )
@@ -716,7 +727,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int, None]] = (
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType.READ
             )
@@ -756,7 +767,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[..., Union[List[Row], int, None]] = (
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType(query_config.action)
             )
@@ -781,6 +792,39 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         except Exception as exc:
             logger.error(
                 "Encountered error executing override mask function '{}",
+                override_function_name,
+                exc_info=True,
+            )
+            raise FidesopsException(str(exc))
+
+    @staticmethod
+    def _invoke_consent_request_override(
+        override_function_name: str,
+        client: AuthenticatedClient,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        query_config: SaaSQueryConfig,
+        secrets: Any,
+    ) -> bool:
+        """
+        Invokes the appropriate user-defined SaaS request override for consent requests
+        and performs error handling for uncaught exceptions coming out of the override.
+        """
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType(query_config.action)
+            )
+        )
+        try:
+            return override_function(
+                client,
+                policy,
+                privacy_request,
+                secrets,
+            )  # type: ignore
+        except Exception as exc:
+            logger.error(
+                "Encountered error executing override consent function '{}",
                 override_function_name,
                 exc_info=True,
             )
