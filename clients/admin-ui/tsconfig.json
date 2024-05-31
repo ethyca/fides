@@ -34,11 +34,5 @@
     "**/*.tsx",
     "**/*.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "cypress/**/*.ts",
-    "cypress/**/*.tsx",
-    "**/*.test.ts",
-    "**/*.test.tsx"
-  ]
+  "exclude": ["node_modules", "cypress/**/*.ts", "cypress/**/*.tsx"]
 }
