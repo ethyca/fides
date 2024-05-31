@@ -9,6 +9,7 @@ import {
   Switch,
   SwitchProps,
   Text,
+  TextProps,
   useDisclosure,
   useToast,
   WarningIcon,
@@ -155,15 +156,17 @@ export const IndeterminateCheckboxCell = ({
 
 type DefaultHeaderCellProps<T, V> = {
   value: V;
-} & HeaderContext<T, V>;
+} & HeaderContext<T, V> &
+  TextProps;
 
 export const DefaultHeaderCell = <T,>({
   value,
+  ...props
 }: DefaultHeaderCellProps<
   T,
   string | number | string[] | undefined | boolean
 >) => (
-  <Text fontSize="xs" lineHeight={9} fontWeight="medium">
+  <Text fontSize="xs" lineHeight={9} fontWeight="medium" {...props}>
     {value}
   </Text>
 );

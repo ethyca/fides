@@ -63,9 +63,10 @@ export const FidesCell = <T,>({
         // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
         maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
-        cursor: cell.column.columnDef.meta?.disableRowClick
-          ? "default"
-          : "pointer",
+        cursor:
+          !onRowClick || cell.column.columnDef.meta?.disableRowClick
+            ? "unset"
+            : "pointer",
       }}
       _first={{
         borderBottomWidth:
