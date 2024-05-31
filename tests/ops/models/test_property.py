@@ -75,9 +75,9 @@ class TestProperty:
         assert prop.id.startswith("FDS")
         assert prop.privacy_center_config == privacy_center_config
         assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
-        assert prop.paths == ["test"]
+        assert prop.paths == ["testing"]
         assert prop.is_default is False
-        assert len(prop.experiences) == 1
+        assert len(prop.experiences) == 0
 
         prop.delete(db)
 

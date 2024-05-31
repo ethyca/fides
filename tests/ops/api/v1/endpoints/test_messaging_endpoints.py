@@ -2020,7 +2020,7 @@ class TestPutMessagingTemplates:
             headers=auth_header,
             json=[
                 {
-                    "type": "invalid_type",
+                    "key": "invalid_type",
                     "content": {
                         "body": None,
                         "subject": None,
