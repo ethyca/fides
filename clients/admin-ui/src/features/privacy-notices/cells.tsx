@@ -3,12 +3,8 @@ import { Badge, TagProps, Tooltip } from "fidesui";
 import React from "react";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { MapCell } from "~/features/common/table/";
 import { EnableCell } from "~/features/common/table/v2/cells";
-import {
-  FRAMEWORK_MAP,
-  MECHANISM_MAP,
-} from "~/features/privacy-notices/constants";
+import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
 import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ConsentMechanism,
@@ -48,10 +44,6 @@ export const getRegions = (
   });
   return values;
 };
-
-export const FrameworkCell = (cellProps: any) => (
-  <MapCell map={FRAMEWORK_MAP} {...cellProps} />
-);
 
 type TagNames = "available" | "enabled" | "inactive";
 
