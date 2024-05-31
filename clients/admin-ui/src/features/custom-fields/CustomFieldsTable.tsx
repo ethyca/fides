@@ -58,15 +58,17 @@ const EmptyTableNotice = () => (
     data-testid="no-results-notice"
     alignSelf="center"
     margin="auto"
+    textAlign="center"
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
         It looks like it’s your first time here!
       </Text>
       <Text fontSize="sm">
-        You haven’t created any custom fields yet. To create a custom field,
-        click on the <strong>&quot;{ADD_CUSTOM_FIELD_BTN_LABEL}&quot;</strong>{" "}
-        button
+        You haven’t created any custom fields yet.
+        <br />
+        To create a custom field, click on the{" "}
+        <strong>&quot;{ADD_CUSTOM_FIELD_BTN_LABEL}&quot;</strong> button
       </Text>
     </VStack>
   </VStack>
