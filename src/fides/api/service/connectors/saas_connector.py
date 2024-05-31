@@ -807,10 +807,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         secrets: Any,
     ) -> bool:
         """
-        Invokes the appropriate user-defined SaaS request override for consent requests.
-
-        Includes the necessary data preparations for override input
-        and has error handling for uncaught exceptions coming out of the override
+        Invokes the appropriate user-defined SaaS request override for consent requests
+        and performs error handling for uncaught exceptions coming out of the override.
         """
         override_function: Callable[..., Union[List[Row], int, bool, None]] = (
             SaaSRequestOverrideFactory.get_override(
