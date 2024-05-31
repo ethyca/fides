@@ -21,7 +21,7 @@ export interface PrivacyCenterSettings {
   IS_PREFETCH_ENABLED: boolean | false; // (optional) whether we should pre-fetch geolocation and experience server-side
   OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
   MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
-  PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
+  PRIVACY_CENTER_URL: string; // e.g. http://localhost:3001
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
   FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
