@@ -59,6 +59,7 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
+from fides.api.models.property import Property
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -295,6 +296,7 @@ class PrivacyRequest(
         Policy,
         backref="privacy_requests",
     )
+    property_id = Column(String, ForeignKey(Property.id_field_path), nullable=True)
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)

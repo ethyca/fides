@@ -173,6 +173,38 @@ def get_basic_messaging_template_by_type_or_default(
     return template
 
 
+def get_enabled_messaging_template_by_type_and_property(
+    db: Session,
+    template_type: str,
+    property_id: Optional[str],
+    use_default_property: Optional[bool] = True,
+) -> Optional[MessagingTemplate]:
+    """
+    Retrieve templates that are enabled, given type and property.
+    Uses default property if none is found and use_default_property is enabled.
+    """
+    if not property_id and use_default_property:
+        default_property = Property.get_by(db=db, field="is_default", value=True)
+        if not default_property:
+            return None
+        property_id = default_property.id
+    logger.info(
+        "Getting custom messaging template for template type: {} and property id: {}",
+        template_type,
+        property_id,
+    )
+    template = MessagingTemplate.filter(
+        db=db,
+        conditions=(
+            (MessagingTemplate.is_enabled.is_(True))
+            & (MessagingTemplate.type == template_type)
+            & (Property.id == property_id)
+        ),
+    ).first()
+
+    return template
+
+
 def create_or_update_basic_templates(
     db: Session, data: Dict[str, Any]
 ) -> Optional[MessagingTemplate]:

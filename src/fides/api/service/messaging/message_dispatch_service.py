@@ -41,6 +41,9 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.api.service.connectors.base_email_connector import (
+    get_email_messaging_config_service_type,
+)
 from fides.api.service.messaging.messaging_crud_service import (
     get_basic_messaging_template_by_type_or_default,
 )
@@ -100,6 +103,7 @@ def dispatch_message_task(
     message_meta: Dict[str, Any],
     service_type: Optional[str],
     to_identity: Dict[str, Any],
+    property_specific_messaging_template: Optional[MessagingTemplate],
 ) -> None:
     """
     A wrapper function to dispatch a message task into the Celery queues
@@ -112,7 +116,65 @@ def dispatch_message_task(
             Identity.parse_obj(to_identity),
             service_type,
             schema.body_params,
+            property_specific_messaging_template=property_specific_messaging_template,
         )
+
+
+def get_property_specific_messaging_template(
+    db: Session, property_id: Optional[str], action_type: MessagingActionType
+) -> Optional[MessagingTemplate]:
+    """
+    Returns specific messaging template if one is enabled for a given action type and property.
+    """
+    property_specific_messaging_enabled = ConfigProxy(
+        db
+    ).notifications.enable_property_specific_messaging
+    if not property_specific_messaging_enabled:
+        return None
+
+    # Only email messaging method is supported when property-specific messaging is enabled.
+    service_type = get_email_messaging_config_service_type(db=db)
+    if not service_type or get_messaging_method(service_type) != MessagingMethod.EMAIL:
+        logger.warning(
+            "An email messaging config must be configured if property specific messaging is enabled."
+        )
+        return None
+
+    template = get_enabled_messaging_template_by_type_and_property(
+        db=db,
+        template_type=action_type.value,
+        property_id=property_id,
+        use_default_property=True,
+    )
+    if not template:
+        logger.info("No enabled template was found for action type: {}", action_type)
+        return None
+    return template
+
+
+def message_send_enabled(
+    db: Session,
+    property_id: Optional[str],
+    action_type: MessagingActionType,
+    legacy_email_enabled: bool,
+) -> bool:
+    """
+    Determines whether sending messages from Fides is enabled or disabled.
+    Property-specific messaging, if enabled, always takes precedence, and requires checking "enabled" templates for the
+    given action type and property.
+    """
+    property_specific_messaging_enabled = ConfigProxy(
+        db
+    ).notifications.enable_property_specific_messaging
+    if property_specific_messaging_enabled:
+        property_specific_messaging_template = get_property_specific_messaging_template(
+            db=db, property_id=property_id, action_type=action_type
+        )
+        if property_specific_messaging_template:
+            return True
+    elif legacy_email_enabled:
+        return True
+    return False
 
 
 def dispatch_message(
@@ -131,6 +193,7 @@ def dispatch_message(
         ]
     ] = None,
     subject_override: Optional[str] = None,
+    property_specific_messaging_template: Optional[MessagingTemplate] = None,
 ) -> None:
     """
     Sends a message to `to_identity` with content supplied in `message_body_params`
@@ -151,11 +214,24 @@ def dispatch_message(
     )
     messaging_method = get_messaging_method(service_type)
     message: Optional[Union[EmailForActionType, str]] = None
+    messaging_template: Optional[MessagingTemplate] = None
 
-    logger.info("Getting custom messaging template for action type: {}", action_type)
-    messaging_template = get_basic_messaging_template_by_type_or_default(
-        db=db, template_type=action_type.value
-    )
+    # If property-specific messaging is enabled, we switch over to this mode, regardless of other ENV vars
+    if ConfigProxy(db).notifications.enable_property_specific_messaging:
+        if not property_specific_messaging_template:
+            logger.warning(
+                "Skipping sending property-specific email as no enabled template was found for action type: {}",
+                action_type,
+            )
+            return
+        messaging_template = property_specific_messaging_template
+    else:
+        logger.info(
+            "Getting custom messaging template for action type: {}", action_type
+        )
+        messaging_template = get_basic_messaging_template_by_type_or_default(
+            db=db, template_type=action_type.value
+        )
 
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(

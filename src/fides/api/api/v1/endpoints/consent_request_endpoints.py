@@ -40,7 +40,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.messaging.messaging import MessagingMethod
+from fides.api.schemas.messaging.messaging import MessagingMethod, MessagingActionType
 from fides.api.schemas.privacy_request import BulkPostPrivacyRequests
 from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.privacy_request import (
@@ -55,6 +55,10 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service._verification import send_verification_code_to_user
+from fides.api.service.messaging.message_dispatch_service import (
+    get_property_specific_messaging_template,
+    message_send_enabled,
+)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -188,6 +192,7 @@ def create_consent_request(
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
+    # todo- pass in property id here
 
     identity = data.identity
     if (
@@ -213,12 +218,23 @@ def create_consent_request(
     consent_request.persist_custom_privacy_request_fields(
         db=db, custom_privacy_request_fields=data.custom_privacy_request_fields
     )
-
-    # we send out a verification code if verification is required in general (for access, erasure, and consent),
-    # but have the ability to disable verification just for consent
-    if not config_proxy.execution.disable_consent_identity_verification:
+    if message_send_enabled(
+        db,
+        data.property_id,
+        MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+        not config_proxy.execution.disable_consent_identity_verification,
+    ):
         try:
-            send_verification_code_to_user(db, consent_request, data.identity)
+            property_specific_messaging_template = (
+                get_property_specific_messaging_template(
+                    db=db,
+                    property_id=data.property_id,
+                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                )
+            )
+            send_verification_code_to_user(
+                db, consent_request, data.identity, property_specific_messaging_template
+            )
         except MessageDispatchException as exc:
             logger.error("Error sending the verification code message: {}", str(exc))
             raise HTTPException(
