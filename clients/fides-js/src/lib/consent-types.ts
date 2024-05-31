@@ -775,6 +775,8 @@ export enum ServingComponent {
  * Request body when indicating that notices were served in the UI
  */
 export type RecordConsentServedRequest = {
+  served_notice_history_id: string; // a generated uuidv4 string
+
   browser_identity: Identity;
   code?: string;
   privacy_notice_history_ids?: Array<string>;

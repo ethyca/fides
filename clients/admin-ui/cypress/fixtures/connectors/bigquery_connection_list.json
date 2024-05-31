@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "name": "BQ Integration",
+      "key": "bq_integration",
+      "description": "Description",
+      "connection_type": "bigquery",
+      "access": "read",
+      "created_at": "2024-05-24T13:35:57.509826+00:00",
+      "updated_at": "2024-05-24T13:35:57.509826+00:00",
+      "disabled": false,
+      "last_test_timestamp": null,
+      "last_test_succeeded": null,
+      "saas_config": null,
+      "secrets": null,
+      "authorized": false,
+      "enabled_actions": null
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 50,
+  "pages": 1
+}

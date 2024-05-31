@@ -11,7 +11,7 @@ export const ErrorToastOptions: UseToastOptions = {
 };
 
 export const ConfigErrorToastOptions: UseToastOptions = {
-  title: "An error occurred while retrieving the Privacy Center Config",
+  title: "An error occurred while retrieving the Privacy Center config",
   ...ErrorToastOptions,
 };
 
