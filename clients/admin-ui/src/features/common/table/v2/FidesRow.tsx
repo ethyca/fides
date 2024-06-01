@@ -22,11 +22,7 @@ export const FidesRow = <T,>({
   const rowEl = (
     <Tr
       height="36px"
-      _hover={
-        onRowClick
-          ? { backgroundColor: "gray.50", cursor: "pointer" }
-          : undefined
-      }
+      _hover={onRowClick ? { backgroundColor: "gray.50" } : undefined}
       key={row.id}
       data-testid={`row-${row.id}`}
       backgroundColor={row.getCanSelect() ? undefined : "gray.50"}
