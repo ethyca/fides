@@ -125,24 +125,28 @@ describe("Custom Fields", () => {
         ).as("patchCustomFields");
       });
 
-      // DEFER: (PROD-2139) Add sorting to the V2 table
-      it.skip("should be able to sort", () => {
-        cy.getByTestId("row-0").should("contain", "Taxonomy - Single select");
+      it("should be able to sort", () => {
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
         // sort alphabetical
-        cy.getByTestId("column-Label").click();
-        cy.getByTestId("row-0").should("contain", "Multiple select list");
+        cy.getByTestId("name-header-sort").click();
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
         // sort reverse
-        cy.getByTestId("column-Label").click();
-        cy.getByTestId("row-0").should("contain", "Taxonomy - Single select");
+        cy.getByTestId("name-header-sort").click();
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
       });
 
-      // DEFER: (PROD-2139) Add sorting to the V2 table
-      it.skip("should maintain sort after custom field is enabled/disabled", () => {
-        cy.getByTestId("row-0").should("contain", "Taxonomy - Single select");
+      it("should maintain sort after custom field is enabled/disabled", () => {
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
         // sort alphabetical
-        cy.getByTestId("column-Label").click();
-        cy.getByTestId("row-0").should("contain", "Multiple select list");
+        cy.getByTestId("name-header-sort").click();
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
         // the patched data needs to be mock or cypress will return the same data
         cy.fixture("custom-fields/list.json").then((customFieldsList) => {
@@ -170,7 +174,7 @@ describe("Custom Fields", () => {
         // redux should requery after invalidation
         cy.wait("@getCustomFieldSingleSelectEnabled");
 
-        cy.getByTestId("row-0").should("contain", "Multiple select list");
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
         // the original mock needs to be brought back
         cy.intercept(
@@ -190,7 +194,7 @@ describe("Custom Fields", () => {
         // redux should requery after invalidation
         cy.wait("@getCustomFields");
 
-        cy.getByTestId("row-0").should("contain", "Multiple select list");
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
       });
     });
 

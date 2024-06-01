@@ -3,9 +3,8 @@ import {
   ColumnDef,
   createColumnHelper,
   getCoreRowModel,
-  getExpandedRowModel,
   getFilteredRowModel,
-  getGroupedRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -169,9 +168,8 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
 
   const tableInstance = useReactTable<CustomFieldDefinitionWithId>({
     getCoreRowModel: getCoreRowModel(),
-    getGroupedRowModel: getGroupedRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     globalFilterFn: "includesString",
     columns,
@@ -228,6 +226,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
             tableInstance={tableInstance}
             onRowClick={userCanUpdate ? handleRowClick : undefined}
             emptyTableNotice={<EmptyTableNotice />}
+            enableSorting
           />
         )}
         {isOpen && (

@@ -166,7 +166,7 @@ export const DefaultHeaderCell = <T,>({
   T,
   string | number | string[] | undefined | boolean
 >) => (
-  <Text fontSize="xs" lineHeight={9} fontWeight="medium" {...props}>
+  <Text fontSize="xs" lineHeight={9} fontWeight="medium" flex={1} {...props}>
     {value}
   </Text>
 );

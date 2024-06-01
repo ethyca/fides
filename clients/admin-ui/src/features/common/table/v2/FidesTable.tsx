@@ -6,20 +6,25 @@ import {
   Table as TableInstance,
 } from "@tanstack/react-table";
 import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   Box,
   Button,
-  ChevronDownIcon,
+  HStack,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Portal,
+  SmallCloseIcon,
   Table,
   TableContainer,
   Tbody,
   Td,
   Th,
   Thead,
+  theme,
   Tr,
 } from "fidesui";
 import React, { ReactNode, useMemo } from "react";
@@ -49,18 +54,63 @@ declare module "@tanstack/table-core" {
 }
 /* eslint-enable */
 
+export const sortingDisplay: {
+  [key: string]: { icon: JSX.Element; title: string };
+} = {
+  asc: { icon: <ArrowUpIcon />, title: "Sort ascending" },
+  desc: { icon: <ArrowDownIcon />, title: "Sort descending" },
+};
+
+const tableHeaderButtonStyles = {
+  height: theme.space[9], // same as table header height
+  width: "100%",
+  textAlign: "start",
+  "&:focus-visible": {
+    backgroundColor: "gray.100",
+  },
+  "&:focus": {
+    outline: "none",
+  },
+};
+
 const HeaderContent = <T,>({
   header,
   onGroupAll,
   onDisplayAll,
   isDisplayAll,
+  enableSorting,
 }: {
   header: Header<T, unknown>;
   onGroupAll: (id: string) => void;
   onDisplayAll: (id: string) => void;
   isDisplayAll: boolean;
+  enableSorting: boolean;
 }) => {
   if (!header.column.columnDef.meta?.showHeaderMenu) {
+    if (enableSorting && header.column.getCanSort()) {
+      return (
+        <Button
+          data-testid={`${header.id}-header-sort`}
+          onClick={header.column.getToggleSortingHandler()}
+          rightIcon={
+            sortingDisplay[header.column.getIsSorted() as string]?.icon
+          }
+          title={
+            sortingDisplay[header.column.getNextSortingOrder() as string]
+              ?.title ?? "Clear sort"
+          }
+          variant="ghost"
+          size="sm"
+          sx={{
+            ...getTableTHandTDStyles(header.column.id),
+            ...tableHeaderButtonStyles,
+          }}
+        >
+          {flexRender(header.column.columnDef.header, header.getContext())}
+        </Button>
+      );
+    }
+
     return (
       <Box
         data-testid={`${header.id}-header`}
@@ -78,20 +128,20 @@ const HeaderContent = <T,>({
     <Menu placement="bottom-end">
       <MenuButton
         as={Button}
-        rightIcon={<ChevronDownIcon />}
+        rightIcon={
+          <HStack>
+            {sortingDisplay[header.column.getIsSorted() as string]?.icon}
+            <MoreIcon transform="rotate(90deg)" />
+          </HStack>
+        }
+        title="Column options"
         variant="ghost"
         size="sm"
-        height={9} // same as table header height
-        width="100%"
-        sx={{ ...getTableTHandTDStyles(header.column.id) }}
-        textAlign="start"
+        sx={{
+          ...getTableTHandTDStyles(header.column.id),
+          ...tableHeaderButtonStyles,
+        }}
         data-testid={`${header.id}-header-menu`}
-        _focusVisible={{
-          backgroundColor: "gray.100",
-        }}
-        _focus={{
-          outline: "none",
-        }}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </MenuButton>
@@ -103,18 +153,27 @@ const HeaderContent = <T,>({
           data-testid={`${header.id}-header-menu-list`}
         >
           <MenuItem
+            gap={2}
             color={!isDisplayAll ? "complimentary.500" : undefined}
             onClick={() => onGroupAll(header.id)}
           >
-            <GroupedIcon mr="2" /> Group all
+            <GroupedIcon /> Group all
           </MenuItem>
           <MenuItem
+            gap={2}
             color={isDisplayAll ? "complimentary.500" : undefined}
             onClick={() => onDisplayAll(header.id)}
           >
-            <DisplayAllIcon mr="2" />
-            Display all
+            <DisplayAllIcon /> Display all
           </MenuItem>
+          {enableSorting && header.column.getCanSort() && (
+            <MenuItem gap={2} onClick={header.column.getToggleSortingHandler()}>
+              {sortingDisplay[header.column.getNextSortingOrder() as string]
+                ?.icon ?? <SmallCloseIcon />}
+              {sortingDisplay[header.column.getNextSortingOrder() as string]
+                ?.title ?? "Clear sort"}
+            </MenuItem>
+          )}
         </MenuList>
       </Portal>
     </Menu>
@@ -129,6 +188,7 @@ type Props<T> = {
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   emptyTableNotice?: ReactNode;
   overflow?: "auto" | "visible" | "hidden";
+  enableSorting?: boolean;
 };
 
 const TableBody = <T,>({
@@ -181,6 +241,7 @@ export const FidesTableV2 = <T,>({
   renderRowTooltipLabel,
   emptyTableNotice,
   overflow = "auto",
+  enableSorting = false,
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
@@ -265,6 +326,7 @@ export const FidesTableV2 = <T,>({
                     isDisplayAll={
                       !!displayAllColumns.find((c) => header.id === c)
                     }
+                    enableSorting={enableSorting}
                   />
                   {/* Capture area to render resizer cursor */}
                   {header.column.getCanResize() ? (
