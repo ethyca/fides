@@ -1,81 +1,14 @@
-import { useEffect, useState, useCallback } from "preact/hooks";
-import { FidesEvent } from "./events";
+import { useEffect, useCallback, useState } from "preact/hooks";
+import { v4 as uuidv4 } from "uuid";
+import { FidesEvent } from "../events";
 import {
   FidesInitOptions,
   PrivacyExperience,
   RecordConsentServedRequest,
   ServingComponent,
-  RecordsServedResponse,
-} from "./consent-types";
-import { patchNoticesServed } from "../services/api";
-
-/**
- * Hook which tracks if the app has mounted yet.
- *
- * Used to make sure the server and client UIs match for hydration
- * Adapted from https://www.joshwcomeau.com/react/the-perils-of-rehydration/
- */
-export const useHasMounted = () => {
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  return hasMounted;
-};
-
-/**
- * Hook to facilitate showing/hiding while adhering to WAI
- * based on chakra-ui's `useDisclosure`
- */
-export const useDisclosure = ({ id }: { id: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const onClose = useCallback(() => setIsOpen(false), []);
-  const onOpen = useCallback(() => setIsOpen(true), []);
-
-  const onToggle = useCallback(() => {
-    if (isOpen) {
-      onClose();
-    } else {
-      onOpen();
-    }
-  }, [isOpen, onOpen, onClose]);
-
-  const getButtonProps = () => ({
-    "aria-expanded": isOpen,
-    "aria-controls": id,
-    onClick: onToggle,
-  });
-
-  const getDisclosureProps = () => ({
-    id,
-    className: isOpen ? "fides-disclosure-visible" : "fides-disclosure-hidden",
-  });
-
-  return {
-    isOpen,
-    onOpen,
-    onClose,
-    onToggle,
-    getButtonProps,
-    getDisclosureProps,
-  };
-};
-
-/**
- * Extracts the id value of each object in the list and returns a list
- * of IDs, either strings or numbers based on the IDs' type.
- */
-const extractIds = <T extends { id: string | number }[]>(
-  modelList?: T
-): any[] => {
-  if (!modelList) {
-    return [];
-  }
-  return modelList.map((model) => model.id);
-};
+} from "../consent-types";
+import { patchNoticesServed } from "../../services/api";
+import { extractIds } from "../common-utils";
 
 export const useConsentServed = ({
   options,
@@ -92,8 +25,9 @@ export const useConsentServed = ({
   userGeography?: string;
   acknowledgeMode?: boolean;
 }) => {
-  const [servedNotice, setServedNotice] =
-    useState<RecordsServedResponse | null>(null);
+  const [servedNoticeHistoryId, setServedNoticeHistoryId] = useState<string>(
+    uuidv4()
+  );
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
@@ -114,8 +48,13 @@ export const useConsentServed = ({
         return;
       }
 
+      // Create new uuid for each served notice
+      const newUUID = uuidv4();
+      setServedNoticeHistoryId(newUUID);
+
       // Construct the notices-served API request and send!
       const request: RecordConsentServedRequest = {
+        served_notice_history_id: newUUID,
         browser_identity: event.detail.identity,
         privacy_experience_config_history_id:
           privacyExperienceConfigHistoryId || "",
@@ -145,13 +84,12 @@ export const useConsentServed = ({
         ),
         serving_component: String(event.detail.extraDetails.servingComponent),
       };
-      const result = await patchNoticesServed({
+
+      // Send the request to the notices-served API
+      patchNoticesServed({
         request,
         options,
       });
-      if (result) {
-        setServedNotice(result);
-      }
     },
     [
       privacyExperienceConfigHistoryId,
@@ -170,5 +108,6 @@ export const useConsentServed = ({
     };
   }, [handleUIEvent]);
 
-  return { servedNotice };
+  return { servedNoticeHistoryId };
 };
+export default useConsentServed;
