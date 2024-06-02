@@ -12,6 +12,14 @@ MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"
 
 
+autodiscover_task_locations: List[str] = [
+    "fides.api.tasks",
+    "fides.api.tasks.scheduled",
+    "fides.api.service.privacy_request",
+    "fides.api.service.privacy_request.request_runner_service",
+]
+
+
 class DatabaseTask(Task):  # pylint: disable=W0223
     _task_engine = None
     _sessionmaker = None
@@ -68,14 +76,7 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
 
     app.conf.update(celery_config)
 
-    app.autodiscover_tasks(
-        [
-            "fides.api.tasks",
-            "fides.api.tasks.scheduled",
-            "fides.api.service.privacy_request",
-            "fides.api.service.privacy_request.request_runner_service",
-        ]
-    )
+    app.autodiscover_tasks(autodiscover_task_locations)
 
     return app
 
