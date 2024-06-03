@@ -18,7 +18,8 @@ class Testgreenhouse_harvestConnector:
         access_results = await greenhouse_harvest_runner.access_request(
             access_policy=policy, identities={"email": greenhouse_harvest_identity_email}
         )
-        assert (access_results["greenhouse_harvest:user"])
+        assert (
+            access_results["greenhouse_harvest_instance:user"][0]["email_addresses"][0]['value']) == greenhouse_harvest_identity_email
         # assert here
 
     async def test_non_strict_erasure_request(
