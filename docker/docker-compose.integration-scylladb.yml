@@ -1,0 +1,17 @@
+services:
+  scylladb_example:
+    image: scylladb/scylla
+    container_name: scylladb_example
+    expose:
+      - 9042
+    ports:
+      - "9042:9042"
+
+  scylla-load-keyspace:
+    container_name: scylla-load-keyspace
+    image: scylladb/scylla
+    volumes:
+      - ./docker/sample_data/scylla/scylla_example.cql:/scylla/scylla_example.cql
+      - ./docker/sample_data/scylla/scylla_entrypoint.sh:/scylla/scylla_entrypoint.sh
+    entrypoint: ["bash", "/scylla/scylla_entrypoint.sh"]
+
