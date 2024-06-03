@@ -56,7 +56,6 @@ saas_config:
           method: PUT
           path: /v1/candidates/<user_id>/anonymize
           # headers:
-
           param_values:
             - name: user_id
               references:

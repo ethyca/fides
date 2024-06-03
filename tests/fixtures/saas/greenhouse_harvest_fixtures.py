@@ -135,6 +135,7 @@ def greenhouse_harvest_erasure_data(
     assert response.ok
     json_response = response.json()
     user_id = json_response["id"]
+    assert json_response["id"] > 1
 
     yield {user_id}
 

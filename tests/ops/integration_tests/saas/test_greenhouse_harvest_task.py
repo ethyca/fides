@@ -20,7 +20,6 @@ class Testgreenhouse_harvestConnector:
         )
         assert (
             access_results["greenhouse_harvest_instance:user"][0]["email_addresses"][0]['value']) == greenhouse_harvest_identity_email
-        # assert here
 
     async def test_non_strict_erasure_request(
         self,
@@ -38,3 +37,4 @@ class Testgreenhouse_harvestConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": greenhouse_harvest_erasure_identity_email},
         )
+        assert erasure_results == {"greenhouse_harvest_instance:user": 1}
