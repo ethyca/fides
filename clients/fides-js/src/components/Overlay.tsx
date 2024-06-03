@@ -22,7 +22,6 @@ import {
   shouldResurfaceConsent,
 } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
-import { useHasMounted } from "../lib/hooks";
 import type { I18n } from "../lib/i18n";
 
 import ConsentModal from "./ConsentModal";
@@ -30,6 +29,7 @@ import ConsentContent from "./ConsentContent";
 import "./fides.css";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
+import { useHasMounted } from "../lib/hooks";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -155,13 +155,18 @@ const Overlay: FunctionComponent<Props> = ({
   }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
+    if (options.modalLinkId === "") {
+      // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
+      // developers using `Fides.showModal();` can use this to prevent polling for the modal link.
+      return () => {};
+    }
     window.Fides.showModal = handleOpenModal;
     document.body.classList.add("fides-overlay-modal-link-shown");
-    // use a delay to ensure that link exists in the DOM
+    // use a short delay to give basic page a chance to render the modal link element
     const delayModalLinkBinding = setTimeout(() => {
       const modalLinkId = options.modalLinkId || "fides-modal-link";
-      const modalLinkEl = document.getElementById(modalLinkId);
-      if (modalLinkEl) {
+      debugLog(options.debug, "Searching for modal link element...");
+      const bindModalLink = (modalLinkEl: HTMLElement) => {
         debugLog(
           options.debug,
           "Modal link element found, updating it to show and trigger modal on click."
@@ -170,9 +175,35 @@ const Overlay: FunctionComponent<Props> = ({
         modalLinkRef.current.addEventListener("click", window.Fides.showModal);
         // Update to show the pre-existing modal link in the DOM
         modalLinkRef.current.classList.add("fides-modal-link-shown");
-      } else {
-        debugLog(options.debug, "Modal link element not found.");
-      }
+      };
+      const checkModalLink = () => {
+        let modalLinkEl = document.getElementById(modalLinkId);
+        if (!modalLinkEl) {
+          // Wait until the hosting page's link element is available before attempting to bind to the click handler. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
+          debugLog(
+            options.debug,
+            `Modal link element not found (#${modalLinkId}), waiting for it to be added to the DOM...`
+          );
+          let attempts = 0;
+          let interval = 200;
+          const checkInterval = setInterval(() => {
+            modalLinkEl = document.getElementById(modalLinkId);
+            if (modalLinkEl) {
+              clearInterval(checkInterval);
+              bindModalLink(modalLinkEl);
+            } else {
+              attempts += 1;
+              // if the container is not found after 5 attempts, increase the interval to reduce the polling frequency
+              if (attempts >= 5 && interval < 1000) {
+                interval += 200;
+              }
+            }
+          }, interval);
+        } else {
+          bindModalLink(modalLinkEl);
+        }
+      };
+      checkModalLink();
     }, delayModalLinkMilliseconds);
     return () => {
       clearTimeout(delayModalLinkBinding);

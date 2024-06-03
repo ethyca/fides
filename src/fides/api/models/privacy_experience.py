@@ -48,7 +48,7 @@ FidesJSUXTypes: List[ComponentType] = [
 FidesJSOverlayTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
     ComponentType.modal,
-    ComponentType.tcf_overlay
+    ComponentType.tcf_overlay,
 ]
 
 

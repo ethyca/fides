@@ -3,7 +3,7 @@
   "version": "2.13.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "dev:windows": "next dev",
     "build": "next build",
     "start": "next start",
@@ -16,7 +16,7 @@
     "clean": "rm -rf .turbo node_modules",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:start": "export NODE_ENV=test && npm run build && npm run start",
+    "cy:start": "export NODE_ENV=test && npm run build && next start -p 3001",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",

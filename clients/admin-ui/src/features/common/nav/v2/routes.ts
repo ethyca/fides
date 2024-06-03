@@ -37,6 +37,7 @@ export const ADD_PROPERTY_ROUTE = "/consent/properties/add-property";
 
 // Management group
 export const USER_MANAGEMENT_ROUTE = "/user-management";
+export const INTEGRATION_MANAGEMENT_ROUTE = "/integrations";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/management/organization";
 export const LOCATIONS_ROUTE = "/management/locations";
 export const REGULATIONS_ROUTE = "/management/regulations";
