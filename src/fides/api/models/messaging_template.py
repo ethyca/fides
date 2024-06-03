@@ -68,13 +68,13 @@ def _link_properties_to_messaging_template(
     """
     Link supplied properties to MessagingTemplate and unlink any properties not supplied.
     """
-    if len(properties) == 0:
-        return []
-    new_properties = (
-        db.query(Property)
-        .filter(Property.id.in_([prop["id"] for prop in properties]))
-        .all()
-    )
+    new_properties = []
+    if len(properties) > 0:
+        new_properties = (
+            db.query(Property)
+            .filter(Property.id.in_([prop["id"] for prop in properties]))
+            .all()
+        )
     messaging_template.properties = new_properties
     messaging_template.save(db)
     return messaging_template.properties

@@ -146,7 +146,7 @@ class Property(Base):
                 f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
             )
 
-        # Ensure that there is at least 1 default. Relevent if we somehow reach a state where there is no defualt property
+        # Ensure that there is at least 1 default. Relevent if we somehow reach a state where there is no default property
         has_default_property = Property.get_by(db=db, field="is_default", value=True)
         if not has_default_property:
             data["is_default"] = True

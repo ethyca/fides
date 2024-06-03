@@ -65,8 +65,11 @@ def upgrade():
         unique=False,
     )
     op.add_column(
-        "messaging_template", sa.Column("is_enabled", sa.Boolean(), nullable=False)
+        "messaging_template", sa.Column("is_enabled", sa.Boolean(), nullable=True)
     )
+    op.execute("UPDATE messaging_template SET is_default = FALSE;")
+
+    op.alter_column("messaging_template", "is_enabled", nullable=False)
 
     op.alter_column("messaging_template", "key", new_column_name="type")
 

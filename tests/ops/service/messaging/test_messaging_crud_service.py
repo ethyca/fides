@@ -64,7 +64,7 @@ class TestMessagingTemplates:
     def test_get_messaging_template_by_type_invalid(self, db: Session):
         assert get_messaging_template_by_type(db=db, template_type="invalid") is None
 
-    def test_update_messaging_template(
+    def test_update_messaging_template_add_property(
         self,
         db: Session,
         messaging_template_subject_identity_verification,
@@ -98,6 +98,37 @@ class TestMessagingTemplates:
         assert len(property_a_db.messaging_templates) == 1
         property_b_db = Property.get(db, object_id=property_b.id)
         assert len(property_b_db.messaging_templates) == 1
+
+    def test_update_messaging_template_remove_all_properties(
+            self,
+            db: Session,
+            messaging_template_subject_identity_verification,
+            property_a,
+            property_b,
+    ):
+        update_body = {
+            "content": {
+                "subject": "Here is your code {{code}}",
+                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            },
+            # Remove all properties
+            "properties": None,
+            "is_enabled": True,
+        }
+
+        update_messaging_template(
+            db,
+            messaging_template_subject_identity_verification.id,
+            MessagingTemplateWithPropertiesBodyParams(**update_body),
+        )
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=messaging_template_subject_identity_verification.id
+        )
+        assert len(messaging_template.properties) == 0
+
+        # assert relationship to properties
+        property_a_db = Property.get(db, object_id=property_a.id)
+        assert property_a_db.messaging_templates is None
 
     def test_update_messaging_template_id_not_found(
         self,
