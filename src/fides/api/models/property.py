@@ -153,9 +153,9 @@ class Property(Base):
             data["is_default"] = True
         else:
             # Prevent the only default property from being changed to `is_default=False`
-            if has_default_property.id == data["id"] and data["is_default"] is False:
+            if has_default_property.id == self.id and data.get("is_default") is False:
                 raise ValueError(
-                    f'Unable to set property with id {data["id"]} to is_default=False. You must have exactly one default property configured.'
+                    f'Unable to set property with id {self.id} to is_default=False. You must have exactly one default property configured.'
                 )
 
         super().update(db=db, data=data)

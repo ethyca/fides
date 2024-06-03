@@ -30,7 +30,6 @@ from fides.api.models.messaging import (
 )
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
-    MessagingTemplate,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed

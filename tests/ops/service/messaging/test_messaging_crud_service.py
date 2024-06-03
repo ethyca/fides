@@ -87,7 +87,7 @@ class TestMessagingTemplates:
             },
         )
         templates = MessagingTemplate.query(db=db)
-        assert len(templates) == 1
+        assert len(templates.all()) == 1
         assert templates[0].content["subject"] == "Test new subject"
 
     def test_create_or_update_basic_templates_new_type(
@@ -106,7 +106,7 @@ class TestMessagingTemplates:
             },
         )
         templates = MessagingTemplate.query(db=db)
-        assert len(templates) == 2
+        assert len(templates.all()) == 2
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=new_template.id
         )
@@ -138,8 +138,6 @@ class TestMessagingTemplates:
             db, object_id=messaging_template_subject_identity_verification.id
         )
         assert len(messaging_template.properties) == 2
-        assert messaging_template.properties[0].id == property_a.id
-        assert messaging_template.properties[1].id == property_b.id
 
         # assert relationship to properties
         property_a_db = Property.get(db, object_id=property_a.id)
@@ -174,9 +172,9 @@ class TestMessagingTemplates:
         )
         assert len(messaging_template.properties) == 0
 
-        # assert relationship to properties
+        # assert relationship to properties is removed
         property_a_db = Property.get(db, object_id=property_a.id)
-        assert property_a_db.messaging_templates is None
+        assert property_a_db.messaging_templates == []
 
     def test_update_messaging_template_id_not_found(
         self,

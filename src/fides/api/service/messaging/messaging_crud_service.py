@@ -150,7 +150,7 @@ def create_or_update_basic_templates(
                     & (Property.id == default_property.id)
                 ),
             ).first()
-    else:
+    elif len(templates) == 1:
         template = templates[0]
 
     if template:
