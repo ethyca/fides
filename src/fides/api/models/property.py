@@ -14,6 +14,7 @@ from sqlalchemy import (
     Text,
     Index,
     and_,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -146,10 +147,17 @@ class Property(Base):
                 f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
             )
 
-        # Ensure that there is at least 1 default. Relevent if we somehow reach a state where there is no default property
+        # Ensure that there is at least 1 default.
         has_default_property = Property.get_by(db=db, field="is_default", value=True)
         if not has_default_property:
             data["is_default"] = True
+        else:
+            # Prevent the only default property from being changed to `is_default=False`
+            if has_default_property.id == data["id"] and data["is_default"] is False:
+                raise ValueError(
+                    f'Unable to set property with id {data["id"]} to is_default=False. You must have exactly one default property configured.'
+                )
+
 
         super().update(db=db, data=data)
         link_experience_configs_to_property(
@@ -276,4 +284,12 @@ class MessagingTemplateToProperty(Base):
         index=True,
         nullable=False,
         primary_key=True,
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "messaging_template_id",
+            "property_id",
+            name="messaging_template_id_property_id",
+        ),
     )

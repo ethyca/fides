@@ -18,8 +18,8 @@ from fides.api.schemas.messaging.messaging import (
     MessagingTemplateWithPropertiesDetail,
 )
 from fides.api.service.messaging.messaging_crud_service import (
-    get_all_messaging_templates,
-    get_messaging_template_by_type,
+    get_all_basic_messaging_templates,
+    get_basic_messaging_template_by_type,
     update_messaging_template,
     create_messaging_template,
     delete_template_by_id,
@@ -31,7 +31,7 @@ from fides.api.service.messaging.messaging_crud_service import (
 
 class TestMessagingTemplates:
     def test_get_all_messaging_templates(self, db: Session):
-        templates = get_all_messaging_templates(db=db)
+        templates = get_all_basic_messaging_templates(db=db)
         assert len(templates) == len(DEFAULT_MESSAGING_TEMPLATES)
 
     def test_get_messaging_template_by_type_existing(self, db: Session):
@@ -49,7 +49,7 @@ class TestMessagingTemplates:
             },
         )
 
-        template = get_messaging_template_by_type(db=db, template_type=template_type)
+        template = get_basic_messaging_template_by_type(db=db, template_type=template_type)
         assert template.type == template_type
         assert template.content == content
 
@@ -57,12 +57,12 @@ class TestMessagingTemplates:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
 
-        template = get_messaging_template_by_type(db=db, template_type=template_type)
+        template = get_basic_messaging_template_by_type(db=db, template_type=template_type)
         assert template.type == template_type
         assert template.content == content
 
     def test_get_messaging_template_by_type_invalid(self, db: Session):
-        assert get_messaging_template_by_type(db=db, template_type="invalid") is None
+        assert get_basic_messaging_template_by_type(db=db, template_type="invalid") is None
 
     def test_update_messaging_template_add_property(
         self,

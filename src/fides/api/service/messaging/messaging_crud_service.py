@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import List, Optional, Dict, Any
 
 from fideslang.validation import FidesKey
@@ -86,7 +87,7 @@ def get_messaging_config_by_key(db: Session, key: FidesKey) -> MessagingConfigRe
     )
 
 
-def get_all_messaging_templates(db: Session) -> List[MessagingTemplate]:
+def get_all_basic_messaging_templates(db: Session) -> List[MessagingTemplate]:
     """
     Retrieve all templates from the database, filling in default values if any default template type
     is not found in the database.
@@ -108,7 +109,7 @@ def get_all_messaging_templates(db: Session) -> List[MessagingTemplate]:
     return templates
 
 
-def get_messaging_template_by_type(
+def get_basic_messaging_template_by_type(
     db: Session, template_type: str
 ) -> Optional[MessagingTemplate]:
     template = MessagingTemplate.get_by(db, field="type", value=template_type)
@@ -118,6 +119,22 @@ def get_messaging_template_by_type(
         content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
         template = MessagingTemplate(type=template_type, content=content)
 
+    return template
+
+
+def create_or_update_basic_templates(db: Session, data: Dict[str, Any]) -> Optional[MessagingTemplate]:
+    """
+    For "basic", or non property-specific messaging templates, we update if template "type" matches an existing db row,
+    otherwise we create a new one.
+    """
+
+    # fixme- if multiple with same type, get template with default property
+    #  e.g. paid user downgrades to OSS and has multiple templates configured
+    template = MessagingTemplate.get_by(db, field="type", value=data["type"])
+    if template:
+        template.update(db=db, data=data)
+    else:
+        template = MessagingTemplate.create(db=db, data=data)
     return template
 
 
@@ -238,14 +255,7 @@ def create_messaging_template(
 
 
 def delete_template_by_id(db: Session, template_id: str) -> None:
-    logger.info("Finding messaging config with id '{}'", template_id)
-    messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
-        db, object_id=template_id
-    )
-    if not messaging_template:
-        raise MessagingConfigNotFoundException(
-            f"No messaging template found with id {template_id}"
-        )
+    messaging_template: Optional[MessagingTemplate] = get_template_by_id(db, template_id)
     templates_with_type = (
         MessagingTemplate.query(db=db)
         .filter(MessagingTemplate.type == messaging_template.type)
@@ -260,6 +270,7 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
 
 
 def get_template_by_id(db: Session, template_id: str) -> MessagingTemplate:
+    logger.info("Finding messaging config with id '{}'", template_id)
     messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
         db, object_id=template_id
     )
@@ -293,26 +304,16 @@ def get_all_messaging_templates_summary(
     db: Session,
 ) -> Optional[List[MessagingTemplateWithPropertiesSummary]]:
     # Retrieve all templates from the database
-    db_templates: Dict[str, List[Dict[str, Any]]] = {}
+    db_templates: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for template in MessagingTemplate.all(db):
-        if db_templates.get(template.type):
-            db_templates[template.type].append(
-                {
-                    "id": template.id,
-                    "type": template.type,
-                    "is_enabled": template.is_enabled,
-                    "properties": template.properties,
-                }
-            )
-        else:
-            db_templates[template.type] = [
-                {
-                    "id": template.id,
-                    "type": template.type,
-                    "is_enabled": template.is_enabled,
-                    "properties": template.properties,
-                }
-            ]
+        db_templates[template.type].append(
+            {
+                "id": template.id,
+                "type": template.type,
+                "is_enabled": template.is_enabled,
+                "properties": template.properties,
+            }
+        )
 
     # Create a list of MessagingTemplate models, using defaults if a key is not found in the database
     templates: List[MessagingTemplateWithPropertiesSummary] = []

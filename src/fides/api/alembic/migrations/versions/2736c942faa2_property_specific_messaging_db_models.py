@@ -45,6 +45,11 @@ def upgrade():
             ["plus_property.id"],
         ),
         sa.PrimaryKeyConstraint("id", "messaging_template_id", "property_id"),
+        sa.UniqueConstraint(
+            "messaging_template_id",
+            "property_id",
+            name="messaging_template_id_property_id",
+        ),
     )
     op.create_index(
         op.f("ix_messaging_template_to_property_id"),

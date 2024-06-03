@@ -154,6 +154,22 @@ class TestProperty:
         assert experience.id == minimal_experience["id"]
         assert experience.name == minimal_experience["name"]
 
+    def test_update_property_remove_only_default(self, db: Session, property_a):
+
+        # When property_a fixture gets created, the db model sets is_default to True.
+        # Here we attempt to set the only default property to is_default = false
+        with pytest.raises(ValueError):
+            property_a.update(
+                db=db,
+                data={
+                    "name": "Property A",
+                    "type": PropertyType.other,
+                    "experiences": [],
+                    "paths": [],
+                    "is_default": False,
+                },
+            )
+
     def test_update_property_duplicate_paths(self, db: Session):
         first_prop = Property.create(
             db=db,

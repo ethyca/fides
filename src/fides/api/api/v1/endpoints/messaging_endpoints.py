@@ -55,7 +55,7 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
     delete_messaging_config,
-    get_all_messaging_templates,
+    get_all_basic_messaging_templates,
     get_messaging_config_by_key,
     update_messaging_config,
 )
@@ -502,7 +502,7 @@ def send_test_message(
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
     response_model=List[MessagingTemplateResponse],
 )
-def get_messaging_templates(
+def get_basic_messaging_templates(
     *, db: Session = Depends(deps.get_db)
 ) -> List[MessagingTemplateResponse]:
     """Returns the available messaging templates, augments the models with labels to be used in the UI."""
@@ -512,7 +512,7 @@ def get_messaging_templates(
             content=template.content,
             label=DEFAULT_MESSAGING_TEMPLATES.get(template.type, {}).get("label", None),
         )
-        for template in get_all_messaging_templates(db=db)
+        for template in get_all_basic_messaging_templates(db=db)
     ]
 
 
@@ -520,7 +520,7 @@ def get_messaging_templates(
     MESSAGING_TEMPLATES,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
 )
-def update_messaging_templates(
+def update_basic_messaging_templates(
     templates: List[MessagingTemplateRequest], *, db: Session = Depends(deps.get_db)
 ) -> BulkPutMessagingTemplateResponse:
     """Updates the messaging templates and reverts empty subject or body values to the default values."""
