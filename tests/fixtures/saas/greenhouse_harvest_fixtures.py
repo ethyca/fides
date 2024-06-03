@@ -16,8 +16,14 @@ secrets = get_secrets("greenhouse_harvest")
 def greenhouse_harvest_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "greenhouse_harvest.domain")
-        or secrets["domain"]
-        # add the rest of your secrets here
+        or secrets["domain"],
+        "api_key": pydash.get(saas_config, "greenhouse_harvest.api_key")
+        or secrets["api_key"],
+        "greenhouse_user_id": pydash.get(saas_config, "greenhouse_harvest.greenhouse_user_id")
+        or secrets["greenhouse_user_id"],
+        ## remove below
+        "user_id": pydash.get(saas_config, "greenhouse_harvest.user_id")
+        or secrets["user_id"]
     }
 
 
@@ -40,7 +46,7 @@ def greenhouse_harvest_external_references() -> Dict[str, Any]:
 
 @pytest.fixture
 def greenhouse_harvest_erasure_external_references() -> Dict[str, Any]:
-    return {}
+    return {"greenhouse_user_id":"4054939008"}
 
 
 @pytest.fixture

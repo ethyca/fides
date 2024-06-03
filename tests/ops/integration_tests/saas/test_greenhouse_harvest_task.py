@@ -10,11 +10,16 @@ class Testgreenhouse_harvestConnector:
         greenhouse_harvest_runner.test_connection()
 
     async def test_access_request(
-        self, greenhouse_harvest_runner: ConnectorRunner, policy, greenhouse_harvest_identity_email: str
+        self,
+        greenhouse_harvest_runner: ConnectorRunner,
+        policy: Policy,
+        greenhouse_harvest_identity_email: str,
     ):
         access_results = await greenhouse_harvest_runner.access_request(
             access_policy=policy, identities={"email": greenhouse_harvest_identity_email}
         )
+        assert (access_results["greenhouse_harvest:user"])
+        # assert here
 
     async def test_non_strict_erasure_request(
         self,
