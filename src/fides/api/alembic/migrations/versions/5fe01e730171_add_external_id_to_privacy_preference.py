@@ -44,26 +44,6 @@ def upgrade():
     op.drop_constraint(
         "last_saved_for_phone_number", "currentprivacypreferencev2", type_="unique"
     )
-    op.create_unique_constraint(
-        "last_saved_for_email_per_property_id",
-        "currentprivacypreferencev2",
-        ["email", "property_id"],
-    )
-    op.create_unique_constraint(
-        "last_saved_for_external_id_per_property_id",
-        "currentprivacypreferencev2",
-        ["external_id", "property_id"],
-    )
-    op.create_unique_constraint(
-        "last_saved_for_fides_user_device_per_property_id",
-        "currentprivacypreferencev2",
-        ["fides_user_device", "property_id"],
-    )
-    op.create_unique_constraint(
-        "last_saved_for_phone_number_per_property_id",
-        "currentprivacypreferencev2",
-        ["phone_number", "property_id"],
-    )
     op.add_column(
         "privacypreferencehistory",
         sa.Column(
@@ -108,20 +88,92 @@ def upgrade():
             unique=False,
         )
         op.create_index(
-            "idx_preferences_gin",
+            "ix_preferences_gin",
             "currentprivacypreferencev2",
             [sa.text("(preferences -> 'preferences'::text) jsonb_path_ops")],
             unique=False,
             postgresql_using="gin",
         )
+        op.create_index(
+            op.f("ix_currentprivacypreferencev2_email_property_id"),
+            "currentprivacypreferencev2",
+            ["email", "property_id"],
+            unique=True,
+        )
+        op.create_index(
+            op.f("ix_currentprivacypreferencev2_external_id_property_id"),
+            "currentprivacypreferencev2",
+            ["external_id", "property_id"],
+            unique=True,
+        )
+        op.create_index(
+            op.f("ix_currentprivacypreferencev2_fides_user_device_property_id"),
+            "currentprivacypreferencev2",
+            ["fides_user_device", "property_id"],
+            unique=True,
+        )
+        op.create_index(
+            op.f("ix_currentprivacypreferencev2_phone_number_property_id"),
+            "currentprivacypreferencev2",
+            ["phone_number", "property_id"],
+            unique=True,
+        )
+        op.execute(
+            """
+            ALTER TABLE currentprivacypreferencev2
+            ADD CONSTRAINT last_saved_for_email_per_property_id
+            UNIQUE USING INDEX ix_currentprivacypreferencev2_email_property_id;
+            """
+        )
+        op.execute(
+            """
+            ALTER TABLE currentprivacypreferencev2
+            ADD CONSTRAINT last_saved_for_external_id_per_property_id
+            UNIQUE USING INDEX ix_currentprivacypreferencev2_external_id_property_id;
+            """
+        )
+        op.execute(
+            """
+            ALTER TABLE currentprivacypreferencev2
+            ADD CONSTRAINT last_saved_for_fides_user_device_per_property_id
+            UNIQUE USING INDEX ix_currentprivacypreferencev2_fides_user_device_property_id;
+            """
+        )
+        op.execute(
+            """
+            ALTER TABLE currentprivacypreferencev2
+            ADD CONSTRAINT last_saved_for_phone_number_per_property_id
+            UNIQUE USING INDEX ix_currentprivacypreferencev2_phone_number_property_id;
+            """
+        )
     else:
         logger.warning(
             "The currentprivacypreferencev2 table has more than 1 million rows, "
-            "skipping index creation. Be sure to manually run the following commands:\n"
+            "skipping index and constraint creation. Be sure to manually run the following commands:\n"
+            "- 'CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_email_property_id "
+            "ON currentprivacypreferencev2 (email, property_id)'\n"
+            "- 'CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_external_id_property_id "
+            "ON currentprivacypreferencev2 (external_id, property_id)'\n"
+            "- 'CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_fides_user_device_property_id "
+            "ON currentprivacypreferencev2 (fides_user_device, property_id)'\n"
+            "- 'CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_phone_number_property_id "
+            "ON currentprivacypreferencev2 (phone_number, property_id)'\n"
             "- 'CREATE INDEX CONCURRENTLY ix_currentprivacypreferencev2_hashed_external_id "
             "ON currentprivacypreferencev2 (hashed_external_id)'\n"
-            "- 'CREATE INDEX CONCURRENTLY idx_preferences_gin "
-            "ON currentprivacypreferencev2 USING gin ((preferences->'preferences') jsonb_path_ops)'"
+            "- 'CREATE INDEX CONCURRENTLY ix_preferences_gin "
+            "ON currentprivacypreferencev2 USING gin ((preferences->'preferences') jsonb_path_ops)'\n"
+            "- 'ALTER TABLE currentprivacypreferencev2 "
+            "ADD CONSTRAINT last_saved_for_email_per_property_id "
+            "UNIQUE USING INDEX idx_currentprivacypreferencev2_email_property_id'\n"
+            "- 'ALTER TABLE currentprivacypreferencev2 "
+            "ADD CONSTRAINT last_saved_for_external_id_per_property_id "
+            "UNIQUE USING INDEX idx_currentprivacypreferencev2_external_id_property_id'\n"
+            "- 'ALTER TABLE currentprivacypreferencev2 "
+            "ADD CONSTRAINT last_saved_for_fides_user_device_per_property_id "
+            "UNIQUE USING INDEX idx_currentprivacypreferencev2_fides_user_device_property_id'\n"
+            "- 'ALTER TABLE currentprivacypreferencev2 "
+            "ADD CONSTRAINT last_saved_for_phone_number_per_property_id "
+            "UNIQUE USING INDEX idx_currentprivacypreferencev2_phone_number_property_id'"
         )
 
     privacypreferencehistory_count = connection.execute(
@@ -195,6 +247,23 @@ def downgrade():
         "currentprivacypreferencev2",
         type_="unique",
     )
+    op.drop_index(
+        op.f("ix_currentprivacypreferencev2_phone_number_property_id"),
+        table_name="currentprivacypreferencev2",
+    )
+    op.drop_index(
+        op.f("ix_currentprivacypreferencev2_fides_user_device_property_id"),
+        table_name="currentprivacypreferencev2",
+    )
+    op.drop_index(
+        op.f("ix_currentprivacypreferencev2_external_id_property_id"),
+        table_name="currentprivacypreferencev2",
+    )
+    op.drop_index(
+        op.f("ix_currentprivacypreferencev2_email_property_id"),
+        table_name="currentprivacypreferencev2",
+    )
+    op.drop_index(op.f("ix_preferences_gin"), table_name="currentprivacypreferencev2")
     op.drop_index(
         op.f("ix_currentprivacypreferencev2_property_id"),
         table_name="currentprivacypreferencev2",
