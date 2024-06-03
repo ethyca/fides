@@ -31,6 +31,7 @@ import {
 } from "~/components/modals/validation";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { useRouter } from "next/router";
 
 type FormValues = {
   [key: string]: any;
@@ -62,6 +63,8 @@ const usePrivacyRequestForm = ({
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
+  const router = useRouter();
+
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
@@ -78,7 +81,12 @@ const usePrivacyRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [key, field.default_value || ""])
+          .map(([key, field]) => [
+            key,
+            (field.query_param_key && router.query[field.query_param_key]) ||
+              field.default_value ||
+              "",
+          ])
       ),
     },
     onSubmit: async (values) => {
@@ -114,7 +122,10 @@ const usePrivacyRequestForm = ({
             {
               label: field.label,
               value: field.hidden
-                ? field.default_value
+                ? (field.query_param_key &&
+                    router.query[field.query_param_key]) ||
+                  field.default_value ||
+                  null
                 : fallbackNull(values[key]),
             },
           ])
