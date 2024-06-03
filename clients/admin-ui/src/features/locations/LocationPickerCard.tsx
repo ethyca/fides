@@ -1,4 +1,4 @@
-import { useDisclosure } from "@fidesui/react";
+import { useDisclosure } from "fidesui";
 import { useState } from "react";
 
 import PickerCard from "~/features/common/PickerCard";

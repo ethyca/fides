@@ -1,3 +1,4 @@
+import { debounce } from "common/utils";
 import {
   ArrowDownLineIcon,
   Box,
@@ -14,8 +15,7 @@ import {
   SearchLineIcon,
   Text,
   Tooltip,
-} from "@fidesui/react";
-import { debounce } from "common/utils";
+} from "fidesui";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";

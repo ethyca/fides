@@ -1,11 +1,11 @@
-import { Box, Text, useToast } from "@fidesui/react";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
+import { Box, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DataTabs, { type TabData } from "~/features/common/DataTabs";
+import { type TabData } from "~/features/common/DataTabs";
 import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
@@ -13,22 +13,21 @@ import {
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import {
   setLockedForGVL,
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import SystemHistoryTable from "~/features/system/history/SystemHistoryTable";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import { SystemResponse } from "~/types/api";
-
-import ToastLink from "../common/ToastLink";
-import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
   setActiveSystem,
   useGetSystemByFidesKeyQuery,
-} from "./system.slice";
-import SystemInformationForm from "./SystemInformationForm";
+} from "~/features/system/system.slice";
+import SystemInformationForm from "~/features/system/SystemInformationForm";
+import { SystemResponse } from "~/types/api";
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -53,12 +52,12 @@ const ToastMessage = ({
   </Box>
 );
 
-const SystemFormTabs = ({
-  initialTabIndex = 0,
+const useSystemFormTabs = ({
   isCreate,
+  initialTabIndex,
 }: {
-  /** If true, then some editing features will not be enabled */
   initialTabIndex?: number;
+  /** If true, then some editing features will not be enabled */
   isCreate?: boolean;
 }) => {
   const [tabIndex, setTabIndex] = useState(initialTabIndex);
@@ -149,7 +148,7 @@ const SystemFormTabs = ({
 
   const tabData: TabData[] = [
     {
-      label: "System information",
+      label: "Information",
       content: (
         <>
           <Box px={6} mb={9}>
@@ -254,16 +253,6 @@ const SystemFormTabs = ({
     });
   }
 
-  return (
-    <DataTabs
-      data={tabData}
-      data-testid="system-tabs"
-      index={tabIndex}
-      isLazy
-      isManual
-      onChange={onTabChange}
-    />
-  );
+  return { tabData, tabIndex, onTabChange };
 };
-
-export default SystemFormTabs;
+export default useSystemFormTabs;

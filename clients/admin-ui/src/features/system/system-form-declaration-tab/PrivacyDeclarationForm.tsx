@@ -2,7 +2,7 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import { Box, Button, Collapse, Flex, Spacer, Stack } from "@fidesui/react";
+import { Box, Button, Collapse, Flex, Spacer, Stack } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";

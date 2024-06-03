@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Flex, HStack, Text, VStack } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -18,6 +17,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import { Flex, HStack, Text, VStack } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";

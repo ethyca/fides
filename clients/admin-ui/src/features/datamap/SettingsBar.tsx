@@ -9,7 +9,7 @@ import {
   Tag,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 

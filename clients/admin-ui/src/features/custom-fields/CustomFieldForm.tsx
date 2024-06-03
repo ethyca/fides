@@ -1,4 +1,3 @@
-import { Box, Button, Flex, IconButton, Text } from "@fidesui/react";
 import {
   FIELD_TYPE_OPTIONS_NEW,
   FieldTypes,
@@ -11,6 +10,7 @@ import { AddIcon } from "common/custom-fields/icons/AddIcon";
 import FormSection from "common/form/FormSection";
 import { CustomSelect } from "common/form/inputs";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
+import { Box, Button, Flex, IconButton, Text } from "fidesui";
 import { FieldArray, Form, FormikProps, useFormikContext } from "formik";
 import { useEffect } from "react";
 

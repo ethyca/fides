@@ -88,7 +88,7 @@ describe("safeLookupPropertyId", () => {
     expect(() => {
       safeLookupPropertyId(req, geolocation, environment, "mock-fides-string");
     }).toThrow(
-      "FidesString must not be provided if a property_id is specified."
+      "FIDES_STRING must not be provided if a property_id is specified."
     );
   });
 

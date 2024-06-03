@@ -6,9 +6,10 @@
   "eslint.workingDirectories": [
     "./clients/admin-ui",
     "./clients/fides-js",
+    "./clients/fidesui",
     "./clients/privacy-center",
     "./clients/cypress-e2e",
-    "./clients/simple-app"
+    "./clients/sample-app"
   ],
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "./clients/node_modules/typescript/lib",

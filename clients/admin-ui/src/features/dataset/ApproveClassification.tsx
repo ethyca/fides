@@ -1,4 +1,4 @@
-import { Button, chakra, Spacer, useToast } from "@fidesui/react";
+import { Button, chakra, Spacer, useToast } from "fidesui";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 

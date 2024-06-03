@@ -1,4 +1,3 @@
-import { Box } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import {
@@ -14,6 +13,7 @@ import {
   DatastoreConnectionRequest,
   DatastoreConnectionSecretsRequest,
 } from "datastore-connections/types";
+import { Box } from "fidesui";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 

@@ -31,7 +31,7 @@ export const safeLookupPropertyId = (
     }
     if (fidesString) {
       throw new Error(
-        "FidesString must not be provided if a property_id is specified."
+        "FIDES_STRING must not be provided if a property_id is specified."
       );
     }
   } else if (Array.isArray(propertyId)) {

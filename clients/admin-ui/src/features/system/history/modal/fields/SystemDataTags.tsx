@@ -1,4 +1,4 @@
-import { Flex, FormControl, Tag, VStack } from "@fidesui/react";
+import { Flex, FormControl, Tag, VStack } from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";

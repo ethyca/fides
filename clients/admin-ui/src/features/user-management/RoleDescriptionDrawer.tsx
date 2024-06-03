@@ -1,4 +1,4 @@
-import { Box, VStack } from "@fidesui/react";
+import { Box, VStack } from "fidesui";
 
 import { ROLES } from "~/features/user-management/constants";
 

@@ -1,5 +1,5 @@
-import { Box, Heading } from "@fidesui/react";
 import Layout from "common/Layout";
+import { Box, Heading } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 

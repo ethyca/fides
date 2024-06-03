@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Stack } from "@fidesui/react";
+import { Button, ButtonGroup, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { lazy } from "yup";
 

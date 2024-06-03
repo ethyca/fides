@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Link, Spacer, Text } from "@fidesui/react";
+import { Box, Flex, Heading, Link, Spacer, Text } from "fidesui";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features";

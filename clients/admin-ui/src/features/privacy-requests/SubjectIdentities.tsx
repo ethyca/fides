@@ -1,4 +1,4 @@
-import { Divider, Flex, Heading, Tag, Text } from "@fidesui/react";
+import { Divider, Flex, Heading, Tag, Text } from "fidesui";
 import { useState } from "react";
 
 import PII from "../common/PII";

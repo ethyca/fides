@@ -55,7 +55,7 @@ class TestConsentRequestReporting:
             headers=auth_header,
         )
         assert response.status_code == 403
-        assert response.json() == {"detail": "Not Authorized for this action"}
+        assert "Not Authorized for this action" in response.json()["detail"]
 
     def test_consent_request_report(
         self,

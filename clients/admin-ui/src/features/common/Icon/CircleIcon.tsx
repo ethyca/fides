@@ -1,4 +1,4 @@
-import { createIcon } from "@chakra-ui/icons";
+import { createIcon } from "fidesui";
 
 export const CircleIcon = createIcon({
   displayName: "CircleIcon",

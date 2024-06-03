@@ -11,7 +11,7 @@ import {
   IconButton,
   Text,
   TrashCanSolidIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode } from "react";
 
 interface Props {

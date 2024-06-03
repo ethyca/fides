@@ -1,4 +1,3 @@
-import { Box, Text, VStack } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import {
@@ -7,6 +6,7 @@ import {
 } from "connection-type/connection-type.slice";
 import { usePatchDatastoreConnectionMutation } from "datastore-connections/datastore-connection.slice";
 import { DatastoreConnectionRequest } from "datastore-connections/types";
+import { Box, Text, VStack } from "fidesui";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
