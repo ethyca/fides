@@ -15,23 +15,15 @@ from fides.api.schemas.connection_configuration.connection_secrets_attentive imp
 )
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQueryDocsSchema as BigQueryDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema as BigQuerySchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_dynamodb import (
     DynamoDBDocsSchema as DynamoDBDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_dynamodb import (
     DynamoDBSchema as DynamoDBSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     EmailDocsSchema as EmailDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_email import (
     EmailSchema as EmailSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_email import (
     ExtendedEmailSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
@@ -40,56 +32,38 @@ from fides.api.schemas.connection_configuration.connection_secrets_fides import 
 )
 from fides.api.schemas.connection_configuration.connection_secrets_manual_webhook import (
     ManualWebhookSchema as ManualWebhookSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_manual_webhook import (
     ManualWebhookSchemaforDocs as ManualWebhookSchemaforDocs,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBDocsSchema as MariaDBDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema as MariaDBSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBDocsSchema as MongoDBDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema as MongoDBSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mssql import (
     MicrosoftSQLServerSchema as MicrosoftSQLServerSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_mssql import (
     MSSQLDocsSchema as MSSQLDocsSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLDocsSchema as MySQLDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema as MySQLSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLDocsSchema as PostgreSQLDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLSchema as PostgreSQLSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftDocsSchema as RedshiftDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftSchema as RedshiftSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchema as SaaSSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchemaFactory as SaaSSchemaFactory,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeDocsSchema as SnowflakeDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeSchema as SnowflakeSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_sovrn import (
@@ -114,6 +88,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.fides.value: FidesConnectorSchema,
     ConnectionType.generic_consent_email.value: ExtendedEmailSchema,
     ConnectionType.generic_erasure_email.value: EmailSchema,
+    ConnectionType.google_cloud_mysql.value: MySQLSchema,#GoogleCloudMySQLSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
     ConnectionType.mariadb.value: MariaDBSchema,

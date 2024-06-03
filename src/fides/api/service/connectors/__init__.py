@@ -52,7 +52,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.fides.value: FidesConnector,
     ConnectionType.generic_consent_email.value: GenericConsentEmailConnector,
     ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,
-    ConnectionType.google_cloud_sql_mysql.value: GoogleCloudMySQLConnector,
+    ConnectionType.google_cloud_mysql.value: GoogleCloudMySQLConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.mariadb.value: MariaDBConnector,

@@ -1,17 +1,30 @@
+import json
 import os
 from typing import Generator
 
 import pytest
 from sqlalchemy import inspect
+from sqlalchemy.engine import URL, Engine
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
 from toml import load as load_toml
 
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType, ConnectionTestStatus
+from fides.api.common_exceptions import ConnectionException
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+)
+from fides.common.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 from fides.api.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
 from fides.api.service.connectors import (
     RedshiftConnector,
     SnowflakeConnector,
     get_connector,
 )
+from fides.api.service.connectors.sql_connector import (
+    GoogleCloudMySQLConnector,
+)
+
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 
@@ -182,3 +195,133 @@ def test_bigquery_example_data(bigquery_test_engine):
             "visit",
         ]
     )
+
+
+@pytest.mark.integration_google_cloud_mysql
+@pytest.mark.integration
+class TestGoogleCloudMySQLConnector:
+    def test_google_cloud_mysql_db_connector(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_google_cloud_mysql,
+        google_cloud_mysql_secrets,
+    ) -> None:
+        connector = get_connector(connection_config_google_cloud_mysql)
+
+        assert connector.__class__ == GoogleCloudMySQLConnector
+
+        client = connector.client()
+        assert client.__class__ == Engine
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+        print('google_cloud_mysql_secrets', google_cloud_mysql_secrets)
+
+        connection_config_google_cloud_mysql.secrets = {
+            "url": str(
+                URL.create(
+                    "mysql+pymysql",
+                    username=google_cloud_mysql_secrets["username"],
+                    password=google_cloud_mysql_secrets["password"],
+                    host=google_cloud_mysql_secrets["host"],
+                    database=google_cloud_mysql_secrets["dbname"],
+                )
+            )
+        }
+        connection_config_google_cloud_mysql.save(db)
+        connector = get_connector(connection_config_google_cloud_mysql)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config_google_cloud_mysql.secrets = {"host": "bad_host"}
+        connection_config_google_cloud_mysql.save(db)
+        connector = get_connector(connection_config_google_cloud_mysql)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()
+
+
+@pytest.mark.integration_google_cloud_mysql
+@pytest.mark.integration
+class TestGoogleCloudMySQLConnectionPutSecretsAPI:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client, policy, connection_config_google_cloud_mysql) -> str:
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_google_cloud_mysql.key}/secret"
+
+    def test_google_cloud_mysql_db_connection_incorrect_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_google_cloud_mysql,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {"host": "mysql_example", "port": 1234, "dbname": "my_test_db"}
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_google_cloud_mysql.key}."
+        )
+        assert body["test_status"] == "failed"
+        assert "Operational Error connecting to google_cloud_mysql db." == body["failure_reason"]
+        db.refresh(connection_config_google_cloud_mysql)
+
+        assert connection_config_google_cloud_mysql.secrets == {
+            "host": "mysql_example",
+            "port": 1234,
+            "dbname": "my_test_db",
+            "username": None,
+            "password": None,
+            "ssh_required": False,
+        }
+        assert connection_config_google_cloud_mysql.last_test_timestamp is not None
+        assert connection_config_google_cloud_mysql.last_test_succeeded is False
+
+    def test_google_cloud_mysql_db_connection_connect_with_components(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_google_cloud_mysql,
+        google_cloud_mysql_secrets,
+    ) -> None:
+        payload = {
+            "host": google_cloud_mysql_secrets['host'],
+            "dbname": google_cloud_mysql_secrets['dbname'],
+            "username": google_cloud_mysql_secrets['username'],
+            "password": google_cloud_mysql_secrets['password'],
+        }
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_google_cloud_mysql.key}."
+        )
+        assert body["test_status"] == "succeeded"
+        assert body["failure_reason"] is None
+        db.refresh(connection_config_google_cloud_mysql)
+        assert connection_config_google_cloud_mysql.secrets == {
+            "host": "34.132.168.106",
+            "dbname": "mysql",
+            "username": "root",
+            "password": "ethyca",
+            "port": 3306,
+            "ssh_required": False,
+        }
+        assert connection_config_google_cloud_mysql.last_test_timestamp is not None
+        assert connection_config_google_cloud_mysql.last_test_succeeded is True

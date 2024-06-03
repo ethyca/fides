@@ -580,4 +580,4 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
 
 class GoogleCloudMySQLConnector(MySQLConnector):
-    """Connector specific to Google Cloud MySQL"""
+    """Connector specific to Google Cloud for MySQL"""
