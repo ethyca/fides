@@ -164,16 +164,16 @@ def upgrade():
             "ON currentprivacypreferencev2 USING gin ((preferences->'preferences') jsonb_path_ops)'\n"
             "- 'ALTER TABLE currentprivacypreferencev2 "
             "ADD CONSTRAINT last_saved_for_email_per_property_id "
-            "UNIQUE USING INDEX idx_currentprivacypreferencev2_email_property_id'\n"
+            "UNIQUE USING INDEX ix_currentprivacypreferencev2_email_property_id'\n"
             "- 'ALTER TABLE currentprivacypreferencev2 "
             "ADD CONSTRAINT last_saved_for_external_id_per_property_id "
-            "UNIQUE USING INDEX idx_currentprivacypreferencev2_external_id_property_id'\n"
+            "UNIQUE USING INDEX ix_currentprivacypreferencev2_external_id_property_id'\n"
             "- 'ALTER TABLE currentprivacypreferencev2 "
             "ADD CONSTRAINT last_saved_for_fides_user_device_per_property_id "
-            "UNIQUE USING INDEX idx_currentprivacypreferencev2_fides_user_device_property_id'\n"
+            "UNIQUE USING INDEX ix_currentprivacypreferencev2_fides_user_device_property_id'\n"
             "- 'ALTER TABLE currentprivacypreferencev2 "
             "ADD CONSTRAINT last_saved_for_phone_number_per_property_id "
-            "UNIQUE USING INDEX idx_currentprivacypreferencev2_phone_number_property_id'"
+            "UNIQUE USING INDEX ix_currentprivacypreferencev2_phone_number_property_id'"
         )
 
     privacypreferencehistory_count = connection.execute(
