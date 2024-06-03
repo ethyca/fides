@@ -25,16 +25,16 @@ from fides.api.service.messaging.messaging_crud_service import (
     delete_template_by_id,
     get_template_by_id,
     get_default_template_by_type,
-    get_all_messaging_templates_summary,
+    get_all_messaging_templates_summary, create_or_update_basic_templates,
 )
 
 
 class TestMessagingTemplates:
-    def test_get_all_messaging_templates(self, db: Session):
+    def test_get_all_basic_messaging_templates(self, db: Session):
         templates = get_all_basic_messaging_templates(db=db)
         assert len(templates) == len(DEFAULT_MESSAGING_TEMPLATES)
 
-    def test_get_messaging_template_by_type_existing(self, db: Session):
+    def test_get_basic_messaging_template_by_type_existing(self, db: Session):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = {
             "subject": "Here is your code {{code}}",
@@ -53,7 +53,7 @@ class TestMessagingTemplates:
         assert template.type == template_type
         assert template.content == content
 
-    def test_get_messaging_template_by_type_default(self, db: Session):
+    def test_get_basic_messaging_template_by_type_default(self, db: Session):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
 
@@ -61,8 +61,35 @@ class TestMessagingTemplates:
         assert template.type == template_type
         assert template.content == content
 
-    def test_get_messaging_template_by_type_invalid(self, db: Session):
+    def test_get_basic_messaging_template_by_type_invalid(self, db: Session):
         assert get_basic_messaging_template_by_type(db=db, template_type="invalid") is None
+
+    def test_create_or_update_basic_templates_existing_type(self, db: Session, messaging_template_no_property):
+        content = {
+            "subject": "Test new subject",
+            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        }
+        create_or_update_basic_templates(db, data={
+            "type": MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value, "content": content, "is_enabled": False
+        })
+        templates = MessagingTemplate.query(db=db)
+        assert len(templates) == 1
+        assert templates[0].content["subject"] == "Test new subject"
+
+    def test_create_or_update_basic_templates_new_type(self, db: Session, messaging_template_privacy_request_receipt):
+        content = {
+            "subject": "Test new subject",
+            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        }
+        new_template = create_or_update_basic_templates(db, data={
+            "type": MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value, "content": content, "is_enabled": False
+        })
+        templates = MessagingTemplate.query(db=db)
+        assert len(templates) == 2
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=new_template.id
+        )
+        assert messaging_template.content["subject"] == "Test new subject"
 
     def test_update_messaging_template_add_property(
         self,

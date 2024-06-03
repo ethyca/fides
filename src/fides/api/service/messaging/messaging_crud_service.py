@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import List, Optional, Dict, Any
 
+from fides.api.models.property import Property
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -126,11 +127,30 @@ def create_or_update_basic_templates(db: Session, data: Dict[str, Any]) -> Optio
     """
     For "basic", or non property-specific messaging templates, we update if template "type" matches an existing db row,
     otherwise we create a new one.
-    """
 
-    # fixme- if multiple with same type, get template with default property
-    #  e.g. paid user downgrades to OSS and has multiple templates configured
-    template = MessagingTemplate.get_by(db, field="type", value=data["type"])
+    There might be multiple templates configured by type, in the edge case where a paid user downgrades to OSS.
+    We use the one associated with the default property if found. If no default, we fall back on first item for safety.
+    """
+    template = None
+    templates = (
+        MessagingTemplate.query(db=db)
+            .filter(MessagingTemplate.type == data["type"])
+            .all()
+    )
+
+    if len(templates) > 1:
+        default_property = Property.get_by(db=db, field="is_default", value=True)
+        if default_property:
+            template = MessagingTemplate.filter(
+                db=db,
+                conditions=(
+                        (MessagingTemplate.type == data["type"])
+                        & (Property.id == default_property.id)
+                ),
+            ).first()
+    else:
+        template = templates[0]
+
     if template:
         template.update(db=db, data=data)
     else:
