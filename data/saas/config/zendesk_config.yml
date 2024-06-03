@@ -27,10 +27,7 @@ saas_config:
 
   test_request:
     method: GET
-    path: /api/v2/users/search.json
-    query_params:
-      - name: query
-        value: test@ethyca
+    path: /api/v2/users/count
 
   endpoints:
     - name: user
