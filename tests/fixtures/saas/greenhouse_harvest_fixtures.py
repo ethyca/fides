@@ -60,7 +60,7 @@ def greenhouse_harvest_erasure_data(
         "Authorization": f"{greenhouse_harvest_secrets['api_key']}",
         "On-Behalf-Of": f"{greenhouse_harvest_erasure_external_references['greenhouse_user_id']}"
     }
-    # details of the user
+    # details of the user to create.
     body = {
         "first_name": "Test",
         "last_name": "Ethyca",
@@ -131,7 +131,7 @@ def greenhouse_harvest_erasure_data(
     response = requests.post(
         base_url, headers=headers, json=body
     )
-#    import pdb; pdb.set_trace()
+
     assert response.ok
     json_response = response.json()
     user_id = json_response["id"]
