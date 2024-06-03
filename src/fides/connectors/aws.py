@@ -12,6 +12,7 @@ from fideslang.models import (
     System,
     SystemMetadata,
 )
+from loguru import logger
 
 from fides.connectors.models import (
     AWSConfig,
@@ -44,11 +45,17 @@ def handle_common_aws_errors(func: Callable) -> Callable:
         try:
             return func(*args, **kwargs)
         except ClientError as error:
+            logger.warning(error.response["Error"]["Code"])
             if error.response["Error"]["Code"] in [
                 "InvalidClientTokenId",
                 "SignatureDoesNotMatch",
             ]:
                 raise ConnectorAuthFailureException(error.response["Error"]["Message"])
+            if error.response["Error"]["Code"] in [
+                "AccessDenied", "AccessDeniedException"
+            ]:
+                logger.warning(error.response["Error"]["Message"])
+                return []
             raise ConnectorFailureException(error.response["Error"]["Message"])
 
     return update_wrapper(wrapper_func, func)
@@ -96,11 +103,22 @@ def describe_dynamo_tables(client: Any, table_names: List[str]) -> List[Dict]:  
     Returns describe_table response given a 'dynamodb' boto3 client.
     """
     describe_tables = []
-    for table in table_names:
-        described_table = client.describe_table(TableName=table)
-        described_table["Table"]["Fields"] = scan_dynamo_table(client, table)
-        describe_tables.append(described_table["Table"])
+    for table_name in table_names:
+        described_table = describe_dynamo_table(client, table_name)
+        if isinstance(described_table, dict):
+            describe_tables.append(described_table)
+
     return describe_tables
+
+@handle_common_aws_errors
+def describe_dynamo_table(client: Any, table_name: str) -> Dict:  # type: ignore
+    """
+    Returns describe_table response given a 'dynamodb' boto3 client.
+    """
+    described_table = client.describe_table(TableName=table_name)
+    described_table["Table"]["Fields"] = scan_dynamo_table(client, table_name)
+
+    return described_table["Table"]
 
 
 @handle_common_aws_errors
@@ -109,7 +127,14 @@ def get_dynamo_tables(client: Any) -> List[str]:  # type: ignore
     Returns a list of table names response given a 'rds' boto3 client.
     """
     list_tables = client.list_tables()
-    return list_tables["TableNames"]
+    table_names = list_tables["TableNames"]
+    next_page_exists = "LastEvaluatedTableName" in list_tables
+    while next_page_exists:
+        last_evaluated_table_name = list_tables["LastEvaluatedTableName"]
+        list_tables = client.list_tables(ExclusiveStartTableName=last_evaluated_table_name)
+        table_names.extend(list_tables["TableNames"])
+        next_page_exists = "LastEvaluatedTableName" in list_tables
+    return table_names
 
 @handle_common_aws_errors
 def scan_dynamo_table(client: Any, table_name: str) -> List[str]:  # type: ignore
