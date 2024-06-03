@@ -129,7 +129,7 @@ def generate_dataset_aws(ctx: click.Context) -> None:
 @aws_secret_access_key_option
 @aws_session_token_option
 @aws_region_option
-@click.option("--single-dataset", type=bool)
+@click.option("--single-dataset", type=bool, default=False)
 @include_null_flag
 @with_analytics
 def generate_dataset_dynamodb(
@@ -141,7 +141,7 @@ def generate_dataset_dynamodb(
     secret_access_key: str,
     session_token: str,
     region: str,
-    single_dataset: bool = False
+    single_dataset: bool,
 ) -> None:
     """
     Generates a dataset object from DynamoDB using the AWS boto3 connection config.
