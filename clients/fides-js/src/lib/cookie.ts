@@ -58,7 +58,8 @@ export const consentCookieObjHasSomeConsentSet = (
  * generated UUID to prevent it from being identifiable (without matching it to
  * some other identity data!)
  */
-export const generateFidesUserDeviceId = (): string => uuidv4();
+const generateFidesUserDeviceId = (): string => uuidv4();
+const userDeviceId = generateFidesUserDeviceId();
 
 /**
  * Determine whether or not the given cookie is "new" (ie. has never been saved
@@ -74,7 +75,6 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
  */
 export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
   const now = new Date();
-  const userDeviceId = generateFidesUserDeviceId();
   return {
     consent: consent || {},
     identity: {
