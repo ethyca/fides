@@ -16,10 +16,6 @@ saas_config:
     - name: Greenhouse USER id to use for On Behalf Of header.
       label: Your Greenhouse USER id. This value can be seen by any Greenhouse user from the main page by examining the URL when viewing this user. From the Greenhouse main page, navigate to Configure >> Users >> Select the desired user. The URL when viewing the account will look like this https://app8.greenhouse.io/account/users/4054939008/edit where the numeric value is the Greenhouse user ID.
 
-  # external_references:
-  #   - name: user_id
-  #     description: Dataset reference to the location of Greenhouse user IDs. For example `dataset.collection.field`
-
   client_config:
     protocol: https
     host: <domain>
