@@ -9,8 +9,8 @@ dataset:
         fields:
           - name: id
             data_categories: [user.unique_id]
-            #primary_key?
             fidesops_meta:
+              primary_key: True
               data_type: integer
           - name: first_name
             data_categories: [user.name.first]

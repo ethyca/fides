@@ -134,9 +134,9 @@ def greenhouse_harvest_erasure_data(
 #    import pdb; pdb.set_trace()
     assert response.ok
     json_response = response.json()
-    user_id_res = json_response["id"]
+    user_id = json_response["id"]
 
-    yield {user_id_res}
+    yield {user_id}
 
 
 @pytest.fixture
