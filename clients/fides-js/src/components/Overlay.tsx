@@ -22,7 +22,6 @@ import {
   shouldResurfaceConsent,
 } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
-import { useHasMounted } from "../lib/hooks";
 import type { I18n } from "../lib/i18n";
 
 import ConsentModal from "./ConsentModal";
@@ -30,6 +29,7 @@ import ConsentContent from "./ConsentContent";
 import "./fides.css";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
+import { useHasMounted } from "../lib/hooks";
 
 interface RenderBannerProps {
   isOpen: boolean;

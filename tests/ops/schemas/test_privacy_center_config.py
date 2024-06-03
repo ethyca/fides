@@ -25,10 +25,18 @@ class TestPrivacyCenterConfig:
     def test_valid_custom_privacy_request_field(self):
         CustomPrivacyRequestField(label="Tenant ID", default_value="123", hidden=True)
 
+    def test_valid_custom_privacy_request_field_with_query_param(self):
+        CustomPrivacyRequestField(
+            label="Tenant ID", query_param_key="site_id", hidden=True
+        )
+
     def test_custom_privacy_request_field_with_missing_default_value(self):
         with pytest.raises(ValidationError) as exc:
             CustomPrivacyRequestField(label="Tenant ID", hidden=True)
-        assert "default_value is required when hidden is True" in str(exc.value)
+        assert (
+            "default_value or query_param_key are required when hidden is True"
+            in str(exc.value)
+        )
 
     def test_custom_privacy_request_fields_with_missing_values(self):
         with pytest.raises(ValidationError):
