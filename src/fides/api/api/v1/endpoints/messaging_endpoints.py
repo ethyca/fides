@@ -57,7 +57,8 @@ from fides.api.service.messaging.messaging_crud_service import (
     delete_messaging_config,
     get_all_basic_messaging_templates,
     get_messaging_config_by_key,
-    update_messaging_config, create_or_update_basic_templates,
+    update_messaging_config,
+    create_or_update_basic_templates,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
@@ -542,7 +543,10 @@ def update_basic_messaging_templates(
             )
             content["body"] = content["body"] or default_template["content"]["body"]
 
-            create_or_update_basic_templates(db, data={"type": template_type, "content": content, "is_enabled": False})
+            create_or_update_basic_templates(
+                db,
+                data={"type": template_type, "content": content, "is_enabled": False},
+            )
 
             succeeded.append(
                 MessagingTemplateResponse(

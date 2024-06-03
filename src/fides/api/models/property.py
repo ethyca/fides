@@ -158,7 +158,6 @@ class Property(Base):
                     f'Unable to set property with id {data["id"]} to is_default=False. You must have exactly one default property configured.'
                 )
 
-
         super().update(db=db, data=data)
         link_experience_configs_to_property(
             db, experience_configs=experiences, prop=self

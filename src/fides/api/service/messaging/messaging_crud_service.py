@@ -123,7 +123,9 @@ def get_basic_messaging_template_by_type(
     return template
 
 
-def create_or_update_basic_templates(db: Session, data: Dict[str, Any]) -> Optional[MessagingTemplate]:
+def create_or_update_basic_templates(
+    db: Session, data: Dict[str, Any]
+) -> Optional[MessagingTemplate]:
     """
     For "basic", or non property-specific messaging templates, we update if template "type" matches an existing db row,
     otherwise we create a new one.
@@ -134,8 +136,8 @@ def create_or_update_basic_templates(db: Session, data: Dict[str, Any]) -> Optio
     template = None
     templates = (
         MessagingTemplate.query(db=db)
-            .filter(MessagingTemplate.type == data["type"])
-            .all()
+        .filter(MessagingTemplate.type == data["type"])
+        .all()
     )
 
     if len(templates) > 1:
@@ -144,8 +146,8 @@ def create_or_update_basic_templates(db: Session, data: Dict[str, Any]) -> Optio
             template = MessagingTemplate.filter(
                 db=db,
                 conditions=(
-                        (MessagingTemplate.type == data["type"])
-                        & (Property.id == default_property.id)
+                    (MessagingTemplate.type == data["type"])
+                    & (Property.id == default_property.id)
                 ),
             ).first()
     else:
@@ -275,7 +277,7 @@ def create_messaging_template(
 
 
 def delete_template_by_id(db: Session, template_id: str) -> None:
-    messaging_template: Optional[MessagingTemplate] = get_template_by_id(db, template_id)
+    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
     templates_with_type = (
         MessagingTemplate.query(db=db)
         .filter(MessagingTemplate.type == messaging_template.type)
