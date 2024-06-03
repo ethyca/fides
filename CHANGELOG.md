@@ -18,10 +18,23 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.37.0...main)
 
 ### Added
+- Deprecate LastServedNotice (lastservednoticev2) table [#4910](https://github.com/ethyca/fides/pull/4910)
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
+- Added UI for configuring integrations for detection/discovery [#4922](https://github.com/ethyca/fides/pull/4922)
+- Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
+- Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
+- Update privacy center port to :3001 for nox [#4918](https://github.com/ethyca/fides/pull/4918)
+- Optimize speed by generating the uuids in the client side for consent requests [#4933](https://github.com/ethyca/fides/pull/4933)
+- Update Privacy Center toast text for consistent capitalization [#4936](https://github.com/ethyca/fides/pull/4936)
+
+### Fixed
+- Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
+
+### Fixed
+- Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
@@ -32,9 +45,9 @@ The types of changes are:
 - Added developer option to disable auto-initialization on FidesJS bundles. [#4900](https://github.com/ethyca/fides/pull/4900)
 - Adding property ID to served notice history and privacy preference history [#4886](https://github.com/ethyca/fides/pull/4886)
 - Adding privacy_center_config and stylesheet fields to the Property model [#4879](https://github.com/ethyca/fides/pull/4879)
-- Include required scopes in API authorization error (403) messages [#4905](https://github.com/ethyca/fides/pull/4905)
 - Adds generic async callback integration support [#4865](https://github.com/ethyca/fides/pull/4865)
 - Ability to `downgrade` the application DB through the `/admin/db` endpoint [#4893](https://github.com/ethyca/fides/pull/4893)
+- Added support for custom property paths, configs and stylesheets for privacy center [#4907](https://github.com/ethyca/fides/pull/4907)
 - Include the scopes required for a given action in `403` response when client does not have sufficient permissions [#4905](https://github.com/ethyca/fides/pull/4905)
 
 ### Changed
@@ -50,12 +63,12 @@ The types of changes are:
 - Reduce privacy center logging to not show response size limit when the /fides.js endpoint has a size bigger than 4MB [#4878](https://github.com/ethyca/fides/pull/4878)
 - Fixed an issue where sourcemaps references were unintentionally included in the FidesJS bundle [#4887](https://github.com/ethyca/fides/pull/4887)
 - Handle a 404 response from Segment when a user ID or email is not found [#4902](https://github.com/ethyca/fides/pull/4902)
+- Fixed TCF styling issues [#4904](https://github.com/ethyca/fides/pull/4904)
 - Fixed an issue where the Trigger Modal Link was not being populated correctly in the translation form [#4911](https://github.com/ethyca/fides/pull/4911)
 
-
 ### Security
-
 - Escape SQLAlchemy passwords [CVE-2024-34715](https://github.com/ethyca/fides/security/advisories/GHSA-8cm5-jfj2-26q7)
+- Properly mask nested BigQuery secrets in connection configuration endpoints [CVE-2024-35189](https://github.com/ethyca/fides/security/advisories/GHSA-rcvg-jj3g-rj7c)
 
 ## [2.36.0](https://github.com/ethyca/fides/compare/2.35.1...2.36.0)
 

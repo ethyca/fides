@@ -827,9 +827,7 @@ describe("Consent i18n", () => {
               preferences,
             } = interception.request.body;
             expect(method).to.eq("gpc");
-            // NOTE: GPC preferences are saved before "notices served" could
-            // possibly complete, so we expect this to be undefined
-            expect(served_notice_history_id).to.eq(undefined);
+            expect(served_notice_history_id).to.be.a("string");
             expect(privacy_experience_config_history_id).to.eq(
               "pri_exp-history-banner-modal-es-000"
             );
@@ -864,7 +862,7 @@ describe("Consent i18n", () => {
               preferences,
             } = interception.request.body;
             expect(method).to.eq("accept");
-            expect(served_notice_history_id).to.eq("ser_notice-history-000");
+            expect(served_notice_history_id).to.be.a("string");
             expect(privacy_experience_config_history_id).to.eq(
               "pri_exp-history-banner-modal-es-000"
             );

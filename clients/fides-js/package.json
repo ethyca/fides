@@ -11,7 +11,7 @@
     "dist/**"
   ],
   "scripts": {
-    "dev": "NODE_ENV=production rollup --watch -c",
+    "dev": "NODE_ENV=development rollup --watch -c",
     "build": "NODE_ENV=production rollup -c",
     "build:windows": "set NODE_ENV=production && rollup -c",
     "postbuild": "npm run docs:generate",
