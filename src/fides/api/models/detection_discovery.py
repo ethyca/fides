@@ -75,8 +75,19 @@ class MonitorConfig(Base):
     # see https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html
 
     classify_params = Column(
-        MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+        MutableDict.as_mutable(JSONB),
+        index=False,
+        unique=False,
+        nullable=True,
     )  # parameters that the monitor will use for classification execution
+
+    datasource_params = Column(
+        MutableDict.as_mutable(JSONB),
+        index=False,
+        unique=False,
+        nullable=True,
+    )  # monitor parameters that are specific per datasource
+    # these are held as an untyped JSON dict (in the DB) to stay flexible
 
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
