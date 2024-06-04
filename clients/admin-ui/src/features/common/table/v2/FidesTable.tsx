@@ -50,6 +50,7 @@ declare module "@tanstack/table-core" {
     showHeaderMenu?: boolean;
     overflow?: "auto" | "visible" | "hidden";
     disableRowClick?: boolean;
+    onCellClick?: (row: TData) => void;
   }
 }
 /* eslint-enable */
