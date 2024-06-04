@@ -24,12 +24,6 @@ def mysql_example_secrets():
     return integration_secrets["mysql_example"]
 
 
-# export GOOGLE_CLOUD_MYSQL_TEST_HOST="34.132.168.106"
-# export GOOGLE_CLOUD_MYSQL_TEST_DBNAME="mysql"
-# export GOOGLE_CLOUD_MYSQL_TEST_USERNAME="root"
-# export GOOGLE_CLOUD_MYSQL_TEST_PASSWORD="ethyca"
-# export GOOGLE_CLOUD_MYSQL_TEST_PORT=3306
-
 @pytest.fixture(scope="function")
 def google_cloud_mysql_secrets():
     secrets = integration_secrets.get("google_cloud_mysql", {})
