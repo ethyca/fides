@@ -1,7 +1,6 @@
 from collections import defaultdict
 from typing import List, Optional, Dict, Any
 
-from fides.api.models.property import Property
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -15,6 +14,7 @@ from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
     MessagingTemplate,
 )
+from fides.api.models.property import Property
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigResponse,
