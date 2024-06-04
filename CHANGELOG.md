@@ -21,8 +21,13 @@ The types of changes are:
 - Deprecate LastServedNotice (lastservednoticev2) table [#4910](https://github.com/ethyca/fides/pull/4910)
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
 - Added UI for configuring integrations for detection/discovery [#4922](https://github.com/ethyca/fides/pull/4922)
+- New queue for saving privacy preferences/notices served [#4931](https://github.com/ethyca/fides/pull/4931)
+- Expose number of tasks in queue in worker health check [#4931](https://github.com/ethyca/fides/pull/4931)
+- Track when preferences/notices served received [#4931](https://github.com/ethyca/fides/pull/4931)
 - Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
 - Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
+- Fill custom privacy request fields with query_param_key [#4948](https://github.com/ethyca/fides/pull/4948)
+
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
@@ -30,6 +35,7 @@ The types of changes are:
 - Optimize speed by generating the uuids in the client side for consent requests [#4933](https://github.com/ethyca/fides/pull/4933)
 - Update Privacy Center toast text for consistent capitalization [#4936](https://github.com/ethyca/fides/pull/4936)
 - Update Custom Fields table and Domain Verification table to use FidesTable V2. Remove V1 components. [#4932](https://github.com/ethyca/fides/pull/4932)
+- Updated how Fields are generated for DynamoDB, improved error handling [#4943](https://github.com/ethyca/fides/pull/4943)
 
 ### Fixed
 - Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
