@@ -137,11 +137,11 @@ def get_dynamo_tables(client: Any) -> List[str]:  # type: ignore
     return table_names
 
 @handle_common_aws_errors
-def scan_dynamo_table(client: Any, table_name: str) -> List[str]:  # type: ignore
+def scan_dynamo_table(client: Any, table_name: str, num_samples: int = 30) -> List[str]:  # type: ignore
     """
     Returns describe_table response given a 'dynamodb' boto3 client.
     """
-    table_scan = client.scan(TableName=table_name, Limit=30)
+    table_scan = client.scan(TableName=table_name, Limit=num_samples)
     fields = set()
     for item in table_scan["Items"]:
         for field, _ in item.items():
