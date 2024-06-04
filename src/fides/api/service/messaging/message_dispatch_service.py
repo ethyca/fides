@@ -89,6 +89,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                     ).dict(),
                     "service_type": config_proxy.notifications.notification_service_type,
                     "to_identity": {"email": email},
+                    "property_specific_messaging_template": None
                 },
             )
 

@@ -104,7 +104,7 @@ class TestMessageDispatchService:
     ❌ Property-specific messaging is disabled
     ✅︎ Has property-specific template
     
-    Result: Email sent with basic messaging template.
+    Result: Email sent with property-specific template
     """
 
     @mock.patch(
@@ -143,7 +143,7 @@ class TestMessageDispatchService:
     ❌ Property-specific messaging is disabled
     ❌ No property-specific template
     
-    Result: Email sent with basic messaging template.
+    Result: Email sent with default messaging template.
     """
 
     @mock.patch(
