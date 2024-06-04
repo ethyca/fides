@@ -17,7 +17,8 @@ saas_config:
       sensitive: True
     - name: greenhouse_user_id
       label: Greenhouse User ID
-      description: Your Greenhouse USER id. This value can be seen by any Greenhouse user from the main page by examining the URL when viewing this user. From the Greenhouse main page, navigate to Configure -> Users -> Select the desired user. The URL when viewing the account will look like this https://app8.greenhouse.io/account/users/4054555008/edit where the numeric value is the Greenhouse user ID.
+      # the id below is made up but has the typical number of characters
+      description: Your Greenhouse USER id. This value can be seen by any Greenhouse user from the main page by examining the URL when viewing this user. From the Greenhouse main page, navigate to Configure select Users then Select the desired user. The URL when viewing the account will look like this https://app8.greenhouse.io/account/users/4054555008/edit where the numeric value is the Greenhouse user ID.
 
   client_config:
     protocol: https

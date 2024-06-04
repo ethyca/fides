@@ -4,7 +4,6 @@ import pydash
 import pytest
 import requests
 
-
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
@@ -38,11 +37,6 @@ def greenhouse_harvest_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-# @pytest.fixture
-# def greenhouse_harvest_erasure_external_references() -> Dict[str, Any]:
-#     return {"greenhouse_user_id":"4052733008"}
-
-
 @pytest.fixture
 def greenhouse_harvest_erasure_data(
     greenhouse_harvest_secrets,
@@ -53,7 +47,7 @@ def greenhouse_harvest_erasure_data(
         "Authorization": f"{greenhouse_harvest_secrets['api_key']}",
         "On-Behalf-Of": f"{greenhouse_harvest_secrets['greenhouse_user_id']}"
     }
-    # details of the test user
+    # details of the test user - note that the job_id value below is from our instance and the sample job. This id is required for this call to work.
     body = {
         "first_name": "Test",
         "last_name": "Ethyca",
@@ -129,7 +123,6 @@ def greenhouse_harvest_erasure_data(
     json_response = response.json()
     user_id = json_response["id"]
     assert json_response["id"] > 1
-
     yield {user_id}
 
 
