@@ -37,6 +37,19 @@ export const FidesCell = <T,>({
     isLastRowOfGroupedRows =
       groupRow.subRows[groupRow.subRows.length - 1].id === cell.row.id;
   }
+  const hasCellClickEnabled =
+    (!isGroupedColumn || isFirstRowOfGroupedRows) &&
+    !!cell.column.columnDef.meta?.onCellClick;
+  let handleCellClick;
+  if (!cell.column.columnDef.meta?.disableRowClick && onRowClick) {
+    handleCellClick = (e: React.MouseEvent<HTMLTableCellElement>) => {
+      onRowClick(cell.row.original, e);
+    };
+  } else if (hasCellClickEnabled) {
+    handleCellClick = () => {
+      cell.column.columnDef.meta?.onCellClick?.(cell.row.original);
+    };
+  }
 
   return (
     <Td
@@ -63,6 +76,10 @@ export const FidesCell = <T,>({
         // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
         maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
+        "&:hover": {
+          backgroundColor: hasCellClickEnabled ? "gray.50" : undefined,
+          cursor: hasCellClickEnabled ? "pointer" : undefined,
+        },
       }}
       _hover={
         onRowClick && !cell.column.columnDef.meta?.disableRowClick
@@ -81,13 +98,7 @@ export const FidesCell = <T,>({
         borderRightWidth: 0,
       }}
       height="inherit"
-      onClick={
-        !cell.column.columnDef.meta?.disableRowClick && onRowClick
-          ? (e) => {
-              onRowClick(cell.row.original, e);
-            }
-          : undefined
-      }
+      onClick={handleCellClick}
       data-testid={`row-${cell.row.id}-col-${cell.column.id}`}
     >
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows

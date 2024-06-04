@@ -27,7 +27,7 @@ The types of changes are:
 - Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
 - Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
 - Fill custom privacy request fields with query_param_key [#4948](https://github.com/ethyca/fides/pull/4948)
-
+- Added ability to open system preview side panel from new data map table [#4944](https://github.com/ethyca/fides/pull/4944)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
