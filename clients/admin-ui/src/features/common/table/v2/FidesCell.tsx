@@ -5,7 +5,7 @@ import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 type FidesCellProps<T> = {
   cell: Cell<T, unknown>;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   isDisplayAll: boolean;
 };
 
@@ -64,6 +64,11 @@ export const FidesCell = <T,>({
         maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
       }}
+      _hover={
+        onRowClick && !cell.column.columnDef.meta?.disableRowClick
+          ? { cursor: "pointer" }
+          : undefined
+      }
       _first={{
         borderBottomWidth:
           (!isTableGrouped && !isLastRowOfPage) ||
@@ -77,9 +82,9 @@ export const FidesCell = <T,>({
       }}
       height="inherit"
       onClick={
-        cell.column.columnDef.id !== "enable" && onRowClick
-          ? () => {
-              onRowClick(cell.row.original);
+        !cell.column.columnDef.meta?.disableRowClick && onRowClick
+          ? (e) => {
+              onRowClick(cell.row.original, e);
             }
           : undefined
       }

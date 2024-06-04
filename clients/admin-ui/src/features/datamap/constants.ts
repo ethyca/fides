@@ -70,4 +70,5 @@ export enum DATAMAP_LOCAL_STORAGE_KEYS {
   TABLE_GROUPING = "datamap-table-grouping",
   TABLE_STATE = "datamap-report-table-state",
   DISPLAY_ALL_COLUMNS = "datamap-display-all-columns",
+  SORTING_STATE = "datamap-sorting-state",
 }
