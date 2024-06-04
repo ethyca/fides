@@ -3,10 +3,10 @@ import React, { useContext } from "react";
 import { Row } from "react-table";
 
 import { DatamapRow } from "~/features//datamap/datamap.slice";
-import GroupedTableBody from "~/features/common/table/grouped/GroupedTableBody";
-import GroupedTableHeader from "~/features/common/table/grouped/GroupedTableHeader";
 import { SYSTEM_FIDES_KEY_COLUMN_ID } from "~/features/datamap/constants";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
+import GroupedTableBody from "~/features/datamap/datamap-table/GroupedTableBody";
+import GroupedTableHeader from "~/features/datamap/datamap-table/GroupedTableHeader";
 import { SetSelectedSystemId } from "~/features/datamap/types";
 
 type DatamapTableProps = {} & SetSelectedSystemId;

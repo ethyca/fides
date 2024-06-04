@@ -1,38 +1,58 @@
+/* eslint-disable react/no-unstable-nested-components */
+import {
+  ColumnDef,
+  createColumnHelper,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { Box, Heading, Link, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
-import { Column } from "react-table";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import Layout from "~/features/common/Layout";
-import { FidesTable, WrappedCell } from "~/features/common/table";
-import { ClipboardCell } from "~/features/common/table/cells";
-import { FidesObject } from "~/features/common/table/FidesTable";
+import {
+  DefaultCell,
+  FidesTableV2,
+  TableSkeletonLoader,
+} from "~/features/common/table/v2";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 
 type CNAMERecord = {
   hostName: string;
   type: string;
   data: string;
-} & FidesObject;
+};
+
+const columnHelper = createColumnHelper<CNAMERecord>();
 
 const DomainRecordsPage: NextPage = () => {
-  const columns: Column<CNAMERecord>[] = useMemo(
+  const columns: ColumnDef<CNAMERecord, any>[] = useMemo(
     () => [
-      {
-        Header: "Name",
-        accessor: "hostName",
-        Cell: WrappedCell,
-      },
-      {
-        Header: "Type",
-        accessor: "type",
-        Cell: WrappedCell,
-      },
-      {
-        Header: "Value",
-        accessor: "data",
-        Cell: ClipboardCell,
-      },
+      columnHelper.accessor((row) => row.hostName, {
+        header: "Name",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+      }),
+      columnHelper.accessor((row) => row.type, {
+        header: "Type",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+      }),
+      columnHelper.accessor((row) => row.data, {
+        header: "Value",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+      }),
+      columnHelper.display({
+        id: "actions",
+        cell: ({ row }) => (
+          <ClipboardButton
+            copyText={row.original.data}
+            variant="outline"
+            size="xs"
+          />
+        ),
+        header: "Actions",
+        maxSize: 65,
+      }),
     ],
     []
   );
@@ -51,9 +71,11 @@ const DomainRecordsPage: NextPage = () => {
     [fidesCloudConfig]
   );
 
-  if (isLoading) {
-    return <div>loading</div>;
-  }
+  const tableInstance = useReactTable<CNAMERecord>({
+    getCoreRowModel: getCoreRowModel(),
+    columns,
+    data,
+  });
 
   return (
     <Layout title="Domain records">
@@ -76,7 +98,13 @@ const DomainRecordsPage: NextPage = () => {
             </Link>{" "}
             for more information on how to configure Domain records.
           </Text>
-          <FidesTable<CNAMERecord> columns={columns} data={data} />
+          {isLoading ? (
+            <Box p={2} borderWidth={1}>
+              <TableSkeletonLoader rowHeight={26} numRows={5} />
+            </Box>
+          ) : (
+            <FidesTableV2<CNAMERecord> tableInstance={tableInstance} />
+          )}
         </Box>
       </Box>
     </Layout>
