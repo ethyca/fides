@@ -34,11 +34,10 @@ The types of changes are:
 - Update privacy center port to :3001 for nox [#4918](https://github.com/ethyca/fides/pull/4918)
 - Optimize speed by generating the uuids in the client side for consent requests [#4933](https://github.com/ethyca/fides/pull/4933)
 - Update Privacy Center toast text for consistent capitalization [#4936](https://github.com/ethyca/fides/pull/4936)
+- Updated how Fields are generated for DynamoDB, improved error handling [#4943](https://github.com/ethyca/fides/pull/4943)
 
 ### Fixed
 - Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
-
-### Fixed
 - Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
