@@ -34,6 +34,7 @@ The types of changes are:
 - Added success toast message after monitoring a resource [#4958](https://github.com/ethyca/fides/pull/4958)
 - Added UI for displaying, adding and editing discovery monitors [#4954](https://github.com/ethyca/fides/pull/4954)
 - Added model and data migrations and CRUD-layer operations for property-specific messaging [#4901](https://github.com/ethyca/fides/pull/4901)
+- Implement sending emails via property-specific messaging templates [#4950](https://github.com/ethyca/fides/pull/4950)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)

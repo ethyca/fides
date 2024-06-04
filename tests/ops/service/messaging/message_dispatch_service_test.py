@@ -106,11 +106,17 @@ class TestMessageDispatchService:
     
     Result: Email sent with basic messaging template.
     """
+
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_property_specific_templates_disabled_with_template(
-            self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config, set_property_specific_messaging_disabled, messaging_template_no_property
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+        set_property_specific_messaging_disabled,
+        messaging_template_no_property,
     ) -> None:
         dispatch_message(
             db=db,
@@ -120,7 +126,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=messaging_template_no_property
+            property_specific_messaging_template=messaging_template_no_property,
         )
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,
@@ -139,11 +145,16 @@ class TestMessageDispatchService:
     
     Result: Email sent with basic messaging template.
     """
+
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_property_specific_templates_disabled_no_template(
-            self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config, set_property_specific_messaging_disabled
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+        set_property_specific_messaging_disabled,
     ) -> None:
         dispatch_message(
             db=db,
@@ -153,7 +164,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=None
+            property_specific_messaging_template=None,
         )
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,
@@ -172,11 +183,17 @@ class TestMessageDispatchService:
     
     Result: Email sent with property-specific messaging template.
     """
+
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_property_specific_templates_enabled_with_template(
-            self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config, set_property_specific_messaging_enabled, messaging_template_no_property
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+        set_property_specific_messaging_enabled,
+        messaging_template_no_property,
     ) -> None:
         dispatch_message(
             db=db,
@@ -186,7 +203,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=messaging_template_no_property
+            property_specific_messaging_template=messaging_template_no_property,
         )
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,
@@ -206,11 +223,16 @@ class TestMessageDispatchService:
     
     Result: Email is not sent.
     """
+
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_property_specific_templates_enabled_no_template(
-            self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config, set_property_specific_messaging_enabled
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+        set_property_specific_messaging_enabled,
     ) -> None:
         dispatch_message(
             db=db,
@@ -220,7 +242,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=None
+            property_specific_messaging_template=None,
         )
         mock_mailgun_dispatcher.assert_not_called()
 
