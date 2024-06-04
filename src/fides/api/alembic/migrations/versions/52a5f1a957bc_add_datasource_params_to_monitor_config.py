@@ -1,7 +1,7 @@
 """add data source params to monitor config
 
 Revision ID: 52a5f1a957bc
-Revises: 4b2eade4353c
+Revises: efddde14da21
 Create Date: 2024-06-03 20:19:12.481577
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "52a5f1a957bc"
-down_revision = "4b2eade4353c"
+down_revision = "efddde14da21"
 branch_labels = None
 depends_on = None
 
