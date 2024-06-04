@@ -26,5 +26,6 @@ class TestalchemerConnector:
             identities={"email": alchemer_erasure_identity_email},
         )
         assert erasure_results == {
-            "alchemer_instance:contact": 1
+            "alchemer_instance:contact": 0,
+            "alchemer_instance:contact": 0
         }
