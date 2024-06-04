@@ -81,12 +81,14 @@ const usePrivacyRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [
-            key,
-            (field.query_param_key && router.query[field.query_param_key]) ||
-              field.default_value ||
-              "",
-          ])
+          .map(([key, field]) => {
+            const valueFromQueryParam =
+              field.query_param_key && router.query[field.query_param_key];
+
+            const value = valueFromQueryParam || field.default_value || "";
+
+            return [key, value];
+          })
       ),
     },
     onSubmit: async (values) => {
@@ -117,18 +119,30 @@ const usePrivacyRequestForm = ({
       // extract custom privacy request field values
       const customPrivacyRequestFieldValues = Object.fromEntries(
         Object.entries(action.custom_privacy_request_fields ?? {})
-          .map(([key, field]) => [
-            key,
-            {
-              label: field.label,
-              value: field.hidden
-                ? (field.query_param_key &&
-                    router.query[field.query_param_key]) ||
-                  field.default_value ||
-                  null
-                : fallbackNull(values[key]),
-            },
-          ])
+          .map(([key, field]) => {
+            if (!field.hidden) {
+              return [
+                key,
+                {
+                  label: field.label,
+                  value: fallbackNull(values[key]),
+                },
+              ];
+            }
+
+            const valueFromQueryParam =
+              field.query_param_key && router.query[field.query_param_key];
+
+            const value = valueFromQueryParam || field.default_value || null;
+
+            return [
+              key,
+              {
+                label: field.label,
+                value,
+              },
+            ];
+          })
           // @ts-ignore
           .filter(([, { value }]) => value !== null)
       );

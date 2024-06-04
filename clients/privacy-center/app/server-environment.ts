@@ -166,6 +166,10 @@ export const validateConfig = (
   }
 
   const invalidFieldMessages = config.actions.flatMap((action) => {
+    /*
+      Validate that hidden fields must have a default_value or a query_param_key
+      defined, otherwise the field would never get a value assigned.
+    */
     const invalidFields = Object.entries(
       action.custom_privacy_request_fields || {}
     )
