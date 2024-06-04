@@ -31,6 +31,7 @@ import {
 } from "~/components/modals/validation";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { useRouter } from "next/router";
 
 type FormValues = {
   [key: string]: any;
@@ -62,6 +63,8 @@ const usePrivacyRequestForm = ({
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
+  const router = useRouter();
+
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
@@ -78,7 +81,14 @@ const usePrivacyRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [key, field.default_value || ""])
+          .map(([key, field]) => {
+            const valueFromQueryParam =
+              field.query_param_key && router.query[field.query_param_key];
+
+            const value = valueFromQueryParam || field.default_value || "";
+
+            return [key, value];
+          })
       ),
     },
     onSubmit: async (values) => {
@@ -109,15 +119,30 @@ const usePrivacyRequestForm = ({
       // extract custom privacy request field values
       const customPrivacyRequestFieldValues = Object.fromEntries(
         Object.entries(action.custom_privacy_request_fields ?? {})
-          .map(([key, field]) => [
-            key,
-            {
-              label: field.label,
-              value: field.hidden
-                ? field.default_value
-                : fallbackNull(values[key]),
-            },
-          ])
+          .map(([key, field]) => {
+            if (!field.hidden) {
+              return [
+                key,
+                {
+                  label: field.label,
+                  value: fallbackNull(values[key]),
+                },
+              ];
+            }
+
+            const valueFromQueryParam =
+              field.query_param_key && router.query[field.query_param_key];
+
+            const value = valueFromQueryParam || field.default_value || null;
+
+            return [
+              key,
+              {
+                label: field.label,
+                value,
+              },
+            ];
+          })
           // @ts-ignore
           .filter(([, { value }]) => value !== null)
       );

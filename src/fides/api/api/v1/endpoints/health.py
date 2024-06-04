@@ -12,7 +12,7 @@ from fides.api.common_exceptions import RedisConnectionError
 from fides.api.db.database import get_db_health
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
-from fides.api.util.cache import get_cache
+from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 
@@ -40,6 +40,7 @@ class WorkerHealthCheck(BaseModel):
 
     workers_enabled: bool
     workers: List[str]
+    queue_counts: Dict[str, int]
 
 
 def get_cache_health() -> str:
@@ -128,8 +129,7 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
 async def workers_health() -> Dict:
     """Confirm that the API is running and healthy."""
     response = WorkerHealthCheck(
-        workers_enabled=False,
-        workers=[],
+        workers_enabled=False, workers=[], queue_counts={}
     ).dict()
 
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
@@ -137,6 +137,7 @@ async def workers_health() -> Dict:
         response["workers_enabled"] = True
         # Figure out a way to make this faster
         response["workers"] = get_worker_ids()
+        response["queue_counts"] = get_queue_counts()
 
     return response
 

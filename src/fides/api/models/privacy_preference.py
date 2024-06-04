@@ -355,6 +355,10 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
         """
         return Column(String, ForeignKey(PrivacyNoticeHistory.id), index=True)
 
+    # Preferences and Notices Served are saved in celery - there may be some gap in between
+    # when the data was received, and when we actually were able to save it to the db
+    received_at = Column(DateTime(timezone=True))
+
     # Location where we received the request
     request_origin = Column(EnumColumn(RequestOrigin))
 
