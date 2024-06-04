@@ -3,18 +3,18 @@ saas_config:
   name: Alchemer
   type: alchemer
   description: A sample schema representing the Alchemer erasure only integration for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/alchemer
   version: 0.1.0
 
   connector_params:
     - name: domain
       label: Domain
+      description: The API domain for Alchemer. Default api.alchemer.com
       default_value: api.alchemer.com
     - name: api_token
       label: API token
-      default_value: <api_token>
     - name: api_token_secret
       label: API token secret
-      default_value: <api_token_secret>
 
   client_config:
     protocol: https
