@@ -25,3 +25,6 @@ class TestalchemerConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": alchemer_erasure_identity_email},
         )
+        assert erasure_results == {
+            "alchemer_instance:contact": 1
+        }

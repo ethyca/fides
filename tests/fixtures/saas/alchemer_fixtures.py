@@ -75,11 +75,8 @@ def alchemer_erasure_data(
         "api_token_secret": alchemer_secrets['api_token_secret'],
         "email_address": alchemer_erasure_identity_email,
     }
-    # import pdb; pdb.set_trace()
     response = requests.put(contactlistcontact_url, params=params)
     assert response.ok
-    # import pdb; pdb.set_trace()
-    # yield {}
 
 
 @pytest.fixture
