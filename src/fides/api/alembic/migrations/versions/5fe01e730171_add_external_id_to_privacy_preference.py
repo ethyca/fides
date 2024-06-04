@@ -1,7 +1,7 @@
 """add external id to privacy preference
 
 Revision ID: 5fe01e730171
-Revises: 4b2eade4353c
+Revises: efddde14da21
 Create Date: 2024-05-31 17:11:50.566937
 
 """
@@ -13,7 +13,7 @@ from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "5fe01e730171"
-down_revision = "4b2eade4353c"
+down_revision = "efddde14da21"
 branch_labels = None
 depends_on = None
 
