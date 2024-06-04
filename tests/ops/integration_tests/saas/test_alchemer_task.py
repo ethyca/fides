@@ -27,5 +27,5 @@ class TestalchemerConnector:
         )
         assert erasure_results == {
             "alchemer_instance:contact": 0,
-            "alchemer_instance:contact": 0
+            "alchemer_instance:contact_list": 0
         }
