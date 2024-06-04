@@ -192,7 +192,7 @@ def create_consent_request(
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
-    # todo- pass in property id here
+    # TODO: (PROD-2142)- pass in property id here
 
     identity = data.identity
     if (

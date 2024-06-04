@@ -1822,7 +1822,7 @@ def create_privacy_request_func(
 
     If authenticated is True the identity verification step is bypassed.
     """
-    # fixme- update privacy center to pass in property id where applicable
+    # TODO: (PROD-2142)- update privacy center to pass in property id where applicable
     if not CONFIG.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
