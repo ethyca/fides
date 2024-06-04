@@ -46,6 +46,7 @@ from fides.api.service.connectors.base_email_connector import (
 )
 from fides.api.service.messaging.messaging_crud_service import (
     get_basic_messaging_template_by_type_or_default,
+    get_enabled_messaging_template_by_type_and_property,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.logger import Pii
