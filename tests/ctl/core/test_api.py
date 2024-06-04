@@ -2541,6 +2541,26 @@ class TestHealthchecks:
         """Test the server healthcheck."""
         response = test_client.get(test_config.cli.server_url + "/health/workers")
         assert response.status_code == 200
+        assert response.json() == {
+            "workers_enabled": False,
+            "workers": [],
+            "queue_counts": {},
+        }
+
+    @pytest.mark.usefixtures("enable_celery_worker")
+    def test_worker_health_check_with_workers_enabled(self, test_config, test_client):
+        response = test_client.get(test_config.cli.server_url + "/health/workers")
+        assert response.status_code == 200
+        # Workers not actually running in pytest though
+        assert response.json() == {
+            "workers_enabled": True,
+            "workers": [],
+            "queue_counts": {
+                "fidesops.messaging": 0,
+                "fides.privacy_preferences": 0,
+                "fides": 0,
+            },
+        }
 
 
 @pytest.mark.integration

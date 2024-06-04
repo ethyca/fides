@@ -12,6 +12,7 @@ from fideslang.models import (
     System,
     SystemMetadata,
 )
+from loguru import logger
 
 from fides.connectors.models import (
     AWSConfig,
@@ -44,11 +45,17 @@ def handle_common_aws_errors(func: Callable) -> Callable:
         try:
             return func(*args, **kwargs)
         except ClientError as error:
+            logger.warning(error.response["Error"]["Code"])
             if error.response["Error"]["Code"] in [
                 "InvalidClientTokenId",
                 "SignatureDoesNotMatch",
             ]:
                 raise ConnectorAuthFailureException(error.response["Error"]["Message"])
+            if error.response["Error"]["Code"] in [
+                "AccessDenied", "AccessDeniedException"
+            ]:
+                logger.warning(error.response["Error"]["Message"])
+                return []
             raise ConnectorFailureException(error.response["Error"]["Message"])
 
     return update_wrapper(wrapper_func, func)
@@ -96,10 +103,22 @@ def describe_dynamo_tables(client: Any, table_names: List[str]) -> List[Dict]:  
     Returns describe_table response given a 'dynamodb' boto3 client.
     """
     describe_tables = []
-    for table in table_names:
-        described_table = client.describe_table(TableName=table)
-        describe_tables.append(described_table["Table"])
+    for table_name in table_names:
+        described_table = describe_dynamo_table(client, table_name)
+        if isinstance(described_table, dict):
+            describe_tables.append(described_table)
+
     return describe_tables
+
+@handle_common_aws_errors
+def describe_dynamo_table(client: Any, table_name: str) -> Dict:  # type: ignore
+    """
+    Returns describe_table response given a 'dynamodb' boto3 client.
+    """
+    described_table = client.describe_table(TableName=table_name)
+    described_table["Table"]["Fields"] = scan_dynamo_table(client, table_name)
+
+    return described_table["Table"]
 
 
 @handle_common_aws_errors
@@ -108,7 +127,28 @@ def get_dynamo_tables(client: Any) -> List[str]:  # type: ignore
     Returns a list of table names response given a 'rds' boto3 client.
     """
     list_tables = client.list_tables()
-    return list_tables["TableNames"]
+    table_names = list_tables["TableNames"]
+    next_page_exists = "LastEvaluatedTableName" in list_tables
+    while next_page_exists:
+        last_evaluated_table_name = list_tables["LastEvaluatedTableName"]
+        list_tables = client.list_tables(ExclusiveStartTableName=last_evaluated_table_name)
+        table_names.extend(list_tables["TableNames"])
+        next_page_exists = "LastEvaluatedTableName" in list_tables
+    return table_names
+
+@handle_common_aws_errors
+def scan_dynamo_table(client: Any, table_name: str, num_samples: int = 30) -> List[str]:  # type: ignore
+    """
+    Returns describe_table response given a 'dynamodb' boto3 client.
+    """
+    table_scan = client.scan(TableName=table_name, Limit=num_samples)
+    fields = set()
+    for item in table_scan["Items"]:
+        for field, _ in item.items():
+            fields.add(field)
+
+    return list(fields)
+
 
 
 @handle_common_aws_errors
@@ -126,36 +166,61 @@ def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
 
 
 def create_dynamodb_dataset(
-    described_dynamo_tables: List[Dict], organization_key: str = "default_organization"
-) -> Dataset:
+    described_dynamo_tables: List[Dict], organization_key: str = "default_organization", single_dataset: bool = False
+) -> List[Dataset]:
     """
     Given "describe_table" response(s), build a dataset object to represent
     each dynamodb table, returning a fides dataset.
     """
     # TODO: add something for improved dataset uniqueness, i.e. region/account
-    dataset_name = "DynamoDB"
-    unique_dataset_name = generate_unique_fides_key(dataset_name, "", "")
-    dataset = Dataset(
-        name=dataset_name,
-        fides_key=unique_dataset_name,
-        organization_fides_key=organization_key,
-        collections=[
-            DatasetCollection(
-                name=collection["TableName"],
-                fields=[
-                    DatasetField(
-                        name=field["AttributeName"],
-                        description=f"Fides Generated Description for Column: {field['AttributeName']}",
-                        data_categories=[],
-                        # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
-                    )
-                    for field in collection["AttributeDefinitions"]
+    if single_dataset:
+        dataset_name = "DynamoDB"
+        unique_dataset_name = generate_unique_fides_key(dataset_name, "", "")
+        datasets = [Dataset(
+            name=dataset_name,
+            fides_key=unique_dataset_name,
+            organization_fides_key=organization_key,
+            collections=[
+                DatasetCollection(
+                    name=collection["TableName"],
+                    # description=collection["TableArn"],
+                    fields=[
+                        DatasetField(
+                            name=field,
+                            description=f"Fides Generated Description for Column: {field}",
+                            data_categories=[],
+                            # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
+                        )
+                        for field in collection["Fields"]
+                    ],
+                )
+                for collection in described_dynamo_tables
+            ],
+        )]
+    else:
+        datasets = [
+            Dataset(
+            name=collection["TableName"],
+            fides_key=generate_unique_fides_key(collection["TableName"], "", ""),
+            organization_fides_key=organization_key,
+            collections=[
+                DatasetCollection(
+                    name=collection["TableName"],
+                    # description=collection["TableArn"],
+                    fields=[
+                        DatasetField(
+                            name=field,
+                            description=f"Fides Generated Description for Column: {field}",
+                            data_categories=[],
+                            # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
+                        )
+                        for field in collection["Fields"]
+                    ],
+                )
                 ],
-            )
-            for collection in described_dynamo_tables
-        ],
-    )
-    return dataset
+        ) for collection in described_dynamo_tables
+        ]
+    return datasets
 
 
 def create_redshift_systems(
