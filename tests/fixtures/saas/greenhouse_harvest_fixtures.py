@@ -114,11 +114,9 @@ def greenhouse_harvest_erasure_data(
             }
         ]
     }
-
     response = requests.post(
         base_url, headers=headers, json=body
     )
-
     assert response.ok
     json_response = response.json()
     user_id = json_response["id"]
