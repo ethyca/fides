@@ -1,7 +1,7 @@
 """property specific messaging db models
 
 Revision ID: 2736c942faa2
-Revises: 4b2eade4353c
+Revises: efddde14da21
 Create Date: 2024-05-28 14:26:09.012859
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "2736c942faa2"
-down_revision = "4b2eade4353c"
+down_revision = "efddde14da21"
 branch_labels = None
 depends_on = None
 
