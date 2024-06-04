@@ -17,6 +17,39 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import get_identity
 
+def oracle_responsys_config_parse_profile_lists(input: str) -> list[str]:
+  """
+  Parses the list of profile lists entered as part of the connector params from comma-delimited values. Special value "all" indicates that all profile lists are in-scope.
+  """
+  profile_lists = []
+
+  if input != "all":
+      profile_lists = str.split(",")
+
+  return profile_lists
+
+def oracle_responsys_config_parse_profile_extensions(input: str) -> dict[str,list[str]]:
+  """
+  Parses the list of profile extensions entered as part of the connector params from comma-delimited values. Profile extensions are expected to be in the format of `<profile_list>.<profile_extension>`. Special value "all" indicates that all profile extensions are in-scope.
+  """
+  unparsed_profile_extensions = []
+  profile_extensions = {}
+
+  if input != "all":
+      unparsed_profile_extensions = input.split(",")
+      for extension in unparsed_profile_extensions:
+          ext = extension.split(".")
+          if len(ext) > 2:
+              raise FidesopsException("Profile extension could not be parsed, more than one '.' found.")
+          if len(ext) < 2:
+              raise FidesopsException("Profile extension could not be parsed, '.' not found.")
+          if ext[0] in profile_extensions:
+              profile_extensions[ext[0]].append(ext[1])
+          else:
+              profile_extensions[ext[0]] = [ext[1]]
+
+  return profile_extensions
+
 
 def oracle_responsys_serialize_record_data(response: Response) -> list[dict[Any, Any]]:
     """
@@ -80,8 +113,20 @@ def oracle_responsys_profile_list_recipients_read(
     """
     Retrieve data from each profile list.
     """
-    list_ids = input_data.get("profile_list_id", [])
     results = []
+
+    list_ids_from_api = input_data.get("profile_list_id", [])
+    list_ids_from_config_str = secrets["profile_lists"]
+
+    if list_ids_from_config_str != "all":
+        list_ids_from_config = list_ids_from_config_str.split(",")
+        # Because Fides will ignore 404s, make sure lists exist, so 404s will only come from the recipient not being found.
+        for list_id in list_ids_from_config:
+            if list_id not in list_ids_from_api:
+                raise FidesopsException("Profile list not found.")
+        list_ids = list_ids_from_config
+    else:
+        list_ids = list_ids_from_api
 
     identity = get_identity(privacy_request)
     if identity == "email":
@@ -138,8 +183,22 @@ def oracle_responsys_profile_extension_recipients_read(
     riids = input_data.get("responsys_id", [])
 
     results = []
+    extensions = []
 
-    extensions = oracle_responsys_get_profile_extensions(client, list_ids)
+    # If config sets the list of extensions, then use it. Otherwise, all extensions are in scope.
+    extensions_from_config = oracle_responsys_config_parse_profile_extensions(secrets["profile_extensions"])
+    extensions_from_api = oracle_responsys_get_profile_extensions(client, list_ids)
+    if extensions_from_config:
+        # Because Fides will ignore 404s, make sure lists/extensions exist, so 404s will only come from the recipient not being found.
+        for key, value in extensions_from_config.items():
+            if key not in list_ids:
+                raise FidesopsException("Profile extension does not belong to a valid profile list.")
+            for profile_extension in value:
+                if profile_extension not in extensions_from_api[key]:
+                    raise FidesopsException("Profile extension not found.")
+        extensions = extensions_from_config
+    else:
+        extensions = extensions_from_api
 
     body = {
         "fieldList": ["all"],
