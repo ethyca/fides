@@ -217,7 +217,6 @@ class TestGoogleCloudMySQLConnector:
         client = connector.client()
         assert client.__class__ == Engine
         assert connector.test_connection() == ConnectionTestStatus.succeeded
-        print('google_cloud_mysql_secrets', google_cloud_mysql_secrets)
 
         connection_config_google_cloud_mysql.secrets = {
             "url": str(
