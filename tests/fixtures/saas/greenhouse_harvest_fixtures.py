@@ -38,29 +38,22 @@ def greenhouse_harvest_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-@pytest.fixture
-def greenhouse_harvest_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def greenhouse_harvest_erasure_external_references() -> Dict[str, Any]:
-    return {"greenhouse_user_id":"4052733008"}
+# @pytest.fixture
+# def greenhouse_harvest_erasure_external_references() -> Dict[str, Any]:
+#     return {"greenhouse_user_id":"4052733008"}
 
 
 @pytest.fixture
 def greenhouse_harvest_erasure_data(
     greenhouse_harvest_secrets,
-    greenhouse_harvest_erasure_external_references,
     greenhouse_harvest_erasure_identity_email: str,
 ) -> Generator:
-    # create the data needed for erasure tests here
     base_url = f"https://{greenhouse_harvest_secrets['domain']}/v1/candidates"
     headers = {
         "Authorization": f"{greenhouse_harvest_secrets['api_key']}",
-        "On-Behalf-Of": f"{greenhouse_harvest_erasure_external_references['greenhouse_user_id']}"
+        "On-Behalf-Of": f"{greenhouse_harvest_secrets['greenhouse_user_id']}"
     }
-    # details of the user to create.
+    # details of the test user
     body = {
         "first_name": "Test",
         "last_name": "Ethyca",
@@ -145,14 +138,10 @@ def greenhouse_harvest_runner(
     db,
     cache,
     greenhouse_harvest_secrets,
-    greenhouse_harvest_external_references,
-    greenhouse_harvest_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "greenhouse_harvest",
         greenhouse_harvest_secrets,
-        external_references=greenhouse_harvest_external_references,
-        erasure_external_references=greenhouse_harvest_erasure_external_references,
     )
