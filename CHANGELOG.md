@@ -27,6 +27,7 @@ The types of changes are:
 - Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
 - Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
 - Fill custom privacy request fields with query_param_key [#4948](https://github.com/ethyca/fides/pull/4948)
+- Add `datasource_params` column to MonitorConfig DB model [#4951](https://github.com/ethyca/fides/pull/4951)
 
 
 ### Changed
