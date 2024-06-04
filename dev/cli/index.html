@@ -1849,7 +1849,7 @@ Will also automatically initialize a fresh database.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h6 id="fides-generate-dataset-aws-dynamodb">fides generate dataset aws dynamodb</h6>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate a dataset object from BigQuery using a SQLAlchemy connection string.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates a dataset object from DynamoDB using the AWS boto3 connection config.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset aws dynamodb [OPTIONS] OUTPUT_FILENAME
@@ -1870,7 +1870,8 @@ Will also automatically initialize a fresh database.
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
   --access_key_id TEXT      Connect to AWS using an `Access Key ID`. _Requires
                             options `--access_key_id`, `--secret_access_key` &amp;
                             `--region`._
@@ -1884,6 +1885,7 @@ Will also automatically initialize a fresh database.
   --region TEXT             Connect to AWS using a specific `Region`.
                             _Requires options `--access_key_id`,
                             `--secret_access_key` &amp; `--region`._
+  --single-dataset BOOLEAN
   --include-null            Include null attributes.
   --help                    Show this message and exit.
 </code></pre></div></td></tr></table></div>
