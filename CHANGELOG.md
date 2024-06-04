@@ -21,6 +21,9 @@ The types of changes are:
 - Deprecate LastServedNotice (lastservednoticev2) table [#4910](https://github.com/ethyca/fides/pull/4910)
 - Added erasure support to the Recurly integration [#4891](https://github.com/ethyca/fides/pull/4891)
 - Added UI for configuring integrations for detection/discovery [#4922](https://github.com/ethyca/fides/pull/4922)
+- New queue for saving privacy preferences/notices served [#4931](https://github.com/ethyca/fides/pull/4931)
+- Expose number of tasks in queue in worker health check [#4931](https://github.com/ethyca/fides/pull/4931)
+- Track when preferences/notices served received [#4931](https://github.com/ethyca/fides/pull/4931)
 - Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
 - Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
 
