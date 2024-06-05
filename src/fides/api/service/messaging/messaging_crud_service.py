@@ -114,7 +114,9 @@ def get_all_basic_messaging_templates(db: Session) -> List[MessagingTemplate]:
     return templates
 
 
-def _basic_messaging_template_by_type(db: Session, template_type: str) -> Optional[MessagingTemplate]:
+def _basic_messaging_template_by_type(
+    db: Session, template_type: str
+) -> Optional[MessagingTemplate]:
     """
     Provide a consistent way to retrieve basic messaging template given a type.
 
@@ -130,8 +132,8 @@ def _basic_messaging_template_by_type(db: Session, template_type: str) -> Option
     template = None
     templates = (
         MessagingTemplate.query(db=db)
-            .filter(MessagingTemplate.type == template_type)
-            .all()
+        .filter(MessagingTemplate.type == template_type)
+        .all()
     )
 
     if len(templates) == 1:
@@ -142,8 +144,8 @@ def _basic_messaging_template_by_type(db: Session, template_type: str) -> Option
             template = MessagingTemplate.filter(
                 db=db,
                 conditions=(
-                        (MessagingTemplate.type == template_type)
-                        & (default_property.id in MessagingTemplate.properties)
+                    (MessagingTemplate.type == template_type)
+                    & (default_property.id in MessagingTemplate.properties)
                 ),
             ).first()
             if not template:
@@ -229,7 +231,10 @@ def _validate_overlapping_templates(
     for db_template in possible_overlapping_templates:
         for db_property in db_template.properties:
             # Exclude if we're updating the overlapping item
-            if update_id != possible_overlapping_templates[0].id and db_property.id in new_property_ids:
+            if (
+                update_id != possible_overlapping_templates[0].id
+                and db_property.id in new_property_ids
+            ):
                 raise MessagingConfigValidationException(
                     f"There is already an enabled messaging template with template type {template_type} and property {db_property.id}"
                 )

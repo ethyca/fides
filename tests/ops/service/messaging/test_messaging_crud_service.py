@@ -68,7 +68,10 @@ class TestMessagingTemplates:
 
     def test_get_basic_messaging_template_by_type_invalid(self, db: Session):
         assert (
-                get_basic_messaging_template_by_type_or_default(db=db, template_type="invalid") is None
+            get_basic_messaging_template_by_type_or_default(
+                db=db, template_type="invalid"
+            )
+            is None
         )
 
     def test_create_or_update_basic_templates_existing_type(
@@ -113,7 +116,10 @@ class TestMessagingTemplates:
         assert messaging_template.content["subject"] == "Test new subject"
 
     def test_create_or_update_basic_templates_existing_type_multiple(
-            self, db: Session, messaging_template_no_property, messaging_template_subject_identity_verification
+        self,
+        db: Session,
+        messaging_template_no_property,
+        messaging_template_subject_identity_verification,
     ):
         content = {
             "subject": "Test new subject",
@@ -134,8 +140,11 @@ class TestMessagingTemplates:
         template = MessagingTemplate.filter(
             db=db,
             conditions=(
-                    (MessagingTemplate.type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value)
-                    & (default_property.id in MessagingTemplate.properties)
+                (
+                    MessagingTemplate.type
+                    == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+                )
+                & (default_property.id in MessagingTemplate.properties)
             ),
         ).first()
         assert template.content["subject"] == "Test new subject"
