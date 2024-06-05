@@ -155,6 +155,7 @@ const MonitorConfigTab = ({
           />
         ),
         header: "Actions",
+        meta: { disableRowClick: true },
         maxSize: 50,
       }),
     ],

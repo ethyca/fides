@@ -49,7 +49,7 @@ export const usePicker = <T extends { id: string; name: string }>({
   };
 };
 
-export interface Props<T> {
+export interface CheckboxListProps<T> {
   title: string;
   items: T[];
   selected: Array<string>;
@@ -58,9 +58,6 @@ export interface Props<T> {
   toggle?: ReactNode;
   onViewMore?: () => void;
   numSelected: number;
-  // eslint thinks this is unused because it's the prop type for two components
-  // and unused on one of them
-  // eslint-disable-next-line react/no-unused-prop-types
   boldText?: boolean;
 }
 
@@ -95,7 +92,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
   onViewMore,
   numSelected,
   boldText,
-}: Props<T>) => {
+}: CheckboxListProps<T>) => {
   const itemsToShow = onViewMore ? items.slice(0, NUM_TO_SHOW) : items;
 
   const { allSelected, someSelected, handleToggleAll, handleToggleSelection } =
@@ -169,27 +166,10 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
 };
 
 const PickerCard = <T extends { id: string; name: string }>({
-  title,
-  items,
-  selected,
-  indeterminate,
-  onChange,
-  toggle,
-  onViewMore,
-  numSelected,
-}: Props<T>) => (
-  <PickerCardContainer title={title}>
-    <PickerCheckboxList
-      title={title}
-      items={items}
-      selected={selected}
-      indeterminate={indeterminate}
-      onChange={onChange}
-      toggle={toggle}
-      onViewMore={onViewMore}
-      numSelected={numSelected}
-      boldText
-    />
+  ...props
+}: CheckboxListProps<T>) => (
+  <PickerCardContainer title={props.title}>
+    <PickerCheckboxList {...props} boldText />
   </PickerCardContainer>
 );
 

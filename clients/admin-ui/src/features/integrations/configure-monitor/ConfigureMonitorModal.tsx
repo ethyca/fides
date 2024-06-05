@@ -18,7 +18,9 @@ const ConfigureMonitorModal = ({
 }) => (
   <AddModal
     title={
-      monitor ? `Configure ${monitor.name}` : "Configure discovery monitor"
+      monitor?.name
+        ? `Configure ${monitor.name}`
+        : "Configure discovery monitor"
     }
     isOpen={isOpen}
     onClose={onClose}

@@ -124,8 +124,6 @@ const ConfigureMonitorForm = ({
                 label="Execution start date"
                 id="execution_start_date"
                 isRequired
-                // @ts-ignore - TS is looking for a number here and doesn't
-                // know the string is formatted correctly
                 minValue={CURRENT_DATE_ISO}
               />
             )}

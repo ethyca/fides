@@ -1266,7 +1266,7 @@ interface CustomDatePickerProps {
   tooltip?: string;
   isDisabled?: boolean;
   isRequired?: boolean;
-  minValue?: number;
+  minValue?: string;
 }
 
 export const CustomDatePicker = ({

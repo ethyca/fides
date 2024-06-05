@@ -1,11 +1,11 @@
-import { EditIcon, HStack, IconButton } from "fidesui";
+import { Box, EditIcon, IconButton } from "fidesui";
 
 const MonitorConfigActionsCell = ({
   onEditClick,
 }: {
   onEditClick: () => void;
 }) => (
-  <HStack onClick={(e) => e.stopPropagation()} cursor="auto">
+  <Box>
     <IconButton
       onClick={onEditClick}
       icon={<EditIcon />}
@@ -14,7 +14,7 @@ const MonitorConfigActionsCell = ({
       data-testid="edit-monitor-btn"
       aria-label="Edit monitor"
     />
-  </HStack>
+  </Box>
 );
 
 export default MonitorConfigActionsCell;
