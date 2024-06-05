@@ -61,8 +61,7 @@ const ConfigureMonitorForm = ({
 
   const handleSubmit = async (values: FormValues) => {
     const startDate = new Date(values.execution_start_date);
-    // TEMP: set to 0s after Adam's fix is merged
-    startDate.setUTCHours(1, 1, 1);
+    startDate.setUTCHours(0, 0, 0);
 
     const payload: MonitorConfig = isEditing
       ? {

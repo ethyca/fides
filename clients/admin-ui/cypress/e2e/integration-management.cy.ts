@@ -187,14 +187,12 @@ describe("Integration management for data detection & discovery", () => {
               num_threads: 1,
             },
             databases: [],
-            execution_start_date: "2034-06-03T01:01:01.000Z",
+            execution_start_date: "2034-06-03T00:00:00.000Z",
             execution_frequency: "Daily",
           },
         }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("input-name").type("A new monitor");
-        // Cypress doesn't like to type into date pickers, so we stick with
-        // the default date and just make sure it renders
         cy.getByTestId("input-execution_start_date").type("2034-06-03");
         cy.selectOption("input-execution_frequency", "Daily");
         cy.getByTestId("next-btn").click();
@@ -206,7 +204,7 @@ describe("Integration management for data detection & discovery", () => {
               num_threads: 1,
               num_samples: 25,
             },
-            execution_start_date: "2034-06-03T01:01:01.000Z",
+            execution_start_date: "2034-06-03T00:00:00.000Z",
             execution_frequency: "Daily",
           });
         });
@@ -225,7 +223,6 @@ describe("Integration management for data detection & discovery", () => {
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
         cy.getByTestId("next-btn").click();
-        // cy.getByTestId("select-all").should("have.attr", "data-indeterminate");
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
           "data-checked"
