@@ -145,7 +145,11 @@ def _basic_messaging_template_by_type(
                 db=db,
                 conditions=(
                     (MessagingTemplate.type == template_type)
-                    & (default_property.id in MessagingTemplate.properties)
+                    & (
+                        MessagingTemplate.properties.any(
+                            Property.id == default_property.id
+                        )
+                    )
                 ),
             ).first()
             if not template:
@@ -182,7 +186,12 @@ def create_or_update_basic_templates(
     template = _basic_messaging_template_by_type(db, data["type"])
 
     if template:
-        template.update(db=db, data=data)
+        # Preserve properties if they existed before, but do not support changing / adding properties for
+        # basic templates
+        if template.properties:
+            data["properties"] = [{"id": prop.id} for prop in template.properties]
+        template = template.update(db=db, data=data)
+
     else:
         template = MessagingTemplate.create(db=db, data=data)
     return template
@@ -198,7 +207,7 @@ def _validate_overlapping_templates(
     """
     Validates that only one enabled templates are unique by template type and property.
 
-    The following illustrates what template combinations is and isn't allowed to co-exist in the DB:
+    The following illustrates which template combinations are and aren't allowed to co-exist in the DB:
 
     Valid:
     template_1: {"is_enabled": True, "type": "subject_identity_verification", properties: ["FDS-13454"]}
@@ -215,12 +224,15 @@ def _validate_overlapping_templates(
     # We don't care about templates that are disabled or have no properties
     if is_enabled is False or new_property_ids is None:
         return
+
+    # If we're updating a template, be sure to exclude this from possible overlapping templates
     possible_overlapping_templates = (
         db.query(MessagingTemplate)
         .filter_by(
             is_enabled=True,
             type=template_type,
         )
+        .filter(MessagingTemplate.id != update_id)
         .all()
     )
 
@@ -230,11 +242,7 @@ def _validate_overlapping_templates(
     # Otherwise, we need to check whether properties will overlap
     for db_template in possible_overlapping_templates:
         for db_property in db_template.properties:
-            # Exclude if we're updating the overlapping item
-            if (
-                update_id != possible_overlapping_templates[0].id
-                and db_property.id in new_property_ids
-            ):
+            if db_property.id in new_property_ids:
                 raise MessagingConfigValidationException(
                     f"There is already an enabled messaging template with template type {template_type} and property {db_property.id}"
                 )

@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict, List
+from typing import Optional, List
 
 import pytest
 from fides.api.common_exceptions import (
@@ -144,10 +144,13 @@ class TestMessagingTemplates:
                     MessagingTemplate.type
                     == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
                 )
-                & (default_property.id in MessagingTemplate.properties)
+                & (MessagingTemplate.properties.any(Property.id == default_property.id))
             ),
         ).first()
         assert template.content["subject"] == "Test new subject"
+        # any existing properties should be preserved even through we do not support adding/changing properties
+        # with basic templates
+        assert len(template.properties) == 1
 
     def test_update_messaging_template_add_property(
         self,
