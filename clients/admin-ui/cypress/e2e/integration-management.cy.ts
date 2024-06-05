@@ -146,6 +146,15 @@ describe("Integration management for data detection & discovery", () => {
       cy.wait("@patchConnection");
     });
 
+    it("shows an empty state in 'data discovery' tab when no monitors are configured", () => {
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+        fixture: "detection-discovery/monitors/empty_monitors.json",
+      }).as("getEmptyMonitors");
+      cy.getByTestId("tab-Data discovery").click();
+      cy.wait("@getEmptyMonitors");
+      cy.getByTestId("no-results-notice").should("exist");
+    });
+
     describe("data discovery tab", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
@@ -160,15 +169,6 @@ describe("Integration management for data detection & discovery", () => {
 
       it("shows a table of monitors", () => {
         cy.getByTestId("row-test monitor 1").should("exist");
-      });
-
-      it("shows an empty state in 'data discovery' tab when no monitors are configured", () => {
-        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
-          fixture: "detection-discovery/monitors/empty_monitors.json",
-        }).as("getEmptyMonitors");
-        cy.getByTestId("tab-Data discovery").click();
-        cy.wait("@getEmptyMonitors");
-        cy.getByTestId("no-results-notice").should("exist");
       });
 
       it("can configure a new monitor", () => {
