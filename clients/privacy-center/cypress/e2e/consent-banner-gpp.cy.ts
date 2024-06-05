@@ -383,6 +383,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
+              // because TCF is disabled, status can always be "ready"
               expect(data.signalStatus).to.eql("ready");
             });
         });
@@ -535,6 +536,8 @@ describe("Fides-js GPP extension", () => {
               // Opt in string
               expect(data.pingData.applicableSections).to.eql([8]);
               expect(data.pingData.gppString).to.eql("DBABBg~BUoAAABY.QA");
+              // because TCF is disabled, status can always be "ready"
+              expect(data.pingData.signalStatus).to.eql("ready");
             });
         });
       });
@@ -564,6 +567,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
+              // because TCF is disabled, status can always be "ready"
               expect(data.signalStatus).to.eql("ready");
               expect(data.applicableSections).to.eql([-1]);
             });
@@ -581,6 +585,7 @@ describe("Fides-js GPP extension", () => {
             const [data, success] = args[2];
             expect(success).to.eql(true);
             expect(data.pingData.applicableSections).to.eql([-1]);
+            expect(data.pingData.signalStatus).to.eql("ready");
           });
       });
 
@@ -595,6 +600,7 @@ describe("Fides-js GPP extension", () => {
             const [data, success] = args[2];
             expect(success).to.eql(true);
             expect(data.pingData.applicableSections).to.eql([-1]);
+            expect(data.pingData.signalStatus).to.eql("ready");
           });
       });
 
@@ -624,6 +630,8 @@ describe("Fides-js GPP extension", () => {
               // Opt in string
               expect(data.pingData.applicableSections).to.eql([-1]);
               expect(data.pingData.gppString).to.eql("DBAA");
+              // because TCF is disabled, status can always be "ready"
+              expect(data.pingData.signalStatus).to.eql("ready");
             });
         });
       });
