@@ -22,6 +22,8 @@ class SaaSRequestType(Enum):
     UPDATE = "update"
     DATA_PROTECTION_REQUEST = "data_protection_request"
     DELETE = "delete"
+    OPT_IN = "opt_in"
+    OPT_OUT = "opt_out"
 
 
 class SaaSRequestOverrideFactory:
@@ -31,7 +33,7 @@ class SaaSRequestOverrideFactory:
     """
 
     registry: Dict[
-        SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int, None]]]
+        SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int, bool, None]]]
     ] = {}
     valid_overrides: Dict[SaaSRequestType, str] = {}
 
@@ -42,8 +44,8 @@ class SaaSRequestOverrideFactory:
 
     @classmethod
     def register(cls, name: str, request_types: List[SaaSRequestType]) -> Callable[
-        [Callable[..., Union[List[Row], int, None]]],
-        Callable[..., Union[List[Row], int, None]],
+        [Callable[..., Union[List[Row], int, bool, None]]],
+        Callable[..., Union[List[Row], int, bool, None]],
     ]:
         """
         Decorator to register the custom-implemented SaaS request override
@@ -58,8 +60,8 @@ class SaaSRequestOverrideFactory:
             )
 
         def wrapper(
-            override_function: Callable[..., Union[List[Row], int, None]],
-        ) -> Callable[..., Union[List[Row], int, None]]:
+            override_function: Callable[..., Union[List[Row], int, bool, None]],
+        ) -> Callable[..., Union[List[Row], int, bool, None]]:
             for request_type in request_types:
                 logger.debug(
                     "Registering new SaaS request override function '{}' under name '{}' for SaaSRequestType {}",
@@ -79,6 +81,8 @@ class SaaSRequestOverrideFactory:
                     SaaSRequestType.DATA_PROTECTION_REQUEST,
                 ):
                     validate_update_override_function(override_function)
+                elif request_type in (SaaSRequestType.OPT_IN, SaaSRequestType.OPT_OUT):
+                    validate_consent_override_function(override_function)
                 else:
                     raise ValueError(
                         f"Invalid SaaSRequestType '{request_type}' provided for SaaS request override function"
@@ -105,14 +109,14 @@ class SaaSRequestOverrideFactory:
     @classmethod
     def get_override(
         cls, override_function_name: str, request_type: SaaSRequestType
-    ) -> Callable[..., Union[List[Row], int, None]]:
+    ) -> Callable[..., Union[List[Row], int, bool, None]]:
         """
         Returns the request override function given the name.
         Raises NoSuchSaaSRequestOverrideException if the named override
         does not exist.
         """
         try:
-            override_function: Callable[..., Union[List[Row], int, None]] = (
+            override_function: Callable[..., Union[List[Row], int, bool, None]] = (
                 cls.registry[request_type][override_function_name]
             )
         except KeyError:
@@ -183,6 +187,29 @@ def validate_update_override_function(f: Callable) -> None:
     if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must declare at least 5 parameters"
+        )
+
+
+def validate_consent_override_function(f: Callable) -> None:
+    """
+    Perform some basic checks on the user-provided SaaS request override function
+    that will be used with `consent` actions.
+
+    The validation is not overly strict to allow for some flexibility in
+    the functions that are used for overrides, but we check to ensure that
+    the function meets the framework's basic expectations.
+
+    Specifically, the validation checks that function's return type is `bool`
+    and that it declares at least 4 parameters.
+    """
+    sig: Signature = signature(f)
+    if sig.return_annotation is not bool:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS request override function must return a bool"
+        )
+    if len(sig.parameters) < 4:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS request override function must declare at least 4 parameters"
         )
 
 

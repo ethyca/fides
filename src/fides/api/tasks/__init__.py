@@ -5,11 +5,19 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_engine, get_db_session
-from fides.api.util.logger import create_handler_dicts
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
+PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
+
+
+autodiscover_task_locations: List[str] = [
+    "fides.api.tasks",
+    "fides.api.tasks.scheduled",
+    "fides.api.service.privacy_request",
+    "fides.api.service.privacy_request.request_runner_service",
+]
 
 
 class DatabaseTask(Task):  # pylint: disable=W0223
@@ -68,14 +76,7 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
 
     app.conf.update(celery_config)
 
-    app.autodiscover_tasks(
-        [
-            "fides.api.tasks",
-            "fides.api.tasks.scheduled",
-            "fides.api.service.privacy_request",
-            "fides.api.service.privacy_request.request_runner_service",
-        ]
-    )
+    app.autodiscover_tasks(autodiscover_task_locations)
 
     return app
 

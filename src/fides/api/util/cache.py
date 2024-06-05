@@ -10,7 +10,11 @@ from redis.exceptions import DataError
 
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
-from fides.api.tasks import celery_app
+from fides.api.tasks import (
+    MESSAGING_QUEUE_NAME,
+    PRIVACY_PREFERENCES_QUEUE_NAME,
+    celery_app,
+)
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.config import CONFIG
 
@@ -256,3 +260,23 @@ def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
                 return True
 
     return False
+
+
+def get_queue_counts() -> Dict[str, int]:
+    """
+    Returns a count of the list of the tasks in each queue
+    """
+    try:
+        queue_counts: Dict[str, int] = {}
+        redis_conn = get_cache()
+        default_queue_name = celery_app.conf.get("task_default_queue", "celery")
+        for queue in [
+            MESSAGING_QUEUE_NAME,
+            PRIVACY_PREFERENCES_QUEUE_NAME,
+            default_queue_name,
+        ]:
+            queue_counts[queue] = redis_conn.llen(queue)
+    except Exception as exception:
+        logger.critical(exception)
+        queue_counts = {}
+    return queue_counts

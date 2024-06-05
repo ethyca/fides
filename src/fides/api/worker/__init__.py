@@ -7,7 +7,11 @@ from celery.signals import celeryd_after_setup
 from loguru import logger
 
 from fides.api.service.saas_request.override_implementations import *
-from fides.api.tasks import MESSAGING_QUEUE_NAME, celery_app
+from fides.api.tasks import (
+    MESSAGING_QUEUE_NAME,
+    PRIVACY_PREFERENCES_QUEUE_NAME,
+    celery_app,
+)
 
 
 def start_worker() -> None:
@@ -19,7 +23,7 @@ def start_worker() -> None:
             "worker",
             "--loglevel=info",
             "--concurrency=2",
-            f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME}",
+            f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME},{PRIVACY_PREFERENCES_QUEUE_NAME}",
         ]
     )
 

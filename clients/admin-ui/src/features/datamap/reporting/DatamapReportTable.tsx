@@ -46,6 +46,7 @@ import {
   useExportMinimalDatamapReportMutation,
   useGetMinimalDatamapReportQuery,
 } from "~/features/datamap/datamap.slice";
+import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import {
   DatamapReportFilterModal,
@@ -225,6 +226,7 @@ export const DatamapReportTable = () => {
     useState<string>();
   const [selectedDataSubjectFilters, setSelectedDataSubjectFilters] =
     useState<string>();
+  const [selectedSystemId, setSelectedSystemId] = useState<string>();
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = useState<string>("");
@@ -362,6 +364,9 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="System" {...props} />,
         meta: {
           displayText: "System",
+          onCellClick: (row) => {
+            setSelectedSystemId(row.fides_key);
+          },
         },
       }),
       columnHelper.accessor((row) => row.data_uses, {
@@ -1158,6 +1163,11 @@ export const DatamapReportTable = () => {
         isNextPageDisabled={isNextPageDisabled || isReportFetching}
         startRange={startRange}
         endRange={endRange}
+      />
+
+      <DatamapDrawer
+        selectedSystemId={selectedSystemId}
+        resetSelectedSystemId={() => setSelectedSystemId(undefined)}
       />
     </Flex>
   );

@@ -62,7 +62,7 @@ describe("validateConfig", () => {
       expected: {
         isValid: false,
         message:
-          "A default_value is required for hidden field(s) 'tenant_id' in the action with policy_key 'default_access_policy', 'tenant_id' in the action with policy_key 'default_erasure_policy'",
+          "A default_value or query_param_key is required for hidden field(s) 'tenant_id' in the action with policy_key 'default_access_policy', 'tenant_id' in the action with policy_key 'default_erasure_policy'",
       },
     },
   ];
