@@ -92,7 +92,7 @@ class MonitorConfig(Base):
         """Derives the `execution_start_date`"""
         if (
             not self.monitor_execution_trigger
-            or not self.monitor_execution_trigger.get("start_date")
+            or self.monitor_execution_trigger.get("start_date", None) is None
         ):
             return None
         return self.monitor_execution_trigger.get("start_date")
@@ -102,7 +102,7 @@ class MonitorConfig(Base):
         """Derives the `execution_frequency`"""
         if (
             not self.monitor_execution_trigger
-            or not self.monitor_execution_trigger.get("hour")
+            or self.monitor_execution_trigger.get("hour", None) is None
         ):
             return None
         if self.monitor_execution_trigger.get("day", None) is not None:
