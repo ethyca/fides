@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MonitorConfig } from './MonitorConfig';
+import type { MonitorConfig } from "./MonitorConfig";
 
 export type Page_MonitorConfig_ = {
   items: Array<MonitorConfig>;
@@ -11,4 +11,3 @@ export type Page_MonitorConfig_ = {
   size: number;
   pages?: number;
 };
-
