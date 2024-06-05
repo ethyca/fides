@@ -1,8 +1,8 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: greenhouse_harvest_api
+    name: greenhouse
     description: >-
-      A sample dataset representing the Greenhouse Harvest API connector for
+      A sample dataset representing the Greenhouse integration for
       Fides
     collections:
       - name: user

@@ -10,42 +10,42 @@ from tests.ops.integration_tests.saas.connector_runner import (
 )
 from tests.ops.test_helpers.vault_client import get_secrets
 
-secrets = get_secrets("greenhouse_harvest")
+secrets = get_secrets("greenhouse")
 
 
 @pytest.fixture(scope="session")
-def greenhouse_harvest_secrets(saas_config) -> Dict[str, Any]:
+def greenhouse_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "greenhouse_harvest.domain")
+        "domain": pydash.get(saas_config, "greenhouse.domain")
         or secrets["domain"],
-        "api_key": pydash.get(saas_config, "greenhouse_harvest.api_key")
+        "api_key": pydash.get(saas_config, "greenhouse.api_key")
         or secrets["api_key"],
-        "greenhouse_user_id": pydash.get(saas_config, "greenhouse_harvest.greenhouse_user_id")
+        "greenhouse_user_id": pydash.get(saas_config, "greenhouse.greenhouse_user_id")
         or secrets["greenhouse_user_id"],
     }
 
 
 @pytest.fixture(scope="session")
-def greenhouse_harvest_identity_email(saas_config) -> str:
+def greenhouse_identity_email(saas_config) -> str:
     return (
-        pydash.get(saas_config, "greenhouse_harvest.identity_email") or secrets["identity_email"]
+        pydash.get(saas_config, "greenhouse.identity_email") or secrets["identity_email"]
     )
 
 
 @pytest.fixture
-def greenhouse_harvest_erasure_identity_email() -> str:
+def greenhouse_erasure_identity_email() -> str:
     return generate_random_email()
 
 
 @pytest.fixture
-def greenhouse_harvest_erasure_data(
-    greenhouse_harvest_secrets,
-    greenhouse_harvest_erasure_identity_email: str,
+def greenhouse_erasure_data(
+    greenhouse_secrets,
+    greenhouse_erasure_identity_email: str,
 ) -> Generator:
-    base_url = f"https://{greenhouse_harvest_secrets['domain']}/v1/candidates"
+    base_url = f"https://{greenhouse_secrets['domain']}/v1/candidates"
     headers = {
-        "Authorization": f"{greenhouse_harvest_secrets['api_key']}",
-        "On-Behalf-Of": f"{greenhouse_harvest_secrets['greenhouse_user_id']}"
+        "Authorization": f"{greenhouse_secrets['api_key']}",
+        "On-Behalf-Of": f"{greenhouse_secrets['greenhouse_user_id']}"
     }
     # details of the test user - note that the job_id value below is from our instance and the sample job. This id is required for this call to work.
     body = {
@@ -68,7 +68,7 @@ def greenhouse_harvest_erasure_data(
         ],
         "email_addresses": [
             {
-            "value": greenhouse_harvest_erasure_identity_email,
+            "value": greenhouse_erasure_identity_email,
             "type": "work"
             },
             {
@@ -125,14 +125,14 @@ def greenhouse_harvest_erasure_data(
 
 
 @pytest.fixture
-def greenhouse_harvest_runner(
+def greenhouse_runner(
     db,
     cache,
-    greenhouse_harvest_secrets,
+    greenhouse_secrets,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
-        "greenhouse_harvest",
-        greenhouse_harvest_secrets,
+        "greenhouse",
+        greenhouse_secrets,
     )

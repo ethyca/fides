@@ -1,9 +1,9 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Greenhouse Harvest
-  type: greenhouse_harvest
-  description: A sample schema representing the Greenhouse Harvest API integration for Fides
-  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/greenhouse_harvest
+  name: Greenhouse
+  type: greenhouse
+  description: A sample schema representing the Greenhouse integration for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/greenhouse
   version: 0.1.0
 
   connector_params:
