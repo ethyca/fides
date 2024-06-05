@@ -599,10 +599,12 @@ def infer_target_identity_type(
     identity_data: Identity,
 ) -> str:
     """
-    Consent requests, unlike privacy requests, only accept 1 identity type- email or phone.
-    These identity types are configurable as optional/required within the privacy center config.json.
-    If both identity types are provided, we'll use identity type if defined in
-    CONFIG.notifications.notification_service_type, else default to email.
+    Consent requests, unlike privacy requests, only accept 1 identity type: email,
+    phone, external_id, or fides_user_device_id. These identity types are configurable
+    as optional/required within the privacy center config.json. If both email and phone
+    identity types are provided, we'll use the identity type defined in
+    CONFIG.notifications.notification_service_type. Otherwise, the fallback order is
+    email, phone_number, external_id, and finally fides_user_device_id.
     """
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(

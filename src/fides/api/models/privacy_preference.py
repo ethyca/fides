@@ -200,11 +200,6 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
             "property_id",
             name="last_saved_for_external_id_per_property_id",
         ),
-        Index(
-            "idx_preferences_gin",
-            text("(preferences->'preferences') jsonb_path_ops"),
-            postgresql_using="gin",
-        ),
     )
 
 

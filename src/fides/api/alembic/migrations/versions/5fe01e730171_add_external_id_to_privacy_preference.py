@@ -1,7 +1,7 @@
 """add external id to privacy preference
 
 Revision ID: 5fe01e730171
-Revises: efddde14da21
+Revises: 52a5f1a957bc
 Create Date: 2024-05-31 17:11:50.566937
 
 """
@@ -13,7 +13,7 @@ from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "5fe01e730171"
-down_revision = "efddde14da21"
+down_revision = "52a5f1a957bc"
 branch_labels = None
 depends_on = None
 
@@ -88,13 +88,6 @@ def upgrade():
             unique=False,
         )
         op.create_index(
-            "ix_preferences_gin",
-            "currentprivacypreferencev2",
-            [sa.text("(preferences -> 'preferences'::text) jsonb_path_ops")],
-            unique=False,
-            postgresql_using="gin",
-        )
-        op.create_index(
             op.f("ix_currentprivacypreferencev2_email_property_id"),
             "currentprivacypreferencev2",
             ["email", "property_id"],
@@ -158,10 +151,10 @@ def upgrade():
             "ON currentprivacypreferencev2 (fides_user_device, property_id)'\n"
             "- 'CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_phone_number_property_id "
             "ON currentprivacypreferencev2 (phone_number, property_id)'\n"
+            "- 'CREATE INDEX CONCURRENTLY ix_currentprivacypreferencev2_property_id "
+            "ON currentprivacypreferencev2 (property_id)'\n"
             "- 'CREATE INDEX CONCURRENTLY ix_currentprivacypreferencev2_hashed_external_id "
             "ON currentprivacypreferencev2 (hashed_external_id)'\n"
-            "- 'CREATE INDEX CONCURRENTLY ix_preferences_gin "
-            "ON currentprivacypreferencev2 USING gin ((preferences->'preferences') jsonb_path_ops)'\n"
             "- 'ALTER TABLE currentprivacypreferencev2 "
             "ADD CONSTRAINT last_saved_for_email_per_property_id "
             "UNIQUE USING INDEX ix_currentprivacypreferencev2_email_property_id'\n"
