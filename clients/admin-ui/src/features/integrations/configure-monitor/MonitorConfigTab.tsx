@@ -182,8 +182,7 @@ const MonitorConfigTab = ({
         Data discovery monitors observe configured systems for data model
         changes to proactively discover and classify data risks. You can create
         multiple monitors to observe part or all of a project, dataset, table or
-        API for changes and assign these to different data stewards. Read the
-        Data discovery monitor guide now.
+        API for changes and assign these to different data stewards.
       </Text>
       <TableActionBar>
         <Spacer />
