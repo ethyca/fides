@@ -75,8 +75,19 @@ class MonitorConfig(Base):
     # see https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html
 
     classify_params = Column(
-        MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+        MutableDict.as_mutable(JSONB),
+        index=False,
+        unique=False,
+        nullable=True,
     )  # parameters that the monitor will use for classification execution
+
+    datasource_params = Column(
+        MutableDict.as_mutable(JSONB),
+        index=False,
+        unique=False,
+        nullable=True,
+    )  # monitor parameters that are specific per datasource
+    # these are held as an untyped JSON dict (in the DB) to stay flexible
 
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
@@ -92,7 +103,7 @@ class MonitorConfig(Base):
         """Derives the `execution_start_date`"""
         if (
             not self.monitor_execution_trigger
-            or not self.monitor_execution_trigger.get("start_date")
+            or self.monitor_execution_trigger.get("start_date", None) is None
         ):
             return None
         return self.monitor_execution_trigger.get("start_date")
@@ -102,7 +113,7 @@ class MonitorConfig(Base):
         """Derives the `execution_frequency`"""
         if (
             not self.monitor_execution_trigger
-            or not self.monitor_execution_trigger.get("hour")
+            or self.monitor_execution_trigger.get("hour", None) is None
         ):
             return None
         if self.monitor_execution_trigger.get("day", None) is not None:

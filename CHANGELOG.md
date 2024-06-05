@@ -27,6 +27,7 @@ The types of changes are:
 - Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
 - Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
 - Fill custom privacy request fields with query_param_key [#4948](https://github.com/ethyca/fides/pull/4948)
+- Add `datasource_params` column to MonitorConfig DB model [#4951](https://github.com/ethyca/fides/pull/4951)
 - Added ability to open system preview side panel from new data map table [#4944](https://github.com/ethyca/fides/pull/4944)
 
 ### Changed
@@ -41,6 +42,7 @@ The types of changes are:
 - Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
 - Fixed an issue where language form field error message was not displaying properly [#4942](https://github.com/ethyca/fides/pull/4942)
 - Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
+- Fixed an issue where the unique device ID was not being retained when Fides.js was reinitialized [#4947](https://github.com/ethyca/fides/pull/4947)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
