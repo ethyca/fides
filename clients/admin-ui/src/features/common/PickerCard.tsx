@@ -58,9 +58,34 @@ export interface Props<T> {
   toggle?: ReactNode;
   onViewMore?: () => void;
   numSelected: number;
+  // eslint thinks this is unused because it's the prop type for two components
+  // and unused on one of them
+  // eslint-disable-next-line react/no-unused-prop-types
+  boldText?: boolean;
 }
 
-const PickerCard = <T extends { id: string; name: string }>({
+const PickerCardContainer = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) => (
+  <Box
+    p={4}
+    display="flex"
+    alignItems="flex-start"
+    gap="4px"
+    borderRadius="4px"
+    boxShadow="0px 1px 2px 0px rgba(0, 0, 0, 0.06), 0px 1px 3px 0px rgba(0, 0, 0, 0.1)"
+    fontSize="sm"
+    data-testid={`picker-card-${title}`}
+  >
+    {children}
+  </Box>
+);
+
+export const PickerCheckboxList = <T extends { id: string; name: string }>({
   title,
   items,
   selected,
@@ -69,6 +94,7 @@ const PickerCard = <T extends { id: string; name: string }>({
   toggle,
   onViewMore,
   numSelected,
+  boldText,
 }: Props<T>) => {
   const itemsToShow = onViewMore ? items.slice(0, NUM_TO_SHOW) : items;
 
@@ -80,77 +106,91 @@ const PickerCard = <T extends { id: string; name: string }>({
     });
 
   return (
-    <Box
-      p={4}
-      display="flex"
-      alignItems="flex-start"
-      gap="4px"
-      borderRadius="4px"
-      boxShadow="0px 1px 2px 0px rgba(0, 0, 0, 0.06), 0px 1px 3px 0px rgba(0, 0, 0, 0.1)"
-      fontSize="sm"
-      data-testid={`picker-card-${title}`}
-    >
-      <VStack alignItems="flex-start" spacing={3} width="100%" height="100%">
-        <Flex justifyContent="space-between" width="100%">
-          <Checkbox
-            fontSize="md"
-            textTransform="capitalize"
-            fontWeight="semibold"
-            isChecked={allSelected}
-            size="md"
-            mr="2"
-            onChange={handleToggleAll}
-            colorScheme="complimentary"
-            data-testid="select-all"
-            isIndeterminate={!allSelected && someSelected}
-          >
-            {title}
-          </Checkbox>
+    <VStack alignItems="flex-start" spacing={3} width="100%" height="100%">
+      <Flex justifyContent="space-between" width="100%">
+        <Checkbox
+          fontSize="md"
+          textTransform={boldText ? "capitalize" : undefined}
+          fontWeight={boldText ? "semibold" : "auto"}
+          isChecked={allSelected}
+          size="md"
+          mr="2"
+          onChange={handleToggleAll}
+          colorScheme="complimentary"
+          data-testid="select-all"
+          isIndeterminate={!allSelected && someSelected}
+        >
+          {title}
+        </Checkbox>
 
-          {toggle ?? null}
-        </Flex>
-        {numSelected > 0 ? (
-          <Badge
-            colorScheme="purple"
-            variant="solid"
-            width="fit-content"
-            data-testid="num-selected-badge"
-          >
-            {numSelected} selected
-          </Badge>
-        ) : null}
-        <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
-          <CheckboxGroup colorScheme="complimentary">
-            {itemsToShow.map((item) => (
-              <Flex key={item.id} alignItems="center" gap="8px">
-                <Checkbox
-                  key={item.id}
-                  isChecked={selected.includes(item.id)}
-                  isIndeterminate={indeterminate.includes(item.id)}
-                  size="md"
-                  fontWeight="500"
-                  onChange={() => handleToggleSelection(item.id)}
-                  data-testid={`${item.name}-checkbox`}
-                >
-                  {item.name}
-                </Checkbox>
-              </Flex>
-            ))}
-          </CheckboxGroup>
-        </VStack>
-        {onViewMore ? (
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={onViewMore}
-            data-testid="view-more-btn"
-          >
-            View more
-          </Button>
-        ) : null}
+        {toggle ?? null}
+      </Flex>
+      {numSelected > 0 ? (
+        <Badge
+          colorScheme="purple"
+          variant="solid"
+          width="fit-content"
+          data-testid="num-selected-badge"
+        >
+          {numSelected} selected
+        </Badge>
+      ) : null}
+      <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
+        <CheckboxGroup colorScheme="complimentary">
+          {itemsToShow.map((item) => (
+            <Flex key={item.id} alignItems="center" gap="8px">
+              <Checkbox
+                key={item.id}
+                isChecked={selected.includes(item.id)}
+                isIndeterminate={indeterminate.includes(item.id)}
+                size="md"
+                fontWeight={boldText ? "500" : "auto"}
+                onChange={() => handleToggleSelection(item.id)}
+                data-testid={`${item.name}-checkbox`}
+              >
+                {item.name}
+              </Checkbox>
+            </Flex>
+          ))}
+        </CheckboxGroup>
       </VStack>
-    </Box>
+      {onViewMore ? (
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={onViewMore}
+          data-testid="view-more-btn"
+        >
+          View more
+        </Button>
+      ) : null}
+    </VStack>
   );
 };
+
+const PickerCard = <T extends { id: string; name: string }>({
+  title,
+  items,
+  selected,
+  indeterminate,
+  onChange,
+  toggle,
+  onViewMore,
+  numSelected,
+}: Props<T>) => (
+  <PickerCardContainer title={title}>
+    <PickerCheckboxList
+      title={title}
+      items={items}
+      selected={selected}
+      indeterminate={indeterminate}
+      onChange={onChange}
+      toggle={toggle}
+      onViewMore={onViewMore}
+      numSelected={numSelected}
+      boldText
+    />
+  </PickerCardContainer>
+);
 
 export default PickerCard;

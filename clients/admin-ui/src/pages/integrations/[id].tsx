@@ -10,10 +10,10 @@ import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connec
 import BigQueryOverview, {
   BigQueryInstructions,
 } from "~/features/integrations/bigqueryOverviewCopy";
+import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
-import MonitorConfigTab from "~/features/integrations/MonitorConfigTab";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -71,7 +71,7 @@ const IntegrationDetailView: NextPage = () => {
             link: INTEGRATION_MANAGEMENT_ROUTE,
           },
           {
-            title: id ?? "",
+            title: connection?.name ?? connection?.key ?? "",
           },
         ]}
       >

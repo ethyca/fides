@@ -8,18 +8,22 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Spinner, Text } from "fidesui";
-import { useEffect, useMemo } from "react";
+import { Button, Spacer, Spinner, Text, useDisclosure, VStack } from "fidesui";
+import { useEffect, useMemo, useState } from "react";
 
+import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
+  GroupCountBadgeCell,
   PaginationBar,
+  TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { EnableCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
+import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import { ConnectionConfigurationResponse, MonitorConfig } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -31,6 +35,32 @@ const EMPTY_RESPONSE = {
 };
 
 const columnHelper = createColumnHelper<MonitorConfig>();
+
+const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    borderRadius="base"
+    maxW="70%"
+    data-testid="no-results-notice"
+    alignSelf="center"
+    margin="auto"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        No monitors
+      </Text>
+      <Text fontSize="sm">
+        You have not configured any data discovery monitors. Click &quot;Add
+        monitor&quot; to configure data discovery now.
+      </Text>
+      <Button onClick={onAddClick} colorScheme="primary">
+        Add monitor
+      </Button>
+    </VStack>
+  </VStack>
+);
 
 const MonitorConfigTab = ({
   integration,
@@ -61,6 +91,28 @@ const MonitorConfigTab = ({
     connection_config_key: integration.key,
   });
 
+  const modal = useDisclosure();
+  const [monitorToEdit, setMonitorToEdit] = useState<MonitorConfig | undefined>(
+    undefined
+  );
+  const [formStep, setFormStep] = useState(0);
+
+  const handleEditMonitor = (monitor: MonitorConfig) => {
+    setMonitorToEdit(monitor);
+    modal.onOpen();
+  };
+
+  const handleCloseModal = () => {
+    setMonitorToEdit(undefined);
+    setFormStep(0);
+    modal.onClose();
+  };
+
+  const handleAdvanceForm = (monitor: MonitorConfig) => {
+    setMonitorToEdit(monitor);
+    setFormStep(1);
+  };
+
   const response = monitorResult ?? EMPTY_RESPONSE;
 
   const {
@@ -82,29 +134,31 @@ const MonitorConfigTab = ({
       }),
       columnHelper.accessor((row) => row.databases, {
         id: "projects",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) =>
+          props.getValue().length === 0 ? (
+            <DefaultCell value="All projects" />
+          ) : (
+            <GroupCountBadgeCell
+              suffix="Projects"
+              value={props.getValue()}
+              {...props}
+              isDisplayAll
+            />
+          ),
         header: (props) => <DefaultHeaderCell value="Location" {...props} />,
-      }),
-      // insert "last monitored" row
-      // insert "data steward" row
-      columnHelper.display({
-        id: "toggle",
-        cell: () => (
-          <EnableCell
-            value
-            onToggle={() => console.log("toggled!")}
-            title="title"
-            message="message"
-          />
-        ),
-        header: "Status",
       }),
       columnHelper.display({
         id: "action",
-        cell: () => <DefaultCell value="actions here" />,
+        cell: (props) => (
+          <MonitorConfigActionsCell
+            onEditClick={() => handleEditMonitor(props.row.original)}
+          />
+        ),
         header: "Actions",
+        maxSize: 50,
       }),
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -126,12 +180,35 @@ const MonitorConfigTab = ({
     <>
       <Text maxW="720px" mb={6}>
         Data discovery monitors observe configured systems for data model
-        changes to proactively discovery and classify data risks. You can create
+        changes to proactively discover and classify data risks. You can create
         multiple monitors to observe part or all of a project, dataset, table or
         API for changes and assign these to different data stewards. Read the
         Data discovery monitor guide now.
       </Text>
-      <FidesTableV2 tableInstance={tableInstance} />
+      <TableActionBar>
+        <Spacer />
+        <Button
+          onClick={modal.onOpen}
+          size="xs"
+          variant="outline"
+          rightIcon={<MonitorIcon />}
+          data-testid="add-monitor-btn"
+        >
+          Add monitor
+        </Button>
+        <ConfigureMonitorModal
+          isOpen={modal.isOpen}
+          onClose={handleCloseModal}
+          formStep={formStep}
+          onAdvance={handleAdvanceForm}
+          monitor={monitorToEdit}
+        />
+      </TableActionBar>
+      <FidesTableV2
+        tableInstance={tableInstance}
+        onRowClick={handleEditMonitor}
+        emptyTableNotice={<EmptyTableNotice onAddClick={modal.onOpen} />}
+      />
       <PaginationBar
         totalRows={totalRows}
         pageSizes={PAGE_SIZES}
