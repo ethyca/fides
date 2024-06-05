@@ -31,7 +31,7 @@
       "encoded_icon": null
     },
     {
-      "identifier": "google_cloud_mysql",
+      "identifier": "google_cloud_sql_mysql",
       "type": "database",
       "human_readable": "Google Cloud for MySQL",
       "encoded_icon": null

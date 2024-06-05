@@ -44,6 +44,9 @@ from fides.api.schemas.connection_configuration.connection_secrets_mariadb impor
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
+    GoogleCloudSQLMySQLSchema,
+)
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
@@ -579,5 +582,50 @@ class MicrosoftSQLServerConnector(SQLConnector):
         return SQLConnector.default_cursor_result_to_rows(results)
 
 
-class GoogleCloudMySQLConnector(MySQLConnector):
+class GoogleCloudSQLMySQLConnector(MySQLConnector):
     """Connector specific to Google Cloud for MySQL"""
+    secrets_schema = GoogleCloudSQLMySQLSchema
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+
+        import os
+        from dotenv import load_dotenv
+        from google.cloud.sql.connector import Connector
+        from google.oauth2 import service_account
+        load_dotenv()
+        # IAM database user parameter
+        IAM_USER = 'service-account@friendly-tower-424214-n8.iam.gserviceaccount.com'
+        INSTANCE_CONNECTION_NAME = 'friendly-tower-424214-n8:us-central1:test-ethyca'
+        key_path = "friendly-tower-424214-n8-c11734cc3b52.json"
+        # IAM_USER = os.environ["DB_IAM_USER"]
+        # INSTANCE_CONNECTION_NAME = os.environ["INSTANCE_CONNECTION_NAME"]
+        # key_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
+        # load the service account key JSON file
+        credentials = service_account.Credentials.from_service_account_file(
+            key_path
+        )
+        # initialize connector with the loaded credentials
+        connector = Connector(credentials=credentials)
+
+        def getconn():
+            conn = connector.connect(
+            INSTANCE_CONNECTION_NAME,
+            "pymysql",
+            user=IAM_USER,
+            db="", # log in to instance but don't connect to specific database
+            enable_iam_auth=True
+            )
+            return conn
+
+        return create_engine(
+            "mysql+pymysql://",
+            creator=getconn,
+        )
+
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """ results to a list of dictionaries
+        """
+        return SQLConnector.default_cursor_result_to_rows(results)

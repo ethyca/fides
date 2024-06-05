@@ -25,13 +25,13 @@ def mysql_example_secrets():
 
 
 @pytest.fixture(scope="function")
-def google_cloud_mysql_secrets():
-    secrets = integration_secrets.get("google_cloud_mysql", {})
-    secrets["host"] = secrets.get("host") or os.environ.get("GOOGLE_CLOUD_MYSQL_TEST_HOST")
-    secrets["dbname"] = secrets.get("dbname") or os.environ.get("GOOGLE_CLOUD_MYSQL_TEST_DBNAME")
-    secrets["username"] = secrets.get("username") or os.environ.get("GOOGLE_CLOUD_MYSQL_TEST_USERNAME")
-    secrets["password"] = secrets.get("password") or os.environ.get("GOOGLE_CLOUD_MYSQL_TEST_PASSWORD")
-    secrets["port"] = secrets.get("port") or os.environ.get("GOOGLE_CLOUD_MYSQL_TEST_PORT")
+def google_cloud_sql_mysql_secrets():
+    secrets = integration_secrets.get("google_cloud_sql_mysql", {})
+    secrets["host"] = secrets.get("host") or os.environ.get("google_cloud_sql_mysql_TEST_HOST")
+    secrets["dbname"] = secrets.get("dbname") or os.environ.get("google_cloud_sql_mysql_TEST_DBNAME")
+    secrets["username"] = secrets.get("username") or os.environ.get("google_cloud_sql_mysql_TEST_USERNAME")
+    secrets["password"] = secrets.get("password") or os.environ.get("google_cloud_sql_mysql_TEST_PASSWORD")
+    secrets["port"] = secrets.get("port") or os.environ.get("google_cloud_sql_mysql_TEST_PORT")
     return secrets
 
 
@@ -125,15 +125,15 @@ def connection_config_mysql(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def connection_config_google_cloud_mysql(db: Session, google_cloud_mysql_secrets) -> Generator:
+def connection_config_google_cloud_sql_mysql(db: Session, google_cloud_sql_mysql_secrets) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
             "name": str(uuid4()),
-            "key": "my_google_cloud_mysql_db_1",
-            "connection_type": ConnectionType.google_cloud_mysql,
+            "key": "my_google_cloud_sql_mysql_db_1",
+            "connection_type": ConnectionType.google_cloud_sql_mysql,
             "access": AccessLevel.write,
-            "secrets": google_cloud_mysql_secrets,
+            "secrets": google_cloud_sql_mysql_secrets,
         },
     )
     yield connection_config
