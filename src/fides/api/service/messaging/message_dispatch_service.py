@@ -42,7 +42,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.messaging_crud_service import (
-    get_basic_messaging_template_by_type,
+    get_basic_messaging_template_by_type_or_default,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.logger import Pii
@@ -153,7 +153,7 @@ def dispatch_message(
     message: Optional[Union[EmailForActionType, str]] = None
 
     logger.info("Getting custom messaging template for action type: {}", action_type)
-    messaging_template = get_basic_messaging_template_by_type(
+    messaging_template = get_basic_messaging_template_by_type_or_default(
         db=db, template_type=action_type.value
     )
 
@@ -343,7 +343,8 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=_render(messaging_template.content["body"]),  # type: ignore
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION:
-        # get email template doesn't use defualt templates in messaging_template.py
+        # This action type does not use the default templates that are configurable in the Admin-UI.
+        # They are instead hard-coded in fides, which we retrieve using get_email_template(action_type)
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Privacy Request Error Alert",
@@ -362,7 +363,8 @@ def _build_email(  # pylint: disable=too-many-return-statements
             template_variables=variables,
         )
     if action_type == MessagingActionType.TEST_MESSAGE:
-        # get email template doesn't use defualt templates in messaging_template.py
+        # This action type does not use the default templates that are configurable in the Admin-UI.
+        # They are instead hard-coded in fides, which we retrieve using get_email_template(action_type)
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Test message from fides", body=base_template.render()

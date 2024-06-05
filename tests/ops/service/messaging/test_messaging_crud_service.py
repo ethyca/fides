@@ -19,7 +19,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.service.messaging.messaging_crud_service import (
     get_all_basic_messaging_templates,
-    get_basic_messaging_template_by_type,
+    get_basic_messaging_template_by_type_or_default,
     update_messaging_template,
     create_messaging_template,
     delete_template_by_id,
@@ -50,7 +50,7 @@ class TestMessagingTemplates:
             },
         )
 
-        template = get_basic_messaging_template_by_type(
+        template = get_basic_messaging_template_by_type_or_default(
             db=db, template_type=template_type
         )
         assert template.type == template_type
@@ -60,7 +60,7 @@ class TestMessagingTemplates:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
 
-        template = get_basic_messaging_template_by_type(
+        template = get_basic_messaging_template_by_type_or_default(
             db=db, template_type=template_type
         )
         assert template.type == template_type
@@ -68,7 +68,7 @@ class TestMessagingTemplates:
 
     def test_get_basic_messaging_template_by_type_invalid(self, db: Session):
         assert (
-            get_basic_messaging_template_by_type(db=db, template_type="invalid") is None
+                get_basic_messaging_template_by_type_or_default(db=db, template_type="invalid") is None
         )
 
     def test_create_or_update_basic_templates_existing_type(
@@ -111,6 +111,34 @@ class TestMessagingTemplates:
             db, object_id=new_template.id
         )
         assert messaging_template.content["subject"] == "Test new subject"
+
+    def test_create_or_update_basic_templates_existing_type_multiple(
+            self, db: Session, messaging_template_no_property, messaging_template_subject_identity_verification
+    ):
+        content = {
+            "subject": "Test new subject",
+            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        }
+        create_or_update_basic_templates(
+            db,
+            data={
+                "type": MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
+                "content": content,
+                "is_enabled": False,
+            },
+        )
+
+        # should update the template with default property if multiple templates are configured
+        default_property = Property.get_by(db=db, field="is_default", value=True)
+
+        template = MessagingTemplate.filter(
+            db=db,
+            conditions=(
+                    (MessagingTemplate.type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value)
+                    & (default_property.id in MessagingTemplate.properties)
+            ),
+        ).first()
+        assert template.content["subject"] == "Test new subject"
 
     def test_update_messaging_template_add_property(
         self,

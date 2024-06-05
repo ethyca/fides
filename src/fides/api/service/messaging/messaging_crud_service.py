@@ -93,27 +93,71 @@ def get_all_basic_messaging_templates(db: Session) -> List[MessagingTemplate]:
     Retrieve all templates from the database, filling in default values if any default template type
     is not found in the database.
     """
-    #
-    templates_from_db = {
-        template.type: template.content for template in MessagingTemplate.all(db)
-    }
     templates = []
     for template_type, template in DEFAULT_MESSAGING_TEMPLATES.items():
-        content = templates_from_db.get(template_type, template["content"])
-        templates.append(
-            MessagingTemplate(
-                type=template_type,
-                content=content,
+        template_from_db = _basic_messaging_template_by_type(db, template_type)
+        if template_from_db:
+            templates.append(
+                MessagingTemplate(
+                    type=template_type,
+                    content=template_from_db.content,
+                )
             )
-        )
+        else:
+            templates.append(
+                MessagingTemplate(
+                    type=template_type,
+                    content=template["content"],
+                )
+            )
 
     return templates
 
 
-def get_basic_messaging_template_by_type(
+def _basic_messaging_template_by_type(db: Session, template_type: str) -> Optional[MessagingTemplate]:
+    """
+    Provide a consistent way to retrieve basic messaging template given a type.
+
+    Scenario A: One template configured with type
+    Result: Return that template
+
+    Scenario B: Multiple templates configured with type, none with default property
+    Result: Return the first template
+
+    Scenario C: Multiple templates configured with type, one with default property
+    Result: Return the template with default property
+    """
+    template = None
+    templates = (
+        MessagingTemplate.query(db=db)
+            .filter(MessagingTemplate.type == template_type)
+            .all()
+    )
+
+    if len(templates) == 1:
+        template = templates[0]
+    elif len(templates) > 1:
+        default_property = Property.get_by(db=db, field="is_default", value=True)
+        if default_property:
+            template = MessagingTemplate.filter(
+                db=db,
+                conditions=(
+                        (MessagingTemplate.type == template_type)
+                        & (default_property.id in MessagingTemplate.properties)
+                ),
+            ).first()
+            if not template:
+                template = templates[0]
+        else:
+            template = templates[0]
+
+    return template
+
+
+def get_basic_messaging_template_by_type_or_default(
     db: Session, template_type: str
 ) -> Optional[MessagingTemplate]:
-    template = MessagingTemplate.get_by(db, field="type", value=template_type)
+    template = _basic_messaging_template_by_type(db, template_type)
 
     # If no template is found in the database, use the default
     if not template and template_type in DEFAULT_MESSAGING_TEMPLATES:
@@ -133,25 +177,7 @@ def create_or_update_basic_templates(
     There might be multiple templates configured by type, in the edge case where a paid user downgrades to OSS.
     We use the one associated with the default property if found. If no default, we fall back on first item for safety.
     """
-    template = None
-    templates = (
-        MessagingTemplate.query(db=db)
-        .filter(MessagingTemplate.type == data["type"])
-        .all()
-    )
-
-    if len(templates) > 1:
-        default_property = Property.get_by(db=db, field="is_default", value=True)
-        if default_property:
-            template = MessagingTemplate.filter(
-                db=db,
-                conditions=(
-                    (MessagingTemplate.type == data["type"])
-                    & (Property.id == default_property.id)
-                ),
-            ).first()
-    elif len(templates) == 1:
-        template = templates[0]
+    template = _basic_messaging_template_by_type(db, data["type"])
 
     if template:
         template.update(db=db, data=data)
@@ -199,15 +225,11 @@ def _validate_overlapping_templates(
     if not possible_overlapping_templates:
         return
 
-    # If we're updating the only possible overlap, we allow this
-    if update_id and len(possible_overlapping_templates) == 1:
-        if update_id == possible_overlapping_templates[0].id:
-            return
-
     # Otherwise, we need to check whether properties will overlap
     for db_template in possible_overlapping_templates:
         for db_property in db_template.properties:
-            if db_property.id in new_property_ids:
+            # Exclude if we're updating the overlapping item
+            if update_id != possible_overlapping_templates[0].id and db_property.id in new_property_ids:
                 raise MessagingConfigValidationException(
                     f"There is already an enabled messaging template with template type {template_type} and property {db_property.id}"
                 )
@@ -218,18 +240,15 @@ def update_messaging_template(
     template_id: str,
     template_update_body: MessagingTemplateWithPropertiesBodyParams,
 ) -> Optional[MessagingTemplate]:
-    # Updating template type is not allowed once it is created, so we don't intake it here
-    logger.info("Finding messaging config with id '{}'", template_id)
-    db_messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
-        db, object_id=template_id
-    )
-    if not db_messaging_template:
-        raise MessagingConfigNotFoundException(
-            f"No messaging template found with id {template_id}"
-        )
+    """
+    This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
+
+    Updating template type is not allowed once it is created, so we don't intake it here.
+    """
+    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
     _validate_overlapping_templates(
         db,
-        db_messaging_template.type,
+        messaging_template.type,
         template_update_body.properties,
         template_update_body.is_enabled,
         template_id,
@@ -244,7 +263,7 @@ def update_messaging_template(
             {"id": property_id} for property_id in template_update_body.properties
         ]
 
-    return db_messaging_template.update(db=db, data=data)
+    return messaging_template.update(db=db, data=data)
 
 
 def create_messaging_template(
@@ -252,6 +271,9 @@ def create_messaging_template(
     template_type: str,
     template_create_body: MessagingTemplateWithPropertiesBodyParams,
 ) -> Optional[MessagingTemplate]:
+    """
+    This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
+    """
     if template_type not in DEFAULT_MESSAGING_TEMPLATES:
         raise MessagingConfigValidationException(
             f"Messaging template type {template_type} is not supported."
@@ -325,6 +347,9 @@ def get_default_template_by_type(
 def get_all_messaging_templates_summary(
     db: Session,
 ) -> Optional[List[MessagingTemplateWithPropertiesSummary]]:
+    """
+    This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
+    """
     # Retrieve all templates from the database
     db_templates: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for template in MessagingTemplate.all(db):

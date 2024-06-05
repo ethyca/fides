@@ -542,6 +542,9 @@ def update_basic_messaging_templates(
             )
             content["body"] = content["body"] or default_template["content"]["body"]
 
+            # For Basic Messaging Templates, we ignore the is_enabled flag at runtime. This is because
+            # enabling/disabling by template is only supported for property-specific messaging templates,
+            # not basic templates.
             create_or_update_basic_templates(
                 db,
                 data={"type": template_type, "content": content, "is_enabled": False},
