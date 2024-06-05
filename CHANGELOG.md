@@ -42,6 +42,7 @@ The types of changes are:
 - Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
 - Fixed an issue where language form field error message was not displaying properly [#4942](https://github.com/ethyca/fides/pull/4942)
 - Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
+- Fixed an issue where the unique device ID was not being retained when Fides.js was reinitialized [#4947](https://github.com/ethyca/fides/pull/4947)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
