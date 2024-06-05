@@ -172,8 +172,9 @@ export const PrivacyNoticesTable = () => {
         userCanUpdate &&
           columnHelper.accessor((row) => row.disabled, {
             id: "enable",
-            cell: (props) => EnablePrivacyNoticeCell(props),
+            cell: EnablePrivacyNoticeCell,
             header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+            meta: { disableRowClick: true },
           }),
       ].filter(Boolean) as ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[],
     [userCanUpdate]

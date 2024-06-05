@@ -2106,6 +2106,8 @@ dataset:
       data_categories: [system]
     - name: monitor_execution_trigger
       data_categories: [system]
+    - name: datasource_params
+      data_categories: [system]
   - name: stagedresource
     fields:
     - name: child_diff_statuses

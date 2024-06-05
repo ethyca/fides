@@ -166,10 +166,19 @@ export const validateConfig = (
   }
 
   const invalidFieldMessages = config.actions.flatMap((action) => {
+    /*
+      Validate that hidden fields must have a default_value or a query_param_key
+      defined, otherwise the field would never get a value assigned.
+    */
     const invalidFields = Object.entries(
       action.custom_privacy_request_fields || {}
     )
-      .filter(([, field]) => field.hidden && field.default_value === undefined)
+      .filter(
+        ([, field]) =>
+          field.hidden &&
+          field.default_value === undefined &&
+          field.query_param_key === undefined
+      )
       .map(([key]) => `'${key}'`);
 
     return invalidFields.length > 0
@@ -184,7 +193,7 @@ export const validateConfig = (
   if (invalidFieldMessages.length > 0) {
     return {
       isValid: false,
-      message: `A default_value is required for hidden field(s) ${invalidFieldMessages.join(
+      message: `A default_value or query_param_key is required for hidden field(s) ${invalidFieldMessages.join(
         ", "
       )}`,
     };

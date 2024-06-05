@@ -7,7 +7,9 @@ import {
   CheckboxProps,
   Flex,
   Switch,
+  SwitchProps,
   Text,
+  TextProps,
   useDisclosure,
   useToast,
   WarningIcon,
@@ -154,33 +156,36 @@ export const IndeterminateCheckboxCell = ({
 
 type DefaultHeaderCellProps<T, V> = {
   value: V;
-} & HeaderContext<T, V>;
+} & HeaderContext<T, V> &
+  TextProps;
 
 export const DefaultHeaderCell = <T,>({
   value,
+  ...props
 }: DefaultHeaderCellProps<
   T,
   string | number | string[] | undefined | boolean
 >) => (
-  <Text fontSize="xs" lineHeight={9} fontWeight="medium">
+  <Text fontSize="xs" lineHeight={9} fontWeight="medium" flex={1} {...props}>
     {value}
   </Text>
 );
 
-type EnableCellProps = {
-  value: boolean;
+interface EnableCellProps extends Omit<SwitchProps, "value"> {
+  enabled: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
   message: string;
   isDisabled?: boolean;
-};
+}
 
 export const EnableCell = ({
-  value,
+  enabled,
   onToggle,
   title,
   message,
   isDisabled,
+  ...switchProps
 }: EnableCellProps) => {
   const modal = useDisclosure();
   const toast = useToast();
@@ -204,10 +209,11 @@ export const EnableCell = ({
     <>
       <Switch
         colorScheme="complimentary"
-        isChecked={!value}
+        isChecked={enabled}
         data-testid="toggle-switch"
         disabled={isDisabled}
         onChange={handleToggle}
+        {...switchProps}
       />
       <ConfirmationModal
         isOpen={modal.isOpen}
