@@ -65,7 +65,7 @@ saas_config:
         delete:
           method: DELETE
           path: /v5/contactlist/<contact_list_id>/contactlistcontact/<contact_id>
-          # grouped_inputs: [contact_list, contact] # this is preliminary and requires changes to the integrations framework
+          # grouped_inputs: [contact_list, contact] # this is preliminary
           param_values:
             - name: contact_list_id
               references:
