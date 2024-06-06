@@ -21,11 +21,10 @@ db="mysql_example"
 port=3306
 
 [google_cloud_sql_mysql]
-server=""
-user=""
-password=""
-db=""
-port=""
+db_iam_user=""
+instance_connection_name=""
+
+[google_cloud_sql_mysql.keyfile_creds]
 
 [redshift]
 host=""
