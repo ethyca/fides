@@ -10,6 +10,7 @@ import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connec
 import BigQueryOverview, {
   BigQueryInstructions,
 } from "~/features/integrations/bigqueryOverviewCopy";
+import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
@@ -55,6 +56,10 @@ const IntegrationDetailView: NextPage = () => {
         </Box>
       ),
     },
+    {
+      label: "Data discovery",
+      content: <MonitorConfigTab integration={connection!} />,
+    },
   ];
 
   return (
@@ -66,12 +71,12 @@ const IntegrationDetailView: NextPage = () => {
             link: INTEGRATION_MANAGEMENT_ROUTE,
           },
           {
-            title: id ?? "",
+            title: connection?.name ?? connection?.key ?? "",
           },
         ]}
       >
         <IntegrationBox integration={connection} />
-        {isLoading ? <Spinner /> : <DataTabs data={tabs} />}
+        {isLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
       </PageHeader>
     </Layout>
   );
