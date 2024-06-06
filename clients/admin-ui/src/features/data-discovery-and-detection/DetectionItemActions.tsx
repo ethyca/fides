@@ -71,10 +71,10 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
           icon={<MonitorOnIcon />}
           onClick={async () => {
             setIsProcessingAction(true);
-            // await confirmResourceMutation({
-            //   staged_resource_urn: resource.urn,
-            //   monitor_config_id: resource.monitor_config_id!,
-            // });
+            await confirmResourceMutation({
+              staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id!,
+            });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
               `${resource.name || "The resource"} is now being monitored.`
