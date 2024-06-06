@@ -7,16 +7,18 @@ import type { PrivacyCenterConfig } from "./PrivacyCenterConfig";
 import type { PropertyType } from "./PropertyType";
 
 /**
- * A schema representing the complete `Property` model.
+ * Schema that represents a `Property` as returned in the
+ * public-facing Property APIs.
  *
- * This schema extends the base `PublicPropertyResponse` schema,
- * which only includes fields that are appropriate to be exposed
- * in public endpoints.
+ * NOTE: Add to this schema with care. Any fields added to
+ * this response schema will be exposed in public-facing
+ * (i.e. unauthenticated) API responses. If a field has
+ * sensitive information, it should NOT be added to this schema!
  *
- * Any `Property` fields that are sensitive but need to be included in private
- * API responses should be added to this schema.
+ * Any `Property` fields that are sensitive should be added to the
+ * appropriate non-public schemas that extend this schema.
  */
-export type Property = {
+export type PublicPropertyResponse = {
   name: string;
   type: PropertyType;
   id?: string;
