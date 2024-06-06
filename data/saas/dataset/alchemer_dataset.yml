@@ -5,32 +5,6 @@ dataset:
       A sample dataset representing the Alchemer erasure only connector for
       Fides
     collections:
-      - name: contact_list
-        fields:
-          - name: id
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: list_name
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: date_modified
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: date_created
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: user_id_created
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: user_id_modified
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
       - name: contact
         fields:
           - name: id

@@ -76,6 +76,7 @@ def alchemer_erasure_data(
         "email_address": alchemer_erasure_identity_email,
     }
     response = requests.put(contactlistcontact_url, params=params)
+
     assert response.ok
 
 

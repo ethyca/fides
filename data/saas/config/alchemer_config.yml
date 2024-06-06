@@ -33,35 +33,22 @@ saas_config:
     path: /v5/account
 
   endpoints:
-    - name: contact_list
-      requests:
-        read:
-          method: GET
-          path: /v5/contactlist
-          data_path: data
-          param_values:
-            - name: placeholder
-              identity: email
-
     - name: contact
       requests:
         read:
-          method: GET
-          path: /v5/contactlist/<contact_list_id>/contactlistcontact
-          data_path: data
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: email_address
-                value:
-                  identity: email
-                case_sensitive: false
+          request_override: alchemer_list_read
           param_values:
-            - name: contact_list_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: contact_list.id
-                  direction: from
+            - name: placeholder_email
+              identity: email
+          #     references:
+          #       - dataset: <instance_fides_key>
+          #         field: contact.contact_list_id
+          #         direction: from
+          #   - name: contact_id
+          #     references:
+          #       - dataset: <instance_fides_key>
+          #         field: contact.id
+          #         direction: from
         delete:
           method: DELETE
           path: /v5/contactlist/<contact_list_id>/contactlistcontact/<contact_id>
@@ -70,7 +57,7 @@ saas_config:
             - name: contact_list_id
               references:
                 - dataset: <instance_fides_key>
-                  field: contact_list.id
+                  field: contact.contact_list_id
                   direction: from
             - name: contact_id
               references:
