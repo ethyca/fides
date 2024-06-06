@@ -6,8 +6,8 @@ import {
   ViewOffIcon,
 } from "fidesui";
 import { useState } from "react";
-import { useAlert } from "~/features/common/hooks";
 
+import { useAlert } from "~/features/common/hooks";
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
