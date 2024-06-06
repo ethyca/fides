@@ -1,6 +1,5 @@
 import {
   Button,
-  ButtonGroup,
   FilterLightIcon,
   Flex,
   IconButton,
@@ -11,13 +10,10 @@ import {
   useDisclosure,
 } from "fidesui";
 import React, { useContext } from "react";
-import { useDispatch } from "react-redux";
 
-import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { DownloadLightIcon, GearLightIcon } from "~/features/common/Icon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { selectIsMapOpen, setView } from "~/features/datamap/datamap.slice";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import ExportModal from "~/features/datamap/modals/ExportModal";
@@ -25,8 +21,6 @@ import FilterModal from "~/features/datamap/modals/FilterModal";
 import SettingsModal from "~/features/datamap/modals/SettingsModal";
 
 const useSettingsBar = () => {
-  const isMapOpen = useAppSelector(selectIsMapOpen);
-
   const {
     isOpen: isExportModalOpen,
     onOpen: onExportModalOpen,
@@ -51,7 +45,6 @@ const useSettingsBar = () => {
 
   return {
     isExportModalOpen,
-    isMapOpen,
     isSettingsModalOpen,
     isFilterModalOpen,
     onSettingsModalOpen,
@@ -65,7 +58,6 @@ const useSettingsBar = () => {
 };
 
 const SettingsBar: React.FC = () => {
-  const dispatch = useDispatch();
   const {
     isExportModalOpen,
     isFilterModalOpen,
@@ -76,7 +68,6 @@ const SettingsBar: React.FC = () => {
     onFilterModalClose,
     onExportClick,
     onExportModalClose,
-    isMapOpen,
   } = useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
@@ -145,26 +136,6 @@ const SettingsBar: React.FC = () => {
               </Tag>
             ) : null}
           </Button>
-          <ButtonGroup isAttached size="sm" marginRight={4}>
-            <Button
-              colorScheme={isMapOpen ? "primary" : undefined}
-              onClick={() => {
-                dispatch(setView("map"));
-              }}
-              data-testid="map-btn"
-            >
-              Map
-            </Button>
-            <Button
-              colorScheme={!isMapOpen ? "primary" : undefined}
-              onClick={() => {
-                dispatch(setView("table"));
-              }}
-              data-testid="table-btn"
-            >
-              Table
-            </Button>
-          </ButtonGroup>
           <IconButton
             aria-label="Open Column Settings"
             variant="ghost"

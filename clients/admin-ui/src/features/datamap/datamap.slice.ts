@@ -282,9 +282,6 @@ export const datamapSlice = createSlice({
         payload
       );
     },
-    setView(draftState, { payload }: PayloadAction<View>) {
-      draftState.view = payload;
-    },
     setIsGettingStarted(draftState, { payload }: PayloadAction<boolean>) {
       draftState.isGettingStarted = payload;
     },
@@ -298,17 +295,12 @@ export const selectColumns = createSelector(
   (settings) => settings.columns
 );
 
-export const selectIsMapOpen = createSelector(
-  selectSettings,
-  (settings) => settings.view === "map"
-);
-
 export const selectIsGettingStarted = createSelector(
   selectSettings,
   (settings) => settings.isGettingStarted
 );
 
-export const { setColumns, loadColumns, setView, setIsGettingStarted } =
+export const { setColumns, loadColumns, setIsGettingStarted } =
   datamapSlice.actions;
 
 export const { reducer } = datamapSlice;
