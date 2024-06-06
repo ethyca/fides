@@ -49,7 +49,11 @@ const IntegrationBox = ({
         </Flex>
         <ButtonGroup size="sm" variant="outline">
           {showTestNotice && (
-            <Button onClick={testConnection} isLoading={isLoading}>
+            <Button
+              onClick={testConnection}
+              isLoading={isLoading}
+              data-testid="test-connection-btn"
+            >
               Test connection
             </Button>
           )}

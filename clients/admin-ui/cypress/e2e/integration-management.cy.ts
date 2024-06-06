@@ -5,6 +5,12 @@ import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 describe("Integration management for data detection & discovery", () => {
   beforeEach(() => {
     cy.login();
+    cy.intercept("GET", "/api/v1/connection/*/test", {
+      statusCode: 200,
+      body: {
+        test_status: "succeeded",
+      },
+    }).as("testConnection");
   });
 
   describe("accessing the page", () => {
@@ -47,6 +53,13 @@ describe("Integration management for data detection & discovery", () => {
       it("should show a list of integrations", () => {
         cy.getByTestId("integration-info-bq_integration").should("exist");
         cy.getByTestId("empty-state").should("not.exist");
+      });
+
+      it("should be able to test connections by clicking the button", () => {
+        cy.getByTestId("integration-info-bq_integration").within(() => {
+          cy.getByTestId("test-connection-btn").click();
+          cy.wait("@testConnection");
+        });
       });
 
       it("should navigate to management page when 'manage' button is clicked", () => {
@@ -132,6 +145,11 @@ describe("Integration management for data detection & discovery", () => {
         fixture: "connectors/bigquery_connection.json",
       }).as("getConnection");
       cy.visit("/integrations/bq_integration");
+    });
+
+    it("can test the connection", () => {
+      cy.getByTestId("test-connection-btn").click();
+      cy.wait("@testConnection");
     });
 
     it("can edit integration with the modal", () => {
