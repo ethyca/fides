@@ -3,8 +3,6 @@ import {
   FilterLightIcon,
   Flex,
   IconButton,
-  Menu,
-  MenuButton,
   Tag,
   Text,
   useDisclosure,
@@ -12,21 +10,14 @@ import {
 import React, { useContext } from "react";
 
 import { useFeatures } from "~/features/common/features";
-import { DownloadLightIcon, GearLightIcon } from "~/features/common/Icon";
+import { GearLightIcon } from "~/features/common/Icon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
-import ExportModal from "~/features/datamap/modals/ExportModal";
 import FilterModal from "~/features/datamap/modals/FilterModal";
 import SettingsModal from "~/features/datamap/modals/SettingsModal";
 
 const useSettingsBar = () => {
-  const {
-    isOpen: isExportModalOpen,
-    onOpen: onExportModalOpen,
-    onClose: onExportModalClose,
-  } = useDisclosure();
-
   const {
     isOpen: isSettingsModalOpen,
     onOpen: onSettingsModalOpen,
@@ -39,35 +30,24 @@ const useSettingsBar = () => {
     onClose: onFilterModalClose,
   } = useDisclosure();
 
-  const onExportClick = () => {
-    onExportModalOpen();
-  };
-
   return {
-    isExportModalOpen,
     isSettingsModalOpen,
     isFilterModalOpen,
     onSettingsModalOpen,
     onSettingsModalClose,
     onFilterModalOpen,
     onFilterModalClose,
-    onExportClick,
-    onExportModalClose,
-    onExportModalOpen,
   };
 };
 
 const SettingsBar: React.FC = () => {
   const {
-    isExportModalOpen,
     isFilterModalOpen,
     isSettingsModalOpen,
     onSettingsModalOpen,
     onSettingsModalClose,
     onFilterModalOpen,
     onFilterModalClose,
-    onExportClick,
-    onExportModalClose,
   } = useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
@@ -144,20 +124,9 @@ const SettingsBar: React.FC = () => {
             onClick={onSettingsModalOpen}
             icon={<GearLightIcon />}
           />
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Export data"
-              icon={<DownloadLightIcon />}
-              onClick={onExportClick}
-              size="sm"
-              variant="ghost"
-            />
-          </Menu>
         </Flex>
       </Flex>
       <FilterModal isOpen={isFilterModalOpen} onClose={onFilterModalClose} />
-      <ExportModal isOpen={isExportModalOpen} onClose={onExportModalClose} />
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={onSettingsModalClose}

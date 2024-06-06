@@ -35,7 +35,6 @@
     "@reduxjs/toolkit": "^1.9.3",
     "@tanstack/react-table": "^8.10.7",
     "chakra-react-select": "^3.3.7",
-    "csv-stringify": "^6.3.0",
     "cytoscape": "^3.23.0",
     "cytoscape-klay": "^3.1.4",
     "date-fns": "^2.29.3",
@@ -53,8 +52,8 @@
     "msw": "^1.2.1",
     "narrow-minded": "^1.2.1",
     "next": "^12.3.4",
-    "query-string": "^9.0.0",
     "next-transpile-modules": "^10.0.0",
+    "query-string": "^9.0.0",
     "react": "^17.0.2",
     "react-cytoscapejs": "^2.0.0",
     "react-dnd": "^15.0.1",
@@ -65,7 +64,6 @@
     "react-table": "^7.8.0",
     "redux-persist": "^6.0.0",
     "whatwg-fetch": "^3.6.2",
-    "xlsx": "^0.18.5",
     "yup": "^0.32.11"
   },
   "devDependencies": {
