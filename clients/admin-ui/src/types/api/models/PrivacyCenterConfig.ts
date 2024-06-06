@@ -6,7 +6,10 @@ import type { fides__api__schemas__privacy_center_config__ConsentConfig } from "
 import type { PrivacyRequestOption } from "./PrivacyRequestOption";
 
 /**
- * A base template for all other Fides Schemas to inherit from.
+ * NOTE: Add to this schema with care. Any fields added to
+ * this response schema will be exposed in public-facing
+ * (i.e. unauthenticated) API responses. If a field has
+ * sensitive information, it should NOT be added to this schema!
  */
 export type PrivacyCenterConfig = {
   title: string;
