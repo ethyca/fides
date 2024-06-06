@@ -7,7 +7,7 @@ import { DataSubject } from "~/types/api";
 const dataSubjectsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDataSubjects: build.query<DataSubject[], void>({
-      query: () => ({ url: `data_subject/` }),
+      query: () => ({ url: `data_subject` }),
       providesTags: () => ["Data Subjects"],
       transformResponse: (subjects: DataSubject[]) =>
         subjects.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
@@ -17,7 +17,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
       Partial<DataSubject> & Pick<DataSubject, "fides_key">
     >({
       query: (dataSubject) => ({
-        url: `data_subject/`,
+        url: `data_subject`,
         params: { resource_type: "data_subject" },
         method: "PUT",
         body: dataSubject,
@@ -26,7 +26,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
     }),
     createDataSubject: build.mutation<DataSubject, DataSubject>({
       query: (dataSubject) => ({
-        url: `data_subject/`,
+        url: `data_subject`,
         method: "POST",
         body: dataSubject,
       }),
