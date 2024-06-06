@@ -2,18 +2,21 @@ import { CheckCircleIcon, Flex, Text, WarningIcon } from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
 
-const ConnectionStatusNotice = ({
-  timestamp,
-  succeeded,
-}: {
+export type ConnectionStatusData = {
   timestamp?: string;
   succeeded?: boolean;
+};
+
+const ConnectionStatusNotice = ({
+  testData,
+}: {
+  testData: ConnectionStatusData;
 }) => {
-  if (!timestamp) {
+  if (!testData.timestamp) {
     return <Text data-testid="connection-status">Connection not tested</Text>;
   }
-  const testDate = formatDate(timestamp);
-  return succeeded ? (
+  const testDate = formatDate(testData.timestamp);
+  return testData.succeeded ? (
     <Flex color="green.400" align="center" data-testid="connection-status">
       <CheckCircleIcon mr={2} />
       <Text>Last connected {testDate}</Text>
