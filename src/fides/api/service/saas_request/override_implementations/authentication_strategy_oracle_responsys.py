@@ -31,7 +31,6 @@ class OracleResponsysAuthenticationStrategy(AuthenticationStrategy):
     def __init__(self, configuration: OracleResponsysAuthenticationConfiguration):
         self.username = configuration.username
         self.password = configuration.password
-        self.test = "hi"
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
