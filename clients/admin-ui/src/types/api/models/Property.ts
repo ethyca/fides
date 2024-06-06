@@ -7,7 +7,14 @@ import type { PrivacyCenterConfig } from "./PrivacyCenterConfig";
 import type { PropertyType } from "./PropertyType";
 
 /**
- * A base template for all other Fides Schemas to inherit from.
+ * A schema representing the complete `Property` model.
+ *
+ * This schema extends the base `PublicPropertyResponse` schema,
+ * which only includes fields that are appropriate to be exposed
+ * in public endpoints.
+ *
+ * Any `Property` fields that are sensitive but need to be included in private
+ * API responses should be added to this schema.
  */
 export type Property = {
   name: string;
