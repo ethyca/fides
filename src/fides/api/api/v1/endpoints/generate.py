@@ -50,7 +50,6 @@ class ValidTargets(str, Enum):
     SCYLLADB = "scylla"
 
 
-
 class GenerateTypes(str, Enum):
     """
     Generate Type Enum to capture the discrete possible values

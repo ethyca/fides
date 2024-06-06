@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -29,7 +29,7 @@ class ScyllaSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         sensitive=True,
     )
-    keyspace: str = Field(
+    keyspace: Optional[str] = Field(
         title="Keyspace",
         description="The keyspace used.",
         sensitive=True,
@@ -39,7 +39,6 @@ class ScyllaSchema(ConnectionConfigSecretsSchema):
         "host",
         "username",
         "password",
-        "keyspace",
     ]
 
 

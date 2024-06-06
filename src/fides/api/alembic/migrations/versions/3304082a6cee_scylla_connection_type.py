@@ -1,7 +1,7 @@
 """scylla_connection_type
 
 Revision ID: 3304082a6cee
-Revises: 4b2eade4353c
+Revises: 52a5f1a957bc
 Create Date: 2024-06-03 19:54:20.907724
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "3304082a6cee"
-down_revision = "4b2eade4353c"
+down_revision = "52a5f1a957bc"
 branch_labels = None
 depends_on = None
 
@@ -32,7 +32,7 @@ def upgrade():
 
 
 def downgrade():
-    # Remove 'fides' from ConnectionType
+    # Remove 'scylla' from ConnectionType
     op.execute("alter type connectiontype rename to connectiontype_old")
     op.execute(
         "create type connectiontype as enum('mongodb', 'mysql', 'https', 'snowflake', 'redshift', 'mssql', 'mariadb', 'bigquery', 'saas', 'manual', 'manual_webhook', 'timescale', 'fides', 'sovrn', 'attentive', 'dynamodb', 'postgres', 'generic_consent_email', 'generic_erasure_email')"

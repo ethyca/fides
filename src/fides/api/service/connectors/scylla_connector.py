@@ -10,7 +10,9 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.schemas.connection_configuration import ScyllaSchema
+from fides.api.schemas.connection_configuration.connection_secrets_scylla import (
+    ScyllaSchema,
+)
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
@@ -23,10 +25,9 @@ class ScyllaConnector(BaseConnector):
         """
         Builds URI
         """
-        pass
 
     def create_client(self) -> Cluster:
-        """Returns a client for a Scylla instance"""
+        """Returns a Scylla cluster"""
 
         config = ScyllaSchema(**self.configuration.secrets or {})
 
@@ -34,36 +35,41 @@ class ScyllaConnector(BaseConnector):
             username=config.username, password=config.password
         )
         cluster = Cluster([config.host], port=config.port, auth_provider=auth_provider)
-
-        session = cluster.connect(config.keyspace)
-        return session
+        return cluster
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         pass
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
-        Connects to the scylla database
+        Connects to the scylla database and issues a trivial query
         """
         logger.info("Starting test connection to {}", self.configuration.key)
         config = ScyllaSchema(**self.configuration.secrets or {})
-        client = self.client()
+        cluster = self.client()
 
         try:
-            # Select table names from keyspace
-            rows = client.execute(
-                "select table_name from system_schema.tables WHERE keyspace_name=%s",
-                [config.keyspace],
-            )
-            # for row in rows:
-            #     logger.info(row[0])
+            with cluster.connect(
+                config.keyspace if config.keyspace else None
+            ) as client:
+                client.execute("select now() from system.local")
+        except cassandra.cluster.NoHostAvailable as exc:
+            if "Unable to connect to any servers using keyspace" in str(exc):
+                raise ConnectionException("Keyspace issue detected")
+            try:
+                error = list(exc.errors.values())[0]
+            except Exception:
+                raise ConnectionException("No host available.")
 
-        except cassandra.cluster.NoHostAvailable:
+            if isinstance(error, cassandra.AuthenticationFailed):
+                raise ConnectionException("Authentication failed")
+
             raise ConnectionException("No host available.")
+
         except cassandra.protocol.SyntaxException:
             raise ConnectionException("Syntax exception")
-        except Exception as exc:
-            raise ConnectionException("Connection Error connecting to Scylla. {}", exc)
+        except Exception:
+            raise ConnectionException("Connection Error connecting to Scylla DB.")
 
         return ConnectionTestStatus.succeeded
 
@@ -75,8 +81,7 @@ class ScyllaConnector(BaseConnector):
         request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """Retrieve scylla data"""
-        pass
+        """Retrieve scylla data - not yet implemented"""
 
     def mask_data(
         self,
@@ -86,9 +91,7 @@ class ScyllaConnector(BaseConnector):
         request_task: RequestTask,
         rows: List[Row],
     ) -> int:
-        """Execute a masking request"""
-        pass
+        """Execute a masking request - not yet implemented"""
 
     def close(self) -> None:
         """Close any held resources"""
-        pass

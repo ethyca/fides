@@ -2,6 +2,7 @@ services:
   scylladb_example:
     image: scylladb/scylla
     container_name: scylladb_example
+    command: --authenticator=PasswordAuthenticator
     expose:
       - 9042
     ports:
