@@ -19,7 +19,7 @@ saas_config:
       default_value: "all"
     - name: profile_extensions
       label: Profile Extensions
-      description: A comma-separated list of profile extensions in the format of <list name>.<extension_name>, e.g. list_1.extension_a,list_2.extension_b. If value is "all", Fides will execute the DSR against all profile extensions.
+      description: A comma-separated list of profile extensions in the format of <list name>.<extension_name>, e.g. list_1.extension_a,list_2.extension_b. If value is "all", Fides will execute the DSR against all profile extensions. If profile lists are restricted, profile extensions will be limited to those belonging to the specified profile lists.
       default_value: "all"
   client_config:
     protocol: https
