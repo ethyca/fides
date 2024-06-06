@@ -7,4 +7,5 @@
  */
 export type DatabaseHealthCheck = {
   database: string;
+  database_revision?: string;
 };

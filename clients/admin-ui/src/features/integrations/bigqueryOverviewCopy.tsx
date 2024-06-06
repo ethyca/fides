@@ -174,8 +174,10 @@ export const BigQueryInstructions = () => {
         </InfoText>
         <Table fontSize="14px">
           <Thead>
-            <Th>Permission</Th>
-            <Th>Description</Th>
+            <Tr>
+              <Th>Permission</Th>
+              <Th>Description</Th>
+            </Tr>
           </Thead>
           <Tbody>
             <Tr>
@@ -225,8 +227,10 @@ export const BigQueryInstructions = () => {
         </InfoText>
         <Table fontSize="14px">
           <Thead>
-            <Th>Permission</Th>
-            <Th>Description</Th>
+            <Tr>
+              <Th>Permission</Th>
+              <Th>Description</Th>
+            </Tr>
           </Thead>
           <Tbody>
             <Tr>
