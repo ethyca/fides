@@ -58,7 +58,7 @@ export interface CheckboxListProps<T> {
   toggle?: ReactNode;
   onViewMore?: () => void;
   numSelected: number;
-  boldText?: boolean;
+  variant?: "default" | "emphasize";
 }
 
 const PickerCardContainer = ({
@@ -91,7 +91,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
   toggle,
   onViewMore,
   numSelected,
-  boldText,
+  variant = "default",
 }: CheckboxListProps<T>) => {
   const itemsToShow = onViewMore ? items.slice(0, NUM_TO_SHOW) : items;
 
@@ -107,8 +107,8 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
       <Flex justifyContent="space-between" width="100%">
         <Checkbox
           fontSize="md"
-          textTransform={boldText ? "capitalize" : undefined}
-          fontWeight={boldText ? "semibold" : "auto"}
+          textTransform={variant === "emphasize" ? "capitalize" : undefined}
+          fontWeight={variant === "emphasize" ? "semibold" : "auto"}
           isChecked={allSelected}
           size="md"
           mr="2"
@@ -141,7 +141,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
                 isChecked={selected.includes(item.id)}
                 isIndeterminate={indeterminate.includes(item.id)}
                 size="md"
-                fontWeight={boldText ? "500" : "auto"}
+                fontWeight={variant === "emphasize" ? "500" : "auto"}
                 onChange={() => handleToggleSelection(item.id)}
                 data-testid={`${item.name}-checkbox`}
               >
@@ -169,7 +169,7 @@ const PickerCard = <T extends { id: string; name: string }>({
   ...props
 }: CheckboxListProps<T>) => (
   <PickerCardContainer title={props.title}>
-    <PickerCheckboxList {...props} boldText />
+    <PickerCheckboxList {...props} variant="emphasize" />
   </PickerCardContainer>
 );
 
