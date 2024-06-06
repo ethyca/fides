@@ -179,7 +179,7 @@ const MonitorConfigTab = ({
 
   return (
     <>
-      <Text maxW="720px" mb={6}>
+      <Text maxW="720px" mb={6} fontSize="sm">
         Data discovery monitors observe configured systems for data model
         changes to proactively discover and classify data risks. You can create
         multiple monitors to observe part or all of a project, dataset, table or
