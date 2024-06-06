@@ -137,8 +137,6 @@ class SQLConnector(BaseConnector[Engine]):
         self,
         node: ExecutionNode,
         policy: Policy,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
@@ -158,7 +156,6 @@ class SQLConnector(BaseConnector[Engine]):
         node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        request_task: RequestTask,
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""

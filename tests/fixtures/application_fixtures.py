@@ -138,11 +138,9 @@ integration_secrets = {
         "password": pydash.get(integration_config, "mysql_example.password"),
     },
     "google_cloud_sql_mysql": {
-        "host": pydash.get(integration_config, "google_cloud_sql_mysql.server"),
-        "port": pydash.get(integration_config, "google_cloud_sql_mysql.port"),
-        "dbname": pydash.get(integration_config, "google_cloud_sql_mysql.db"),
-        "username": pydash.get(integration_config, "google_cloud_sql_mysql.user"),
-        "password": pydash.get(integration_config, "google_cloud_sql_mysql.password"),
+        "db_iam_user": pydash.get(integration_config, "google_cloud_sql_mysql.db_iam_user"),
+        "instance_connection_name": pydash.get(integration_config, "google_cloud_sql_mysql.instance_connection_name"),
+        "keyfile_creds": pydash.get(integration_config, "google_cloud_sql_mysql.keyfile_creds"),
     },
     "mssql_example": {
         "host": pydash.get(integration_config, "mssql_example.server"),
