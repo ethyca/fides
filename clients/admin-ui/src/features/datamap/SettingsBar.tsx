@@ -2,7 +2,6 @@ import {
   Button,
   FilterLightIcon,
   Flex,
-  IconButton,
   Tag,
   Text,
   useDisclosure,
@@ -10,20 +9,12 @@ import {
 import React, { useContext } from "react";
 
 import { useFeatures } from "~/features/common/features";
-import { GearLightIcon } from "~/features/common/Icon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import FilterModal from "~/features/datamap/modals/FilterModal";
-import SettingsModal from "~/features/datamap/modals/SettingsModal";
 
 const useSettingsBar = () => {
-  const {
-    isOpen: isSettingsModalOpen,
-    onOpen: onSettingsModalOpen,
-    onClose: onSettingsModalClose,
-  } = useDisclosure();
-
   const {
     isOpen: isFilterModalOpen,
     onOpen: onFilterModalOpen,
@@ -31,24 +22,15 @@ const useSettingsBar = () => {
   } = useDisclosure();
 
   return {
-    isSettingsModalOpen,
     isFilterModalOpen,
-    onSettingsModalOpen,
-    onSettingsModalClose,
     onFilterModalOpen,
     onFilterModalClose,
   };
 };
 
 const SettingsBar: React.FC = () => {
-  const {
-    isFilterModalOpen,
-    isSettingsModalOpen,
-    onSettingsModalOpen,
-    onSettingsModalClose,
-    onFilterModalOpen,
-    onFilterModalClose,
-  } = useSettingsBar();
+  const { isFilterModalOpen, onFilterModalOpen, onFilterModalClose } =
+    useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
   const { systemsCount: totalSystemsCount, dictionaryService: compassEnabled } =
@@ -96,7 +78,6 @@ const SettingsBar: React.FC = () => {
             backgroundColor="#824EF2"
             color="white"
             size="sm"
-            marginRight={4}
             onClick={onFilterModalOpen}
             _hover={{ opacity: 0.8 }}
             _active={{
@@ -116,21 +97,9 @@ const SettingsBar: React.FC = () => {
               </Tag>
             ) : null}
           </Button>
-          <IconButton
-            aria-label="Open Column Settings"
-            variant="ghost"
-            size="sm"
-            marginRight={1}
-            onClick={onSettingsModalOpen}
-            icon={<GearLightIcon />}
-          />
         </Flex>
       </Flex>
       <FilterModal isOpen={isFilterModalOpen} onClose={onFilterModalClose} />
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={onSettingsModalClose}
-      />
     </>
   );
 };

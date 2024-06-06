@@ -15,19 +15,12 @@ import {
 } from "~/features/datamap/constants";
 import { DATAMAP_GROUPING, Page_DatamapReport_ } from "~/types/api";
 
-export interface DataCategoryNode {
-  value: string;
-  label: string;
-  description?: string;
-  children: DataCategoryNode[];
-}
-
 export interface DatamapRow {
   [fieldName: string]: string;
 }
 
 /** A column in the table. Derived from API response client-side. */
-export interface DatamapColumn {
+interface DatamapColumn {
   isVisible: boolean;
   /** The human-readable name for this column */
   text: string;
@@ -36,13 +29,9 @@ export interface DatamapColumn {
   id: number;
 }
 
-export interface Filters {
-  [fieldValue: string]: string[];
-}
+type DatamapResponse = DatamapRow[];
 
-export type DatamapResponse = DatamapRow[];
-
-export type DatamapTableData = {
+type DatamapTableData = {
   columns: DatamapColumn[];
   rows: DatamapRow[];
 };
@@ -288,7 +277,7 @@ export const datamapSlice = createSlice({
   },
 });
 
-export const selectSettings = (state: RootState) => state.datamap;
+const selectSettings = (state: RootState) => state.datamap;
 
 export const selectColumns = createSelector(
   selectSettings,
