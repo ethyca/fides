@@ -133,18 +133,19 @@ const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
-  // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
     // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
-    const { experience, saved_consent: savedConsent } = window.Fides;
+    const { experience, saved_consent: savedConsent, options } = window.Fides;
+    const isTcfEnabled = options.tcfEnabled;
     cmpApi.setSupportedAPIs(getSupportedApis());
     // Set status to ready immediately upon initialization, if either:
     // A. Consent should not be resurfaced
-    // B. User has no prefs and has all opt-in notices
+    // B. User has no prefs and has all opt-in notices and TCF is disabled
     if (
       isPrivacyExperience(experience) &&
       (!shouldResurfaceConsent(experience, event.detail, savedConsent) ||
-        (allNoticesAreDefaultOptIn(experience.privacy_notices) &&
+        (!isTcfEnabled &&
+          allNoticesAreDefaultOptIn(experience.privacy_notices) &&
           !userHasExistingPrefs(
             savedConsent,
             event.detail.fides_string,
@@ -176,10 +177,12 @@ const initializeGppCmpApi = () => {
 
   window.addEventListener("FidesUIShown", (event) => {
     // Set US GPP notice fields
-    const { experience, saved_consent: savedConsent } = window.Fides;
+    const { experience, saved_consent: savedConsent, options } = window.Fides;
+    const isTcfEnabled = options.tcfEnabled;
     if (isPrivacyExperience(experience)) {
-      // set signal status to ready only for users with no existing prefs and if notices are all opt-in by default
+      // set signal status to ready only for users with no existing prefs and if notices are all opt-in by default and TCF is disabled
       if (
+        !isTcfEnabled &&
         allNoticesAreDefaultOptIn(experience.privacy_notices) &&
         !userHasExistingPrefs(
           savedConsent,
@@ -198,6 +201,9 @@ const initializeGppCmpApi = () => {
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+        sectionsChanged.forEach((section) => {
+          cmpApi.fireSectionChange(section.name);
+        });
       }
     }
   });
