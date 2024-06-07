@@ -245,23 +245,6 @@ def downgrade():
         type_="unique",
     )
     op.drop_index(
-        op.f("ix_currentprivacypreferencev2_phone_number_property_id"),
-        table_name="currentprivacypreferencev2",
-    )
-    op.drop_index(
-        op.f("ix_currentprivacypreferencev2_fides_user_device_property_id"),
-        table_name="currentprivacypreferencev2",
-    )
-    op.drop_index(
-        op.f("ix_currentprivacypreferencev2_external_id_property_id"),
-        table_name="currentprivacypreferencev2",
-    )
-    op.drop_index(
-        op.f("ix_currentprivacypreferencev2_email_property_id"),
-        table_name="currentprivacypreferencev2",
-    )
-    op.drop_index(op.f("ix_preferences_gin"), table_name="currentprivacypreferencev2")
-    op.drop_index(
         op.f("ix_currentprivacypreferencev2_property_id"),
         table_name="currentprivacypreferencev2",
     )
