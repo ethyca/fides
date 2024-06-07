@@ -1720,6 +1720,8 @@ dataset:
       data_categories: [user]
     - name: property_id
       data_categories: [system.operations]
+    - name: received_at
+      data_categories: [ system.operations ]
   - name: servednoticehistory
     description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
@@ -1776,6 +1778,8 @@ dataset:
       data_categories: [user]
     - name: property_id
       data_categories: [system.operations]
+    - name: received_at
+      data_categories: [ system.operations ]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
@@ -2083,6 +2087,8 @@ dataset:
     - name: databases
       data_categories: [system]
     - name: monitor_execution_trigger
+      data_categories: [system]
+    - name: datasource_params
       data_categories: [system]
   - name: stagedresource
     fields:

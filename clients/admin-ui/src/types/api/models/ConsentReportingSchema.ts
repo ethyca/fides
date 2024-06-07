@@ -36,4 +36,5 @@ export type ConsentReportingSchema = {
   served_notice_history_id?: string;
   notice_name?: string;
   tcf_preferences?: any;
+  property_id?: string;
 };

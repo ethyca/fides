@@ -151,7 +151,6 @@ const ConfigureSystem: NextPage = () => {
         <VStack alignItems="stretch" flex="1" gap="18px" maxWidth="70vw">
           <DataTabsContent
             data={tabData}
-            data-testid="system-tabs"
             index={tabIndex}
             isLazy
             isManual
