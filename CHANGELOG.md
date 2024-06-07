@@ -17,6 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.38.0...main)
 
+### Changed
+- Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
+
+### Fixed
+- Fixed an issue where the GPP signal status was prematurely set to `ready` in some scenarios [#4957](https://github.com/ethyca/fides/pull/4957)
+
 ## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)
 
 ### Added
@@ -41,7 +47,6 @@ The types of changes are:
 - Update Privacy Center toast text for consistent capitalization [#4936](https://github.com/ethyca/fides/pull/4936)
 - Update Custom Fields table and Domain Verification table to use FidesTable V2. Remove V1 components. [#4932](https://github.com/ethyca/fides/pull/4932)
 - Updated how Fields are generated for DynamoDB, improved error handling [#4943](https://github.com/ethyca/fides/pull/4943)
-- Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
 
 ### Fixed
 - Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
@@ -49,7 +54,6 @@ The types of changes are:
 - Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
 - Fixed an issue where the unique device ID was not being retained when Fides.js was reinitialized [#4947](https://github.com/ethyca/fides/pull/4947)
 - Fixed inconsistent font sizes on new integrations UI [#4959](https://github.com/ethyca/fides/pull/4959)
-- Fixed an issue where the GPP signal status was prematurely set to `ready` in some scenarios [#4957](https://github.com/ethyca/fides/pull/4957)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
