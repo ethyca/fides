@@ -39,8 +39,8 @@ def alchemer_list_read(
         "api_token_secret": secrets['api_token_secret'],
     }
     response = requests.request("GET",contact_list_url, params=params)
-
     list_ids_data = response.json()
+
     list_results = []
     for list_id in list_ids_data['data']:
         list_results.append(list_id['id'])
@@ -51,10 +51,13 @@ def alchemer_list_read(
         contact_results = []
         for contact in contacts_data['data']:
             if contact['email_address'] == identity_email:
-                contact_results.append({
-                    "contact_list_id":list,
-                    "contact_id": contact['id']
-                    })
+                contact_results.append(contact)
+
+
+                # contact_results.append({
+                #     "contact_list_id":list,
+                #     "contact_id": contact['id']
+                #     })
     return contact_results
 
 
