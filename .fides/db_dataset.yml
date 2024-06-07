@@ -1786,6 +1786,10 @@ dataset:
       data_categories: [system.operations]
     - name: received_at
       data_categories: [ system.operations ]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: hashed_external_id
+      data_categories: [system.operations]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
