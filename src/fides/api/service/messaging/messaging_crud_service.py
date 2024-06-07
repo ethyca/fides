@@ -132,8 +132,8 @@ def _basic_messaging_template_by_type(
     template = None
     templates = (
         MessagingTemplate.query(db=db)
-            .filter(MessagingTemplate.type == template_type)
-            .all()
+        .filter(MessagingTemplate.type == template_type)
+        .all()
     )
 
     if len(templates) == 1:
