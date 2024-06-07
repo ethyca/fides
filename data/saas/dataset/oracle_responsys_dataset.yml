@@ -119,7 +119,6 @@ dataset:
           - name: riid
             data_categories: [user.unique_id]
             fidesops_meta:
-              primary_key: True
               data_type: string
           - name: user_data
             data_categories: [user.content]
