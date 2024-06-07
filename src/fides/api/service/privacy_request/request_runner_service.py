@@ -620,8 +620,6 @@ def initiate_privacy_request_completion_email(
             property_id=property_id,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
         )
-        if not property_specific_messaging_template:
-            return
         # synchronous for now since failure to send complete emails is fatal to request
         dispatch_message(
             db=session,
@@ -641,8 +639,6 @@ def initiate_privacy_request_completion_email(
             property_id=property_id,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
         )
-        if not property_specific_messaging_template:
-            return
         dispatch_message(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
