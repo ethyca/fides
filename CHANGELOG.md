@@ -31,6 +31,8 @@ The types of changes are:
 - Fill custom privacy request fields with query_param_key [#4948](https://github.com/ethyca/fides/pull/4948)
 - Add `datasource_params` column to MonitorConfig DB model [#4951](https://github.com/ethyca/fides/pull/4951)
 - Added ability to open system preview side panel from new data map table [#4944](https://github.com/ethyca/fides/pull/4944)
+- Added sucess toast message after monitoring a resource [#4958](https://github.com/ethyca/fides/pull/4958)
+- Added UI for displaying, adding and editing discovery monitors [#4954](https://github.com/ethyca/fides/pull/4954)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
@@ -45,6 +47,8 @@ The types of changes are:
 - Fixed an issue where language form field error message was not displaying properly [#4942](https://github.com/ethyca/fides/pull/4942)
 - Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
 - Fixed an issue where the unique device ID was not being retained when Fides.js was reinitialized [#4947](https://github.com/ethyca/fides/pull/4947)
+- Fixed inconsistent font sizes on new integrations UI [#4959](https://github.com/ethyca/fides/pull/4959)
+- Fixed an issue where the GPP signal status was prematurely set to `ready` in some scenarios [#4957](https://github.com/ethyca/fides/pull/4957)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 
