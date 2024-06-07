@@ -20,6 +20,10 @@ depends_on = None
 
 def upgrade():
     op.add_column(
+        "consentrequest",
+        sa.Column("property_id", sa.String(), nullable=True),
+    )
+    op.add_column(
         "currentprivacypreferencev2",
         sa.Column(
             "external_id",
@@ -279,3 +283,4 @@ def downgrade():
     op.drop_column("currentprivacypreferencev2", "property_id")
     op.drop_column("currentprivacypreferencev2", "hashed_external_id")
     op.drop_column("currentprivacypreferencev2", "external_id")
+    op.drop_column("consentrequest", "property_id")

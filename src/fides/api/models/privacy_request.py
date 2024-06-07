@@ -1496,6 +1496,11 @@ class Consent(Base):
 class ConsentRequest(IdentityVerificationMixin, Base):
     """Tracks consent requests."""
 
+    property_id = Column(
+        String,
+        index=True,
+        nullable=True,
+    )
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )

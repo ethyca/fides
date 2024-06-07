@@ -208,6 +208,7 @@ def create_consent_request(
 
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
+        "property_id": getattr(data, "property_id", None),
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
