@@ -1,7 +1,7 @@
 """add s3 connection type
 
 Revision ID: cb344673f633
-Revises: 4b2eade4353c
+Revises: 52a5f1a957bc
 Create Date: 2024-05-31 20:46:08.829330
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "cb344673f633"
-down_revision = "4b2eade4353c"
+down_revision = "52a5f1a957bc"
 branch_labels = None
 depends_on = None
 
