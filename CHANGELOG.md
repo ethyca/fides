@@ -15,7 +15,19 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.37.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.38.0...main)
+
+### Added
+- Added model and data migrations and CRUD-layer operations for property-specific messaging [#4901](https://github.com/ethyca/fides/pull/4901)
+- Added option in FidesJS SDK to only disable notice-served API [#4965](https://github.com/ethyca/fides/pull/4965)
+
+### Changed
+- Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
+
+### Fixed
+- Fixed an issue where the GPP signal status was prematurely set to `ready` in some scenarios [#4957](https://github.com/ethyca/fides/pull/4957)
+
+## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)
 
 ### Added
 - Deprecate LastServedNotice (lastservednoticev2) table [#4910](https://github.com/ethyca/fides/pull/4910)
@@ -26,18 +38,26 @@ The types of changes are:
 - Track when preferences/notices served received [#4931](https://github.com/ethyca/fides/pull/4931)
 - Request overrides for opt-in and opt-out consent requests [#4920](https://github.com/ethyca/fides/pull/4920)
 - Added query_param_key to Privacy Center schema [#4939](https://github.com/ethyca/fides/pull/4939)
+- Fill custom privacy request fields with query_param_key [#4948](https://github.com/ethyca/fides/pull/4948)
+- Add `datasource_params` column to MonitorConfig DB model [#4951](https://github.com/ethyca/fides/pull/4951)
+- Added ability to open system preview side panel from new data map table [#4944](https://github.com/ethyca/fides/pull/4944)
+- Added success toast message after monitoring a resource [#4958](https://github.com/ethyca/fides/pull/4958)
+- Added UI for displaying, adding and editing discovery monitors [#4954](https://github.com/ethyca/fides/pull/4954)
 
 ### Changed
 - Set default ports for local development of client projects (:3001 for privacy center and :3000 for admin-ui) [#4912](https://github.com/ethyca/fides/pull/4912)
 - Update privacy center port to :3001 for nox [#4918](https://github.com/ethyca/fides/pull/4918)
 - Optimize speed by generating the uuids in the client side for consent requests [#4933](https://github.com/ethyca/fides/pull/4933)
 - Update Privacy Center toast text for consistent capitalization [#4936](https://github.com/ethyca/fides/pull/4936)
+- Update Custom Fields table and Domain Verification table to use FidesTable V2. Remove V1 components. [#4932](https://github.com/ethyca/fides/pull/4932)
+- Updated how Fields are generated for DynamoDB, improved error handling [#4943](https://github.com/ethyca/fides/pull/4943)
 
 ### Fixed
 - Fixed an issue where the test integration action failed for the Zendesk integration [#4929](https://github.com/ethyca/fides/pull/4929)
-
-### Fixed
+- Fixed an issue where language form field error message was not displaying properly [#4942](https://github.com/ethyca/fides/pull/4942)
 - Fixed an issue where the consent cookie could not be set on multi-level root domain (e.g. co.uk, co.jp) [#4935](https://github.com/ethyca/fides/pull/4935)
+- Fixed an issue where the unique device ID was not being retained when Fides.js was reinitialized [#4947](https://github.com/ethyca/fides/pull/4947)
+- Fixed inconsistent font sizes on new integrations UI [#4959](https://github.com/ethyca/fides/pull/4959)
 
 ## [2.37.0](https://github.com/ethyca/fides/compare/2.36.0...2.37.0)
 

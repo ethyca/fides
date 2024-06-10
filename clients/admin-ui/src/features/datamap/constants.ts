@@ -15,7 +15,6 @@ export enum ExportFormat {
   xlsx = "xlsx",
 }
 
-export const SYSTEM_FIDES_KEY_COLUMN_ID = "system.fides_key";
 export const SYSTEM_NAME = "system.name";
 export const SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME =
   "system.privacy_declaration.data_use.name";
@@ -70,4 +69,5 @@ export enum DATAMAP_LOCAL_STORAGE_KEYS {
   TABLE_GROUPING = "datamap-table-grouping",
   TABLE_STATE = "datamap-report-table-state",
   DISPLAY_ALL_COLUMNS = "datamap-display-all-columns",
+  SORTING_STATE = "datamap-sorting-state",
 }

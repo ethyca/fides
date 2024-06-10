@@ -88,6 +88,7 @@ describe("Minimal datamap report table", () => {
     cy.getByTestId("group-by-menu-list").within(() => {
       cy.getByTestId("group-by-data-use-system").click();
     });
+    cy.wait("@getDatamapMinimal");
     cy.getByTestId("group-by-menu").should("contain.text", "Group by data use");
 
     // should persist the grouping when navigating away
@@ -208,5 +209,25 @@ describe("Minimal datamap report table", () => {
 
     // ideally we should test the downloads, but it's a bit complex and time consuming so deferring for now
     it.skip("should download the export file", () => {});
+  });
+
+  describe("System preview drawer", () => {
+    it("should open the system preview drawer", () => {
+      cy.getByTestId("row-0-col-system_name").click();
+      cy.getByTestId("datamap-drawer").should("be.visible");
+      cy.getByTestId("datamap-drawer-close").click({ force: true });
+      cy.getByTestId("datamap-drawer").should("not.be.visible");
+    });
+    it("should open the system preview drawer when grouped by data use", () => {
+      cy.getByTestId("group-by-menu").click();
+      cy.getByTestId("group-by-menu-list").within(() => {
+        cy.getByTestId("group-by-data-use-system").click();
+      });
+      cy.wait("@getDatamapMinimal");
+      cy.getByTestId("row-0-col-system_name").click();
+      cy.getByTestId("datamap-drawer").should("be.visible");
+      cy.getByTestId("datamap-drawer-close").click({ force: true });
+      cy.getByTestId("datamap-drawer").should("not.be.visible");
+    });
   });
 });

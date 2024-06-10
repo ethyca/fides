@@ -1552,13 +1552,29 @@ dataset:
     fields:
     - name: id
       data_categories: [system.operations]
-    - name: key
+    - name: is_enabled
+      data_categories: [system.operations]
+    - name: type
       data_categories: [system.operations]
     - name: content
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+  - name: messaging_template_to_property
+    description: 'Table used to store relationship between messaging templates and properties'
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: messaging_template_id
+      data_categories: [system.operations]
+    - name: property_id
       data_categories: [system.operations]
   - name: plus_system_history
     description: 'Table used to store system changes'
@@ -1952,6 +1968,8 @@ dataset:
       data_categories: [system.operations]
     - name: type
       data_categories: [system.operations]
+    - name: is_default
+      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
@@ -2087,6 +2105,8 @@ dataset:
     - name: databases
       data_categories: [system]
     - name: monitor_execution_trigger
+      data_categories: [system]
+    - name: datasource_params
       data_categories: [system]
   - name: stagedresource
     fields:

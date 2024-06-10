@@ -3,7 +3,13 @@ import queryString from "query-string";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { DiffStatus, Page_StagedResource_ } from "~/types/api";
+import {
+  DiffStatus,
+  MonitorConfig,
+  Page_MonitorConfig_,
+  Page_StagedResource_,
+  Page_str_,
+} from "~/types/api";
 
 interface State {
   page?: number;
@@ -24,6 +30,12 @@ interface MonitorResultQueryParams {
   search?: string;
 }
 
+interface DatabaseQueryParams {
+  page: number;
+  size: number;
+  monitor_config_id: string;
+}
+
 interface ResourceActionQueryParams {
   staged_resource_urn?: string;
 }
@@ -39,6 +51,28 @@ interface ChangeResourceCategoryQueryParam {
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getMonitorsByIntegration: build.query<Page_MonitorConfig_, any>({
+      query: (params) => ({
+        method: "GET",
+        url: `/plus/discovery-monitor`,
+        params,
+      }),
+      providesTags: ["Discovery Monitor Configs"],
+    }),
+    putDiscoveryMonitor: build.mutation<MonitorConfig, MonitorConfig>({
+      query: (body) => ({
+        method: "PUT",
+        url: `/plus/discovery-monitor`,
+        body,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    getDatabasesByMonitor: build.query<Page_str_, DatabaseQueryParams>({
+      query: (params) => ({
+        method: "GET",
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/databases`,
+      }),
+    }),
     getMonitorResults: build.query<
       Page_StagedResource_,
       MonitorResultQueryParams
@@ -136,6 +170,9 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetMonitorsByIntegrationQuery,
+  usePutDiscoveryMonitorMutation,
+  useGetDatabasesByMonitorQuery,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   usePromoteResourcesMutation,

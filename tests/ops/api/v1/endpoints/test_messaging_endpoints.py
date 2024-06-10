@@ -1926,7 +1926,7 @@ class TestPutMessagingTemplates:
     def payload(self) -> List[Dict[str, Any]]:
         return [
             {
-                "key": "subject_identity_verification",
+                "type": "subject_identity_verification",
                 "content": {
                     "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
                     "subject": "Your code is {{code}}",
@@ -1961,7 +1961,7 @@ class TestPutMessagingTemplates:
         assert response.json() == {
             "succeeded": [
                 {
-                    "key": "subject_identity_verification",
+                    "type": "subject_identity_verification",
                     "content": {
                         "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
                         "subject": "Your code is {{code}}",
@@ -1985,7 +1985,7 @@ class TestPutMessagingTemplates:
             headers=auth_header,
             json=[
                 {
-                    "key": "subject_identity_verification",
+                    "type": "subject_identity_verification",
                     "content": {
                         "body": None,
                         "subject": None,
@@ -1997,7 +1997,7 @@ class TestPutMessagingTemplates:
         assert response.json() == {
             "succeeded": [
                 {
-                    "key": "subject_identity_verification",
+                    "type": "subject_identity_verification",
                     "content": {
                         "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
                         "subject": "Your one-time code is {{code}}",
@@ -2008,7 +2008,7 @@ class TestPutMessagingTemplates:
             "failed": [],
         }
 
-    def test_put_messaging_templates_invalid_key(
+    def test_put_messaging_templates_invalid_type(
         self,
         url,
         api_client: TestClient,
@@ -2020,7 +2020,7 @@ class TestPutMessagingTemplates:
             headers=auth_header,
             json=[
                 {
-                    "key": "invalid_key",
+                    "type": "invalid_type",
                     "content": {
                         "body": None,
                         "subject": None,
@@ -2033,9 +2033,9 @@ class TestPutMessagingTemplates:
             "succeeded": [],
             "failed": [
                 {
-                    "message": "Invalid template key.",
+                    "message": "Invalid template type.",
                     "data": {
-                        "key": "invalid_key",
+                        "type": "invalid_type",
                         "content": {"body": None, "subject": None},
                     },
                 }
