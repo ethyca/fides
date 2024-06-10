@@ -20,8 +20,8 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.service.messaging.messaging_crud_service import (
     get_all_basic_messaging_templates,
     get_basic_messaging_template_by_type_or_default,
-    update_messaging_template,
-    create_messaging_template,
+    update_property_specific_template,
+    create_property_specific_template_by_type,
     delete_template_by_id,
     get_template_by_id,
     get_default_template_by_type,
@@ -169,7 +169,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
 
-        update_messaging_template(
+        update_property_specific_template(
             db,
             messaging_template_subject_identity_verification.id,
             MessagingTemplateWithPropertiesBodyParams(**update_body),
@@ -202,7 +202,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
 
-        update_messaging_template(
+        update_property_specific_template(
             db,
             messaging_template_subject_identity_verification.id,
             MessagingTemplateWithPropertiesBodyParams(**update_body),
@@ -232,7 +232,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
         with pytest.raises(MessagingConfigNotFoundException) as exc:
-            update_messaging_template(
+            update_property_specific_template(
                 db, "invalid", MessagingTemplateWithPropertiesBodyParams(**update_body)
             )
 
@@ -248,7 +248,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
 
-        update_messaging_template(
+        update_property_specific_template(
             db,
             messaging_template_subject_identity_verification.id,
             MessagingTemplateWithPropertiesBodyParams(**update_body),
@@ -281,7 +281,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
         with pytest.raises(Exception) as exc:
-            update_messaging_template(
+            update_property_specific_template(
                 db,
                 messaging_template_no_property.id,
                 MessagingTemplateWithPropertiesBodyParams(**update_body),
@@ -303,7 +303,7 @@ class TestMessagingTemplates:
             "properties": [property_a.id],
             "is_enabled": False,
         }
-        update_messaging_template(
+        update_property_specific_template(
             db,
             messaging_template_no_property.id,
             MessagingTemplateWithPropertiesBodyParams(**update_body),
@@ -329,7 +329,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
 
-        created_template = create_messaging_template(
+        created_template = create_property_specific_template_by_type(
             db, template_type, MessagingTemplateWithPropertiesBodyParams(**create_body)
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
@@ -352,7 +352,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
 
-        created_template = create_messaging_template(
+        created_template = create_property_specific_template_by_type(
             db, template_type, MessagingTemplateWithPropertiesBodyParams(**create_body)
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
@@ -371,7 +371,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
         with pytest.raises(MessagingConfigValidationException) as exc:
-            create_messaging_template(
+            create_property_specific_template_by_type(
                 db,
                 template_type,
                 create_body,
@@ -389,7 +389,7 @@ class TestMessagingTemplates:
             "properties": [property_a.id, "invalid_id"],
             "is_enabled": True,
         }
-        template = create_messaging_template(
+        template = create_property_specific_template_by_type(
             db,
             template_type,
             MessagingTemplateWithPropertiesBodyParams(**create_body),
@@ -419,7 +419,7 @@ class TestMessagingTemplates:
             "is_enabled": False,
         }
 
-        created_template = create_messaging_template(
+        created_template = create_property_specific_template_by_type(
             db, template_type, MessagingTemplateWithPropertiesBodyParams(**create_body)
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
@@ -447,7 +447,7 @@ class TestMessagingTemplates:
             "is_enabled": True,
         }
         with pytest.raises(MessagingConfigValidationException) as exc:
-            create_messaging_template(
+            create_property_specific_template_by_type(
                 db,
                 template_type,
                 MessagingTemplateWithPropertiesBodyParams(**create_body),
@@ -520,7 +520,7 @@ class TestMessagingTemplates:
     def test_get_template_by_id(
         self, db: Session, messaging_template_subject_identity_verification
     ):
-        template = get_template_by_id(
+        template: MessagingTemplate = get_template_by_id(
             db, template_id=messaging_template_subject_identity_verification.id
         )
         assert template.type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value

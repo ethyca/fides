@@ -17,7 +17,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
-    MessagingTemplateResponse,
+    BasicMessagingTemplateResponse,
 )
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -34,7 +34,7 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
-    MESSAGING_TEMPLATES,
+    BASIC_MESSAGING_TEMPLATES,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -1890,7 +1890,7 @@ class TestTestMessage:
 class TestGetMessagingTemplates:
     @pytest.fixture
     def url(self) -> str:
-        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+        return V1_URL_PREFIX + BASIC_MESSAGING_TEMPLATES
 
     def test_get_messaging_templates_unauthorized(
         self, url, api_client: TestClient, generate_auth_header
@@ -1914,13 +1914,13 @@ class TestGetMessagingTemplates:
         assert response.status_code == 200
 
         # Validate the response conforms to the expected model
-        [MessagingTemplateResponse(**item) for item in response.json()]
+        [BasicMessagingTemplateResponse(**item) for item in response.json()]
 
 
 class TestPutMessagingTemplates:
     @pytest.fixture
     def url(self) -> str:
-        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+        return V1_URL_PREFIX + BASIC_MESSAGING_TEMPLATES
 
     @pytest.fixture
     def payload(self) -> List[Dict[str, Any]]:
