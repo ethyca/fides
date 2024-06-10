@@ -31,7 +31,7 @@ export type ConnectionConfigSecretsRequest = {
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllSystems: build.query<SystemResponse[], void>({
-      query: () => ({ url: `system/` }),
+      query: () => ({ url: `system` }),
       providesTags: () => ["System"],
       transformResponse: (systems: SystemResponse[]) =>
         systems.sort((a, b) => {
@@ -43,14 +43,14 @@ const systemApi = baseApi.injectEndpoints({
         }),
     }),
     getSystemByFidesKey: build.query<SystemResponse, string>({
-      query: (fides_key) => ({ url: `system/${fides_key}/` }),
+      query: (fides_key) => ({ url: `system/${fides_key}` }),
       providesTags: ["System"],
     }),
     // we accept 'unknown' as well since the user can paste anything in, and we rely
     // on the backend to do the validation for us
     createSystem: build.mutation<SystemResponse, System | unknown>({
       query: (body) => ({
-        url: `system/`,
+        url: `system`,
         method: "POST",
         body,
       }),
@@ -95,7 +95,7 @@ const systemApi = baseApi.injectEndpoints({
       Partial<System> & Pick<System, "fides_key">
     >({
       query: ({ ...patch }) => ({
-        url: `system/`,
+        url: `system`,
         params: { resource_type: "system" },
         method: "PUT",
         body: patch,
