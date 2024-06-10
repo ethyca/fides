@@ -131,8 +131,8 @@ class TestMessageDispatchService:
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,
             EmailForActionType(
-                subject="Your one-time code is 2348",
-                body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
+                subject="Here is your code 2348",
+                body="Use code 2348 to verify your identity, you have 10 minutes!",
                 template_variables={"code": "2348", "minutes": 10},
             ),
             "test@email.com",
