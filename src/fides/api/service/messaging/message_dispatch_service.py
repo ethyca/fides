@@ -158,7 +158,7 @@ def message_send_enabled(
     db: Session,
     property_id: Optional[str],
     action_type: MessagingActionType,
-    legacy_email_enabled: bool,
+    basic_email_template_enabled: bool,
 ) -> bool:
     """
     Determines whether sending messages from Fides is enabled or disabled.
@@ -174,8 +174,9 @@ def message_send_enabled(
         )
         if property_specific_messaging_template:
             return True
-    elif legacy_email_enabled:
+    elif basic_email_template_enabled:
         return True
+    logger.info("Message send is disabled for action type {}", action_type)
     return False
 
 

@@ -912,7 +912,7 @@ def set_property_specific_messaging_enabled(db):
     CONFIG.notifications.enable_property_specific_messaging = True
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
-    CONFIG.notifications.notification_service_type = original_value
+    CONFIG.notifications.enable_property_specific_messaging = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
@@ -923,7 +923,7 @@ def set_property_specific_messaging_disabled(db):
     CONFIG.notifications.enable_property_specific_messaging = False
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
-    CONFIG.notifications.notification_service_type = original_value
+    CONFIG.notifications.enable_property_specific_messaging = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
