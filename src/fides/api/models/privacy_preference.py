@@ -168,7 +168,6 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
 
     property_id = Column(
         String,
-        index=True,
         nullable=True,
     )
 

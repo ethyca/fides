@@ -17,6 +17,22 @@ down_revision = "52a5f1a957bc"
 branch_labels = None
 depends_on = None
 
+"""
+WARNING - Conditional migration based on table size
+
+This migration script checks the size of specific tables and performs the following actions:
+
+1. If the tables have less than 1 million rows:
+   - Creates the necessary indices
+   - Adds the required constraints
+
+2. If the tables are too large (1 million rows or more):
+   - Logs non-blocking SQL commands to create the indices and constraints
+   - The non-blocking commands utilize:
+     - `CREATE INDEX CONCURRENTLY` for creating indices
+     - `ADD CONSTRAINT USING INDEX` for adding constraints
+   - These commands add the indices and constraints without blocking any reads or writes on the tables
+"""
 
 def upgrade():
     op.add_column(
@@ -86,12 +102,6 @@ def upgrade():
             unique=False,
         )
         op.create_index(
-            op.f("ix_currentprivacypreferencev2_property_id"),
-            "currentprivacypreferencev2",
-            ["property_id"],
-            unique=False,
-        )
-        op.create_index(
             op.f("ix_currentprivacypreferencev2_email_property_id"),
             "currentprivacypreferencev2",
             ["email", "property_id"],
@@ -155,8 +165,6 @@ def upgrade():
             "ON currentprivacypreferencev2 (fides_user_device, property_id)'\n"
             "- 'CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_phone_number_property_id "
             "ON currentprivacypreferencev2 (phone_number, property_id)'\n"
-            "- 'CREATE INDEX CONCURRENTLY ix_currentprivacypreferencev2_property_id "
-            "ON currentprivacypreferencev2 (property_id)'\n"
             "- 'CREATE INDEX CONCURRENTLY ix_currentprivacypreferencev2_hashed_external_id "
             "ON currentprivacypreferencev2 (hashed_external_id)'\n"
             "- 'ALTER TABLE currentprivacypreferencev2 "
