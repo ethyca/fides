@@ -2,7 +2,7 @@ import { baseApi } from "~/features/common/api.slice";
 import { BulkUpdateFailed } from "~/types/api/models/BulkUpdateFailed";
 
 export type MessagingTemplate = {
-  key: string;
+  type: string;
   label: string;
   content: {
     subject: string;

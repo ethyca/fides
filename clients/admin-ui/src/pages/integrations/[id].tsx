@@ -1,4 +1,12 @@
-import { Box, Button, Flex, Spacer, Spinner, useDisclosure } from "fidesui";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Flex,
+  Spacer,
+  Spinner,
+  useDisclosure,
+} from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -7,6 +15,7 @@ import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
+import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import BigQueryOverview, {
   BigQueryInstructions,
 } from "~/features/integrations/bigqueryOverviewCopy";
@@ -18,9 +27,14 @@ import IntegrationBox from "~/features/integrations/IntegrationBox";
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
   const id = Array.isArray(query.id) ? query.id[0] : query.id;
-  const { data: connection, isLoading } = useGetDatastoreConnectionByKeyQuery(
-    id ?? ""
-  );
+  const { data: connection, isLoading: integrationIsLoading } =
+    useGetDatastoreConnectionByKeyQuery(id ?? "");
+
+  const {
+    testConnection,
+    isLoading: testIsLoading,
+    testData,
+  } = useTestConnection(connection);
 
   const { onOpen, isOpen, onClose } = useDisclosure();
   const tabs: TabData[] = [
@@ -36,15 +50,21 @@ const IntegrationDetailView: NextPage = () => {
             p={3}
           >
             <Flex flexDirection="column">
-              <ConnectionStatusNotice
-                timestamp={connection?.last_test_timestamp}
-                succeeded={connection?.last_test_succeeded}
-              />
+              <ConnectionStatusNotice testData={testData} />
             </Flex>
             <Spacer />
-            <Button variant="outline" onClick={onOpen} data-testid="manage-btn">
-              Manage connection
-            </Button>
+            <ButtonGroup size="sm" variant="outline">
+              <Button
+                onClick={testConnection}
+                isLoading={testIsLoading}
+                data-testid="test-connection-btn"
+              >
+                Test connection
+              </Button>
+              <Button onClick={onOpen} data-testid="manage-btn">
+                Manage
+              </Button>
+            </ButtonGroup>
           </Flex>
           <ConfigureIntegrationModal
             isOpen={isOpen}
@@ -76,7 +96,7 @@ const IntegrationDetailView: NextPage = () => {
         ]}
       >
         <IntegrationBox integration={connection} />
-        {isLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
+        {integrationIsLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
       </PageHeader>
     </Layout>
   );
