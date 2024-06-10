@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.38.0...main)
 
+### Added
+- Added model and data migrations and CRUD-layer operations for property-specific messaging [#4901](https://github.com/ethyca/fides/pull/4901)
+
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
 
@@ -37,7 +40,7 @@ The types of changes are:
 - Fill custom privacy request fields with query_param_key [#4948](https://github.com/ethyca/fides/pull/4948)
 - Add `datasource_params` column to MonitorConfig DB model [#4951](https://github.com/ethyca/fides/pull/4951)
 - Added ability to open system preview side panel from new data map table [#4944](https://github.com/ethyca/fides/pull/4944)
-- Added sucess toast message after monitoring a resource [#4958](https://github.com/ethyca/fides/pull/4958)
+- Added success toast message after monitoring a resource [#4958](https://github.com/ethyca/fides/pull/4958)
 - Added UI for displaying, adding and editing discovery monitors [#4954](https://github.com/ethyca/fides/pull/4954)
 
 ### Changed
