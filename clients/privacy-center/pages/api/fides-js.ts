@@ -214,6 +214,8 @@ export default async function handler(
         environment.settings.FIDES_API_URL,
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
+      fidesDisableNoticesServedApi:
+        environment.settings.FIDES_DISABLE_NOTICES_SERVED_API,
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       fidesString,
