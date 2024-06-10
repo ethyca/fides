@@ -1,7 +1,7 @@
 """scylla_connection_type
 
 Revision ID: 3304082a6cee
-Revises: 52a5f1a957bc
+Revises: 5f96f13be8ec
 Create Date: 2024-06-03 19:54:20.907724
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "3304082a6cee"
-down_revision = "52a5f1a957bc"
+down_revision = "5f96f13be8ec"
 branch_labels = None
 depends_on = None
 
