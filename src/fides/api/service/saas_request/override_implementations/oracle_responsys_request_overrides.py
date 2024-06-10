@@ -1,7 +1,7 @@
 import json
-import pydash
-
 from typing import Any, Dict, List
+
+import pydash
 from requests import Response
 
 from fides.api.common_exceptions import FidesopsException
@@ -17,41 +17,49 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import get_identity
 
-def oracle_responsys_config_parse_profile_lists(input: str) -> list[str]:
-  """
-  Parses the list of profile lists entered as part of the connector params from comma-delimited values. Special value "all" indicates that all profile lists are in-scope.
-  """
-  profile_lists = []
 
-  if input != "all":
-      profile_lists = str.split(",")
+def oracle_responsys_config_parse_profile_lists(list_restrictions: str) -> List[str]:
+    """
+    Parses the list of profile lists entered as part of the connector params from comma-delimited values. Special value "all" indicates that all profile lists are in-scope.
+    """
+    profile_lists = []
 
-  return profile_lists
+    if list_restrictions != "all":
+        profile_lists = list_restrictions.split(",")
 
-def oracle_responsys_config_parse_profile_extensions(input: str) -> dict[str,list[str]]:
-  """
-  Parses the list of profile extensions entered as part of the connector params from comma-delimited values. Profile extensions are expected to be in the format of `<profile_list>.<profile_extension>`. Special value "all" indicates that all profile extensions are in-scope.
-  """
-  unparsed_profile_extensions = []
-  profile_extensions = {}
-
-  if input != "all":
-      unparsed_profile_extensions = input.split(",")
-      for extension in unparsed_profile_extensions:
-          ext = extension.split(".")
-          if len(ext) > 2:
-              raise FidesopsException("Profile extension could not be parsed, more than one '.' found.")
-          if len(ext) < 2:
-              raise FidesopsException("Profile extension could not be parsed, '.' not found.")
-          if ext[0] in profile_extensions:
-              profile_extensions[ext[0]].append(ext[1])
-          else:
-              profile_extensions[ext[0]] = [ext[1]]
-
-  return profile_extensions
+    return profile_lists
 
 
-def oracle_responsys_serialize_record_data(response: Response) -> list[dict[Any, Any]]:
+def oracle_responsys_config_parse_profile_extensions(
+    extension_restrictions: str,
+) -> Dict[str, List[str]]:
+    """
+    Parses the list of profile extensions entered as part of the connector params from comma-delimited values. Profile extensions are expected to be in the format of `<profile_list>.<profile_extension>`. Special value "all" indicates that all profile extensions are in-scope.
+    """
+    unparsed_profile_extensions = []
+    profile_extensions: Dict[str, List[str]] = {}
+
+    if extension_restrictions != "all":
+        unparsed_profile_extensions = extension_restrictions.split(",")
+        for extension in unparsed_profile_extensions:
+            ext = extension.split(".")
+            if len(ext) > 2:
+                raise FidesopsException(
+                    "Profile extension could not be parsed, more than one '.' found."
+                )
+            if len(ext) < 2:
+                raise FidesopsException(
+                    "Profile extension could not be parsed, '.' not found."
+                )
+            if ext[0] in profile_extensions:
+                profile_extensions[ext[0]].append(ext[1])
+            else:
+                profile_extensions[ext[0]] = [ext[1]]
+
+    return profile_extensions
+
+
+def oracle_responsys_serialize_record_data(response: Response) -> List[Dict[Any, Any]]:
     """
     Serializes response data from two separate arrays: one for the keys and one for the values for each result, returning a list of dicts.
     {
@@ -183,16 +191,20 @@ def oracle_responsys_profile_extension_recipients_read(
     riids = input_data.get("responsys_id", [])
 
     results = []
-    extensions = []
+    extensions: Dict[str, List[str]] = {}
 
     # If config sets the list of extensions, then use it. Otherwise, all extensions are in scope.
-    extensions_from_config = oracle_responsys_config_parse_profile_extensions(secrets["profile_extensions"])
+    extensions_from_config = oracle_responsys_config_parse_profile_extensions(
+        secrets["profile_extensions"]
+    )
     extensions_from_api = oracle_responsys_get_profile_extensions(client, list_ids)
     if extensions_from_config:
         # Because Fides will ignore 404s, make sure lists/extensions exist, so 404s will only come from the recipient not being found.
         for key, value in extensions_from_config.items():
             if key not in list_ids:
-                raise FidesopsException("Profile extension does not belong to a valid profile list.")
+                raise FidesopsException(
+                    "Profile extension does not belong to a valid profile list."
+                )
             for profile_extension in value:
                 if profile_extension not in extensions_from_api[key]:
                     raise FidesopsException("Profile extension not found.")

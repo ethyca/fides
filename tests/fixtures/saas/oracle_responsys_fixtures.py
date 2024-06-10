@@ -26,7 +26,9 @@ def oracle_responsys_secrets(saas_config) -> Dict[str, Any]:
         or secrets["password"],
         "profile_lists": pydash.get(saas_config, "oracle_responsys.profile_lists")
         or secrets["profile_lists"],
-        "profile_extensions": pydash.get(saas_config, "oracle_responsys.profile_extensions")
+        "profile_extensions": pydash.get(
+            saas_config, "oracle_responsys.profile_extensions"
+        )
         or secrets["profile_extensions"],
         "test_list": pydash.get(saas_config, "oracle_responsys.test_list")
         or secrets["test_list"],
@@ -96,7 +98,9 @@ def oracle_responsys_erasure_data(
             "records": [
                 [
                     oracle_responsys_erasure_identity_email,
-                    oracle_responsys_erasure_identity_phone_number[1:], # Omit the + prefix
+                    oracle_responsys_erasure_identity_phone_number[
+                        1:
+                    ],  # Omit the + prefix
                 ]
             ],
             "mapTemplateName": None,

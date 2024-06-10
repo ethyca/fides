@@ -83,7 +83,6 @@ class TestOracleResponsysConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": oracle_responsys_erasure_identity_email},
         )
-        print(erasure_results)
         assert erasure_results == {
             "oracle_responsys_instance:profile_list_recipient": 1,
             "oracle_responsys_instance:profile_list": 0,

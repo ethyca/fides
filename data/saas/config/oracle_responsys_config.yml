@@ -3,7 +3,7 @@ saas_config:
   name: Oracle Responsys
   type: oracle_responsys
   description: A sample schema representing the Oracle Responsys connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
@@ -87,8 +87,6 @@ saas_config:
         read:
           - request_override: oracle_responsys_profile_extension_recipients_read
             param_values:
-              - name: placeholder_email
-                identity: email
               - name: profile_list_id
                 references:
                   - dataset: <instance_fides_key>
