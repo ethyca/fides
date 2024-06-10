@@ -14,7 +14,7 @@ from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
     MessagingTemplate,
 )
-from fides.api.models.property import Property
+from fides.api.models.property import Property, MessagingTemplateToProperty
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigResponse,
@@ -124,7 +124,7 @@ def _basic_messaging_template_by_type(
     Result: Return that template
 
     Scenario B: Multiple templates configured with type, none with default property
-    Result: Return the first template
+    Result: Return the last updated template
 
     Scenario C: Multiple templates configured with type, one with default property
     Result: Return the template with default property
@@ -133,6 +133,7 @@ def _basic_messaging_template_by_type(
     templates = (
         MessagingTemplate.query(db=db)
         .filter(MessagingTemplate.type == template_type)
+        .order_by(MessagingTemplate.updated_at.desc())
         .all()
     )
 
@@ -141,17 +142,16 @@ def _basic_messaging_template_by_type(
     elif len(templates) > 1:
         default_property = Property.get_by(db=db, field="is_default", value=True)
         if default_property:
-            template = MessagingTemplate.filter(
-                db=db,
-                conditions=(
-                    (MessagingTemplate.type == template_type)
-                    & (
-                        MessagingTemplate.properties.any(
-                            Property.id == default_property.id
-                        )
-                    )
-                ),
-            ).first()
+            template = (
+                db.query(MessagingTemplate)
+                .join(MessagingTemplateToProperty)
+                .filter(
+                    MessagingTemplate.type == template_type,
+                    MessagingTemplateToProperty.property_id == default_property.id,
+                )
+                .order_by(MessagingTemplate.updated_at.desc())
+                .first()
+            )
             if not template:
                 template = templates[0]
         else:

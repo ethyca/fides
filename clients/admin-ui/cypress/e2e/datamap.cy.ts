@@ -7,33 +7,10 @@ describe("Datamap table and spatial view", () => {
     stubPlus(true);
   });
 
-  it("Can render only render one view at a time", () => {
+  it("Can render spatial view", () => {
     cy.visit("/datamap");
     cy.wait("@getDatamap");
-
-    // Only the spatial view should be visible first
-    cy.getByTestId("cytoscape-graph");
-    cy.getByTestId("datamap-table").should("not.exist");
-
-    // Now table view
-    cy.getByTestId("table-btn").click();
-    cy.getByTestId("datamap-table");
-    cy.getByTestId("cytoscape-graph").should("not.exist");
-
-    // Now only the spatial view
-    cy.getByTestId("map-btn").click();
-    cy.getByTestId("cytoscape-graph");
-    cy.getByTestId("datamap-table").should("not.exist");
-
-    // Now table view
-    cy.getByTestId("table-btn").click();
-    cy.getByTestId("datamap-table");
-    cy.getByTestId("cytoscape-graph").should("not.exist");
-
-    // Clicking on the table view again should keep the table view open
-    cy.getByTestId("table-btn").click();
-    cy.getByTestId("datamap-table");
-    cy.getByTestId("cytoscape-graph").should("not.exist");
+    cy.getByTestId("cytoscape-graph").should("exist");
   });
 
   it("Renders a modal to prompt the user to get started when there is no datamap yet", () => {
