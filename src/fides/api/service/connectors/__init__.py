@@ -33,12 +33,24 @@ from fides.api.service.connectors.mongodb_connector import (
 from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
 from fides.api.service.connectors.sql_connector import (
     BigQueryConnector as BigQueryConnector,
+)
+from fides.api.service.connectors.sql_connector import (
     GoogleCloudSQLMySQLConnector as GoogleCloudSQLMySQLConnector,
+)
+from fides.api.service.connectors.sql_connector import (
     MariaDBConnector as MariaDBConnector,
+)
+from fides.api.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector as MicrosoftSQLServerConnector,
-    MySQLConnector as MySQLConnector,
+)
+from fides.api.service.connectors.sql_connector import MySQLConnector as MySQLConnector
+from fides.api.service.connectors.sql_connector import (
     PostgreSQLConnector as PostgreSQLConnector,
+)
+from fides.api.service.connectors.sql_connector import (
     RedshiftConnector as RedshiftConnector,
+)
+from fides.api.service.connectors.sql_connector import (
     SnowflakeConnector as SnowflakeConnector,
 )
 from fides.api.service.connectors.timescale_connector import (

@@ -15,29 +15,41 @@ class KeyfileCreds(BaseModel):
 
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
-    private_key_id: Optional[str] = Field(None, title="Private Key ID")
+    private_key_id: Optional[str] = Field(None, title="Private key ID")
     private_key: Optional[str] = Field(None, sensitive=True)
     client_email: Optional[EmailStr] = None
     client_id: Optional[str] = Field(None, title="Client ID")
     auth_uri: Optional[str] = Field(None, title="Auth URI")
     token_uri: Optional[str] = Field(None, title="Token URI")
     auth_provider_x509_cert_url: Optional[str] = Field(
-        None, title="Auth Provider X509 Cert URL"
+        None, title="Auth provider X509 cert URL"
     )
-    client_x509_cert_url: Optional[str] = Field(None, title="Client X509 Cert URL")
-    universe_domain: str = Field(title="Universe Domain")
+    client_x509_cert_url: Optional[str] = Field(None, title="Client X509 cert URL")
+    universe_domain: str = Field(title="Universe domain")
 
 
 class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Google Cloud SQL MySQL"""
-    db_iam_user: str = Field(title="DB IAM User", description="example: service-account@test.iam.gserviceaccount.com")
-    instance_connection_name: str = Field(title="Instance Connection Name", description="example: friendly-tower-424214-n8:us-central1:test-ethyca")
+
+    db_iam_user: str = Field(
+        title="DB IAM user",
+        description="example: service-account@test.iam.gserviceaccount.com",
+    )
+    instance_connection_name: str = Field(
+        title="Instance connection name",
+        description="example: friendly-tower-424214-n8:us-central1:test-ethyca",
+    )
     keyfile_creds: KeyfileCreds = Field(
+        title="Keyfile creds",
         sensitive=True,
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
 
-    _required_components: List[str] = ["db_iam_user", "instance_connection_name", "keyfile_creds"]
+    _required_components: List[str] = [
+        "db_iam_user",
+        "instance_connection_name",
+        "keyfile_creds",
+    ]
 
     @validator("keyfile_creds", pre=True)
     def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:

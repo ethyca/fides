@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Type
 from urllib.parse import quote_plus
 
 import paramiko
+import pymysql
 import sshtunnel  # type: ignore
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
@@ -40,14 +41,14 @@ from fides.api.schemas.connection_configuration import (
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
+    GoogleCloudSQLMySQLSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
-    GoogleCloudSQLMySQLSchema,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
@@ -579,8 +580,9 @@ class MicrosoftSQLServerConnector(SQLConnector):
         return SQLConnector.default_cursor_result_to_rows(results)
 
 
-class GoogleCloudSQLMySQLConnector(MySQLConnector):
+class GoogleCloudSQLMySQLConnector(SQLConnector):
     """Connector specific to Google Cloud SQL for MySQL"""
+
     secrets_schema = GoogleCloudSQLMySQLSchema
 
     # Overrides SQLConnector.create_client
@@ -589,18 +591,20 @@ class GoogleCloudSQLMySQLConnector(MySQLConnector):
 
         config = self.secrets_schema(**self.configuration.secrets or {})
 
-        credentials = service_account.Credentials.from_service_account_info(dict(config.keyfile_creds))
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(config.keyfile_creds)
+        )
 
         # initialize connector with the loaded credentials
         connector = Connector(credentials=credentials)
 
-        def getconn():
-            conn = connector.connect(
+        def getconn() -> pymysql.connections.Connection:
+            conn: pymysql.connections.Connection = connector.connect(
                 config.instance_connection_name,
                 "pymysql",
                 user=config.db_iam_user,
-                db="", # log in to instance but don't connect to specific database
-                enable_iam_auth=True
+                db="",  # log in to instance but don't connect to specific database
+                enable_iam_auth=True,
             )
             return conn
 
@@ -608,6 +612,5 @@ class GoogleCloudSQLMySQLConnector(MySQLConnector):
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
-        """ results to a list of dictionaries
-        """
+        """results to a list of dictionaries"""
         return SQLConnector.default_cursor_result_to_rows(results)

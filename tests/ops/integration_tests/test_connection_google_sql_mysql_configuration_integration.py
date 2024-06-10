@@ -5,24 +5,22 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
+from fides.api.common_exceptions import ConnectionException
 from fides.api.models.connectionconfig import ConnectionTestStatus
+from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.sql_connector import GoogleCloudSQLMySQLConnector
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
 from fides.common.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-from fides.api.service.connectors import (
-    get_connector,
-)
-from fides.api.service.connectors.sql_connector import (
-    GoogleCloudSQLMySQLConnector,
-)
-
 
 """
 pytest tests/ops/integration_tests/test_connection_google_sql_mysql_configuration_integration.py --no-cov -m integration_google_cloud_sql_mysql -s
 """
+
+
 @pytest.mark.integration_google_cloud_sql_mysql
 @pytest.mark.integration
 class TestGoogleCloudSQLMySQLConnector:
@@ -30,7 +28,6 @@ class TestGoogleCloudSQLMySQLConnector:
         self,
         db: Session,
         google_cloud_sql_mysql_connection_config,
-        # google_cloud_sql_mysql_secrets,
     ) -> None:
         connector = get_connector(google_cloud_sql_mysql_connection_config)
 
@@ -40,25 +37,9 @@ class TestGoogleCloudSQLMySQLConnector:
         assert client.__class__ == Engine
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
-        # google_cloud_sql_mysql_connection_config.secrets = {
-        #     "url": str(
-        #         URL.create(
-        #             "mysql+pymysql",
-        #             username=google_cloud_sql_mysql_secrets["username"],
-        #             password=google_cloud_sql_mysql_secrets["password"],
-        #             host=google_cloud_sql_mysql_secrets["host"],
-        #             database=google_cloud_sql_mysql_secrets["dbname"],
-        #         )
-        #     )
-        # }
-        # google_cloud_sql_mysql_connection_config.save(db)
-        # connector = get_connector(google_cloud_sql_mysql_connection_config)
-        # assert connector.test_connection() == ConnectionTestStatus.succeeded
-
         google_cloud_sql_mysql_connection_config.secrets["keyfile_creds"] = {}
         google_cloud_sql_mysql_connection_config.save(db)
         connector = get_connector(google_cloud_sql_mysql_connection_config)
-        from fides.api.common_exceptions import ConnectionException
         with pytest.raises(ConnectionException):
             connector.test_connection()
 
@@ -67,7 +48,9 @@ class TestGoogleCloudSQLMySQLConnector:
 @pytest.mark.integration
 class TestGoogleCloudSQLMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, google_cloud_sql_mysql_connection_config) -> str:
+    def url(
+        self, oauth_client, policy, google_cloud_sql_mysql_connection_config
+    ) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{google_cloud_sql_mysql_connection_config.key}/secret"
 
     def test_google_cloud_sql_mysql_db_connection_incorrect_secrets(
@@ -99,7 +82,10 @@ class TestGoogleCloudSQLMySQLConnectionPutSecretsAPI:
         assert "Connection error." == body["failure_reason"]
 
         db.refresh(google_cloud_sql_mysql_connection_config)
-        assert google_cloud_sql_mysql_connection_config.secrets["instance_connection_name"] == "wrong:instance:connection_name"
+        assert (
+            google_cloud_sql_mysql_connection_config.secrets["instance_connection_name"]
+            == "wrong:instance:connection_name"
+        )
         assert google_cloud_sql_mysql_connection_config.last_test_timestamp is not None
         assert google_cloud_sql_mysql_connection_config.last_test_succeeded is False
 
@@ -139,7 +125,9 @@ class TestGoogleCloudSQLMySQLConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestGoogleCloudSQLMySQLConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, google_cloud_sql_mysql_connection_config) -> str:
+    def url(
+        self, oauth_client, policy, google_cloud_sql_mysql_connection_config
+    ) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{google_cloud_sql_mysql_connection_config.key}/test"
 
     def test_connection_configuration_test_not_authenticated(

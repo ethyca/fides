@@ -28,7 +28,9 @@ def google_cloud_sql_mysql_connection_config(db: Session) -> Generator:
         },
     )
     # Pulling from integration config file or GitHub secrets
-    google_cloud_sql_mysql_integration_config = integration_config.get("google_cloud_sql_mysql", {})
+    google_cloud_sql_mysql_integration_config = integration_config.get(
+        "google_cloud_sql_mysql", {}
+    )
     db_iam_user = google_cloud_sql_mysql_integration_config.get(
         "db_iam_user"
     ) or os.environ.get("GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER")

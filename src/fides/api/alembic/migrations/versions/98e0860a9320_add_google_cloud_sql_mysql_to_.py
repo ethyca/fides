@@ -5,13 +5,13 @@ Revises: efddde14da21
 Create Date: 2024-06-05 15:32:18.414155
 
 """
-from alembic import op
-import sqlalchemy as sa
 
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '98e0860a9320'
-down_revision = 'efddde14da21'
+revision = "98e0860a9320"
+down_revision = "efddde14da21"
 branch_labels = None
 depends_on = None
 
@@ -29,7 +29,6 @@ def upgrade():
         )
     )
     op.execute("drop type connectiontype_old")
-
 
 
 def downgrade():
