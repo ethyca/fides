@@ -193,7 +193,7 @@ describe("Integration management for data detection & discovery", () => {
         }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("input-name").type("A new monitor");
-        cy.getByTestId("input-execution_start_date").type("2034-06-03");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.selectOption("input-execution_frequency", "Daily");
         cy.getByTestId("next-btn").click();
         cy.wait("@putMonitor").then((interception) => {
@@ -204,7 +204,7 @@ describe("Integration management for data detection & discovery", () => {
               num_threads: 1,
               num_samples: 25,
             },
-            execution_start_date: "2034-06-03T00:00:00.000Z",
+            execution_start_date: "2034-06-03T14:00:00.000Z",
             execution_frequency: "Daily",
           });
         });
@@ -241,7 +241,6 @@ describe("Integration management for data detection & discovery", () => {
       it("can edit an existing monitor by clicking the table row", () => {
         cy.getByTestId("row-test monitor 2").click();
         cy.getByTestId("input-name").should("have.value", "test monitor 2");
-        cy.getByTestId("input-execution_start_date").should("not.exist");
         cy.getSelectValueContainer("input-execution_frequency").should(
           "contain",
           "Weekly"
