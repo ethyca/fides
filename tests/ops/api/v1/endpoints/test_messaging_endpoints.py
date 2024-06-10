@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from fastapi_pagination import Params
+from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES, MessagingTemplate
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -17,7 +18,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
-    MessagingTemplateResponse,
+    BasicMessagingTemplateResponse, MessagingTemplateWithPropertiesSummary, MessagingTemplateWithPropertiesDetail,
 )
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -34,9 +35,9 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
-    MESSAGING_TEMPLATES,
+    BASIC_MESSAGING_TEMPLATES,
     MESSAGING_TEST,
-    V1_URL_PREFIX,
+    V1_URL_PREFIX, MESSAGING_TEMPLATES_SUMMARY,
 )
 from fides.config import get_config
 
@@ -1887,10 +1888,10 @@ class TestTestMessage:
         assert mock_dispatch_message.called
 
 
-class TestGetMessagingTemplates:
+class TestGetBasicMessagingTemplates:
     @pytest.fixture
     def url(self) -> str:
-        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+        return V1_URL_PREFIX + BASIC_MESSAGING_TEMPLATES
 
     def test_get_messaging_templates_unauthorized(
         self, url, api_client: TestClient, generate_auth_header
@@ -1914,13 +1915,13 @@ class TestGetMessagingTemplates:
         assert response.status_code == 200
 
         # Validate the response conforms to the expected model
-        [MessagingTemplateResponse(**item) for item in response.json()]
+        [BasicMessagingTemplateResponse(**item) for item in response.json()]
 
 
-class TestPutMessagingTemplates:
+class TestPutBasicMessagingTemplates:
     @pytest.fixture
     def url(self) -> str:
-        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+        return V1_URL_PREFIX + BASIC_MESSAGING_TEMPLATES
 
     @pytest.fixture
     def payload(self) -> List[Dict[str, Any]]:
@@ -2041,3 +2042,73 @@ class TestPutMessagingTemplates:
                 }
             ],
         }
+
+class TestGetPropertySpecificMessagingTemplateSummary:
+    @pytest.fixture
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_TEMPLATES_SUMMARY
+
+    def test_get_messaging_templates_unauthorized(
+            self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_messaging_templates_wrong_scope(
+            self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_messaging_templates_summary_no_db_templates(
+            self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp) == 0
+
+    def test_get_all_messaging_templates_summary_some_db_templates(
+            self,
+            url, api_client: TestClient, generate_auth_header,
+            messaging_template_subject_identity_verification,
+            messaging_template_privacy_request_receipt,
+    ):
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp) == 2
+
+        # Validate the response conforms to the expected model
+        [MessagingTemplateWithPropertiesSummary(**item) for item in resp]
+
+    def test_get_all_messaging_templates_summary_all_db_templates(
+            self, db: Session, url, api_client: TestClient, generate_auth_header, property_a
+    ):
+        content = {
+            "subject": "Some subject",
+            "body": "Some body",
+        }
+        for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
+            MessagingTemplate.create(
+                db=db,
+                data=MessagingTemplateWithPropertiesDetail(
+                    content=content,
+                    properties=[{"id": property_a.id, "name": property_a.name}],
+                    is_enabled=True,
+                    type=template_type,
+                ).dict(),
+            )
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp) == 6
+
+        # Validate the response conforms to the expected model
+        [MessagingTemplateWithPropertiesSummary(**item) for item in resp]
+

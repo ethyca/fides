@@ -28,11 +28,14 @@ from fides.api.models.messaging import (
     default_messaging_config_name,
     get_schema_for_secrets,
 )
-from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
+from fides.api.models.messaging_template import (
+    DEFAULT_MESSAGING_TEMPLATES,
+    MessagingTemplate,
+)
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
-    BulkPutMessagingTemplateResponse,
+    BulkPutBasicMessagingTemplateResponse,
     MessagingActionType,
     MessagingConfigRequest,
     MessagingConfigRequestBase,
@@ -40,9 +43,12 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingServiceType,
-    MessagingTemplateRequest,
-    MessagingTemplateResponse,
+    BasicMessagingTemplateRequest,
+    BasicMessagingTemplateResponse,
     TestMessagingStatusMessage,
+    MessagingTemplateWithPropertiesSummary,
+    MessagingTemplateWithPropertiesDetail,
+    MessagingTemplateWithPropertiesBodyParams,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -50,12 +56,17 @@ from fides.api.schemas.messaging.messaging_secrets_docs_only import (
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_crud_service import (
-    create_or_update_basic_templates,
     create_or_update_messaging_config,
     delete_messaging_config,
     get_all_basic_messaging_templates,
     get_messaging_config_by_key,
     update_messaging_config,
+    create_or_update_basic_templates,
+    get_default_template_by_type,
+    create_property_specific_template_by_type,
+    get_template_by_id,
+    update_property_specific_template,
+    delete_template_by_id,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
@@ -74,9 +85,13 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
-    MESSAGING_TEMPLATES,
+    BASIC_MESSAGING_TEMPLATES,
     MESSAGING_TEST,
     V1_URL_PREFIX,
+    MESSAGING_TEMPLATES_SUMMARY,
+    MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
+    MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
+    MESSAGING_TEMPLATE_BY_ID,
 )
 from fides.config.config_proxy import ConfigProxy
 
@@ -496,16 +511,16 @@ def send_test_message(
 
 
 @router.get(
-    MESSAGING_TEMPLATES,
+    BASIC_MESSAGING_TEMPLATES,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=List[MessagingTemplateResponse],
+    response_model=List[BasicMessagingTemplateResponse],
 )
 def get_basic_messaging_templates(
     *, db: Session = Depends(deps.get_db)
-) -> List[MessagingTemplateResponse]:
+) -> List[BasicMessagingTemplateResponse]:
     """Returns the available messaging templates, augments the models with labels to be used in the UI."""
     return [
-        MessagingTemplateResponse(
+        BasicMessagingTemplateResponse(
             type=template.type,
             content=template.content,
             label=DEFAULT_MESSAGING_TEMPLATES.get(template.type, {}).get("label", None),
@@ -515,12 +530,14 @@ def get_basic_messaging_templates(
 
 
 @router.put(
-    MESSAGING_TEMPLATES,
+    BASIC_MESSAGING_TEMPLATES,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
 )
 def update_basic_messaging_templates(
-    templates: List[MessagingTemplateRequest], *, db: Session = Depends(deps.get_db)
-) -> BulkPutMessagingTemplateResponse:
+    templates: List[BasicMessagingTemplateRequest],
+    *,
+    db: Session = Depends(deps.get_db),
+) -> BulkPutBasicMessagingTemplateResponse:
     """Updates the messaging templates and reverts empty subject or body values to the default values."""
 
     succeeded = []
@@ -549,7 +566,7 @@ def update_basic_messaging_templates(
             )
 
             succeeded.append(
-                MessagingTemplateResponse(
+                BasicMessagingTemplateResponse(
                     type=template_type,
                     content=content,
                     label=default_template.get("label"),
@@ -565,4 +582,124 @@ def update_basic_messaging_templates(
                 )
             )
 
-    return BulkPutMessagingTemplateResponse(succeeded=succeeded, failed=failed)
+    return BulkPutBasicMessagingTemplateResponse(succeeded=succeeded, failed=failed)
+
+
+@router.get(
+    MESSAGING_TEMPLATES_SUMMARY,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=AbstractPage[MessagingTemplateWithPropertiesSummary],
+)
+def get_property_specific_messaging_templates_summary(
+    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+) -> AbstractPage[MessagingTemplateWithPropertiesSummary]:
+    """
+    Returns all messaging templates. Can be very large response if user has many properties with messaging templates
+    configured for each property.
+    """
+    return paginate(
+        MessagingTemplate.query(db=db).order_by(MessagingConfig.created_at.desc()),
+        params=params,
+    )
+
+
+@router.get(
+    MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=MessagingTemplateWithPropertiesDetail,
+)
+def get_default_messaging_template(
+    template_type: MessagingActionType,
+) -> MessagingTemplateWithPropertiesDetail:
+    """
+    Retrieves default messaging template by template type.
+    """
+    logger.info(
+        "Finding default messaging template of template type '{}'", template_type
+    )
+    return get_default_template_by_type(template_type)
+
+
+@router.post(
+    MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=Optional[MessagingTemplate],
+)
+def create_property_specific_messaging_template(
+    template_type: MessagingActionType,
+    *,
+    db: Session = Depends(deps.get_db),
+    messaging_template_create_body: MessagingTemplateWithPropertiesBodyParams,
+) -> Optional[MessagingTemplate]:
+    """
+    Creates property-specific messaging template by template type.
+    """
+    logger.info(
+        "Creating new property-specific messaging template of type '{}'", template_type
+    )
+    return create_property_specific_template_by_type(
+        db, template_type, messaging_template_create_body
+    )
+
+
+@router.put(
+    MESSAGING_TEMPLATE_BY_ID,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=Optional[MessagingTemplate],
+)
+def update_property_specific_messaging_template(
+    template_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    messaging_template_update_body: MessagingTemplateWithPropertiesBodyParams,
+) -> Optional[MessagingTemplate]:
+    """
+    Updates property-specific messaging template by template id.
+    """
+    logger.info(
+        "Updating new property-specific messaging template of id '{}'", template_id
+    )
+    return update_property_specific_template(
+        db, template_id, messaging_template_update_body
+    )
+
+
+@router.get(
+    MESSAGING_TEMPLATE_BY_ID,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=MessagingTemplateWithPropertiesDetail,
+)
+def get_messaging_template_by_id(
+    template_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> MessagingTemplateWithPropertiesDetail:
+    """
+    Retrieves messaging template by template tid.
+    """
+    logger.info("Finding messaging template with id '{}'", template_id)
+    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
+    return MessagingTemplateWithPropertiesDetail(
+        id=template_id,
+        type=messaging_template.type,
+        content=messaging_template.content,
+        is_enabled=messaging_template.is_enabled,
+        properties=messaging_template.properties,
+    )
+
+
+@router.delete(
+    MESSAGING_TEMPLATE_BY_ID,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=None,
+)
+def delete_messaging_template_by_id(
+    template_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> None:
+    """
+    Deletes messaging template by template id.
+    """
+    logger.info("Deleting messaging template with id '{}'", template_id)
+    return delete_template_by_id(db, template_id)

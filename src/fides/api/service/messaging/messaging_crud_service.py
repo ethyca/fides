@@ -286,7 +286,7 @@ def _validate_overlapping_templates(
                 )
 
 
-def update_messaging_template(
+def update_property_specific_template(
     db: Session,
     template_id: str,
     template_update_body: MessagingTemplateWithPropertiesBodyParams,
@@ -296,7 +296,9 @@ def update_messaging_template(
 
     Updating template type is not allowed once it is created, so we don't intake it here.
     """
-    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
+    messaging_template: MessagingTemplate = get_template_by_id(
+        db, template_id
+    )
     _validate_overlapping_templates(
         db,
         messaging_template.type,
@@ -317,7 +319,7 @@ def update_messaging_template(
     return messaging_template.update(db=db, data=data)
 
 
-def create_messaging_template(
+def create_property_specific_template_by_type(
     db: Session,
     template_type: str,
     template_create_body: MessagingTemplateWithPropertiesBodyParams,
@@ -350,7 +352,9 @@ def create_messaging_template(
 
 
 def delete_template_by_id(db: Session, template_id: str) -> None:
-    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
+    messaging_template: MessagingTemplate = get_template_by_id(
+        db, template_id
+    )
     templates_with_type = (
         MessagingTemplate.query(db=db)
         .filter(MessagingTemplate.type == messaging_template.type)
@@ -364,7 +368,9 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
     messaging_template.delete(db)
 
 
-def get_template_by_id(db: Session, template_id: str) -> MessagingTemplate:
+def get_template_by_id(
+    db: Session, template_id: str
+) -> MessagingTemplate:
     logger.info("Finding messaging config with id '{}'", template_id)
     messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
         db, object_id=template_id
@@ -394,9 +400,8 @@ def get_default_template_by_type(
     return template
 
 
-# TODO: (PROD-2058) if id is None, we know on FE that this does not exist yet in DB
 def get_all_messaging_templates_summary(
-    db: Session,
+        db: Session,
 ) -> Optional[List[MessagingTemplateWithPropertiesSummary]]:
     """
     This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
@@ -416,8 +421,8 @@ def get_all_messaging_templates_summary(
     # Create a list of MessagingTemplate models, using defaults if a key is not found in the database
     templates: List[MessagingTemplateWithPropertiesSummary] = []
     for (
-        template_type,
-        default_template,  # pylint: disable=W0612
+            template_type,
+            default_template,  # pylint: disable=W0612
     ) in DEFAULT_MESSAGING_TEMPLATES.items():
         # insert type key, see if there are any matches with DB, else use defaults
         db_templates_with_type: Optional[List[Dict[str, Any]]] = db_templates.get(

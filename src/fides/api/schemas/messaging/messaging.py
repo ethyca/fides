@@ -416,21 +416,21 @@ class MessagingConfigStatusMessage(BaseModel):
     detail: Optional[str] = None
 
 
-class MessagingTemplateBase(BaseModel):
+class BasicMessagingTemplateBase(BaseModel):
     type: str
     content: Dict[str, Any]
 
 
-class MessagingTemplateRequest(MessagingTemplateBase):
+class BasicMessagingTemplateRequest(BasicMessagingTemplateBase):
     pass
 
 
-class MessagingTemplateResponse(MessagingTemplateBase):
+class BasicMessagingTemplateResponse(BasicMessagingTemplateBase):
     label: str
 
 
-class BulkPutMessagingTemplateResponse(BulkResponse):
-    succeeded: List[MessagingTemplateResponse]
+class BulkPutBasicMessagingTemplateResponse(BulkResponse):
+    succeeded: List[BasicMessagingTemplateResponse]
     failed: List[BulkUpdateFailed]
 
 
