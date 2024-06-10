@@ -223,7 +223,7 @@ describe("Integration management for data detection & discovery", () => {
               num_threads: 1,
               num_samples: 25,
             },
-            execution_start_date: "2034-06-03T14:00:00.000Z",
+            execution_start_date: "2034-06-03T10:00:00.000Z",
             execution_frequency: "Daily",
           });
         });
