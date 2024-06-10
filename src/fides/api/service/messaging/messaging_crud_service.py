@@ -170,6 +170,28 @@ def get_basic_messaging_template_by_type_or_default(
         content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
         template = MessagingTemplate(type=template_type, content=content)
 
+
+def create_or_update_basic_templates(
+    db: Session, data: Dict[str, Any]
+) -> Optional[MessagingTemplate]:
+    """
+    For "basic", or non property-specific messaging templates, we update if template "type" matches an existing db row,
+    otherwise we create a new one.
+
+    There might be multiple templates configured by type, in the edge case where a paid user downgrades to OSS.
+    We use the one associated with the default property if found. If no default, we fall back on first item for safety.
+    """
+    template = _basic_messaging_template_by_type(db, data["type"])
+
+    if template:
+        # Preserve properties if they existed before, but do not support changing / adding properties for
+        # basic templates
+        if template.properties:
+            data["properties"] = [{"id": prop.id} for prop in template.properties]
+        template = template.update(db=db, data=data)
+
+    else:
+        template = MessagingTemplate.create(db=db, data=data)
     return template
 
 
