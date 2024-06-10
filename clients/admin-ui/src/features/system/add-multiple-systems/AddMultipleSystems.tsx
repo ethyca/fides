@@ -41,7 +41,6 @@ import {
   Tooltip,
   useDisclosure,
   useToast,
-  VStack,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -49,6 +48,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
+import EmptyTableNotice from "~/features/common/table/EmptyTableNotice";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,
@@ -82,28 +82,12 @@ type Props = {
   redirectRoute: string;
 };
 
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No results found.
-      </Text>
-      <Text fontSize="sm">
-        {`Can't find the vendor you are looking for? Add custom systems or unlisted
-      vendors by selecting the "Add custom vendor" button below.`}
-      </Text>
-    </VStack>
-    <AddVendor buttonLabel="Add custom vendor" />
-  </VStack>
+const NoResults = () => (
+  <EmptyTableNotice
+    title="No results found."
+    description={`Can't find the vendor you are looking for? Add custom systems or unlisted vendors by selecting the "Add custom vendor" button below.`}
+    button={<AddVendor buttonLabel="Add custom vendor" />}
+  />
 );
 
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
@@ -416,7 +400,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           }
           return undefined;
         }}
-        emptyTableNotice={<EmptyTableNotice />}
+        emptyTableNotice={<NoResults />}
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}

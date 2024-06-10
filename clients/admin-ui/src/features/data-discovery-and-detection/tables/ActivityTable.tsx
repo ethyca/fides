@@ -8,7 +8,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
+import { Box, Flex } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -22,6 +22,7 @@ import {
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import NoActivityNotice from "~/features/data-discovery-and-detection/tables/NoActivityNotice";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import { Database, DiffStatus, StagedResource } from "~/types/api";
 
@@ -39,26 +40,6 @@ const EMPTY_RESPONSE = {
   size: 50,
   pages: 1,
 };
-
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="empty-state"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No activity found
-      </Text>
-      <Text fontSize="sm">You&apos;re up to date!</Text>
-    </VStack>
-  </VStack>
-);
 
 const columnHelper = createColumnHelper<Database>();
 
@@ -181,7 +162,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={onRowClick}
-        emptyTableNotice={<EmptyTableNotice />}
+        emptyTableNotice={<NoActivityNotice />}
       />
       <PaginationBar
         totalRows={totalRows}

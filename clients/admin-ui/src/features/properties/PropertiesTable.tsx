@@ -17,13 +17,14 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Flex, HStack, Text, VStack } from "fidesui";
+import { Flex, HStack, Text } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
+import EmptyTableNotice from "~/features/common/table/EmptyTableNotice";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
 import { Page_Property_, Property, ScopeRegistryEnum } from "~/types/api";
@@ -41,29 +42,18 @@ const emptyPropertiesResponse: Page_Property_ = {
   pages: 1,
 };
 
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No properties found.
-      </Text>
+const NoProperties = () => (
+  <EmptyTableNotice
+    title="No properties found."
+    description={
       <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
         <Text fontSize="sm">
           Click “Add property” to add your first property to Fides.
         </Text>
         <AddPropertyButton buttonLabel="Add property" buttonVariant="primary" />
       </Restrict>
-    </VStack>
-  </VStack>
+    }
+  />
 );
 
 export const PropertiesTable = () => {
@@ -191,7 +181,7 @@ export const PropertiesTable = () => {
         <FidesTableV2
           tableInstance={tableInstance}
           onRowClick={onRowClick}
-          emptyTableNotice={<EmptyTableNotice />}
+          emptyTableNotice={<NoProperties />}
         />
         <PaginationBar
           totalRows={totalRows}

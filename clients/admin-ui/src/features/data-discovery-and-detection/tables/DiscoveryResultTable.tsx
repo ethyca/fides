@@ -8,7 +8,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
+import { Box, Flex } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -23,6 +23,7 @@ import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/h
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
+import NoActivityNotice from "~/features/data-discovery-and-detection/tables/NoActivityNotice";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
@@ -37,26 +38,6 @@ const EMPTY_RESPONSE = {
   size: 50,
   pages: 1,
 };
-
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="empty-state"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No activity found
-      </Text>
-      <Text fontSize="sm">You&apos;re up to date!</Text>
-    </VStack>
-  </VStack>
-);
 
 interface MonitorResultTableProps {
   resourceUrn?: string;
@@ -175,7 +156,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
-        emptyTableNotice={<EmptyTableNotice />}
+        emptyTableNotice={<NoActivityNotice />}
         overflow="visible"
       />
       <PaginationBar

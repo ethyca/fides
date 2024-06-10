@@ -2,8 +2,10 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Box,
+  Button,
   ButtonProps,
   Divider,
+  SmallAddIcon,
   Stack,
   Text,
   useDisclosure,
@@ -12,8 +14,8 @@ import {
 import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import InfoBox from "~/features/common/InfoBox";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
 import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
@@ -220,13 +222,26 @@ const PrivacyDeclarationFormTab = ({
     setShowForm(false);
   }, [system.fides_key]);
 
+  const addButton = (
+    <Button
+      size="xs"
+      colorScheme="primary"
+      fontWeight="semibold"
+      data-testid="add-btn"
+      onClick={handleOpenNewForm}
+      rightIcon={<SmallAddIcon boxSize={4} />}
+    >
+      Add data use
+    </Button>
+  );
+
   return (
     <Stack spacing={6} data-testid="data-use-tab">
       {system.privacy_declarations.length === 0 ? (
-        <EmptyTableState
+        <InfoBox
           title="You don't have a data use set up for this system yet."
-          description='A Data Use is the purpose for which data is used in a system. In Fides, a system may have more than one Data Use. For example, a CRM system may be used both for "Customer Support" and also for "Email Marketing", each of these is a Data Use.'
-          handleAdd={handleOpenNewForm}
+          text='A Data Use is the purpose for which data is used in a system. In Fides, a system may have more than one Data Use. For example, a CRM system may be used both for "Customer Support" and also for "Email Marketing", each of these is a Data Use.'
+          button={addButton}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup

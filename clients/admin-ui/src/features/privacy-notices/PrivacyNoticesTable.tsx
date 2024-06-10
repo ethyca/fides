@@ -18,13 +18,14 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Button, Flex, HStack, Text, VStack } from "fidesui";
+import { Button, Flex, HStack } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { useHasPermission } from "~/features/common/Restrict";
+import EmptyTableNotice from "~/features/common/table/EmptyTableNotice";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   EnablePrivacyNoticeCell,
@@ -47,37 +48,25 @@ const emptyNoticeResponse = {
   pages: 1,
 };
 
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No privacy notices found.
-      </Text>
-      <Text fontSize="sm">
-        Click &quot;Add a privacy notice&quot; to add your first privacy notice
-        to Fides.
-      </Text>
-    </VStack>
-    <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
-      <Button
-        size="xs"
-        colorScheme="primary"
-        data-testid="add-privacy-notice-btn"
-      >
-        Add a privacy notice +
-      </Button>
-    </NextLink>
-  </VStack>
+const NoNotices = () => (
+  <EmptyTableNotice
+    title="No privacy notices found."
+    description='Click "Add a privacy notice" to add your first privacy notice
+    to Fides.'
+    button={
+      <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
+        <Button
+          size="xs"
+          colorScheme="primary"
+          data-testid="add-privacy-notice-btn"
+        >
+          Add a privacy notice +
+        </Button>
+      </NextLink>
+    }
+  />
 );
+
 const columnHelper = createColumnHelper<LimitedPrivacyNoticeResponseSchema>();
 
 export const PrivacyNoticesTable = () => {
@@ -222,7 +211,7 @@ export const PrivacyNoticesTable = () => {
         <FidesTableV2
           tableInstance={tableInstance}
           onRowClick={userCanUpdate ? onRowClick : undefined}
-          emptyTableNotice={<EmptyTableNotice />}
+          emptyTableNotice={<NoNotices />}
         />
         <PaginationBar
           totalRows={totalRows}

@@ -1,12 +1,12 @@
 import { Box, Link } from "fidesui";
 
-import EmptyTableState from "~/features/common/table/EmptyTableState";
+import InfoBox from "~/features/common/InfoBox";
 
 const GVLNotice = () => (
   <Box mb="6" maxW="720px" data-testid="locked-for-GVL-notice">
-    <EmptyTableState
+    <InfoBox
       title="This system is part of the TCF Global Vendor List (GVL)"
-      description={
+      text={
         <>
           As a result, the system fields are not editable as they come directly
           from Fides Compass and the Global Vendor List (GVL). In some cases
