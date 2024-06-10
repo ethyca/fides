@@ -64,7 +64,17 @@ Defaults to `false`.
 
 > **fides\_disable\_save\_api**: `boolean`
 
-When `true`, disable FidesJS from saving user consent preferences to the Fides API
+When `true`, disable FidesJS from saving user consent preferences to the Fides API.
+
+Defaults to `false`.
+
+***
+
+### fides\_disable\_notices\_served\_api
+
+> **fides\_disable\_notices\_served\_api**: `boolean`
+
+When `true`, only disable FidesJS from saving notices served to the Fides API.
 
 Defaults to `false`.
 
@@ -116,7 +126,7 @@ Defaults to `false`.
 > **fides\_locale**: `string`
 
 Override the browser's preferred locale (`navigator.language`) when
-selecting the best translations for the FidesJS UI. 
+selecting the best translations for the FidesJS UI.
 
 Must be set to a `string` that is a valid language code (e.g. `"en-US"`,
 `"fr"`, `"zh-CN"`). See https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
@@ -132,7 +142,7 @@ Defaults to `undefined`.
 Override the current user's `fides_string` consent preferences (see [Fides.fides_string](Fides.md#fides_string)). Can be used to synchronize consent preferences for a
 registered user from a custom backend, where the `fides_string` could be
 provided by the server across multiple devices, etc.
-selecting the best translations for the FidesJS UI. 
+selecting the best translations for the FidesJS UI.
 
 Defaults to `undefined`.
 
@@ -147,6 +157,6 @@ will always default this value to `true` (since the TCF experience will
 typically only be enabled in locations where GDPR applies), but this can be
 overriden at the page-level as needed. Only applicable to a TCF experience.
 
-For more details, see the [TCF CMP API technical specification](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean)  * 
+For more details, see the [TCF CMP API technical specification](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean)  *
 
 Defaults to `true`.
