@@ -192,6 +192,7 @@ markers = [
     "integration_dynamodb",
     "integration_saas",
     "integration_saas_override",
+    "integration_scylladb",
     "unit_saas"
 ]
 asyncio_mode = "auto"

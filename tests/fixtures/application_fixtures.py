@@ -175,6 +175,11 @@ integration_secrets = {
             integration_config, "dynamodb_example.aws_secret_access_key"
         ),
     },
+    "scylla_example": {
+        "host": pydash.get(integration_config, "scylladb_example.server"),
+        "username": pydash.get(integration_config, "scylladb_example.username"),
+        "password": pydash.get(integration_config, "scylladb_example.password"),
+    },
 }
 
 

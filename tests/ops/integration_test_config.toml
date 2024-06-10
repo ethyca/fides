@@ -72,3 +72,8 @@ polling_timeout=1800
 aws_access_key_id = ""
 aws_secret_access_key = ""
 region = ""
+
+[scylladb_example]
+server="scylladb_example"
+username = "cassandra"
+password = "cassandra"
