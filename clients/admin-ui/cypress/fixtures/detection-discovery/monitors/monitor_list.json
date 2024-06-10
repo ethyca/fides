@@ -1,0 +1,56 @@
+{
+  "items": [
+    {
+      "name": "test monitor 1",
+      "key": "test_monitor_1",
+      "connection_config_key": "bq_test",
+      "classify_params": {
+        "possible_targets": null,
+        "top_n": 5,
+        "remove_stop_words": false,
+        "pii_threshold": 0.4,
+        "num_samples": 25,
+        "num_threads": 1
+      },
+      "databases": ["prj-bigquery-000001", "prj-bqextract-000002"],
+      "execution_start_date": "2024-06-04T11:11:11+00:00",
+      "execution_frequency": "Daily"
+    },
+    {
+      "name": "test monitor 2",
+      "key": "test_monitor_2",
+      "connection_config_key": "bq_test",
+      "classify_params": {
+        "possible_targets": null,
+        "top_n": 5,
+        "remove_stop_words": false,
+        "pii_threshold": 0.4,
+        "num_samples": 25,
+        "num_threads": 1
+      },
+      "databases": [],
+      "execution_start_date": "2024-06-04T11:11:11+00:00",
+      "execution_frequency": "Weekly"
+    },
+    {
+      "name": "test monitor 3",
+      "key": "test_monitor_3",
+      "connection_config_key": "bq_test",
+      "classify_params": {
+        "possible_targets": null,
+        "top_n": 5,
+        "remove_stop_words": false,
+        "pii_threshold": 0.4,
+        "num_samples": 25,
+        "num_threads": 1
+      },
+      "databases": [],
+      "execution_start_date": "2024-06-04T11:11:11+00:00",
+      "execution_frequency": "Monthly"
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}
