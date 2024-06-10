@@ -2379,6 +2379,45 @@ describe("Consent overlay", () => {
         });
       });
     });
+
+    it("when fides_disable_notices_served_api option is set, only disables notices-served API", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: buildMockNotices(),
+        },
+        options: {
+          fidesDisableNoticesServedApi: true,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("#fides-modal-link").click();
+
+        // Check that notices-served API is not called when the modal is shown
+        cy.get("@FidesUIShown").then(() => {
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          cy.wait("@patchNoticesServed", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+        });
+
+        // Also, check that privacy-preferences API is called after saving
+        cy.getByTestId("Save-btn").click();
+        cy.get("@FidesUpdated").then(() => {
+          cy.wait("@patchPrivacyPreference", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNotNull(xhr?.response?.body);
+          });
+        });
+      });
+    });
   });
 
   describe("consent overlay buttons", () => {
