@@ -54,8 +54,8 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
 
     // Transform the values object back into an array of MessagingTemplates
     const messagingTemplates = Object.entries(values).map(
-      ([key, { content }]) => ({
-        key,
+      ([type, { content }]) => ({
+        type,
         content,
       })
     ) as MessagingTemplate[];
@@ -67,7 +67,7 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
   const initialValues = emailTemplates.reduce(
     (acc, template) => ({
       ...acc,
-      [template.key]: { label: template.label, content: template.content },
+      [template.type]: { label: template.label, content: template.content },
     }),
     {} as EmailTemplatesFormValues
   );
