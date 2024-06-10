@@ -580,7 +580,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
 
 class GoogleCloudSQLMySQLConnector(MySQLConnector):
-    """Connector specific to Google Cloud for MySQL"""
+    """Connector specific to Google Cloud SQL for MySQL"""
     secrets_schema = GoogleCloudSQLMySQLSchema
 
     # Overrides SQLConnector.create_client
