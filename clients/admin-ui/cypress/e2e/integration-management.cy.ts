@@ -183,6 +183,7 @@ describe("Integration management for data detection & discovery", () => {
         }).as("getDatabases");
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
+        cy.clock(new Date(2034, 5, 3));
       });
 
       it("shows a table of monitors", () => {
