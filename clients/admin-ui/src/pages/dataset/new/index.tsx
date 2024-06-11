@@ -1,9 +1,10 @@
-import { Box, Button, Heading, Stack, Text } from "fidesui";
+import { Box, Button, Heading, Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
 import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
@@ -15,15 +16,12 @@ const NewDataset: NextPage = () => {
     "yaml" | "database" | "manual" | null
   >(null);
   return (
-    <Layout title="Datasets">
+    <Layout title="Create New Dataset">
       <BackButton backPath={DATASET_ROUTE} />
-      <Heading mb={2} fontSize="2xl" fontWeight="semibold">
-        Datasets
+      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+        Create New Dataset
       </Heading>
       <Stack spacing={8}>
-        <Box w={{ base: "100%", lg: "50%" }}>
-          <Text>Create a dataset using YAML or connect to a database.</Text>
-        </Box>
         <Box>
           <Button
             size="sm"
@@ -33,7 +31,7 @@ const NewDataset: NextPage = () => {
             isActive={generateMethod === "yaml"}
             data-testid="upload-yaml-btn"
           >
-            Upload a new dataset YAML
+            Upload a Dataset YAML
           </Button>
           <Button
             size="sm"
@@ -46,6 +44,9 @@ const NewDataset: NextPage = () => {
           >
             Connect to a database
           </Button>
+          {features.flags.dataDiscoveryAndDetection ? (
+            <QuestionTooltip label="Creating a dataset via a database connection is disabled when the 'detection & discovery' beta feature is enabled" />
+          ) : null}
         </Box>
         {generateMethod === "database" && (
           <Box w={{ base: "100%", lg: "50%" }}>
