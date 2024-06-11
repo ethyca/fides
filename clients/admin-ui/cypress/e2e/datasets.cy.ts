@@ -4,7 +4,6 @@ import {
   stubPlus,
 } from "cypress/support/stubs";
 
-
 describe("Dataset", () => {
   beforeEach(() => {
     cy.login();
