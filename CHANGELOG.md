@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.38.0...main)
 
 ### Added
+- Adds the start of the Scylla DB Integration [#4946](https://github.com/ethyca/fides/pull/4946)
 - Added model and data migrations and CRUD-layer operations for property-specific messaging [#4901](https://github.com/ethyca/fides/pull/4901)
 - Added option in FidesJS SDK to only disable notice-served API [#4965](https://github.com/ethyca/fides/pull/4965)
 
