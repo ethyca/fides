@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.37.1b4.post0.dev17"
+    "version": "2.37.1b4.post0.dev18"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15046,6 +15046,10 @@
           },
           "fides_user_device_id": {
             "title": "Fides user device ID",
+            "type": "string"
+          },
+          "external_id": {
+            "title": "External ID",
             "type": "string"
           }
         },
