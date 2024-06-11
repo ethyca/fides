@@ -1628,6 +1628,7 @@ class TestGetPrivacyRequests:
             "ga_client_id": None,
             "ljt_readerID": None,
             "fides_user_device_id": None,
+            "external_id": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
@@ -3904,16 +3905,6 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
-
-    @pytest.fixture(scope="function")
-    def subject_identity_verification_required(self, db):
-        """Override autouse fixture to enable identity verification for tests"""
-        original_value = CONFIG.execution.subject_identity_verification_required
-        CONFIG.execution.subject_identity_verification_required = True
-        ApplicationConfig.update_config_set(db, CONFIG)
-        yield
-        CONFIG.execution.subject_identity_verification_required = original_value
-        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_create_privacy_request_no_email_config(
         self,
