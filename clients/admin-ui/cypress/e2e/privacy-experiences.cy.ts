@@ -75,7 +75,7 @@ describe("Privacy experiences", () => {
     }).as("getEmptyExperiences");
     cy.visit(PRIVACY_EXPERIENCE_ROUTE);
     cy.wait("@getEmptyExperiences");
-    cy.getByTestId("empty-state");
+    cy.getByTestId("no-results-notice");
   });
 
   it("can copy a JS script tag", () => {

@@ -8,10 +8,11 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Spacer, Spinner, Text, useDisclosure, VStack } from "fidesui";
+import { Button, Spacer, Spinner, Text, useDisclosure } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
+import EmptyTableNotice from "~/features/common/table/EmptyTableNotice";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -36,30 +37,16 @@ const EMPTY_RESPONSE = {
 
 const columnHelper = createColumnHelper<MonitorConfig>();
 
-const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No monitors
-      </Text>
-      <Text fontSize="sm">
-        You have not configured any data discovery monitors. Click &quot;Add
-        monitor&quot; to configure data discovery now.
-      </Text>
+const NoMonitors = ({ onAddClick }: { onAddClick: () => void }) => (
+  <EmptyTableNotice
+    title="No monitors"
+    description='You have not configured any data discovery monitors. Click "Add monitor" to configure data discovery now.'
+    button={
       <Button onClick={onAddClick} colorScheme="primary">
         Add monitor
       </Button>
-    </VStack>
-  </VStack>
+    }
+  />
 );
 
 const MonitorConfigTab = ({
@@ -207,7 +194,7 @@ const MonitorConfigTab = ({
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleEditMonitor}
-        emptyTableNotice={<EmptyTableNotice onAddClick={modal.onOpen} />}
+        emptyTableNotice={<NoMonitors onAddClick={modal.onOpen} />}
       />
       <PaginationBar
         totalRows={totalRows}

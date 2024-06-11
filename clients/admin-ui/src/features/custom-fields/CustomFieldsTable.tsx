@@ -15,13 +15,13 @@ import {
   Text,
   useDisclosure,
   useToast,
-  VStack,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
+import EmptyTableNotice from "~/features/common/table/EmptyTableNotice";
 import {
   DefaultHeaderCell,
   FidesTableV2,
@@ -47,30 +47,18 @@ import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
 const ADD_CUSTOM_FIELD_BTN_LABEL = "Add a custom field";
 
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-    textAlign="center"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        It looks like it’s your first time here!
-      </Text>
+const NoCustomFields = () => (
+  <EmptyTableNotice
+    title="It looks like it’s your first time here!"
+    description={
       <Text fontSize="sm">
         You haven’t created any custom fields yet.
         <br />
         To create a custom field, click on the{" "}
         <strong>&quot;{ADD_CUSTOM_FIELD_BTN_LABEL}&quot;</strong> button
       </Text>
-    </VStack>
-  </VStack>
+    }
+  />
 );
 
 const columnHelper = createColumnHelper<CustomFieldDefinitionWithId>();
@@ -225,7 +213,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
           <FidesTableV2
             tableInstance={tableInstance}
             onRowClick={userCanUpdate ? handleRowClick : undefined}
-            emptyTableNotice={<EmptyTableNotice />}
+            emptyTableNotice={<NoCustomFields />}
             enableSorting
           />
         )}
