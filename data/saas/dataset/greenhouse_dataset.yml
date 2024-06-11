@@ -1,9 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: greenhouse
-    description: >-
-      A sample dataset representing the Greenhouse integration for
-      Fides
+    name: Greenhouse Dataset
+    description: A sample dataset representing the Greenhouse integration for Fides
     collections:
       - name: user
         fields:

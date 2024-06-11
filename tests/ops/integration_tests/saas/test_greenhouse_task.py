@@ -5,7 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-class TestgreenhouseConnector:
+class TestGreenhouseConnector:
     def test_connection(self, greenhouse_runner: ConnectorRunner):
         greenhouse_runner.test_connection()
 
@@ -19,7 +19,8 @@ class TestgreenhouseConnector:
             access_policy=policy, identities={"email": greenhouse_identity_email}
         )
         assert (
-            access_results["greenhouse_instance:user"][0]["email_addresses"][0]['value']) == greenhouse_identity_email
+            access_results["greenhouse_instance:user"][0]["email_addresses"][0]["value"]
+        ) == greenhouse_identity_email
 
     async def test_non_strict_erasure_request(
         self,
@@ -30,7 +31,7 @@ class TestgreenhouseConnector:
         greenhouse_erasure_data,
     ):
         (
-            access_results,
+            _,
             erasure_results,
         ) = await greenhouse_runner.non_strict_erasure_request(
             access_policy=policy,
