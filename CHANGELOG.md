@@ -17,11 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.38.1...main)
 
+### Changed
+- Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
+
 ## [2.38.1](https://github.com/ethyca/fides/compare/2.38.0...2.38.1)
 
-### Added
-
 ### Changed
+- Disable the 'connect to a database' button if the `dataDiscoveryAndDetection` feature flag is enabled [#1455](https://github.com/ethyca/fidesplus/pull/1455)
 
 ### Fixed
 - Fixed "add" icons on some buttons being wrong size [#4975](https://github.com/ethyca/fides/pull/4975)
