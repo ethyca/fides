@@ -71,8 +71,10 @@ def twilio_sms_erasure_data(
     response = requests.post(url, headers=headers, data=payload, auth=auth)
     assert response.ok
 
+    # adding a sleep here as it takes 'some' time for a message to be actionable for erasure
     time.sleep(10)
-    ## I wanted to add a reply as well, this can be done easily in the Twilio GUI with a virtual phone, however due to the verification they do of phone numbers we get a message that the virtual phone number 'is not a valid message-capable twilio phone number' we may be able to update a message to flip the to and from though
+
+    ## I wanted to add a reply as well, this can be done easily in the Twilio GUI with a virtual phone, however due to the verification they do of phone numbers we get a message that the virtual phone number 'is not a valid message-capable twilio phone number' we may be able to update a message to flip the to and from though and I will look into this
 
     # payload = f'To={twilio_sms_secrets["twilio_from_phone"]}&From={twilio_sms_erasure_identity_phone_number}&Body=madeup%20body%20for%20testing%20To%20identityphone'
 
