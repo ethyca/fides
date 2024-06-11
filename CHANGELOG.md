@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added model and data migrations and CRUD-layer operations for property-specific messaging [#4901](https://github.com/ethyca/fides/pull/4901)
 - Added option in FidesJS SDK to only disable notice-served API [#4965](https://github.com/ethyca/fides/pull/4965)
+- External ID support for consent management [#4927](https://github.com/ethyca/fides/pull/4927)
 - Added access and erasure support for the Greenhouse Harvest integration [#4945](https://github.com/ethyca/fides/pull/4945)
 
 ### Changed
