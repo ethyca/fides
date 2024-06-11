@@ -237,6 +237,7 @@ const _Fides: FidesGlobal = {
     tcfEnabled: true,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
+    fidesDisableNoticesServedApi: false,
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,

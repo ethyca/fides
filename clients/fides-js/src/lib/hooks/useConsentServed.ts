@@ -31,8 +31,8 @@ export const useConsentServed = ({
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
-      // Disable the notices-served API if the fides_disable_save_api option is set
-      if (options.fidesDisableSaveApi) {
+      // Disable the notices-served API if the fides_disable_save_api option or fides_disable_notices_served_api option is set
+      if (options.fidesDisableSaveApi || options.fidesDisableNoticesServedApi) {
         return;
       }
 

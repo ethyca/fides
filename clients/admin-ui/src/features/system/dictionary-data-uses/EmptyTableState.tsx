@@ -1,8 +1,8 @@
 import {
-  AddIcon,
   Box,
   Button,
   HStack,
+  SmallAddIcon,
   Stack,
   Text,
   WarningTwoIcon,
@@ -45,7 +45,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
             fontWeight="semibold"
             data-testid="add-btn"
             onClick={handleAdd}
-            rightIcon={<AddIcon boxSize={2} />}
+            rightIcon={<SmallAddIcon boxSize={4} />}
           >
             Add data use
           </Button>
