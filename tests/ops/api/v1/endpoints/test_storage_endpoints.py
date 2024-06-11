@@ -14,9 +14,9 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.storage import StorageConfig, default_storage_config_name
 from fides.api.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
     ResponseFormat,
-    S3AuthMethod,
     StorageConfigStatus,
     StorageConfigStatusMessage,
     StorageDetails,
@@ -123,7 +123,7 @@ class TestPatchStorageConfig:
                 "name": "test destination",
                 "type": StorageType.s3.value,
                 "details": {
-                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                    "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
                     "naming": "some-filename-convention-enum",
                     "max_retries": 10,
@@ -210,7 +210,7 @@ class TestPatchStorageConfig:
                     "name": "test destination",
                     "type": StorageType.s3.value,
                     "details": {
-                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                        "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                         "bucket": "some-bucket",
                         "naming": "some-filename-convention-enum",
                         "max_retries": 10,
@@ -226,7 +226,7 @@ class TestPatchStorageConfig:
         storage_config.delete(db)
 
     @pytest.mark.parametrize(
-        "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
+        "auth_method", [AWSAuthMethod.SECRET_KEYS.value, AWSAuthMethod.AUTOMATIC.value]
     )
     def test_patch_storage_config_with_different_auth_methods(
         self,
@@ -262,7 +262,7 @@ class TestPatchStorageConfig:
                 "name": "my-test-dest",
                 "type": StorageType.s3.value,
                 "details": {
-                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                    "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
                     "naming": "some-filename-convention-enum",
                     "max_retries": 10,
@@ -308,7 +308,7 @@ class TestPatchStorageConfig:
                     "type": StorageType.s3.value,
                     "details": {
                         # "bucket": "removed-from-payload",
-                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                        "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                         "naming": "request_id",
                         "max_retries": 10,
                     },
@@ -457,7 +457,7 @@ class TestPutStorageConfigSecretsS3:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         get_s3_session_mock.assert_called_once_with(
-            S3AuthMethod.SECRET_KEYS.value,
+            AWSAuthMethod.SECRET_KEYS.value,
             {
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
@@ -495,7 +495,7 @@ class TestGetStorageConfigs:
                     "name": storage_config.name,
                     "type": storage_config.type.value,
                     "details": {
-                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                        "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                         "bucket": "test_bucket",
                         "naming": "request_id",
                     },
@@ -551,7 +551,7 @@ class TestGetStorageConfig:
             "name": storage_config.name,
             "type": StorageType.s3.value,
             "details": {
-                "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                 "bucket": "test_bucket",
                 "naming": "request_id",
             },
@@ -771,7 +771,7 @@ class TestPutDefaultStorageConfig:
         return {
             "type": StorageType.s3.value,
             "details": {
-                "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                 "bucket": "some-bucket",
                 "max_retries": 10,
             },
@@ -854,7 +854,7 @@ class TestPutDefaultStorageConfig:
         assert 422 == response.status_code
 
     @pytest.mark.parametrize(
-        "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
+        "auth_method", [AWSAuthMethod.SECRET_KEYS.value, AWSAuthMethod.AUTOMATIC.value]
     )
     def test_put_default_storage_config_with_different_auth_methods(
         self,
@@ -1002,7 +1002,7 @@ class TestPutDefaultStorageConfig:
                 "type": StorageType.s3.value,
                 "details": {
                     # "bucket": "removed-from-payload",
-                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                    "auth_method": AWSAuthMethod.SECRET_KEYS.value,
                     "naming": "request_id",
                     "max_retries": 10,
                 },
@@ -1222,7 +1222,7 @@ class TestPutDefaultStorageConfigSecretsS3:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         get_s3_session_mock.assert_called_once_with(
-            S3AuthMethod.SECRET_KEYS.value,
+            AWSAuthMethod.SECRET_KEYS.value,
             {
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],

@@ -48,7 +48,7 @@ class FileBasedStorageDetails(BaseModel):
         extra = Extra.forbid
 
 
-class S3AuthMethod(Enum):
+class AWSAuthMethod(Enum):
     AUTOMATIC = "automatic"
     SECRET_KEYS = "secret_keys"
 
@@ -56,7 +56,7 @@ class S3AuthMethod(Enum):
 class StorageDetailsS3(FileBasedStorageDetails):
     """The details required to represent an AWS S3 storage bucket."""
 
-    auth_method: S3AuthMethod
+    auth_method: AWSAuthMethod
     bucket: str
     max_retries: Optional[int] = 0
 

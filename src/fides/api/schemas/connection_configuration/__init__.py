@@ -81,6 +81,9 @@ from fides.api.schemas.connection_configuration.connection_secrets_redshift impo
     RedshiftSchema as RedshiftSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_s3 import (
+    S3DocsSchema as S3DocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_s3 import (
     S3Schema as S3Schema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
@@ -175,4 +178,5 @@ connection_secrets_schemas = Union[
     FidesDocsSchema,
     SovrnDocsSchema,
     DynamoDBDocsSchema,
+    S3DocsSchema,
 ]

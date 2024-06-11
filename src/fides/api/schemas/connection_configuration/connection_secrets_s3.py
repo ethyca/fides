@@ -1,23 +1,19 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from pydantic import Field
+from pydantic import Field, root_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
-
-
-class S3AuthMethod(Enum):
-    AUTOMATIC = "automatic"
-    SECRET_KEYS = "secret_keys"
+from fides.api.schemas.storage.storage import AWSAuthMethod
 
 
 class S3Schema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Amazon S3"""
 
-    auth_method: S3AuthMethod = Field(
+    auth_method: AWSAuthMethod = Field(
         title="Authentication Method",
         description="Determines which type of authentication method to use for connecting to Amazon S3",
     )
@@ -32,9 +28,27 @@ class S3Schema(ConnectionConfigSecretsSchema):
         sensitive=True,
     )
 
+    aws_assume_role_arn: Optional[str] = Field(
+        title="Assume Role ARN",
+        description="If provided, the ARN of the role that should be assumed to connect to s3.",
+    )
+
     _required_components: List[str] = ["auth_method"]
 
-    # TODO: validator that ensures `region_name`, `aws_access_key_id` and `aws_secret_access_key` are provided if `auth_method`= `secret_keys`
+    @root_validator(pre=True)
+    @classmethod
+    def keys_provided_if_needed(cls, values: Dict) -> Dict:
+        """
+        Validates that both access and secret access keys are provided if using a `secret_keys` auth method.
+        """
+        if values.get("auth_method") == AWSAuthMethod.SECRET_KEYS.value and not (
+            values.get("aws_access_key_id") and values.get("aws_secret_access_key")
+        ):
+            raise ValueError(
+                f"An Access Key ID and a Secret Access Key must be provided if using the `{AWSAuthMethod.SECRET_KEYS.value}` Authentication Method"
+            )
+
+        return values
 
 
 class S3DocsSchema(S3Schema, NoValidationSchema):

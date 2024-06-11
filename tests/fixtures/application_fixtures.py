@@ -10,11 +10,6 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
-from fides.api.models.property import Property
-from fides.api.schemas.property import Property as PropertySchema
-from fides.api.schemas.property import PropertyType
-
-from fides.api.models.messaging_template import MessagingTemplate
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
@@ -34,6 +29,7 @@ from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_gra
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import (
     ActionType,
     Policy,
@@ -83,18 +79,18 @@ from fides.api.models.storage import (
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
+    MessagingActionType,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
-    MessagingActionType,
     MessagingTemplateWithPropertiesDetail,
 )
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
-    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -217,7 +213,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
@@ -269,7 +265,7 @@ def storage_config_default(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "format": ResponseFormat.json,
@@ -292,7 +288,7 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "secrets": {
