@@ -8,7 +8,7 @@ const organizationApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createOrganization: build.mutation<Organization, Partial<Organization>>({
       query: (body) => ({
-        url: `organization/`,
+        url: `organization`,
         method: "POST",
         body,
       }),
@@ -18,7 +18,7 @@ const organizationApi = baseApi.injectEndpoints({
       Partial<Organization> & Pick<Organization, "fides_key">,
       string
     >({
-      query: (fides_key) => ({ url: `organization/${fides_key}/` }),
+      query: (fides_key) => ({ url: `organization/${fides_key}` }),
       providesTags: ["Organization"],
     }),
     updateOrganization: build.mutation<
@@ -26,7 +26,7 @@ const organizationApi = baseApi.injectEndpoints({
       Partial<Organization> & Pick<Organization, "fides_key">
     >({
       query: ({ ...patch }) => ({
-        url: `organization/`,
+        url: `organization`,
         method: "PUT",
         body: patch,
       }),
