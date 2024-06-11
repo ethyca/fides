@@ -89,10 +89,12 @@ saas_config:
               identity: phone_number
         delete:
           method: DELETE
-          path: /2010-04-01/Accounts/<user_sid>/Messages/.json
+          path: /2010-04-01/Accounts/<twilio_account_sid>/Messages/<user_sid>.json
           param_values:
             - name: user_sid
               references:
                 - dataset: <instance_fides_key>
                   field: user.sid
                   direction: from
+            - name: twilio_account_sid
+              connector_param: twilio_account_sid

@@ -3,8 +3,9 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from requests.auth import HTTPBasicAuth
+import time
 
+from requests.auth import HTTPBasicAuth
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
@@ -70,6 +71,7 @@ def twilio_sms_erasure_data(
     response = requests.post(url, headers=headers, data=payload, auth=auth)
     assert response.ok
 
+    time.sleep(10)
     ## I wanted to add a reply as well, this can be done easily in the Twilio GUI with a virtual phone, however due to the verification they do of phone numbers we get a message that the virtual phone number 'is not a valid message-capable twilio phone number' we may be able to update a message to flip the to and from though
 
     # payload = f'To={twilio_sms_secrets["twilio_from_phone"]}&From={twilio_sms_erasure_identity_phone_number}&Body=madeup%20body%20for%20testing%20To%20identityphone'

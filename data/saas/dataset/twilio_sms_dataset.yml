@@ -59,7 +59,7 @@ dataset:
           - name: sid
             data_categories: [system.operations]
             fidesops_meta:
-              #private_key
+              primary_key: True
               data_type: string
           - name: status
             data_categories: [system.operations]
