@@ -19,12 +19,15 @@ The types of changes are:
 
 ### Added
 - Added model and data migrations and CRUD-layer operations for property-specific messaging [#4901](https://github.com/ethyca/fides/pull/4901)
+- Added option in FidesJS SDK to only disable notice-served API [#4965](https://github.com/ethyca/fides/pull/4965)
 
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
 
 ### Fixed
 - Fixed an issue where the GPP signal status was prematurely set to `ready` in some scenarios [#4957](https://github.com/ethyca/fides/pull/4957)
+- Removed exteraneous `/` from the several endpoint URLs [#4962](https://github.com/ethyca/fides/pull/4962)
+- Fixed and optimized Database Icon SVGs used in Datamap [#4969](https://github.com/ethyca/fides/pull/4969)
 
 ## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)
 

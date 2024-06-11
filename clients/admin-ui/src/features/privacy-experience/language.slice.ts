@@ -24,7 +24,7 @@ const languageApi = baseApi.injectEndpoints({
     getAllLanguages: build.query<Page_Language_, LanguageQueryParams>({
       query: (params) => ({
         params,
-        url: `/plus/languages/`,
+        url: `/plus/languages`,
       }),
       providesTags: () => ["Languages"],
     }),
