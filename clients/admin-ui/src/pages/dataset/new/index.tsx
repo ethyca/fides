@@ -1,6 +1,7 @@
 import { Box, Button, Heading, Stack, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
+import { useFeatures } from "~/features/common/features";
 
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
@@ -9,6 +10,7 @@ import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
 
 const NewDataset: NextPage = () => {
+  const features = useFeatures();
   const [generateMethod, setGenerateMethod] = useState<
     "yaml" | "database" | "manual" | null
   >(null);
@@ -39,6 +41,7 @@ const NewDataset: NextPage = () => {
             variant="outline"
             onClick={() => setGenerateMethod("database")}
             isActive={generateMethod === "database"}
+            isDisabled={features.flags.dataDiscoveryAndDetection}
             data-testid="connect-db-btn"
           >
             Connect to a database

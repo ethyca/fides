@@ -245,11 +245,7 @@ const DatabaseConnectForm = () => {
                 colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting || isLoading}
-                isDisabled={
-                  isSubmitting ||
-                  isLoading ||
-                  features.flags.dataDiscoveryAndDetection
-                }
+                isDisabled={isSubmitting || isLoading}
                 data-testid="create-dataset-btn"
               >
                 Generate dataset
