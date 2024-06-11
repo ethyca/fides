@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.38.0"
+    "version": "2.37.1b4.post0.dev16"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10184,16 +10184,16 @@
         "tags": [
           "Messaging"
         ],
-        "summary": "Get Messaging Templates",
+        "summary": "Get Basic Messaging Templates",
         "description": "Returns the available messaging templates, augments the models with labels to be used in the UI.",
-        "operationId": "get_messaging_templates_api_v1_messaging_templates_get",
+        "operationId": "get_basic_messaging_templates_api_v1_messaging_templates_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Get Messaging Templates Api V1 Messaging Templates Get",
+                  "title": "Response Get Basic Messaging Templates Api V1 Messaging Templates Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/MessagingTemplateResponse"
@@ -10215,9 +10215,9 @@
         "tags": [
           "Messaging"
         ],
-        "summary": "Update Messaging Templates",
+        "summary": "Update Basic Messaging Templates",
         "description": "Updates the messaging templates and reverts empty subject or body values to the default values.",
-        "operationId": "update_messaging_templates_api_v1_messaging_templates_put",
+        "operationId": "update_basic_messaging_templates_api_v1_messaging_templates_put",
         "requestBody": {
           "content": {
             "application/json": {
@@ -15686,13 +15686,13 @@
       "MessagingTemplateRequest": {
         "title": "MessagingTemplateRequest",
         "required": [
-          "key",
+          "type",
           "content"
         ],
         "type": "object",
         "properties": {
-          "key": {
-            "title": "Key",
+          "type": {
+            "title": "Type",
             "type": "string"
           },
           "content": {
@@ -15704,14 +15704,14 @@
       "MessagingTemplateResponse": {
         "title": "MessagingTemplateResponse",
         "required": [
-          "key",
+          "type",
           "content",
           "label"
         ],
         "type": "object",
         "properties": {
-          "key": {
-            "title": "Key",
+          "type": {
+            "title": "Type",
             "type": "string"
           },
           "content": {
