@@ -603,7 +603,7 @@ class GoogleCloudSQLMySQLConnector(SQLConnector):
                 config.instance_connection_name,
                 "pymysql",
                 user=config.db_iam_user,
-                db="",  # log in to instance but don't connect to specific database
+                db=config.dbname,
                 enable_iam_auth=True,
             )
             return conn
@@ -614,3 +614,8 @@ class GoogleCloudSQLMySQLConnector(SQLConnector):
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """results to a list of dictionaries"""
         return SQLConnector.default_cursor_result_to_rows(results)
+
+    def build_uri(self):
+        """
+        We need to override this method so it is not abstract anymore.
+        """

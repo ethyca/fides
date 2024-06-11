@@ -152,6 +152,9 @@ integration_secrets = {
             integration_config,
             "google_cloud_sql_mysql_example.instance_connection_name",
         ),
+        "dbname": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.dbname"
+        ),
         "keyfile_creds": pydash.get(
             integration_config, "google_cloud_sql_mysql_example.keyfile_creds"
         ),

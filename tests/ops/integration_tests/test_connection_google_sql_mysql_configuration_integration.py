@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from sqlalchemy import func, select, table
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
@@ -15,10 +16,6 @@ from fides.common.api.scope_registry import (
     STORAGE_READ,
 )
 from fides.common.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-
-"""
-pytest tests/ops/integration_tests/test_connection_google_sql_mysql_configuration_integration.py --no-cov -m integration_google_cloud_sql_mysql -s
-"""
 
 
 @pytest.mark.integration_google_cloud_sql_mysql
@@ -225,3 +222,29 @@ class TestGoogleCloudSQLMySQLConnectionTestSecretsAPI:
         db.refresh(google_cloud_sql_mysql_connection_config)
         assert google_cloud_sql_mysql_connection_config.last_test_timestamp is not None
         assert google_cloud_sql_mysql_connection_config.last_test_succeeded is True
+
+
+@pytest.mark.integration
+@pytest.mark.integration_google_cloud_sql_mysql
+def test_mysql_example_data(google_cloud_sql_mysql_integration_db):
+    """Confirm that the example database is populated with simulated data"""
+    expected_counts = {
+        "product": 3,
+        "address": 3,
+        "customer": 2,
+        "employee": 2,
+        "payment_card": 2,
+        "orders": 4,
+        "order_item": 5,
+        "visit": 2,
+        "login": 7,
+        "service_request": 4,
+        "report": 4,
+    }
+
+    for table_name, expected_count in expected_counts.items():
+        # NOTE: we could use text() here, but we want to avoid SQL string
+        # templating as much as possible. instead, use the table() helper to
+        # dynamically generate the FROM clause for each table_name
+        count_sql = select(func.count()).select_from(table(table_name))
+        assert google_cloud_sql_mysql_integration_db.execute(count_sql).scalar() == expected_count

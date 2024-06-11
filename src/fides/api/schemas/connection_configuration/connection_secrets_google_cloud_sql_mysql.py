@@ -39,6 +39,9 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
         title="Instance connection name",
         description="example: friendly-tower-424214-n8:us-central1:test-ethyca",
     )
+    dbname: Optional[str] = Field(
+        title="Database name",
+    )
     keyfile_creds: KeyfileCreds = Field(
         title="Keyfile creds",
         sensitive=True,
