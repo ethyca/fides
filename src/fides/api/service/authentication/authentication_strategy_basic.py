@@ -30,8 +30,8 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
     ) -> PreparedRequest:
         """Add basic authentication to the request"""
         secrets = connection_config.secrets
-        username = assign_placeholders(self.username, secrets)
-        password = assign_placeholders(self.password, secrets)
+        username = assign_placeholders(self.username, secrets)  # type: ignore
+        password = assign_placeholders(self.password, secrets)  # type: ignore
 
         # the requests library treats a None password as a "None" literal string
         # so we need to override this behavior
