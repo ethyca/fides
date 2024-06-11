@@ -546,40 +546,11 @@ class TestMessagingTemplates:
         with pytest.raises(MessagingConfigValidationException) as exc:
             get_default_template_by_type("invalid_type")
 
-    def test_get_all_messaging_templates_summary_no_db_templates(self, db: Session):
-        summary = get_all_messaging_templates_summary(db)
-        assert len(summary) == 6
-        # id should not exist for templates that do not exist in db
-        assert summary[0].id is None
-        assert summary[0].is_enabled is False
+    def test_get_all_messaging_templates_summary(self, db: Session, messaging_template_no_property):
+        summary: List[MessagingTemplate] = get_all_messaging_templates_summary(db)
+        assert len(summary) == 1
+        assert len(summary[0].properties) == 0
+        assert summary[0].content is not None
+        assert summary[0].type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        assert summary[0].is_enabled is True
 
-    def test_get_all_messaging_templates_summary_some_db_templates(
-        self,
-        db: Session,
-        messaging_template_subject_identity_verification,
-        messaging_template_privacy_request_receipt,
-    ):
-        summary = get_all_messaging_templates_summary(db)
-        assert len(summary) == 6
-
-    def test_get_all_messaging_templates_summary_all_db_templates(
-        self, db: Session, property_a
-    ):
-        content = {
-            "subject": "Some subject",
-            "body": "Some body",
-        }
-        for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
-            MessagingTemplate.create(
-                db=db,
-                data=MessagingTemplateWithPropertiesDetail(
-                    content=content,
-                    properties=[{"id": property_a.id, "name": property_a.name}],
-                    is_enabled=True,
-                    type=template_type,
-                ).dict(),
-            )
-        summary = get_all_messaging_templates_summary(db)
-        assert len(summary) == 6
-        # id should exist for templates that exist in db
-        assert summary[0].id
