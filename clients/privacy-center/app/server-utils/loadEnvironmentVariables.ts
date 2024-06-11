@@ -45,6 +45,11 @@ const loadEnvironmentVariables = () => {
       .FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API
       ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API === "true"
       : false,
+    FIDES_DISABLE_NOTICES_SERVED_API: process.env
+      .FIDES_PRIVACY_CENTER__FIDES_DISABLE_NOTICES_SERVED_API
+      ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_NOTICES_SERVED_API ===
+        "true"
+      : false,
     FIDES_DISABLE_BANNER: process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER
       ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER === "true"
       : false,
