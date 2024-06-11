@@ -19,6 +19,13 @@ The types of changes are:
 
 ## [2.38.1](https://github.com/ethyca/fides/compare/2.38.0...2.38.1)
 
+### Added
+
+### Changed
+
+### Fixed
+- Fixed "add" icons on some buttons being wrong size [#4975](https://github.com/ethyca/fides/pull/4975)
+
 ## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)
 
 ### Added
