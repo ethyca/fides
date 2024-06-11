@@ -75,5 +75,5 @@ region = ""
 
 [scylladb_example]
 server="scylladb_example"
-username = "cassandra"
-password = "cassandra"
+username = "scylla_user"
+password = "scylla_pass"

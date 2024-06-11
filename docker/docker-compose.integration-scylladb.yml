@@ -1,18 +1,15 @@
 services:
   scylladb_example:
-    image: scylladb/scylla
+    image: bitnami/scylladb:6.0.0
     container_name: scylladb_example
-    command: --authenticator=PasswordAuthenticator
+    environment:
+      - SCYLLADB_PASSWORD_SEEDER=yes
+      - SCYLLADB_USER=scylla_user
+      - SCYLLADB_PASSWORD=scylla_pass
+      - SCYLLADB_AUTHENTICATOR=PasswordAuthenticator
     expose:
       - 9042
+    volumes:
+      - ./docker/sample_data/scylla:/docker-entrypoint-initdb.d
     ports:
       - "9042:9042"
-
-  scylla-load-keyspace:
-    container_name: scylla-load-keyspace
-    image: scylladb/scylla
-    volumes:
-      - ./docker/sample_data/scylla/scylla_example.cql:/scylla/scylla_example.cql
-      - ./docker/sample_data/scylla/scylla_entrypoint.sh:/scylla/scylla_entrypoint.sh
-    entrypoint: ["bash", "/scylla/scylla_entrypoint.sh"]
-

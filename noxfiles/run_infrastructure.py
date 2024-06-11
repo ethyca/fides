@@ -84,9 +84,6 @@ def run_infrastructure(
         for datastore in datastores
         if datastore in DOCKERFILE_DATASTORES
     ]
-    if "scylladb_example" in docker_datastores:
-        # Bring up a separate container to populate data
-        docker_datastores.append("scylla-load-keyspace")
 
     _run_cmd_or_err(f'echo "Docker datastores {docker_datastores}"')
 

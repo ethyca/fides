@@ -55,19 +55,19 @@ class ScyllaConnector(BaseConnector):
                 client.execute("select now() from system.local")
         except cassandra.cluster.NoHostAvailable as exc:
             if "Unable to connect to any servers using keyspace" in str(exc):
-                raise ConnectionException("Keyspace issue detected")
+                raise ConnectionException("Unknown keyspace.")
             try:
                 error = list(exc.errors.values())[0]
             except Exception:
                 raise ConnectionException("No host available.")
 
             if isinstance(error, cassandra.AuthenticationFailed):
-                raise ConnectionException("Authentication failed")
+                raise ConnectionException("Authentication failed.")
 
             raise ConnectionException("No host available.")
 
         except cassandra.protocol.SyntaxException:
-            raise ConnectionException("Syntax exception")
+            raise ConnectionException("Syntax exception.")
         except Exception:
             raise ConnectionException("Connection Error connecting to Scylla DB.")
 
