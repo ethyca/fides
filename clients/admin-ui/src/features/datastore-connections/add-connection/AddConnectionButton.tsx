@@ -1,4 +1,4 @@
-import { Button } from "@fidesui/react";
+import { Button } from "fidesui";
 import NextLink from "next/link";
 import React from "react";
 

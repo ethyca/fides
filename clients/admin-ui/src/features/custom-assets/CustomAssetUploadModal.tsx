@@ -11,7 +11,7 @@ import {
   ModalOverlay,
   Text,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 

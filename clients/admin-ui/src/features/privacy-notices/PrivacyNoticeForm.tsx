@@ -1,3 +1,4 @@
+import { Select } from "chakra-react-select";
 import {
   Box,
   Button,
@@ -7,8 +8,7 @@ import {
   Stack,
   useToast,
   VStack,
-} from "@fidesui/react";
-import { Select } from "chakra-react-select";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -178,7 +178,7 @@ const PrivacyNoticeForm = ({
                 <NoticeKeyField isEditing={isEditing} />
                 <PrivacyNoticeLocationDisplay
                   regions={passedInPrivacyNotice?.configured_regions}
-                  label="Locations where consent notice is shown to visitors"
+                  label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
                 <CustomSwitch

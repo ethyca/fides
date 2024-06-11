@@ -3,6 +3,19 @@
  */
 
 import {
+  chakraComponents,
+  ChakraStylesConfig,
+  CreatableSelect,
+  GroupBase,
+  MenuPosition,
+  MultiValue,
+  OptionProps,
+  Select,
+  SelectComponentsConfig,
+  SingleValue,
+  Size,
+} from "chakra-react-select";
+import {
   Box,
   Checkbox,
   Code,
@@ -32,20 +45,7 @@ import {
   Textarea,
   TextareaProps,
   VStack,
-} from "@fidesui/react";
-import {
-  chakraComponents,
-  ChakraStylesConfig,
-  CreatableSelect,
-  GroupBase,
-  MenuPosition,
-  MultiValue,
-  OptionProps,
-  Select,
-  SelectComponentsConfig,
-  SingleValue,
-  Size,
-} from "chakra-react-select";
+} from "fidesui";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 import React, {
   forwardRef,
@@ -1255,6 +1255,65 @@ export const CustomClipboardCopy = ({
           </Flex>
         ) : null}
         {innerInput}
+      </VStack>
+    </FormControl>
+  );
+};
+
+interface CustomDatePickerProps {
+  label?: string;
+  name: string;
+  tooltip?: string;
+  isDisabled?: boolean;
+  isRequired?: boolean;
+  minValue?: string;
+}
+
+export const CustomDatePicker = ({
+  label,
+  name,
+  tooltip,
+  isDisabled,
+  isRequired,
+  minValue,
+  ...props
+}: CustomDatePickerProps & FieldHookConfig<Date>) => {
+  const [field, meta, { setValue, setTouched }] = useField(name);
+  const isInvalid = !!(meta.touched && meta.error);
+
+  const { validateField } = useFormikContext();
+
+  return (
+    <FormControl isRequired={isRequired} isInvalid={isInvalid}>
+      <VStack align="start">
+        {!!label && (
+          <Flex align="center">
+            <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
+              {label}
+            </Label>
+          </Flex>
+        )}
+        <Input
+          type="date"
+          name={name}
+          min={minValue}
+          value={field.value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setValue(e.target.value);
+            setTouched(true);
+          }}
+          onBlur={() => {
+            validateField(name);
+          }}
+          size="sm"
+          focusBorderColor="primary.600"
+          data-testid={`input-${name}`}
+        />
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
       </VStack>
     </FormControl>
   );

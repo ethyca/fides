@@ -1,14 +1,5 @@
 /* eslint-disable no-param-reassign */
-import {
-  Button,
-  Flex,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Thead,
-  Tr,
-} from "@fidesui/react";
+import { Button, Flex, Table, Tbody, Td, Text, Thead, Tr } from "fidesui";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";

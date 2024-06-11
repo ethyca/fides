@@ -11,7 +11,7 @@ import {
   Stack,
   Text,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";

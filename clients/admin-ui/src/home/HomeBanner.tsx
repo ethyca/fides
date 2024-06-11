@@ -1,4 +1,4 @@
-import { Flex, Text } from "@fidesui/react";
+import { Flex, Text } from "fidesui";
 import * as React from "react";
 
 import { useFeatures } from "~/features/common/features";

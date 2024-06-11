@@ -3,18 +3,18 @@
  */
 
 import {
+  CustomFieldsList,
+  CustomFieldValues,
+  useCustomFields,
+} from "common/custom-fields";
+import {
   Box,
   BoxProps,
   GreenCheckCircleIcon,
   Heading,
   Stack,
   Text,
-} from "@fidesui/react";
-import {
-  CustomFieldsList,
-  CustomFieldValues,
-  useCustomFields,
-} from "common/custom-fields";
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";

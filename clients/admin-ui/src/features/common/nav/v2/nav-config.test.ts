@@ -66,9 +66,6 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasPlus: true,
-      flags: {
-        datamapReportingPage: true,
-      },
       userScopes: ALL_SCOPES,
     });
 

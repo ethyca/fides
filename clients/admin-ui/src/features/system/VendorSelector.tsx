@@ -1,4 +1,12 @@
 import {
+  ActionMeta,
+  chakraComponents,
+  CreatableSelect,
+  GroupBase,
+  OptionProps,
+  SingleValue,
+} from "chakra-react-select";
+import {
   Box,
   CloseButton,
   Flex,
@@ -12,15 +20,7 @@ import {
   Spacer,
   Text,
   VStack,
-} from "@fidesui/react";
-import {
-  ActionMeta,
-  chakraComponents,
-  CreatableSelect,
-  GroupBase,
-  OptionProps,
-  SingleValue,
-} from "chakra-react-select";
+} from "fidesui";
 import { useField, useFormikContext } from "formik";
 import React, { useEffect, useState } from "react";
 

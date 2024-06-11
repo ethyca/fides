@@ -420,6 +420,7 @@ div#fides-consent-content .fides-modal-body {
   background-color: var(--fides-overlay-background-color);
   bottom: 0px;
   width: 100%;
+  max-width: var(--fides-overlay-width);
   border-bottom-left-radius: var(--fides-overlay-component-border-radius);
   border-bottom-right-radius: var(--fides-overlay-component-border-radius);
 }
@@ -669,9 +670,8 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 }
 
 .fides-notice-toggle .fides-notice-toggle-trigger {
-  width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   min-height: 40px;
   align-items: center;
 }
@@ -1073,7 +1073,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
     width: 100%;
   }
   .fides-modal-footer {
-    width: 100%;
+    max-width: 100%;
   }
   .fides-tcf-banner-container
     div#fides-banner

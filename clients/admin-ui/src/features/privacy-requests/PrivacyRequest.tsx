@@ -1,4 +1,4 @@
-import { Box, VStack } from "@fidesui/react";
+import { Box, VStack } from "fidesui";
 
 import EventsAndLogs from "./events-and-logs/EventsAndLogs";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";

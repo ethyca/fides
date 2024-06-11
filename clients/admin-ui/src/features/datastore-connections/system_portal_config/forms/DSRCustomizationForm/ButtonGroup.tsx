@@ -1,7 +1,7 @@
 import {
   Button as ChakraButton,
   ButtonGroup as ChakraButtonGroup,
-} from "@fidesui/react";
+} from "fidesui";
 import React from "react";
 
 type ButtonGroupProps = {

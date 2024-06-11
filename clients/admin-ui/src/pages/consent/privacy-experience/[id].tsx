@@ -1,4 +1,4 @@
-import { Center, Spinner, Text } from "@fidesui/react";
+import { Center, Spinner, Text } from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";

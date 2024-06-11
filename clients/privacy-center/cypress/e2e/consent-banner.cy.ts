@@ -233,7 +233,7 @@ describe("Consent overlay", () => {
                 "pri_exp-history-banner-modal-en-000",
               user_geography: "us_ca",
               method: ConsentMethod.SAVE,
-              served_notice_history_id: "ser_notice-history-000",
+              served_notice_history_id: body.served_notice_history_id,
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -543,9 +543,10 @@ describe("Consent overlay", () => {
             user_geography: "us_ca",
 
             method: ConsentMethod.SAVE,
-            served_notice_history_id: "ser_notice-history-000",
+            served_notice_history_id: body.served_notice_history_id,
           };
           expect(body).to.eql(expected);
+          expect(body.served_notice_history_id).to.be.a("string");
         });
 
         // check that the cookie updated
@@ -643,7 +644,7 @@ describe("Consent overlay", () => {
               "pri_exp-history-banner-modal-en-000",
             user_geography: "us_ca",
             method: ConsentMethod.SAVE,
-            served_notice_history_id: "ser_notice-history-000",
+            served_notice_history_id: body.served_notice_history_id,
           };
           expect(body).to.eql(expected);
         });
@@ -917,7 +918,7 @@ describe("Consent overlay", () => {
             user_geography: "us_ca",
 
             method: ConsentMethod.GPC,
-            served_notice_history_id: undefined,
+            served_notice_history_id: body.served_notice_history_id,
           };
           // uuid is generated automatically if the user has no saved consent cookie
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -1497,15 +1498,44 @@ describe("Consent overlay", () => {
         });
       });
 
-      it("shows the modal link", () => {
-        cy.get("#fides-modal-link").should("be.visible");
-      });
+      describe("modal link", () => {
+        it("is visible", () => {
+          cy.get("#fides-modal-link").should("be.visible");
+        });
 
-      describe("modal link click", () => {
-        it("should open modal", () => {
+        it("opens modal when clicked", () => {
           cy.get("#fides-modal-link").should("be.visible").click();
           cy.getByTestId("consent-modal").should("be.visible");
         });
+
+        it(
+          "gets binded to the click handler even after a delay in appearing in the DOM",
+          { defaultCommandTimeout: 200 },
+          () => {
+            const delay = 1000;
+            cy.on("window:before:load", (win: { render_delay: number }) => {
+              // eslint-disable-next-line no-param-reassign
+              win.render_delay = delay;
+            });
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+              (config) => {
+                stubConfig({
+                  experience: {
+                    experience_config: {
+                      ...config.experience.experience_config,
+                      ...{ component: ComponentType.MODAL },
+                    },
+                  },
+                });
+              }
+            );
+            cy.get("#fides-modal-link").should("not.exist");
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(delay); // wait until delay is over
+            cy.get("#fides-modal-link").should("be.visible").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+          }
+        );
       });
     });
 
@@ -1786,6 +1816,7 @@ describe("Consent overlay", () => {
             },
             extraDetails: {
               consentMethod: undefined,
+              shouldShowExperience: true,
             },
             fides_string: undefined,
           },
@@ -2223,19 +2254,21 @@ describe("Consent overlay", () => {
           tcf_special_features: [],
           tcf_system_consents: [],
           tcf_system_legitimate_interests: [],
+          served_notice_history_id: body.served_notice_history_id,
         });
+        expect(body.served_notice_history_id).to.be.a("string");
+        const servedNoticeHistoryId = body.served_notice_history_id;
+
         // Now opt out of the notices
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
         });
-        // The patch should include the served notice ID (response from patchNoticesServed)
+        // The patch should include the served notice ID (generated in the client and used in the notices-served request already)
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
-          expect(served_notice_history_id).to.eql(
-            noticesServedInterception.response?.body.served_notice_history_id
-          );
+          expect(served_notice_history_id).to.eql(servedNoticeHistoryId);
           expect(preferenceInterception.request.body.method).to.eql(
             ConsentMethod.REJECT
           );
@@ -2346,6 +2379,45 @@ describe("Consent overlay", () => {
         });
       });
     });
+
+    it("when fides_disable_notices_served_api option is set, only disables notices-served API", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: buildMockNotices(),
+        },
+        options: {
+          fidesDisableNoticesServedApi: true,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("#fides-modal-link").click();
+
+        // Check that notices-served API is not called when the modal is shown
+        cy.get("@FidesUIShown").then(() => {
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          cy.wait("@patchNoticesServed", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+        });
+
+        // Also, check that privacy-preferences API is called after saving
+        cy.getByTestId("Save-btn").click();
+        cy.get("@FidesUpdated").then(() => {
+          cy.wait("@patchPrivacyPreference", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNotNull(xhr?.response?.body);
+          });
+        });
+      });
+    });
   });
 
   describe("consent overlay buttons", () => {
@@ -2450,7 +2522,7 @@ describe("Consent overlay", () => {
 
       // Call reinitialize() without making any changes
       cy.window().then((win) => {
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should re-initialize and re-show the banner
@@ -2479,7 +2551,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: false,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize again, in embedded mode this time
@@ -2498,7 +2570,7 @@ describe("Consent overlay", () => {
           fides_embed: true,
           fides_disable_banner: true,
         };
-        win.Fides.reinitialize();
+        win.Fides.init();
       });
 
       // FidesJS should initialize once again, without any banners
@@ -2507,6 +2579,37 @@ describe("Consent overlay", () => {
         cy.get("#fides-overlay .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("exist");
+      });
+    });
+  });
+
+  describe("when initialization has been disabled by the developer", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { initialize: "false" },
+      });
+      cy.window().then((win) => {
+        win.addEventListener(
+          "FidesInitialized",
+          cy.stub().as("FidesInitialized")
+        );
+      });
+    });
+    it("does not trigger any side-effects (like banners displaying, events firing, etc.)", () => {
+      cy.window().then((win) => {
+        assert.isTrue(!!win.Fides.config);
+        assert.isFalse(win.Fides.initialized);
+      });
+      cy.get("@FidesInitialized").should("not.have.been.called");
+      cy.get("#fides-overlay .fides-banner").should("not.exist");
+    });
+    it("can still be initialized manually by the developer after adjusting settings", () => {
+      cy.window().then((win) => {
+        win.Fides.init().then(() => {
+          assert.isTrue(win.Fides.initialized);
+        });
       });
     });
   });

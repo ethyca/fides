@@ -1,3 +1,4 @@
+import SearchBar from "common/SearchBar";
 import {
   Badge,
   Box,
@@ -16,8 +17,7 @@ import {
   Stack,
   Switch,
   Text,
-} from "@fidesui/react";
-import SearchBar from "common/SearchBar";
+} from "fidesui";
 import { useFormikContext } from "formik";
 import { ChangeEvent, useMemo, useState } from "react";
 

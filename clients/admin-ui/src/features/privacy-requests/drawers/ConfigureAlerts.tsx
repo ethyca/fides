@@ -23,7 +23,7 @@ import {
   Text,
   useDisclosure,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import {
   Field,
   FieldArray,

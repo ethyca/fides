@@ -62,7 +62,8 @@ export interface FidesInitOptions {
   // ID of the parent DOM element where the overlay should be inserted (default: "fides-overlay")
   overlayParentId: string | null;
 
-  // ID of the DOM element that should trigger the consent modal (default: "fides-modal-link"
+  // ID of the DOM element that should trigger the consent modal (default: "fides-modal-link")
+  // If set to empty string "", fides.js will not attempt to bind the modal link to the click handler
   modalLinkId: string | null;
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
@@ -83,6 +84,9 @@ export interface FidesInitOptions {
 
   // Whether we should disable saving consent preferences to the Fides API.
   fidesDisableSaveApi: boolean;
+
+  // Whether we should only disable saving notices served to the Fides API.
+  fidesDisableNoticesServedApi: boolean;
 
   // Whether we should disable the banner
   fidesDisableBanner: boolean;
@@ -130,6 +134,7 @@ export interface FidesInitOptions {
  * need to change.
  */
 export interface FidesGlobal extends Fides {
+  cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
@@ -142,10 +147,11 @@ export interface FidesGlobal extends Fides {
   saved_consent: NoticeConsent;
   tcf_consent: TcfOtherConsent;
   gtm: typeof gtm;
-  init: (config: FidesConfig) => Promise<void>;
+  init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;
+  shouldShowExperience: () => boolean;
   showModal: () => void;
 }
 
@@ -664,6 +670,7 @@ export type FidesInitOptionsOverrides = Pick<
   FidesInitOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
+  | "fidesDisableNoticesServedApi"
   | "fidesEmbed"
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
@@ -772,6 +779,8 @@ export enum ServingComponent {
  * Request body when indicating that notices were served in the UI
  */
 export type RecordConsentServedRequest = {
+  served_notice_history_id: string; // a generated uuidv4 string
+
   browser_identity: Identity;
   code?: string;
   privacy_notice_history_ids?: Array<string>;

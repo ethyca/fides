@@ -36,12 +36,15 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
-    LastServedNotice,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.models.property import PrivacyExperienceConfigProperty, Property
+from fides.api.models.property import (
+    PrivacyExperienceConfigProperty,
+    Property,
+    MessagingTemplateToProperty,
+)
 from fides.api.models.registration import UserRegistration
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync

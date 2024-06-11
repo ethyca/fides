@@ -4,7 +4,7 @@ import json
 import typing
 from datetime import datetime
 from json import loads
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from uuid import uuid4
 
 import pytest
@@ -2512,8 +2512,11 @@ class TestHealthchecks:
     ) -> None:
         """Test the database health checks."""
 
-        def mock_get_db_health(url: str, db) -> str:
-            return database_health
+        def mock_get_db_health(url: str, db) -> Tuple[str, str]:
+            return (
+                database_health,
+                "9e83545ed9b6",
+            )  # just an arbitrary revision # for testing
 
         monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
         response = test_client.get(test_config.cli.server_url + "/health/database")
@@ -2538,6 +2541,26 @@ class TestHealthchecks:
         """Test the server healthcheck."""
         response = test_client.get(test_config.cli.server_url + "/health/workers")
         assert response.status_code == 200
+        assert response.json() == {
+            "workers_enabled": False,
+            "workers": [],
+            "queue_counts": {},
+        }
+
+    @pytest.mark.usefixtures("enable_celery_worker")
+    def test_worker_health_check_with_workers_enabled(self, test_config, test_client):
+        response = test_client.get(test_config.cli.server_url + "/health/workers")
+        assert response.status_code == 200
+        # Workers not actually running in pytest though
+        assert response.json() == {
+            "workers_enabled": True,
+            "workers": [],
+            "queue_counts": {
+                "fidesops.messaging": 0,
+                "fides.privacy_preferences": 0,
+                "fides": 0,
+            },
+        }
 
 
 @pytest.mark.integration

@@ -1,4 +1,4 @@
-import { Badge, Box, EditIcon } from "@fidesui/react";
+import { Badge, Box, EditIcon } from "fidesui";
 import { useCallback, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";

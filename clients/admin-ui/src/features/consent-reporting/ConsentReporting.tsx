@@ -5,7 +5,7 @@ import {
   InputGroup,
   InputLeftAddon,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";

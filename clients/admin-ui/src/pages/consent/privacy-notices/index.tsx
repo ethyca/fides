@@ -1,4 +1,4 @@
-import { Box, Heading, Text } from "@fidesui/react";
+import { Box, Heading, Text } from "fidesui";
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";

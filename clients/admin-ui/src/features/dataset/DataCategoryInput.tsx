@@ -1,5 +1,10 @@
-import { ClassifiedDataCategoryDropdown } from "@fidesui/components";
-import { Box, FormLabel, Grid, Stack } from "@fidesui/react";
+import {
+  Box,
+  ClassifiedDataCategoryDropdown,
+  FormLabel,
+  Grid,
+  Stack,
+} from "fidesui";
 
 import { DataCategory } from "~/types/api";
 

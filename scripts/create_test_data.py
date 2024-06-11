@@ -230,7 +230,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
                     ExecutionLogStatus.pending,
                     ExecutionLogStatus.complete,
                     ExecutionLogStatus.error,
-                    ExecutionLogStatus.paused,
+                    ExecutionLogStatus.awaiting_processing,
                     ExecutionLogStatus.retrying,
                     ExecutionLogStatus.skipped,
                 ]:

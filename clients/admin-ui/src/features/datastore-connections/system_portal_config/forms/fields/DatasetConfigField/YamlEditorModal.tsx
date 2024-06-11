@@ -6,7 +6,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { Dataset } from "~/types/api";
 

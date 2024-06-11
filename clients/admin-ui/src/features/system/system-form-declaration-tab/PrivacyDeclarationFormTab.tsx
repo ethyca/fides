@@ -1,3 +1,5 @@
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Box,
   ButtonProps,
@@ -6,9 +8,7 @@ import {
   Text,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";

@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { AsyncConfig } from "./AsyncConfig";
 import type { ClientConfig } from "./ClientConfig";
 import type { Header } from "./Header";
 import type { HTTPMethod } from "./HTTPMethod";
@@ -31,5 +32,6 @@ export type SaaSRequest = {
   grouped_inputs?: Array<string>;
   ignore_errors?: boolean | Array<number>;
   rate_limit_config?: RateLimitConfig;
+  async_config?: AsyncConfig;
   skip_missing_param_values?: boolean;
 };

@@ -10,6 +10,11 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from fides.api.models.property import Property
+from fides.api.schemas.property import Property as PropertySchema
+from fides.api.schemas.property import PropertyType
+
+from fides.api.models.messaging_template import MessagingTemplate
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
@@ -64,6 +69,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     RequestTask,
 )
+from fides.api.models.property import Property
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
@@ -80,7 +86,11 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
+    MessagingActionType,
+    MessagingTemplateWithPropertiesDetail,
 )
+from fides.api.schemas.property import Property as PropertySchema
+from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.storage.storage import (
     FileNaming,
@@ -93,6 +103,9 @@ from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
+)
+from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
+    RandomStringRewriteMaskingStrategy,
 )
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
@@ -311,6 +324,99 @@ def set_active_storage_s3(db) -> None:
             }
         },
     )
+
+
+@pytest.fixture(scope="function")
+def property_a(db) -> Generator:
+    prop_a = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property",
+            type=PropertyType.website,
+            experiences=[],
+            paths=["test"],
+        ).dict(),
+    )
+    yield prop_a
+    prop_a.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def property_b(db: Session) -> Generator:
+    prop_b = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property b",
+            type=PropertyType.website,
+            experiences=[],
+            paths=[],
+        ).dict(),
+    )
+    yield prop_b
+    prop_b.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_no_property(db: Session) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [],
+        "is_enabled": True,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_subject_identity_verification(
+    db: Session, property_a
+) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=MessagingTemplateWithPropertiesDetail(
+            content=content,
+            properties=[{"id": property_a.id, "name": property_a.name}],
+            is_enabled=True,
+            type=template_type,
+        ).dict(),
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_privacy_request_receipt(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.PRIVACY_REQUEST_RECEIPT
+    content = {
+        "subject": "Your request has been received.",
+        "body": "Stay tuned!",
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=MessagingTemplateWithPropertiesDetail(
+            content=content,
+            properties=[{"id": property_a.id, "name": property_a.name}],
+            is_enabled=True,
+            type=template_type,
+        ).dict(),
+    )
+    yield messaging_template
+    messaging_template.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1137,7 +1243,7 @@ def erasure_policy_string_rewrite_name_and_email(
         },
     )
 
-    erasure_rule = Rule.create(
+    string_erasure_rule = Rule.create(
         db=db,
         data={
             "action_type": ActionType.erasure.value,
@@ -1151,12 +1257,29 @@ def erasure_policy_string_rewrite_name_and_email(
         },
     )
 
+    email_erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "email rewrite erasure rule rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": RandomStringRewriteMaskingStrategy.name,
+                "configuration": {
+                    "length": 20,
+                    "format_preservation": {"suffix": "@email.com"},
+                },
+            },
+        },
+    )
+
     erasure_rule_target_name = RuleTarget.create(
         db=db,
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.name").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": string_erasure_rule.id,
         },
     )
 
@@ -1165,7 +1288,7 @@ def erasure_policy_string_rewrite_name_and_email(
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.contact.email").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": email_erasure_rule.id,
         },
     )
 
@@ -1179,7 +1302,11 @@ def erasure_policy_string_rewrite_name_and_email(
     except ObjectDeletedError:
         pass
     try:
-        erasure_rule.delete(db)
+        string_erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        email_erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:

@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Button, Flex, HStack, Text, VStack } from "@fidesui/react";
 import {
   ColumnDef,
   createColumnHelper,
@@ -18,6 +17,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import { Button, Flex, HStack, Text, VStack } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
@@ -185,8 +185,9 @@ export const PrivacyExperiencesTable = () => {
         userCanUpdate &&
           columnHelper.accessor((row) => row.disabled, {
             id: "enable",
-            cell: (props) => EnablePrivacyExperienceCell(props),
+            cell: EnablePrivacyExperienceCell,
             header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+            meta: { disableRowClick: true },
           }),
       ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
     [userCanUpdate]

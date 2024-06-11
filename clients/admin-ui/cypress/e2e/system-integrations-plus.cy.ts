@@ -14,6 +14,9 @@ describe("System integrations", () => {
     cy.intercept("GET", "/api/v1/connection_type/postgres/secret", {
       fixture: "connectors/postgres_secret.json",
     }).as("getPostgresConnectorSecret");
+    cy.intercept("GET", "/api/v1/plus/dictionary/system?size=2000", {
+      fixture: "dictionary-entries.json",
+    }).as("getDict");
     stubPlus(true);
     stubSystemCrud();
     cy.visit(SYSTEM_ROUTE);
@@ -24,6 +27,7 @@ describe("System integrations", () => {
       cy.getByTestId("more-btn").click();
       cy.getByTestId("edit-btn").click();
     });
+    cy.wait("@getDict");
     cy.getByTestId("tab-Integrations").click();
     cy.getByTestId("tab-panel-Integrations").should("exist");
   });

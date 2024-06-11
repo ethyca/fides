@@ -6,7 +6,7 @@ import {
   IconButton,
   Switch,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { TaxonomyEntityNode } from "./types";
 

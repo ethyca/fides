@@ -8,7 +8,7 @@ import {
   Text,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
