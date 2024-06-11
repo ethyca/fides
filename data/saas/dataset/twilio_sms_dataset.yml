@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: twilio_sms
-    description: A sample dataset representing the twilio sms integration for Fides
+    name: tsms
+    description: A sample dataset representing the twilio_sms integration for Fides
     collections:
       - name: user
         fields:
@@ -34,9 +34,6 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: error_code
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer
           - name: error_message
           - name: from
             data_categories: [user.contact.phone_number]
@@ -52,6 +49,9 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: price
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: price_unit
             data_categories: [system.operations]
             fidesops_meta:
@@ -59,6 +59,7 @@ dataset:
           - name: sid
             data_categories: [system.operations]
             fidesops_meta:
+              #private_key
               data_type: string
           - name: status
             data_categories: [system.operations]
