@@ -1,5 +1,4 @@
 import {
-  AddIcon,
   Box,
   Button,
   DeleteIcon,
@@ -9,6 +8,7 @@ import {
   IconButton,
   LinkBox,
   LinkOverlay,
+  SmallAddIcon,
   Spacer,
   Stack,
   Text,
@@ -165,7 +165,7 @@ export const PrivacyDeclarationDisplayGroup = ({
             backgroundColor="primary.800"
             color="white"
             fontWeight="600"
-            rightIcon={<AddIcon />}
+            rightIcon={<SmallAddIcon boxSize={4} />}
             data-testid="add-btn"
           >
             Add data use
