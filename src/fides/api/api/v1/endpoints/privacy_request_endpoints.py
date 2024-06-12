@@ -53,7 +53,6 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
 from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,

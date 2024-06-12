@@ -4,7 +4,6 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.privacy_request import ConsentRequest, PrivacyRequest
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
