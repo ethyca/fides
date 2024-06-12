@@ -226,7 +226,6 @@ class TestGoogleCloudSQLMySQLConnectionTestSecretsAPI:
 
 @pytest.mark.integration
 @pytest.mark.integration_google_cloud_sql_mysql
-@pytest.mark.integration_google_cloud_sql_mysql_x
 def test_mysql_example_data(google_cloud_sql_mysql_integration_db):
     """Confirm that the example database is populated with simulated data"""
     expected_counts = {
