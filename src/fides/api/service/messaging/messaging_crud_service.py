@@ -226,7 +226,9 @@ def get_enabled_messaging_template_by_type_and_property(
         ),
     ).first()
     if not template:
-        logger.info("No enabled template was found for template type: {}", template_type)
+        logger.info(
+            "No enabled template was found for template type: {}", template_type
+        )
 
     return template
 
