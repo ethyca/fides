@@ -12,7 +12,6 @@ from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fides.api.models.property import Property
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
@@ -72,6 +71,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
     RequestTask,
 )
+from fides.api.models.property import Property
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,

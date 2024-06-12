@@ -7,7 +7,6 @@ from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fides.api.models.property import Property
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy import column
@@ -40,6 +39,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.models.property import Property
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.messaging.messaging import MessagingMethod, MessagingActionType
 from fides.api.schemas.privacy_request import BulkPostPrivacyRequests
