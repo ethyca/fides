@@ -1,14 +1,10 @@
-import { Badge, TagProps, Tooltip } from "@fidesui/react";
 import { CellContext } from "@tanstack/react-table";
+import { Badge, TagProps, Tooltip } from "fidesui";
 import React from "react";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { MapCell } from "~/features/common/table/";
 import { EnableCell } from "~/features/common/table/v2/cells";
-import {
-  FRAMEWORK_MAP,
-  MECHANISM_MAP,
-} from "~/features/privacy-notices/constants";
+import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
 import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ConsentMechanism,
@@ -48,10 +44,6 @@ export const getRegions = (
   });
   return values;
 };
-
-export const FrameworkCell = (cellProps: any) => (
-  <MapCell map={FRAMEWORK_MAP} {...cellProps} />
-);
 
 type TagNames = "available" | "enabled" | "inactive";
 
@@ -122,7 +114,7 @@ export const EnablePrivacyNoticeCell = ({
 }: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>) => {
   const [patchNoticeMutationTrigger] = useLimitedPatchPrivacyNoticesMutation();
 
-  const value = getValue();
+  const disabled = getValue();
   const onToggle = async (toggle: boolean) =>
     patchNoticeMutationTrigger({
       id: row.original.id,
@@ -140,7 +132,7 @@ export const EnablePrivacyNoticeCell = ({
 
   return (
     <EnableCell
-      value={value}
+      enabled={!disabled}
       isDisabled={toggleIsDisabled}
       onToggle={onToggle}
       title="Disable privacy notice"

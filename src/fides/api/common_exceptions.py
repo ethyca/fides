@@ -163,6 +163,10 @@ class RequestTaskNotFound(BaseException):
     """Privacy Request Task Not Found"""
 
 
+class AwaitingAsyncTaskCallback(BaseException):
+    """Request Task is Awaiting Processing - Awaiting Async Task Callback"""
+
+
 class UpstreamTasksNotReady(BaseException):
     """Privacy Request Task awaiting upstream tasks"""
 
@@ -185,6 +189,10 @@ class SaaSConfigNotFoundException(FidesopsException):
 
 class MessagingConfigNotFoundException(FidesopsException):
     """Custom Exception - Messaging Config Not Found"""
+
+
+class MessagingConfigValidationException(FidesopsException):
+    """Custom Exception - Messaging Config Could Not Be Created, Updated, or Deleted"""
 
 
 class MessageDispatchException(FidesopsException):

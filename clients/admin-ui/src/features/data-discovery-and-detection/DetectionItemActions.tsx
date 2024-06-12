@@ -4,9 +4,10 @@ import {
   HStack,
   ViewIcon,
   ViewOffIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import { useState } from "react";
 
+import { useAlert } from "~/features/common/hooks";
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
@@ -32,6 +33,7 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
   const [confirmResourceMutation] = useConfirmResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
   const [unmuteResourceMutation] = useUnmuteResourceMutation();
+  const { successAlert } = useAlert();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
@@ -73,6 +75,10 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
               staged_resource_urn: resource.urn,
               monitor_config_id: resource.monitor_config_id!,
             });
+            successAlert(
+              "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
+              `${resource.name || "The resource"} is now being monitored.`
+            );
             setIsProcessingAction(false);
           }}
           disabled={isProcessingAction}
@@ -87,6 +93,10 @@ const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
             });
+            successAlert(
+              "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
+              `${resource.name || "The resource"} is now being monitored.`
+            );
             setIsProcessingAction(false);
           }}
           disabled={isProcessingAction}

@@ -92,7 +92,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.REPORTING_DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
-        requiresFlag: "datamapReportingPage",
       },
     ],
   },
@@ -167,6 +166,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.USER_CREATE,
           ScopeRegistryEnum.USER_PERMISSION_UPDATE,
           ScopeRegistryEnum.USER_READ,
+        ],
+      },
+      {
+        title: "Integrations",
+        path: routes.INTEGRATION_MANAGEMENT_ROUTE,
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+        scopes: [
+          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
+          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.CONNECTION_DELETE,
+          ScopeRegistryEnum.CONNECTION_INSTANTIATE,
+          ScopeRegistryEnum.CONNECTION_READ,
+          ScopeRegistryEnum.CONNECTION_TYPE_READ,
         ],
       },
       {

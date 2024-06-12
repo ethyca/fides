@@ -1,83 +1,36 @@
 import {
   Button,
-  ButtonGroup,
   FilterLightIcon,
   Flex,
-  IconButton,
-  Menu,
-  MenuButton,
   Tag,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useContext } from "react";
-import { useDispatch } from "react-redux";
 
-import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { DownloadLightIcon, GearLightIcon } from "~/features/common/Icon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { selectIsMapOpen, setView } from "~/features/datamap/datamap.slice";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
-import ExportModal from "~/features/datamap/modals/ExportModal";
 import FilterModal from "~/features/datamap/modals/FilterModal";
-import SettingsModal from "~/features/datamap/modals/SettingsModal";
 
 const useSettingsBar = () => {
-  const isMapOpen = useAppSelector(selectIsMapOpen);
-
-  const {
-    isOpen: isExportModalOpen,
-    onOpen: onExportModalOpen,
-    onClose: onExportModalClose,
-  } = useDisclosure();
-
-  const {
-    isOpen: isSettingsModalOpen,
-    onOpen: onSettingsModalOpen,
-    onClose: onSettingsModalClose,
-  } = useDisclosure();
-
   const {
     isOpen: isFilterModalOpen,
     onOpen: onFilterModalOpen,
     onClose: onFilterModalClose,
   } = useDisclosure();
 
-  const onExportClick = () => {
-    onExportModalOpen();
-  };
-
   return {
-    isExportModalOpen,
-    isMapOpen,
-    isSettingsModalOpen,
     isFilterModalOpen,
-    onSettingsModalOpen,
-    onSettingsModalClose,
     onFilterModalOpen,
     onFilterModalClose,
-    onExportClick,
-    onExportModalClose,
-    onExportModalOpen,
   };
 };
 
 const SettingsBar: React.FC = () => {
-  const dispatch = useDispatch();
-  const {
-    isExportModalOpen,
-    isFilterModalOpen,
-    isSettingsModalOpen,
-    onSettingsModalOpen,
-    onSettingsModalClose,
-    onFilterModalOpen,
-    onFilterModalClose,
-    onExportClick,
-    onExportModalClose,
-    isMapOpen,
-  } = useSettingsBar();
+  const { isFilterModalOpen, onFilterModalOpen, onFilterModalClose } =
+    useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
   const { systemsCount: totalSystemsCount, dictionaryService: compassEnabled } =
@@ -125,7 +78,6 @@ const SettingsBar: React.FC = () => {
             backgroundColor="#824EF2"
             color="white"
             size="sm"
-            marginRight={4}
             onClick={onFilterModalOpen}
             _hover={{ opacity: 0.8 }}
             _active={{
@@ -145,52 +97,9 @@ const SettingsBar: React.FC = () => {
               </Tag>
             ) : null}
           </Button>
-          <ButtonGroup isAttached size="sm" marginRight={4}>
-            <Button
-              colorScheme={isMapOpen ? "primary" : undefined}
-              onClick={() => {
-                dispatch(setView("map"));
-              }}
-              data-testid="map-btn"
-            >
-              Map
-            </Button>
-            <Button
-              colorScheme={!isMapOpen ? "primary" : undefined}
-              onClick={() => {
-                dispatch(setView("table"));
-              }}
-              data-testid="table-btn"
-            >
-              Table
-            </Button>
-          </ButtonGroup>
-          <IconButton
-            aria-label="Open Column Settings"
-            variant="ghost"
-            size="sm"
-            marginRight={1}
-            onClick={onSettingsModalOpen}
-            icon={<GearLightIcon />}
-          />
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Export data"
-              icon={<DownloadLightIcon />}
-              onClick={onExportClick}
-              size="sm"
-              variant="ghost"
-            />
-          </Menu>
         </Flex>
       </Flex>
       <FilterModal isOpen={isFilterModalOpen} onClose={onFilterModalClose} />
-      <ExportModal isOpen={isExportModalOpen} onClose={onExportModalClose} />
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={onSettingsModalClose}
-      />
     </>
   );
 };

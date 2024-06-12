@@ -1,4 +1,4 @@
-import { Box, Flex } from "@fidesui/react";
+import { Box, Flex } from "fidesui";
 import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";

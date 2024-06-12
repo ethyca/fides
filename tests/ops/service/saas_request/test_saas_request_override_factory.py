@@ -74,6 +74,18 @@ def valid_update_override(
     pass
 
 
+def valid_consent_override(
+    client: AuthenticatedClient,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
+    secrets: Dict[str, Any],
+) -> bool:
+    """
+    A sample override function for consent requests with a valid function signature
+    """
+    pass
+
+
 @pytest.mark.unit_saas
 class TestSaasRequestOverrideFactory:
     """
@@ -135,6 +147,36 @@ class TestSaasRequestOverrideFactory:
         )
         assert valid_update_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.DELETE
+        )
+
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
+
+    def test_register_opt_in_consent(self):
+        """
+        Test registering a valid `opt_in` override function
+        """
+
+        f_id = uuid()
+        register(f_id, SaaSRequestType.OPT_IN)(valid_consent_override)
+        assert valid_consent_override == SaaSRequestOverrideFactory.get_override(
+            f_id, SaaSRequestType.OPT_IN
+        )
+
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
+
+    def test_register_opt_out_consent(self):
+        """
+        Test registering a valid `opt_out` override function
+        """
+
+        f_id = uuid()
+        register(f_id, SaaSRequestType.OPT_OUT)(valid_consent_override)
+        assert valid_consent_override == SaaSRequestOverrideFactory.get_override(
+            f_id, SaaSRequestType.OPT_OUT
         )
 
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:

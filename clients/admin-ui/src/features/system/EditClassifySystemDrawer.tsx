@@ -6,7 +6,7 @@ import {
   Stack,
   Text,
   useToast,
-} from "@fidesui/react";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { narrow } from "narrow-minded";
 import { ReactNode } from "react";

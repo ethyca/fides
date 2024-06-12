@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  Grid,
-  Heading,
-  Link,
-  Text,
-} from "@fidesui/react";
+import { Box, Button, Divider, Flex, Grid, Heading, Link, Text } from "fidesui";
 import type { NextPage } from "next";
 
 import { useFeatures } from "~/features/common/features";

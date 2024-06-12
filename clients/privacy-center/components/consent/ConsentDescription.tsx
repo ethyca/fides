@@ -1,4 +1,4 @@
-import { Box, Text, TextProps } from "@fidesui/react";
+import { Box, Text, TextProps } from "fidesui";
 import { useAppSelector } from "~/app/hooks";
 import useI18n from "~/common/hooks/useI18n";
 import { useConfig } from "~/features/common/config.slice";

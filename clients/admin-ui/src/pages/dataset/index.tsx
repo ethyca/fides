@@ -1,8 +1,9 @@
-import { Box, Button, Heading, Spinner } from "@fidesui/react";
+import { Box, Button, Spinner } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset/dataset.slice";
 import DatasetsTable from "~/features/dataset/DatasetTable";
 
@@ -12,10 +13,8 @@ const DataSets: NextPage = () => {
   });
 
   return (
-    <Layout title="Datasets">
-      <Heading mb={2} fontSize="2xl" fontWeight="semibold">
-        Datasets
-      </Heading>
+    <Layout title="Datasets" mainProps={{ paddingTop: 0 }}>
+      <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
       <Box mb={4}>{isLoading ? <Spinner /> : <DatasetsTable />}</Box>
       <Box>
         <Button

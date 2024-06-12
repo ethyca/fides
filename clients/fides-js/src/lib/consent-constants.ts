@@ -44,6 +44,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     validationRegex: /^(true|false)$/,
   },
   {
+    overrideName: "fidesDisableNoticesServedApi",
+    overrideType: "boolean",
+    overrideKey: "fides_disable_notices_served_api",
+    validationRegex: /^(true|false)$/,
+  },
+  {
     overrideName: "fidesDisableBanner",
     overrideType: "boolean",
     overrideKey: "fides_disable_banner",

@@ -1,3 +1,4 @@
+import { useHasPermission } from "common/Restrict";
 import {
   Button,
   ButtonGroup,
@@ -7,8 +8,7 @@ import {
   Text,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
-import { useHasPermission } from "common/Restrict";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";

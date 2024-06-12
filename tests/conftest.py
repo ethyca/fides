@@ -39,6 +39,7 @@ from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
+from fides.api.tasks import celery_app
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
@@ -175,6 +176,14 @@ def enable_tcf(config):
     config.consent.tcf_enabled = True
     yield config
     config.consent.tcf_enabled = False
+
+
+@pytest.fixture(scope="function")
+def enable_celery_worker(config):
+    """This doesn't actually spin up a worker container"""
+    celery_app.conf["task_always_eager"] = False
+    yield config
+    celery_app.conf["task_always_eager"] = True
 
 
 @pytest.fixture(scope="function")
@@ -805,6 +814,17 @@ def subject_identity_verification_not_required(db):
     CONFIG.execution.subject_identity_verification_required = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
     db.commit()
+
+
+@pytest.fixture(scope="function")
+def disable_consent_identity_verification(db):
+    """Fixture to set disable_consent_identity_verification for tests"""
+    original_value = CONFIG.execution.disable_consent_identity_verification
+    CONFIG.execution.disable_consent_identity_verification = True
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.execution.disable_consent_identity_verification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")

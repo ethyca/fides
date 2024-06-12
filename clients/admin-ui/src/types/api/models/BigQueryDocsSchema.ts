@@ -15,9 +15,5 @@ export type BigQueryDocsSchema = {
   /**
    * The dataset within your BigQuery project that contains the tables you want to access.
    */
-  dataset: string;
-  /**
-   * The projects within your BigQuery organization that you want to scope your connection to.
-   */
-  project: Array<string>;
+  dataset?: string;
 };

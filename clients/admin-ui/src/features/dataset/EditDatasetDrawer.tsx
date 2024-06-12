@@ -1,5 +1,4 @@
-import { ConfirmationModal } from "@fidesui/components";
-import { Text, useDisclosure, useToast } from "@fidesui/react";
+import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
 import { useRouter } from "next/router";
 
 import EditDrawer, {

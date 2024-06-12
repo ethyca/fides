@@ -1,4 +1,4 @@
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@fidesui/react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "fidesui";
 import Link from "next/link";
 
 interface DiscoveryMonitorBreadcrumbsProps {
@@ -17,7 +17,7 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
     <Breadcrumb
       separator="->"
       fontSize="2xl"
-      fontWeight="medium"
+      fontWeight="semibold"
       mb={5}
       data-testid="results-breadcrumb"
     >

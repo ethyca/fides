@@ -8,4 +8,5 @@
 export enum DBActions {
   UPGRADE = "upgrade",
   RESET = "reset",
+  DOWNGRADE = "downgrade",
 }

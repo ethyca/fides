@@ -7,7 +7,7 @@ import { DataUse } from "~/types/api";
 const dataUseApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDataUses: build.query<DataUse[], void>({
-      query: () => ({ url: `data_use/` }),
+      query: () => ({ url: `data_use` }),
       providesTags: () => ["Data Uses"],
       transformResponse: (uses: DataUse[]) =>
         uses.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
@@ -20,7 +20,7 @@ const dataUseApi = baseApi.injectEndpoints({
       Partial<DataUse> & Pick<DataUse, "fides_key">
     >({
       query: (dataUse) => ({
-        url: `data_use/`,
+        url: `data_use`,
         params: { resource_type: "data_use" },
         method: "PUT",
         body: dataUse,
@@ -29,7 +29,7 @@ const dataUseApi = baseApi.injectEndpoints({
     }),
     createDataUse: build.mutation<DataUse, DataUse>({
       query: (dataUse) => ({
-        url: `data_use/`,
+        url: `data_use`,
         method: "POST",
         body: dataUse,
       }),

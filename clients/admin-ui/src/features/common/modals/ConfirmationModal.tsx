@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ThemingProps } from "@chakra-ui/system";
 import {
   Button,
   Center,
@@ -10,7 +8,8 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
-} from "@fidesui/react";
+  ThemingProps,
+} from "fidesui";
 import { ReactNode } from "react";
 
 interface Props {

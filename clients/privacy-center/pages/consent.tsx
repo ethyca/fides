@@ -1,4 +1,4 @@
-import { Stack, useToast } from "@fidesui/react";
+import { Stack, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";

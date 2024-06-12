@@ -6,15 +6,6 @@ import {
   TCFPurposeLegitimateInterestsRecord,
 } from "../../lib/tcf/types";
 
-const ArrowDown = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
-    <path
-      fill="#2D3748"
-      d="m12 13.172 4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222l4.95 4.95Z"
-    />
-  </svg>
-);
-
 const InitialLayerAccordion = ({
   i18n,
   title,
@@ -47,17 +38,16 @@ const InitialLayerAccordion = ({
           : "fides-notice-toggle"
       }
     >
-      <div key={title} className="fides-notice-toggle-title">
-        <span
-          role="button"
-          tabIndex={0}
-          onKeyDown={handleKeyDown}
-          {...getButtonProps()}
-          className="fides-notice-toggle-trigger"
-        >
-          {title}
-          <ArrowDown />
-        </span>
+      <div
+        key={title}
+        className="fides-notice-toggle-title"
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        {...getButtonProps()}
+      >
+        {title}
+        <span className="fides-notice-toggle-trigger" />
       </div>
       <div {...getDisclosureProps()}>
         <div>{description}</div>

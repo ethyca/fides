@@ -1,17 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  Button,
-  ChevronDownIcon,
-  Flex,
-  Heading,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItemOption,
-  MenuList,
-  useDisclosure,
-} from "@fidesui/react";
-import {
   createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
@@ -31,6 +19,17 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import {
+  Button,
+  ChevronDownIcon,
+  Flex,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItemOption,
+  MenuList,
+  useDisclosure,
+} from "fidesui";
 import _, { isArray, map } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
@@ -47,6 +46,7 @@ import {
   useExportMinimalDatamapReportMutation,
   useGetMinimalDatamapReportQuery,
 } from "~/features/datamap/datamap.slice";
+import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import {
   DatamapReportFilterModal,
@@ -142,10 +142,6 @@ const getGrouping = (groupBy: DATAMAP_GROUPING) => {
       grouping = [COLUMN_IDS.DATA_USE];
       break;
     }
-    case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
-      grouping = [COLUMN_IDS.DATA_CATEGORY];
-      break;
-    }
     default:
       grouping = [COLUMN_IDS.SYSTEM_NAME];
   }
@@ -169,14 +165,6 @@ const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
       COLUMN_IDS.DATA_SUBJECT,
     ];
   }
-  if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
-    columnOrder = [
-      COLUMN_IDS.DATA_CATEGORY,
-      COLUMN_IDS.SYSTEM_NAME,
-      COLUMN_IDS.DATA_USE,
-      COLUMN_IDS.DATA_SUBJECT,
-    ];
-  }
   return columnOrder;
 };
 
@@ -187,9 +175,6 @@ const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
   }
   if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
     columnOrder = [COLUMN_IDS.DATA_USE, COLUMN_IDS.SYSTEM_NAME];
-  }
-  if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
-    columnOrder = [COLUMN_IDS.DATA_CATEGORY, COLUMN_IDS.SYSTEM_NAME];
   }
   return columnOrder;
 };
@@ -241,6 +226,7 @@ export const DatamapReportTable = () => {
     useState<string>();
   const [selectedDataSubjectFilters, setSelectedDataSubjectFilters] =
     useState<string>();
+  const [selectedSystemId, setSelectedSystemId] = useState<string>();
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = useState<string>("");
@@ -378,6 +364,9 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="System" {...props} />,
         meta: {
           displayText: "System",
+          onCellClick: (row) => {
+            setSelectedSystemId(row.fides_key);
+          },
         },
       }),
       columnHelper.accessor((row) => row.data_uses, {
@@ -1048,9 +1037,6 @@ export const DatamapReportTable = () => {
       case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
         return "data use";
       }
-      case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
-        return "data category";
-      }
       default: {
         return "system";
       }
@@ -1075,14 +1061,6 @@ export const DatamapReportTable = () => {
 
   return (
     <Flex flex={1} direction="column" overflow="auto">
-      <Heading
-        mb={8}
-        fontSize="2xl"
-        fontWeight="semibold"
-        data-testid="datamap-report-heading"
-      >
-        Data map report
-      </Heading>
       <DatamapReportFilterModal
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
@@ -1185,6 +1163,11 @@ export const DatamapReportTable = () => {
         isNextPageDisabled={isNextPageDisabled || isReportFetching}
         startRange={startRange}
         endRange={endRange}
+      />
+
+      <DatamapDrawer
+        selectedSystemId={selectedSystemId}
+        resetSelectedSystemId={() => setSelectedSystemId(undefined)}
       />
     </Flex>
   );

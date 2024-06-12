@@ -1,4 +1,4 @@
-import { Heading } from "@fidesui/react";
+import { Heading } from "fidesui";
 import { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
 import useI18n from "~/common/hooks/useI18n";

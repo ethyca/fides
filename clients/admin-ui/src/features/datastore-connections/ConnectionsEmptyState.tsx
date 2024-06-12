@@ -1,4 +1,4 @@
-import { Flex, Text } from "@fidesui/react";
+import { Flex, Text } from "fidesui";
 import React from "react";
 
 const ConnectionsEmptyState: React.FC = () => (

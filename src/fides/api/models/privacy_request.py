@@ -62,7 +62,11 @@ from fides.api.models.pre_approval_webhook import (
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
+from fides.api.schemas.external_https import (
+    RequestTaskJWE,
+    SecondPartyResponseFormat,
+    WebhookJWE,
+)
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import (
@@ -215,6 +219,22 @@ def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> s
     jwe = WebhookJWE(
         webhook_id=webhook.id,
         scopes=[PRIVACY_REQUEST_REVIEW],
+        iat=datetime.now().isoformat(),
+    )
+    return generate_jwe(
+        json.dumps(jwe.dict()),
+        CONFIG.security.app_encryption_key,
+    )
+
+
+def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
+    """
+    Generate a JWE to be used to resume privacy request execution when a
+    callback endpoint is hit for a RequestTask
+    """
+    jwe = RequestTaskJWE(
+        request_task_id=request_task.id,
+        scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
@@ -1287,6 +1307,7 @@ class ProvidedIdentityType(EnumType):
     ga_client_id = "ga_client_id"
     ljt_readerID = "ljt_readerID"
     fides_user_device_id = "fides_user_device_id"
+    external_id = "external_id"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
@@ -1475,6 +1496,11 @@ class Consent(Base):
 class ConsentRequest(IdentityVerificationMixin, Base):
     """Tracks consent requests."""
 
+    property_id = Column(
+        String,
+        index=True,
+        nullable=True,
+    )
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )
@@ -1614,7 +1640,7 @@ class ExecutionLogStatus(EnumType):
     pending = "pending"
     complete = "complete"
     error = "error"
-    paused = "paused"
+    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
     retrying = "retrying"
     skipped = "skipped"
 
@@ -1653,7 +1679,13 @@ class ExecutionLog(Base):
         nullable=False,
     )
     status = Column(
-        EnumColumn(ExecutionLogStatus),
+        EnumColumn(
+            ExecutionLogStatus,
+            native_enum=True,
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
+        ),
         index=True,
         nullable=False,
     )
@@ -1736,8 +1768,16 @@ class RequestTask(Base):
     collection_name = Column(String, nullable=False, index=True)
     action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
 
+    # Note that RequestTasks share statuses with ExecutionLogs.  When a RequestTask changes state, an ExecutionLog
+    # is also created with that state.  These are tied tightly together in GraphTask.
     status = Column(
-        EnumColumn(ExecutionLogStatus),  # character varying in database
+        EnumColumn(
+            ExecutionLogStatus,
+            native_enum=False,
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
+        ),  # character varying in database
         index=True,
         nullable=False,
     )
@@ -1781,6 +1821,9 @@ class RequestTask(Base):
     # Written after a consent request is completed - not all consent
     # connectors will end up sending a request
     consent_sent = Column(Boolean)
+
+    # For async tasks awaiting callback
+    callback_succeeded = Column(Boolean)
 
     # Stores a serialized collection that can be transformed back into a Collection to help
     # execute the current task

@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 import { useMemo, useState } from "react";
 
 import BorderGrid from "~/features/common/BorderGrid";

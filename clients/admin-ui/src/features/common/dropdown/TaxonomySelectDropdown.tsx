@@ -1,5 +1,5 @@
-import { Badge, Box, HStack, Text } from "@fidesui/react";
 import { OptionProps, Options, Select } from "chakra-react-select";
+import { Badge, Box, HStack, Text } from "fidesui";
 import { ReactNode } from "react";
 
 import useTaxonomies from "../hooks/useTaxonomies";
