@@ -39,6 +39,7 @@ class Identity(IdentityBase):
     ga_client_id: Optional[str] = Field(None, title="GA client ID")
     ljt_readerID: Optional[str] = Field(None, title="LJT reader ID")
     fides_user_device_id: Optional[str] = Field(None, title="Fides user device ID")
+    external_id: Optional[str] = Field(None, title="External ID")
 
     class Config:
         """Allows extra fields to be provided but they must have a value of type LabeledIdentity."""

@@ -1,3 +1,5 @@
+from base64 import b64encode
+
 from requests import PreparedRequest
 
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -28,11 +30,15 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
     ) -> PreparedRequest:
         """Add basic authentication to the request"""
         secrets = connection_config.secrets
+        username = assign_placeholders(self.username, secrets)  # type: ignore
+        password = assign_placeholders(self.password, secrets)  # type: ignore
 
-        request.prepare_auth(
-            auth=(
-                assign_placeholders(self.username, secrets),  # type: ignore
-                assign_placeholders(self.password, secrets),  # type: ignore
-            )
+        # the requests library treats a None password as a "None" literal string
+        # so we need to override this behavior
+        if password is None:
+            password = ""
+
+        request.headers["Authorization"] = (
+            "Basic " + b64encode(f"{username}:{password}".encode()).decode()
         )
         return request
