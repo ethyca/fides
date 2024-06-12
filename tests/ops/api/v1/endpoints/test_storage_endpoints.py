@@ -443,11 +443,11 @@ class TestPutStorageConfigSecretsS3:
         }
 
     @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.get_s3_session"
+        "fides.api.service.storage.storage_authenticator_service.get_aws_session"
     )
     def test_put_s3_config_secrets_and_verify(
         self,
-        get_s3_session_mock: Mock,
+        get_aws_session_mock: Mock,
         api_client: TestClient,
         payload,
         url,
@@ -456,7 +456,7 @@ class TestPutStorageConfigSecretsS3:
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
-        get_s3_session_mock.assert_called_once_with(
+        get_aws_session_mock.assert_called_once_with(
             AWSAuthMethod.SECRET_KEYS.value,
             {
                 "aws_access_key_id": payload["aws_access_key_id"],
@@ -1208,11 +1208,11 @@ class TestPutDefaultStorageConfigSecretsS3:
         }
 
     @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.get_s3_session"
+        "fides.api.service.storage.storage_authenticator_service.get_aws_session"
     )
     def test_put_default_s3_config_secrets_and_verify(
         self,
-        get_s3_session_mock: Mock,
+        get_aws_session_mock: Mock,
         api_client: TestClient,
         payload,
         url,
@@ -1221,7 +1221,7 @@ class TestPutDefaultStorageConfigSecretsS3:
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
-        get_s3_session_mock.assert_called_once_with(
+        get_aws_session_mock.assert_called_once_with(
             AWSAuthMethod.SECRET_KEYS.value,
             {
                 "aws_access_key_id": payload["aws_access_key_id"],

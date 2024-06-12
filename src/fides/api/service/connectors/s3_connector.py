@@ -15,20 +15,18 @@ from fides.connectors.models import ConnectorFailureException
 
 
 class S3Connector(BaseConnector):
-    """AWS S3 Connector - This is currently used just to test connections to S3"""
+    """
+    AWS S3 Connector - this is currently used just to test connections to S3.
 
-    def build_uri(self) -> None:
-        """Not used for this type"""
-
-    def close(self) -> None:
-        """Not used for this type"""
+    NOTE: No DSR processing is yet supported for S3.
+    """
 
     def create_client(self) -> Any:  # type: ignore
         """Returns a client for s3"""
         config = S3Schema(**self.configuration.secrets or {})
         return get_aws_session(
             auth_method=config.auth_method.value,
-            storage_secrets=config.dict(),
+            storage_secrets=config.dict(),  # type: ignore
             assume_role_arn=config.aws_assume_role_arn,
         )
 
@@ -71,3 +69,7 @@ class S3Connector(BaseConnector):
     ) -> int:
         """DSR execution not yet supported for S3"""
         raise NotImplementedError()
+
+    def close(self) -> None:
+        """Close any held resources"""
+        # no held resources for S3 connector

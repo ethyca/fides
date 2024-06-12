@@ -133,7 +133,7 @@ def upload_to_s3(  # pylint: disable=R0913
     file_key: str,
     resp_format: str,
     privacy_request: PrivacyRequest,
-    auth_method: AWSAuthMethod,
+    auth_method: str,
     data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
     data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:

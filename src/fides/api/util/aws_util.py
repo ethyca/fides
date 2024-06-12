@@ -9,7 +9,7 @@ from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 
 
 def get_aws_session(
-    auth_method: AWSAuthMethod,
+    auth_method: str,
     storage_secrets: Dict[StorageSecrets, Any],
     assume_role_arn: Optional[str] = None,
 ) -> Session:
@@ -19,6 +19,7 @@ def get_aws_session(
     If an `assume_role_arn` is provided, the secrets will be used to
     assume that role and return a Session instantiated with that role.
     """
+    sts_client = None
     if auth_method == AWSAuthMethod.SECRET_KEYS.value:
         if storage_secrets is None:
             err_msg = "Storage secrets not found for S3 storage."
@@ -31,7 +32,9 @@ def get_aws_session(
                 StorageSecrets.AWS_SECRET_ACCESS_KEY.value  # type: ignore
             ],
         )
-
+        # Check that credentials are valid
+        sts_client = session.client("sts")
+        sts_client.get_caller_identity()
     elif auth_method == AWSAuthMethod.AUTOMATIC.value:
         session = Session()
         logger.info("Successfully created automatic session")
@@ -39,11 +42,9 @@ def get_aws_session(
         logger.error("Auth method not supported for S3: {}", auth_method)
         raise ValueError(f"Auth method not supported for S3: {auth_method}")
 
-    # Check that credentials are valid
-    sts_client = session.client("sts")
-    sts_client.get_caller_identity()
-
     if assume_role_arn:
+        if sts_client is None:
+            sts_client = session.client("sts")
         try:
             response = sts_client.assume_role(
                 RoleArn=assume_role_arn, RoleSessionName="FidesAssumeRoleSession"
