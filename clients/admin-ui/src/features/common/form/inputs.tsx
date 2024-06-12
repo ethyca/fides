@@ -1334,7 +1334,7 @@ export const CustomDateTimeInput = ({
 
   const { validateField } = useFormikContext();
 
-  const fieldId = props.id ?? name;
+  const fieldId = props.id || name;
 
   return (
     <FormControl isRequired={isRequired} isInvalid={isInvalid}>
