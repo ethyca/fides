@@ -18,8 +18,8 @@ class CelerySettings(FidesSettings):
     )
     task_always_eager: bool = Field(
         default=True,
-        description="If true, tasks are executed locally instead of being sent to the queue (should just be used in "
-        "testing).  If False, tasks are sent to the queue.",
+        description="If true, tasks are executed locally instead of being sent to the queue.  "
+        "If False, tasks are sent to the queue.",
     )
 
     class Config:
