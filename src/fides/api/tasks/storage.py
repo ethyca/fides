@@ -15,11 +15,7 @@ from loguru import logger
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.storage.storage import (
-    AWSAuthMethod,
-    ResponseFormat,
-    StorageSecrets,
-)
+from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
