@@ -10,22 +10,19 @@ Create Date: 2024-05-28 14:52:08.114674
 import random
 import string
 import uuid
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
+from sqlalchemy import bindparam, text
 
 # revision identifiers, used by Alembic.
 from sqlalchemy.dialects.postgresql import JSONB
-
-from fides.api.schemas.messaging.messaging import MessagingActionType
-from sqlalchemy.exc import IntegrityError
-
-from sqlalchemy import text, bindparam
 from sqlalchemy.engine import Connection, LegacyCursorResult
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.elements import TextClause
 
+from fides.api.schemas.messaging.messaging import MessagingActionType
 
 # revision identifiers, used by Alembic.
 revision = "5f96f13be8ec"
