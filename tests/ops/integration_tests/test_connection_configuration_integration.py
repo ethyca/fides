@@ -1366,7 +1366,7 @@ class TestScyllaDBConnector:
 
         # Test bad host
         integration_scylladb_config.secrets = orig_secrets  # Reset
-        integration_scylladb_config.secrets["host"] = "bad_host"
+        integration_scylladb_config.secrets["host"] = "myserver.myname.com"
         integration_scylladb_config.save(db)
         connector = ScyllaConnector(integration_scylladb_config)
         with pytest.raises(ConnectionException) as exc:
