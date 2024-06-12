@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -14,13 +14,13 @@ from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
     MessagingTemplate,
 )
-from fides.api.models.property import Property, MessagingTemplateToProperty
+from fides.api.models.property import MessagingTemplateToProperty, Property
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigResponse,
-    MessagingTemplateWithPropertiesSummary,
-    MessagingTemplateWithPropertiesDetail,
     MessagingTemplateWithPropertiesBodyParams,
+    MessagingTemplateWithPropertiesDetail,
+    MessagingTemplateWithPropertiesSummary,
 )
 
 
