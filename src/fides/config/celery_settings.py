@@ -1,4 +1,4 @@
-from pydantic import Extra, Field
+from pydantic import Field
 
 from .fides_settings import FidesSettings
 
