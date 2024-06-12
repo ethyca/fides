@@ -1,5 +1,5 @@
 import pytest
-# see jira for at least some mention of identity_phone_number
+
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
@@ -10,15 +10,14 @@ class Testtwilio_smsConnector:
         twilio_sms_runner.test_connection()
 
     async def test_access_request(
-        self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_identity_phone_number: str
+        self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_identity_phone_number: str,
+        twilio_sms_add_data
     ):
-        # commenting out for now as we need phone not email
-        # access_results = await twilio_sms_runner.access_request(
-        #     access_policy=policy, identities={"email": twilio_sms_identity_email}
         access_results = await twilio_sms_runner.access_request(
             access_policy=policy, identities={"phone_number": twilio_sms_identity_phone_number}
         )
-        # add assert
+        for user in access_results["twilio_sms_instance:user"]:
+            assert user["to"] or user["from"] == twilio_sms_identity_phone_number
 
 
     async def test_non_strict_erasure_request(
@@ -37,3 +36,4 @@ class Testtwilio_smsConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"phone_number": twilio_sms_erasure_identity_phone_number},
         )
+        assert erasure_results == {"twilio_sms_instance:user": 4}
