@@ -1,7 +1,7 @@
 """Add property id to privacy request model
 
 Revision ID: a3c173391603
-Revises: 5f96f13be8ec
+Revises: 5fe01e730171
 Create Date: 2024-06-04 17:40:35.230801
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "a3c173391603"
-down_revision = "5f96f13be8ec"
+down_revision = "5fe01e730171"
 branch_labels = None
 depends_on = None
 
