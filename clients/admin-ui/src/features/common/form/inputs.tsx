@@ -1334,12 +1334,14 @@ export const CustomDateTimeInput = ({
 
   const { validateField } = useFormikContext();
 
+  const fieldId = props.id ?? name;
+
   return (
     <FormControl isRequired={isRequired} isInvalid={isInvalid}>
       <VStack align="start">
         {!!label && (
           <Flex align="center">
-            <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
+            <Label htmlFor={fieldId} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
             {!!tooltip && <QuestionTooltip label={tooltip} />}
@@ -1348,6 +1350,7 @@ export const CustomDateTimeInput = ({
         <Input
           type="datetime-local"
           name={name}
+          id={fieldId}
           value={field.value}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             setValue(e.target.value);
