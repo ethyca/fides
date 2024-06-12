@@ -7,6 +7,7 @@ from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fides.api.models.property import Property
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy import column
@@ -192,6 +193,15 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
     # TODO: (PROD-2142)- pass in property id here
+    if data.property_id:
+        valid_property: Optional[Property] = Property.get_by(
+            db, field="id", value=data.property_id
+        )
+        if not valid_property:
+            raise HTTPException(
+                HTTP_400_BAD_REQUEST,
+                detail="The property id provided is invalid",
+            )
 
     identity = data.identity
     if (

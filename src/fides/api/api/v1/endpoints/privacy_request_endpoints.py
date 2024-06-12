@@ -12,6 +12,7 @@ from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fides.api.models.property import Property
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
@@ -1832,6 +1833,21 @@ def create_privacy_request_func(
             }
             failed.append(failure)
             continue
+
+        if privacy_request_data.property_id:
+            valid_property: Optional[Property] = Property.get_by(
+                db, field="id", value=privacy_request_data.property_id
+            )
+            if not valid_property:
+                logger.warning(
+                    "Create failed for privacy request with invalid property id"
+                )
+                failure = {
+                    "message": "Property id must be valid to process",
+                    "data": privacy_request_data,
+                }
+                failed.append(failure)
+                continue
 
         logger.info("Finding policy with key '{}'", privacy_request_data.policy_key)
         policy: Optional[Policy] = Policy.get_by(

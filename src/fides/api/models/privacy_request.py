@@ -296,7 +296,7 @@ class PrivacyRequest(
         Policy,
         backref="privacy_requests",
     )
-    property_id = Column(String, ForeignKey(Property.id_field_path), nullable=True)
+    property_id = Column(String, nullable=True)
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
