@@ -34,10 +34,9 @@ def test_basic_auth_with_username_only():
     authenticated_request = AuthenticationStrategy.get_strategy(
         "basic", {"username": "<username>"}
     ).add_authentication(req, ConnectionConfig(secrets=secrets))
-    # The requests library still calls str(password) even if the password is None
     assert (
         authenticated_request.headers["Authorization"]
-        == f"Basic {bytes_to_b64_str(bytes(f'{username}:None', 'UTF-8'))}"
+        == f"Basic {bytes_to_b64_str(bytes(f'{username}:', 'UTF-8'))}"
     )
 
 

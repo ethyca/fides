@@ -821,6 +821,8 @@ dataset:
       data_categories: [system.operations]
     - name: preferences
       data_categories: [system.operations]
+    - name: property_id
+      data_categories: [system.operations]
   - name: custom_connector_template
     description: 'A table used to hold custom connector templates which include a SaaS config, dataset, and an optional icon and functions'
     data_categories: []
@@ -1740,6 +1742,10 @@ dataset:
       data_categories: [system.operations]
     - name: received_at
       data_categories: [ system.operations ]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: hashed_external_id
+      data_categories: [system.operations]
   - name: servednoticehistory
     description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
@@ -1798,6 +1804,10 @@ dataset:
       data_categories: [system.operations]
     - name: received_at
       data_categories: [ system.operations ]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: hashed_external_id
+      data_categories: [system.operations]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
@@ -1823,6 +1833,12 @@ dataset:
     - name: preferences
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: hashed_external_id
+      data_categories: [system.operations]
+    - name: property_id
       data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'

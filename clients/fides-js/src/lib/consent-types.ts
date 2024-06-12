@@ -85,6 +85,9 @@ export interface FidesInitOptions {
   // Whether we should disable saving consent preferences to the Fides API.
   fidesDisableSaveApi: boolean;
 
+  // Whether we should only disable saving notices served to the Fides API.
+  fidesDisableNoticesServedApi: boolean;
+
   // Whether we should disable the banner
   fidesDisableBanner: boolean;
 
@@ -667,6 +670,7 @@ export type FidesInitOptionsOverrides = Pick<
   FidesInitOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
+  | "fidesDisableNoticesServedApi"
   | "fidesEmbed"
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
