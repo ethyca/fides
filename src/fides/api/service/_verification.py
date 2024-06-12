@@ -23,7 +23,7 @@ def send_verification_code_to_user(
     db: Session,
     request: ConsentRequest | PrivacyRequest,
     to_identity: Identity | None,
-    property_specific_messaging_template: Optional[MessagingTemplate],
+    property_id: Optional[str],
 ) -> str:
     """Generate and cache a verification code, and then message the user"""
     config_proxy = ConfigProxy(db)
@@ -39,7 +39,7 @@ def send_verification_code_to_user(
             verification_code=verification_code,
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
         ),
-        property_specific_messaging_template=property_specific_messaging_template,
+        property_id=property_id,
     )
 
     return verification_code

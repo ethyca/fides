@@ -54,7 +54,6 @@ from fides.api.service.connectors.erasure_email_connector import (
 from fides.api.service.connectors.fides_connector import filter_fides_connector_datasets
 from fides.api.service.messaging.message_dispatch_service import (
     dispatch_message,
-    get_property_specific_messaging_template,
     message_send_enabled,
 )
 from fides.api.service.storage.storage_uploader_service import upload
@@ -615,11 +614,6 @@ def initiate_privacy_request_completion_email(
         phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
     )
     if policy.get_rules_for_action(action_type=ActionType.access):
-        property_specific_messaging_template = get_property_specific_messaging_template(
-            db=session,
-            property_id=property_id,
-            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-        )
         # synchronous for now since failure to send complete emails is fatal to request
         dispatch_message(
             db=session,
@@ -631,21 +625,16 @@ def initiate_privacy_request_completion_email(
                 subject_request_download_time_in_days=CONFIG.security.subject_request_download_link_ttl_seconds
                 / 86400,
             ),
-            property_specific_messaging_template=property_specific_messaging_template,
+            property_id=property_id,
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):
-        property_specific_messaging_template = get_property_specific_messaging_template(
-            db=session,
-            property_id=property_id,
-            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-        )
         dispatch_message(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_identity=to_identity,
             service_type=config_proxy.notifications.notification_service_type,
             message_body_params=None,
-            property_specific_messaging_template=property_specific_messaging_template,
+            property_id=property_id,
         )
 
 

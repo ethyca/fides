@@ -89,7 +89,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                     ).dict(),
                     "service_type": config_proxy.notifications.notification_service_type,
                     "to_identity": {"email": email},
-                    "property_specific_messaging_template": None,
+                    "property_id": None,
                 },
             )
 
@@ -105,7 +105,7 @@ def dispatch_message_task(
     message_meta: Dict[str, Any],
     service_type: Optional[str],
     to_identity: Dict[str, Any],
-    property_specific_messaging_template: Optional[MessagingTemplate],
+    property_id: Optional[str],
 ) -> None:
     """
     A wrapper function to dispatch a message task into the Celery queues
@@ -118,8 +118,32 @@ def dispatch_message_task(
             Identity.parse_obj(to_identity),
             service_type,
             schema.body_params,
-            property_specific_messaging_template=property_specific_messaging_template,
+            property_id,
         )
+
+
+def _property_specific_messaging_eligible(db: Session) -> bool:
+    """
+    Helper method to determine whether property specific messaging is eligible at all. To be eligible:
+    1. The ENV must be configured
+    2. The messaging type must be set as email. SMS is not yet supported for property-specific messaging.
+
+    This method does not include a check for valid and enabled templates.
+    """
+    property_specific_messaging_enabled = ConfigProxy(
+        db
+    ).notifications.enable_property_specific_messaging
+    if not property_specific_messaging_enabled:
+        return False
+
+    # Only email messaging method is supported when property-specific messaging is enabled.
+    service_type = get_email_messaging_config_service_type(db=db)
+    if not service_type or get_messaging_method(service_type) != MessagingMethod.EMAIL:
+        logger.warning(
+            "An email messaging config must be configured if property specific messaging is enabled."
+        )
+        return False
+    return True
 
 
 def get_property_specific_messaging_template(
@@ -128,18 +152,8 @@ def get_property_specific_messaging_template(
     """
     Returns specific messaging template if one is enabled for a given action type and property.
     """
-    property_specific_messaging_enabled = ConfigProxy(
-        db
-    ).notifications.enable_property_specific_messaging
-    if not property_specific_messaging_enabled:
-        return None
-
-    # Only email messaging method is supported when property-specific messaging is enabled.
-    service_type = get_email_messaging_config_service_type(db=db)
-    if not service_type or get_messaging_method(service_type) != MessagingMethod.EMAIL:
-        logger.warning(
-            "An email messaging config must be configured if property specific messaging is enabled."
-        )
+    is_property_specific_messaging_eligible = _property_specific_messaging_eligible(db)
+    if not is_property_specific_messaging_eligible:
         return None
 
     template = get_enabled_messaging_template_by_type_and_property(
@@ -149,7 +163,6 @@ def get_property_specific_messaging_template(
         use_default_property=True,
     )
     if not template:
-        logger.info("No enabled template was found for action type: {}", action_type)
         return None
     return template
 
@@ -169,6 +182,16 @@ def message_send_enabled(
         db
     ).notifications.enable_property_specific_messaging
     if property_specific_messaging_enabled:
+        # Only email messaging method is supported when property-specific messaging is enabled.
+        service_type = get_email_messaging_config_service_type(db=db)
+        if (
+            not service_type
+            or get_messaging_method(service_type) != MessagingMethod.EMAIL
+        ):
+            logger.warning(
+                "An email messaging config must be configured if property specific messaging is enabled."
+            )
+            return False
         property_specific_messaging_template = get_property_specific_messaging_template(
             db=db, property_id=property_id, action_type=action_type
         )
@@ -196,7 +219,7 @@ def dispatch_message(
         ]
     ] = None,
     subject_override: Optional[str] = None,
-    property_specific_messaging_template: Optional[MessagingTemplate] = None,
+    property_id: Optional[str] = None,
 ) -> None:
     """
     Sends a message to `to_identity` with content supplied in `message_body_params`
@@ -221,6 +244,9 @@ def dispatch_message(
 
     # If property-specific messaging is enabled, we switch over to this mode, regardless of other ENV vars
     if ConfigProxy(db).notifications.enable_property_specific_messaging:
+        property_specific_messaging_template = get_property_specific_messaging_template(
+            db, property_id, action_type
+        )
         if not property_specific_messaging_template:
             logger.warning(
                 "Skipping sending property-specific email as no enabled template was found for action type: {}",

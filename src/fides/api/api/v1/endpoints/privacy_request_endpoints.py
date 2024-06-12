@@ -108,7 +108,6 @@ from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     check_and_dispatch_error_notifications,
     dispatch_message_task,
-    get_property_specific_messaging_template,
     message_send_enabled,
 )
 from fides.api.service.privacy_request.request_runner_service import (
@@ -232,7 +231,7 @@ def _send_privacy_request_receipt_message_to_user(
     policy: Optional[Policy],
     to_identity: Optional[Identity],
     service_type: Optional[str],
-    property_specific_messaging_template: Optional[MessagingTemplate],
+    property_id: Optional[str],
 ) -> None:
     """Helper function to send request receipt message to the user"""
     if not to_identity:
@@ -263,7 +262,7 @@ def _send_privacy_request_receipt_message_to_user(
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
-            "property_specific_messaging_template": property_specific_messaging_template,
+            "property_id": property_id,
         },
     )
 
@@ -1041,7 +1040,7 @@ def _send_privacy_request_review_message_to_user(
     identity_data: Dict[str, Any],
     rejection_reason: Optional[str],
     service_type: Optional[str],
-    property_specific_messaging_template: Optional[MessagingTemplate],
+    property_id: Optional[str],
 ) -> None:
     """Helper method to send review notification message to user, shared between approve and deny"""
     if not identity_data:
@@ -1068,7 +1067,7 @@ def _send_privacy_request_review_message_to_user(
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
-            "property_specific_messaging_template": property_specific_messaging_template,
+            "property_id": property_id,
         },
     )
 
@@ -1121,18 +1120,11 @@ def verify_identification_code(
             MessagingActionType.PRIVACY_REQUEST_RECEIPT,
             config_proxy.notifications.send_request_receipt_notification,
         ):
-            property_specific_messaging_template = (
-                get_property_specific_messaging_template(
-                    db=db,
-                    property_id=privacy_request.property_id,
-                    action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
-                )
-            )
             _send_privacy_request_receipt_message_to_user(
                 policy,
                 privacy_request.get_persisted_identity(),
                 config_proxy.notifications.notification_service_type,
-                property_specific_messaging_template,
+                privacy_request.property_id,
             )
 
     except IdentityVerificationException as exc:
@@ -1201,17 +1193,12 @@ def _approve_request(
         MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
         config_proxy.notifications.send_request_review_notification,
     ):
-        property_specific_messaging_template = get_property_specific_messaging_template(
-            db=db,
-            property_id=privacy_request.property_id,
-            action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
-        )
         _send_privacy_request_review_message_to_user(
             action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
             identity_data=privacy_request.get_cached_identity_data(),
             rejection_reason=None,
             service_type=config_proxy.notifications.notification_service_type,
-            property_specific_messaging_template=property_specific_messaging_template,
+            property_id=privacy_request.property_id,
         )
 
     queue_privacy_request(privacy_request_id=privacy_request.id)
@@ -1291,19 +1278,12 @@ def deny_privacy_request(
             MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
             config_proxy.notifications.send_request_review_notification,
         ):
-            property_specific_messaging_template = (
-                get_property_specific_messaging_template(
-                    db=db,
-                    property_id=privacy_request.property_id,
-                    action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
-                )
-            )
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=privacy_requests.reason,
                 service_type=config_proxy.notifications.notification_service_type,
-                property_specific_messaging_template=property_specific_messaging_template,
+                property_id=privacy_request.property_id,
             )
 
     return review_privacy_request(
@@ -1919,18 +1899,11 @@ def create_privacy_request_func(
                 MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 config_proxy.execution.subject_identity_verification_required,
             ):
-                property_specific_messaging_template = (
-                    get_property_specific_messaging_template(
-                        db=db,
-                        property_id=privacy_request.property_id,
-                        action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                    )
-                )
                 send_verification_code_to_user(
                     db,
                     privacy_request,
                     privacy_request_data.identity,
-                    property_specific_messaging_template,
+                    privacy_request.property_id,
                 )
                 created.append(privacy_request)
                 continue  # Skip further processing for this privacy request
@@ -1941,18 +1914,11 @@ def create_privacy_request_func(
                 MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 config_proxy.notifications.send_request_receipt_notification,
             ):
-                property_specific_messaging_template = (
-                    get_property_specific_messaging_template(
-                        db=db,
-                        property_id=privacy_request.property_id,
-                        action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
-                    )
-                )
                 _send_privacy_request_receipt_message_to_user(
                     policy,
                     privacy_request_data.identity,
                     config_proxy.notifications.notification_service_type,
-                    property_specific_messaging_template,
+                    privacy_request.property_id,
                 )
             if config_proxy.execution.require_manual_request_approval:
                 _trigger_pre_approval_webhooks(db, privacy_request)

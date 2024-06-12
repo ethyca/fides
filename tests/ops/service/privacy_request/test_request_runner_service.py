@@ -2271,7 +2271,7 @@ class TestPrivacyRequestsEmailNotifications:
                         subject_request_download_time_in_days=download_time_in_days,
                         download_links=[upload_mock.return_value],
                     ),
-                    property_specific_messaging_template=None,
+                    property_id=None,
                 ),
                 call(
                     db=ANY,
@@ -2279,7 +2279,7 @@ class TestPrivacyRequestsEmailNotifications:
                     to_identity=identity,
                     service_type=MessagingServiceType.mailgun.value,
                     message_body_params=None,
-                    property_specific_messaging_template=None,
+                    property_id=None,
                 ),
             ],
             any_order=True,

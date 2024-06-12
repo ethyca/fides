@@ -126,7 +126,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=messaging_template_no_property,
+            property_id=None,
         )
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,
@@ -164,7 +164,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=None,
+            property_id=None,
         )
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,
@@ -203,7 +203,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=messaging_template_no_property,
+            property_id=None,
         )
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,
@@ -242,7 +242,7 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_specific_messaging_template=None,
+            property_id=None,
         )
         mock_mailgun_dispatcher.assert_not_called()
 

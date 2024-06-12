@@ -225,6 +225,8 @@ def get_enabled_messaging_template_by_type_and_property(
             & (Property.id == property_id)
         ),
     ).first()
+    if not template:
+        logger.info("No enabled template was found for action type: {}", action_type)
 
     return template
 

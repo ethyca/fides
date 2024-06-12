@@ -56,7 +56,6 @@ from fides.api.schemas.privacy_request import (
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service._verification import send_verification_code_to_user
 from fides.api.service.messaging.message_dispatch_service import (
-    get_property_specific_messaging_template,
     message_send_enabled,
 )
 from fides.api.util.api_router import APIRouter
@@ -225,15 +224,8 @@ def create_consent_request(
         not config_proxy.execution.disable_consent_identity_verification,
     ):
         try:
-            property_specific_messaging_template = (
-                get_property_specific_messaging_template(
-                    db=db,
-                    property_id=data.property_id,
-                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                )
-            )
             send_verification_code_to_user(
-                db, consent_request, data.identity, property_specific_messaging_template
+                db, consent_request, data.identity, data.property_id
             )
         except MessageDispatchException as exc:
             logger.error("Error sending the verification code message: {}", str(exc))
