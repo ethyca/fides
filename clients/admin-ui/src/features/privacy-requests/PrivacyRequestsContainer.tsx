@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Restrict from "~/features/common/Restrict";
+import { RequestTable } from "~/features/privacy-requests/RequestTable";
 import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
 import { ScopeRegistryEnum } from "~/types/api";
 
+import DeprecatedRequestFilters from "./DeprecatedRequestFilters";
+import DeprecatedRequestTable from "./DeprecatedRequestTable";
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
-import RequestFilters from "./RequestFilters";
-import RequestTable from "./RequestTable";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),
@@ -34,15 +35,19 @@ const PrivacyRequestsContainer: React.FC = () => {
           Privacy Requests
         </Heading>
         <Spacer />
-        {hasPlus ? (
+        {hasPlus && (
           <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_CREATE]}>
             <SubmitPrivacyRequest />
           </Restrict>
-        ) : null}
+        )}
         <ActionButtons />
       </Flex>
-      <RequestFilters revealPII={revealPII} setRevealPII={setRevealPII} />
-      <RequestTable revealPII={revealPII} />
+      <RequestTable />
+      <DeprecatedRequestFilters
+        revealPII={revealPII}
+        setRevealPII={setRevealPII}
+      />
+      <DeprecatedRequestTable revealPII={revealPII} />
     </>
   );
 };

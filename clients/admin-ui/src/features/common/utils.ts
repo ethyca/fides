@@ -69,3 +69,14 @@ export const getQueryParamsFromArray = (
   }
   return undefined;
 };
+
+/**
+ * Masks sensitive data with asterisks unless specified to reveal it.
+ * @param {string} sensitiveData - The `sensitiveData` parameter is a string that contains potentially sensitive Personally Identifiable Information (PII) such as names, addresses, phone numbers, or email addresses.
+ * @param {boolean} [revealPII=false] - The `revealPII` parameter is a boolean flag that determines whether PII should be revealed or masked.
+ * @returns returns the original `data` string with all characters replaced by "*" if `revealPII` is set to `false`. If `revealPII` is set to `true`, then the original `sensitiveData` string is returned as is.
+ */
+export const getPII = (sensitiveData: string, revealPII: boolean = false) => {
+  const pii = revealPII ? sensitiveData : sensitiveData.replace(/./g, "*");
+  return pii;
+};

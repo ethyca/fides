@@ -102,6 +102,9 @@ type RequestRowProps = {
   revealPII: boolean;
 };
 
+/**
+ * @deprecated
+ */
 const RequestRow = ({
   isChecked,
   onCheckChange,

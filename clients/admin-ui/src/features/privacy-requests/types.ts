@@ -1,3 +1,5 @@
+import { DrpAction } from "~/types/api";
+
 export type PrivacyRequestStatus =
   | "approved"
   | "awaiting_email_send"
@@ -83,6 +85,8 @@ export interface PrivacyRequestEntity {
     name: string;
     key: string;
     rules: Rule[];
+    drp_action?: DrpAction;
+    execution_timeframe?: number;
   };
   reviewer: {
     id: string;
@@ -97,6 +101,9 @@ export interface PrivacyRequestEntity {
 export interface PrivacyRequestResponse {
   items: PrivacyRequestEntity[];
   total: number;
+  page?: number;
+  pages?: number;
+  size?: number;
 }
 
 export interface PrivacyRequestParams {

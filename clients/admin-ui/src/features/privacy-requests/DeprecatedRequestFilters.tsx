@@ -121,6 +121,9 @@ type RequestFiltersProps = {
   setRevealPII: (revealPII: boolean) => void;
 };
 
+/**
+ * @deprecated
+ */
 const RequestFilters = ({ revealPII, setRevealPII }: RequestFiltersProps) => {
   const {
     handleSearchChange,

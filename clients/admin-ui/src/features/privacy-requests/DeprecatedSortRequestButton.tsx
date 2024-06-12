@@ -77,6 +77,9 @@ type SortRequestButtonProps = {
   isLoading: boolean;
 };
 
+/**
+ * @deprecated
+ */
 const SortRequestButton: React.FC<SortRequestButtonProps> = ({
   sortField,
   isLoading,
