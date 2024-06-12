@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.db.session import get_db_session
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
