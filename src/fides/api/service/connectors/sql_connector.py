@@ -106,7 +106,7 @@ class SQLConnector(BaseConnector[Engine]):
         return rows
 
     @abstractmethod
-    def build_uri(self) -> str:
+    def build_uri(self) -> Optional[str]:
         """Build a database specific uri connection string"""
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
@@ -615,7 +615,7 @@ class GoogleCloudSQLMySQLConnector(SQLConnector):
         """results to a list of dictionaries"""
         return SQLConnector.default_cursor_result_to_rows(results)
 
-    def build_uri(self):
+    def build_uri(self) -> None:
         """
-        We need to override this method so it is not abstract anymore.
+        We need to override this method so it is not abstract anymore, and MicrosoftSQLServerConnector is instantiable.
         """

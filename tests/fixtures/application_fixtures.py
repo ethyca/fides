@@ -10,11 +10,6 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
-from fides.api.models.property import Property
-from fides.api.schemas.property import Property as PropertySchema
-from fides.api.schemas.property import PropertyType
-
-from fides.api.models.messaging_template import MessagingTemplate
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
@@ -34,6 +29,7 @@ from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_gra
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import (
     ActionType,
     Policy,
@@ -83,10 +79,10 @@ from fides.api.models.storage import (
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
+    MessagingActionType,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
-    MessagingActionType,
     MessagingTemplateWithPropertiesDetail,
 )
 from fides.api.schemas.property import Property as PropertySchema

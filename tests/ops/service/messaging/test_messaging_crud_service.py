@@ -1,32 +1,32 @@
-from typing import Optional, List
+from typing import List, Optional
 
 import pytest
+from sqlalchemy.orm import Session
+
 from fides.api.common_exceptions import (
     MessagingConfigNotFoundException,
     MessagingConfigValidationException,
 )
-from sqlalchemy.orm import Session
-
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
     MessagingTemplate,
 )
-from fides.api.models.property import Property, MessagingTemplateToProperty
+from fides.api.models.property import MessagingTemplateToProperty, Property
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateWithPropertiesDetail,
 )
 from fides.api.service.messaging.messaging_crud_service import (
-    get_all_basic_messaging_templates,
-    get_basic_messaging_template_by_type_or_default,
-    update_messaging_template,
     create_messaging_template,
-    delete_template_by_id,
-    get_template_by_id,
-    get_default_template_by_type,
-    get_all_messaging_templates_summary,
     create_or_update_basic_templates,
+    delete_template_by_id,
+    get_all_basic_messaging_templates,
+    get_all_messaging_templates_summary,
+    get_basic_messaging_template_by_type_or_default,
+    get_default_template_by_type,
+    get_template_by_id,
+    update_messaging_template,
 )
 
 

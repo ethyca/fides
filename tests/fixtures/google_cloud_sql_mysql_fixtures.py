@@ -6,12 +6,12 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.schemas.connection_configuration import GoogleCloudSQLMySQLSchema
 from fides.api.service.connectors import GoogleCloudSQLMySQLConnector
 from fides.config import CONFIG
@@ -42,9 +42,9 @@ def google_cloud_sql_mysql_connection_config(db: Session) -> Generator:
         "instance_connection_name"
     ) or os.environ.get("GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME")
 
-    dbname = google_cloud_sql_mysql_integration_config.get(
-        "dbname"
-    ) or os.environ.get("GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME")
+    dbname = google_cloud_sql_mysql_integration_config.get("dbname") or os.environ.get(
+        "GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME"
+    )
 
     keyfile_creds = google_cloud_sql_mysql_integration_config.get(
         "keyfile_creds"
@@ -65,8 +65,12 @@ def google_cloud_sql_mysql_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def google_cloud_sql_mysql_integration_session(google_cloud_sql_mysql_connection_config):
-    engine = GoogleCloudSQLMySQLConnector(google_cloud_sql_mysql_connection_config).client()
+def google_cloud_sql_mysql_integration_session(
+    google_cloud_sql_mysql_connection_config,
+):
+    engine = GoogleCloudSQLMySQLConnector(
+        google_cloud_sql_mysql_connection_config
+    ).client()
 
     yield get_db_session(
         config=CONFIG,

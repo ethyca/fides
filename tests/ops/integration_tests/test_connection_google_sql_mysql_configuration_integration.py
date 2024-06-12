@@ -247,4 +247,7 @@ def test_mysql_example_data(google_cloud_sql_mysql_integration_db):
         # templating as much as possible. instead, use the table() helper to
         # dynamically generate the FROM clause for each table_name
         count_sql = select(func.count()).select_from(table(table_name))
-        assert google_cloud_sql_mysql_integration_db.execute(count_sql).scalar() == expected_count
+        assert (
+            google_cloud_sql_mysql_integration_db.execute(count_sql).scalar()
+            == expected_count
+        )
