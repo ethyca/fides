@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     MessagingConfigNotFoundException,
-    MessagingConfigValidationException, EmailTemplateNotFoundException,
+    MessagingConfigValidationException,
+    EmailTemplateNotFoundException,
 )
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
@@ -546,7 +547,9 @@ class TestMessagingTemplates:
         with pytest.raises(MessagingConfigValidationException) as exc:
             get_default_template_by_type("invalid_type")
 
-    def test_save_defaults_for_all_messaging_template_types_no_db_templates(self, db: Session):
+    def test_save_defaults_for_all_messaging_template_types_no_db_templates(
+        self, db: Session
+    ):
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
         assert len(all_templates) == 6

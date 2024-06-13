@@ -5,7 +5,9 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
-    MessagingConfigNotFoundException, EmailTemplateNotFoundException, MessagingTemplateValidationException,
+    MessagingConfigNotFoundException,
+    EmailTemplateNotFoundException,
+    MessagingTemplateValidationException,
 )
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import (
@@ -293,9 +295,7 @@ def update_property_specific_template(
 
     Updating template type is not allowed once it is created, so we don't intake it here.
     """
-    messaging_template: MessagingTemplate = get_template_by_id(
-        db, template_id
-    )
+    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
     _validate_overlapping_templates(
         db,
         messaging_template.type,
@@ -349,9 +349,7 @@ def create_property_specific_template_by_type(
 
 
 def delete_template_by_id(db: Session, template_id: str) -> None:
-    messaging_template: MessagingTemplate = get_template_by_id(
-        db, template_id
-    )
+    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
     templates_with_type = (
         MessagingTemplate.query(db=db)
         .filter(MessagingTemplate.type == messaging_template.type)
@@ -365,9 +363,7 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
     messaging_template.delete(db)
 
 
-def get_template_by_id(
-    db: Session, template_id: str
-) -> MessagingTemplate:
+def get_template_by_id(db: Session, template_id: str) -> MessagingTemplate:
     logger.info("Finding messaging config with id '{}'", template_id)
     messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
         db, object_id=template_id
@@ -398,7 +394,7 @@ def get_default_template_by_type(
 
 
 def save_defaults_for_all_messaging_template_types(
-        db: Session,
+    db: Session,
 ) -> None:
     """
     This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
@@ -408,16 +404,17 @@ def save_defaults_for_all_messaging_template_types(
     """
 
     for (
-            template_type,
-            default_template,  # pylint: disable=W0612
+        template_type,
+        default_template,  # pylint: disable=W0612
     ) in DEFAULT_MESSAGING_TEMPLATES.items():
         # If the db does not have any existing templates with a given template type, write one to the DB
-        any_db_template_with_type = MessagingTemplate.get_by(db=db, field="type", value=template_type)
+        any_db_template_with_type = MessagingTemplate.get_by(
+            db=db, field="type", value=template_type
+        )
         if not any_db_template_with_type:
             data = {
-                "content": default_template.content,
+                "content": default_template["content"],
                 "is_enabled": False,
                 "type": template_type,
             }
         MessagingTemplate.create(db=db, data=data)
-

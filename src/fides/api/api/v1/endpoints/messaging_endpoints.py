@@ -20,7 +20,8 @@ from starlette.status import (
 from fides.api.api import deps
 from fides.api.common_exceptions import (
     MessageDispatchException,
-    MessagingConfigNotFoundException, MessagingConfigValidationException, EmailTemplateNotFoundException,
+    MessagingConfigNotFoundException,
+    EmailTemplateNotFoundException,
     MessagingTemplateValidationException,
 )
 from fides.api.models.messaging import (
@@ -67,7 +68,8 @@ from fides.api.service.messaging.messaging_crud_service import (
     create_property_specific_template_by_type,
     get_template_by_id,
     update_property_specific_template,
-    delete_template_by_id, save_defaults_for_all_messaging_template_types,
+    delete_template_by_id,
+    save_defaults_for_all_messaging_template_types,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
@@ -738,8 +740,4 @@ def delete_messaging_template_by_id(
             detail=e.message,
         )
     except MessagingTemplateValidationException as e:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=e.message
-        )
-
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=e.message)
