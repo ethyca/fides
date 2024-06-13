@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     MessagingConfigNotFoundException,
-    MessagingConfigValidationException,
+    MessagingConfigValidationException, EmailTemplateNotFoundException,
 )
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
@@ -23,7 +23,7 @@ from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_basic_templates,
     delete_template_by_id,
     get_all_basic_messaging_templates,
-    get_all_messaging_templates_summary,
+    save_defaults_for_all_messaging_template_types,
     get_basic_messaging_template_by_type_or_default,
     get_default_template_by_type,
     get_template_by_id,
@@ -231,7 +231,7 @@ class TestMessagingTemplates:
             "properties": [property_a.id, property_b.id],
             "is_enabled": True,
         }
-        with pytest.raises(MessagingConfigNotFoundException) as exc:
+        with pytest.raises(EmailTemplateNotFoundException) as exc:
             update_property_specific_template(
                 db, "invalid", MessagingTemplateWithPropertiesBodyParams(**update_body)
             )
@@ -546,11 +546,38 @@ class TestMessagingTemplates:
         with pytest.raises(MessagingConfigValidationException) as exc:
             get_default_template_by_type("invalid_type")
 
-    def test_get_all_messaging_templates_summary(self, db: Session, messaging_template_no_property):
-        summary: List[MessagingTemplate] = get_all_messaging_templates_summary(db)
-        assert len(summary) == 1
-        assert len(summary[0].properties) == 0
-        assert summary[0].content is not None
-        assert summary[0].type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-        assert summary[0].is_enabled is True
+    def test_save_defaults_for_all_messaging_template_types_no_db_templates(self, db: Session):
+        save_defaults_for_all_messaging_template_types(db)
+        all_templates = MessagingTemplate.query(db).all()
+        assert len(all_templates) == 6
 
+    def test_save_defaults_for_all_messaging_template_types_some_db_templates(
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        messaging_template_privacy_request_receipt,
+    ):
+        save_defaults_for_all_messaging_template_types(db)
+        all_templates = MessagingTemplate.query(db).all()
+        assert len(all_templates) == 6
+
+    def test_save_defaults_for_all_messaging_template_types_all_db_templates(
+        self, db: Session, property_a
+    ):
+        content = {
+            "subject": "Some subject",
+            "body": "Some body",
+        }
+        for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
+            MessagingTemplate.create(
+                db=db,
+                data=MessagingTemplateWithPropertiesDetail(
+                    content=content,
+                    properties=[{"id": property_a.id, "name": property_a.name}],
+                    is_enabled=True,
+                    type=template_type,
+                ).dict(),
+            )
+        save_defaults_for_all_messaging_template_types(db)
+        all_templates = MessagingTemplate.query(db).all()
+        assert len(all_templates) == 6

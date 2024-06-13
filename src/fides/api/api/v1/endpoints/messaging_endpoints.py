@@ -20,7 +20,8 @@ from starlette.status import (
 from fides.api.api import deps
 from fides.api.common_exceptions import (
     MessageDispatchException,
-    MessagingConfigNotFoundException,
+    MessagingConfigNotFoundException, MessagingConfigValidationException, EmailTemplateNotFoundException,
+    MessagingTemplateValidationException,
 )
 from fides.api.models.messaging import (
     MessagingConfig,
@@ -66,7 +67,7 @@ from fides.api.service.messaging.messaging_crud_service import (
     create_property_specific_template_by_type,
     get_template_by_id,
     update_property_specific_template,
-    delete_template_by_id,
+    delete_template_by_id, save_defaults_for_all_messaging_template_types,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
@@ -594,9 +595,11 @@ def get_property_specific_messaging_templates_summary(
     *, db: Session = Depends(deps.get_db), params: Params = Depends()
 ) -> AbstractPage[MessagingTemplateWithPropertiesSummary]:
     """
-    Returns all messaging templates. Can be very large response if user has many properties with messaging templates
-    configured for each property.
+    Returns all messaging templates, automatically saving in any missing message template types to the db.
     """
+    # First save any missing template types to db
+    save_defaults_for_all_messaging_template_types(db)
+    # Now return all templates
     return paginate(
         MessagingTemplate.query(db=db).order_by(MessagingConfig.created_at.desc()),
         params=params,
@@ -637,9 +640,15 @@ def create_property_specific_messaging_template(
     logger.info(
         "Creating new property-specific messaging template of type '{}'", template_type
     )
-    return create_property_specific_template_by_type(
-        db, template_type, messaging_template_create_body
-    )
+    try:
+        return create_property_specific_template_by_type(
+            db, template_type, messaging_template_create_body
+        )
+    except MessagingTemplateValidationException as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=e.message,
+        )
 
 
 @router.put(
@@ -659,9 +668,20 @@ def update_property_specific_messaging_template(
     logger.info(
         "Updating new property-specific messaging template of id '{}'", template_id
     )
-    return update_property_specific_template(
-        db, template_id, messaging_template_update_body
-    )
+    try:
+        return update_property_specific_template(
+            db, template_id, messaging_template_update_body
+        )
+    except EmailTemplateNotFoundException as e:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=e.message,
+        )
+    except MessagingTemplateValidationException as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=e.message,
+        )
 
 
 @router.get(
@@ -678,19 +698,27 @@ def get_messaging_template_by_id(
     Retrieves messaging template by template tid.
     """
     logger.info("Finding messaging template with id '{}'", template_id)
-    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
-    return MessagingTemplateWithPropertiesDetail(
-        id=template_id,
-        type=messaging_template.type,
-        content=messaging_template.content,
-        is_enabled=messaging_template.is_enabled,
-        properties=messaging_template.properties,
-    )
+
+    try:
+        messaging_template = get_template_by_id(db, template_id)
+        return MessagingTemplateWithPropertiesDetail(
+            id=template_id,
+            type=messaging_template.type,
+            content=messaging_template.content,
+            is_enabled=messaging_template.is_enabled,
+            properties=messaging_template.properties,
+        )
+    except EmailTemplateNotFoundException as e:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=e.message,
+        )
 
 
 @router.delete(
     MESSAGING_TEMPLATE_BY_ID,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    status_code=HTTP_204_NO_CONTENT,
     response_model=None,
 )
 def delete_messaging_template_by_id(
@@ -702,4 +730,16 @@ def delete_messaging_template_by_id(
     Deletes messaging template by template id.
     """
     logger.info("Deleting messaging template with id '{}'", template_id)
-    return delete_template_by_id(db, template_id)
+    try:
+        delete_template_by_id(db, template_id)
+    except EmailTemplateNotFoundException as e:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=e.message,
+        )
+    except MessagingTemplateValidationException as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=e.message
+        )
+

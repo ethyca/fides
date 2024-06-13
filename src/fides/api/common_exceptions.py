@@ -203,6 +203,14 @@ class EmailTemplateUnhandledActionType(FidesopsException):
     """Custom Exception - Email Template Unhandled ActionType Error"""
 
 
+class EmailTemplateNotFoundException(FidesopsException):
+    """Custom Exception - Email Template UNot Found"""
+
+
+class MessagingTemplateValidationException(FidesopsException):
+    """Custom Exception - Messaging Template Could Not Be Created, Updated, or Deleted"""
+
+
 class OAuth2TokenException(FidesopsException):
     """Custom Exception - Unable to access or refresh OAuth2 tokens for SaaS connector"""
 

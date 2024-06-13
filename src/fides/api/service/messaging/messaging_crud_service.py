@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
@@ -6,8 +5,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
-    MessagingConfigNotFoundException,
-    MessagingConfigValidationException,
+    MessagingConfigNotFoundException, EmailTemplateNotFoundException, MessagingTemplateValidationException,
 )
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import (
@@ -20,7 +18,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigResponse,
     MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateWithPropertiesDetail,
-    MessagingTemplateWithPropertiesSummary,
 )
 
 
@@ -281,7 +278,7 @@ def _validate_overlapping_templates(
     for db_template in possible_overlapping_templates:
         for db_property in db_template.properties:
             if db_property.id in new_property_ids:
-                raise MessagingConfigValidationException(
+                raise MessagingTemplateValidationException(
                     f"There is already an enabled messaging template with template type {template_type} and property {db_property.id}"
                 )
 
@@ -328,7 +325,7 @@ def create_property_specific_template_by_type(
     This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
     """
     if template_type not in DEFAULT_MESSAGING_TEMPLATES:
-        raise MessagingConfigValidationException(
+        raise MessagingTemplateValidationException(
             f"Messaging template type {template_type} is not supported."
         )
     _validate_overlapping_templates(
@@ -361,7 +358,7 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
         .all()
     )
     if len(templates_with_type) <= 1:
-        raise MessagingConfigValidationException(
+        raise MessagingTemplateValidationException(
             f"Messaging template with id {template_id} cannot be deleted because it is the only template with type {messaging_template.type}"
         )
     logger.info("Deleting messaging config with id '{}'", template_id)
@@ -376,7 +373,7 @@ def get_template_by_id(
         db, object_id=template_id
     )
     if not messaging_template:
-        raise MessagingConfigNotFoundException(
+        raise EmailTemplateNotFoundException(
             f"No messaging template found with id {template_id}"
         )
     return messaging_template
@@ -387,7 +384,7 @@ def get_default_template_by_type(
 ) -> MessagingTemplateWithPropertiesDetail:
     default_template = DEFAULT_MESSAGING_TEMPLATES.get(template_type)
     if not default_template:
-        raise MessagingConfigValidationException(
+        raise MessagingTemplateValidationException(
             f"Messaging template type {template_type} is not supported."
         )
     template = MessagingTemplateWithPropertiesDetail(
@@ -400,52 +397,27 @@ def get_default_template_by_type(
     return template
 
 
-def get_all_messaging_templates_summary(
+def save_defaults_for_all_messaging_template_types(
         db: Session,
-) -> Optional[List[MessagingTemplateWithPropertiesSummary]]:
+) -> None:
     """
     This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
-    """
-    # Retrieve all templates from the database
-    db_templates: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for template in MessagingTemplate.all(db):
-        db_templates[template.type].append(
-            {
-                "id": template.id,
-                "type": template.type,
-                "is_enabled": template.is_enabled,
-                "properties": template.properties,
-            }
-        )
 
-    # Create a list of MessagingTemplate models, using defaults if a key is not found in the database
-    templates: List[MessagingTemplateWithPropertiesSummary] = []
+    We retrieve all templates from the db, writing the default templates that do not already exist. This way, we can
+    have a pure Query obj to provide to the endpoint pagination fn.
+    """
+
     for (
             template_type,
             default_template,  # pylint: disable=W0612
     ) in DEFAULT_MESSAGING_TEMPLATES.items():
-        # insert type key, see if there are any matches with DB, else use defaults
-        db_templates_with_type: Optional[List[Dict[str, Any]]] = db_templates.get(
-            template_type
-        )
-        if db_templates_with_type:
-            for db_template in db_templates_with_type:
-                templates.append(
-                    MessagingTemplateWithPropertiesSummary(
-                        id=db_template["id"],
-                        type=template_type,
-                        is_enabled=db_template["is_enabled"],
-                        properties=db_template["properties"],
-                    )
-                )
-        else:
-            templates.append(
-                MessagingTemplateWithPropertiesSummary(
-                    id=None,
-                    type=template_type,
-                    is_enabled=False,
-                    properties=[],
-                )
-            )
+        # If the db does not have any existing templates with a given template type, write one to the DB
+        any_db_template_with_type = MessagingTemplate.get_by(db=db, field="type", value=template_type)
+        if not any_db_template_with_type:
+            data = {
+                "content": default_template.content,
+                "is_enabled": False,
+                "type": template_type,
+            }
+        MessagingTemplate.create(db=db, data=data)
 
-    return templates
