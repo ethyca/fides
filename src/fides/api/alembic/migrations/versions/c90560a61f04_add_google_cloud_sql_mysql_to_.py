@@ -18,7 +18,8 @@ depends_on = None
 def upgrade():
     # Add 'google_cloud_sql_mysql' to ConnectionType enum
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
-    op.execute("""
+    op.execute(
+        """
         CREATE TYPE connectiontype AS ENUM (
             'mongodb',
             'mysql',
@@ -41,11 +42,14 @@ def upgrade():
             'generic_erasure_email',
             'google_cloud_sql_mysql'
         )
-    """)
-    op.execute("""
+    """
+    )
+    op.execute(
+        """
         ALTER TABLE connectionconfig ALTER COLUMN connection_type TYPE connectiontype USING
         connection_type::text::connectiontype
-    """)
+    """
+    )
     op.execute("DROP TYPE connectiontype_old")
 
 
@@ -55,7 +59,8 @@ def downgrade():
         "DELETE FROM connectionconfig WHERE connection_type IN ('google_cloud_sql_mysql')"
     )
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
-    op.execute("""
+    op.execute(
+        """
         CREATE TYPE connectiontype AS ENUM (
             'mongodb',
             'mysql',
@@ -77,9 +82,12 @@ def downgrade():
             'generic_consent_email',
             'generic_erasure_email'
         )
-    """)
-    op.execute("""
+    """
+    )
+    op.execute(
+        """
         ALTER TABLE connectionconfig ALTER COLUMN connection_type TYPE connectiontype USING
         connection_type::text::connectiontype
-    """)
+    """
+    )
     op.execute("DROP TYPE connectiontype_old")
