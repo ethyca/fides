@@ -234,8 +234,12 @@ export const saveFidesCookie = (
       CODEC
     );
     if (c) {
-      const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
-      if (cookieString) {
+      const savedCookie = getFidesConsentCookie();
+      // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
+      if (
+        savedCookie &&
+        savedCookie.fides_meta.updatedAt === cookie.fides_meta.updatedAt
+      ) {
         break;
       }
     }

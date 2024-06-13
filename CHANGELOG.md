@@ -30,6 +30,7 @@ The types of changes are:
 
 ### Fixed
 - Fixed "add" icons on some buttons being wrong size [#4975](https://github.com/ethyca/fides/pull/4975)
+- Fixed ability to update consent preferences after they've previously been set [#4984](https://github.com/ethyca/fides/pull/4984)
 
 ## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)
 
