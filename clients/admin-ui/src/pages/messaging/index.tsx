@@ -1,46 +1,62 @@
+/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { Badge, Box, Button, Flex, Select, Spinner, Text } from "fidesui";
-import { Formik } from "formik";
-import { M } from "msw/lib/glossary-de6278a9";
+import {
+  createColumnHelper,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { Spinner, Text, VStack } from "fidesui";
 import { NextPage } from "next";
-import { useState } from "react";
+import { useMemo } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import FixedLayout from "~/features/common/FixedLayout";
-import FormSection from "~/features/common/form/FormSection";
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import PageHeader from "~/features/common/PageHeader";
-import { useGetAllPropertiesQuery } from "~/features/properties";
+import {
+  DefaultCell,
+  DefaultHeaderCell,
+  FidesTableV2,
+} from "~/features/common/table/v2";
+import {
+  MessagingTemplate,
+  useGetMessagingTemplatesQuery,
+} from "~/features/messaging-templates/messaging-templates.slice";
+
+const columnHelper = createColumnHelper<MessagingTemplate>();
 
 const MessagingPage: NextPage = () => {
-  const [selectedProperty, setSelectedProperty] = useState<string | undefined>(
-    undefined
-  );
-  const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>(
-    undefined
+  const { data: emailTemplates, isLoading } = useGetMessagingTemplatesQuery();
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor((row) => row.label, {
+        id: "message",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Message" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.properties, {
+        id: "properties",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Properties" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.isEnabled, {
+        id: "isEnabled",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+      }),
+    ],
+    []
   );
 
-  const {
-    isFetching,
-    isLoading,
-    data: properties,
-  } = useGetAllPropertiesQuery({
-    page: 1,
-    size: 50,
+  const tableInstance = useReactTable<CustomFieldDefinitionWithId>({
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    columns,
+    data: emailTemplates || [],
   });
-
-  const templates = [
-    { title: "Subject identity verification", state: "CUSTOM" },
-    { title: "Privacy request received", state: "CUSTOM" },
-    { title: "Privacy request approved", state: "DEFAULT" },
-    { title: "Privacy request denied", state: "DEFAULT" },
-    { title: "Access request completed", state: "CUSTOM" },
-    { title: "Erasure request completed", state: "DISABLED" },
-  ];
-
-  console.log("properties", properties);
-
-  const isEditorEnabled = selectedProperty && selectedTemplate;
 
   return (
     <FixedLayout
@@ -62,152 +78,41 @@ const MessagingPage: NextPage = () => {
 
       {isLoading && <Spinner />}
       {!isLoading && (
-        <Flex height={800}>
-          <Box
-            flexShrink={0}
-            flexGrow={0}
-            borderRightWidth={1}
-            width={350}
-            py={2}
-            px={3}
-            pr={8}
-          >
-            <Flex height="full" direction="column" marginBottom={2}>
-              <Box flex={1} borderBottomWidth={1}>
-                <StepHeading step={1} title="Select a property" />
-                <Select
-                  value={selectedProperty}
-                  onChange={(e) => setSelectedProperty(e.target.value)}
-                >
-                  <option value="">&nbsp;</option>
-                  {properties &&
-                    properties.items.map((property) => (
-                      <option key={property.name} value={property.id}>
-                        {property.name}
-                      </option>
-                    ))}
-                </Select>
-              </Box>
-              <Box flex={1} pt={3}>
-                <StepHeading step={2} title="Select an email template" />
-                {/* <Select
-                  disabled={!selectedProperty}
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value)}
-                >
-                  <option value="">&nbsp;</option>
-                  {templates.map((template) => (
-                    <option key={template.title} value={template.title}>
-                      {template.title} ({template.state})
-                    </option>
-                  ))}
-                </Select> */}
-
-                {selectedProperty && (
-                  <Box>
-                    {templates.map((template) => (
-                      <Flex
-                        key={template.title}
-                        justify="space-between"
-                        align="center"
-                        borderWidth={1}
-                        p={2}
-                        pl={3}
-                        borderColor={
-                          selectedTemplate === template.title
-                            ? "complimentary.500"
-                            : "gray.200"
-                        }
-                        mb={2}
-                        cursor="pointer"
-                        onClick={() => setSelectedTemplate(template.title)}
-                        borderRadius={10}
-                      >
-                        <Text
-                          key={template.title}
-                          fontSize="medium"
-                          color="gray.500"
-                        >
-                          {template.title}
-                        </Text>
-                        <Badge
-                          colorScheme={
-                            template.state === "CUSTOM" ? "green" : "gray"
-                          }
-                        >
-                          {template.state}
-                        </Badge>
-                      </Flex>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            </Flex>
-          </Box>
-          <Box flex={1} borderRightWidth={1} py={2} px={3}>
-            {isEditorEnabled && (
-              <>
-                <StepHeading step={3} title="Edit the template" />
-                <Formik
-                  initialValues={{
-                    messagesubject: selectedTemplate,
-                    messagebody:
-                      "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quasi minima maxime, quas laboriosam delectus dignissimos molestias doloribus sint ",
-                  }}
-                >
-                  <FormSection title={selectedTemplate}>
-                    <CustomTextInput
-                      label="Message subject"
-                      name="messagesubject"
-                      variant="stacked"
-                    />
-                    <CustomTextArea
-                      label="Message body"
-                      name="messagebody"
-                      variant="stacked"
-                      resize
-                    />
-                  </FormSection>
-                </Formik>
-                <Flex justifyContent="right" width="100%" paddingTop={2}>
-                  <Button
-                    size="sm"
-                    type="submit"
-                    colorScheme="primary"
-                    isLoading={isLoading}
-                  >
-                    Save
-                  </Button>
-                </Flex>
-              </>
-            )}
-          </Box>
-          <Box flex={1} py={2} px={3}>
-            {isEditorEnabled && <StepHeading title="Preview" />}
-          </Box>
-        </Flex>
+        <FidesTableV2
+          tableInstance={tableInstance}
+          onRowClick={() => {}}
+          emptyTableNotice={<EmptyTableNotice />}
+          enableSorting
+        />
       )}
     </FixedLayout>
   );
 };
 
-const StepHeading = ({ step, title }: { step: number; title: string }) => (
-  <Flex alignItems="baseline">
-    {step && (
-      <Text
-        fontWeight={700}
-        color="gray.700"
-        fontSize="x-large"
-        marginRight={2}
-        marginBottom={2}
-      >
-        {step}.
+const EmptyTableNotice = () => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    borderRadius="base"
+    maxW="70%"
+    data-testid="no-results-notice"
+    alignSelf="center"
+    margin="auto"
+    textAlign="center"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        It looks like it’s your first time here!
       </Text>
-    )}
-    <Text fontWeight={500} fontSize="larger">
-      {title}
-    </Text>
-  </Flex>
+      <Text fontSize="sm">
+        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ut distinctio
+        odio sunt accusantium iusto, expedita id atque sed optio cum possimus
+        incidunt necessitatibus iste, totam nobis ipsam maiores saepe unde.
+        <br />
+      </Text>
+    </VStack>
+  </VStack>
 );
 
 export default MessagingPage;
