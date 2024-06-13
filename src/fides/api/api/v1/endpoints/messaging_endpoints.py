@@ -628,14 +628,14 @@ def get_default_messaging_template(
 @router.post(
     MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Optional[MessagingTemplate],
+    response_model=Optional[MessagingTemplateWithPropertiesDetail],
 )
 def create_property_specific_messaging_template(
     template_type: MessagingActionType,
     *,
     db: Session = Depends(deps.get_db),
     messaging_template_create_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplate]:
+) -> Optional[MessagingTemplateWithPropertiesDetail]:
     """
     Creates property-specific messaging template by template type.
     """
@@ -656,14 +656,14 @@ def create_property_specific_messaging_template(
 @router.put(
     MESSAGING_TEMPLATE_BY_ID,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Optional[MessagingTemplate],
+    response_model=Optional[MessagingTemplateWithPropertiesDetail],
 )
 def update_property_specific_messaging_template(
     template_id: str,
     *,
     db: Session = Depends(deps.get_db),
     messaging_template_update_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplate]:
+) -> Optional[MessagingTemplateWithPropertiesDetail]:
     """
     Updates property-specific messaging template by template id.
     """
