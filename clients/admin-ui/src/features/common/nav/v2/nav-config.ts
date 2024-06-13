@@ -159,6 +159,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Management",
     routes: [
       {
+        title: "Messaging",
+        path: routes.MESSAGING_ROUTE,
+        requiresPlus: true,
+        scopes: [],
+      },
+      {
         title: "Users",
         path: routes.USER_MANAGEMENT_ROUTE,
         scopes: [

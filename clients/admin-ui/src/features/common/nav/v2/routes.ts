@@ -48,3 +48,4 @@ export const EMAIL_TEMPLATES_ROUTE = "/management/email-templates";
 export const DOMAIN_RECORDS_ROUTE = "/management/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/management/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/management/consent";
+export const MESSAGING_ROUTE = "/messaging";
