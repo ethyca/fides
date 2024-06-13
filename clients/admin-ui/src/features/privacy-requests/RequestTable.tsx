@@ -6,7 +6,9 @@ import {
   FormLabel,
   HStack,
   IconButton,
+  Portal,
   Switch,
+  useDisclosure,
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -30,6 +32,7 @@ import {
   useGetAllPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
+import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
@@ -54,6 +57,8 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     setTotalPages,
     // resetPageIndexToDefault,
   } = useServerSidePagination();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { data, isLoading, isFetching } = useGetAllPrivacyRequestsQuery({
     ...filters,
@@ -132,10 +137,14 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
               id="reveal-pii"
             />
           </HStack>
-          <Button data-testid="filter-btn" size="xs" variant="outline">
+          <Button
+            data-testid="filter-btn"
+            size="xs"
+            variant="outline"
+            onClick={onOpen}
+          >
             Filter
           </Button>
-          {/* TASK: create filter modal */}
           <IconButton
             aria-label="Export report"
             data-testid="export-btn"
@@ -145,6 +154,9 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
             onClick={handleExport}
           />
         </HStack>
+        <Portal>
+          <RequestTableFilterModal isOpen={isOpen} onClose={onClose} />
+        </Portal>
       </TableActionBar>
       {isLoading ? (
         <Box p={2} borderWidth={1}>

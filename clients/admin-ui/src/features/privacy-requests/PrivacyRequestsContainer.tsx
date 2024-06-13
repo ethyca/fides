@@ -1,7 +1,7 @@
 import { Flex, Heading, Spacer } from "fidesui";
 import dynamic from "next/dynamic";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Restrict from "~/features/common/Restrict";
@@ -9,8 +9,6 @@ import { RequestTable } from "~/features/privacy-requests/RequestTable";
 import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import DeprecatedRequestFilters from "./DeprecatedRequestFilters";
-import DeprecatedRequestTable from "./DeprecatedRequestTable";
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
 
 const ActionButtons = dynamic(
@@ -20,7 +18,6 @@ const ActionButtons = dynamic(
 
 const PrivacyRequestsContainer: React.FC = () => {
   const { processing } = useDSRErrorAlert();
-  const [revealPII, setRevealPII] = useState(false);
 
   const { plus: hasPlus } = useFeatures();
 
@@ -43,11 +40,6 @@ const PrivacyRequestsContainer: React.FC = () => {
         <ActionButtons />
       </Flex>
       <RequestTable />
-      <DeprecatedRequestFilters
-        revealPII={revealPII}
-        setRevealPII={setRevealPII}
-      />
-      <DeprecatedRequestTable revealPII={revealPII} />
     </>
   );
 };

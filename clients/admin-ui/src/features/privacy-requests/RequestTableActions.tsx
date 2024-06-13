@@ -3,6 +3,7 @@ import {
   CloseIcon,
   HStack,
   IconButton,
+  Portal,
   StackProps,
   useDisclosure,
 } from "fidesui";
@@ -55,18 +56,22 @@ export const RequestTableActions = ({
         />
       </HStack>
 
-      <ApprovePrivacyRequestModal
-        isOpen={approvalModal.isOpen}
-        isLoading={isLoading}
-        onClose={approvalModal.onClose}
-        onApproveRequest={handleApproveRequest}
-        subjectRequest={subjectRequest}
-      />
-      <DenyPrivacyRequestModal
-        isOpen={denyModal.isOpen}
-        onClose={denyModal.onClose}
-        onDenyRequest={handleDenyRequest}
-      />
+      <Portal>
+        <ApprovePrivacyRequestModal
+          isOpen={approvalModal.isOpen}
+          isLoading={isLoading}
+          onClose={approvalModal.onClose}
+          onApproveRequest={handleApproveRequest}
+          subjectRequest={subjectRequest}
+        />
+      </Portal>
+      <Portal>
+        <DenyPrivacyRequestModal
+          isOpen={denyModal.isOpen}
+          onClose={denyModal.onClose}
+          onDenyRequest={handleDenyRequest}
+        />
+      </Portal>
     </>
   );
 };

@@ -68,7 +68,7 @@ export const getRequestTableColumns = (revealPII = false) => [
   columnHelper.accessor((row) => row.reviewer?.username || "", {
     id: COLUMN_IDS.REVIEWER,
     cell: ({ getValue }) => (
-      <DefaultCell value={getPII(getValue(), revealPII)} />
+      <DefaultCell value={getPII(getValue(), revealPII)} /> // NOTE: this field does not get set when reviewed as root user
     ),
     header: (props) => <DefaultHeaderCell value="Reviewed By" {...props} />,
   }),
