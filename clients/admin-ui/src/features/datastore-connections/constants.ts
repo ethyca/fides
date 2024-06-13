@@ -46,6 +46,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.MYSQL, "mysql.svg"],
   [ConnectionType.POSTGRES, "postgres.svg"],
   [ConnectionType.REDSHIFT, "redshift.svg"],
+  [ConnectionType.SCYLLA, "scylla.svg"],
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
   [ConnectionType.SOVRN, "sovrn.svg"],
   [ConnectionType.TIMESCALE, "timescaledb.svg"],
