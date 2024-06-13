@@ -10,6 +10,7 @@ from deepdiff import DeepDiff
 from fastapi import HTTPException
 from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
+from fideslang.validation import FidesKey
 from loguru import logger as log
 from sqlalchemy import and_, delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,9 +18,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.elements import BinaryExpression
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
+from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.db.crud import create_resource, get_resource, update_resource
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
+    DataCategory,
+    DataSubject,
     DataUse,
     PrivacyDeclaration,
     System,
@@ -48,27 +52,40 @@ def get_system(db: Session, fides_key: str) -> System:
     return system
 
 
+async def validate_data_labels(
+    db: AsyncSession, sql_model: Base, labels: List[FidesKey]
+) -> None:
+    for label in labels:
+        try:
+            await get_resource(
+                sql_model=sql_model,
+                fides_key=label,
+                async_session=db,
+            )
+        except NotFoundError:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Invalid privacy declaration referencing unknown {sql_model.__name__} {label}",
+            )
+
+
 async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) -> None:
     """
     Ensure that the `PrivacyDeclaration`s on the provided `System` resource are valid:
      - that they reference valid `DataUse` records
+     - that they reference valid `DataCategory` records
      - that there are not "duplicate" `PrivacyDeclaration`s as defined by their "logical ID"
 
     If not, a `400` is raised
     """
     logical_ids = set()
     for privacy_declaration in system.privacy_declarations:
-        try:
-            await get_resource(
-                sql_model=DataUse,
-                fides_key=privacy_declaration.data_use,
-                async_session=db,
-            )
-        except NotFoundError:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Invalid privacy declaration referencing unknown DataUse {privacy_declaration.data_use}",
-            )
+        await validate_data_labels(db, DataUse, [privacy_declaration.data_use])
+        await validate_data_labels(
+            db, DataCategory, privacy_declaration.data_categories
+        )
+        await validate_data_labels(db, DataSubject, privacy_declaration.data_subjects)
+
         logical_id = privacy_declaration_logical_id(privacy_declaration)
         if logical_id in logical_ids:
             raise HTTPException(

@@ -589,6 +589,107 @@ class TestSystemCreate:
             len(System.all(db)) == 1
         )  # ensure our system wasn't created, still only one system
 
+    def test_system_create_invalid_data_category(
+        self, test_config, db, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": [
+                                "user.name.first",
+                                "user.name.nickname",
+                                "user.name.last",
+                            ],  # Nickname does not exist
+                            "data_use": "marketing",
+                        }
+                    ],
+                }
+            ),
+        )
+
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": "Invalid privacy declaration referencing unknown DataCategory user.name.nickname"
+        }
+
+        assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_invalid_data_subject(
+        self, test_config, db, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": ["user.name.first", "user.name.last"],
+                            "data_use": "marketing",
+                            "data_subjects": [
+                                "employee",
+                                "intern",
+                            ],  # Intern does not exist
+                        }
+                    ],
+                }
+            ),
+        )
+
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": "Invalid privacy declaration referencing unknown DataSubject intern"
+        }
+
+        assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_invalid_data_use(
+        self, test_config, db, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": ["user.name.first", "user.name.last"],
+                            "data_use": "marketing.measure",  # Invalid data use
+                        }
+                    ],
+                }
+            ),
+        )
+
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": "Invalid privacy declaration referencing unknown DataUse marketing.measure"
+        }
+
+        assert not System.all(db)  # ensure our system wasn't created
+
     async def test_system_create(
         self, generate_auth_header, db, test_config, system_create_request_body
     ):
