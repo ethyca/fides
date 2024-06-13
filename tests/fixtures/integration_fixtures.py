@@ -13,7 +13,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.service.connectors import MongoDBConnector
+from fides.api.service.connectors import MongoDBConnector, ScyllaConnector
 
 from .application_fixtures import faker, integration_secrets
 
@@ -496,3 +496,25 @@ def integration_dynamodb_config(db) -> ConnectionConfig:
     connection_config.save(db)
     yield connection_config
     connection_config.delete(db)
+
+
+# ======================= scylladb  ==========================
+
+
+@pytest.fixture(scope="function")
+def integration_scylladb_config(db) -> ConnectionConfig:
+    connection_config = ConnectionConfig(
+        key="scylla_example",
+        connection_type=ConnectionType.scylla,
+        access=AccessLevel.read,
+        secrets=integration_secrets["scylla_example"],
+        name="scylla_example",
+    )
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def integration_scylla_connector(integration_scylladb_config) -> MongoClient:
+    return ScyllaConnector(integration_scylladb_config).client()
