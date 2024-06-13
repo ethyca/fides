@@ -86,6 +86,8 @@ class TestOracleResponsysConnector:
         assert erasure_results == {
             "oracle_responsys_instance:profile_list_recipient": 1,
             "oracle_responsys_instance:profile_list": 0,
+            "oracle_responsys_instance:profile_extension": 0,
+            "oracle_responsys_instance:profile_extension_recipient": 0,
         }
 
     @pytest.mark.parametrize(
@@ -115,4 +117,6 @@ class TestOracleResponsysConnector:
         assert erasure_results == {
             "oracle_responsys_instance:profile_list_recipient": 1,
             "oracle_responsys_instance:profile_list": 0,
+            "oracle_responsys_instance:profile_extension": 0,
+            "oracle_responsys_instance:profile_extension_recipient": 0,
         }
