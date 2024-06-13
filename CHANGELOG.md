@@ -35,6 +35,7 @@ The types of changes are:
 - Fixed and optimized Database Icon SVGs used in Datamap [#4969](https://github.com/ethyca/fides/pull/4969)
 - Fixed "add" icons on some buttons being wrong size [#4975](https://github.com/ethyca/fides/pull/4975)
 - Masked "Keyfile credentials" input on integration config form [#4971](https://github.com/ethyca/fides/pull/4971)
+- Fixed ability to update consent preferences after they've previously been set [#4984](https://github.com/ethyca/fides/pull/4984)
 
 ## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)
 
