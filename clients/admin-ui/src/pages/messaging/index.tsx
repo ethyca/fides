@@ -7,17 +7,20 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Spinner, Text, VStack } from "fidesui";
+import { Button, HStack, Spinner, Text, VStack } from "fidesui";
 import { NextPage } from "next";
+import Link from "next/link";
 import { useMemo } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import FixedLayout from "~/features/common/FixedLayout";
+import { MESSAGING_NEW_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
+  TableActionBar,
 } from "~/features/common/table/v2";
 import {
   MessagingTemplate,
@@ -76,6 +79,19 @@ const MessagingPage: NextPage = () => {
         borderBottomWidth={1}
       />
 
+      <TableActionBar>
+        <HStack alignItems="center" spacing={4} marginLeft="auto">
+          <Link href={MESSAGING_NEW_ROUTE}>
+            <Button
+              size="xs"
+              colorScheme="primary"
+              data-testid="add-privacy-notice-btn"
+            >
+              Add message +
+            </Button>
+          </Link>
+        </HStack>
+      </TableActionBar>
       {isLoading && <Spinner />}
       {!isLoading && (
         <FidesTableV2
