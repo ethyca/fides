@@ -185,6 +185,7 @@ markers = [
     "integration_postgres",
     "integration_mongodb",
     "integration_mssql",
+    "integration_google_cloud_sql_mysql",
     "integration_redshift",
     "integration_snowflake",
     "integration_mariadb",

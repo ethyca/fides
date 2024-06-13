@@ -33,7 +33,7 @@
     {
       "identifier": "google_cloud_sql_mysql",
       "type": "database",
-      "human_readable": "Google Cloud for MySQL",
+      "human_readable": "Google Cloud SQL for MySQL",
       "encoded_icon": null
     },
     {
