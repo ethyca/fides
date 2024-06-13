@@ -197,6 +197,44 @@ def create_or_update_basic_templates(
     return template
 
 
+def get_enabled_messaging_template_by_type_and_property(
+    db: Session,
+    template_type: str,
+    property_id: Optional[str],
+    use_default_property: Optional[bool] = True,
+) -> Optional[MessagingTemplate]:
+    """
+    Retrieve templates that are enabled, given type and property.
+    Uses default property if none is found and use_default_property is enabled.
+    """
+    if not property_id and use_default_property:
+        default_property = Property.get_by(db=db, field="is_default", value=True)
+        if not default_property:
+            return None
+        property_id = default_property.id
+    logger.info(
+        "Getting custom messaging template for template type: {} and property id: {}",
+        template_type,
+        property_id,
+    )
+    template = (
+        db.query(MessagingTemplate)
+        .join(MessagingTemplateToProperty)
+        .filter(
+            MessagingTemplate.is_enabled.is_(True),
+            MessagingTemplate.type == template_type,
+            MessagingTemplateToProperty.property_id == property_id,
+        )
+        .first()
+    )
+    if not template:
+        logger.info(
+            "No enabled template was found for template type: {}", template_type
+        )
+
+    return template
+
+
 def _validate_overlapping_templates(
     db: Session,
     template_type: str,

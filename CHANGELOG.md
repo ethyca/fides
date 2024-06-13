@@ -18,10 +18,12 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.38.0...main)
 
 ### Added
+- Adds the start of the Scylla DB Integration [#4946](https://github.com/ethyca/fides/pull/4946)
 - Added model and data migrations and CRUD-layer operations for property-specific messaging [#4901](https://github.com/ethyca/fides/pull/4901)
 - Added option in FidesJS SDK to only disable notice-served API [#4965](https://github.com/ethyca/fides/pull/4965)
 - External ID support for consent management [#4927](https://github.com/ethyca/fides/pull/4927)
 - Added access and erasure support for the Greenhouse Harvest integration [#4945](https://github.com/ethyca/fides/pull/4945)
+- Implement sending emails via property-specific messaging templates [#4950](https://github.com/ethyca/fides/pull/4950)
 
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)

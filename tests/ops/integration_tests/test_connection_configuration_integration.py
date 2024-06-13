@@ -13,6 +13,7 @@ from fides.api.service.connectors import (
     MongoDBConnector,
     PostgreSQLConnector,
     SaaSConnector,
+    ScyllaConnector,
     get_connector,
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -1336,3 +1337,60 @@ class TestSaasConnectorIntegration:
         connector = get_connector(mailchimp_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()
+
+
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
+class TestScyllaDBConnector:
+    def test_scylla_db_connector(
+        self,
+        db: Session,
+        integration_scylladb_config,
+    ) -> None:
+        orig_secrets = integration_scylladb_config.secrets.copy()
+
+        # Test good creds
+        connector = ScyllaConnector(integration_scylladb_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        # Test bad username
+        integration_scylladb_config.secrets["username"] = "bad_username"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Authentication failed."
+
+        # Test bad host
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["host"] = "myserver.myname.com"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "No host available."
+
+        # Test bad keyspace
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["keyspace"] = "nonexistent_keyspace"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Unknown keyspace."
+
+        # Test bad password
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["password"] = "bad pass"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Authentication failed."
+
+        # Test specific, valid keyspace
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["keyspace"] = "vendors_keyspace"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded

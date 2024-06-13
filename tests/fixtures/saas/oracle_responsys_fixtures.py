@@ -24,6 +24,12 @@ def oracle_responsys_secrets(saas_config) -> Dict[str, Any]:
         or secrets["username"],
         "password": pydash.get(saas_config, "oracle_responsys.password")
         or secrets["password"],
+        "profile_lists": pydash.get(saas_config, "oracle_responsys.profile_lists")
+        or secrets["profile_lists"],
+        "profile_extensions": pydash.get(
+            saas_config, "oracle_responsys.profile_extensions"
+        )
+        or secrets["profile_extensions"],
         "test_list": pydash.get(saas_config, "oracle_responsys.test_list")
         or secrets["test_list"],
     }
@@ -78,7 +84,8 @@ def oracle_responsys_erasure_data(
     oracle_responsys_secrets,
 ) -> Generator:
     """
-    Creates a dynamic test data record for erasure tests.
+    Creates a dynamic test data record for profile_list_recipient for erasure tests.
+    A profile_extension_recipient is not created, because they take a while to be queryable after being created.
     Yields RIID as this may be useful to have in test scenarios
     """
     base_url = f"https://{oracle_responsys_secrets['domain']}"
@@ -91,7 +98,9 @@ def oracle_responsys_erasure_data(
             "records": [
                 [
                     oracle_responsys_erasure_identity_email,
-                    oracle_responsys_erasure_identity_phone_number,
+                    oracle_responsys_erasure_identity_phone_number[
+                        1:
+                    ],  # Omit the + prefix
                 ]
             ],
             "mapTemplateName": None,

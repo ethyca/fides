@@ -38,6 +38,7 @@ module = [
   "boto3.*",
   "botocore.*",
   "bson.*",
+  "cassandra.*",
   "celery.*",
   "citext.*",
   "dask.*",
@@ -151,7 +152,7 @@ good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
 ignore="migrations,tests"
 
 [tool.pylint.whitelist]
-extension-pkg-whitelist = ["pydantic", "zlib"]
+extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
 
 ############
 ## Pytest ##
@@ -193,6 +194,7 @@ markers = [
     "integration_dynamodb",
     "integration_saas",
     "integration_saas_override",
+    "integration_scylladb",
     "unit_saas"
 ]
 asyncio_mode = "auto"

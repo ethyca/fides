@@ -47,6 +47,7 @@ class ValidTargets(str, Enum):
     OKTA = "okta"
     BIGQUERY = "bigquery"
     DYNAMODB = "dynamodb"
+    SCYLLADB = "scylla"
 
 
 class GenerateTypes(str, Enum):
