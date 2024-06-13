@@ -74,10 +74,10 @@ def twilio_sms_erasure_data(
     # adding a sleep here as it takes 'some' time for a message to be actionable for erasure
     time.sleep(3)
 
-    yield {}
 '''
 This fixture added so that there is at least one entry in the users collection before the access requests executes.
 '''
+
 @pytest.fixture
 def twilio_sms_add_data(
     twilio_sms_erasure_identity_phone_number: str,
@@ -97,8 +97,6 @@ def twilio_sms_add_data(
 
     # adding a sleep here as it takes 'some' time for a message to be actionable for erasure
     time.sleep(3)
-
-    yield {}
 
 
 @pytest.fixture
