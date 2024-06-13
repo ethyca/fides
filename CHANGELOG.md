@@ -23,6 +23,7 @@ The types of changes are:
 - Added option in FidesJS SDK to only disable notice-served API [#4965](https://github.com/ethyca/fides/pull/4965)
 - External ID support for consent management [#4927](https://github.com/ethyca/fides/pull/4927)
 - Added access and erasure support for the Greenhouse Harvest integration [#4945](https://github.com/ethyca/fides/pull/4945)
+- Support for Limited FIDES__CELERY__* Env Vars [#4980](https://github.com/ethyca/fides/pull/4980)
 - Implement sending emails via property-specific messaging templates [#4950](https://github.com/ethyca/fides/pull/4950)
 
 ### Changed
