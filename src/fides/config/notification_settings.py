@@ -26,6 +26,10 @@ class NotificationSettings(FidesSettings):
         default=False,
         description="When set to True, enables subject notifications upon privacy request review.",
     )
+    enable_property_specific_messaging: bool = Field(
+        default=False,
+        description="When set to True, enables property specific messaging feature, otherwise fall back on the messaging template type env flags set above.",
+    )
 
     @validator("notification_service_type", pre=True)
     @classmethod
