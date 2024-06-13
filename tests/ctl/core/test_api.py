@@ -13,6 +13,7 @@ from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
 from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
+from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -24,14 +25,17 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 from starlette.testclient import TestClient
-from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints import health
 from fides.api.db.crud import get_resource
 from fides.api.db.system import create_system
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System, DataCategory as DataCategoryModel, DataUse as DataUseModel, DataSubject as DataSubjectModel
+from fides.api.models.sql_models import DataCategory as DataCategoryModel
+from fides.api.models.sql_models import Dataset
+from fides.api.models.sql_models import DataSubject as DataSubjectModel
+from fides.api.models.sql_models import DataUse as DataUseModel
+from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import OWNER, VIEWER
@@ -515,22 +519,23 @@ class TestSystemCreate:
             ],
         )
 
-
     @pytest.fixture(scope="function", name="data_category")
     def fixture_inactive_data_category(self, db: Session) -> typing.Generator:
         """
         Fixture that yields an inactive data category and then deletes it for each test run.
         """
         fides_key = "foo"
-        data_category = DataCategoryModel.create(db=db, data={
-            "fides_key": fides_key,
-            "active": False,
-        })
+        data_category = DataCategoryModel.create(
+            db=db,
+            data={
+                "fides_key": fides_key,
+                "active": False,
+            },
+        )
 
         yield data_category
 
         data_category.delete(db)
-
 
     @pytest.fixture(scope="function", name="data_use")
     def fixture_inactive_data_use(self, db: Session) -> typing.Generator:
@@ -538,10 +543,13 @@ class TestSystemCreate:
         Fixture that yields an inactive data category and then deletes it for each test run.
         """
         fides_key = "foo"
-        data_use = DataUseModel.create(db=db, data={
-            "fides_key": fides_key,
-            "active": False,
-        })
+        data_use = DataUseModel.create(
+            db=db,
+            data={
+                "fides_key": fides_key,
+                "active": False,
+            },
+        )
 
         yield data_use
 
@@ -553,10 +561,13 @@ class TestSystemCreate:
         Fixture that yields an inactive data category and then deletes it for each test run.
         """
         fides_key = "foo"
-        data_subject = DataSubjectModel.create(db=db, data={
-            "fides_key": fides_key,
-            "active": False,
-        })
+        data_subject = DataSubjectModel.create(
+            db=db,
+            data={
+                "fides_key": fides_key,
+                "active": False,
+            },
+        )
 
         yield data_subject
 
@@ -841,7 +852,6 @@ class TestSystemCreate:
         }
 
         assert not System.all(db)  # ensure our system wasn't created
-
 
     async def test_system_create(
         self, generate_auth_header, db, test_config, system_create_request_body
