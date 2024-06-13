@@ -83,7 +83,7 @@ def fixture_inactive_data_category(db: Session) -> typing.Generator:
     """
     Fixture that yields an inactive data category and then deletes it for each test run.
     """
-    fides_key = "foo"
+    fides_key = "inactive_data_category"
     data_category = DataCategoryModel.create(
         db=db,
         data={
@@ -102,7 +102,7 @@ def fixture_inactive_data_use(db: Session) -> typing.Generator:
     """
     Fixture that yields an inactive data category and then deletes it for each test run.
     """
-    fides_key = "foo"
+    fides_key = "inactive_data_use"
     data_use = DataUseModel.create(
         db=db,
         data={
@@ -121,7 +121,7 @@ def fixture_inactive_data_subject(db: Session) -> typing.Generator:
     """
     Fixture that yields an inactive data category and then deletes it for each test run.
     """
-    fides_key = "foo"
+    fides_key = "inactive_data_subject"
     data_subject = DataSubjectModel.create(
         db=db,
         data={
