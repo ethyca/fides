@@ -24,13 +24,14 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 from starlette.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints import health
 from fides.api.db.crud import get_resource
 from fides.api.db.system import create_system
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
+from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System, DataCategory as DataCategoryModel, DataUse as DataUseModel, DataSubject as DataSubjectModel
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import OWNER, VIEWER
@@ -514,6 +515,53 @@ class TestSystemCreate:
             ],
         )
 
+
+    @pytest.fixture(scope="function", name="data_category")
+    def fixture_inactive_data_category(self, db: Session) -> typing.Generator:
+        """
+        Fixture that yields an inactive data category and then deletes it for each test run.
+        """
+        fides_key = "foo"
+        data_category = DataCategoryModel.create(db=db, data={
+            "fides_key": fides_key,
+            "active": False,
+        })
+
+        yield data_category
+
+        data_category.delete(db)
+
+
+    @pytest.fixture(scope="function", name="data_use")
+    def fixture_inactive_data_use(self, db: Session) -> typing.Generator:
+        """
+        Fixture that yields an inactive data category and then deletes it for each test run.
+        """
+        fides_key = "foo"
+        data_use = DataUseModel.create(db=db, data={
+            "fides_key": fides_key,
+            "active": False,
+        })
+
+        yield data_use
+
+        data_use.delete(db)
+
+    @pytest.fixture(scope="function", name="data_subject")
+    def fixture_inactive_data_subject(self, db: Session) -> typing.Generator:
+        """
+        Fixture that yields an inactive data category and then deletes it for each test run.
+        """
+        fides_key = "foo"
+        data_subject = DataSubjectModel.create(db=db, data={
+            "fides_key": fides_key,
+            "active": False,
+        })
+
+        yield data_subject
+
+        data_subject.delete(db)
+
     def test_system_create_not_authenticated(
         self,
         test_config,
@@ -689,6 +737,111 @@ class TestSystemCreate:
         }
 
         assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_inactive_data_category(
+        self, test_config, data_category, db, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": [
+                                "user.name.first",
+                                "user.name.last",
+                                data_category.fides_key,
+                            ],
+                            "data_use": "marketing",
+                        }
+                    ],
+                }
+            ),
+        )
+
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": f"Invalid privacy declaration referencing inactive DataCategory {data_category.fides_key}"
+        }
+
+        assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_inactive_data_use(
+        self, test_config, data_use, db, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": [
+                                "user.name.first",
+                                "user.name.last",
+                            ],
+                            "data_use": data_use.fides_key,
+                        }
+                    ],
+                }
+            ),
+        )
+
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": f"Invalid privacy declaration referencing inactive DataUse {data_use.fides_key}"
+        }
+
+        assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_inactive_data_subject(
+        self, test_config, data_subject, db, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=json.dumps(
+                {
+                    "fides_key": "system_key",
+                    "system_type": "system",
+                    "privacy_declarations": [
+                        {
+                            "fides_key": "test",
+                            "data_categories": [
+                                "user.name.first",
+                                "user.name.last",
+                            ],
+                            "data_use": "marketing",
+                            "data_subjects": [data_subject.fides_key],
+                        }
+                    ],
+                }
+            ),
+        )
+
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": f"Invalid privacy declaration referencing inactive DataSubject {data_subject.fides_key}"
+        }
+
+        assert not System.all(db)  # ensure our system wasn't created
+
 
     async def test_system_create(
         self, generate_auth_header, db, test_config, system_create_request_body

@@ -57,7 +57,7 @@ async def validate_data_labels(
 ) -> None:
     for label in labels:
         try:
-            await get_resource(
+            resource = await get_resource(
                 sql_model=sql_model,
                 fides_key=label,
                 async_session=db,
@@ -68,12 +68,19 @@ async def validate_data_labels(
                 detail=f"Invalid privacy declaration referencing unknown {sql_model.__name__} {label}",
             )
 
+        if not resource.active:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Invalid privacy declaration referencing inactive {sql_model.__name__} {label}",
+            )
+
 
 async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) -> None:
     """
     Ensure that the `PrivacyDeclaration`s on the provided `System` resource are valid:
      - that they reference valid `DataUse` records
      - that they reference valid `DataCategory` records
+     - that they reference valid `DataSubject` records
      - that there are not "duplicate" `PrivacyDeclaration`s as defined by their "logical ID"
 
     If not, a `400` is raised
